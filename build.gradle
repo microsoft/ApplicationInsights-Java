@@ -1,0 +1,15 @@
+
+apply plugin: 'java'
+
+jar {
+    version = '1.0'
+    baseName = 'manual-tests'
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':Core')
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
