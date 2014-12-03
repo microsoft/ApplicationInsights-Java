@@ -10,14 +10,15 @@
 .settings/
 
 # Gradle
-.gradle 
-build/ 
+.gradle
+build/
  
 # Ignore Gradle GUI config 
 gradle-app.setting 
 
 ## Directory-based project format: 
-.idea/ 
+.idea
+Core/build
 # if you remove the above rule, at least ignore the following: 
 
  
