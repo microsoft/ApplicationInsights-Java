@@ -1,4 +1,4 @@
-AppInsights-Java
+﻿AppInsights-Java
 ================
 Introduction
 ------------
@@ -10,4 +10,4 @@ Getting started
 ---------------
 
   1. Recommended IDE is IntelliJ idea. When you first open either of the two projects, do it by ‘Import Project’ rather than ‘Open Project’ This will start from the Gradle files and recreate all the build and runtime dependencies in IntelliJ’s cache.
-  2. You can use gradlew.bat on Windows to get gradle installed
+  2. You can use gradlew.bat on Windows to get gradle installed.
