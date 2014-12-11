@@ -50,15 +50,31 @@ public class SimpleHttpChannel implements TelemetryChannel
 
             CloseableHttpClient httpClient = HttpClients.createDefault();
 
-            try (CloseableHttpResponse response = httpClient.execute(request))
+            CloseableHttpResponse response = null;
+            try
             {
+                response = httpClient.execute(request);
                 HttpEntity respEntity = response.getEntity();
                 if (respEntity != null)
                     respEntity.getContent().close();
 
                 if (developerMode) System.out.println("Status: " + response.getStatusLine());
             }
-
+            catch (IOException ioe)
+            {
+                ioe.printStackTrace(System.err);
+                try
+                {
+                    if (response != null)
+                    {
+                        response.close();
+                    }
+                }
+                catch (IOException ioeIn)
+                {
+                    ioeIn.printStackTrace(System.err);
+                }
+            }
         }
         catch (IOException ioe)
         {

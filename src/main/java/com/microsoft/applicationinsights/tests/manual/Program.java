@@ -16,7 +16,7 @@ class Program
         TelemetryClient appInsights = new TelemetryClient();
         appInsights.getContext().getProperties().put("programmatic", "works");
 
-        Map<String, Double> metrics = new HashMap<>();
+        Map<String, Double> metrics = new HashMap<String, Double>();
         metrics.put("Answers", (double)15);
 
         appInsights.trackEvent("A test event", null, metrics);

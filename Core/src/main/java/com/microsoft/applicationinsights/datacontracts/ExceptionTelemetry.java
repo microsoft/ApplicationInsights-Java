@@ -191,7 +191,7 @@ public class ExceptionTelemetry extends BaseTelemetry
 
     private void updateException(Exception exception)
     {
-        ArrayList<ExceptionDetails> exceptions = new ArrayList<>();
+        ArrayList<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
         convertExceptionTree(exception, null, exceptions);
 
         this.data.setExceptions(exceptions);
