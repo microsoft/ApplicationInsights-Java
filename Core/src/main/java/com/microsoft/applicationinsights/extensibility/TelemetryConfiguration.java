@@ -16,7 +16,7 @@ public class TelemetryConfiguration
 
     private String instrumentationKey;
 
-    private final List<ContextInitializer> contextInitializers = new ArrayList<>();
+    private final List<ContextInitializer> contextInitializers = new ArrayList<ContextInitializer>();
     private TelemetryChannel channel;
     private boolean trackingIsDisabled = true;
 
