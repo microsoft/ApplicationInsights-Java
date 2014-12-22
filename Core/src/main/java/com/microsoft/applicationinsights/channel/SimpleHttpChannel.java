@@ -11,6 +11,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple HTTP channel, using no buffering, batching, or asynchrony.
@@ -18,7 +19,7 @@ import java.io.StringWriter;
 public class SimpleHttpChannel implements TelemetryChannel
 {
     @Override
-    public boolean getDeveloperMode()
+    public boolean isDeveloperMode()
     {
         return developerMode;
     }
@@ -80,6 +81,10 @@ public class SimpleHttpChannel implements TelemetryChannel
         {
             ioe.printStackTrace(System.err);
         }
+    }
+
+    @Override
+    public void stop(long timeout, TimeUnit timeUnit) {
     }
 
     private boolean developerMode = false;
