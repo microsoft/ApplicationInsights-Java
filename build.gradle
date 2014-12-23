@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-	compile project(':Core')
+    compile project(':Core')
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
