@@ -1,13 +1,15 @@
 package com.microsoft.applicationinsights.logging.log4j;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.datacontracts.BaseTelemetry;
+import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
 import com.microsoft.applicationinsights.datacontracts.TraceTelemetry;
+import com.microsoft.applicationinsights.util.StringUtil;
 import org.apache.logging.log4j.core.*;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -26,23 +28,12 @@ public class ApplicationInsightsAppender extends AbstractAppender {
     //region Ctor
 
     /**
-     * Constructor that defaults to suppressing exceptions.
-     *
-     * @param name   The Appender name.
-     * @param filter The Filter to associate with the Appender.
-     * @param layout The layout to use to format the event.
-     */
-    protected ApplicationInsightsAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
-        super(name, filter, layout);
-    }
-
-    /**
      * Constructs new Application Insights appender.
      * @param name The appender name.
      * @param instrumentationKey The instrumentation key.
      */
-    public ApplicationInsightsAppender(String name, String instrumentationKey) {
-        this(name, null, null);
+    protected ApplicationInsightsAppender(String name, String instrumentationKey) {
+        super(name, null, null);
 
         this.instrumentationKey = instrumentationKey;
     }
@@ -87,13 +78,22 @@ public class ApplicationInsightsAppender extends AbstractAppender {
         String formattedMessage = event.getMessage().getFormattedMessage();
 
         if (formattedMessage == null) {
-            formattedMessage = "Log4J Trace";
+            formattedMessage = "Log4j Trace";
         }
 
-        TraceTelemetry trace = new TraceTelemetry(formattedMessage);
-        buildCustomParameters(event, trace);
+        BaseTelemetry telemetry;
+        Throwable throwable = event.getThrown();
+        if (throwable != null) {
+            Exception exception = throwable instanceof Exception ? (Exception) throwable : new Exception(throwable);
 
-        this.telemetryClient.trackTrace(trace);
+            telemetry = new ExceptionTelemetry(exception);
+        } else {
+            telemetry = new TraceTelemetry(formattedMessage);
+        }
+
+        buildCustomParameters(event, telemetry);
+
+        this.telemetryClient.track(telemetry);
     }
 
     /**
@@ -104,7 +104,7 @@ public class ApplicationInsightsAppender extends AbstractAppender {
         super.start();
 
         this.telemetryClient = new TelemetryClient();
-        if (this.instrumentationKey != null && !this.instrumentationKey.isEmpty())
+        if (!StringUtil.isNullOrEmpty(this.instrumentationKey))
         {
             this.telemetryClient.getContext().setInstrumentationKey(this.instrumentationKey);
         }
@@ -114,16 +114,20 @@ public class ApplicationInsightsAppender extends AbstractAppender {
 
     //region Private methods
 
+    protected TelemetryClient getTelemetryClient() {
+        return telemetryClient;
+    }
+
     /**
      * Builds the custom parameters.
      * @param logEvent The event.
-     * @param traceTelemetry The trace telemetry to update.
+     * @param telemetry The trace telemetry to update.
      */
-    private static void buildCustomParameters(LogEvent logEvent, TraceTelemetry traceTelemetry) {
+    private static void buildCustomParameters(LogEvent logEvent, BaseTelemetry telemetry) {
 
-        Map<String, String> metaData = traceTelemetry.getContext().getProperties();
+        Map<String, String> metaData = telemetry.getContext().getProperties();
 
-        metaData.put("SourceType", "Log4Net");
+        metaData.put("SourceType", "Log4j");
 
         addLogEventProperty("LoggerName", logEvent.getLoggerName(), metaData);
         addLogEventProperty("LoggingLevel", logEvent.getLevel() != null ? logEvent.getLevel().name() : null, metaData);
@@ -138,11 +142,6 @@ public class ApplicationInsightsAppender extends AbstractAppender {
             addLogEventProperty("FileName", stackTraceElement.getFileName(), metaData);
             addLogEventProperty("MethodName", stackTraceElement.getMethodName(), metaData);
             addLogEventProperty("LineNumber", String.valueOf(stackTraceElement.getLineNumber()), metaData);
-        }
-
-        if (logEvent.getThrown() != null)
-        {
-            addLogEventProperty("ExceptionMessage", logEvent.getThrown().getMessage(), metaData);
         }
 
         // TODO: Username, domain and identity should be included as in .NET version.
