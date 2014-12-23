@@ -5,6 +5,7 @@ import java.util.Map;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.common.TelemetryChannelMock;
+import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
@@ -84,9 +85,35 @@ public class ApplicationInsightsAppenderTests {
         Assert.assertFalse("No exception should be thrown.", isExceptionWasThrown);
     }
 
+    @Test
+    public void testWhenExceptionTracedThenExceptionTelemetrySent() {
+        sendThrowableAndVerifyExceptionTelemetrySent(new Exception("oh no!"));
+    }
+
+    @Test
+    public void testWhenErrorTracedThenExceptionTelemetrySent() {
+        sendThrowableAndVerifyExceptionTelemetrySent(new Error("oh no!"));
+    }
+
     // endregion Tests
 
     // region Private methods
+
+    private void sendThrowableAndVerifyExceptionTelemetrySent(Throwable throwable) {
+        Logger logger = LogManager.getRootLogger();
+        logger.catching(throwable);
+
+        Telemetry eventSent = getLastSentItems().get(0);
+
+        Assert.assertTrue("Event should be of type " + ExceptionTelemetry.class.getSimpleName(), eventSent instanceof ExceptionTelemetry);
+    }
+
+    private List<Telemetry> getLastSentItems() {
+        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+        TelemetryChannelMock channelMock = (TelemetryChannelMock) appender.getTelemetryClient().getChannel();
+
+        return channelMock.getSentItems();
+    }
 
     private ApplicationInsightsAppender getApplicationInsightsAppender() {
         Logger logger = LogManager.getRootLogger();
