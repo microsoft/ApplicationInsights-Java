@@ -1,12 +1,13 @@
 package com.microsoft.applicationinsights.datacontracts;
 
-import com.microsoft.applicationinsights.implementation.*;
-import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.implementation.*;
+import com.microsoft.applicationinsights.util.MapUtil;
+
+import com.google.common.base.Strings;
 
 /**
  * Represents a context for sending telemetry to the Application Insights service.
@@ -118,7 +119,7 @@ public class TelemetryContext implements JsonSerializable
 
     public void Initialize(TelemetryContext source)
     {
-        if (!StringUtil.isNullOrEmpty(source.getInstrumentationKey()))
+        if (!Strings.isNullOrEmpty(source.getInstrumentationKey()))
             setInstrumentationKey(source.getInstrumentationKey());
 
         if (source.tags != null && source.tags.size() > 0)

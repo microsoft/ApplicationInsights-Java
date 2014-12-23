@@ -1,5 +1,7 @@
 package com.microsoft.applicationinsights.channel;
 
+import java.io.Serializable;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
@@ -9,7 +11,7 @@ import com.google.common.base.Strings;
  *
  * Created by gupele on 12/17/2014.
  */
-public final class Transmission {
+public final class Transmission implements Serializable{
     private final byte[] content;
 
     private final String webContentType;

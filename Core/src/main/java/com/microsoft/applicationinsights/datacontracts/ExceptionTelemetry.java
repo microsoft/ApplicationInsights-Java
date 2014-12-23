@@ -1,16 +1,17 @@
 package com.microsoft.applicationinsights.datacontracts;
 
-import com.microsoft.applicationinsights.extensibility.model.ExceptionData;
-import com.microsoft.applicationinsights.extensibility.model.ExceptionDetails;
-import com.microsoft.applicationinsights.extensibility.model.StackFrame;
-import com.microsoft.applicationinsights.datacontracts.ExceptionHandledAt;
-import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.extensibility.model.ExceptionData;
+import com.microsoft.applicationinsights.extensibility.model.ExceptionDetails;
+import com.microsoft.applicationinsights.extensibility.model.StackFrame;
+import com.microsoft.applicationinsights.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.util.MapUtil;
+
+import com.google.common.base.Strings;
 
 /**
  * Telemetry used to track events.
@@ -99,7 +100,7 @@ public class ExceptionTelemetry extends BaseTelemetry
 
                 writer.writeProperty("ver", this.data.getVer());
                 writer.writeProperty("handledAt",
-                        StringUtil.populateRequiredStringWithNullValue(this.data.getHandledAt(), "handledAt", ExceptionTelemetry.class.getName()));
+                        LocalStringsUtils.populateRequiredStringWithNullValue(this.data.getHandledAt(), "handledAt", ExceptionTelemetry.class.getName()));
                 writer.writeMetricsProperty("measurements", this.data.getMeasurements());
                 writer.writeProperty("properties", this.data.getProperties());
 
@@ -137,9 +138,9 @@ public class ExceptionTelemetry extends BaseTelemetry
                 writer.writeProperty("outerId", exceptionDetails.getOuterId());
 
             writer.writeProperty("typeName",
-                    StringUtil.populateRequiredStringWithNullValue(exceptionDetails.getTypeName(), "typeName", ExceptionTelemetry.class.getName()));
+                    LocalStringsUtils.populateRequiredStringWithNullValue(exceptionDetails.getTypeName(), "typeName", ExceptionTelemetry.class.getName()));
             writer.writeProperty("message",
-                    StringUtil.populateRequiredStringWithNullValue(exceptionDetails.getMessage(), "message", ExceptionTelemetry.class.getName()));
+                    LocalStringsUtils.populateRequiredStringWithNullValue(exceptionDetails.getMessage(), "message", ExceptionTelemetry.class.getName()));
 
             if (exceptionDetails.getHasFullStack())
                 writer.writeProperty("hasFullStack", exceptionDetails.getHasFullStack());
@@ -179,7 +180,7 @@ public class ExceptionTelemetry extends BaseTelemetry
         writer.writeProperty("level", frame.getLevel());
         writer.writeProperty(
                 "method",
-                StringUtil.populateRequiredStringWithNullValue(frame.getMethod(), "StackFrameMethod", ExceptionTelemetry.class.getName()));
+                LocalStringsUtils.populateRequiredStringWithNullValue(frame.getMethod(), "StackFrameMethod", ExceptionTelemetry.class.getName()));
         writer.writeProperty("fileName", frame.getFileName());
 
         // 0 means it is unavailable
@@ -219,7 +220,7 @@ public class ExceptionTelemetry extends BaseTelemetry
         }
 
         ExceptionDetails exceptionDetails = new ExceptionDetails();
-        exceptionDetails.setId(StringUtil.generateRandomIntegerId());
+        exceptionDetails.setId(LocalStringsUtils.generateRandomIntegerId());
         exceptionDetails.setTypeName(exception.getClass().getName());
         exceptionDetails.setMessage(exception.getMessage());
 
@@ -247,7 +248,7 @@ public class ExceptionTelemetry extends BaseTelemetry
                 frame.setFileName(elem.getFileName());
                 frame.setLine(elem.getLineNumber());
 
-                if (!StringUtil.isNullOrEmpty(className))
+                if (!Strings.isNullOrEmpty(className))
                     frame.setMethod(elem.getClassName() + "." + elem.getMethodName());
                 else
                     frame.setMethod(elem.getMethodName());

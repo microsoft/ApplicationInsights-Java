@@ -1,8 +1,8 @@
 package com.microsoft.applicationinsights.datacontracts;
 
 import com.microsoft.applicationinsights.extensibility.model.MessageData;
+import com.microsoft.applicationinsights.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
 
 import java.io.IOException;
 
@@ -39,7 +39,7 @@ public class TraceTelemetry extends BaseTelemetry
     @Override
     public void sanitize()
     {
-        this.data.setMessage(StringUtil.sanitize(this.data.getMessage(), 32768));
+        this.data.setMessage(LocalStringsUtils.sanitize(this.data.getMessage(), 32768));
         MapUtil.sanitizeProperties(this.getProperties());
     }
 
@@ -65,7 +65,7 @@ public class TraceTelemetry extends BaseTelemetry
             {
                 writer.writeStartObject();
                 writer.writeProperty("ver", this.data.getVer());
-                writer.writeProperty("message", StringUtil.populateRequiredStringWithNullValue(this.data.getMessage(), "message", TraceTelemetry.class.getName()));
+                writer.writeProperty("message", LocalStringsUtils.populateRequiredStringWithNullValue(this.data.getMessage(), "message", TraceTelemetry.class.getName()));
                 writer.writeProperty("properties", this.data.getProperties());
                 writer.writeEndObject();
             }

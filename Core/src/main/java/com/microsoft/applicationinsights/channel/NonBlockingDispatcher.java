@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.channel;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;

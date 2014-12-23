@@ -40,6 +40,7 @@ public class TelemetryConfigurationFactory
         }
 
         //configuration.setChannel(new StdOutChannel());
-        configuration.setChannel(new SimpleHttpChannel());
+//        configuration.setChannel(new SimpleHttpChannel());
+        configuration.setChannel(new InProcessTelemetryChannel());
     }
 }

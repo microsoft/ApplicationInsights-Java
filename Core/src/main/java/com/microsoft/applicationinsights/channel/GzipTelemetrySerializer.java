@@ -20,10 +20,10 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
     private final static String GZIP_WEB_CONTENT_TYPE = "application/x-json-stream";
     private final static String GZIP_WEB_ENCODING_TYPE = "gzip";
 
-    private final String newlineString;
+    private final byte[] newlineString;
 
     public GzipTelemetrySerializer() {
-        this.newlineString = System.getProperty("line.separator");
+        this.newlineString = System.getProperty("line.separator").getBytes();
     }
 
     @Override
@@ -39,17 +39,30 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
             try {
                 GZIPOutputStream zipStream = new GZIPOutputStream(byteStream);
 
-                StringWriter writer = new StringWriter();
-                JsonWriter jsonWriter = new com.microsoft.applicationinsights.implementation.JsonWriter(writer);
-
                 try {
+                    int counter = 0;
+                    StringWriter writer = new StringWriter();
+                    JsonWriter jsonWriter = new com.microsoft.applicationinsights.implementation.JsonWriter(writer);
+
+                    // The format is:
+                    // 1. Telemetry is written in Json
+                    // 2. Separate each Telemetry by newline
+                    // 3. Compress the entire data by using Gzip
                     for (Telemetry telemetry : telemetries) {
+
+                        if (counter != 0) {
+                            zipStream.write(newlineString);
+                        }
+
+                        ++counter;
+
                         telemetry.serialize(jsonWriter);
                         String asJson = writer.toString();
                         zipStream.write(asJson.getBytes());
-                        zipStream.write(newlineString.getBytes());
 
-                        writer.getBuffer().setLength(0);
+                        if (counter < telemetries.size()) {
+                            writer.getBuffer().setLength(0);
+                        }
                     }
                 } finally {
                     zipStream.close();

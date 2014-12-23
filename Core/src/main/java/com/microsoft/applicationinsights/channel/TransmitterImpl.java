@@ -1,11 +1,13 @@
 package com.microsoft.applicationinsights.channel;
 
 import java.util.Collection;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import com.microsoft.applicationinsights.util.ThreadPoolUtils;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.util.ThreadPoolUtils;
 
 /**
  * The default implementation of the {@link TelemetriesTransmitter}
@@ -87,10 +89,14 @@ public class TransmitterImpl implements TelemetriesTransmitter {
 
     private final ScheduledThreadPoolExecutor threadPool;
 
-    public TransmitterImpl(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer) {
+    private final TransmissionsLoader transmissionsLoader;
+
+    public TransmitterImpl(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, TransmissionsLoader transmissionsLoader) {
         this.transmissionDispatcher = transmissionDispatcher;
         this.serializer = serializer;
         threadPool = new ScheduledThreadPoolExecutor(2);
+        this.transmissionsLoader = transmissionsLoader;
+        this.transmissionsLoader.load();
     }
 
     @Override
@@ -109,6 +115,7 @@ public class TransmitterImpl implements TelemetriesTransmitter {
 
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
+        transmissionsLoader.stop(timeout, timeUnit);
         ThreadPoolUtils.stop(threadPool, timeout, timeUnit);
         transmissionDispatcher.stop(timeout, timeUnit);
     }

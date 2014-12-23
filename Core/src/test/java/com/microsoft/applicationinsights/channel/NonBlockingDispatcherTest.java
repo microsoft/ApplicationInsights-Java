@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.channel;
 import org.junit.Test;
 
 import org.mockito.Mockito;
+
 import static org.mockito.Matchers.anyObject;
 
 public class NonBlockingDispatcherTest {

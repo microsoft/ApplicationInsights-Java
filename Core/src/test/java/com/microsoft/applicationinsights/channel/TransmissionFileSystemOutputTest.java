@@ -4,18 +4,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+
+import org.apache.commons.io.FileUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 
 public class TransmissionFileSystemOutputTest {
-    private final String workingFolder;
     private final static String TRANSMISSION_FILE_EXTENSION = "trn";
     private final static int SIZE_OF_TRANSMISSION_CONTENT = 10;
     private final static String TEMP_TEST_FOLDER = "TransmissionTests";
+    private final static String MOCK_CONTENT = "MockContent";
+    private final static String MOCK_CONTENT_TYPE_BASE = "MockContent";
+    private final static String MOCK_ENCODING_TYPE_BASE = "MockEncodingType";
+    private final static int SIZE_OF_MOCK_TRANSMISSION = 228;
+
+    private final String workingFolder;
 
     public TransmissionFileSystemOutputTest() {
         workingFolder = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
@@ -38,31 +45,42 @@ public class TransmissionFileSystemOutputTest {
 
     @Test
     public void testSuccessfulSendTwoFilesWhereThereIsNoRoomForTheSecond() throws Exception {
-        testSuccessfulSends(2, 1, new Long(SIZE_OF_TRANSMISSION_CONTENT - 1));
+        testSuccessfulSends(2, 1, new Long(SIZE_OF_MOCK_TRANSMISSION - 1), null);
     }
 
     @Test
     public void testSuccessfulSendTenFilesWhereThereIsNoRoomForTheLastThree() throws Exception {
-        testSuccessfulSends(10, 7, new Long(SIZE_OF_TRANSMISSION_CONTENT * 7));
+        testSuccessfulSends(10, 7, new Long(SIZE_OF_MOCK_TRANSMISSION * 7), null);
     }
 
     @Test
     public void testStop() throws Exception {
     }
 
-    private void testSuccessfulSends(int amount) throws Exception {
-        testSuccessfulSends(amount, amount, null);
-    }
-
-    private void testSuccessfulSends(int amount, int expectedSuccess, Long capacity) throws Exception {
+    @Test
+    public void testFetchOldestFiles() throws Exception {
         File folder = createFolderForTest();
         try {
-            createAndSend(amount, capacity);
+            TransmissionFileSystemOutput tested = new TransmissionFileSystemOutput(workingFolder);
 
-            Collection<File> transmissions = FileUtils.listFiles(folder, new String[]{TRANSMISSION_FILE_EXTENSION}, false);
+            for (int i = 0; i < 10; ++i) {
+                String iAsString = String.valueOf(10 - i);
+                String content = MOCK_CONTENT + iAsString;
+                tested.send(new Transmission(content.getBytes(), MOCK_CONTENT_TYPE_BASE + iAsString, MOCK_ENCODING_TYPE_BASE + iAsString));
+            }
 
-            assertNotNull(transmissions);
-            assertEquals(transmissions.size(), expectedSuccess);
+            for (int i = 0; i < 10; ++i) {
+                Transmission transmission = tested.fetchOldestFile();
+                assertNotNull(transmission);
+
+                String iAsString = String.valueOf(i + 1);
+                assertEquals(new String(transmission.getContent()), MOCK_CONTENT + iAsString);
+                assertEquals(transmission.getWebContentType(), MOCK_CONTENT_TYPE_BASE + iAsString);
+                assertEquals(transmission.getWebContentEncodingType(), MOCK_ENCODING_TYPE_BASE + iAsString);
+            }
+
+            Transmission transmission = tested.fetchOldestFile();
+            assertNull(transmission);
         } finally {
             if (folder.exists()) {
                 FileUtils.deleteDirectory(folder);
@@ -70,7 +88,30 @@ public class TransmissionFileSystemOutputTest {
         }
     }
 
-    private void createAndSend(int amount, Long capacity) {
+    private TransmissionFileSystemOutput testSuccessfulSends(int amount) throws Exception {
+        return testSuccessfulSends(amount, amount, null, null);
+    }
+
+    private TransmissionFileSystemOutput testSuccessfulSends(int amount, int expectedSuccess, Long capacity, File testFolder) throws Exception {
+        File folder = testFolder == null ? createFolderForTest() : testFolder;
+        TransmissionFileSystemOutput tested = null;
+        try {
+            tested = createAndSend(amount, capacity);
+
+            Collection<File> transmissions = FileUtils.listFiles(folder, new String[]{TRANSMISSION_FILE_EXTENSION}, false);
+
+            assertNotNull(transmissions);
+            assertEquals(transmissions.size(), expectedSuccess);
+        } finally {
+            if (testFolder == null && folder.exists()) {
+                FileUtils.deleteDirectory(folder);
+            }
+        }
+
+        return tested;
+    }
+
+    private TransmissionFileSystemOutput createAndSend(int amount, Long capacity) {
         TransmissionFileSystemOutput tested = new TransmissionFileSystemOutput(workingFolder);
         if (capacity != null) {
             tested.setCapacity(capacity);
@@ -79,6 +120,8 @@ public class TransmissionFileSystemOutputTest {
         for (int i = 0; i < amount; ++i) {
             tested.send(new Transmission(new byte[SIZE_OF_TRANSMISSION_CONTENT], "MockContentType", "MockEncodingType"));
         }
+
+        return tested;
     }
 
     private File createFolderForTest() throws IOException {

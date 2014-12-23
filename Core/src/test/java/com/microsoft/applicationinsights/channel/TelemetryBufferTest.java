@@ -126,6 +126,30 @@ public class TelemetryBufferTest {
         }
     };
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testNegativeBufferSizeSenderIsSet() throws Exception {
+        TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, -1, 20);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testZeroBufferSizeSenderIsSet() throws Exception {
+        TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 0, 20);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNegativeBufferTimeoutSenderIsSet() throws Exception {
+        TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 1, -20);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testZeroBufferTimeoutSenderIsSet() throws Exception {
+        TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 20, 0);
+    }
+
     @Test(expected = NullPointerException.class)
     public void testNoSenderIsSet() throws Exception {
         TelemetryBuffer testedBuffer = new TelemetryBuffer(null);

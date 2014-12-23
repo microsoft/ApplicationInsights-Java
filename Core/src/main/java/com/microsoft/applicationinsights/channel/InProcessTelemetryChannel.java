@@ -1,8 +1,8 @@
 package com.microsoft.applicationinsights.channel;
 
-import com.google.common.base.Preconditions;
-
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.base.Preconditions;
 
 /**
  * One of the main {@link com.microsoft.applicationinsights.channel.TelemetryChannel}

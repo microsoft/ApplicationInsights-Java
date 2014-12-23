@@ -1,11 +1,13 @@
 package com.microsoft.applicationinsights.datacontracts;
 
-import com.microsoft.applicationinsights.extensibility.model.EventData;
-import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
-
 import java.io.IOException;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.extensibility.model.EventData;
+import com.microsoft.applicationinsights.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.util.MapUtil;
+
+import com.google.common.base.Strings;
 
 /**
  * Telemetry used to track events.
@@ -39,7 +41,7 @@ public class EventTelemetry extends BaseTelemetry
 
     public void setName(String name)
     {
-        if (StringUtil.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name))
             throw new IllegalArgumentException("The event name cannot be null or empty");
         this.data.setName(name);
     }
@@ -47,7 +49,7 @@ public class EventTelemetry extends BaseTelemetry
     @Override
     public void sanitize()
     {
-        this.data.setName(StringUtil.sanitize(this.data.getName(), 1024));
+        this.data.setName(LocalStringsUtils.sanitize(this.data.getName(), 1024));
         MapUtil.sanitizeProperties(this.getProperties());
         MapUtil.sanitizeMeasurements(this.getMetrics());
     }
@@ -74,7 +76,7 @@ public class EventTelemetry extends BaseTelemetry
             {
                 writer.writeStartObject();
                 writer.writeProperty("ver", this.data.getVer());
-                writer.writeProperty("name", StringUtil.populateRequiredStringWithNullValue(this.data.getName(), "name", EventTelemetry.class.getName()));
+                writer.writeProperty("name", LocalStringsUtils.populateRequiredStringWithNullValue(this.data.getName(), "name", EventTelemetry.class.getName()));
                 writer.writeMetricsProperty("measurements", this.data.getMeasurements());
                 writer.writeProperty("properties", this.data.getProperties());
                 writer.writeEndObject();

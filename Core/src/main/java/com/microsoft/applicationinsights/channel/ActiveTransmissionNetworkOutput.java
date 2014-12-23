@@ -1,11 +1,10 @@
 package com.microsoft.applicationinsights.channel;
 
-
-import com.microsoft.applicationinsights.util.ThreadPoolUtils;
-
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import com.microsoft.applicationinsights.util.ThreadPoolUtils;
 
 /**
  * Created by gupele on 12/18/2014.
@@ -39,6 +38,9 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
 
     @Override
     public boolean send(final Transmission transmission) {
+//        if (transmission != null) {
+//            return false;
+//        }
         try {
             outputThreads.execute(new Runnable() {
                 @Override

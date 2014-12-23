@@ -1,13 +1,14 @@
 package com.microsoft.applicationinsights.implementation;
 
+import java.util.Map;
+import java.util.Properties;
+
 import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.util.MapUtil;
 import com.microsoft.applicationinsights.util.PropertyHelper;
-import com.microsoft.applicationinsights.util.StringUtil;
 
-import java.util.Map;
-import java.util.Properties;
+import com.google.common.base.Strings;
 
 /**
  * Context initializer loading general properties from a properties file.
@@ -27,8 +28,9 @@ public class PropertiesContextInitializer implements ContextInitializer
             String key = (String)p.getKey();
             String value = (String)p.getValue();
 
-            if (StringUtil.isNullOrEmpty(key))
+            if (Strings.isNullOrEmpty(key)) {
                 continue;
+            }
 
             if (key.startsWith("ai."))
             {

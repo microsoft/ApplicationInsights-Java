@@ -1,6 +1,11 @@
 package com.microsoft.applicationinsights.channel;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.concurrent.TimeUnit;
+
 import com.microsoft.applicationinsights.implementation.JsonWriter;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -8,10 +13,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A simple HTTP channel, using no buffering, batching, or asynchrony.

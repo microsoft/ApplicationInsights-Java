@@ -1,14 +1,16 @@
 package com.microsoft.applicationinsights.datacontracts;
 
-import com.microsoft.applicationinsights.extensibility.model.RequestData;
-import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.extensibility.model.RequestData;
+import com.microsoft.applicationinsights.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.util.MapUtil;
+
+import com.google.common.base.Strings;
 
 /**
  * Telemetry used to track events.
@@ -25,7 +27,7 @@ public class HttpRequestTelemetry extends BaseTelemetry
         super();
         this.data = new RequestData();
         initialize(this.data.getProperties());
-        setId(StringUtil.generateRandomId());
+        setId(LocalStringsUtils.generateRandomId());
         this.setResponseCode("200");
     }
 
@@ -61,8 +63,9 @@ public class HttpRequestTelemetry extends BaseTelemetry
 
     public void setName(String name)
     {
-        if (StringUtil.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("The event name cannot be null or empty");
+        }
         this.data.setName(name);
     }
 
@@ -101,13 +104,14 @@ public class HttpRequestTelemetry extends BaseTelemetry
 
     public void setDuration(long milliSeconds)
     {
-        this.data.setDuration(StringUtil.formatDuration(milliSeconds));
+        this.data.setDuration(LocalStringsUtils.formatDuration(milliSeconds));
     }
 
     public URL getUrl() throws MalformedURLException
     {
-        if (StringUtil.isNullOrEmpty(this.data.getUrl()))
+        if (LocalStringsUtils.isNullOrEmpty(this.data.getUrl())) {
             return null;
+        }
         return new URL(this.data.getUrl());
     }
 
@@ -135,7 +139,7 @@ public class HttpRequestTelemetry extends BaseTelemetry
     @Override
     public void sanitize()
     {
-        this.data.setName(StringUtil.sanitize(this.data.getName(), 1024));
+        this.data.setName(LocalStringsUtils.sanitize(this.data.getName(), 1024));
         MapUtil.sanitizeProperties(this.getProperties());
         MapUtil.sanitizeMeasurements(this.getMetrics());
     }
@@ -163,13 +167,13 @@ public class HttpRequestTelemetry extends BaseTelemetry
                 writer.writeStartObject();
                 writer.writeProperty("ver", this.data.getVer());
                 writer.writeProperty("id",
-                        StringUtil.populateRequiredStringWithNullValue(this.data.getId(), "id", HttpRequestTelemetry.class.getName()));
+                        LocalStringsUtils.populateRequiredStringWithNullValue(this.data.getId(), "id", HttpRequestTelemetry.class.getName()));
                 writer.writeProperty("name", this.data.getName());
                 writer.writeProperty("startTime", this.getTimestamp());
                 writer.writeProperty("duration", this.data.getDuration());
                 writer.writeProperty("success", this.data.getSuccess());
                 writer.writeProperty("responseCode",
-                        StringUtil.populateRequiredStringWithNullValue(this.data.getResponseCode(), "responseCode", HttpRequestTelemetry.class.getName()));
+                        LocalStringsUtils.populateRequiredStringWithNullValue(this.data.getResponseCode(), "responseCode", HttpRequestTelemetry.class.getName()));
                 writer.writeProperty("url", this.data.getUrl());
                 writer.writeMetricsProperty("measurements", this.data.getMeasurements());
                 writer.writeProperty("httpMethod", this.data.getHttpMethod());

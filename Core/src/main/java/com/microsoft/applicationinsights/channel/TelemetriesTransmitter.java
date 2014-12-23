@@ -10,12 +10,12 @@ import java.util.concurrent.TimeUnit;
  *
  * Containers of Telemetry instances are populated by application threads. This class use
  * the 'channel's' threads for the rest of the process. In other words, the de-coupling of
- * user and channel threads happen here.
+ * user and channel threads happens here.
  *
- * The class let its users to schedule a 'send', where a channel thread will be sent to 'pick up'
- * the container of Telemetries
- * Or, it also let the caller to initiate a 'send now' call where the caller passes the container
- * and this class will continue, again, using a channel thread while releasing the calling thread
+ * The class lets its users to schedule a 'send', where a channel thread will be sent to 'pick up'
+ * the container of Telemetries.
+ * Or, it also lets the caller to initiate a 'send now' call where the caller passes the container
+ * and this class will continue, again, using a channel thread while releasing the calling thread.
  *
  * Created by gupele on 12/17/2014.
  */

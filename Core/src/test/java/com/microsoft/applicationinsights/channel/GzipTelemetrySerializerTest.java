@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.channel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Map;
@@ -10,7 +11,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import com.microsoft.applicationinsights.util.StringUtil;
 import org.junit.Test;
 
 import com.microsoft.applicationinsights.datacontracts.JsonWriter;

@@ -1,12 +1,12 @@
 package com.microsoft.applicationinsights.channel;
 
-import com.google.common.base.Preconditions;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.base.Preconditions;
 
 /**
  * The class is responsible for getting instances of {@link com.microsoft.applicationinsights.channel.Telemetry}
@@ -54,7 +54,7 @@ public final class TelemetryBuffer {
 
     private final static int DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 128;
 
-    private final static int TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS = 60;
+    private final static int TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS = 10;
 
     /// The sender we use to send Telemetry containers
     private final TelemetriesTransmitter sender;
@@ -88,6 +88,8 @@ public final class TelemetryBuffer {
      */
     public TelemetryBuffer(TelemetriesTransmitter sender, int maxTelemetriesInBatch, int transmitBufferTimeoutInSeconds) {
         Preconditions.checkNotNull(sender, "sender must be non-null value");
+        Preconditions.checkArgument(maxTelemetriesInBatch > 0, "maxTelemetriesInBatch must be a positive number");
+        Preconditions.checkArgument(transmitBufferTimeoutInSeconds > 0, "transmitBufferTimeoutInSeconds must be a positive number");
 
         this.sender = sender;
         telemetries = new ArrayList<Telemetry>(maxTelemetriesInBatch);
