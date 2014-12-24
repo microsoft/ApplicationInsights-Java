@@ -6,7 +6,7 @@ import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 /**
- * Telemetry channel mock which provide the events that has been sent by the client.
+ * Telemetry channel mock which provides the events that has been sent by the client.
  */
 public class TelemetryChannelMock implements TelemetryChannel {
 

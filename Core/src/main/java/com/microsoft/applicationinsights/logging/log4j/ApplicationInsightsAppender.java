@@ -1,5 +1,9 @@
 package com.microsoft.applicationinsights.logging.log4j;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.datacontracts.BaseTelemetry;
 import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
@@ -10,10 +14,6 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
 
 @Plugin(name="ApplicationInsightsAppender", category = "Core", elementType = "appender")
 public class ApplicationInsightsAppender extends AbstractAppender {
@@ -67,9 +67,7 @@ public class ApplicationInsightsAppender extends AbstractAppender {
     }
 
     /**
-     * Logs a LogEvent using whatever logic this Appender wishes to use. It is typically recommended to use a
-     * bridge pattern not only for the benefits from decoupling an Appender from its implementation, but it is also
-     * handy for sharing resources which may require some form of locking.
+     * Logs the event.
      *
      * @param event The LogEvent.
      */

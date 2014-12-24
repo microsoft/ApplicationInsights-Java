@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration packages="com.microsoft.applicationinsights.logging.log4j">
     <Appenders>
-        <ApplicationInsightsAppender name="test" instrumentationKey="89d1195d-35b8-468e-bd53-317b844f8e6b" />
+        <ApplicationInsightsAppender name="test" instrumentationKey="Test_Instrumentation_Key" />
     </Appenders>
     <Loggers>
         <Root level="trace">

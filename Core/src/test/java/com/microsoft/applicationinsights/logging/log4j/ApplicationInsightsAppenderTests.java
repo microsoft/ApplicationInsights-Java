@@ -15,7 +15,7 @@ public class ApplicationInsightsAppenderTests {
 
     // region Consts
 
-    private final String TestInstrumentationKey = "89d1195d-35b8-468e-bd53-317b844f8e6b";
+    private final String TestInstrumentationKey = "Test_Instrumentation_Key";
 
     // endregion Consts
 
