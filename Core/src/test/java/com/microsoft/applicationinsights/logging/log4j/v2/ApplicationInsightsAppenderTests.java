@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.logging.log4j;
+package com.microsoft.applicationinsights.logging.log4j.v2;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,8 @@ public class ApplicationInsightsAppenderTests {
     public void testInstrumentationKeyIsLoadedFromConfiguration() {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
 
-        Assert.assertEquals(TestInstrumentationKey, appender.getInstrumentationKey());
+        String configurationKey = appender.getTelemetryManager().getTelemetryClient().getContext().getInstrumentationKey();
+        Assert.assertEquals(TestInstrumentationKey, configurationKey);
     }
 
     @Test
@@ -110,7 +111,7 @@ public class ApplicationInsightsAppenderTests {
 
     private List<Telemetry> getLastSentItems() {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
-        TelemetryChannelMock channelMock = (TelemetryChannelMock) appender.getTelemetryClient().getChannel();
+        TelemetryChannelMock channelMock = (TelemetryChannelMock) appender.getTelemetryManager().getTelemetryClient().getChannel();
 
         return channelMock.getSentItems();
     }
@@ -127,7 +128,7 @@ public class ApplicationInsightsAppenderTests {
 
     private void setMockTelemetryChannelToAIAppender() {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
-        TelemetryClient telemetryClient = appender.getTelemetryClient();
+        TelemetryClient telemetryClient = appender.getTelemetryManager().getTelemetryClient();
         telemetryClient.setChannel(telemetryChannelMock);
     }
 

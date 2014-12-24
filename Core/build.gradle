@@ -16,4 +16,5 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
 }

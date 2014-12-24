@@ -67,6 +67,7 @@ public class TelemetryClient
     {
         if (context == null)
             context = createInitializedContext();
+
         return context;
     }
 
