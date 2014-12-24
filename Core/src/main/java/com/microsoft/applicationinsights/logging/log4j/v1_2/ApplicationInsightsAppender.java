@@ -44,8 +44,13 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
             return;
         }
 
-        ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(event);
-        this.telemetryManager.sendTelemetry(aiEvent);
+        try {
+            ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(event);
+            this.telemetryManager.sendTelemetry(aiEvent);
+        } catch (Exception e) {
+            // Appender failure must not fail the running application.
+            // TODO: Assert.Debug/warning on exception?
+        }
     }
 
     /**
@@ -72,7 +77,12 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
     public void activateOptions() {
         super.activateOptions();
 
-        telemetryManager = new TelemetryManager(this.instrumentationKey);
+        try {
+            this.telemetryManager = new TelemetryManager(this.instrumentationKey);
+        } catch (Exception e) {
+            // Appender failure must not fail the running application.
+            // TODO: Assert.Debug/warning on exception?
+        }
     }
 
     // endregion Public methods

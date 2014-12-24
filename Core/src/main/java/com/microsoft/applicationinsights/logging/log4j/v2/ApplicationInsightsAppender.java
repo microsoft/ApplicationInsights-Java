@@ -26,7 +26,12 @@ public class ApplicationInsightsAppender extends AbstractAppender {
     protected ApplicationInsightsAppender(String name, String instrumentationKey) {
         super(name, null, null);
 
-        telemetryManager = new TelemetryManager(instrumentationKey);
+        try {
+            telemetryManager = new TelemetryManager(instrumentationKey);
+        } catch (Exception e) {
+            // Appender failure must not fail the running application.
+            // TODO: Assert.Debug/warning on exception?
+        }
     }
 
     //endregion Ctor
@@ -67,8 +72,13 @@ public class ApplicationInsightsAppender extends AbstractAppender {
             return;
         }
 
-        ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(event);
-        this.telemetryManager.sendTelemetry(aiEvent);
+        try {
+            ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(event);
+            this.telemetryManager.sendTelemetry(aiEvent);
+        } catch (Exception e) {
+            // Appender failure must not fail the running application.
+            // TODO: Assert.Debug/warning on exception?
+        }
     }
 
     /**
@@ -80,8 +90,4 @@ public class ApplicationInsightsAppender extends AbstractAppender {
     }
 
     //endregion Public methods
-
-    //region Private methods
-
-    //endregion Private methods
 }
