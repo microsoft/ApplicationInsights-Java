@@ -1,13 +1,37 @@
 
 apply plugin: 'java'
+apply plugin: 'maven'
 
 jar {
     version = '1.0'
     baseName = 'appinsights-core'
 }
 
+configurations {
+    deployerJars
+}
+
 repositories {
     mavenCentral()
+}
+
+dependencies { 
+    deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
+} 
+
+version = "1.0.0-SNAPSHOT"
+group = "com.microsoft.applicationinsights"
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            configuration = configurations.deployerJars
+
+            repository(url: "ftp://waws-prod-dm1-003.ftp.azurewebsites.windows.net/site/wwwroot/repository/") { 
+                authentication(userName: "dotm2\\\$dotm2", password:javamavenuserpassword)
+            }
+         }
+    }
 }
 
 dependencies {
