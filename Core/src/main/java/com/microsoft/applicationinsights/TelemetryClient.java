@@ -1,5 +1,8 @@
 package com.microsoft.applicationinsights;
 
+import java.util.Date;
+import java.util.Map;
+
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.datacontracts.*;
@@ -7,10 +10,8 @@ import com.microsoft.applicationinsights.datacontracts.ExceptionHandledAt;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryConfiguration;
 import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
 
-import java.util.Date;
-import java.util.Map;
+import com.google.common.base.Strings;
 
 /**
  * This is the main interface for Application Insights telemetry generation.
@@ -89,7 +90,7 @@ public class TelemetryClient
     {
         if (isDisabled()) return;
 
-        if (StringUtil.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name))
             name = "";
 
         EventTelemetry et = new EventTelemetry(name);
@@ -134,7 +135,7 @@ public class TelemetryClient
     {
         if (isDisabled()) return;
 
-        if (StringUtil.isNullOrEmpty(message))
+        if (Strings.isNullOrEmpty(message))
             message = "";
 
         TraceTelemetry et = new TraceTelemetry(message);
@@ -177,7 +178,7 @@ public class TelemetryClient
     {
         if (isDisabled()) return;
 
-        if (StringUtil.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name))
             name = "";
 
         MetricTelemetry mt = new MetricTelemetry(name, value);
@@ -298,14 +299,14 @@ public class TelemetryClient
 
         TelemetryContext ctx = this.getContext();
 
-        if (StringUtil.isNullOrEmpty(ctx.getInstrumentationKey()))
+        if (Strings.isNullOrEmpty(ctx.getInstrumentationKey()))
             ctx.setInstrumentationKey(configuration.getInstrumentationKey());
 
         telemetry.getContext().Initialize(ctx);
 
         // TODO: use app-defined telemetry initializers, too.
 
-        if (StringUtil.isNullOrEmpty(telemetry.getContext().getInstrumentationKey()))
+        if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey()))
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
 
         telemetry.sanitize();

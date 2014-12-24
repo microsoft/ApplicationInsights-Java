@@ -4,7 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class StringUtil
+public class LocalStringsUtils
 {
     /**
      * Determine whether a string is null or empty.

@@ -1,11 +1,13 @@
 package com.microsoft.applicationinsights.datacontracts;
 
+import java.io.IOException;
+
 import com.microsoft.applicationinsights.extensibility.model.DataPoint;
 import com.microsoft.applicationinsights.extensibility.model.MetricData;
+import com.microsoft.applicationinsights.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
 
-import java.io.IOException;
+import com.google.common.base.Strings;
 
 /**
  * Telemetry used to track events.
@@ -38,8 +40,9 @@ public class MetricTelemetry extends BaseTelemetry
 
     public void setName(String name)
     {
-        if (StringUtil.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("The metric name cannot be null or empty");
+        }
         this.metric.setName(name);
     }
 
@@ -66,7 +69,7 @@ public class MetricTelemetry extends BaseTelemetry
     @Override
     public void sanitize()
     {
-        this.metric.setName(StringUtil.sanitize(this.metric.getName(), 1024));
+        this.metric.setName(LocalStringsUtils.sanitize(this.metric.getName(), 1024));
         MapUtil.sanitizeProperties(this.getProperties());
     }
 
@@ -97,7 +100,7 @@ public class MetricTelemetry extends BaseTelemetry
                 {
                     writer.writeStartArray();
                     writer.writeStartObject();
-                    writer.writeProperty("name", StringUtil.populateRequiredStringWithNullValue(this.metric.getName(), "name", MetricTelemetry.class.getName()));
+                    writer.writeProperty("name", LocalStringsUtils.populateRequiredStringWithNullValue(this.metric.getName(), "name", MetricTelemetry.class.getName()));
                     writer.writeProperty("kind", this.metric.getKind());
                     writer.writeProperty("value", this.metric.getValue());
                     writer.writeProperty("count", this.metric.getCount());

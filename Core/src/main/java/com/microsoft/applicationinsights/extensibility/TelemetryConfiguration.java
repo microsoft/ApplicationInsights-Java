@@ -1,7 +1,7 @@
 package com.microsoft.applicationinsights.extensibility;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +51,8 @@ public class TelemetryConfiguration
 
     public boolean isTrackingDisabled()
     {
-        return trackingIsDisabled || StringUtil.isNullOrEmpty(instrumentationKey);
-}
+        return trackingIsDisabled || Strings.isNullOrEmpty(instrumentationKey);
+    }
 
     public void setTrackingIsDisabled(boolean disable)
     {
@@ -71,8 +71,9 @@ public class TelemetryConfiguration
 
     public void setInstrumentationKey(String key)
     {
-        if (StringUtil.isNullOrEmpty(key))
+        if (Strings.isNullOrEmpty(key)) {
             throw new IllegalArgumentException("key");
+        }
         instrumentationKey = key;
     }
 }

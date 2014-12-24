@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.extensibility;
 
+import com.microsoft.applicationinsights.channel.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.SimpleHttpChannel;
 import com.microsoft.applicationinsights.implementation.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.implementation.PropertiesContextInitializer;
@@ -39,6 +40,7 @@ public class TelemetryConfigurationFactory
         }
 
         //configuration.setChannel(new StdOutChannel());
-        configuration.setChannel(new SimpleHttpChannel());
+//        configuration.setChannel(new SimpleHttpChannel());
+        configuration.setChannel(new InProcessTelemetryChannel());
     }
 }

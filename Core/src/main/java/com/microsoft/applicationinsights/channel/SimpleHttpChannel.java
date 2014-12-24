@@ -1,6 +1,11 @@
 package com.microsoft.applicationinsights.channel;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.concurrent.TimeUnit;
+
 import com.microsoft.applicationinsights.implementation.JsonWriter;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -9,16 +14,13 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-import java.io.IOException;
-import java.io.StringWriter;
-
 /**
  * A simple HTTP channel, using no buffering, batching, or asynchrony.
  */
 public class SimpleHttpChannel implements TelemetryChannel
 {
     @Override
-    public boolean getDeveloperMode()
+    public boolean isDeveloperMode()
     {
         return developerMode;
     }
@@ -80,6 +82,10 @@ public class SimpleHttpChannel implements TelemetryChannel
         {
             ioe.printStackTrace(System.err);
         }
+    }
+
+    @Override
+    public void stop(long timeout, TimeUnit timeUnit) {
     }
 
     private boolean developerMode = false;

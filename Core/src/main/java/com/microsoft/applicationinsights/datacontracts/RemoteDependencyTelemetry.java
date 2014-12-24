@@ -1,12 +1,14 @@
 package com.microsoft.applicationinsights.datacontracts;
 
+import java.io.IOException;
+
 import com.microsoft.applicationinsights.extensibility.model.DependencyKind;
 import com.microsoft.applicationinsights.extensibility.model.RddSourceType;
 import com.microsoft.applicationinsights.extensibility.model.RemoteDependencyData;
+import com.microsoft.applicationinsights.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
 
-import java.io.IOException;
+import com.google.common.base.Strings;
 
 /**
  * Telemetry used to track events.
@@ -35,7 +37,7 @@ public class RemoteDependencyTelemetry extends BaseTelemetry
 
     public void setName(String name)
     {
-        if (StringUtil.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name))
             throw new IllegalArgumentException("The event name cannot be null or empty");
         this.data.setName(name);
     }
@@ -103,7 +105,7 @@ public class RemoteDependencyTelemetry extends BaseTelemetry
     @Override
     public void sanitize()
     {
-        this.data.setName(StringUtil.sanitize(this.data.getName(), 1024));
+        this.data.setName(LocalStringsUtils.sanitize(this.data.getName(), 1024));
         MapUtil.sanitizeProperties(this.getProperties());
     }
 

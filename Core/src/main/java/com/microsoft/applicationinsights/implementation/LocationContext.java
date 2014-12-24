@@ -1,12 +1,14 @@
 package com.microsoft.applicationinsights.implementation;
 
-import com.microsoft.applicationinsights.datacontracts.*;
-import com.microsoft.applicationinsights.extensibility.model.ContextTagKeys;
-import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
-
 import java.io.IOException;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.datacontracts.*;
+import com.microsoft.applicationinsights.extensibility.model.ContextTagKeys;
+import com.microsoft.applicationinsights.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.util.MapUtil;
+
+import com.google.common.base.Strings;
 
 public class LocationContext implements JsonSerializable
 {
@@ -24,7 +26,7 @@ public class LocationContext implements JsonSerializable
 
     public void setIp(String value)
     {
-        if (!StringUtil.isNullOrEmpty(value) && isIPV4(value))
+        if (!Strings.isNullOrEmpty(value) && isIPV4(value))
         {
             MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getLocationIP(), value);
         }
@@ -38,13 +40,12 @@ public class LocationContext implements JsonSerializable
         writer.writeEndObject();
     }
 
-    private boolean isIPV4(String ip)
-    {
-        if ((ip.length() > 15) || ip.length() < 7)
+    private boolean isIPV4(String ip) {
+        if ((ip.length() > 15) || ip.length() < 7) {
             return false;
+        }
 
-        for (char c : ip.toCharArray())
-        {
+        for (char c : ip.toCharArray()) {
             if (c >= '0' && c <= '9')
                 continue;
             if (c != '.')
@@ -52,13 +53,14 @@ public class LocationContext implements JsonSerializable
         }
 
         String[] strArray = ip.split(".");
-        if (strArray.length != 4)
+        if (strArray.length != 4) {
             return false;
+        }
 
-        for (String str : strArray)
-        {
-            if (!StringUtil.tryParseByte(str))
+        for (String str : strArray) {
+            if (!LocalStringsUtils.tryParseByte(str)) {
                 return false;
+            }
         }
 
         return true;

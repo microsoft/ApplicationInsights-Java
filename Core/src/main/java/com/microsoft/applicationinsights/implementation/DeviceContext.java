@@ -1,12 +1,12 @@
 package com.microsoft.applicationinsights.implementation;
 
-import com.microsoft.applicationinsights.datacontracts.*;
-import com.microsoft.applicationinsights.extensibility.model.ContextTagKeys;
-import com.microsoft.applicationinsights.util.MapUtil;
-import com.microsoft.applicationinsights.util.StringUtil;
-
 import java.io.IOException;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.datacontracts.*;
+import com.microsoft.applicationinsights.extensibility.model.ContextTagKeys;
+import com.microsoft.applicationinsights.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.util.MapUtil;
 
 public class DeviceContext implements JsonSerializable
 {
@@ -122,7 +122,7 @@ public class DeviceContext implements JsonSerializable
     {
         writer.writeStartObject();
         writer.writeProperty("type", this.getType());
-        writer.writeProperty("id", StringUtil.populateRequiredStringWithNullValue(this.getId(), "id", DeviceContext.class.getName()));
+        writer.writeProperty("id", LocalStringsUtils.populateRequiredStringWithNullValue(this.getId(), "id", DeviceContext.class.getName()));
         writer.writeProperty("osVersion", this.getOperatingSystem());
         writer.writeProperty("oemName", this.getOemName());
         writer.writeProperty("model", this.getModel());
