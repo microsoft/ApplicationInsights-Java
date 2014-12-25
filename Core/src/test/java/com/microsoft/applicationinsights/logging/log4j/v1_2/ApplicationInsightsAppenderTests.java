@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.logging.log4j;
+package com.microsoft.applicationinsights.logging.log4j.v1_2;
 
 import java.util.List;
 import java.util.Map;
@@ -6,9 +6,8 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.common.TelemetryChannelMock;
 import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Appender;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.junit.*;
 
 public class ApplicationInsightsAppenderTests {
@@ -42,7 +41,8 @@ public class ApplicationInsightsAppenderTests {
     public void testInstrumentationKeyIsLoadedFromConfiguration() {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
 
-        Assert.assertEquals(TestInstrumentationKey, appender.getInstrumentationKey());
+        String configurationKey = appender.getTelemetryClientProxy().getTelemetryClient().getContext().getInstrumentationKey();
+        Assert.assertEquals(TestInstrumentationKey, configurationKey);
     }
 
     @Test
@@ -74,10 +74,19 @@ public class ApplicationInsightsAppenderTests {
     @Test
     public void testAppenderInitializedCorrectlyWhenNoInstrumentationKeyProvided() {
 
+        // TODO: This test have no meaning after catching all exceptions.
+        // will be refactored to use TelemetryClientProxy interface.
+
         boolean isExceptionWasThrown = false;
         try {
-            ApplicationInsightsAppender appender = new ApplicationInsightsAppender("appender", null);
-            appender = new ApplicationInsightsAppender("appender", "");
+            // Checking appender with NULL key.
+            ApplicationInsightsAppender appender = new ApplicationInsightsAppender();
+            appender.activateOptions();
+
+            // Checking appender with empty key.
+            appender = new ApplicationInsightsAppender();
+            appender.setInstrumentationKey("");
+            appender.activateOptions();
         } catch (Exception e) {
             isExceptionWasThrown = true;
         }
@@ -101,7 +110,7 @@ public class ApplicationInsightsAppenderTests {
 
     private void sendThrowableAndVerifyExceptionTelemetrySent(Throwable throwable) {
         Logger logger = LogManager.getRootLogger();
-        logger.catching(throwable);
+        logger.fatal("fatal", throwable);
 
         Telemetry eventSent = getLastSentItems().get(0);
 
@@ -110,24 +119,23 @@ public class ApplicationInsightsAppenderTests {
 
     private List<Telemetry> getLastSentItems() {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
-        TelemetryChannelMock channelMock = (TelemetryChannelMock) appender.getTelemetryClient().getChannel();
+        TelemetryChannelMock channelMock = (TelemetryChannelMock) appender.getTelemetryClientProxy().getTelemetryClient().getChannel();
 
         return channelMock.getSentItems();
     }
 
     private ApplicationInsightsAppender getApplicationInsightsAppender() {
         Logger logger = LogManager.getRootLogger();
-        org.apache.logging.log4j.core.Logger coreLogger = (org.apache.logging.log4j.core.Logger)logger;
-
-        Map<String, Appender> appenderMap = coreLogger.getAppenders();
-        ApplicationInsightsAppender appender = (ApplicationInsightsAppender) appenderMap.get("test");
+        ApplicationInsightsAppender appender = (ApplicationInsightsAppender)logger.getAppender("test");
 
         return appender;
     }
 
     private void setMockTelemetryChannelToAIAppender() {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
-        TelemetryClient telemetryClient = appender.getTelemetryClient();
+        appender.activateOptions();
+
+        TelemetryClient telemetryClient = appender.getTelemetryClientProxy().getTelemetryClient();
         telemetryClient.setChannel(telemetryChannelMock);
     }
 
