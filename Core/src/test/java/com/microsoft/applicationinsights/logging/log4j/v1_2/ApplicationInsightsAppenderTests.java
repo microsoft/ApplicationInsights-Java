@@ -41,7 +41,7 @@ public class ApplicationInsightsAppenderTests {
     public void testInstrumentationKeyIsLoadedFromConfiguration() {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
 
-        String configurationKey = appender.getTelemetryManager().getTelemetryClient().getContext().getInstrumentationKey();
+        String configurationKey = appender.getTelemetryClientProxy().getTelemetryClient().getContext().getInstrumentationKey();
         Assert.assertEquals(TestInstrumentationKey, configurationKey);
     }
 
@@ -74,6 +74,9 @@ public class ApplicationInsightsAppenderTests {
     @Test
     public void testAppenderInitializedCorrectlyWhenNoInstrumentationKeyProvided() {
 
+        // TODO: This test have no meaning after catching all exceptions.
+        // will be refactored to use TelemetryClientProxy interface.
+
         boolean isExceptionWasThrown = false;
         try {
             // Checking appender with NULL key.
@@ -84,7 +87,6 @@ public class ApplicationInsightsAppenderTests {
             appender = new ApplicationInsightsAppender();
             appender.setInstrumentationKey("");
             appender.activateOptions();
-
         } catch (Exception e) {
             isExceptionWasThrown = true;
         }
@@ -117,7 +119,7 @@ public class ApplicationInsightsAppenderTests {
 
     private List<Telemetry> getLastSentItems() {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
-        TelemetryChannelMock channelMock = (TelemetryChannelMock) appender.getTelemetryManager().getTelemetryClient().getChannel();
+        TelemetryChannelMock channelMock = (TelemetryChannelMock) appender.getTelemetryClientProxy().getTelemetryClient().getChannel();
 
         return channelMock.getSentItems();
     }
@@ -133,7 +135,7 @@ public class ApplicationInsightsAppenderTests {
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
         appender.activateOptions();
 
-        TelemetryClient telemetryClient = appender.getTelemetryManager().getTelemetryClient();
+        TelemetryClient telemetryClient = appender.getTelemetryClientProxy().getTelemetryClient();
         telemetryClient.setChannel(telemetryChannelMock);
     }
 

@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.logging.log4j.v1_2;
 
-import com.microsoft.applicationinsights.logging.common.TelemetryManager;
+import com.microsoft.applicationinsights.logging.common.LogTelemetryClientProxy;
+import com.microsoft.applicationinsights.logging.common.TelemetryClientProxy;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
@@ -8,15 +9,16 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
 
     // region Members
 
+    private boolean isInitialized = true;
     private String instrumentationKey;
-    private TelemetryManager telemetryManager;
+    private TelemetryClientProxy telemetryClientProxy;
 
     // endregion Members
 
     // region Public methods
 
-    public TelemetryManager getTelemetryManager() {
-        return this.telemetryManager;
+    public TelemetryClientProxy getTelemetryClientProxy() {
+        return this.telemetryClientProxy;
     }
 
     /**
@@ -38,15 +40,15 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
      */
     @Override
     protected void append(LoggingEvent event) {
-        if (this.closed) {
+        if (this.closed || !this.isInitialized) {
 
-            // TODO: trace that closed.
+            // TODO: trace that closed or not initialized.
             return;
         }
 
         try {
             ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(event);
-            this.telemetryManager.sendTelemetry(aiEvent);
+            this.telemetryClientProxy.sendEvent(aiEvent);
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             // TODO: Assert.Debug/warning on exception?
@@ -78,10 +80,11 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
         super.activateOptions();
 
         try {
-            this.telemetryManager = new TelemetryManager(this.instrumentationKey);
+            this.telemetryClientProxy = new LogTelemetryClientProxy(this.instrumentationKey);
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             // TODO: Assert.Debug/warning on exception?
+            this.isInitialized = false;
         }
     }
 

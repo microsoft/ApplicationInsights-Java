@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.logging.log4j.v2;
 
-import com.microsoft.applicationinsights.logging.common.TelemetryManager;
+import com.microsoft.applicationinsights.logging.common.LogTelemetryClientProxy;
+import com.microsoft.applicationinsights.logging.common.TelemetryClientProxy;
 import org.apache.logging.log4j.core.*;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -12,7 +13,8 @@ public class ApplicationInsightsAppender extends AbstractAppender {
 
     //region Members
 
-    private TelemetryManager telemetryManager;
+    private boolean isInitialized = true;
+    private TelemetryClientProxy telemetryClientProxy;
 
     //endregion Members
 
@@ -27,10 +29,11 @@ public class ApplicationInsightsAppender extends AbstractAppender {
         super(name, null, null);
 
         try {
-            telemetryManager = new TelemetryManager(instrumentationKey);
+            telemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             // TODO: Assert.Debug/warning on exception?
+            this.isInitialized = false;
         }
     }
 
@@ -38,8 +41,8 @@ public class ApplicationInsightsAppender extends AbstractAppender {
 
     //region Public methods
 
-    public TelemetryManager getTelemetryManager() {
-        return this.telemetryManager;
+    public LogTelemetryClientProxy getTelemetryClientProxy() {
+        return (LogTelemetryClientProxy)this.telemetryClientProxy;
     }
 
     /**
@@ -66,15 +69,15 @@ public class ApplicationInsightsAppender extends AbstractAppender {
      */
     @Override
     public void append(LogEvent event) {
-        if (!this.isStarted()) {
+        if (!this.isStarted() || !this.isInitialized) {
 
-            // TODO: trace not started.
+            // TODO: trace not started or not initialized.
             return;
         }
 
         try {
             ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(event);
-            this.telemetryManager.sendTelemetry(aiEvent);
+            this.telemetryClientProxy.sendEvent(aiEvent);
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             // TODO: Assert.Debug/warning on exception?

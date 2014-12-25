@@ -9,9 +9,10 @@ import com.microsoft.applicationinsights.util.StringUtil;
 
 /**
  * This class encapsulates all the common logic for sending AI telemetry.
- * This class is used by all Appenders, Listeners etc.
+ * This class is used by all Appenders, Listeners etc and therefore keeping them without
+ * any logic.
  */
-public class TelemetryManager {
+public class LogTelemetryClientProxy implements TelemetryClientProxy {
 
     // region Members
 
@@ -22,10 +23,10 @@ public class TelemetryManager {
     // region Constructor
 
     /**
-     * Constructs new Telemetry Manager instance.
-     * @param instrumentationKey The instrumentation key.
+     * Constructs new AI event sender instance.
+     * @param instrumentationKey The instrumentation key for sending the events.
      */
-    public TelemetryManager(String instrumentationKey) {
+    public LogTelemetryClientProxy(String instrumentationKey) {
 
         this.telemetryClient = new TelemetryClient();
         if (!StringUtil.isNullOrEmpty(instrumentationKey)) {
@@ -38,11 +39,11 @@ public class TelemetryManager {
     // region Public methods
 
     /**
-     * Sends the given telemetry to AI.
+     * Sends the given event to AI.
      *
      * @param event
      */
-    public void sendTelemetry(ApplicationInsightsEvent event) {
+    public void sendEvent(ApplicationInsightsEvent event) {
 
         String formattedMessage = event.getMessage();
 
