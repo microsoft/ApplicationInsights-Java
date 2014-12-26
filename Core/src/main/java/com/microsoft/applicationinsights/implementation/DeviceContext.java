@@ -118,19 +118,16 @@ public class DeviceContext implements JsonSerializable
     }
 
     @Override
-    public void serialize(com.microsoft.applicationinsights.datacontracts.JsonWriter writer) throws IOException
-    {
-        writer.writeStartObject();
-        writer.writeProperty("type", this.getType());
-        writer.writeProperty("id", LocalStringsUtils.populateRequiredStringWithNullValue(this.getId(), "id", DeviceContext.class.getName()));
-        writer.writeProperty("osVersion", this.getOperatingSystem());
-        writer.writeProperty("oemName", this.getOemName());
-        writer.writeProperty("model", this.getModel());
-        writer.writeProperty("network", this.getNetworkType());
-        writer.writeProperty("resolution", this.getScreenResolution());
-        writer.writeProperty("locale", this.getLanguage());
-        writer.writeProperty("roleName", this.getRoleName());
-        writer.writeProperty("roleInstance", this.getRoleInstance());
-        writer.writeEndObject();
+    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+        writer.write("type", this.getType());
+        writer.write("id", LocalStringsUtils.populateRequiredStringWithNullValue(this.getId(), "id", DeviceContext.class.getName()));
+        writer.write("osVersion", this.getOperatingSystem());
+        writer.write("oemName", this.getOemName());
+        writer.write("model", this.getModel());
+        writer.write("network", this.getNetworkType());
+        writer.write("resolution", this.getScreenResolution());
+        writer.write("locale", this.getLanguage());
+        writer.write("roleName", this.getRoleName());
+        writer.write("roleInstance", this.getRoleInstance());
     }
 }

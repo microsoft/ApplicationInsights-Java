@@ -5,7 +5,7 @@ import java.io.StringWriter;
 import java.util.Collection;
 import java.util.zip.GZIPOutputStream;
 
-import com.microsoft.applicationinsights.datacontracts.JsonWriter;
+import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -42,7 +42,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 try {
                     int counter = 0;
                     StringWriter writer = new StringWriter();
-                    JsonWriter jsonWriter = new com.microsoft.applicationinsights.implementation.JsonWriter(writer);
+                    JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
 
                     // The format is:
                     // 1. Telemetry is written in Json
@@ -57,11 +57,14 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                         ++counter;
 
                         telemetry.serialize(jsonWriter);
+                        jsonWriter.close();
+
                         String asJson = writer.toString();
                         zipStream.write(asJson.getBytes());
 
                         if (counter < telemetries.size()) {
                             writer.getBuffer().setLength(0);
+                            jsonWriter.reset(writer);
                         }
                     }
                 } finally {

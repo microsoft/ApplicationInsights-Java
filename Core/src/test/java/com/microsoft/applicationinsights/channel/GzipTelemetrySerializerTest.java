@@ -11,9 +11,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
 import org.junit.Test;
 
-import com.microsoft.applicationinsights.datacontracts.JsonWriter;
 import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
 
 import com.google.common.base.Optional;
@@ -60,18 +60,6 @@ public class GzipTelemetrySerializerTest {
         }
 
         @Override
-        public void serialize(JsonWriter writer) throws IOException {
-            writer.writeStartObject();
-
-            writer.writeProperty("ver", 1);
-            writer.writeProperty("telemetryName", telemetryName);
-
-            writer.writeProperty("properties", this.getProperties());
-
-            writer.writeEndObject();
-        }
-
-        @Override
         public boolean equals(Object other) {
             if (this == other) {
                 return true;
@@ -89,6 +77,13 @@ public class GzipTelemetrySerializerTest {
 
         public String getTelemetryName() {
             return telemetryName;
+        }
+
+        @Override
+        public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+            writer.write("ver", 1);
+            writer.write("telemetryName", telemetryName);
+            writer.write("properties", this.getProperties());
         }
     }
 

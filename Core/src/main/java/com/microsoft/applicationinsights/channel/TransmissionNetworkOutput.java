@@ -1,6 +1,9 @@
 package com.microsoft.applicationinsights.channel;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Strings;
@@ -80,12 +83,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             response = httpClient.execute(request);
 
             HttpEntity respEntity = response.getEntity();
-            if (respEntity != null) {
-                respEntity.getContent().close();
-            }
             int code = response.getStatusLine().getStatusCode();
             if (code != 200) {
-                // TODO: check more and log
+                if (respEntity != null) {
+                    logError(respEntity);
+                }
             }
         } catch (IOException ioe) {
             ioe.printStackTrace(System.err);
@@ -102,6 +104,20 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         }
 
         return true;
+    }
+
+    private void logError(HttpEntity respEntity) {
+        InputStream inputStream = null;
+        try {
+            inputStream = respEntity.getContent();
+            InputStreamReader streamReader = new InputStreamReader(inputStream, "UTF-8");
+            BufferedReader reader = new BufferedReader(streamReader);
+            String responseLine = reader.readLine();
+            respEntity.getContent().close();
+            // TODO: check more and log
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private HttpPost createTransmissionPostRequest(Transmission transmission) {
