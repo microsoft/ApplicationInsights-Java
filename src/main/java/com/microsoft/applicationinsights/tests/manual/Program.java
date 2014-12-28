@@ -20,6 +20,7 @@ class Program
         metrics.put("Answers", (double)15);
 
         appInsights.trackEvent("A test event", null, metrics);
+
         appInsights.trackTrace("Things seem to be going well");
 
         MetricTelemetry mt = new MetricTelemetry("Test time", 17.0);

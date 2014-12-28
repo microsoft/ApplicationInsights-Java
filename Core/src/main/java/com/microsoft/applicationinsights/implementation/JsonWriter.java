@@ -116,7 +116,7 @@ public class JsonWriter implements com.microsoft.applicationinsights.datacontrac
     public void writeProperty(String name, JsonSerializable value) throws IOException {
         if (!isNullOrEmpty(value)) {
             writePropertyName(name);
-            value.serialize(this);
+            //value.serialize(this);
         }
     }
 
@@ -126,7 +126,7 @@ public class JsonWriter implements com.microsoft.applicationinsights.datacontrac
         }
 
         emptyObjectDetector.setEmpty(true);
-        value.serialize(emptyObjectDetector);
+        //value.serialize(emptyObjectDetector);
         return emptyObjectDetector.isEmpty();
     }
 
@@ -268,7 +268,7 @@ public class JsonWriter implements com.microsoft.applicationinsights.datacontrac
         @Override
         public void writeProperty(String name, JsonSerializable value) throws IOException {
             if (value != null) {
-                value.serialize(this);
+                //value.serialize(this);
             }
         }
 

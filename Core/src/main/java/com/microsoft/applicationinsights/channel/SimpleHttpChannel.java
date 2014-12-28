@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.implementation.JsonWriter;
 
 import org.apache.http.HttpEntity;
@@ -38,7 +39,8 @@ public class SimpleHttpChannel implements TelemetryChannel
         {
             // Establish the payload.
             StringWriter writer = new StringWriter();
-            item.serialize(new JsonWriter(writer));
+//            item.serialize(new JsonWriter(writer));
+            item.serialize(new JsonTelemetryDataSerializer(writer));
 
             // Send it.
 
