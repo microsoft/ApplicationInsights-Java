@@ -15,7 +15,7 @@ import com.microsoft.applicationinsights.util.LocalStringsUtils;
 /**
  * Created by gupele on 12/24/2014.
  */
-public class JsonTelemetryDataSerializer {
+public final class JsonTelemetryDataSerializer {
 
     private final static String JSON_SEPARATOR = ",";
     private final static String JSON_START_OBJECT = "{";
@@ -190,7 +190,7 @@ public class JsonTelemetryDataSerializer {
 
         writeName(name);
         try {
-            if (map == null || map.size() < 1) {
+            if (map.size() < 1) {
                 out.write("null");
             } else {
                 out.write(JSON_START_OBJECT);
@@ -216,7 +216,7 @@ public class JsonTelemetryDataSerializer {
 
         writeName(name);
         try {
-            if (list == null || list.size() < 1) {
+            if (list.size() < 1) {
                 out.write("null");
             } else {
                 out.write(JSON_START_ARRAY);
@@ -237,7 +237,6 @@ public class JsonTelemetryDataSerializer {
     private <T> void write(T item) throws IOException {
         if (item instanceof JsonSerializable) {
             StringWriter stringWriter = new StringWriter();
-            JsonTelemetryDataSerializer temp = new JsonTelemetryDataSerializer(new BufferedWriter(stringWriter));
 
             String jsonStringToAppend = createJsonFor((JsonSerializable)item);
             if (Strings.isNullOrEmpty(jsonStringToAppend)) {

@@ -1,8 +1,10 @@
 package com.microsoft.applicationinsights.channel;
 
 import com.microsoft.applicationinsights.datacontracts.JsonSerializable;
+import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
@@ -34,4 +36,11 @@ public interface Telemetry extends JsonSerializable
      * Sanitizes the properties of the telemetry item based on DP constraints.
      */
     void sanitize();
+
+    /**
+     * Serializes itself to Json using the {@link JsonTelemetryDataSerializer}
+     * @param writer The writer that helps with serializing into Json format
+     * @throws IOException a possible exception
+     */
+    void serialize(JsonTelemetryDataSerializer writer) throws IOException;
 }

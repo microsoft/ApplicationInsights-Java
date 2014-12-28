@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.channel;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.zip.GZIPOutputStream;
@@ -32,7 +33,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
         Preconditions.checkArgument(!telemetries.isEmpty(), "telemetries: One or more telemetry item is expected");
 
         Transmission result = null;
-
+        boolean succeeded = true;
         try {
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
@@ -40,44 +41,55 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 GZIPOutputStream zipStream = new GZIPOutputStream(byteStream);
 
                 try {
-                    int counter = 0;
-                    StringWriter writer = new StringWriter();
-                    JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
-
-                    // The format is:
-                    // 1. Telemetry is written in Json
-                    // 2. Separate each Telemetry by newline
-                    // 3. Compress the entire data by using Gzip
-                    for (Telemetry telemetry : telemetries) {
-
-                        if (counter != 0) {
-                            zipStream.write(newlineString);
-                        }
-
-                        ++counter;
-
-                        telemetry.serialize(jsonWriter);
-                        jsonWriter.close();
-
-                        String asJson = writer.toString();
-                        zipStream.write(asJson.getBytes());
-
-                        if (counter < telemetries.size()) {
-                            writer.getBuffer().setLength(0);
-                            jsonWriter.reset(writer);
-                        }
-                    }
+                    serializeAndCompress(zipStream, telemetries);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    succeeded = false;
                 } finally {
                     zipStream.close();
                 }
             } finally {
                 byteStream.close();
-                result = new Transmission(byteStream.toByteArray(), GZIP_WEB_CONTENT_TYPE, GZIP_WEB_ENCODING_TYPE);
+
+                // The creation of the result must be done after the 'zipStream' is closed
+                if (succeeded) {
+                    result = new Transmission(byteStream.toByteArray(), GZIP_WEB_CONTENT_TYPE, GZIP_WEB_ENCODING_TYPE);
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();
         }
 
         return Optional.fromNullable(result);
+    }
+
+    private void serializeAndCompress(GZIPOutputStream zipStream, Collection<Telemetry> telemetries) throws IOException {
+        int counter = 0;
+        StringWriter writer = new StringWriter();
+        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
+
+        // The format is:
+        // 1. Telemetry is written in Json
+        // 2. Separate each Telemetry by newline
+        // 3. Compress the entire data by using Gzip
+        for (Telemetry telemetry : telemetries) {
+
+            if (counter != 0) {
+                zipStream.write(newlineString);
+            }
+
+            ++counter;
+
+            telemetry.serialize(jsonWriter);
+            jsonWriter.close();
+
+            String asJson = writer.toString();
+            zipStream.write(asJson.getBytes());
+
+            if (counter < telemetries.size()) {
+                writer.getBuffer().setLength(0);
+                jsonWriter.reset(writer);
+            }
+        }
     }
 }

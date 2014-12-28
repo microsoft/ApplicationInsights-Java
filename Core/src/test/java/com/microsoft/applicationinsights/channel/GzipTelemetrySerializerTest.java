@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.channel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Map;
@@ -19,9 +18,13 @@ import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
 
+import org.mockito.Mockito;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 
 public class GzipTelemetrySerializerTest {
     private static class StubTelemetry implements Telemetry {
@@ -85,6 +88,19 @@ public class GzipTelemetrySerializerTest {
             writer.write("telemetryName", telemetryName);
             writer.write("properties", this.getProperties());
         }
+    }
+
+    @Test
+    public void testTelemetryThatThrows() throws Exception {
+        GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
+        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+        Mockito.doThrow(new IOException()).when(mockTelemetry).serialize(any(JsonTelemetryDataSerializer.class));
+        List<Telemetry> telemetries = new ArrayList<Telemetry>();
+        telemetries.add(mockTelemetry);
+        Optional<Transmission> result = tested.serialize(telemetries);
+
+        assertNotNull(result);
+        assertFalse(result.isPresent());
     }
 
     @Test(expected = NullPointerException.class)
