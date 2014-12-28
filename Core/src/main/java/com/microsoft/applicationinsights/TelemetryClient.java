@@ -16,7 +16,7 @@ import com.google.common.base.Strings;
 /**
  * This is the main interface for Application Insights telemetry generation.
  */
-public class TelemetryClient
+public class TelemetryClient implements ITelemetryClient
 {
     private final TelemetryConfiguration configuration;
     private TelemetryContext       context;

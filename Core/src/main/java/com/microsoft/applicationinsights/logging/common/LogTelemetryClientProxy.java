@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.logging.common;
 
 import java.util.Map;
+import com.microsoft.applicationinsights.ITelemetryClient;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.datacontracts.BaseTelemetry;
 import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
@@ -16,27 +17,47 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
 
     // region Members
 
-    private TelemetryClient telemetryClient;
+    private boolean isInitialized = false;
+    private ITelemetryClient telemetryClient;
 
     // endregion Members
 
     // region Constructor
 
     /**
-     * Constructs new AI event sender instance.
+     * Constructs new telemetry client proxy instance with the given client.
+     * @param telemetryClient The telemetry client.
+     * @param instrumentationKey The instrumentation key.
+     */
+    public LogTelemetryClientProxy(ITelemetryClient telemetryClient, String instrumentationKey) {
+        try {
+            this.telemetryClient = telemetryClient;
+            if (!LocalStringsUtils.isNullOrEmpty(instrumentationKey)) {
+                this.telemetryClient.getContext().setInstrumentationKey(instrumentationKey);
+            }
+
+            this.isInitialized = true;
+        } catch (Exception e) {
+            // Catching all exceptions so in case of a failure the calling appender won't throw exception.
+            // TODO: Assert.Debug/warning on exception?
+        }
+    }
+
+    /**
+     * Constructs new telemetry client proxy instance.
      * @param instrumentationKey The instrumentation key for sending the events.
      */
     public LogTelemetryClientProxy(String instrumentationKey) {
-
-        this.telemetryClient = new TelemetryClient();
-        if (!LocalStringsUtils.isNullOrEmpty(instrumentationKey)) {
-            this.telemetryClient.getContext().setInstrumentationKey(instrumentationKey);
-        }
+        this(new TelemetryClient(), instrumentationKey);
     }
 
     // endregion Constructor
 
     // region Public methods
+
+    public boolean isInitialized() {
+        return this.isInitialized;
+    }
 
     /**
      * Sends the given event to AI.
@@ -62,7 +83,7 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
      *
      * @return Telemetry client
      */
-    public TelemetryClient getTelemetryClient() {
+    public ITelemetryClient getTelemetryClient() {
         return this.telemetryClient;
     }
 

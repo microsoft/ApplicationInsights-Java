@@ -1,18 +1,15 @@
-package com.microsoft.applicationinsights.logging.log4j.v2;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
+package com.microsoft.applicationinsights.logging.logback;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import ch.qos.logback.classic.Logger;
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.logging.Common.LoggingTestHelper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Appender;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 public class ApplicationInsightsAppenderTests {
 
@@ -49,10 +46,10 @@ public class ApplicationInsightsAppenderTests {
 
     @Test
     public void testAppenderSendsGivenEvent() {
-        Logger logger = LogManager.getRootLogger();
-        logger.trace("New event!");
+        Logger logger = (Logger) LoggerFactory.getLogger("root");
+        logger.trace("Hello");
 
-        Assert.assertEquals(1, this.telemetriesSent.size());
+        Assert.assertEquals(1, telemetriesSent.size());
     }
 
     // endregion Tests
@@ -60,11 +57,8 @@ public class ApplicationInsightsAppenderTests {
     // region Private methods
 
     private ApplicationInsightsAppender getApplicationInsightsAppender() {
-        Logger logger = LogManager.getRootLogger();
-        org.apache.logging.log4j.core.Logger coreLogger = (org.apache.logging.log4j.core.Logger)logger;
-
-        Map<String, Appender> appenderMap = coreLogger.getAppenders();
-        ApplicationInsightsAppender appender = (ApplicationInsightsAppender) appenderMap.get("test");
+        Logger logger = (Logger) LoggerFactory.getLogger("root");
+        ApplicationInsightsAppender appender = (ApplicationInsightsAppender) logger.getAppender("test");
 
         return appender;
     }

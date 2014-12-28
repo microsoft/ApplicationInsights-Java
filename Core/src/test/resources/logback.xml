@@ -1,0 +1,9 @@
+<configuration>
+    <appender name="test" class="com.microsoft.applicationinsights.logging.logback.ApplicationInsightsAppender">
+        <instrumentationKey>Test_Instrumentation_Key</instrumentationKey>
+    </appender>
+
+    <root level="trace">
+        <appender-ref ref="test" />
+    </root>
+</configuration>

@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.logging.common;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.ITelemetryClient;
 
 public interface TelemetryClientProxy {
 
@@ -14,5 +14,11 @@ public interface TelemetryClientProxy {
     /**
      * Gets the telemetry client.
      */
-    TelemetryClient getTelemetryClient();
+    ITelemetryClient getTelemetryClient();
+
+    /**
+     * Gets a value indicating whether the proxy has been initialized.
+     * @return True if initialized, false otherwise.
+     */
+    boolean isInitialized();
 }
