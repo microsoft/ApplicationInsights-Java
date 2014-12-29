@@ -15,4 +15,10 @@ public interface TelemetryClientProxy {
      * Gets the telemetry client.
      */
     TelemetryClient getTelemetryClient();
+
+    /**
+     * Gets a value indicating whether the proxy has been initialized.
+     * @return True if initialized, false otherwise.
+     */
+    boolean isInitialized();
 }

@@ -29,5 +29,8 @@
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.code.gson:gson:1.7.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.mockito:mockito-all:1.8.0" level="project" />
     <orderEntry type="library" exported="" name="Gradle: log4j:log4j:1.2.17" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.slf4j:slf4j-api:1.7.9" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: ch.qos.logback:logback-classic:1.1.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: ch.qos.logback:logback-core:1.1.2" level="project" />
   </component>
 </module>

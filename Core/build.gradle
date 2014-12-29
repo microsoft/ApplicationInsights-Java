@@ -27,10 +27,10 @@ uploadArchives {
         mavenDeployer {
             configuration = configurations.deployerJars
 
-            repository(url: "ftp://waws-prod-dm1-003.ftp.azurewebsites.windows.net/site/wwwroot/repository/") { 
+            repository(url: "ftp://waws-prod-dm1-003.ftp.azurewebsites.windows.net/site/wwwroot/repository/") {
                 authentication(userName: "dotm2\\\$dotm2", password:javamavenuserpassword)
             }
-         }
+        }
     }
 }
 */
@@ -42,6 +42,9 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '12.0.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
     compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.2'
     testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
     testCompile group: 'junit', name: 'junit', version: '4.11'
