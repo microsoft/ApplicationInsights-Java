@@ -59,13 +59,18 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
     private final AtomicLong size;
 
     public TransmissionFileSystemOutput() {
-        this(System.getProperty("java.io.tmpdir") + File.separator + TRANSMISSION_DEFAULT_FOLDER);
+        this(new File(System.getProperty("java.io.tmpdir"), TRANSMISSION_DEFAULT_FOLDER).getPath());
     }
 
     public TransmissionFileSystemOutput(String folderPath) {
         Preconditions.checkNotNull(folderPath, "folderPath must be a non-null value");
 
         folder = new File(folderPath);
+
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+
         if (!folder.exists() || !folder.canRead() || !folder.canWrite()) {
             throw new IllegalArgumentException("Folder must exist with read and write permissions");
         }
