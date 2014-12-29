@@ -74,9 +74,10 @@ public class TransmissionFileSystemOutputTest {
                 assertNotNull(transmission);
 
                 String iAsString = String.valueOf(i + 1);
-                assertEquals(new String(transmission.getContent()), MOCK_CONTENT + iAsString);
-                assertEquals(transmission.getWebContentType(), MOCK_CONTENT_TYPE_BASE + iAsString);
-                assertEquals(transmission.getWebContentEncodingType(), MOCK_ENCODING_TYPE_BASE + iAsString);
+                String fetchedContent = new String(transmission.getContent());
+                assertEquals(String.format("Wrong content %s", fetchedContent), fetchedContent, MOCK_CONTENT + iAsString);
+                assertEquals(String.format("Wrong WebContentType %s", transmission.getWebContentType()), transmission.getWebContentType(), MOCK_CONTENT_TYPE_BASE + iAsString);
+                assertEquals(String.format("Wrong WebContentEncodingType %s", transmission.getWebContentEncodingType()), transmission.getWebContentEncodingType(), MOCK_ENCODING_TYPE_BASE + iAsString);
             }
 
             Transmission transmission = tested.fetchOldestFile();
