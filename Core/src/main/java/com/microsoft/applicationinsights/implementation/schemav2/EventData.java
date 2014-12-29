@@ -83,6 +83,7 @@ public class EventData extends Domain {
         if (this.properties == null) {
             this.properties = new HashMap<String, String>();
         }
+
         return this.properties;
     }
 

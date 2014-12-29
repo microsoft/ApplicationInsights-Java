@@ -40,7 +40,7 @@ public class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
 
     @Override
     public Map<String, String> getCustomParameters() {
-        Map<String, String> metaData = new HashMap<>();
+        Map<String, String> metaData = new HashMap<String, String>();
 
         metaData.put("SourceType", "Log4j");
 
