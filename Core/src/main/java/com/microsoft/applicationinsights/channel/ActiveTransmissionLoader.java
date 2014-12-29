@@ -2,6 +2,8 @@ package com.microsoft.applicationinsights.channel;
 
 import com.google.common.base.Preconditions;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,6 +29,8 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
 
     // The dispatcher is needed to process the fetched Transmissions
     private final TransmissionDispatcher dispatcher;
+
+    private CyclicBarrier barrier;
 
     // The threads that do the work
     private final Thread[] threads;
@@ -54,6 +58,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                 @Override
                 public void run() {
                     try {
+                        barrier.await();
                         while (!done.get()) {
                             Transmission transmission = fileSystem.fetchOldestFile();
                             if (transmission == null) {
@@ -70,10 +75,27 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
         }}
 
     @Override
-    public void load() {
+    public synchronized boolean load(boolean waitForThreadsToStart) {
+        if (barrier == null) {
+            int numberOfThreads = threads.length;
+            if (waitForThreadsToStart) {
+                ++numberOfThreads;
+            }
+            barrier = new CyclicBarrier(numberOfThreads);
+        }
         for (Thread thread : threads) {
             thread.start();
         }
+        try {
+            barrier.await();
+            return true;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (BrokenBarrierException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     @Override
