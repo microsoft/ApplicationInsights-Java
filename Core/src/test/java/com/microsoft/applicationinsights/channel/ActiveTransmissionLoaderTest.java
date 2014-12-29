@@ -89,7 +89,7 @@ public class ActiveTransmissionLoaderTest {
 
             if (!putFilesFirst) {
                 tested.load();
-                Thread.sleep(4000);
+                Thread.sleep(7000);
             }
 
             for (int i = 0; i < amount; ++i) {
@@ -99,13 +99,13 @@ public class ActiveTransmissionLoaderTest {
             if (putFilesFirst) {
                 tested.load();
             }
-            Thread.sleep(4000);
+            Thread.sleep(7000);
 
             Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
             Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
 
         } finally {
-            tested.stop(1L, TimeUnit.SECONDS);
+            tested.stop(7L, TimeUnit.SECONDS);
             if (folder != null && folder.exists()) {
                 FileUtils.deleteDirectory(folder);
             }

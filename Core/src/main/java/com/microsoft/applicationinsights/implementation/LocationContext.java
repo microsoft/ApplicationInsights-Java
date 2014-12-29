@@ -10,8 +10,7 @@ import com.microsoft.applicationinsights.util.MapUtil;
 
 import com.google.common.base.Strings;
 
-public class LocationContext implements JsonSerializable
-{
+public class LocationContext implements JsonSerializable {
     private final Map<String, String> tags;
 
     public LocationContext(Map<String, String> tags)
@@ -24,20 +23,15 @@ public class LocationContext implements JsonSerializable
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getLocationIP());
     }
 
-    public void setIp(String value)
-    {
-        if (!Strings.isNullOrEmpty(value) && isIPV4(value))
-        {
+    public void setIp(String value) {
+        if (!Strings.isNullOrEmpty(value) && isIPV4(value)) {
             MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getLocationIP(), value);
         }
     }
 
     @Override
-    public void serialize(com.microsoft.applicationinsights.datacontracts.JsonWriter writer) throws IOException
-    {
-        writer.writeStartObject();
-        writer.writeProperty("ip", this.getIp());
-        writer.writeEndObject();
+    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+        writer.write("ip", this.getIp());
     }
 
     private boolean isIPV4(String ip) {

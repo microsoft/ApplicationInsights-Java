@@ -12,7 +12,7 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
  */
 public class TelemetryChannelMock implements TelemetryChannel {
 
-    private List<Telemetry> sentItems = new LinkedList<>();
+    private List<Telemetry> sentItems = new LinkedList<Telemetry>();
 
     @Override
     public boolean isDeveloperMode() {

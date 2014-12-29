@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.logging.common;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.channel.TelemetryClient;
 
 public interface TelemetryClientProxy {
 

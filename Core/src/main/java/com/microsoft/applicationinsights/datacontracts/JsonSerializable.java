@@ -10,5 +10,5 @@ public interface JsonSerializable
     /**
      *  Writes JSON representation of the object to the specified writer.
      */
-    void serialize(JsonWriter writer) throws IOException;
+    void serialize(JsonTelemetryDataSerializer serializer) throws IOException;
 }

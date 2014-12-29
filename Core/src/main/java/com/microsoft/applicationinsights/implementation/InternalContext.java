@@ -7,8 +7,7 @@ import com.microsoft.applicationinsights.util.MapUtil;
 import java.io.IOException;
 import java.util.Map;
 
-public class InternalContext implements JsonSerializable
-{
+public class InternalContext implements JsonSerializable {
     private final Map<String, String> tags;
 
     public InternalContext(Map<String, String> tags)
@@ -21,27 +20,21 @@ public class InternalContext implements JsonSerializable
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalSdkVersion());
     }
 
-    public void setSdkVersion(String version)
-    {
+    public void setSdkVersion(String version) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalSdkVersion(), version);
     }
 
-    String getAgentVersion()
-    {
+    String getAgentVersion() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalAgentVersion());
     }
 
-    public void setAgentVersion(String version)
-    {
+    public void setAgentVersion(String version) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalAgentVersion(), version);
     }
 
     @Override
-    public void serialize(com.microsoft.applicationinsights.datacontracts.JsonWriter writer) throws IOException
-    {
-        writer.writeStartObject();
-        writer.writeProperty("sdkVersion", getSdkVersion());
-        writer.writeProperty("agentVersion", getAgentVersion());
-        writer.writeEndObject();
+    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+        writer.write("sdkVersion", this.getSdkVersion());
+        writer.write("agentVersion", this.getAgentVersion());
     }
 }

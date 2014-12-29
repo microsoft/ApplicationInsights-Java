@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.channel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Map;
@@ -11,17 +10,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
 import org.junit.Test;
 
-import com.microsoft.applicationinsights.datacontracts.JsonWriter;
 import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
 
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
 
+import org.mockito.Mockito;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 
 public class GzipTelemetrySerializerTest {
     private static class StubTelemetry implements Telemetry {
@@ -60,18 +63,6 @@ public class GzipTelemetrySerializerTest {
         }
 
         @Override
-        public void serialize(JsonWriter writer) throws IOException {
-            writer.writeStartObject();
-
-            writer.writeProperty("ver", 1);
-            writer.writeProperty("telemetryName", telemetryName);
-
-            writer.writeProperty("properties", this.getProperties());
-
-            writer.writeEndObject();
-        }
-
-        @Override
         public boolean equals(Object other) {
             if (this == other) {
                 return true;
@@ -90,6 +81,26 @@ public class GzipTelemetrySerializerTest {
         public String getTelemetryName() {
             return telemetryName;
         }
+
+        @Override
+        public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+            writer.write("ver", 1);
+            writer.write("telemetryName", telemetryName);
+            writer.write("properties", this.getProperties());
+        }
+    }
+
+    @Test
+    public void testTelemetryThatThrows() throws Exception {
+        GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
+        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+        Mockito.doThrow(new IOException()).when(mockTelemetry).serialize(any(JsonTelemetryDataSerializer.class));
+        List<Telemetry> telemetries = new ArrayList<Telemetry>();
+        telemetries.add(mockTelemetry);
+        Optional<Transmission> result = tested.serialize(telemetries);
+
+        assertNotNull(result);
+        assertFalse(result.isPresent());
     }
 
     @Test(expected = NullPointerException.class)

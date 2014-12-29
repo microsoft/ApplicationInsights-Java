@@ -8,8 +8,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-public class UserContext implements JsonSerializable
-{
+public class UserContext implements JsonSerializable {
     private final Map<String,String> tags;
 
     public UserContext(Map<String, String> tags)
@@ -17,54 +16,43 @@ public class UserContext implements JsonSerializable
         this.tags = tags;
     }
 
-    String getId()
-    {
+    String getId() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserId());
     }
 
-    public void setId(String version)
-    {
+    public void setId(String version) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserId(), version);
     }
 
-    String getAccountId()
-    {
+    String getAccountId() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserAccountId());
     }
 
-    public void setAccountId(String version)
-    {
+    public void setAccountId(String version) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserAccountId(), version);
     }
 
-    String getUserAgent()
-    {
+    String getUserAgent() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserAgent());
     }
 
-    public void setUserAgent(String version)
-    {
+    public void setUserAgent(String version) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserAgent(), version);
     }
 
-    Date getAcquisitionDate()
-    {
+    Date getAcquisitionDate() {
         return MapUtil.getDateValueOrNull(tags, ContextTagKeys.getKeys().getUserAccountAcquisitionDate());
     }
 
-    public void setgetAcquisitionDate(Date version)
-    {
+    public void setgetAcquisitionDate(Date version) {
         MapUtil.setDateValueOrRemove(tags, ContextTagKeys.getKeys().getUserAccountAcquisitionDate(), version);
     }
 
     @Override
-    public void serialize(com.microsoft.applicationinsights.datacontracts.JsonWriter writer) throws IOException
-    {
-        writer.writeStartObject();
-        writer.writeProperty("id", this.getId());
-        writer.writeProperty("userAgent", this.getUserAgent());
-        writer.writeProperty("accountId", this.getAccountId());
-        writer.writeProperty("anonUserAcquisitionDate", this.getAcquisitionDate());
-        writer.writeEndObject();
+    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+        writer.write("id", this.getId());
+        writer.write("userAgent", this.getUserAgent());
+        writer.write("accountId", this.getAccountId());
+        writer.write("anonUserAcquisitionDate", this.getAcquisitionDate());
     }
 }

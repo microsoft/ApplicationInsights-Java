@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.channel;
 
+import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.implementation.JsonWriter;
 
 import java.io.IOException;
@@ -25,7 +26,8 @@ public class StdOutChannel implements TelemetryChannel
     public void send(Telemetry item) {
         try {
             StringWriter writer = new StringWriter();
-            item.serialize(new JsonWriter(writer));
+//            item.serialize(new JsonWriter(writer));
+            item.serialize(new JsonTelemetryDataSerializer(writer));
             System.out.println("TELEMETRY: " + writer.toString());
         } catch (IOException ioe) {
             ioe.printStackTrace(System.err);
