@@ -1,32 +1,29 @@
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.util;
 
 import java.util.Date;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.channel.TelemetryClient;
 import com.microsoft.applicationinsights.datacontracts.*;
-import com.microsoft.applicationinsights.datacontracts.ExceptionHandledAt;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryConfiguration;
-import com.microsoft.applicationinsights.util.MapUtil;
 
 import com.google.common.base.Strings;
 
 /**
- * This is the main interface for Application Insights telemetry generation.
+ * Created by gupele on 12/28/2014.
  */
-public class TelemetryClient
-{
+public class DefaultTelemetryClient implements TelemetryClient {
     private final TelemetryConfiguration configuration;
-    private TelemetryContext       context;
-    private TelemetryChannel       channel;
+    private TelemetryContext context;
+    private TelemetryChannel channel;
 
     /**
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
      */
-    public TelemetryClient(TelemetryConfiguration configuration)
-    {
+    public DefaultTelemetryClient(TelemetryConfiguration configuration) {
         if (configuration == null)
             configuration = TelemetryConfiguration.getActive();
 
@@ -36,26 +33,25 @@ public class TelemetryClient
     /**
      * Initializes a new instance of the TelemetryClient class, configured from the active configuration.
      */
-    public TelemetryClient()
-    {
+    public DefaultTelemetryClient() {
         this(TelemetryConfiguration.getActive());
     }
 
     /**
      * Gets the channel used by the client.
      */
-    public TelemetryChannel getChannel()
-    {
-        if (channel == null)
+    public TelemetryChannel getChannel() {
+        if (channel == null) {
             this.channel = configuration.getChannel();
+        }
+
         return this.channel;
     }
 
     /**
      * Sets the channel used by the client.
      */
-    public void setChannel(TelemetryChannel channel)
-    {
+    public void setChannel(TelemetryChannel channel) {
         this.channel = channel;
     }
 
@@ -64,10 +60,11 @@ public class TelemetryClient
      * @return A telemetry context used for all records. Changes to it will impact all future telemetry in this
      * application session.
      */
-    public TelemetryContext getContext()
-    {
-        if (context == null)
+    public TelemetryContext getContext() {
+        if (context == null) {
             context = createInitializedContext();
+        }
+
         return context;
     }
 
@@ -75,8 +72,7 @@ public class TelemetryClient
      * Checks whether tracking is enabled or not.
      * @return 'true' if tracking is disabled, 'false' otherwise.
      */
-    public boolean isDisabled()
-    {
+    public boolean isDisabled() {
         return configuration.isTrackingDisabled();
     }
 
@@ -86,22 +82,22 @@ public class TelemetryClient
      * @param properties Named string values you can use to search and classify events.
      * @param metrics Measurements associated with this event.
      */
-    public void trackEvent(String name, Map<String, String> properties, Map<String, Double> metrics)
-    {
-        if (isDisabled()) return;
+    public void trackEvent(String name, Map<String, String> properties, Map<String, Double> metrics) {
+        if (isDisabled()) {
+            return;
+        }
 
-        if (Strings.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name)) {
             name = "";
+        }
 
         EventTelemetry et = new EventTelemetry(name);
 
-        if (properties != null && properties.size() > 0)
-        {
+        if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, et.getContext().getProperties());
         }
 
-        if (metrics != null && metrics.size() > 0)
-        {
+        if (metrics != null && metrics.size() > 0) {
             MapUtil.copy(metrics, et.getMetrics());
         }
 
@@ -112,8 +108,7 @@ public class TelemetryClient
      * Sends an EventTelemetry record for display in Diagnostic Search and aggregation in Metrics Explorer.
      * @param name A name for the event.
      */
-    public void trackEvent(String name)
-    {
+    public void trackEvent(String name) {
         trackEvent(name, null, null);
     }
 
@@ -121,8 +116,7 @@ public class TelemetryClient
      * Sends an EventTelemetry record for display in Diagnostic Search and aggregation in Metrics Explorer.
      * @param telemetry An event log item.
      */
-    public void trackEvent(EventTelemetry telemetry)
-    {
+    public void trackEvent(EventTelemetry telemetry) {
         track(telemetry);
     }
 
@@ -131,17 +125,18 @@ public class TelemetryClient
      * @param message A log message.
      * @param properties Named string values you can use to search and classify trace messages.
      */
-    public void trackTrace(String message, Map<String, String> properties)
-    {
-        if (isDisabled()) return;
+    public void trackTrace(String message, Map<String, String> properties) {
+        if (isDisabled()) {
+            return;
+        }
 
-        if (Strings.isNullOrEmpty(message))
+        if (Strings.isNullOrEmpty(message)) {
             message = "";
+        }
 
         TraceTelemetry et = new TraceTelemetry(message);
 
-        if (properties != null && properties.size() > 0)
-        {
+        if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, et.getContext().getProperties());
         }
 
@@ -152,16 +147,14 @@ public class TelemetryClient
      * Sends a TraceTelemetry record for display in Diagnostic Search.
      * @param message A log message.
      */
-    public void trackTrace(String message)
-    {
+    public void trackTrace(String message) {
         trackTrace(message, null);
     }
 
     /**
      * Sends a TraceTelemetry record for display in Diagnostic Search.
      */
-    public void trackTrace(TraceTelemetry telemetry)
-    {
+    public void trackTrace(TraceTelemetry telemetry) {
         this.track(telemetry);
     }
 
@@ -174,23 +167,23 @@ public class TelemetryClient
      * @param max The maximum value of the sample.
      * @param properties Named string values you can use to search and classify trace messages.
      */
-    public void trackMetric(String name, double value, int sampleCount, double min, double max, Map<String, String> properties)
-    {
-        if (isDisabled()) return;
+    public void trackMetric(String name, double value, int sampleCount, double min, double max, Map<String, String> properties) {
+        if (isDisabled()) {
+            return;
+        }
 
-        if (Strings.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name)) {
             name = "";
+        }
 
         MetricTelemetry mt = new MetricTelemetry(name, value);
         mt.setCount(sampleCount);
-        if (sampleCount > 1)
-        {
+        if (sampleCount > 1) {
             mt.setMin(min);
             mt.setMax(max);
         }
 
-        if (properties != null && properties.size() > 0)
-        {
+        if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, mt.getContext().getProperties());
         }
     }
@@ -200,16 +193,14 @@ public class TelemetryClient
      * @param name The name of the measurement
      * @param value The value of the measurement.
      */
-    public void trackMetric(String name, double value)
-    {
+    public void trackMetric(String name, double value) {
         trackMetric(name, value, 1, value, value, null);
     }
 
     /**
      * Send a MetricTelemetry record for aggregation in Metric Explorer.
      */
-    public void trackMetric(MetricTelemetry telemetry)
-    {
+    public void trackMetric(MetricTelemetry telemetry) {
         track(telemetry);
     }
 
@@ -219,20 +210,19 @@ public class TelemetryClient
      * @param properties Named string values you can use to search and classify trace messages.
      * @param metrics Measurements associated with this exception event.
      */
-    public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics)
-    {
-        if (isDisabled()) return;
+    public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
+        if (isDisabled()) {
+            return;
+        }
 
         ExceptionTelemetry et = new ExceptionTelemetry(exception);
         et.setExceptionHandledAt(ExceptionHandledAt.UserCode);
 
-        if (properties != null && properties.size() > 0)
-        {
+        if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, et.getContext().getProperties());
         }
 
-        if (metrics != null && metrics.size() > 0)
-        {
+        if (metrics != null && metrics.size() > 0) {
             MapUtil.copy(metrics, et.getMetrics());
         }
 
@@ -243,8 +233,7 @@ public class TelemetryClient
      * Sends an ExceptionTelemetry record for display in Diagnostic Search.
      * @param exception The exception to log information about.
      */
-    public void trackException(Exception exception)
-    {
+    public void trackException(Exception exception) {
         trackException(exception, null, null);
     }
 
@@ -252,8 +241,7 @@ public class TelemetryClient
      * Sends an ExceptionTelemetry record for display in Diagnostic Search.
      * @param telemetry An already constructed exception telemetry record.
      */
-    public void trackException(ExceptionTelemetry telemetry)
-    {
+    public void trackException(ExceptionTelemetry telemetry) {
         track(telemetry);
     }
 
@@ -265,22 +253,22 @@ public class TelemetryClient
      * @param responseCode The HTTP response code.
      * @param success 'true' if the request was a success, 'false' otherwise.
      */
-    public void trackHttpRequest(String name, Date timestamp, long duration, String responseCode, boolean success)
-    {
-        if (isDisabled()) return;
+    public void trackHttpRequest(String name, Date timestamp, long duration, String responseCode, boolean success) {
+        if (isDisabled()) {
+            return;
+        }
 
         track(new HttpRequestTelemetry(name, timestamp, duration, responseCode, success));
     }
 
-    public void trackHttpRequest(HttpRequestTelemetry request)
-    {
+    public void trackHttpRequest(HttpRequestTelemetry request) {
         track(request);
     }
 
-    public void trackRemoteDependency(RemoteDependencyTelemetry telemetry)
-    {
-        if (telemetry == null)
+    public void trackRemoteDependency(RemoteDependencyTelemetry telemetry) {
+        if (telemetry == null) {
             telemetry = new RemoteDependencyTelemetry("");
+        }
 
         track(telemetry);
     }
@@ -288,40 +276,43 @@ public class TelemetryClient
     /**
      * This method is part of the Application Insights infrastructure. Do not call it directly.
      */
-    public void track(Telemetry telemetry)
-    {
-        if (telemetry == null)
+    public void track(Telemetry telemetry) {
+        if (telemetry == null) {
             throw new IllegalArgumentException("telemetry item cannot be null");
+        }
 
-        if (isDisabled()) return;
+        if (isDisabled()) {
+            return;
+        }
 
         telemetry.setTimestamp(new Date());
 
         TelemetryContext ctx = this.getContext();
 
-        if (Strings.isNullOrEmpty(ctx.getInstrumentationKey()))
+        if (Strings.isNullOrEmpty(ctx.getInstrumentationKey())) {
             ctx.setInstrumentationKey(configuration.getInstrumentationKey());
+        }
 
         telemetry.getContext().Initialize(ctx);
 
         // TODO: use app-defined telemetry initializers, too.
 
-        if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey()))
+        if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey())) {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
+        }
 
         telemetry.sanitize();
 
         getChannel().send(telemetry);
     }
 
-    private TelemetryContext createInitializedContext()
-    {
+    private TelemetryContext createInitializedContext() {
         TelemetryContext ctx = new TelemetryContext();
         ctx.setInstrumentationKey(configuration.getInstrumentationKey());
-        for (ContextInitializer init : configuration.getContextInitializers())
-        {
+        for (ContextInitializer init : configuration.getContextInitializers()) {
             init.Initialize(ctx);
         }
+
         return ctx;
     }
 }

@@ -1,7 +1,8 @@
 package com.microsoft.applicationinsights.tests.manual;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.channel.TelemetryClient;
 import com.microsoft.applicationinsights.datacontracts.*;
+import com.microsoft.applicationinsights.util.DefaultTelemetryClient;
 
 import java.io.IOException;
 import java.util.Date;
@@ -13,7 +14,7 @@ class Program
 {
     public static void main(String[] args) throws IOException
     {
-        TelemetryClient appInsights = new TelemetryClient();
+        TelemetryClient appInsights = new DefaultTelemetryClient();
         appInsights.getContext().getProperties().put("programmatic", "works");
 
         Map<String, Double> metrics = new HashMap<String, Double>();

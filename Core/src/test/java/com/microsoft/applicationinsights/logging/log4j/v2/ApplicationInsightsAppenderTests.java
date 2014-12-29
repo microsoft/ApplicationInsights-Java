@@ -2,10 +2,12 @@ package com.microsoft.applicationinsights.logging.log4j.v2;
 
 import java.util.List;
 import java.util.Map;
-import com.microsoft.applicationinsights.TelemetryClient;
+
+import com.microsoft.applicationinsights.channel.TelemetryClient;
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.common.TelemetryChannelMock;
 import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;

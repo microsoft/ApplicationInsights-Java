@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
-import com.sun.org.apache.bcel.internal.generic.DSTORE;
 
 /**
  * Data contract class RemoteDependencyData.
