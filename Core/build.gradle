@@ -14,6 +14,12 @@ configurations {
     deployerJars
 }
 
+compileJava {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+    options.bootClasspath = "${System.getenv('JAVA_JRE_6')}\\lib\\rt.jar"
+}
+
 /*
 dependencies { 
     deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
