@@ -6,7 +6,14 @@ import java.util.Map;
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryClient;
-import com.microsoft.applicationinsights.datacontracts.*;
+import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
+import com.microsoft.applicationinsights.datacontracts.TraceTelemetry;
+import com.microsoft.applicationinsights.datacontracts.EventTelemetry;
+import com.microsoft.applicationinsights.datacontracts.MetricTelemetry;
+import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
+import com.microsoft.applicationinsights.datacontracts.ExceptionHandledAt;
+import com.microsoft.applicationinsights.datacontracts.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.datacontracts.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryConfiguration;
 

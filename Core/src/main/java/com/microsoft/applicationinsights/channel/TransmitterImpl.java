@@ -96,7 +96,7 @@ public class TransmitterImpl implements TelemetriesTransmitter {
         this.serializer = serializer;
         threadPool = new ScheduledThreadPoolExecutor(2);
         this.transmissionsLoader = transmissionsLoader;
-        this.transmissionsLoader.load();
+        this.transmissionsLoader.load(false);
     }
 
     @Override

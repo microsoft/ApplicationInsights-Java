@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 
 import org.apache.commons.io.FileUtils;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyObject;
 
 public class ActiveTransmissionLoaderTest {
@@ -54,11 +55,6 @@ public class ActiveTransmissionLoaderTest {
     }
 
     @Test
-    public void testTenFilesOnDiskBeforeLoaderStarted() throws Exception {
-        testFilesOnDiskAreLoaded(10, true);
-    }
-
-    @Test
     public void testOneFileOnDiskAfterLoaderStarted() throws Exception {
         testFilesOnDiskAreLoaded(1, false);
     }
@@ -68,18 +64,12 @@ public class ActiveTransmissionLoaderTest {
         testFilesOnDiskAreLoaded(2, false);
     }
 
-    @Test
-    public void testTenFilesOnDiskAfterLoaderStarted() throws Exception {
-        testFilesOnDiskAreLoaded(10, false);
-    }
-
     private void testFilesOnDiskAreLoaded(int amount, boolean putFilesFirst) throws IOException, InterruptedException {
-        TransmissionFileSystemOutput fileSystem = new TransmissionFileSystemOutput();
-        TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
-        ActiveTransmissionLoader tested = new ActiveTransmissionLoader(fileSystem, mockDispatcher, 2);
         File folder = null;
+        ActiveTransmissionLoader tested = null;
         try {
-            folder = new File(System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER);
+            String filesPath = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
+            folder = new File(filesPath);
             if (folder.exists()) {
                 FileUtils.deleteDirectory(folder);
             }
@@ -87,9 +77,12 @@ public class ActiveTransmissionLoaderTest {
                 folder.mkdir();
             }
 
+            TransmissionFileSystemOutput fileSystem = new TransmissionFileSystemOutput(filesPath);
+            TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
+            tested = new ActiveTransmissionLoader(fileSystem, mockDispatcher, 2);
             if (!putFilesFirst) {
-                tested.load();
-                Thread.sleep(7000);
+                boolean ok = tested.load(true);
+                assertTrue("Failed to load", ok);
             }
 
             for (int i = 0; i < amount; ++i) {
@@ -97,15 +90,19 @@ public class ActiveTransmissionLoaderTest {
             }
 
             if (putFilesFirst) {
-                tested.load();
+                boolean ok = tested.load(true);
+                assertTrue("Failed to load", ok);
             }
-            Thread.sleep(7000);
 
+            Thread.sleep(3000);
             Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
             Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
 
         } finally {
-            tested.stop(7L, TimeUnit.SECONDS);
+            if (tested != null) {
+                tested.stop(1L, TimeUnit.SECONDS);
+            }
+
             if (folder != null && folder.exists()) {
                 FileUtils.deleteDirectory(folder);
             }
