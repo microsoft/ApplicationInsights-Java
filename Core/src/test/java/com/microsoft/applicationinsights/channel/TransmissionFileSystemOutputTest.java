@@ -63,21 +63,21 @@ public class TransmissionFileSystemOutputTest {
         try {
             TransmissionFileSystemOutput tested = new TransmissionFileSystemOutput(workingFolder);
 
-            for (int i = 0; i < 10; ++i) {
-                String iAsString = String.valueOf(10 - i);
+            for (int i = 10; i != 0; --i) {
+                String iAsString = String.valueOf(i);
                 String content = MOCK_CONTENT + iAsString;
                 tested.send(new Transmission(content.getBytes(), MOCK_CONTENT_TYPE_BASE + iAsString, MOCK_ENCODING_TYPE_BASE + iAsString));
             }
 
-            for (int i = 0; i < 10; ++i) {
+            for (int i = 1; i <= 10; ++i) {
                 Transmission transmission = tested.fetchOldestFile();
                 assertNotNull(transmission);
 
-                String iAsString = String.valueOf(i + 1);
-                String fetchedContent = new String(transmission.getContent());
-                assertEquals(String.format("Wrong content %s", fetchedContent), fetchedContent, MOCK_CONTENT + iAsString);
+                String iAsString = String.valueOf(i);
                 assertEquals(String.format("Wrong WebContentType %s", transmission.getWebContentType()), transmission.getWebContentType(), MOCK_CONTENT_TYPE_BASE + iAsString);
                 assertEquals(String.format("Wrong WebContentEncodingType %s", transmission.getWebContentEncodingType()), transmission.getWebContentEncodingType(), MOCK_ENCODING_TYPE_BASE + iAsString);
+                String fetchedContent = new String(transmission.getContent());
+                assertEquals(String.format("Wrong content %s", fetchedContent), fetchedContent, MOCK_CONTENT + iAsString);
             }
 
             Transmission transmission = tested.fetchOldestFile();
