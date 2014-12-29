@@ -179,7 +179,7 @@ public class TelemetryBufferTest {
         }
 
         Mockito.verify(mockSender, Mockito.times(1)).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher)any(), anyLong(), (TimeUnit)anyObject());
-        Mockito.verify(mockSender, Mockito.times(1)).sendNow(anyCollection());
+        Mockito.verify(mockSender, Mockito.times(1)).sendNow(anyCollectionOf(Telemetry.class));
     }
 
     @Test
