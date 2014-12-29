@@ -22,26 +22,22 @@ public class ActiveTransmissionLoaderTest {
 
     @Test(expected = NullPointerException.class)
     public void testNullDispatcher() throws Exception {
-        TransmissionFileSystemOutput mock = new TransmissionFileSystemOutput();
-        new ActiveTransmissionLoader(mock, null, 1);
+        testIllegalState(null, 1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testZeroThreads() throws Exception {
-        TransmissionFileSystemOutput mock = new TransmissionFileSystemOutput();
-        new ActiveTransmissionLoader(mock, Mockito.mock(TransmissionDispatcher.class), 0);
+        testIllegalState(Mockito.mock(TransmissionDispatcher.class), 0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNegativeNumberOfThreads() throws Exception {
-        TransmissionFileSystemOutput mock = new TransmissionFileSystemOutput();
-        new ActiveTransmissionLoader(mock, Mockito.mock(TransmissionDispatcher.class), -1);
+        testIllegalState(Mockito.mock(TransmissionDispatcher.class), -1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTooManyThreads() throws Exception {
-        TransmissionFileSystemOutput mock = new TransmissionFileSystemOutput();
-        new ActiveTransmissionLoader(mock, Mockito.mock(TransmissionDispatcher.class), ActiveTransmissionLoader.MAX_THREADS_ALLOWED + 1);
+        testIllegalState(Mockito.mock(TransmissionDispatcher.class), ActiveTransmissionLoader.MAX_THREADS_ALLOWED + 1);
     }
 
     @Test
@@ -108,4 +104,26 @@ public class ActiveTransmissionLoaderTest {
             }
         }
     }
+
+    private void testIllegalState(final TransmissionDispatcher dispatcher, int numberOfThreads) throws Exception {
+        File folder = null;
+        try {
+            String filesPath = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
+            folder = new File(filesPath);
+            if (folder.exists()) {
+                FileUtils.deleteDirectory(folder);
+            }
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+
+            TransmissionFileSystemOutput mock = new TransmissionFileSystemOutput(filesPath);
+            new ActiveTransmissionLoader(mock, dispatcher, numberOfThreads);
+        } finally {
+            if (folder != null && folder.exists()) {
+                FileUtils.deleteDirectory(folder);
+            }
+        }
+    }
+
 }
