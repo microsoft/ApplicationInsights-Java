@@ -226,9 +226,10 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
     private Optional<File> renameToTemporaryName(File tempTransmissionFile) {
         File transmissionFile = null;
         try {
-            transmissionFile = new File(folder, FilenameUtils.getBaseName(tempTransmissionFile.getName()) + TEMP_FILE_EXTENSION);
-            if (tempTransmissionFile.renameTo(transmissionFile)) {
-                size.addAndGet(-transmissionFile.length());
+            File renamedFile = new File(folder, FilenameUtils.getBaseName(tempTransmissionFile.getName()) + TEMP_FILE_EXTENSION);
+            if (tempTransmissionFile.renameTo(renamedFile)) {
+                size.addAndGet(-renamedFile.length());
+                transmissionFile = renamedFile;
             }
         } catch (Exception ignore) {
             // Consume the exception, since there isn't anything 'smart' to do now
