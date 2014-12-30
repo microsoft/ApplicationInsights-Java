@@ -18,6 +18,7 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryConfiguration;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 
 /**
  * Created by gupele on 12/28/2014.
@@ -302,7 +303,13 @@ public class DefaultTelemetryClient implements TelemetryClient {
 
         telemetry.getContext().Initialize(ctx);
 
-        // TODO: use app-defined telemetry initializers, too.
+        for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
+            try {
+                initializer.Initialize(telemetry);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey())) {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");

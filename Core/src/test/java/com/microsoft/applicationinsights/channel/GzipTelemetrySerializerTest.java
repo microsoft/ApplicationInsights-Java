@@ -3,11 +3,7 @@ package com.microsoft.applicationinsights.channel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
@@ -19,6 +15,12 @@ import com.google.common.base.Optional;
 import com.google.gson.Gson;
 
 import org.mockito.Mockito;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
