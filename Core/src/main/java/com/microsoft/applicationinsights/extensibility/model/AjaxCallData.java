@@ -13,11 +13,15 @@
 package com.microsoft.applicationinsights.extensibility.model;
 
 
-/**
-* *****************************************************************************                                AjaxCall type ***************************************************************************** Instances of AjaxCall represent a remote call from JavaScript on the client     to the server
+import com.microsoft.applicationinsights.implementation.schemav2.PageViewData;
+
+/*** *****************************************************************************
+ * AjaxCall type
+ * *****************************************************************************
+ * Instances of AjaxCall represent a remote call from JavaScript on the client  to the server
 */
 @SuppressWarnings("all")
-public class AjaxCallData extends com.microsoft.applicationinsights.extensibility.model.PageViewData {
+public class AjaxCallData extends PageViewData {
     //
     // Fields
     //
@@ -171,7 +175,6 @@ public class AjaxCallData extends com.microsoft.applicationinsights.extensibilit
     }
 
     protected void reset(String name, String qualifiedName) {
-        super.reset(name, qualifiedName);
         ajaxUrl = "";
         requestSize = 0;
         responseSize = 0;
