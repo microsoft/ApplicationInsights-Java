@@ -33,7 +33,7 @@ public class MessageData extends Domain implements JsonSerializable {
     /**
      * Backing field for property SeverityLevel.
      */
-    private int severityLevel;
+    private SeverityLevel severityLevel;
 
     /**
      * Backing field for property Properties.
@@ -79,14 +79,14 @@ public class MessageData extends Domain implements JsonSerializable {
     /**
      * Gets the SeverityLevel property.
      */
-    public int getSeverityLevel() {
+    public SeverityLevel getSeverityLevel() {
         return this.severityLevel;
     }
 
     /**
      * Sets the SeverityLevel property.
      */
-    public void setSeverityLevel(int value) {
+    public void setSeverityLevel(SeverityLevel value) {
         this.severityLevel = value;
     }
 
@@ -118,7 +118,7 @@ public class MessageData extends Domain implements JsonSerializable {
 
         writer.write("ver", ver);
         writer.write("message", message);
-        writer.write("severityLevel", severityLevel);
+        writer.write("severityLevel", severityLevel.getValue());
         writer.write("properties", properties);
     }
 
