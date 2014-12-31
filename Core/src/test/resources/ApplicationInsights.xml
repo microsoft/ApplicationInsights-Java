@@ -4,11 +4,16 @@
       Learn more about Application Insights configuration with ApplicationInsights.config here:
       http://go.microsoft.com/fwlink/?LinkID=513840
     -->
-    <InstrumentationKey>c9341531-05ac-4d8c-972e-36e97601d5fd</InstrumentationKey>
+    <InstrumentationKey>
+        A-test-instrumentation-key
+    </InstrumentationKey>
     <TelemetryModules>
     </TelemetryModules>
     <ContextInitializers>
     </ContextInitializers>
     <TelemetryInitializers>
     </TelemetryInitializers>
+    <Channel>
+        com.microsoft.applicationinsights.channel.StdOutChannel
+    </Channel>
 </ApplicationInsights>

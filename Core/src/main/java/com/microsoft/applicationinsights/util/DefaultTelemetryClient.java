@@ -32,8 +32,9 @@ public class DefaultTelemetryClient implements TelemetryClient {
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
      */
     public DefaultTelemetryClient(TelemetryConfiguration configuration) {
-        if (configuration == null)
-            configuration = TelemetryConfiguration.getActive();
+        if (configuration == null) {
+            configuration = TelemetryConfiguration.INSTANCE.getActive();
+        }
 
         this.configuration = configuration;
     }
@@ -42,7 +43,7 @@ public class DefaultTelemetryClient implements TelemetryClient {
      * Initializes a new instance of the TelemetryClient class, configured from the active configuration.
      */
     public DefaultTelemetryClient() {
-        this(TelemetryConfiguration.getActive());
+        this(TelemetryConfiguration.INSTANCE.getActive());
     }
 
     /**

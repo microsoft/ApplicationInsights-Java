@@ -9,29 +9,38 @@ import java.util.List;
 /**
  * Configuration data and logic for telemetry clients.
  */
-public class TelemetryConfiguration {
+public enum TelemetryConfiguration implements TelemetryClientConfiguration {
+    INSTANCE;
 
-    private static TelemetryConfiguration s_active;
-    private static final Object s_lock = new Object();
+    // Synchronization for instance initialization
+    private final Object s_lock = new Object();
+    private volatile boolean initialized = false;
 
     private String instrumentationKey;
 
-    private final List<ContextInitializer> contextInitializers = new ArrayList<ContextInitializer>();
-    private final List<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
+    private final ArrayList<ContextInitializer> contextInitializers = new ArrayList<ContextInitializer>();
+    private final ArrayList<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
+
     private TelemetryChannel channel;
+
     private boolean trackingIsDisabled = true;
+
     private boolean developerMode = false;
 
-    public static TelemetryConfiguration getActive() {
-        if (s_active == null) {
+    /**
+     * We initialize the instance once by using {@link com.microsoft.applicationinsights.extensibility.TelemetryConfigurationFactory}
+     * @return The instance
+     */
+    public TelemetryConfiguration getActive() {
+        if (!initialized) {
             synchronized (s_lock) {
-                s_active = new TelemetryConfiguration();
-                s_active.trackingIsDisabled = false;
-                TelemetryConfigurationFactory.INSTANCE.Initialize(s_active);
+                if (!initialized) {
+                    TelemetryConfigurationFactory.INSTANCE.initialize(this);
+                }
             }
         }
 
-        return s_active;
+        return this;
     }
 
     public TelemetryChannel getChannel() {
@@ -71,9 +80,11 @@ public class TelemetryConfiguration {
     }
 
     public void setInstrumentationKey(String key) {
+        // A non null, non empty instrumentation key is a must
         if (Strings.isNullOrEmpty(key)) {
             throw new IllegalArgumentException("key");
         }
+
         instrumentationKey = key;
     }
 }

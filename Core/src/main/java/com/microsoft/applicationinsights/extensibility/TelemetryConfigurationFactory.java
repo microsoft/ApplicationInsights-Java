@@ -6,109 +6,38 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import com.microsoft.applicationinsights.channel.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.implementation.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.implementation.PropertiesContextInitializer;
 import com.microsoft.applicationinsights.implementation.SdkVersionContextInitializer;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.google.common.base.Strings;
 
 /**
  * Initializer class for configuration instances.
  */
-public enum TelemetryConfigurationFactory {
+enum TelemetryConfigurationFactory {
     INSTANCE;
+
+    // Default file name
+    private final static String CONFIG_FILE_NAME = "ApplicationInsights.xml";
 
     private final static String CONTEXT_INITIALIZERS_SECTION = "ContextInitializers";
     private final static String TELEMETRY_INITIALIZERS_SECTION = "TelemetryInitializers";
     private final static String INITIALIZERS_ADD = "Add";
     private final static String INITIALIZERS_TYPE = "Type";
-    private final static String CONFIG_FILE_NAME = "ApplicationInsights.xml";
+    private final static String CHANNEL_SECTION = "Channel";
+    private final static String DISABLE_TELEMETRY_SECTION = "DisableTelemetry";
+    private final static String DEVELOPER_MODE_SECTION = "DeveloperMode";
+    private final static String INSTRUMENTATION_KEY_SECTION = "InstrumentationKey";
 
-    /**
-     * Inner helper class that knows how to parse and work with the configuration file
-     */
-    public static final class ConfigParser {
-        private Document doc;
+    private ConfigFileParser parser;
+    private String fileToParse;
 
-        public boolean parse(String fileName) {
-            try {
-                ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
-
-                InputStream inputStream = classLoader.getResourceAsStream(fileName);
-                if (inputStream == null) {
-                    return false;
-                }
-
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder();
-                doc = db.parse(inputStream);
-                doc.getDocumentElement().normalize();
-
-                return true;
-            } catch (ParserConfigurationException e) {
-                e.printStackTrace();
-            } catch (SAXException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            return false;
-        }
-
-        public String getValue(String item) {
-            NodeList nodeList = doc.getElementsByTagName(item);
-            for (int counter = 0; counter < nodeList.getLength(); ++counter) {
-                Node elementNode = nodeList.item(counter);
-                if (elementNode.getNodeType() != Node.ELEMENT_NODE) {
-                    continue;
-                }
-
-                return ((Element)elementNode).getTextContent();
-            }
-
-            return null;
-        }
-
-        public Collection<String> getList(String listName, String listItem, String attribute) {
-            List<String> result = new ArrayList<String>();
-
-            NodeList nodeList = doc.getElementsByTagName(listName);
-            for (int counter = 0; counter < nodeList.getLength(); ++counter) {
-                Node elementNode = nodeList.item(counter);
-                if (elementNode.getNodeType() != Node.ELEMENT_NODE) {
-                    continue;
-                }
-
-                NodeList items = ((Element)elementNode).getElementsByTagName(listItem);
-                for (int i = 0; i < items.getLength(); ++i) {
-                    Node elementItem = items.item(i);
-                    if (elementItem.getNodeType() != Node.ELEMENT_NODE) {
-                        continue;
-                    }
-
-                    String attr = ((Element)elementItem).getAttribute(attribute);
-                    if (attr != null) {
-                        result.add(attr);
-                    }
-                }
-            }
-
-            return result;
-        }
+    TelemetryConfigurationFactory() {
+        fileToParse = CONFIG_FILE_NAME;
     }
 
     /**
@@ -122,38 +51,62 @@ public enum TelemetryConfigurationFactory {
      * Set Telemetry Initializers where they should be written with full package name
      * @param configuration
      */
-    public final void Initialize(TelemetryConfiguration configuration) {
-        ConfigParser parser = new ConfigParser();
-        if (!parser.parse(CONFIG_FILE_NAME)) {
-            return;
+    public final void initialize(TelemetryClientConfiguration configuration) {
+        // We disable in case we fail
+        configuration.setTrackingIsDisabled(true);
+
+        try {
+            if (parser == null) {
+                parser = new XmlConfigParser();
+            }
+
+            if (!parser.parse(fileToParse)) {
+                return;
+            }
+
+            if (!setInstrumentationKey(parser, configuration)) {
+                return;
+            }
+
+            setDeveloperMode(parser, configuration);
+
+            if (!setChannel(parser, configuration)) {
+                return;
+            }
+
+            setTrackingDisabledMode(parser, configuration);
+
+            setContextInitializers(parser, configuration);
+            setTelemetryInitializers(parser, configuration);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (!setInstrumentationKey(parser, configuration)) {
-            return;
-        }
-
-        setDeveloperMode(parser, configuration);
-
-        if (!setChannel(parser, configuration)) {
-            return;
-        }
-
-        setTrackingDisabledMode(parser, configuration);
-
-        setContextInitializers(parser, configuration);
-        setTelemetryInitializers(parser, configuration);
     }
 
-    private void setTrackingDisabledMode(ConfigParser parser, TelemetryConfiguration configuration) {
-        configuration.setTrackingIsDisabled(fetchBooleanValue(parser, "DisableTelemetry", false));
+    public void setParserData(ConfigFileParser parser, String fileToParse) {
+        this.fileToParse = fileToParse;
+        this.parser = parser;
     }
 
-    private void setDeveloperMode(ConfigParser parser, TelemetryConfiguration configuration) {
-        configuration.setDeveloperMode(fetchBooleanValue(parser, "DeveloperMode", false));
+    private void setTrackingDisabledMode(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+        configuration.setTrackingIsDisabled(fetchBooleanValue(parser, DISABLE_TELEMETRY_SECTION, false));
     }
 
-    private boolean setChannel(ConfigParser parser, TelemetryConfiguration configuration) {
-        String channelName = parser.getValue("Channel");
+    private void setDeveloperMode(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+        configuration.setDeveloperMode(fetchBooleanValue(parser, DEVELOPER_MODE_SECTION, false));
+    }
+
+    /**
+     * Currently we only search for the name of the instance to create
+     *
+     * If not found or corrupted, we use {@link InProcessTelemetryChannel}
+     *
+     * @param parser The parser we work with
+     * @param configuration Where we store the {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
+     * @return
+     */
+    private boolean setChannel(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+        String channelName = parser.getTrimmedValue(CHANNEL_SECTION);
 
         if (channelName != null) {
             TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class);
@@ -173,14 +126,16 @@ public enum TelemetryConfigurationFactory {
         return false;
     }
 
-    private boolean setInstrumentationKey(ConfigParser parser, TelemetryConfiguration configuration) {
-        String iKey = parser.getValue("InstrumentationKey");
-        if (iKey == null) {
-            return false;
-        }
+    /**
+     * Setting an instrumentation key
+     * @param parser The parser we work with
+     * @param configuration Where we store our findings
+     * @return True if success, false otherwise
+     */
+    private boolean setInstrumentationKey(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+        String iKey = parser.getTrimmedValue(INSTRUMENTATION_KEY_SECTION);
 
-        iKey = iKey.trim();
-        if ("".equals(iKey)) {
+        if (Strings.isNullOrEmpty(iKey)) {
             return false;
         }
 
@@ -189,10 +144,19 @@ public enum TelemetryConfigurationFactory {
         return true;
     }
 
-    private void setContextInitializers(ConfigParser parser, TelemetryConfiguration configuration) {
+    /**
+     * Searches for the CONTEXT_INITIALIZERS_SECTION amd will fetch and create all instances
+     * that are mentioned there. Those instances will be later be stored in the {@link com.microsoft.applicationinsights.extensibility.TelemetryConfiguration}
+     *
+     * Currently, we 'hard code' putting three Initializers
+     *
+     * @param parser The parser we work to fetch the data
+     * @param configuration Where we need to store our new instances
+     */
+    private void setContextInitializers(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
         List<ContextInitializer> initializerList = configuration.getContextInitializers();
 
-        // Guy: to keep with prev version. A few will probably be moved to the configuration
+        // To keep with prev version. A few will probably be moved to the configuration
         initializerList.add(new SdkVersionContextInitializer());
         initializerList.add(new DeviceInfoContextInitializer());
         initializerList.add(new PropertiesContextInitializer());
@@ -200,15 +164,29 @@ public enum TelemetryConfigurationFactory {
         setInitializers(ContextInitializer.class, parser, CONTEXT_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
     }
 
-    private void setTelemetryInitializers(ConfigParser parser, TelemetryConfiguration configuration) {
+    /**
+     * Searches for the TELEMETRY_INITIALIZERS_SECTION amd will fetch and create all instances
+     * that are mentioned there. Those instances will be later be stored in the {@link com.microsoft.applicationinsights.extensibility.TelemetryConfiguration}
+     * @param parser The parser we work to fetch the data
+     * @param configuration Where we need to store our new instances
+     */
+    private void setTelemetryInitializers(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
         List<TelemetryInitializer> initializerList = configuration.getTelemetryInitializers();
         setInitializers(TelemetryInitializer.class, parser, TELEMETRY_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
     }
 
-    private boolean fetchBooleanValue(ConfigParser parser, String name, boolean defaultValue) {
+    /**
+     * An helper method that fetches a boolean value of configuration file.
+     * If not found, or corrupted, a default value will be returned
+     * @param parser The parser we work with to fetch the value
+     * @param tagName The name of the tag where the parser should look for the value
+     * @param defaultValue A value to be returned in case the parser fails to find or the value is corrupted
+     * @return The value or default
+     */
+    private boolean fetchBooleanValue(ConfigFileParser parser, String tagName, boolean defaultValue) {
         boolean result = defaultValue;
 
-        String value = parser.getValue(name);
+        String value = parser.getTrimmedValue(tagName);
         if (!Strings.isNullOrEmpty(value)) {
             result = Boolean.valueOf(value);
         }
@@ -216,9 +194,22 @@ public enum TelemetryConfigurationFactory {
         return result;
     }
 
+    /**
+     * Generic method that creates instances based on their names and adds them to a Collection
+     *
+     * Note that the class does its 'best effort' to create an instance and will not fail the method
+     * if an instance (or more) was failed to create. This is naturally, a policy we can easily replace
+     *
+     * @param clazz The class all instances should have
+     * @param parser The parser gives us the names of the classes to create
+     * @param sectionName The section name where we tell the parser to search
+     * @param itemName The internal name inside the section name, to point the parser
+     * @param list The container of instances, this is where we store our instances that we create
+     * @param <T>
+     */
     private <T> void setInitializers(
             Class<T> clazz,
-            ConfigParser parser,
+            ConfigFileParser parser,
             String sectionName,
             String itemName,
             List<T> list) {
@@ -231,6 +222,16 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
+    /**
+     * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
+     *
+     * Note that currently we 'swallow' all exceptions and simply return null if we fail
+     *
+     * @param className The class we create an instance of
+     * @param interfaceClass The class' parent interface we wish to work with
+     * @param <T> A generic method
+     * @return The instance or null if failed
+     */
     @SuppressWarnings("unchecked")
     private <T> T createInstance(String className, Class<T> interfaceClass) {
         try {
