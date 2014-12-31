@@ -18,6 +18,7 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryConfiguration;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 
 /**
  * Created by gupele on 12/28/2014.
@@ -31,8 +32,9 @@ public class DefaultTelemetryClient implements TelemetryClient {
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
      */
     public DefaultTelemetryClient(TelemetryConfiguration configuration) {
-        if (configuration == null)
-            configuration = TelemetryConfiguration.getActive();
+        if (configuration == null) {
+            configuration = TelemetryConfiguration.INSTANCE.getActive();
+        }
 
         this.configuration = configuration;
     }
@@ -41,7 +43,7 @@ public class DefaultTelemetryClient implements TelemetryClient {
      * Initializes a new instance of the TelemetryClient class, configured from the active configuration.
      */
     public DefaultTelemetryClient() {
-        this(TelemetryConfiguration.getActive());
+        this(TelemetryConfiguration.INSTANCE.getActive());
     }
 
     /**
@@ -302,7 +304,13 @@ public class DefaultTelemetryClient implements TelemetryClient {
 
         telemetry.getContext().Initialize(ctx);
 
-        // TODO: use app-defined telemetry initializers, too.
+        for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
+            try {
+                initializer.Initialize(telemetry);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey())) {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
