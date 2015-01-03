@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration packages="com.microsoft.applicationinsights.log4j">
+    <Appenders>
+        <ApplicationInsightsAppender name="test" instrumentationKey="Test_Instrumentation_Key" />
+    </Appenders>
+    <Loggers>
+        <Root level="trace">
+            <AppenderRef ref="test"/>
+        </Root>
+    </Loggers>
+</Configuration>
