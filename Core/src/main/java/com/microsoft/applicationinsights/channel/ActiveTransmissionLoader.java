@@ -85,6 +85,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                     }
                 }
             });
+            threads[i].setDaemon(true);
         }}
 
     @Override
