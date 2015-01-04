@@ -91,16 +91,13 @@ public class GzipTelemetrySerializerTest {
     }
 
     @Test
-    public void testTelemetryThatThrows() throws Exception {
-        GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
-        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
-        Mockito.doThrow(new IOException()).when(mockTelemetry).serialize(any(JsonTelemetryDataSerializer.class));
-        List<Telemetry> telemetries = new ArrayList<Telemetry>();
-        telemetries.add(mockTelemetry);
-        Optional<Transmission> result = tested.serialize(telemetries);
+    public void testTelemetryThatThrowsIOException() throws Exception {
+        testException(new IOException());
+    }
 
-        assertNotNull(result);
-        assertFalse(result.isPresent());
+    @Test
+    public void testTelemetryThatThrowsNullPointerException() throws Exception {
+        testException(new NullPointerException());
     }
 
     @Test(expected = NullPointerException.class)
@@ -184,6 +181,18 @@ public class GzipTelemetrySerializerTest {
         } finally {
             gis.close();
         }
+    }
+
+    private void testException(Exception exception) throws IOException {
+        GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
+        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+        Mockito.doThrow(exception).when(mockTelemetry).serialize(any(JsonTelemetryDataSerializer.class));
+        List<Telemetry> telemetries = new ArrayList<Telemetry>();
+        telemetries.add(mockTelemetry);
+        Optional<Transmission> result = tested.serialize(telemetries);
+
+        assertNotNull(result);
+        assertFalse(result.isPresent());
     }
 
     private StubTelemetry createStubTelemetry(String index) {

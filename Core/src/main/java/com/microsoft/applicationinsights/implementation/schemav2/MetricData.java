@@ -53,13 +53,6 @@ public class MetricData extends Domain implements JsonSerializable {
     }
 
     /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
-    }
-
-    /**
      * Gets the Metrics property.
      */
     public List<DataPoint> getMetrics() {
