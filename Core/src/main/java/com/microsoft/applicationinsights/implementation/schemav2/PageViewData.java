@@ -26,7 +26,7 @@ public class PageViewData extends EventData {
     /**
      * Backing field for property Duration.
      */
-    private String duration;
+    private long duration;
 
     /**
      * Initializes a new instance of the <see cref="PageViewData"/> class.
@@ -53,14 +53,14 @@ public class PageViewData extends EventData {
     /**
      * Gets the Duration property.
      */
-    public String getDuration() {
+    public Long getDuration() {
         return this.duration;
     }
 
     /**
      * Sets the Duration property.
      */
-    public void setDuration(String value) {
+    public void setDuration(Long value) {
         this.duration = value;
     }
 

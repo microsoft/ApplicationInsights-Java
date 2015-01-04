@@ -69,13 +69,6 @@ public class ExceptionData extends Domain implements JsonSerializable {
     }
 
     /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
-    }
-
-    /**
      * Gets the HandledAt property.
      */
     public String getHandledAt() {

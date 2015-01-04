@@ -33,7 +33,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
         Preconditions.checkArgument(!telemetries.isEmpty(), "telemetries: One or more telemetry item is expected");
 
         Transmission result = null;
-        boolean succeeded = true;
+        boolean succeeded = false;
         try {
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
@@ -42,9 +42,12 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
 
                 try {
                     serializeAndCompress(zipStream, telemetries);
+                    succeeded = true;
                 } catch (IOException e) {
                     e.printStackTrace();
-                    succeeded = false;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } catch (Throwable t) {
                 } finally {
                     zipStream.close();
                 }

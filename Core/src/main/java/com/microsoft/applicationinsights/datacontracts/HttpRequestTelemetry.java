@@ -93,7 +93,7 @@ public class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
     }
 
     public void setDuration(long milliSeconds) {
-        this.data.setDuration(LocalStringsUtils.formatDuration(milliSeconds));
+        this.data.setDuration(milliSeconds);
     }
 
     public URL getUrl() throws MalformedURLException {

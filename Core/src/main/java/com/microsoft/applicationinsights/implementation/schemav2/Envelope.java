@@ -104,13 +104,6 @@ public class Envelope implements JsonSerializable
     }
 
     /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
-    }
-
-    /**
      * Gets the Name property.
      */
     public String getName() {

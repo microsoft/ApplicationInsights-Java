@@ -42,7 +42,7 @@ public class RequestData extends Domain {
     /**
      * Backing field for property Duration.
      */
-    private String duration;
+    private Long duration;
 
     /**
      * Backing field for property ResponseCode.
@@ -90,13 +90,6 @@ public class RequestData extends Domain {
     }
 
     /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
-    }
-
-    /**
      * Gets the Id property.
      */
     public String getId() {
@@ -141,14 +134,14 @@ public class RequestData extends Domain {
     /**
      * Gets the Duration property.
      */
-    public String getDuration() {
+    public long getDuration() {
         return this.duration;
     }
 
     /**
      * Sets the Duration property.
      */
-    public void setDuration(String value) {
+    public void setDuration(long value) {
         this.duration = value;
     }
 
