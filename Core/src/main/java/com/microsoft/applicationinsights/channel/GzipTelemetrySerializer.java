@@ -43,8 +43,6 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 try {
                     serializeAndCompress(zipStream, telemetries);
                     succeeded = true;
-                } catch (IOException e) {
-                    e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                 } catch (Throwable t) {
