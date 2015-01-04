@@ -25,6 +25,7 @@ import java.util.Comparator;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -45,6 +46,10 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
     private final static String TEMP_FILE_EXTENSION = ".tmp";
     private final static String TRANSMISSION_FILE_EXTENSION = ".trn";
     private final static String TRANSMISSION_FILE_EXTENSION_FOR_SEARCH = "trn";
+    private final static int NUMBER_OF_FILES_TO_CACHE = 128;
+
+    private final static int MAX_RETRY_FOR_DELETE = 2;
+    private final static int DELETE_TIMEOUT_ON_FAILURE_IN_MILLS = 100;
 
     private final static int DEFAULT_CAPACITY_KILOBYTES = 10 * 1024;
 
@@ -57,6 +62,9 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
 
     /// The size of the current files we have on the disk
     private final AtomicLong size;
+
+    /// Cache old files here to re-send to have better performance
+    private final ArrayList<File> cacheOfOldestFiles = new ArrayList<File>();
 
     public TransmissionFileSystemOutput() {
         this(new File(System.getProperty("java.io.tmpdir"), TRANSMISSION_DEFAULT_FOLDER).getPath());
@@ -106,47 +114,39 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
     }
 
     public Transmission fetchOldestFile() {
-        Collection<Transmission> files = fetchOldestFiles(1);
-        if (files.isEmpty()) {
-            return null;
-        }
-
-        return files.iterator().next();
-    }
-
-    public synchronized Collection<Transmission> fetchOldestFiles(int limit) {
         try {
-            Collection<File> transmissions = FileUtils.listFiles(folder, new String[] {TRANSMISSION_FILE_EXTENSION_FOR_SEARCH}, false);
-            if (transmissions.isEmpty()) {
-                return Collections.emptyList();
+            Optional<File> oldestFile = fetchOldestFromCache();
+            if (!oldestFile.isPresent()) {
+                return null;
             }
 
-            List<File> filesToLoad = sortAndTrim(transmissions, limit);
+            Optional<File> oldestFileAsTemp = renameToTemporaryName(oldestFile.get());
+            if (!oldestFileAsTemp.isPresent()) {
+                return null;
+            }
 
-            ArrayList<Transmission> loadedTransmissions = new ArrayList<Transmission>(filesToLoad.size());
+            File tempFile = oldestFileAsTemp.get();
+            Optional<Transmission> transmission = loadTransmission(tempFile);
 
-            for (File file : filesToLoad) {
-                Optional<File> fileOptional = renameToTemporaryName(file);
-                if (!fileOptional.isPresent()) {
-                    continue;
+            // On the vast majority of times this should work
+            // but there might be some timing issues, that's why we try twice
+            for (int deleteCounter = 0; deleteCounter < MAX_RETRY_FOR_DELETE; ++deleteCounter) {
+                if (tempFile.delete()) {
+                    break;
                 }
 
-                File tempFile = fileOptional.get();
-                Optional<Transmission> transmission = loadTransmission(tempFile);
-
-                tempFile.delete();
-
-                if (transmission.isPresent()) {
-                    loadedTransmissions.add(transmission.get());
+                try {
+                    Thread.sleep(DELETE_TIMEOUT_ON_FAILURE_IN_MILLS);
+                } catch (InterruptedException e) {
+                    break;
                 }
             }
 
-            return loadedTransmissions;
+            return transmission.get();
         } catch (Exception e) {
-            e.printStackTrace();
         }
 
-        return Collections.emptyList();
+        return null;
     }
 
     public void setCapacity(long capacity) {
@@ -155,7 +155,7 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
         this.capacity = capacity;
     }
 
-    private List<File> sortAndTrim(Collection<File> transmissions, int limit) {
+    private List<File> sortOldestLastAndTrim(Collection<File> transmissions, int limit) {
         List<File> asList;
         if (!(transmissions instanceof List)) {
             asList = Lists.newArrayList(transmissions);
@@ -220,9 +220,12 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
 
     private boolean renameToPermanentName(File tempTransmissionFile) {
         File transmissionFile = new File(folder, FilenameUtils.getBaseName(tempTransmissionFile.getName()) + TRANSMISSION_FILE_EXTENSION);
-        if (tempTransmissionFile.renameTo(transmissionFile)) {
+        try {
+            FileUtils.moveFile(tempTransmissionFile, transmissionFile);
             size.addAndGet(transmissionFile.length());
             return true;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return false;
@@ -232,11 +235,11 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
         File transmissionFile = null;
         try {
             File renamedFile = new File(folder, FilenameUtils.getBaseName(tempTransmissionFile.getName()) + TEMP_FILE_EXTENSION);
-            if (tempTransmissionFile.renameTo(renamedFile)) {
-                size.addAndGet(-renamedFile.length());
-                transmissionFile = renamedFile;
-            }
+            FileUtils.moveFile(tempTransmissionFile, renamedFile);
+            size.addAndGet(-renamedFile.length());
+            transmissionFile = renamedFile;
         } catch (Exception ignore) {
+            ignore.printStackTrace();
             // Consume the exception, since there isn't anything 'smart' to do now
         }
 
@@ -287,5 +290,31 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
         }
 
         return totalSize;
+    }
+
+    private Optional<File> fetchOldestFromCache() {
+        synchronized (this) {
+            if (cacheOfOldestFiles.isEmpty()) {
+
+                // Fill the cache
+                Collection<File> transmissions = FileUtils.listFiles(folder, new String[] {TRANSMISSION_FILE_EXTENSION_FOR_SEARCH}, false);
+
+                if (transmissions.isEmpty()) {
+                    // No files
+                    return Optional.absent();
+                }
+
+                List<File> filesToLoad = sortOldestLastAndTrim(transmissions, NUMBER_OF_FILES_TO_CACHE);
+
+                if (filesToLoad == null || filesToLoad.isEmpty()) {
+                    return Optional.absent();
+                }
+
+                cacheOfOldestFiles.addAll(filesToLoad);
+            }
+
+            // Remove oldest which is the last one, this is optimized for not doing a copy
+            return Optional.fromNullable(cacheOfOldestFiles.remove(cacheOfOldestFiles.size() - 1));
+        }
     }
 }
