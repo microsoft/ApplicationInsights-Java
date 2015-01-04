@@ -56,7 +56,7 @@ public class ActiveTransmissionLoaderTest {
     }
 
     @Test
-    public void testTwoFilesOnDisAfterLoaderStarted() throws Exception {
+    public void testTwoFilesOnDiskAfterLoaderStarted() throws Exception {
         testFilesOnDiskAreLoaded(2, false);
     }
 
@@ -91,7 +91,6 @@ public class ActiveTransmissionLoaderTest {
             }
 
             Thread.sleep(3000);
-            Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
             Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
 
         } finally {

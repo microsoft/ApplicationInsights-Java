@@ -25,24 +25,27 @@ public class ActiveTransmissionFileSystemOutput implements TransmissionOutput {
 
     @Override
     public boolean send(final Transmission transmission) {
+        // TODO: check the possibility of refactoring the 'send' and possible log on errors
         try {
+
             threadPool.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         actualOutput.send(transmission);
-                    } catch (Exception e) {
-                        // Do nothing
-                        // The expectation is that the 'actual output' will consume all exceptions
+                    } catch (Throwable throwable) {
+                        // Avoid un-expected exit of thread
                     }
                 }
             });
             return true;
+
         } catch (RejectedExecutionException e) {
             // Note that currently if we cannot put the job to work we drop
             // the transmission, we need to add internal logging for that case
             // TODO: log
         } catch (Exception e) {
+            // TODO: log
         }
 
         return false;

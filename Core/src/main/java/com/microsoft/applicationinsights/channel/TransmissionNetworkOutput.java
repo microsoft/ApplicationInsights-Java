@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Strings;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -77,8 +76,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     @Override
     public boolean send(Transmission transmission) {
         CloseableHttpResponse response = null;
+        HttpPost request = null;
         try {
-            HttpPost request = createTransmissionPostRequest(transmission);
+            request = createTransmissionPostRequest(transmission);
 
             response = httpClient.execute(request);
 
@@ -89,6 +89,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                     logError(respEntity);
                 }
             }
+        } catch (org.apache.http.conn.ConnectionPoolTimeoutException e) {
+            // log?
+            // We let the Dispatcher decide
+            transmissionDispatcher.dispatch(transmission);
         } catch (IOException ioe) {
             ioe.printStackTrace(System.err);
             try {
@@ -100,6 +104,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 // log?
                 // return transmission to the dispatcher
                 ioeIn.printStackTrace(System.err);
+            }
+        } finally {
+            if (request != null) {
+                request.releaseConnection();
             }
         }
 
@@ -114,7 +122,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             BufferedReader reader = new BufferedReader(streamReader);
             String responseLine = reader.readLine();
             respEntity.getContent().close();
+
             // TODO: check more and log
+            System.out.println(responseLine);
         } catch (IOException e) {
             e.printStackTrace();
         }

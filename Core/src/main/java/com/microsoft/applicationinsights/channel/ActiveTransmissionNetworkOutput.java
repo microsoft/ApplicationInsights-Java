@@ -10,7 +10,7 @@ import com.microsoft.applicationinsights.util.ThreadPoolUtils;
  * Created by gupele on 12/18/2014.
  */
 public final class ActiveTransmissionNetworkOutput implements TransmissionOutput {
-    private final static int DEFAULT_BUFFER_SIZE = 1024;
+    private final static int DEFAULT_BUFFER_SIZE = 7;
     private final static int DEFAULT_MIN_NUMBER_OF_THREADS = 1;
     private final static int DEFAULT_MAX_NUMBER_OF_THREADS = 7;
     private final static long DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS = 60L;
@@ -38,24 +38,22 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
 
     @Override
     public boolean send(final Transmission transmission) {
-//        if (transmission != null) {
-//            return false;
-//        }
         try {
             outputThreads.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         actualOutput.send(transmission);
-                    } catch (Exception e) {
-                        // Do nothing
-                        // The expectation is that the 'actual output' will consume all exceptions
+                    } catch (Throwable throwable) {
+                        // Avoid un-expected exit of thread
                     }
                 }
             });
             return true;
+
         } catch (RejectedExecutionException e) {
         } catch (Exception e) {
+            // TODO: log
         }
 
         return false;

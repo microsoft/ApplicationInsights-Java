@@ -20,6 +20,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
     private final static int DEFAULT_NUMBER_OF_THREADS = 1;
 
     private final static long DEFAULT_SLEEP_INTERVAL_WHEN_NO_TRANSMISSIONS_FOUND_IN_MILLS = 2000;
+    private final static long DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS = 100;
 
     // The helper class that encapsulates the file system access
     private final TransmissionFileSystemOutput fileSystem;
@@ -59,16 +60,28 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                 public void run() {
                     try {
                         barrier.await();
-                        while (!done.get()) {
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (BrokenBarrierException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Avoid un-expected exit of threads
+                    while (!done.get()) {
+                        try {
                             Transmission transmission = fileSystem.fetchOldestFile();
                             if (transmission == null) {
                                 Thread.sleep(sleepIntervalWhenNoTransmissionsFoundInMills);
-                                continue;
-                            }
+                            } else {
+                                dispatcher.dispatch(transmission);
 
-                            dispatcher.dispatch(transmission);
+                                // TODO: check if we need this as configuration value
+                                Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
+                            }
+                        } catch (Exception e) {
+                        } catch (Throwable t) {
                         }
-                    } catch (Exception e) {
+                        // TODO: check whether we need to pause after exception
                     }
                 }
             });
