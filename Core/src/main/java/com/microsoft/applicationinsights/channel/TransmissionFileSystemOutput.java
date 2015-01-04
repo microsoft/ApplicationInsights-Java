@@ -48,6 +48,9 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
     private final static String TRANSMISSION_FILE_EXTENSION_FOR_SEARCH = "trn";
     private final static int NUMBER_OF_FILES_TO_CACHE = 128;
 
+    private final static int MAX_RETRY_FOR_DELETE = 2;
+    private final static int DELETE_TIMEOUT_ON_FAILURE_IN_MILLS = 100;
+
     private final static int DEFAULT_CAPACITY_KILOBYTES = 10 * 1024;
 
 
@@ -126,14 +129,14 @@ public class TransmissionFileSystemOutput implements TransmissionOutput {
             Optional<Transmission> transmission = loadTransmission(tempFile);
 
             // On the vast majority of times this should work
-            // byt there might be some timing issues, that's why we try twice
-            for (int deleteCounter = 0; deleteCounter < 2; ++deleteCounter) {
+            // but there might be some timing issues, that's why we try twice
+            for (int deleteCounter = 0; deleteCounter < MAX_RETRY_FOR_DELETE; ++deleteCounter) {
                 if (tempFile.delete()) {
                     break;
                 }
 
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(DELETE_TIMEOUT_ON_FAILURE_IN_MILLS);
                 } catch (InterruptedException e) {
                     break;
                 }
