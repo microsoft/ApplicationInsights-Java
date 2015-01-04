@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.util;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
@@ -27,12 +28,23 @@ public class DefaultTelemetryClient implements TelemetryClient {
     private TelemetryContext context;
     private TelemetryChannel channel;
 
+    private static final Object TELEMETRY_STOP_HOOK_LOCK = new Object();
+
     /**
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
      */
     public DefaultTelemetryClient(TelemetryConfiguration configuration) {
         if (configuration == null)
             configuration = TelemetryConfiguration.getActive();
+
+        synchronized (TELEMETRY_STOP_HOOK_LOCK) {
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    getChannel().stop(1L, TimeUnit.SECONDS);
+                }
+            });
+        }
 
         this.configuration = configuration;
     }
