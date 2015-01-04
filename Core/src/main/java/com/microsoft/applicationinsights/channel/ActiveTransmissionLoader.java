@@ -1,11 +1,11 @@
 package com.microsoft.applicationinsights.channel;
 
-import com.google.common.base.Preconditions;
-
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.base.Preconditions;
 
 /**
  * The class is responsible for loading transmission files that were saved to the disk
