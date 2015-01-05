@@ -51,7 +51,7 @@ public class TelemetryConfiguration
 
     public boolean isTrackingDisabled()
     {
-        return trackingIsDisabled || Strings.isNullOrEmpty(instrumentationKey);
+        return trackingIsDisabled;
     }
 
     public void setTrackingIsDisabled(boolean disable)
