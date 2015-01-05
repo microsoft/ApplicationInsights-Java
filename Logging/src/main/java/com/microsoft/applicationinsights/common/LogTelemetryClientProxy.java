@@ -2,11 +2,11 @@ package com.microsoft.applicationinsights.common;
 
 import java.util.Map;
 
-import com.microsoft.applicationinsights.channel.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.DefaultTelemetryClient;
 import com.microsoft.applicationinsights.datacontracts.BaseTelemetry;
 import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
 import com.microsoft.applicationinsights.datacontracts.TraceTelemetry;
-import com.microsoft.applicationinsights.util.DefaultTelemetryClient;
 import com.microsoft.applicationinsights.util.LocalStringsUtils;
 
 /**
