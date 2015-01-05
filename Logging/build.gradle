@@ -56,7 +56,7 @@ dependencies {
 
 task createLog4j1_2Jar(type: Jar) {
     from(sourceSets.main.output) {
-        include "com/microsoft/applicationinsights/log4j/v1_2/**"
+        include "com/microsoft/applicationinsights/log4j/v1_2/**", "com/microsoft/applicationinsights/common/**"
         baseName = 'Log4j1.2'
         archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
     }
@@ -64,7 +64,7 @@ task createLog4j1_2Jar(type: Jar) {
 
 task createLog4j2Jar(type: Jar) {
     from(sourceSets.main.output) {
-        include "com/microsoft/applicationinsights/log4j/v2/**"
+        include "com/microsoft/applicationinsights/log4j/v2/**", "com/microsoft/applicationinsights/common/**"
         baseName = "Log4j2"
         archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
     }
@@ -72,7 +72,7 @@ task createLog4j2Jar(type: Jar) {
 
 task createLogbackJar(type: Jar) {
     from(sourceSets.main.output) {
-        include "com/microsoft/applicationinsights/logback/**"
+        include "com/microsoft/applicationinsights/logback/**", "com/microsoft/applicationinsights/common/**"
         baseName = 'Logback'
         archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
     }
