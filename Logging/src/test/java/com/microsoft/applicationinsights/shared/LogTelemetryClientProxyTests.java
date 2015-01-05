@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import com.microsoft.applicationinsights.channel.Telemetry;
-import com.microsoft.applicationinsights.channel.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.common.ApplicationInsightsEvent;
 import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
 import com.microsoft.applicationinsights.datacontracts.TelemetryContext;

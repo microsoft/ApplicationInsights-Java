@@ -1,15 +1,17 @@
-package com.microsoft.applicationinsights.channel;
+package com.microsoft.applicationinsights;
 
+import java.util.Date;
+import java.util.Map;
+
+import com.microsoft.applicationinsights.channel.Telemetry;
+import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.datacontracts.EventTelemetry;
 import com.microsoft.applicationinsights.datacontracts.MetricTelemetry;
 import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
 import com.microsoft.applicationinsights.datacontracts.TraceTelemetry;
 
-import java.util.Date;
-import java.util.Map;
-
 /**
- * Created by gupele on 12/28/2014.
+ * Created by gupele on 1/5/2015.
  */
 public interface TelemetryClient {
     void setChannel(TelemetryChannel channel);

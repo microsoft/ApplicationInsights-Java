@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.util;
+package com.microsoft.applicationinsights;
 
 import java.util.Date;
 import java.util.Map;
@@ -6,24 +6,17 @@ import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.channel.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.TelemetryClient;
-import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
-import com.microsoft.applicationinsights.datacontracts.TraceTelemetry;
-import com.microsoft.applicationinsights.datacontracts.EventTelemetry;
-import com.microsoft.applicationinsights.datacontracts.MetricTelemetry;
-import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
-import com.microsoft.applicationinsights.datacontracts.ExceptionHandledAt;
-import com.microsoft.applicationinsights.datacontracts.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.datacontracts.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.datacontracts.*;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryConfiguration;
+import com.microsoft.applicationinsights.util.MapUtil;
 
 import com.google.common.base.Strings;
 
 /**
- * Created by gupele on 12/28/2014.
+ * Created by gupele on 1/5/2015.
  */
-public class DefaultTelemetryClient implements TelemetryClient {
+public final class DefaultTelemetryClient implements TelemetryClient {
     private final TelemetryConfiguration configuration;
     private TelemetryContext context;
     private TelemetryChannel channel;
@@ -92,7 +85,8 @@ public class DefaultTelemetryClient implements TelemetryClient {
      * @return 'true' if tracking is disabled, 'false' otherwise.
      */
     public boolean isDisabled() {
-        return configuration.isTrackingDisabled();
+        return
+                Strings.isNullOrEmpty(getContext().getInstrumentationKey()) || configuration.isTrackingDisabled();
     }
 
     /**

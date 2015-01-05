@@ -1,8 +1,8 @@
 package com.microsoft.applicationinsights.tests.manual;
 
-import com.microsoft.applicationinsights.channel.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.DefaultTelemetryClient;
 import com.microsoft.applicationinsights.datacontracts.*;
-import com.microsoft.applicationinsights.util.DefaultTelemetryClient;
 
 import java.io.IOException;
 import java.util.Date;
