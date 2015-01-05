@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.channel;
 
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +35,14 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
                 maxThreads,
                 DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS,
                 maxMessagesInBuffer);
+        outputThreads.setThreadFactory(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
     }
 
     @Override

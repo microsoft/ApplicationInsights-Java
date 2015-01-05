@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.channel;
 
 import java.util.Collection;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.util.ThreadPoolUtils;
@@ -95,6 +96,14 @@ public class TransmitterImpl implements TelemetriesTransmitter {
         this.transmissionDispatcher = transmissionDispatcher;
         this.serializer = serializer;
         threadPool = new ScheduledThreadPoolExecutor(2);
+        threadPool.setThreadFactory(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
         this.transmissionsLoader = transmissionsLoader;
         this.transmissionsLoader.load(false);
     }
