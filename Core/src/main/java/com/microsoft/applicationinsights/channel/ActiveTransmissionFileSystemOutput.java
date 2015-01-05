@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.channel;
 
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,14 @@ public class ActiveTransmissionFileSystemOutput implements TransmissionOutput {
     public ActiveTransmissionFileSystemOutput(TransmissionOutput actualOutput) {
         this.actualOutput = actualOutput;
         threadPool = ThreadPoolUtils.newLimitedThreadPool(1, 3, 20L, 1024);
+        threadPool.setThreadFactory(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
     }
 
     @Override
