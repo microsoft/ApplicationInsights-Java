@@ -1,31 +1,20 @@
-apply plugin: 'java'
-apply plugin: 'maven'
-
 jar {
     version = '1.0'
     baseName = 'appinsights-core'
 }
 
-repositories {
-    mavenCentral()
-}
-
-configurations {
-    deployerJars
-}
-
-compileJava {
-    sourceCompatibility = 1.6
-    targetCompatibility = 1.6
-    options.bootClasspath = "${System.getenv('JAVA_JRE_6')}\\lib\\rt.jar"
-}
-
-dependencies {
-    deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
-} 
-
 version = "1.0.0-SNAPSHOT"
 group = "com.microsoft.applicationinsights"
+
+dependencies {
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.2'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.5'
+    compile group: 'com.google.guava', name: 'guava', version: '12.0.1'
+    testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
+}
+
+// region Publishing tasks
 
 task checkUploadProperties << {
     if (!this.hasProperty("javamavenuserpassword")) {
@@ -49,18 +38,4 @@ uploadArchives {
 
 tasks.uploadArchives.dependsOn(checkUploadProperties)
 
-dependencies {
-    compile group: 'commons-io', name: 'commons-io', version: '2.4'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.2'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.5'
-    compile group: 'com.google.guava', name: 'guava', version: '12.0.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
-    compile group: 'log4j', name: 'log4j', version: '1.2.17'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'
-    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.2'
-    testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
-}
+// endregion Publishing tasks

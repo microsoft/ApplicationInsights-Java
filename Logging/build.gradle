@@ -1,0 +1,110 @@
+version = "1.0.0-SNAPSHOT"
+group = "com.microsoft.applicationinsights.logging"
+
+// region Publishing tasks
+
+task checkUploadProperties << {
+    if (!this.hasProperty("javamavenuserpassword")) {
+        throw new GroovyRuntimeException("Property javamavenuserpassword should be defined for uploadArchives task")
+    }
+}
+
+uploadArchives {
+    if (this.hasProperty("javamavenuserpassword")) {
+        repositories {
+            mavenDeployer {
+                configuration = configurations.deployerJars
+
+                repository(url: "ftp://waws-prod-dm1-003.ftp.azurewebsites.windows.net/site/wwwroot/repository/") {
+                    authentication(userName: "dotm2\\\$dotm2", password: javamavenuserpassword)
+                }
+
+                // Updating artifacts IDs
+                addFilter('LogbackJar') { artifact, file ->
+                    artifact.name == "LogbackJar"
+                }
+                pom('LogbackJar').artifactId = 'Logback'
+
+                addFilter('Log4j1_2Jar') { artifact, file ->
+                    artifact.name == "Log4j1_2Jar"
+                }
+                pom('Log4j1_2Jar').artifactId = 'Log4j1_2'
+
+                addFilter('Log4j2Jar') { artifact, file ->
+                    artifact.name == "Log4j2Jar"
+                }
+                pom('Log4j2Jar').artifactId = 'Log4j2'
+            }
+        }
+    }
+}
+
+// endregion Publishing tasks
+
+dependencies {
+    compile project(':Core')
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.2'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
+}
+
+// region Create JAR tasks
+
+task createLog4j1_2Jar(type: Jar) {
+    from(sourceSets.main.output) {
+        include "com/microsoft/applicationinsights/log4j/v1_2/**"
+        baseName = 'Log4j1.2'
+        archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
+    }
+}
+
+task createLog4j2Jar(type: Jar) {
+    from(sourceSets.main.output) {
+        include "com/microsoft/applicationinsights/log4j/v2/**"
+        baseName = "Log4j2"
+        archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
+    }
+}
+
+task createLogbackJar(type: Jar) {
+    from(sourceSets.main.output) {
+        include "com/microsoft/applicationinsights/logback/**"
+        baseName = 'Logback'
+        archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
+    }
+}
+
+task buildJars << {
+    createLog4j1_2Jar.execute()
+    createLog4j2Jar.execute()
+    createLogbackJar.execute()
+}
+
+tasks.uploadArchives.dependsOn(buildJars)
+tasks.buildJars.dependsOn(createLog4j1_2Jar)
+tasks.buildJars.dependsOn(createLog4j2Jar)
+tasks.buildJars.dependsOn(createLogbackJar)
+
+// endregion Create JAR tasks
+
+// region Create artifacts
+
+artifacts {
+    archives(createLog4j1_2Jar) {
+        name = 'Log4j1_2Jar'
+    }
+
+    archives(createLog4j2Jar) {
+        name = 'Log4j2Jar'
+    }
+
+    archives(createLogbackJar) {
+        name = 'LogbackJar'
+    }
+}
+
+// endregion Create artifacts

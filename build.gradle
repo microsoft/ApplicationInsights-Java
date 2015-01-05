@@ -4,12 +4,41 @@ jar {
     version = '1.0'
     baseName = 'manual-tests'
 }
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     compile project(':Core')
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile project(':Logging')
 }
+
+// region Shared sub-projects configuration
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'
+
+    compileJava {
+        sourceCompatibility = 1.6
+        targetCompatibility = 1.6
+        options.bootClasspath = "${System.getenv('JAVA_JRE_6')}\\lib\\rt.jar"
+    }
+
+    configurations {
+        deployerJars
+    }
+
+    dependencies {
+        deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile group: 'junit', name: 'junit', version: '4.11'
+        testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
+    }
+}
+
+// endregion Shared sub-projects configuration
 
