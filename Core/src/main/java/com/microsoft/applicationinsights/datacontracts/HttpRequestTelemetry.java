@@ -14,7 +14,7 @@ import com.google.common.base.Strings;
 /**
  * Telemetry used to track events.
  */
-public class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
+public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
     private final RequestData data;
 
     /**

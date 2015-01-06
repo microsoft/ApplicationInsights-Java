@@ -8,7 +8,7 @@ import com.google.common.base.Strings;
 /**
  * Telemetry used to track events.
  */
-public class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDependencyData> {
+public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDependencyData> {
     private final RemoteDependencyData data;
 
     public RemoteDependencyTelemetry() {

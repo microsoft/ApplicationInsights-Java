@@ -6,7 +6,7 @@ import com.microsoft.applicationinsights.util.LocalStringsUtils;
 /**
  * Telemetry used to track events.
  */
-public class TraceTelemetry extends BaseTelemetry<MessageData> {
+public final class TraceTelemetry extends BaseTelemetry<MessageData> {
     private final MessageData data;
 
     public TraceTelemetry() {

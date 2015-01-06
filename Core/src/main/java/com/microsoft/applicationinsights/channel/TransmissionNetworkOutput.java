@@ -25,7 +25,7 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements TransmissionOutput {
+final class TransmissionNetworkOutput implements TransmissionOutput {
     private final static String CONTENT_TYPE_HEADER = "Content-Type";
     private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private final static int DEFAULT_REQUEST_TIMEOUT_IN_MILLIS = 60000;

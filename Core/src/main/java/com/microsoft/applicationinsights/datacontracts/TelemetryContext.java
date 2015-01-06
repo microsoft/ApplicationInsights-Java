@@ -18,7 +18,7 @@ import com.google.common.base.Strings;
 /**
  * Represents a context for sending telemetry to the Application Insights service.
  */
-public class TelemetryContext implements JsonSerializable {
+public final class TelemetryContext implements JsonSerializable {
     private Map<String,String> properties;
     private Map<String,String> tags;
 

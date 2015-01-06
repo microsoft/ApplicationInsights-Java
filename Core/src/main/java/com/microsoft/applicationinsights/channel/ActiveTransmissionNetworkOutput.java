@@ -10,7 +10,7 @@ import com.microsoft.applicationinsights.util.ThreadPoolUtils;
 /**
  * Created by gupele on 12/18/2014.
  */
-public final class ActiveTransmissionNetworkOutput implements TransmissionOutput {
+final class ActiveTransmissionNetworkOutput implements TransmissionOutput {
     private final static int DEFAULT_MAX_MESSAGES_IN_BUFFER = 128;
     private final static int DEFAULT_MIN_NUMBER_OF_THREADS = 1;
     private final static int DEFAULT_MAX_NUMBER_OF_THREADS = 7;

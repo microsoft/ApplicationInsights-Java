@@ -14,7 +14,7 @@ import com.microsoft.applicationinsights.util.ThreadPoolUtils;
  *
  * Created by gupele on 12/22/2014.
  */
-public class ActiveTransmissionFileSystemOutput implements TransmissionOutput {
+final class ActiveTransmissionFileSystemOutput implements TransmissionOutput {
     private final ThreadPoolExecutor threadPool;
 
     private final TransmissionOutput actualOutput;

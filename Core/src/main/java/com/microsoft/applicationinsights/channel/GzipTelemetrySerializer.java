@@ -17,7 +17,7 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 12/17/2014.
  */
-public final class GzipTelemetrySerializer implements TelemetrySerializer {
+final class GzipTelemetrySerializer implements TelemetrySerializer {
     private final static String GZIP_WEB_CONTENT_TYPE = "application/x-json-stream";
     private final static String GZIP_WEB_ENCODING_TYPE = "gzip";
 

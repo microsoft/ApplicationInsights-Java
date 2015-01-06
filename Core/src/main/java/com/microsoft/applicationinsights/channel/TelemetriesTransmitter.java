@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/17/2014.
  */
-public interface TelemetriesTransmitter {
+interface TelemetriesTransmitter {
     public interface TelemetriesFetcher {
         Collection<Telemetry> fetch();
     }

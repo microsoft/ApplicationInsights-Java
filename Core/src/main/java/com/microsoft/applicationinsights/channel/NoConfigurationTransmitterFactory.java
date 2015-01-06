@@ -5,7 +5,7 @@ package com.microsoft.applicationinsights.channel;
  *
  * Created by gupele on 12/21/2014.
  */
-public class NoConfigurationTransmitterFactory implements TransmitterFactory {
+class NoConfigurationTransmitterFactory implements TransmitterFactory {
     @Override
     public TelemetriesTransmitter create(String endpoint) {
         // An active object with the network sender

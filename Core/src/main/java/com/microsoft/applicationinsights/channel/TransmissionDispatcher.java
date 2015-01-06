@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public interface TransmissionDispatcher {
+interface TransmissionDispatcher {
     void dispatch(Transmission transmission);
 
     void stop(long timeout, TimeUnit timeUnit);

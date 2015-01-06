@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.channel;
 
 import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryClientConfiguration;
-import com.microsoft.applicationinsights.implementation.JsonWriter;
 
 import java.io.IOException;
 import java.io.StringWriter;
