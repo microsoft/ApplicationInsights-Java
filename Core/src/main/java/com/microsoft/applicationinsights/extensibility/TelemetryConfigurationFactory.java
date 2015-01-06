@@ -76,7 +76,7 @@ enum TelemetryConfigurationFactory {
             setContextInitializers(parser, configuration);
             setTelemetryInitializers(parser, configuration);
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -125,7 +125,7 @@ enum TelemetryConfigurationFactory {
             configuration.setChannel(new InProcessTelemetryChannel(configuration));
             return true;
         } catch (Exception e) {
-            // e.printStackTrace();
+            e.printStackTrace();
         }
 
         return false;
