@@ -31,10 +31,10 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     private final TelemetryBuffer telemetryBuffer;
 
-    public InProcessTelemetryChannel() {
+    public InProcessTelemetryChannel(String endpoint) {
 
         // Temporary
-        telemetriesTransmitter = new NoConfigurationTransmitterFactory().create(null);
+        telemetriesTransmitter = new NoConfigurationTransmitterFactory().create(endpoint);
 
         telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter);
     }

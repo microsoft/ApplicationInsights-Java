@@ -9,6 +9,6 @@ import javax.sound.midi.Transmitter;
  */
 public interface TransmitterFactory {
 
-    TelemetriesTransmitter create(TelemetryConfiguration telemetryConfiguration);
+    TelemetriesTransmitter create(String endpoint);
 
 }

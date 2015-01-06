@@ -9,6 +9,7 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.datacontracts.*;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryConfiguration;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.util.MapUtil;
 
 import com.google.common.base.Strings;
@@ -28,7 +29,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      */
     public DefaultTelemetryClient(TelemetryConfiguration configuration) {
         if (configuration == null)
-            configuration = TelemetryConfiguration.getActive();
+            configuration = TelemetryConfiguration.INSTANCE.getActive();
 
         synchronized (TELEMETRY_STOP_HOOK_LOCK) {
             Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -46,7 +47,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * Initializes a new instance of the TelemetryClient class, configured from the active configuration.
      */
     public DefaultTelemetryClient() {
-        this(TelemetryConfiguration.getActive());
+        this(TelemetryConfiguration.INSTANCE.getActive());
     }
 
     /**
@@ -308,7 +309,13 @@ public final class DefaultTelemetryClient implements TelemetryClient {
 
         telemetry.getContext().Initialize(ctx);
 
-        // TODO: use app-defined telemetry initializers, too.
+        for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
+            try {
+                initializer.Initialize(telemetry);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey())) {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");

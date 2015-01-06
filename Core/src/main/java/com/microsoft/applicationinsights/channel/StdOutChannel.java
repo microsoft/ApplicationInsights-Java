@@ -22,6 +22,13 @@ public class StdOutChannel implements TelemetryChannel
         // Just ignore it.
     }
 
+    public StdOutChannel() {
+        this(null);
+    }
+
+    public StdOutChannel(String endpoint) {
+    }
+
     @Override
     public void send(Telemetry item) {
         try {
