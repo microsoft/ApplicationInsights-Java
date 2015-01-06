@@ -52,21 +52,18 @@ enum TelemetryConfigurationFactory {
      * @param configuration
      */
     public final void initialize(TelemetryClientConfiguration configuration) {
-        // We disable in case we fail
-        configuration.setTrackingIsDisabled(true);
-
         try {
             if (parser == null) {
                 parser = new XmlConfigParser();
             }
 
             if (!parser.parse(fileToParse)) {
+                configuration.setDeveloperMode(false);
+                configuration.setChannel(new InProcessTelemetryChannel(configuration));
                 return;
             }
 
-            if (!setInstrumentationKey(parser, configuration)) {
-                return;
-            }
+            setInstrumentationKey(parser, configuration);
 
             setDeveloperMode(parser, configuration);
 
@@ -79,7 +76,7 @@ enum TelemetryConfigurationFactory {
             setContextInitializers(parser, configuration);
             setTelemetryInitializers(parser, configuration);
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -103,7 +100,7 @@ enum TelemetryConfigurationFactory {
      *
      * @param parser The parser we work with
      * @param configuration Where we store the {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
-     * @return
+     * @return True on success
      */
     private boolean setChannel(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
         HashSet<String> itemNames = new HashSet<String>();
@@ -128,7 +125,7 @@ enum TelemetryConfigurationFactory {
             configuration.setChannel(new InProcessTelemetryChannel(configuration));
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            // e.printStackTrace();
         }
 
         return false;

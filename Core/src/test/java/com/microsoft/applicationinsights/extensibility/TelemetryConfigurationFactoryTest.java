@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 
 public class TelemetryConfigurationFactoryTest {
@@ -119,7 +120,8 @@ public class TelemetryConfigurationFactoryTest {
         initializeWithFactory(mockParser, mockConfiguration);
 
         Mockito.verify(mockParser, Mockito.times(1)).parse(MOCK_CONF_FILE);
-        Mockito.verify(mockConfiguration, Mockito.times(1)).setTrackingIsDisabled(true);
+        Mockito.verify(mockConfiguration, Mockito.times(1)).setTrackingIsDisabled(false);
+        Mockito.verify(mockConfiguration, Mockito.times(1)).setChannel((TelemetryChannel)anyObject());
     }
 
     @Test
@@ -132,7 +134,8 @@ public class TelemetryConfigurationFactoryTest {
         initializeWithFactory(mockParser, mockConfiguration);
 
         Mockito.verify(mockParser, Mockito.times(1)).parse(MOCK_CONF_FILE);
-        Mockito.verify(mockConfiguration, Mockito.times(1)).setTrackingIsDisabled(true);
+        Mockito.verify(mockConfiguration, Mockito.times(1)).setTrackingIsDisabled(false);
+        Mockito.verify(mockConfiguration, Mockito.times(1)).setChannel((TelemetryChannel)anyObject());
     }
 
     @Test
@@ -145,7 +148,8 @@ public class TelemetryConfigurationFactoryTest {
         initializeWithFactory(mockParser, mockConfiguration);
 
         Mockito.verify(mockParser, Mockito.times(1)).parse(MOCK_CONF_FILE);
-        Mockito.verify(mockConfiguration, Mockito.times(1)).setTrackingIsDisabled(true);
+        Mockito.verify(mockConfiguration, Mockito.times(1)).setTrackingIsDisabled(false);
+        Mockito.verify(mockConfiguration, Mockito.times(1)).setChannel((TelemetryChannel)anyObject());
     }
 
     @Test
@@ -160,7 +164,6 @@ public class TelemetryConfigurationFactoryTest {
 
         Mockito.verify(mockParser, Mockito.times(1)).parse(MOCK_CONF_FILE);
         Mockito.verify(mockConfiguration, Mockito.times(1)).setInstrumentationKey(MOCK_IKEY);
-        Mockito.verify(mockConfiguration, Mockito.times(1)).setTrackingIsDisabled(true);
         Mockito.verify(mockConfiguration, Mockito.times(1)).setTrackingIsDisabled(false);
         Mockito.verify(mockConfiguration, Mockito.times(1)).getContextInitializers();
         Mockito.verify(mockConfiguration, Mockito.times(1)).getTelemetryInitializers();
