@@ -26,7 +26,7 @@ public enum TelemetryConfiguration implements TelemetryClientConfiguration {
 
     private TelemetryChannel channel;
 
-    private boolean trackingIsDisabled = true;
+    private boolean trackingIsDisabled = false;
 
     private boolean developerMode = false;
 
@@ -66,7 +66,7 @@ public enum TelemetryConfiguration implements TelemetryClientConfiguration {
     }
 
     public boolean isTrackingDisabled() {
-        return trackingIsDisabled || Strings.isNullOrEmpty(instrumentationKey);
+        return trackingIsDisabled;
     }
 
     @Override
