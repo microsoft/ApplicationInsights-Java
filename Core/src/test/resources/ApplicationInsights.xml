@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" schemaVersion="2014-05-30">
+    <!--
+      Learn more about Application Insights configuration with ApplicationInsights.config here:
+      http://go.microsoft.com/fwlink/?LinkID=513840
+    -->
+    <InstrumentationKey>
+        A-test-instrumentation-key
+    </InstrumentationKey>
+    <TelemetryModules>
+    </TelemetryModules>
+    <ContextInitializers>
+    </ContextInitializers>
+    <TelemetryInitializers>
+    </TelemetryInitializers>
+    <Channel>
+        <Type>com.microsoft.applicationinsights.channel.StdOutChannel</Type>
+        <EndpointAddress>
+            test-endpoint
+        </EndpointAddress>
+    </Channel>
+</ApplicationInsights>

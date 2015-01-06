@@ -24,6 +24,7 @@ public class TelemetryConfigurationFactoryTest {
     private final static String MOCK_CONF_FILE = "mockFileName";
     private final static String MOCK_IKEY = "mockikey";
     private final static String MOCK_XML_IKEY = "A-test-instrumentation-key";
+    private final static String MOCK_XML_ENDPOINT = "test-endpoint";
     private final static String MOCK_ENDPOINT = "MockEndpoint";
     private final static String FACTORY_INSTRUMENTATION_KEY = "InstrumentationKey";
 
@@ -33,11 +34,23 @@ public class TelemetryConfigurationFactoryTest {
         private boolean developerMode;
         private boolean trackingIsDisabled;
         private String instrumentationKey;
+        private String endpoint;
         private TelemetryChannel channel;
 
         public String getInstrumentationKey() {
             return instrumentationKey;
         }
+
+        @Override
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        @Override
+        public String getEndpoint() {
+            return endpoint;
+        }
+
         @Override
         public void setChannel(TelemetryChannel channel) {
             this.channel = channel;
@@ -94,6 +107,7 @@ public class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.telemetryInitializers.size(), 0);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_XML_IKEY);
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertEquals(mockConfiguration.getEndpoint(), MOCK_XML_ENDPOINT);
     }
 
     @Test

@@ -112,10 +112,12 @@ enum TelemetryConfigurationFactory {
         Map<String, String> channelData = parser.getStructuredData(CHANNEL_SECTION, itemNames);
 
         String channelEndpoint = channelData.get(CHANNEL_ENDPONT_ADDRESS);
+        configuration.setEndpoint(channelEndpoint);
+
         String channelName = channelData.get(CLASS_TYPE);
 
         if (channelName != null) {
-            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, String.class, channelEndpoint);
+            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, TelemetryClientConfiguration.class, configuration);
             if (channel != null) {
                 configuration.setChannel(channel);
                 return true;
@@ -123,7 +125,7 @@ enum TelemetryConfigurationFactory {
         }
 
         try {
-            configuration.setChannel(new InProcessTelemetryChannel(channelEndpoint));
+            configuration.setChannel(new InProcessTelemetryChannel(configuration));
             return true;
         } catch (Exception e) {
             e.printStackTrace();

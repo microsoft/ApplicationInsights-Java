@@ -1,10 +1,11 @@
 package com.microsoft.applicationinsights.extensibility;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.microsoft.applicationinsights.channel.TelemetryChannel;
+
+import com.google.common.base.Strings;
 
 /**
  * Configuration data and logic for telemetry clients.
@@ -17,6 +18,8 @@ public enum TelemetryConfiguration implements TelemetryClientConfiguration {
     private volatile boolean initialized = false;
 
     private String instrumentationKey;
+
+    private String endpoint;
 
     private final ArrayList<ContextInitializer> contextInitializers = new ArrayList<ContextInitializer>();
     private final ArrayList<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
@@ -43,10 +46,21 @@ public enum TelemetryConfiguration implements TelemetryClientConfiguration {
         return this;
     }
 
+    @Override
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    @Override
+    public String getEndpoint() {
+        return endpoint;
+    }
+
     public TelemetryChannel getChannel() {
         return channel;
     }
 
+    @Override
     public void setChannel(TelemetryChannel channel) {
         this.channel = channel;
     }
@@ -55,22 +69,27 @@ public enum TelemetryConfiguration implements TelemetryClientConfiguration {
         return trackingIsDisabled || Strings.isNullOrEmpty(instrumentationKey);
     }
 
+    @Override
     public void setTrackingIsDisabled(boolean disable) {
         trackingIsDisabled = disable;
     }
 
+    @Override
     public boolean isDeveloperMode() {
         return developerMode;
     }
 
+    @Override
     public void setDeveloperMode(boolean developerMode) {
         this.developerMode = developerMode;
     }
 
+    @Override
     public List<ContextInitializer> getContextInitializers() {
         return contextInitializers;
     }
 
+    @Override
     public List<TelemetryInitializer> getTelemetryInitializers() {
         return telemetryInitializers;
     }
@@ -79,6 +98,7 @@ public enum TelemetryConfiguration implements TelemetryClientConfiguration {
         return instrumentationKey;
     }
 
+    @Override
     public void setInstrumentationKey(String key) {
         // A non null, non empty instrumentation key is a must
         if (Strings.isNullOrEmpty(key)) {

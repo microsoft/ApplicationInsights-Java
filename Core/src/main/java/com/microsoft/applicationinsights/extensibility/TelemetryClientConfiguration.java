@@ -7,12 +7,18 @@ import java.util.List;
 /**
  * Created by gupele on 12/31/2014.
  */
-interface TelemetryClientConfiguration {
+public interface TelemetryClientConfiguration {
+    void setEndpoint(String endpoint);
+
+    String getEndpoint();
+
     void setChannel(TelemetryChannel channel);
 
     void setTrackingIsDisabled(boolean disable);
 
     void setDeveloperMode(boolean developerMode);
+
+    boolean isDeveloperMode();
 
     void setInstrumentationKey(String key);
 

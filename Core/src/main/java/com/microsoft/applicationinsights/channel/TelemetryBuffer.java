@@ -74,26 +74,34 @@ public final class TelemetryBuffer {
     /// A synchronization object to avoid race conditions with the container and generation
     private final Object lock = new Object();
 
+    private boolean developerMode;
+
     /**
      * The constructor needs to get the 'sender' we work with
      * @param sender
      */
-    public TelemetryBuffer(TelemetriesTransmitter sender) {
-        this(sender, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
+    public TelemetryBuffer(TelemetriesTransmitter sender, boolean developerMode) {
+        this(sender, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS, developerMode);
     }
 
     /**
      * The constructor needs to get the 'sender' we work with
      * @param sender
      */
-    public TelemetryBuffer(TelemetriesTransmitter sender, int maxTelemetriesInBatch, int transmitBufferTimeoutInSeconds) {
+    public TelemetryBuffer(TelemetriesTransmitter sender, int maxTelemetriesInBatch, int transmitBufferTimeoutInSeconds, boolean developerMode) {
         Preconditions.checkNotNull(sender, "sender must be non-null value");
         Preconditions.checkArgument(maxTelemetriesInBatch > 0, "maxTelemetriesInBatch must be a positive number");
         Preconditions.checkArgument(transmitBufferTimeoutInSeconds > 0, "transmitBufferTimeoutInSeconds must be a positive number");
 
+        this.developerMode = developerMode;
+        if (developerMode) {
+            this.maxTelemetriesInBatch = 1;
+        } else {
+            this.maxTelemetriesInBatch = maxTelemetriesInBatch;
+        }
+
         this.sender = sender;
-        telemetries = new ArrayList<Telemetry>(maxTelemetriesInBatch);
-        this.maxTelemetriesInBatch = maxTelemetriesInBatch;
+        telemetries = new ArrayList<Telemetry>(this.maxTelemetriesInBatch);
         this.transmitBufferTimeoutInSeconds = transmitBufferTimeoutInSeconds;
     }
 
@@ -115,10 +123,10 @@ public final class TelemetryBuffer {
 
             int currentSize = telemetries.size();
 
-            if (currentSize == 1) {
-                sender.scheduleSend(new TelemetryBufferTelemetriesFetcher(generation), transmitBufferTimeoutInSeconds, TimeUnit.SECONDS);
-            } else if (currentSize >= maxTelemetriesInBatch) {
+            if (currentSize >= maxTelemetriesInBatch) {
                 sender.sendNow(prepareTelemetriesForSend());
+            } else if (currentSize == 1) {
+                sender.scheduleSend(new TelemetryBufferTelemetriesFetcher(generation), transmitBufferTimeoutInSeconds, TimeUnit.SECONDS);
             }
         }
     }

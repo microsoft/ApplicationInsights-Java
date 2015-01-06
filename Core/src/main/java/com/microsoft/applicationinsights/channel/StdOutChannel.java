@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.channel;
 
 import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryClientConfiguration;
 import com.microsoft.applicationinsights.implementation.JsonWriter;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class StdOutChannel implements TelemetryChannel
         this(null);
     }
 
-    public StdOutChannel(String endpoint) {
+    public StdOutChannel(TelemetryClientConfiguration configuration) {
     }
 
     @Override
