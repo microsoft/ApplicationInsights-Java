@@ -1,13 +1,13 @@
 package com.microsoft.applicationinsights.tests.manual;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.DefaultTelemetryClient;
-import com.microsoft.applicationinsights.datacontracts.*;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.DefaultTelemetryClient;
+import com.microsoft.applicationinsights.datacontracts.*;
 
 @SuppressWarnings("ALL")
 class Program

@@ -43,11 +43,16 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     // Use one instance for optimization
     private final CloseableHttpClient httpClient;
 
-    public TransmissionNetworkOutput() {
-        this(DEFAULT_SERVER_URI);
+    public static TransmissionNetworkOutput create() {
+        return create(DEFAULT_SERVER_URI);
     }
 
-    public TransmissionNetworkOutput(String serverUri) {
+    public static TransmissionNetworkOutput create(String endpoint) {
+        String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
+        return new TransmissionNetworkOutput(realEndpoint);
+    }
+
+    private TransmissionNetworkOutput(String serverUri) {
         Preconditions.checkNotNull(serverUri, "serverUri should be a valid non-null value");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(serverUri), "serverUri should be a valid non-null value");
 

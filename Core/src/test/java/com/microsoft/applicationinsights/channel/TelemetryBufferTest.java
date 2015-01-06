@@ -13,7 +13,10 @@ import org.mockito.Mockito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 
 public class TelemetryBufferTest {
     private static class MockSender implements TelemetriesTransmitter {
@@ -129,37 +132,37 @@ public class TelemetryBufferTest {
     @Test(expected = IllegalArgumentException.class)
     public void testNegativeBufferSizeSenderIsSet() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, -1, 20);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, -1, 20, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testZeroBufferSizeSenderIsSet() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 0, 20);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 0, 20, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNegativeBufferTimeoutSenderIsSet() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 1, -20);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 1, -20, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testZeroBufferTimeoutSenderIsSet() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 20, 0);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 20, 0, false);
     }
 
     @Test(expected = NullPointerException.class)
     public void testNoSenderIsSet() throws Exception {
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(null);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(null, false);
     }
 
     @Test
     public void testAddOneTelemetry() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, false);
 
         Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
         testedBuffer.add(mockTelemetry);
@@ -168,18 +171,33 @@ public class TelemetryBufferTest {
     }
 
     @Test
-    public void testSendWhenBufferIsFull() throws Exception {
+    public void testSendWhenBufferIsFullInNonDeveloperMode() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 2, 1200);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 2, 1200, false);
 
         for (int i = 0; i < 2; ++i) {
             Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
             testedBuffer.add(mockTelemetry);
         }
 
-        Mockito.verify(mockSender, Mockito.times(1)).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher)any(), anyLong(), (TimeUnit)anyObject());
+        Mockito.verify(mockSender, Mockito.times(1)).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher) any(), anyLong(), (TimeUnit) anyObject());
         Mockito.verify(mockSender, Mockito.times(1)).sendNow(anyCollectionOf(Telemetry.class));
+    }
+
+    @Test
+    public void testSendWhenBufferIsFullInDeveloperMode() throws Exception {
+        TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 2, 1200, true);
+
+        for (int i = 0; i < 2; ++i) {
+            Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+            testedBuffer.add(mockTelemetry);
+        }
+
+        Mockito.verify(mockSender, Mockito.never()).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher)any(), anyLong(), (TimeUnit)anyObject());
+        Mockito.verify(mockSender, Mockito.times(2)).sendNow(anyCollectionOf(Telemetry.class));
     }
 
     @Test
@@ -192,7 +210,7 @@ public class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(1);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 10);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 10, false);
 
         for (int i = 0; i < 1; ++i) {
             Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
@@ -211,7 +229,7 @@ public class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(10);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 10);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 10, false);
 
         for (int i = 0; i < 10; ++i) {
             Telemetry mockTelemetry = Mockito.mock(Telemetry.class);

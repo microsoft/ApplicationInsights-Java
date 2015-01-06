@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.datacontracts.JsonTelemetryDataSerializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryClientConfiguration;
 import com.microsoft.applicationinsights.implementation.JsonWriter;
 
 import org.apache.http.HttpEntity;
@@ -30,6 +31,9 @@ public class SimpleHttpChannel implements TelemetryChannel
     public void setDeveloperMode(boolean value)
     {
         developerMode = value;
+    }
+
+    public SimpleHttpChannel(TelemetryClientConfiguration configuration) {
     }
 
     @Override
