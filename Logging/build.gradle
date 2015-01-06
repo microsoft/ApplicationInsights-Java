@@ -19,25 +19,36 @@ uploadArchives {
                     authentication(userName: "dotm2\\\$dotm2", password: javamavenuserpassword)
                 }
 
-                // Updating artifacts IDs
+                // Updating artifacts IDs and dependencies
                 addFilter('LogbackJar') { artifact, file ->
                     artifact.name == "LogbackJar"
                 }
                 pom('LogbackJar').artifactId = 'Logback'
+                pom('LogbackJar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
+                    dep -> dep.artifactId == 'logback-classic' || dep.artifactId == 'logback-core'
+                }.toList() }
 
                 addFilter('Log4j1_2Jar') { artifact, file ->
                     artifact.name == "Log4j1_2Jar"
                 }
                 pom('Log4j1_2Jar').artifactId = 'Log4j1_2'
+                pom('Log4j1_2Jar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
+                    dep -> dep.group == 'log4j'
+                }.toList() }
 
                 addFilter('Log4j2Jar') { artifact, file ->
                     artifact.name == "Log4j2Jar"
                 }
                 pom('Log4j2Jar').artifactId = 'Log4j2'
+                pom('Log4j2Jar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
+                    dep -> dep.name == 'log4j-core' || dep.artifactId == 'log4j-api'
+                }.toList() }
             }
         }
     }
 }
+
+tasks.uploadArchives.dependsOn(checkUploadProperties)
 
 // endregion Publishing tasks
 
