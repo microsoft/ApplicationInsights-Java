@@ -33,7 +33,7 @@ uploadArchives {
                 }
                 pom('Log4j1_2Jar').artifactId = 'Log4j1_2'
                 pom('Log4j1_2Jar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
-                    dep -> dep.group == 'log4j'
+                    dep -> dep.groupId == 'log4j'
                 }.toList() }
 
                 addFilter('Log4j2Jar') { artifact, file ->
@@ -41,7 +41,7 @@ uploadArchives {
                 }
                 pom('Log4j2Jar').artifactId = 'Log4j2'
                 pom('Log4j2Jar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
-                    dep -> dep.name == 'log4j-core' || dep.artifactId == 'log4j-api'
+                    dep -> dep.artifactId == 'log4j-core' || dep.artifactId == 'log4j-api'
                 }.toList() }
             }
         }
