@@ -15,7 +15,7 @@ import com.google.common.base.Strings;
 /**
  * Telemetry used to track events.
  */
-public class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
+public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     private final ExceptionData data;
     private Exception exception;
 

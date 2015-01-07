@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.channel;
 
 import java.util.Collection;
+
 import com.google.common.base.Optional;
 
 /**
@@ -10,7 +11,7 @@ import com.google.common.base.Optional;
  * Concrete classes should be able to create a compressed byte array
  * that represents at collection of Telemetry instances
  */
-public interface TelemetrySerializer {
+interface TelemetrySerializer {
     /**
      *
      * @param telemetries A collection of Telemetry instances

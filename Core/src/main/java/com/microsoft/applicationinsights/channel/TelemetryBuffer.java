@@ -20,7 +20,7 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 12/17/2014.
  */
-public final class TelemetryBuffer {
+final class TelemetryBuffer {
     /**
      * An inner helper class that will let the Sender class to fetch the relevant Telemetries.
      *

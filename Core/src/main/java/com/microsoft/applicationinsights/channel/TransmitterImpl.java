@@ -21,7 +21,7 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 12/18/2014.
  */
-public class TransmitterImpl implements TelemetriesTransmitter {
+final class TransmitterImpl implements TelemetriesTransmitter {
     private static abstract class SendHandler {
         protected final TransmissionDispatcher transmissionDispatcher;
 

@@ -14,7 +14,7 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class NonBlockingDispatcher implements TransmissionDispatcher {
+final class NonBlockingDispatcher implements TransmissionDispatcher {
     private final TransmissionOutput[] transmissionOutputs;
 
     public NonBlockingDispatcher(TransmissionOutput[] transmissionOutputs) {

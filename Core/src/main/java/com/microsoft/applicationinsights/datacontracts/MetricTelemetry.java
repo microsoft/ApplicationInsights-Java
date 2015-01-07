@@ -11,7 +11,7 @@ import com.google.common.base.Strings;
 /**
  * Telemetry used to track events.
  */
-public class MetricTelemetry extends BaseTelemetry<MetricData> {
+public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     private final MetricData data;
     private final DataPoint metric;
 

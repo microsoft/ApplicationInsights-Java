@@ -14,7 +14,7 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 12/22/2014.
  */
-public final class ActiveTransmissionLoader implements TransmissionsLoader {
+final class ActiveTransmissionLoader implements TransmissionsLoader {
     public final static int MAX_THREADS_ALLOWED = 10;
 
     private final static int DEFAULT_NUMBER_OF_THREADS = 1;

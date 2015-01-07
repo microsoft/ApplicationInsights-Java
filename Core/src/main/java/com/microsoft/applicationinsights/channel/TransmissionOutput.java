@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public interface TransmissionOutput {
+interface TransmissionOutput {
     boolean send(Transmission transmission);
 
     void stop(long timeout, TimeUnit timeUnit);

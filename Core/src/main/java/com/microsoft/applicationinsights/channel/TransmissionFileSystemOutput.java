@@ -40,7 +40,7 @@ import org.apache.commons.io.FilenameUtils;
  *
  * Created by gupele on 12/18/2014.
  */
-public class TransmissionFileSystemOutput implements TransmissionOutput {
+final class TransmissionFileSystemOutput implements TransmissionOutput {
     private final static String TRANSMISSION_FILE_PREFIX = "Transmission";
     private final static String TRANSMISSION_DEFAULT_FOLDER = "transmissions";
     private final static String TEMP_FILE_EXTENSION = ".tmp";

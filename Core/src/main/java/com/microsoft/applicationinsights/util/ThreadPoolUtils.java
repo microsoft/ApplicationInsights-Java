@@ -1,9 +1,6 @@
 package com.microsoft.applicationinsights.util;
 
-import com.microsoft.applicationinsights.channel.TransmissionOutput;
-
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
