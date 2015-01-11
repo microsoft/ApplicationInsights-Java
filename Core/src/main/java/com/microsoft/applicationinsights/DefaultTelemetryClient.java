@@ -4,13 +4,12 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.channel.Telemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.datacontracts.*;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.util.MapUtil;
+import com.microsoft.applicationinsights.telemetry.*;
+import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 import com.google.common.base.Strings;
 

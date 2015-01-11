@@ -3,12 +3,12 @@ package com.microsoft.applicationinsights;
 import java.util.Date;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.channel.Telemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.datacontracts.EventTelemetry;
-import com.microsoft.applicationinsights.datacontracts.MetricTelemetry;
-import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
-import com.microsoft.applicationinsights.datacontracts.TraceTelemetry;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 
 /**
  * Created by gupele on 1/5/2015.

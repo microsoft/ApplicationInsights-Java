@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.log4j.v1_2;
 
-import com.microsoft.applicationinsights.channel.Telemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.LoggingTestHelper;
 import org.apache.log4j.LogManager;

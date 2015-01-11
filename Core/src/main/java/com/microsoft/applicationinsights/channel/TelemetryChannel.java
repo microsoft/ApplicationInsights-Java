@@ -1,5 +1,7 @@
 package com.microsoft.applicationinsights.channel;
 
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+
 import java.util.concurrent.TimeUnit;
 
 /**

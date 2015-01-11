@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.log4j.v2;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import com.microsoft.applicationinsights.channel.Telemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.LoggingTestHelper;
 import org.apache.logging.log4j.LogManager;

@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.extensibility;
 
-import com.microsoft.applicationinsights.channel.Telemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
  * Created by gupele on 12/30/2014.

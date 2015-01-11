@@ -1,10 +1,9 @@
 package com.microsoft.applicationinsights.common;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import java.util.List;
-import com.microsoft.applicationinsights.channel.Telemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
