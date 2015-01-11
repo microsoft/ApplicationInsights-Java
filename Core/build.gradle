@@ -16,26 +16,18 @@ dependencies {
 
 // region Publishing tasks
 
-task checkUploadProperties << {
-    if (!this.hasProperty("javamavenuserpassword")) {
-        throw new GroovyRuntimeException("Property javamavenuserpassword should be defined for uploadArchives task")
-    }
-}
-
 uploadArchives {
-    if (this.hasProperty("javamavenuserpassword")) {
+    if (this.hasProperty("mavenuserpassword")) {
         repositories {
             mavenDeployer {
                 configuration = configurations.deployerJars
 
-                repository(url: "ftp://waws-prod-dm1-003.ftp.azurewebsites.windows.net/site/wwwroot/repository/") {
-                    authentication(userName: "dotm2\\\$dotm2", password: javamavenuserpassword)
+                repository(url: mavenrepositoryurl) {
+                    authentication(userName: mavenusername, password: mavenuserpassword)
                 }
             }
         }
     }
 }
-
-tasks.uploadArchives.dependsOn(checkUploadProperties)
 
 // endregion Publishing tasks
