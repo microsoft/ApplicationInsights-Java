@@ -14,7 +14,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-package com.microsoft.applicationinsights.extensibility.model;
+package com.microsoft.applicationinsights.extensibility.context;
 
 
 /**
@@ -762,7 +762,7 @@ public class ContextTagKeys
      * @see com.microsoft.bond.BondSerializable#reset()
      */
     public void reset() {
-        reset("ContextTagKeys", "com.microsoft.applicationinsights.extensibility.model.ContextTagKeys");
+        reset("ContextTagKeys", "com.microsoft.applicationinsights.extensibility.context.ContextTagKeys");
     }
 
     protected void reset(String name, String qualifiedName) {

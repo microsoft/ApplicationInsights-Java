@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.extensibility.context;
 
-import com.microsoft.applicationinsights.extensibility.model.ContextTagKeys;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
