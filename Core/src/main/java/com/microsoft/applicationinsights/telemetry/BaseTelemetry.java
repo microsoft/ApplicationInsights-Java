@@ -60,7 +60,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
         envelope.setIKey(context.getInstrumentationKey());
         envelope.setData(new Data<T>(getData()));
         envelope.setTime(LocalStringsUtils.getDateFormatter().format(getTimestamp()));
-        envelope.setTags(context.getProperties());
+        envelope.setTags(context.getTags());
 
         envelope.serialize(writer);
     }
