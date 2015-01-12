@@ -54,18 +54,14 @@ public final class TelemetryBuffer {
         }
     }
 
-    private final static int DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 128;
-
-    private final static int TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS = 10;
-
     /// The sender we use to send Telemetry containers
     private final TelemetriesTransmitter sender;
 
     /// The maximum amount of Telemetries in a batch. If the buffer is
     /// full before the timeout expired, we will need to send it anyway and not wait for the timeout to expire
-    private final int maxTelemetriesInBatch;
+    private int maxTelemetriesInBatch;
 
-    private final int transmitBufferTimeoutInSeconds;
+    private int transmitBufferTimeoutInSeconds;
 
     /// The Telemetry instances are kept here
     private List<Telemetry> telemetries;
@@ -76,35 +72,56 @@ public final class TelemetryBuffer {
     /// A synchronization object to avoid race conditions with the container and generation
     private final Object lock = new Object();
 
-    private boolean developerMode;
-
     /**
      * The constructor needs to get the 'sender' we work with
      * @param sender
      */
-    public TelemetryBuffer(TelemetriesTransmitter sender, boolean developerMode) {
-        this(sender, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS, developerMode);
-    }
-
-    /**
-     * The constructor needs to get the 'sender' we work with
-     * @param sender
-     */
-    public TelemetryBuffer(TelemetriesTransmitter sender, int maxTelemetriesInBatch, int transmitBufferTimeoutInSeconds, boolean developerMode) {
+    public TelemetryBuffer(TelemetriesTransmitter sender, int maxTelemetriesInBatch, int transmitBufferTimeoutInSeconds) {
         Preconditions.checkNotNull(sender, "sender must be non-null value");
         Preconditions.checkArgument(maxTelemetriesInBatch > 0, "maxTelemetriesInBatch must be a positive number");
         Preconditions.checkArgument(transmitBufferTimeoutInSeconds > 0, "transmitBufferTimeoutInSeconds must be a positive number");
 
-        this.developerMode = developerMode;
-        if (developerMode) {
-            this.maxTelemetriesInBatch = 1;
-        } else {
-            this.maxTelemetriesInBatch = maxTelemetriesInBatch;
-        }
+        setMaxTelemetriesInBatch(maxTelemetriesInBatch);
 
         this.sender = sender;
         telemetries = new ArrayList<Telemetry>(this.maxTelemetriesInBatch);
         this.transmitBufferTimeoutInSeconds = transmitBufferTimeoutInSeconds;
+    }
+
+    /**
+     * Sets the maximum number of telemetries in a batch
+     * @param maxTelemetriesInBatch
+     */
+    public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch)
+    {
+        this.maxTelemetriesInBatch = maxTelemetriesInBatch;
+    }
+
+    /**
+     * Gets the maximum number of telemetries in a batch
+     * @return The maximum number of telemetries in a batch
+     */
+    public int getMaxTelemetriesInBatch()
+    {
+        return this.maxTelemetriesInBatch;
+    }
+
+    /**
+     * Sets the transmit buffer timeout in seconds
+     * @param transmitBufferTimeoutInSeconds
+     */
+    public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds)
+    {
+        this.transmitBufferTimeoutInSeconds = transmitBufferTimeoutInSeconds;
+    }
+
+    /**
+     * Gets the transmit buffer timeout in seconds
+     * @return The transmit buffer timeout in seconds
+     */
+    public int getTransmitBufferTimeoutInSeconds()
+    {
+        return this.transmitBufferTimeoutInSeconds;
     }
 
     /**
