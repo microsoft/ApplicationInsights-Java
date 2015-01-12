@@ -2,8 +2,9 @@ package com.microsoft.applicationinsights.internal.schemav2;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
@@ -35,7 +36,7 @@ public class MetricData extends Domain implements JsonSerializable {
     /**
      * Backing field for property Properties.
      */
-    private HashMap<String, String> properties;
+    private ConcurrentMap<String, String> properties;
 
     /**
      * Initializes a new instance of the <see cref="MetricData"/> class.
@@ -72,9 +73,9 @@ public class MetricData extends Domain implements JsonSerializable {
     /**
      * Gets the Properties property.
      */
-    public HashMap<String, String> getProperties() {
+    public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new HashMap<String, String>();
+            this.properties = new ConcurrentHashMap<String, String>();
         }
         return this.properties;
     }
@@ -82,7 +83,7 @@ public class MetricData extends Domain implements JsonSerializable {
     /**
      * Sets the Properties property.
      */
-    public void setProperties(HashMap<String, String> value) {
+    public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 

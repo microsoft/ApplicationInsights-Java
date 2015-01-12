@@ -1,8 +1,8 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.extensibility.context.ComponentContext;
 import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
@@ -19,8 +19,8 @@ import com.google.common.base.Strings;
  * Represents a context for sending telemetry to the Application Insights service.
  */
 public final class TelemetryContext implements JsonSerializable {
-    private Map<String,String> properties;
-    private Map<String,String> tags;
+    private ConcurrentMap<String,String> properties;
+    private ConcurrentMap<String,String> tags;
 
     private String instrumentationKey;
     private ComponentContext component;
@@ -32,11 +32,10 @@ public final class TelemetryContext implements JsonSerializable {
     private InternalContext internal;
 
     public TelemetryContext() {
-        // TODO: create a SnapshottingMap, just like the .NET version has.
-        this(new HashMap<String, String>(), new HashMap<String, String>());
+        this(new ConcurrentHashMap<String, String>(), new ConcurrentHashMap<String, String>());
     }
 
-    public TelemetryContext(Map<String, String> properties, Map<String, String> tags) {
+    public TelemetryContext(ConcurrentMap<String, String> properties, ConcurrentMap<String, String> tags) {
         if (properties == null) {
             throw new IllegalArgumentException("properties cannot be null");
         }
@@ -113,11 +112,11 @@ public final class TelemetryContext implements JsonSerializable {
         this.instrumentationKey = instrumentationKey;
     }
 
-    public Map<String, String> getProperties() {
+    public ConcurrentMap<String, String> getProperties() {
         return properties;
     }
 
-    public Map<String, String> getTags() {
+    public ConcurrentMap<String, String> getTags() {
         return tags;
     }
 

@@ -2,7 +2,11 @@ package com.microsoft.applicationinsights.internal.schemav2;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
@@ -46,12 +50,12 @@ public class ExceptionData extends Domain implements JsonSerializable {
     /**
      * Backing field for property Properties.
      */
-    private HashMap<String, String> properties;
+    private ConcurrentMap<String, String> properties;
 
     /**
      * Backing field for property Measurements.
      */
-    private HashMap<String, Double> measurements;
+    private ConcurrentMap<String, Double> measurements;
 
     /**
      * Initializes a new instance of the <see cref="ExceptionData"/> class.
@@ -116,9 +120,89 @@ public class ExceptionData extends Domain implements JsonSerializable {
     /**
      * Gets the Properties property.
      */
-    public HashMap<String, String> getProperties() {
+    public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new HashMap<String, String>();
+            this.properties = new ConcurrentMap<String, String>() {
+                @Override
+                public String putIfAbsent(String key, String value) {
+                    return null;
+                }
+
+                @Override
+                public boolean remove(Object key, Object value) {
+                    return false;
+                }
+
+                @Override
+                public boolean replace(String key, String oldValue, String newValue) {
+                    return false;
+                }
+
+                @Override
+                public String replace(String key, String value) {
+                    return null;
+                }
+
+                @Override
+                public int size() {
+                    return 0;
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return false;
+                }
+
+                @Override
+                public boolean containsKey(Object key) {
+                    return false;
+                }
+
+                @Override
+                public boolean containsValue(Object value) {
+                    return false;
+                }
+
+                @Override
+                public String get(Object key) {
+                    return null;
+                }
+
+                @Override
+                public String put(String key, String value) {
+                    return null;
+                }
+
+                @Override
+                public String remove(Object key) {
+                    return null;
+                }
+
+                @Override
+                public void putAll(Map<? extends String, ? extends String> m) {
+
+                }
+
+                @Override
+                public void clear() {
+
+                }
+
+                @Override
+                public Set<String> keySet() {
+                    return null;
+                }
+
+                @Override
+                public Collection<String> values() {
+                    return null;
+                }
+
+                @Override
+                public Set<Entry<String, String>> entrySet() {
+                    return null;
+                }
+            };
         }
         return this.properties;
     }
@@ -126,16 +210,16 @@ public class ExceptionData extends Domain implements JsonSerializable {
     /**
      * Sets the Properties property.
      */
-    public void setProperties(HashMap<String, String> value) {
+    public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 
     /**
      * Gets the Measurements property.
      */
-    public HashMap<String, Double> getMeasurements() {
+    public ConcurrentMap<String, Double> getMeasurements() {
         if (this.measurements == null) {
-            this.measurements = new HashMap<String, Double>();
+            this.measurements = new ConcurrentHashMap<String, Double>();
         }
         return this.measurements;
     }
@@ -143,7 +227,7 @@ public class ExceptionData extends Domain implements JsonSerializable {
     /**
      * Sets the Measurements property.
      */
-    public void setMeasurements(HashMap<String, Double> value) {
+    public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
 
