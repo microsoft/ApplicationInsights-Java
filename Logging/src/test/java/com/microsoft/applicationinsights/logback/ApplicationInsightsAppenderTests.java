@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.logback;
 import java.util.LinkedList;
 import java.util.List;
 import ch.qos.logback.classic.Logger;
-import com.microsoft.applicationinsights.channel.Telemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.LoggingTestHelper;
 import org.junit.Assert;

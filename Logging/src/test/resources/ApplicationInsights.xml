@@ -14,7 +14,7 @@
     <TelemetryInitializers>
     </TelemetryInitializers>
     <Channel>
-        <Type>com.microsoft.applicationinsights.channel.StdOutChannel</Type>
+        <Type>com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel</Type>
         <EndpointAddress>
             test-endpoint
         </EndpointAddress>

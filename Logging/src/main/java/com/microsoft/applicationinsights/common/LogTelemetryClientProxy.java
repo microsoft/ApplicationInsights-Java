@@ -4,10 +4,10 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.DefaultTelemetryClient;
-import com.microsoft.applicationinsights.datacontracts.BaseTelemetry;
-import com.microsoft.applicationinsights.datacontracts.ExceptionTelemetry;
-import com.microsoft.applicationinsights.datacontracts.TraceTelemetry;
-import com.microsoft.applicationinsights.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
  * This class encapsulates all the common logic for sending AI telemetry.

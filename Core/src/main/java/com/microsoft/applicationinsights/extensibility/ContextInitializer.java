@@ -1,10 +1,10 @@
 package com.microsoft.applicationinsights.extensibility;
 
-import com.microsoft.applicationinsights.datacontracts.TelemetryContext;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 
 /**
  * Represents an object that implements supporting logic for TelemetryContext.
- * @see com.microsoft.applicationinsights.datacontracts.TelemetryContext
+ * @see com.microsoft.applicationinsights.telemetry.TelemetryContext
  */
 public interface ContextInitializer
 {
