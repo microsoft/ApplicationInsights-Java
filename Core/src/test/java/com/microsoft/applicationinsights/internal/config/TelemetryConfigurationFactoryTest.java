@@ -194,7 +194,7 @@ public class TelemetryConfigurationFactoryTest {
 
         assertFalse(mockConfiguration.isDeveloperMode());
         assertFalse(mockConfiguration.isTrackingIsDisabled());
-        assertEquals(mockConfiguration.contextInitializers.size(), 4);
+        assertEquals(mockConfiguration.contextInitializers.size(), 3);
         assertEquals(mockConfiguration.telemetryInitializers.size(), 0);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
     }
