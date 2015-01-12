@@ -26,9 +26,9 @@ public interface TelemetriesTransmitter {
         Collection<Telemetry> fetch();
     }
 
-    void scheduleSend(TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit);
+    boolean scheduleSend(TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit);
 
-    void sendNow(Collection<Telemetry> telemetries);
+    boolean sendNow(Collection<Telemetry> telemetries);
 
     void stop(long timeout, TimeUnit timeUnit);
 }
