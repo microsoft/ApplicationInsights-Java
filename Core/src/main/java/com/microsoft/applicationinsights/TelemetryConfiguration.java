@@ -13,12 +13,12 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 /**
  * Configuration data and logic for telemetry clients.
  */
-public enum TelemetryConfiguration implements TelemetryClientConfiguration {
-    INSTANCE;
+public final class TelemetryConfiguration implements TelemetryClientConfiguration {
 
     // Synchronization for instance initialization
-    private final Object s_lock = new Object();
-    private volatile boolean initialized = false;
+    private final static Object s_lock = new Object();
+    private static volatile boolean initialized = false;
+    private static TelemetryConfiguration active;
 
     private String instrumentationKey;
 
@@ -37,16 +37,18 @@ public enum TelemetryConfiguration implements TelemetryClientConfiguration {
      * We initialize the instance once by using {@link com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory}
      * @return The instance
      */
-    public TelemetryConfiguration getActive() {
+    public static TelemetryConfiguration getActive() {
         if (!initialized) {
             synchronized (s_lock) {
                 if (!initialized) {
-                    TelemetryConfigurationFactory.INSTANCE.initialize(this);
+                    active = new TelemetryConfiguration();
+                    TelemetryConfigurationFactory.INSTANCE.initialize(active);
+                    initialized = true;
                 }
             }
         }
 
-        return this;
+        return active;
     }
 
     @Override

@@ -4,11 +4,15 @@
       Learn more about Application Insights configuration with ApplicationInsights.config here:
       http://go.microsoft.com/fwlink/?LinkID=513840
     -->
-    <InstrumentationKey>YOUR-INSTRUMENTATION-KEY</InstrumentationKey>
-    <TelemetryModules>
-    </TelemetryModules>
+
+    <!--YOUR-INSTRUMENTATION-KEY-->
+    <InstrumentationKey></InstrumentationKey>
+
     <ContextInitializers>
     </ContextInitializers>
+
     <TelemetryInitializers>
     </TelemetryInitializers>
+
+
 </ApplicationInsights>

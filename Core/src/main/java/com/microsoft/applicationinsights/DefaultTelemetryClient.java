@@ -28,7 +28,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      */
     public DefaultTelemetryClient(TelemetryConfiguration configuration) {
         if (configuration == null)
-            configuration = TelemetryConfiguration.INSTANCE.getActive();
+            configuration = TelemetryConfiguration.getActive();
 
         synchronized (TELEMETRY_STOP_HOOK_LOCK) {
             Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -46,7 +46,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * Initializes a new instance of the TelemetryClient class, configured from the active configuration.
      */
     public DefaultTelemetryClient() {
-        this(TelemetryConfiguration.INSTANCE.getActive());
+        this(TelemetryConfiguration.getActive());
     }
 
     /**
