@@ -3,8 +3,6 @@ package com.microsoft.applicationinsights.telemetry;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 import com.google.common.base.Strings;
 
@@ -43,8 +41,8 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
 
     @Override
     protected void additionalSanitize() {
-        this.data.setName(LocalStringsUtils.sanitize(this.data.getName(), 1024));
-        MapUtil.sanitizeMeasurements(this.getMetrics());
+        this.data.setName(Sanitizer.sanitizeName(this.data.getName()));
+        Sanitizer.sanitizeMeasurements(this.getMetrics());
     }
 
     @Override

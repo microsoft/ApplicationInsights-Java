@@ -62,16 +62,4 @@ public class MapUtil
         else
             map.put(key, LocalStringsUtils.getDateFormatter().format(value));
     }
-
-    public static void sanitizeProperties(Map<String, String> map) {
-        if (map != null) {
-            // TODO: implement this stuff.
-        }
-    }
-
-    public static void sanitizeMeasurements(Map<String, Double> map) {
-        if (map != null) {
-            // TODO: implement this stuff.
-        }
-    }
 }

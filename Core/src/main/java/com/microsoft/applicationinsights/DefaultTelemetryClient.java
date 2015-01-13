@@ -52,6 +52,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
     /**
      * Gets the channel used by the client.
      */
+    @Override
     public TelemetryChannel getChannel() {
         if (channel == null) {
             this.channel = configuration.getChannel();
@@ -63,6 +64,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
     /**
      * Sets the channel used by the client.
      */
+    @Override
     public void setChannel(TelemetryChannel channel) {
         this.channel = channel;
     }
@@ -72,6 +74,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * @return A telemetry context used for all records. Changes to it will impact all future telemetry in this
      * application session.
      */
+    @Override
     public TelemetryContext getContext() {
         if (context == null) {
             context = createInitializedContext();
@@ -95,6 +98,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * @param properties Named string values you can use to search and classify events.
      * @param metrics Measurements associated with this event.
      */
+    @Override
     public void trackEvent(String name, Map<String, String> properties, Map<String, Double> metrics) {
         if (isDisabled()) {
             return;
@@ -121,6 +125,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * Sends an EventTelemetry record for display in Diagnostic Search and aggregation in Metrics Explorer.
      * @param name A name for the event.
      */
+    @Override
     public void trackEvent(String name) {
         trackEvent(name, null, null);
     }
@@ -129,6 +134,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * Sends an EventTelemetry record for display in Diagnostic Search and aggregation in Metrics Explorer.
      * @param telemetry An event log item.
      */
+    @Override
     public void trackEvent(EventTelemetry telemetry) {
         track(telemetry);
     }
@@ -138,6 +144,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * @param message A log message.
      * @param properties Named string values you can use to search and classify trace messages.
      */
+    @Override
     public void trackTrace(String message, Map<String, String> properties) {
         if (isDisabled()) {
             return;
@@ -160,6 +167,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * Sends a TraceTelemetry record for display in Diagnostic Search.
      * @param message A log message.
      */
+    @Override
     public void trackTrace(String message) {
         trackTrace(message, null);
     }
@@ -167,6 +175,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
     /**
      * Sends a TraceTelemetry record for display in Diagnostic Search.
      */
+    @Override
     public void trackTrace(TraceTelemetry telemetry) {
         this.track(telemetry);
     }
@@ -180,6 +189,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * @param max The maximum value of the sample.
      * @param properties Named string values you can use to search and classify trace messages.
      */
+    @Override
     public void trackMetric(String name, double value, int sampleCount, double min, double max, Map<String, String> properties) {
         if (isDisabled()) {
             return;
@@ -206,6 +216,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * @param name The name of the measurement
      * @param value The value of the measurement.
      */
+    @Override
     public void trackMetric(String name, double value) {
         trackMetric(name, value, 1, value, value, null);
     }
@@ -213,6 +224,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
     /**
      * Send a MetricTelemetry record for aggregation in Metric Explorer.
      */
+    @Override
     public void trackMetric(MetricTelemetry telemetry) {
         track(telemetry);
     }
@@ -223,6 +235,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * @param properties Named string values you can use to search and classify trace messages.
      * @param metrics Measurements associated with this exception event.
      */
+    @Override
     public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
         if (isDisabled()) {
             return;
@@ -246,6 +259,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * Sends an ExceptionTelemetry record for display in Diagnostic Search.
      * @param exception The exception to log information about.
      */
+    @Override
     public void trackException(Exception exception) {
         trackException(exception, null, null);
     }
@@ -266,6 +280,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * @param responseCode The HTTP response code.
      * @param success 'true' if the request was a success, 'false' otherwise.
      */
+    @Override
     public void trackHttpRequest(String name, Date timestamp, long duration, String responseCode, boolean success) {
         if (isDisabled()) {
             return;
@@ -274,10 +289,12 @@ public final class DefaultTelemetryClient implements TelemetryClient {
         track(new HttpRequestTelemetry(name, timestamp, duration, responseCode, success));
     }
 
+    @Override
     public void trackHttpRequest(HttpRequestTelemetry request) {
         track(request);
     }
 
+    @Override
     public void trackRemoteDependency(RemoteDependencyTelemetry telemetry) {
         if (telemetry == null) {
             telemetry = new RemoteDependencyTelemetry("");
@@ -286,9 +303,33 @@ public final class DefaultTelemetryClient implements TelemetryClient {
         track(telemetry);
     }
 
+    @Override
+    public void trackPageView(String name) {
+        if (isDisabled()) {
+            return;
+        }
+
+        if (name == null) {
+            name = "";
+        }
+
+        Telemetry telemetry = new PageViewTelemetry(name);
+        track(telemetry);
+    }
+
+    /**
+     * Send information about the page viewed in the application.
+     * @param telemetry The telemetry to send
+     */
+    @Override
+    public void trackPageView(PageViewTelemetry telemetry) {
+        track(telemetry);
+    }
+
     /**
      * This method is part of the Application Insights infrastructure. Do not call it directly.
      */
+    @Override
     public void track(Telemetry telemetry) {
         if (telemetry == null) {
             throw new IllegalArgumentException("telemetry item cannot be null");
@@ -333,5 +374,17 @@ public final class DefaultTelemetryClient implements TelemetryClient {
         }
 
         return ctx;
+    }
+
+    private boolean canTrack(Telemetry telemetry) {
+        if (telemetry == null) {
+            throw new IllegalArgumentException("telemetry item cannot be null");
+        }
+
+        if (isDisabled()) {
+            return false;
+        }
+
+        return true;
     }
 }

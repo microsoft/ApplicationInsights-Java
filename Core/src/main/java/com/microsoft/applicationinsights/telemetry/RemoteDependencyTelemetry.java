@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 import com.google.common.base.Strings;
 
@@ -13,7 +12,7 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
 
     public RemoteDependencyTelemetry() {
         super();
-        this.data = new RemoteDependencyData();
+        data = new RemoteDependencyData();
         initialize(this.data.getProperties());
     }
 
@@ -23,7 +22,7 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     }
 
     public String getName() {
-        return this.data.getName();
+        return data.getName();
     }
 
     public void setName(String name) {
@@ -31,20 +30,20 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
             throw new IllegalArgumentException("The event name cannot be null or empty");
         }
 
-        this.data.setName(name);
+        data.setName(name);
     }
 
     public double getValue() {
-        return this.data.getValue();
+        return data.getValue();
     }
 
     public void setValue(double value) {
-        this.data.setValue(value);
+        data.setValue(value);
     }
 
     @Override
     protected void additionalSanitize() {
-        this.data.setName(LocalStringsUtils.sanitize(this.data.getName(), 1024));
+        data.setName(Sanitizer.sanitizeName(data.getName()));
     }
 
     @Override

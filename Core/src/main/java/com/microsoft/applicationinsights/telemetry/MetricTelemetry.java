@@ -4,7 +4,6 @@ import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 import com.google.common.base.Strings;
 
@@ -71,7 +70,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
 
     @Override
     protected void additionalSanitize() {
-        this.metric.setName(LocalStringsUtils.sanitize(this.metric.getName(), 1024));
+        this.metric.setName(Sanitizer.sanitizeName(metric.getName()));
     }
 
     @Override
