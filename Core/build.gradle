@@ -17,13 +17,13 @@ dependencies {
 // region Publishing tasks
 
 uploadArchives {
-    if (this.hasProperty("mavenuserpassword")) {
+    if (this.hasProperty("mavenUserPassword")) {
         repositories {
             mavenDeployer {
                 configuration = configurations.deployerJars
 
-                repository(url: mavenrepositoryurl) {
-                    authentication(userName: mavenusername, password: mavenuserpassword)
+                repository(url: mavenRepositoryUrl) {
+                    authentication(userName: mavenUsername, password: mavenUserPassword)
                 }
             }
         }

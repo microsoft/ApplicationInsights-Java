@@ -17,18 +17,18 @@ allprojects {
     apply plugin: 'maven'
 
     task checkUploadProperties << {
-        if (!this.hasProperty("mavenuserpassword")) {
-            throw new GroovyRuntimeException("Property mavenuserpassword should be defined for uploadArchives task")
-        } else if (!this.hasProperty("mavenusername")) {
-            throw new GroovyRuntimeException("Property mavenusername should be defined for uploadArchives task")
-        } else if (!this.hasProperty("mavenrepositoryurl")) {
-            throw new GroovyRuntimeException("Property mavenrepositoryurl should be defined for uploadArchives task")
+        if (!this.hasProperty("mavenUserPassword")) {
+            throw new GroovyRuntimeException("Property mavenUserPassword should be defined for uploadArchives task")
+        } else if (!this.hasProperty("mavenUsername")) {
+            throw new GroovyRuntimeException("Property mavenUsername should be defined for uploadArchives task")
+        } else if (!this.hasProperty("mavenRepositoryUrl")) {
+            throw new GroovyRuntimeException("Property mavenRepositoryUrl should be defined for uploadArchives task")
         }
     }
 
     task checkIfReleaseAndUpdateVersion << {
-        if (this.hasProperty("release")) {
-            version = release
+        if (this.hasProperty("releaseVersion")) {
+            version = releaseVersion
         }
     }
 
