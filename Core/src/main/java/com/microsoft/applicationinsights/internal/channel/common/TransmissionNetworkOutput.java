@@ -113,7 +113,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 // return transmission to the dispatcher
                 ioeIn.printStackTrace(System.err);
             }
-        } finally {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
             if (request != null) {
                 request.releaseConnection();
             }

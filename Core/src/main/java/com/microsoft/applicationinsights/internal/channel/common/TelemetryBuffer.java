@@ -126,9 +126,19 @@ public final class TelemetryBuffer {
             int currentSize = telemetries.size();
 
             if (currentSize >= maxTelemetriesInBatch) {
-                sender.sendNow(prepareTelemetriesForSend());
+                if (!sender.sendNow(prepareTelemetriesForSend())) {
+                    // 'prepareTelemetriesForSend' already created a new container
+                    // so basically we have nothing to do, the old container is lost
+                    // TODO: internal log
+                }
             } else if (currentSize == 1) {
-                sender.scheduleSend(new TelemetryBufferTelemetriesFetcher(generation), transmitBufferTimeoutInSeconds, TimeUnit.SECONDS);
+                if (!sender.scheduleSend(new TelemetryBufferTelemetriesFetcher(generation), transmitBufferTimeoutInSeconds, TimeUnit.SECONDS)) {
+                    // We cannot schedule send so we give up the Telemetry
+                    // The reason for this is that in case the maximum buffer size is greater than 2
+                    // than in case a new Telemetry arrives it won't trigger the schedule and might be lost too
+                    // TODO: internal log
+                    telemetries.clear();
+                }
             }
         }
     }
