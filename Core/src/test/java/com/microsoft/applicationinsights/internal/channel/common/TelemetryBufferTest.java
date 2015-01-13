@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -13,11 +13,13 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 
 public class TelemetryBufferTest {
@@ -69,7 +71,7 @@ public class TelemetryBufferTest {
         }
 
         @Override
-        public void scheduleSend(final TelemetriesTransmitter.TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit) {
+        public boolean scheduleSend(final TelemetriesTransmitter.TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit) {
             assertNotNull(telemetriesFetcher);
 
             int called = scheduleSendCallCounter.incrementAndGet();
@@ -98,15 +100,19 @@ public class TelemetryBufferTest {
                     queue.offer(new ScheduledSendResult(true, ""));
                 }
             }, value, timeUnit);
+
+            return true;
         }
 
         @Override
-        public void sendNow(Collection<Telemetry> telemetries) {
+        public boolean sendNow(Collection<Telemetry> telemetries) {
             int called = sendNowCallCounter.incrementAndGet();
             assertEquals("Wrong number of scheduled sends by the TransmissionBuffer", called, expectedNumberOfSendNowCalls);
 
             assertNotNull("Unexpected null value for telemetries container", telemetries);
             assertEquals("Wrong size of telemetries container", telemetries.size(), expectedTelemetriesNumberInSendNow);
+
+            return true;
         }
 
         @Override
@@ -170,6 +176,8 @@ public class TelemetryBufferTest {
     @Test
     public void testSendWhenBufferIsFullInNonDeveloperMode() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+        Mockito.doReturn(true).when(mockSender).sendNow(anyCollection());
+        Mockito.doReturn(true).when(mockSender).scheduleSend(any(TelemetriesTransmitter.TelemetriesFetcher.class), anyLong(), any(TimeUnit.class));
 
         TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 2, 1200);
 
@@ -180,6 +188,67 @@ public class TelemetryBufferTest {
 
         Mockito.verify(mockSender, Mockito.times(1)).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher) any(), anyLong(), (TimeUnit) anyObject());
         Mockito.verify(mockSender, Mockito.times(1)).sendNow(anyCollectionOf(Telemetry.class));
+    }
+
+
+    @Test
+    public void testSendReturnsFalseOnScheduleSend() throws Exception {
+        class StubTelemetriesTransmitter implements TelemetriesTransmitter {
+            private int scheduleSendCounter = 2;
+            private Collection<Telemetry> sendNowCollection;
+
+            @Override
+            public boolean scheduleSend(TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit) {
+                --scheduleSendCounter;
+                if (scheduleSendCounter > 0) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            @Override
+            public boolean sendNow(Collection<Telemetry> telemetries) {
+                sendNowCollection = telemetries;
+                return true;
+            }
+
+            @Override
+            public void stop(long timeout, TimeUnit timeUnit) {
+
+            }
+
+            public Collection<Telemetry> getSendNowCollection() {
+                return sendNowCollection;
+            }
+        };
+
+        List<Telemetry> all = new ArrayList<Telemetry>();
+        List<Telemetry> expected = new ArrayList<Telemetry>();
+        for (int i = 0; i < 4; ++i) {
+            Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+            all.add(mockTelemetry);
+
+            if (i != 0) {
+                expected.add(mockTelemetry);
+            }
+        }
+
+        StubTelemetriesTransmitter mockSender = new StubTelemetriesTransmitter();
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 3, 1200, false);
+
+        for (Telemetry telemetry : all) {
+            testedBuffer.add(telemetry);
+        }
+
+        Collection<Telemetry> sendNowCollection = mockSender.getSendNowCollection();
+        assertEquals(sendNowCollection.size(), expected.size());
+
+        int i = 0;
+        for (Telemetry telemetry : sendNowCollection) {
+            assertSame(telemetry, expected.get(i));
+            ++i;
+        }
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.util.Collection;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -89,6 +90,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
         }
     }
 
+    private final static int MAX_PENDING_SCHEDULE_REQUESTS = 2048;
+
     private final TransmissionDispatcher transmissionDispatcher;
 
     private final TelemetrySerializer serializer;
@@ -97,9 +100,14 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
 
     private final TransmissionsLoader transmissionsLoader;
 
+    private final Semaphore semaphore;
+
     public TransmitterImpl(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, TransmissionsLoader transmissionsLoader) {
         this.transmissionDispatcher = transmissionDispatcher;
         this.serializer = serializer;
+
+        semaphore = new Semaphore(MAX_PENDING_SCHEDULE_REQUESTS);
+
         threadPool = new ScheduledThreadPoolExecutor(2);
         threadPool.setThreadFactory(new ThreadFactory() {
             @Override
@@ -109,22 +117,74 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
                 return thread;
             }
         });
+
         this.transmissionsLoader = transmissionsLoader;
         this.transmissionsLoader.load(false);
     }
 
     @Override
-    public void scheduleSend(TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit) {
+    public boolean scheduleSend(TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit) {
         Preconditions.checkNotNull(telemetriesFetcher, "telemetriesFetcher should be non-null value");
 
-        threadPool.schedule(new ScheduledSendHandler(transmissionDispatcher, telemetriesFetcher, serializer), value, timeUnit);
+        if (!semaphore.tryAcquire()) {
+            return false;
+        }
+
+        try {
+            final Runnable command = new ScheduledSendHandler(transmissionDispatcher, telemetriesFetcher, serializer);
+            threadPool.schedule(new Runnable() {
+                public void run() {
+                    try {
+                        semaphore.release();
+                        command.run();
+                    } catch (Exception e) {
+                    } catch (Throwable t) {
+                    } finally {
+                    }
+                }
+            }, value, timeUnit);
+
+            return true;
+        } catch (Exception e) {
+            semaphore.release();
+        } catch (Throwable t) {
+            semaphore.release();
+        }
+
+        return true;
     }
 
     @Override
-    public void sendNow(Collection<Telemetry> telemetries) {
+    public boolean sendNow(Collection<Telemetry> telemetries) {
         Preconditions.checkNotNull(telemetries, "telemetries should be non-null value");
 
+        if (!semaphore.tryAcquire()) {
+            return false;
+        }
+
         threadPool.submit(new SendNowHandler(transmissionDispatcher, serializer, telemetries));
+        final Runnable command = new SendNowHandler(transmissionDispatcher, serializer, telemetries);
+        try {
+            threadPool.execute(new Runnable() {
+                public void run() {
+                    try {
+                        semaphore.release();
+                        command.run();
+                    } catch (Exception e) {
+                    } catch (Throwable t) {
+                    } finally {
+                    }
+                }
+            });
+
+            return true;
+        } catch (Exception e) {
+            semaphore.release();
+        } catch (Throwable t) {
+            semaphore.release();
+        }
+
+        return false;
     }
 
     @Override

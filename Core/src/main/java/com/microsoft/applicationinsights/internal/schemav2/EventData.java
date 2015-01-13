@@ -1,7 +1,8 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
@@ -34,12 +35,12 @@ public class EventData extends Domain {
     /**
      * Backing field for property Properties.
      */
-    private HashMap<String, String> properties;
+    private ConcurrentMap<String, String> properties;
 
     /**
      * Backing field for property Measurements.
      */
-    private HashMap<String, Double> measurements;
+    private ConcurrentMap<String, Double> measurements;
 
     /**
      * Initializes a new instance of the <see cref="EventData"/> class.
@@ -72,9 +73,9 @@ public class EventData extends Domain {
     /**
      * Gets the Properties property.
      */
-    public HashMap<String, String> getProperties() {
+    public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new HashMap<String, String>();
+            this.properties = new ConcurrentHashMap<String, String>();
         }
         return this.properties;
     }
@@ -82,16 +83,16 @@ public class EventData extends Domain {
     /**
      * Sets the Properties property.
      */
-    public void setProperties(HashMap<String, String> value) {
+    public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 
     /**
      * Gets the Measurements property.
      */
-    public HashMap<String, Double> getMeasurements() {
+    public ConcurrentMap<String, Double> getMeasurements() {
         if (this.measurements == null) {
-            this.measurements = new HashMap<String, Double>();
+            this.measurements = new ConcurrentHashMap<String, Double>();
         }
         return this.measurements;
     }
@@ -99,7 +100,7 @@ public class EventData extends Domain {
     /**
      * Sets the Measurements property.
      */
-    public void setMeasurements(HashMap<String, Double> value) {
+    public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
 

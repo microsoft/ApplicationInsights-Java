@@ -1,15 +1,16 @@
 package com.microsoft.applicationinsights.telemetry;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.SendableData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
-
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Superclass for all telemetry data classes.
@@ -22,8 +23,8 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
     protected BaseTelemetry() {
     }
 
-    protected void initialize(Map<String, String> properties) {
-        this.context = new TelemetryContext(properties, new HashMap<String, String>());
+    protected void initialize(ConcurrentMap<String, String> properties) {
+        this.context = new TelemetryContext(properties, new ConcurrentHashMap<String, String>());
     }
 
     @Override

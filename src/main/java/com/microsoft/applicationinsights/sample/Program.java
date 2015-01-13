@@ -15,6 +15,39 @@ class Program
 {
     public static void main(String[] args) throws IOException
     {
+        validateCore();
+        traceLog4J12();
+        traceLog4J2();
+        traceLogback();
+
+        System.out.println("Press Enter to terminate...");
+        System.in.read();
+    }
+
+    // region Logging
+
+    private static void traceLog4J12() {
+        org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getRootLogger();
+        logger.trace("New Log4j 1.2 event!");
+    }
+
+    private static void traceLog4J2() {
+        org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getRootLogger();
+        logger.trace("New Log4j 2 event!");
+    }
+
+    private static void traceLogback() {
+
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("root");
+        logger.trace("New Logback event!");
+    }
+
+    // endregion Logging
+
+    // region Core
+
+    private static void validateCore() throws IOException {
+
         TelemetryClient appInsights = new DefaultTelemetryClient();
         appInsights.getContext().getProperties().put("programmatic", "works");
 
@@ -53,13 +86,12 @@ class Program
 //        rdt.setAsync(false);
 //
 //        appInsights.track(rdt);
-
-        System.out.println("Press Enter to terminate...");
-        System.in.read();
     }
 
     private static void throwException(String msg) throws Exception
     {
         throw new Exception(msg);
     }
+
+    // endregion Core
 }
