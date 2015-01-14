@@ -133,7 +133,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             String responseLine = reader.readLine();
             respEntity.getContent().close();
 
-            InternalLogger.INSTANCE.log("Failed to send: {0}", responseLine);
+            InternalLogger.INSTANCE.log("Failed to send: %s", responseLine);
         } catch (IOException e) {
             InternalLogger.INSTANCE.log("Failed to send and failed to log the error");
         }

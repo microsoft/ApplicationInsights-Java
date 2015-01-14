@@ -82,6 +82,8 @@ public enum TelemetryConfigurationFactory {
 
             setContextInitializers(parser, configuration);
             setTelemetryInitializers(parser, configuration);
+
+            setInternalLogger(parser, configuration);
         } catch (Exception e) {
             e.printStackTrace();
         }
