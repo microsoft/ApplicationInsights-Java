@@ -69,6 +69,9 @@ public enum TelemetryConfigurationFactory {
                 return;
             }
 
+            // Set the logger first so we might have possible errors written
+            setInternalLogger(parser, configuration);
+
             // Set Developer Mode first so it might change our behavior
             setDeveloperMode(parser, configuration);
 
@@ -82,10 +85,8 @@ public enum TelemetryConfigurationFactory {
 
             setContextInitializers(parser, configuration);
             setTelemetryInitializers(parser, configuration);
-
-            setInternalLogger(parser, configuration);
         } catch (Exception e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to initialize configuration, exception: %s", e.getMessage());
         }
     }
 
@@ -138,7 +139,7 @@ public enum TelemetryConfigurationFactory {
         String channelName = channelData.get(CLASS_TYPE);
 
         if (channelName != null) {
-            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, TelemetryConfiguration.class, configuration, configuration.isDeveloperMode());
+            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, TelemetryConfiguration.class, configuration);
             if (channel != null) {
                 configuration.setChannel(channel);
                 return true;
@@ -149,7 +150,7 @@ public enum TelemetryConfigurationFactory {
             configuration.setChannel(new InProcessTelemetryChannel(configuration));
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to create InProcessTelemetryChannel, exception: %s", e.getMessage());
         }
 
         return false;
@@ -189,7 +190,7 @@ public enum TelemetryConfigurationFactory {
         initializerList.add(new SdkVersionContextInitializer());
         initializerList.add(new DeviceInfoContextInitializer());
 
-        setInitializers(ContextInitializer.class, parser, CONTEXT_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList, configuration.isDeveloperMode());
+        setInitializers(ContextInitializer.class, parser, CONTEXT_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
     }
 
     /**
@@ -200,7 +201,7 @@ public enum TelemetryConfigurationFactory {
      */
     private void setTelemetryInitializers(ConfigFileParser parser, TelemetryConfiguration configuration) {
         List<TelemetryInitializer> initializerList = configuration.getTelemetryInitializers();
-        setInitializers(TelemetryInitializer.class, parser, TELEMETRY_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList, configuration.isDeveloperMode());
+        setInitializers(TelemetryInitializer.class, parser, TELEMETRY_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
     }
 
     /**
@@ -233,7 +234,6 @@ public enum TelemetryConfigurationFactory {
      * @param sectionName The section name where we tell the parser to search
      * @param itemName The internal name inside the section name, to point the parser
      * @param list The container of instances, this is where we store our instances that we create
-     * @param notifyOnErrors On true will notify on errors
      * @param <T>
      */
     private <T> void setInitializers(
@@ -241,11 +241,10 @@ public enum TelemetryConfigurationFactory {
             ConfigFileParser parser,
             String sectionName,
             String itemName,
-            List<T> list,
-            boolean notifyOnErrors) {
+            List<T> list) {
         Collection<String> classNames = parser.getList(sectionName, itemName, CLASS_TYPE);
         for (String className : classNames) {
-            T initializer = createInstance(className, clazz, notifyOnErrors);
+            T initializer = createInstance(className, clazz);
             if (initializer != null) {
                 list.add(initializer);
             }
@@ -260,35 +259,24 @@ public enum TelemetryConfigurationFactory {
      * @param className The class we create an instance of
      * @param interfaceClass The class' parent interface we wish to work with
      * @param <T> The class type to create
-     * @param notifyOnErrors On true will notify on errors
      * @return The instance or null if failed
      */
     @SuppressWarnings("unchecked")
-    private <T> T createInstance(String className, Class<T> interfaceClass, boolean notifyOnErrors) {
+    private <T> T createInstance(String className, Class<T> interfaceClass) {
         try {
             Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
             T instance = (T)clazz.newInstance();
             return instance;
         } catch (ClassCastException e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, ClassCastException", className);
         } catch (ClassNotFoundException e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, ClassNotFoundException", className);
         } catch (InstantiationException e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, InstantiationException", className);
         } catch (IllegalAccessException e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, IllegalAccessException", className);
         } catch (Exception e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, Exception: %s", className, e.getMessage());
         }
 
         return null;
@@ -306,36 +294,25 @@ public enum TelemetryConfigurationFactory {
      * @param argument The argument to pass the ctor
      * @param <T> The class type to create
      * @param <A> The class type as the ctor argument
-     * @param notifyOnErrors On true will notify on errors
      * @return The instance or null if failed
      */
     @SuppressWarnings("unchecked")
-    private <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument, boolean notifyOnErrors) {
+    private <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
         try {
             Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
             Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
         } catch (ClassCastException e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, ClassCastException", className);
         } catch (ClassNotFoundException e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, ClassNotFoundException", className);
         } catch (InstantiationException e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, InstantiationException", className);
         } catch (IllegalAccessException e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, IllegalAccessException", className);
         } catch (Exception e) {
-            if (notifyOnErrors) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.log("Failed to create %s, Exception: %s", className, e.getMessage());
         }
 
         return null;

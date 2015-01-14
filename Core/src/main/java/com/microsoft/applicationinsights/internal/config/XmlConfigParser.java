@@ -1,8 +1,5 @@
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -12,6 +9,11 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -55,13 +57,13 @@ final class XmlConfigParser implements ConfigFileParser {
 
             return true;
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to parse file %s, exception: %s", fileName, e.getMessage());
         } catch (SAXException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to parse file %s, exception: %s", fileName, e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to parse file %s, exception: %s", fileName, e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to parse file %s, exception: %s", fileName, e.getMessage());
         }
 
         return false;
