@@ -38,6 +38,8 @@ public interface TelemetryClient {
 
     void trackException(Exception exception);
 
+    void trackException(ExceptionTelemetry telemetry);
+
     void trackHttpRequest(String name, Date timestamp, long duration, String responseCode, boolean success);
 
     void trackHttpRequest(HttpRequestTelemetry request);
