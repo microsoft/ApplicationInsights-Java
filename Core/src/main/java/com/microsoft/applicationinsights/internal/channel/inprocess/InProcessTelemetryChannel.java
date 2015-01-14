@@ -31,6 +31,10 @@ import com.google.common.base.Preconditions;
  * Created by gupele on 12/17/2014.
  */
 public final class InProcessTelemetryChannel implements TelemetryChannel {
+    private final static int DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 128;
+
+    private final static int TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS = 10;
+
     private boolean developerMode = false;
 
     private final TelemetriesTransmitter telemetriesTransmitter;
@@ -41,8 +45,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
         // Temporary
         telemetriesTransmitter = new NoConfigurationTransmitterFactory().create(configuration.getEndpoint());
-
-        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, configuration.isDeveloperMode());
+        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
+        setDeveloperMode(configuration.isDeveloperMode());
     }
 
     @Override
@@ -52,7 +56,11 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     @Override
     public void setDeveloperMode(boolean developerMode) {
-        this.developerMode = developerMode;
+        if (developerMode != this.developerMode) {
+            this.developerMode = developerMode;
+            int maxTelemetriesInBatch = this.developerMode ? 1 : DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER;
+            telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
+        }
     }
 
     @Override
