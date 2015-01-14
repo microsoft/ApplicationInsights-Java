@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.zip.GZIPOutputStream;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
@@ -46,8 +47,9 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                     serializeAndCompress(zipStream, telemetries);
                     succeeded = true;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    InternalLogger.INSTANCE.log("Failed to serialize , exception: %s", e.getMessage());
                 } catch (Throwable t) {
+                    InternalLogger.INSTANCE.log("Failed to serialize , unknown exception");
                 } finally {
                     zipStream.close();
                 }
@@ -60,7 +62,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to serialize , exception: %s", e.getMessage());
         }
 
         return Optional.fromNullable(result);
