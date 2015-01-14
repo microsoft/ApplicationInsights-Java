@@ -54,7 +54,7 @@ public class LocalStringsUtils
     public static DateFormat getDateFormatter()
     {
         if (s_dateFormatter == null)
-            s_dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+            s_dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
         return s_dateFormatter;
     }
 

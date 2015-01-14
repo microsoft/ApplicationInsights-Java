@@ -209,6 +209,8 @@ public final class DefaultTelemetryClient implements TelemetryClient {
         if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, mt.getContext().getProperties());
         }
+        
+        trackMetric(mt);
     }
 
     /**
