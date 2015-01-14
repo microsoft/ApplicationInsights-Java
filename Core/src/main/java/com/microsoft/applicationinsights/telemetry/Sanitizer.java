@@ -51,7 +51,7 @@ final class Sanitizer {
         if (!Strings.isNullOrEmpty(urlAsString)) {
 
             if (urlAsString.length() > MAX_URL_LENGTH) {
-                urlAsString = urlAsString.substring(0, MAX_URL_LENGTH - 1);
+                urlAsString = urlAsString.substring(0, MAX_URL_LENGTH);
             }
 
             // In case that the truncated string is invalid

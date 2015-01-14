@@ -1,5 +1,7 @@
 package com.microsoft.applicationinsights.internal.util;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -26,7 +28,7 @@ public class DeviceInfo
         }
         catch (UnknownHostException e)
         {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed get host name, exception: %s", e.getMessage());
         }
         return null;
     }

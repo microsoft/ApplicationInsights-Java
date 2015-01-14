@@ -5,9 +5,11 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
+import com.google.common.base.Preconditions;
 
 /**
  * The class is responsible for loading transmission files that were saved to the disk
@@ -63,9 +65,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                     try {
                         barrier.await();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        InternalLogger.INSTANCE.log("Interrupted during barrier wait, exception: %s", e.getMessage());
                     } catch (BrokenBarrierException e) {
-                        e.printStackTrace();
+                        InternalLogger.INSTANCE.log("Failed during barrier wait, exception: %s", e.getMessage());
                     }
 
                     // Avoid un-expected exit of threads
@@ -106,9 +108,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
             barrier.await();
             return true;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Interrupted during barrier wait, exception: %s", e.getMessage());
         } catch (BrokenBarrierException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed during barrier wait, exception: %s", e.getMessage());
         }
 
         return false;
@@ -121,7 +123,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
             try {
                 thread.join();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                InternalLogger.INSTANCE.log("Interrupted during join of active transmission loader, exception: %s", e.getMessage());
             }
         }
     }

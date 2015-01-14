@@ -6,6 +6,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
@@ -14,7 +15,6 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
  * The default implementation of the {@link TelemetriesTransmitter}

@@ -14,8 +14,8 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
 
     public EventTelemetry() {
         super();
-        this.data = new EventData();
-        initialize(this.data.getProperties());
+        data = new EventData();
+        initialize(data.getProperties());
     }
 
     public EventTelemetry(String name) {
@@ -24,11 +24,11 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
     }
 
     public Map<String,Double> getMetrics() {
-        return this.data.getMeasurements();
+        return data.getMeasurements();
     }
 
     public String getName() {
-        return this.data.getName();
+        return data.getName();
     }
 
     public void setName(String name) {
@@ -36,12 +36,12 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
             throw new IllegalArgumentException("The event name cannot be null or empty");
         }
 
-        this.data.setName(name);
+        data.setName(name);
     }
 
     @Override
     protected void additionalSanitize() {
-        this.data.setName(Sanitizer.sanitizeName(this.data.getName()));
+        data.setName(Sanitizer.sanitizeName(data.getName()));
         Sanitizer.sanitizeMeasurements(this.getMetrics());
     }
 
