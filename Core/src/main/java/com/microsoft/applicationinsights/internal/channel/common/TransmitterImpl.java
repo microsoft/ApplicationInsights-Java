@@ -162,7 +162,6 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
             return false;
         }
 
-        threadPool.submit(new SendNowHandler(transmissionDispatcher, serializer, telemetries));
         final Runnable command = new SendNowHandler(transmissionDispatcher, serializer, telemetries);
         try {
             threadPool.execute(new Runnable() {
