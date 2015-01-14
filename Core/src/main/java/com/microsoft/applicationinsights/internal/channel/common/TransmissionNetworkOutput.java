@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
@@ -77,7 +78,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         try {
             httpClient.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to close client, exception: {0}", e.getMessage());
         }
     }
 
@@ -98,23 +99,21 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 }
             }
         } catch (org.apache.http.conn.ConnectionPoolTimeoutException e) {
-            // log?
             // We let the Dispatcher decide
             transmissionDispatcher.dispatch(transmission);
+            InternalLogger.INSTANCE.log("Failed to send, timeout exception");
         } catch (IOException ioe) {
-            ioe.printStackTrace(System.err);
+            InternalLogger.INSTANCE.log("Failed to send, exception: {0}", ioe.getMessage());
             try {
                 if (response != null) {
                     response.close();
                 }
             } catch (IOException ioeIn) {
-                // TODO
-                // log?
-                // return transmission to the dispatcher
-                ioeIn.printStackTrace(System.err);
+                // Returns transmission to the dispatcher
+                InternalLogger.INSTANCE.log("Failed to send and failed to close response, exception: {0}", ioeIn.getMessage());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to load transmission, file not found, exception: {0}", e.getMessage());
         }
         finally {
             if (request != null) {
@@ -134,10 +133,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             String responseLine = reader.readLine();
             respEntity.getContent().close();
 
-            // TODO: check more and log
-            System.out.println(responseLine);
+            InternalLogger.INSTANCE.log("Failed to send: {0}", responseLine);
         } catch (IOException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to send and failed to log the error");
         }
     }
 

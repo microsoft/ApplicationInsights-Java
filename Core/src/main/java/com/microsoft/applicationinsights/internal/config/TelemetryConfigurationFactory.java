@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.HashSet;
 import java.util.List;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.TelemetryClientConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.channel.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import com.google.common.base.Strings;
 
@@ -33,7 +34,10 @@ public enum TelemetryConfigurationFactory {
     private final static String DISABLE_TELEMETRY_SECTION = "DisableTelemetry";
     private final static String DEVELOPER_MODE_SECTION = "DeveloperMode";
     private final static String INSTRUMENTATION_KEY_SECTION = "InstrumentationKey";
-    private final static String CHANNEL_ENDPONT_ADDRESS = "EndpointAddress";
+    private final static String CHANNEL_ENDPOINT_ADDRESS = "EndpointAddress";
+    private final static String LOGGER_SECTION = "SDKLogger";
+    private final static String LOGGER_OUTPUT = "OutputType";
+    private final static String LOGGER_ENABLED = "Enabled";
 
     private ConfigFileParser parser;
     private String fileToParse;
@@ -53,7 +57,7 @@ public enum TelemetryConfigurationFactory {
      * Set Telemetry Initializers where they should be written with full package name
      * @param configuration
      */
-    public final void initialize(TelemetryClientConfiguration configuration) {
+    public final void initialize(TelemetryConfiguration configuration) {
         try {
             if (parser == null) {
                 parser = new XmlConfigParser();
@@ -65,9 +69,10 @@ public enum TelemetryConfigurationFactory {
                 return;
             }
 
-            setInstrumentationKey(parser, configuration);
-
+            // Set Developer Mode first so it might change our behavior
             setDeveloperMode(parser, configuration);
+
+            setInstrumentationKey(parser, configuration);
 
             if (!setChannel(parser, configuration)) {
                 return;
@@ -87,12 +92,27 @@ public enum TelemetryConfigurationFactory {
         this.parser = parser;
     }
 
-    private void setTrackingDisabledMode(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+    private void setTrackingDisabledMode(ConfigFileParser parser, TelemetryConfiguration configuration) {
         configuration.setTrackingIsDisabled(fetchBooleanValue(parser, DISABLE_TELEMETRY_SECTION, false));
     }
 
-    private void setDeveloperMode(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+    private void setDeveloperMode(ConfigFileParser parser, TelemetryConfiguration configuration) {
         configuration.setDeveloperMode(fetchBooleanValue(parser, DEVELOPER_MODE_SECTION, false));
+    }
+
+    private void setInternalLogger(ConfigFileParser parser, TelemetryConfiguration configuration) {
+        HashSet<String> itemNames = new HashSet<String>();
+        itemNames.add(LOGGER_OUTPUT);
+        itemNames.add(LOGGER_ENABLED);
+        Map<String, String> loggerData = parser.getStructuredData(LOGGER_SECTION, itemNames);
+
+        // The logger output type
+        String loggerOutput = loggerData.get(LOGGER_OUTPUT);
+        // Enable the logger?
+        String loggerEnabledAsString = loggerData.get(LOGGER_ENABLED);
+        boolean loggerEnabled = Boolean.valueOf(loggerEnabledAsString);
+
+        InternalLogger.INSTANCE.initialize(loggerOutput, loggerEnabled);
     }
 
     /**
@@ -104,19 +124,19 @@ public enum TelemetryConfigurationFactory {
      * @param configuration Where we store the {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      * @return True on success
      */
-    private boolean setChannel(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+    private boolean setChannel(ConfigFileParser parser, TelemetryConfiguration configuration) {
         HashSet<String> itemNames = new HashSet<String>();
         itemNames.add(CLASS_TYPE);
-        itemNames.add(CHANNEL_ENDPONT_ADDRESS);
+        itemNames.add(CHANNEL_ENDPOINT_ADDRESS);
         Map<String, String> channelData = parser.getStructuredData(CHANNEL_SECTION, itemNames);
 
-        String channelEndpoint = channelData.get(CHANNEL_ENDPONT_ADDRESS);
+        String channelEndpoint = channelData.get(CHANNEL_ENDPOINT_ADDRESS);
         configuration.setEndpoint(channelEndpoint);
 
         String channelName = channelData.get(CLASS_TYPE);
 
         if (channelName != null) {
-            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, TelemetryClientConfiguration.class, configuration);
+            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, TelemetryConfiguration.class, configuration, configuration.isDeveloperMode());
             if (channel != null) {
                 configuration.setChannel(channel);
                 return true;
@@ -139,7 +159,7 @@ public enum TelemetryConfigurationFactory {
      * @param configuration Where we store our findings
      * @return True if success, false otherwise
      */
-    private boolean setInstrumentationKey(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+    private boolean setInstrumentationKey(ConfigFileParser parser, TelemetryConfiguration configuration) {
         String iKey = parser.getTrimmedValue(INSTRUMENTATION_KEY_SECTION);
 
         if (Strings.isNullOrEmpty(iKey)) {
@@ -160,14 +180,14 @@ public enum TelemetryConfigurationFactory {
      * @param parser The parser we work to fetch the data
      * @param configuration Where we need to store our new instances
      */
-    private void setContextInitializers(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+    private void setContextInitializers(ConfigFileParser parser, TelemetryConfiguration configuration) {
         List<ContextInitializer> initializerList = configuration.getContextInitializers();
 
         // To keep with prev version. A few will probably be moved to the configuration
         initializerList.add(new SdkVersionContextInitializer());
         initializerList.add(new DeviceInfoContextInitializer());
 
-        setInitializers(ContextInitializer.class, parser, CONTEXT_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
+        setInitializers(ContextInitializer.class, parser, CONTEXT_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList, configuration.isDeveloperMode());
     }
 
     /**
@@ -176,9 +196,9 @@ public enum TelemetryConfigurationFactory {
      * @param parser The parser we work to fetch the data
      * @param configuration Where we need to store our new instances
      */
-    private void setTelemetryInitializers(ConfigFileParser parser, TelemetryClientConfiguration configuration) {
+    private void setTelemetryInitializers(ConfigFileParser parser, TelemetryConfiguration configuration) {
         List<TelemetryInitializer> initializerList = configuration.getTelemetryInitializers();
-        setInitializers(TelemetryInitializer.class, parser, TELEMETRY_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
+        setInitializers(TelemetryInitializer.class, parser, TELEMETRY_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList, configuration.isDeveloperMode());
     }
 
     /**
@@ -211,6 +231,7 @@ public enum TelemetryConfigurationFactory {
      * @param sectionName The section name where we tell the parser to search
      * @param itemName The internal name inside the section name, to point the parser
      * @param list The container of instances, this is where we store our instances that we create
+     * @param notifyOnErrors On true will notify on errors
      * @param <T>
      */
     private <T> void setInitializers(
@@ -218,10 +239,11 @@ public enum TelemetryConfigurationFactory {
             ConfigFileParser parser,
             String sectionName,
             String itemName,
-            List<T> list) {
+            List<T> list,
+            boolean notifyOnErrors) {
         Collection<String> classNames = parser.getList(sectionName, itemName, CLASS_TYPE);
         for (String className : classNames) {
-            T initializer = createInstance(className, clazz);
+            T initializer = createInstance(className, clazz, notifyOnErrors);
             if (initializer != null) {
                 list.add(initializer);
             }
@@ -236,24 +258,35 @@ public enum TelemetryConfigurationFactory {
      * @param className The class we create an instance of
      * @param interfaceClass The class' parent interface we wish to work with
      * @param <T> The class type to create
+     * @param notifyOnErrors On true will notify on errors
      * @return The instance or null if failed
      */
     @SuppressWarnings("unchecked")
-    private <T> T createInstance(String className, Class<T> interfaceClass) {
+    private <T> T createInstance(String className, Class<T> interfaceClass, boolean notifyOnErrors) {
         try {
             Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
             T instance = (T)clazz.newInstance();
             return instance;
         } catch (ClassCastException e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         }
 
         return null;
@@ -271,25 +304,36 @@ public enum TelemetryConfigurationFactory {
      * @param argument The argument to pass the ctor
      * @param <T> The class type to create
      * @param <A> The class type as the ctor argument
+     * @param notifyOnErrors On true will notify on errors
      * @return The instance or null if failed
      */
     @SuppressWarnings("unchecked")
-    private <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
+    private <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument, boolean notifyOnErrors) {
         try {
             Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
             Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
         } catch (ClassCastException e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (notifyOnErrors) {
+                e.printStackTrace();
+            }
         }
 
         return null;

@@ -20,14 +20,14 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
 
     private ExceptionTelemetry() {
         super();
-        this.data = new ExceptionData();
-        initialize(this.data.getProperties());
-        this.setExceptionHandledAt(ExceptionHandledAt.Unhandled);
+        data = new ExceptionData();
+        initialize(data.getProperties());
+        setExceptionHandledAt(ExceptionHandledAt.Unhandled);
     }
 
     public ExceptionTelemetry(Exception exception) {
         this();
-        this.setException(exception);
+        setException(exception);
 
     }
 
@@ -41,19 +41,19 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     }
 
     public ExceptionHandledAt getExceptionHandledAt() {
-        return Enum.valueOf(ExceptionHandledAt.class, this.data.getHandledAt());
+        return Enum.valueOf(ExceptionHandledAt.class, data.getHandledAt());
     }
 
     public void setExceptionHandledAt(ExceptionHandledAt value) {
-        this.data.setHandledAt(value.toString());
+        data.setHandledAt(value.toString());
     }
 
     public Map<String,Double> getMetrics() {
-        return this.data.getMeasurements();
+        return data.getMeasurements();
     }
 
     public List<ExceptionDetails> getExceptions() {
-        return this.data.getExceptions();
+        return data.getExceptions();
     }
 
     @Override
@@ -70,7 +70,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         ArrayList<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
         convertExceptionTree(exception, null, exceptions);
 
-        this.data.setExceptions(exceptions);
+        data.setExceptions(exceptions);
     }
 
     private static void convertExceptionTree(Throwable exception, ExceptionDetails parentExceptionDetails, List<ExceptionDetails> exceptions) {

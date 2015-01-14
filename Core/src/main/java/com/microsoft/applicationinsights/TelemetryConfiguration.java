@@ -13,7 +13,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 /**
  * Configuration data and logic for telemetry clients.
  */
-public final class TelemetryConfiguration implements TelemetryClientConfiguration {
+public final class TelemetryConfiguration {
 
     // Synchronization for instance initialization
     private final static Object s_lock = new Object();
@@ -51,12 +51,16 @@ public final class TelemetryConfiguration implements TelemetryClientConfiguratio
         return active;
     }
 
-    @Override
+    public static TelemetryConfiguration createDefault() {
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration();
+        TelemetryConfigurationFactory.INSTANCE.initialize(telemetryConfiguration);
+        return telemetryConfiguration;
+    }
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
-    @Override
     public String getEndpoint() {
         return endpoint;
     }
@@ -65,7 +69,6 @@ public final class TelemetryConfiguration implements TelemetryClientConfiguratio
         return channel;
     }
 
-    @Override
     public void setChannel(TelemetryChannel channel) {
         this.channel = channel;
     }
@@ -74,27 +77,22 @@ public final class TelemetryConfiguration implements TelemetryClientConfiguratio
         return trackingIsDisabled;
     }
 
-    @Override
     public void setTrackingIsDisabled(boolean disable) {
         trackingIsDisabled = disable;
     }
 
-    @Override
     public boolean isDeveloperMode() {
         return developerMode;
     }
 
-    @Override
     public void setDeveloperMode(boolean developerMode) {
         this.developerMode = developerMode;
     }
 
-    @Override
     public List<ContextInitializer> getContextInitializers() {
         return contextInitializers;
     }
 
-    @Override
     public List<TelemetryInitializer> getTelemetryInitializers() {
         return telemetryInitializers;
     }
@@ -103,7 +101,6 @@ public final class TelemetryConfiguration implements TelemetryClientConfiguratio
         return instrumentationKey;
     }
 
-    @Override
     public void setInstrumentationKey(String key) {
         // A non null, non empty instrumentation key is a must
         if (Strings.isNullOrEmpty(key)) {

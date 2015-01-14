@@ -74,9 +74,6 @@ class Program {
         } catch (Exception exc) {
             appInsights.trackException(exc);
         }
-
-        System.out.println("Press Enter to terminate...");
-        System.in.read();
     }
 
     private static void throwException(String msg) throws Exception {

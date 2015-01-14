@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -209,6 +210,8 @@ public final class DefaultTelemetryClient implements TelemetryClient {
         if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, mt.getContext().getProperties());
         }
+
+        this.track(mt);
     }
 
     /**
@@ -305,6 +308,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
 
     @Override
     public void trackPageView(String name) {
+        // Avoid creation of data if not needed
         if (isDisabled()) {
             return;
         }
@@ -353,7 +357,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
             try {
                 initializer.Initialize(telemetry);
             } catch (Exception e) {
-                e.printStackTrace();
+                InternalLogger.INSTANCE.log("Failed during telemetry initialization, exception: %s", e.getMessage());
             }
         }
 
@@ -374,17 +378,5 @@ public final class DefaultTelemetryClient implements TelemetryClient {
         }
 
         return ctx;
-    }
-
-    private boolean canTrack(Telemetry telemetry) {
-        if (telemetry == null) {
-            throw new IllegalArgumentException("telemetry item cannot be null");
-        }
-
-        if (isDisabled()) {
-            return false;
-        }
-
-        return true;
     }
 }

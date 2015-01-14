@@ -22,13 +22,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.Comparator;
 
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  * The class knows how to manage {@link Transmission} that needs
@@ -201,17 +203,16 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             input = new ObjectInputStream (buffer);
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to load transmission, file not found, exception: {0}", e.getMessage());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to load transmission, non transmission, exception: {0}", e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to load transmission, io exception: {0}", e.getMessage());
         } finally{
             if (input != null) {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -226,7 +227,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             size.addAndGet(transmissionFile.length());
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Rename To Permanent Name, exception: %s", e.getMessage());
         }
 
         return false;
@@ -240,7 +241,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             size.addAndGet(-renamedFile.length());
             transmissionFile = renamedFile;
         } catch (Exception ignore) {
-            ignore.printStackTrace();
+            InternalLogger.INSTANCE.log("Rename To Temporary Name, exception: %s", ignore.getMessage());
             // Consume the exception, since there isn't anything 'smart' to do now
         }
 
@@ -255,7 +256,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             try{
                 output.writeObject(transmission);
             } catch (IOException e) {
-                e.printStackTrace();
+                InternalLogger.INSTANCE.log("Failed to save transmission, exception: %s", e.getMessage());
             } finally{
                 try {
                     output.close();
@@ -265,7 +266,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             }
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to save transmission, exception: %s", e.getMessage());
         }
 
         return false;
@@ -276,7 +277,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         try {
             file = File.createTempFile(TRANSMISSION_FILE_PREFIX, null, folder);
         } catch (IOException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.log("Failed to create temporary file, exception: %s", e.getMessage());
         }
 
         return Optional.fromNullable(file);
