@@ -32,12 +32,8 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
 
         setId(LocalStringsUtils.generateRandomId());
         this.setResponseCode("200");
-        if (timestamp == null) {
-            timestamp = new Date();
-        }
 
         setTimestamp(timestamp);
-        data.setStartTime(timestamp);
 
         setName(name);
         setDuration(duration);
@@ -49,6 +45,15 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
         return data.getMeasurements();
     }
 
+    @Override
+    public void setTimestamp(Date timestamp) {
+        if (timestamp == null) {
+            timestamp = new Date();
+        }
+
+        super.setTimestamp(timestamp);
+        data.setStartTime(timestamp);
+    }
 
     public String getName() {
         return data.getName();
