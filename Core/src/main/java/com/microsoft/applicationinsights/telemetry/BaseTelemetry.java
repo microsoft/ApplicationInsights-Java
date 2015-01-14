@@ -10,7 +10,6 @@ import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.SendableData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 /**
  * Superclass for all telemetry data classes.
@@ -49,7 +48,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     @Override
     public void sanitize() {
-        MapUtil.sanitizeProperties(this.getProperties());
+        Sanitizer.sanitizeProperties(this.getProperties());
         additionalSanitize();
     }
 

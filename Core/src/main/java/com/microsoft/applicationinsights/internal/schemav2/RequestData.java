@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -38,12 +39,12 @@ public class RequestData extends Domain {
     /**
      * Backing field for property StartTime.
      */
-    private String startTime;
+    private Date startTime;
 
     /**
      * Backing field for property Duration.
      */
-    private Long duration;
+    private long duration;
 
     /**
      * Backing field for property ResponseCode.
@@ -121,14 +122,14 @@ public class RequestData extends Domain {
     /**
      * Gets the StartTime property.
      */
-    public String getStartTime() {
+    public Date getStartTime() {
         return this.startTime;
     }
 
     /**
      * Sets the StartTime property.
      */
-    public void setStartTime(String value) {
+    public void setStartTime(Date value) {
         this.startTime = value;
     }
 
@@ -163,7 +164,7 @@ public class RequestData extends Domain {
     /**
      * Gets the Success property.
      */
-    public boolean getSuccess() {
+    public boolean isSuccess() {
         return this.success;
     }
 

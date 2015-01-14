@@ -31,7 +31,6 @@ allprojects {
             version = releaseVersion
         }
     }
-
     tasks.uploadArchives.dependsOn(checkUploadProperties)
     tasks.uploadArchives.dependsOn(checkIfReleaseAndUpdateVersion)
 
@@ -60,4 +59,3 @@ allprojects {
 }
 
 // endregion Shared sub-projects configuration
-
