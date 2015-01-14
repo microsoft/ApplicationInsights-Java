@@ -11,10 +11,8 @@ import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 @SuppressWarnings("ALL")
-class Program
-{
-    public static void main(String[] args) throws IOException
-    {
+class Program {
+    public static void main(String[] args) throws IOException {
         validateCore();
         traceLog4J12();
         traceLog4J2();
@@ -47,12 +45,13 @@ class Program
     // region Core
 
     private static void validateCore() throws IOException {
-
         TelemetryClient appInsights = new DefaultTelemetryClient();
         appInsights.getContext().getProperties().put("programmatic", "works");
 
+        appInsights.trackPageView("default page");
+
         Map<String, Double> metrics = new HashMap<String, Double>();
-        metrics.put("Answers", (double)15);
+        metrics.put("Answers", (double) 15);
 
         appInsights.trackEvent("A test event", null, metrics);
 
@@ -70,26 +69,17 @@ class Program
         rt.setUrl("http://tempuri.org/ping");
         appInsights.track(rt);
 
-        try
-        {
+        try {
             throwException("This is only a test!");
-        }
-        catch (Exception exc)
-        {
+        } catch (Exception exc) {
             appInsights.trackException(exc);
         }
 
-//        RemoteDependencyTelemetry rdt = new RemoteDependencyTelemetry("MongoDB");
-//        rdt.setCount(1);
-//        rdt.setValue(0.345);
-//        rdt.setDependencyKind(DependencyKind.Other);
-//        rdt.setAsync(false);
-//
-//        appInsights.track(rdt);
+        System.out.println("Press Enter to terminate...");
+        System.in.read();
     }
 
-    private static void throwException(String msg) throws Exception
-    {
+    private static void throwException(String msg) throws Exception {
         throw new Exception(msg);
     }
 

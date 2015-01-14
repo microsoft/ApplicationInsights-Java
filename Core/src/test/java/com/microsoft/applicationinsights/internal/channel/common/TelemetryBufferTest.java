@@ -1,6 +1,8 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -178,6 +180,8 @@ public class TelemetryBufferTest {
         Mockito.verify(mockSender, Mockito.times(1)).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher)any(), anyLong(), (TimeUnit)anyObject());
     }
 
+    // Ignore warning from mock
+    @SuppressWarnings("unchecked")
     @Test
     public void testSendWhenBufferIsFullInNonDeveloperMode() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);

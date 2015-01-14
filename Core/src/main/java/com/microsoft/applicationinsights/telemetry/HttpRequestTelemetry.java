@@ -7,7 +7,6 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 import com.google.common.base.Strings;
 
@@ -17,16 +16,6 @@ import com.google.common.base.Strings;
 public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
     private final RequestData data;
 
-    /**
-     * Initializes a new instance of the RequestTelemetry class.
-     */
-    public HttpRequestTelemetry() {
-        super();
-        this.data = new RequestData();
-        initialize(this.data.getProperties());
-        setId(LocalStringsUtils.generateRandomId());
-        this.setResponseCode("200");
-    }
 
     /**
      * Initializes a new instance of the RequestTelemetry class with the given name,
@@ -38,93 +27,108 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
      * @param success 'true' if the request was a success, 'false' otherwise.
      */
     public HttpRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
-        this();
-        this.setName(name);
-        this.setDuration(duration);
-        this.setResponseCode(responseCode);
-        this.setSuccess(success);
+        this.data = new RequestData();
+        initialize(this.data.getProperties());
 
-        this.setTimestamp(timestamp);
-        this.data.setStartTime(LocalStringsUtils.getDateFormatter().format(timestamp));
+        setId(LocalStringsUtils.generateRandomId());
+        this.setResponseCode("200");
+
+        setTimestamp(timestamp);
+
+        setName(name);
+        setDuration(duration);
+        setResponseCode(responseCode);
+        setSuccess(success);
     }
 
     Map<String, Double> getMetrics() {
-        return this.data.getMeasurements();
+        return data.getMeasurements();
     }
 
+    @Override
+    public void setTimestamp(Date timestamp) {
+        if (timestamp == null) {
+            timestamp = new Date();
+        }
+
+        super.setTimestamp(timestamp);
+        data.setStartTime(timestamp);
+    }
 
     public String getName() {
-        return this.data.getName();
+        return data.getName();
     }
 
     public void setName(String name) {
         if (Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("The event name cannot be null or empty");
         }
-        this.data.setName(name);
+        data.setName(name);
     }
 
     public String getId()
     {
-        return this.data.getId();
+        return data.getId();
     }
 
     public void setId(String id) {
-        this.data.setId(id);
+        data.setId(id);
     }
 
     public String getResponseCode() {
-        return this.data.getResponseCode();
+        return data.getResponseCode();
     }
 
     public void setResponseCode(String responseCode) {
         // Validate
         int code = Integer.parseInt(responseCode);
         setSuccess(code < 400);
-        this.data.setResponseCode(responseCode);
+        data.setResponseCode(responseCode);
     }
 
     public boolean isSuccess() {
-        return this.data.getSuccess();
+        return data.isSuccess();
     }
 
     public void setSuccess(boolean success) {
-        this.data.setSuccess(success);
+        data.setSuccess(success);
     }
 
     public void setDuration(long milliSeconds) {
-        this.data.setDuration(milliSeconds);
+        data.setDuration(milliSeconds);
     }
 
     public URL getUrl() throws MalformedURLException {
-        if (LocalStringsUtils.isNullOrEmpty(this.data.getUrl())) {
+        if (LocalStringsUtils.isNullOrEmpty(data.getUrl())) {
             return null;
         }
 
-        return new URL(this.data.getUrl());
+        return new URL(data.getUrl());
     }
 
     public void setUrl(URL url) {
-        this.data.setUrl(url.toString());
+        data.setUrl(url.toString());
     }
 
     public void setUrl(String url) throws MalformedURLException {
         URL u = new URL(url); // to validate and normalize
-        this.data.setUrl(u.toString());
+        data.setUrl(u.toString());
     }
 
     public String getHttpMethod() {
-        return this.data.getHttpMethod();
+        return data.getHttpMethod();
     }
 
     public void setHttpMethod(String httpMethod) {
-        this.data.setHttpMethod(httpMethod);
+        data.setHttpMethod(httpMethod);
     }
 
     @Override
     protected void additionalSanitize() {
-        this.data.setName(LocalStringsUtils.sanitize(this.data.getName(), 1024));
-        MapUtil.sanitizeMeasurements(this.getMetrics());
+        data.setName(Sanitizer.sanitizeName(data.getName()));
+        data.setId(Sanitizer.sanitizeName(data.getId()));
+        Sanitizer.sanitizeMeasurements(getMetrics());
+        Sanitizer.sanitizeUri(data.getUrl());
     }
 
     @Override

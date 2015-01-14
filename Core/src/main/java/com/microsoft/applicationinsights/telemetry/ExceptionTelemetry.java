@@ -8,7 +8,6 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 import com.google.common.base.Strings;
 
@@ -59,7 +58,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
 
     @Override
     protected void additionalSanitize() {
-        MapUtil.sanitizeMeasurements(this.getMetrics());
+        Sanitizer.sanitizeMeasurements(this.getMetrics());
     }
 
     @Override

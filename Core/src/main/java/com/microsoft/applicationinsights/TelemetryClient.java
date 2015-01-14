@@ -3,12 +3,8 @@ package com.microsoft.applicationinsights;
 import java.util.Date;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.*;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 
 /**
  * Created by gupele on 1/5/2015.
@@ -43,6 +39,14 @@ public interface TelemetryClient {
     void trackException(Exception exception);
 
     void trackHttpRequest(String name, Date timestamp, long duration, String responseCode, boolean success);
+
+    void trackHttpRequest(HttpRequestTelemetry request);
+
+    void trackRemoteDependency(RemoteDependencyTelemetry telemetry);
+
+    void trackPageView(String name);
+
+    void trackPageView(PageViewTelemetry telemetry);
 
     void track(Telemetry telemetry);
 }

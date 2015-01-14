@@ -1,9 +1,5 @@
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
