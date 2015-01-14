@@ -163,6 +163,11 @@ public class TelemetryBufferTest {
         TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 20, 0);
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testNoSenderIsSet() throws Exception {
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(null, 20, 0);
+    }
+
     @Test
     public void testAddOneTelemetry() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
@@ -239,7 +244,7 @@ public class TelemetryBufferTest {
         }
 
         StubTelemetriesTransmitter mockSender = new StubTelemetriesTransmitter();
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 3, 1200, false);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 3, 1200);
 
         for (Telemetry telemetry : all) {
             testedBuffer.add(telemetry);

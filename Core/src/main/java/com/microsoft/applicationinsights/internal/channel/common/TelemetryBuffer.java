@@ -74,7 +74,9 @@ public final class TelemetryBuffer {
 
     /**
      * The constructor needs to get the 'sender' we work with
-     * @param sender
+     * @param sender The sender object for transmitting the telemetries
+     * @param maxTelemetriesInBatch The maximum number of telemetries in a batch
+     * @param transmitBufferTimeoutInSeconds The transmit buffer timeout in seconds
      */
     public TelemetryBuffer(TelemetriesTransmitter sender, int maxTelemetriesInBatch, int transmitBufferTimeoutInSeconds) {
         Preconditions.checkNotNull(sender, "sender must be non-null value");
