@@ -1,10 +1,11 @@
-package com.microsoft.applicationinsights.internal.channel.inprocess;
+package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
+
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
 import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionNetworkOutput;
 import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionFileSystemOutput;
@@ -15,11 +16,9 @@ import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl
 import com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySerializer;
 
 /**
- * A temporary factory (until we use the configuration) to hook the entities needed by {@link TelemetriesTransmitter}
- *
- * Created by gupele on 12/21/2014.
+ * Created by gupele on 1/15/2015.
  */
-class NoConfigurationTransmitterFactory implements TransmitterFactory {
+final class InProcessTelemetryChannelFactory implements TransmitterFactory {
     @Override
     public TelemetriesTransmitter create(String endpoint) {
         // An active object with the network sender

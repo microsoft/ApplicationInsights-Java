@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -126,12 +127,17 @@ final class XmlConfigParser implements ConfigFileParser {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, String> getStructuredData(String sectionName, Set<String> itemNames) {
-        HashMap<String, String> result = new HashMap<String, String>();
+    public StructuredDataResult getStructuredData(String sectionName, String sectionTag) {
+        HashMap<String, String> items = new HashMap<String, String>();
 
+        String sectionTagValue = null;
         Element sectionElement = getFirstElementInDoc(sectionName);
         if (sectionElement == null) {
-            return result;
+            return new StructuredDataResult(sectionTagValue, items);
+        }
+
+        if (!Strings.isNullOrEmpty(sectionTag)) {
+            sectionTagValue = sectionElement.getAttribute(sectionTag);
         }
 
         NodeList nodes = sectionElement.getChildNodes();
@@ -142,17 +148,10 @@ final class XmlConfigParser implements ConfigFileParser {
             }
 
             String elementName = elementItem.getNodeName().trim();
-            if (!itemNames.remove(elementName)) {
-                continue;
-            }
-
-            result.put(elementName, elementItem.getTextContent().trim());
-            if (itemNames.isEmpty()) {
-                break;
-            }
+            items.put(elementName, elementItem.getTextContent().trim());
         }
 
-        return result;
+        return new StructuredDataResult(sectionTagValue, items);
     }
 
 

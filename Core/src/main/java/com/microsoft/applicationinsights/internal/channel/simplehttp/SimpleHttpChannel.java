@@ -2,9 +2,9 @@ package com.microsoft.applicationinsights.internal.channel.simplehttp;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
@@ -35,7 +35,7 @@ final class SimpleHttpChannel implements TelemetryChannel
         developerMode = value;
     }
 
-    public SimpleHttpChannel(TelemetryConfiguration configuration) {
+    public SimpleHttpChannel(Map<String, String> namesAndValues) {
     }
 
     @Override

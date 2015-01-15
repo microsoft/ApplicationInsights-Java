@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.DefaultTelemetryClient;
+import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -14,6 +15,7 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 class Program {
     public static void main(String[] args) throws IOException {
         validateCore();
+
         traceLog4J12();
         traceLog4J2();
         traceLogback();

@@ -11,6 +11,7 @@ import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.LocationContext;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 import com.google.common.base.Strings;
@@ -109,6 +110,10 @@ public final class TelemetryContext implements JsonSerializable {
     }
 
     public void setInstrumentationKey(String instrumentationKey) {
+        if (!Sanitizer.isUUID(instrumentationKey)) {
+            InternalLogger.INSTANCE.log("Telemetry Configuration: illegal instrumentation key: %s", instrumentationKey);
+        }
+
         this.instrumentationKey = instrumentationKey;
     }
 
@@ -132,7 +137,7 @@ public final class TelemetryContext implements JsonSerializable {
         writer.write("internal", this.getInternal());
     }
 
-    public void Initialize(TelemetryContext source) {
+    public void initialize(TelemetryContext source) {
         if (!Strings.isNullOrEmpty(source.getInstrumentationKey()))
             setInstrumentationKey(source.getInstrumentationKey());
 

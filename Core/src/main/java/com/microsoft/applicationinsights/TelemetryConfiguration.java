@@ -3,12 +3,14 @@ package com.microsoft.applicationinsights;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.telemetry.Sanitizer;
 
 /**
  * Configuration data and logic for telemetry clients.
@@ -22,16 +24,12 @@ public final class TelemetryConfiguration {
 
     private String instrumentationKey;
 
-    private String endpoint;
-
     private final ArrayList<ContextInitializer> contextInitializers = new ArrayList<ContextInitializer>();
     private final ArrayList<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
 
     private TelemetryChannel channel;
 
     private boolean trackingIsDisabled = false;
-
-    private boolean developerMode = false;
 
     /**
      * We initialize the instance once by using {@link com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory}
@@ -57,14 +55,6 @@ public final class TelemetryConfiguration {
         return telemetryConfiguration;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
     public TelemetryChannel getChannel() {
         return channel;
     }
@@ -81,14 +71,6 @@ public final class TelemetryConfiguration {
         trackingIsDisabled = disable;
     }
 
-    public boolean isDeveloperMode() {
-        return developerMode;
-    }
-
-    public void setDeveloperMode(boolean developerMode) {
-        this.developerMode = developerMode;
-    }
-
     public List<ContextInitializer> getContextInitializers() {
         return contextInitializers;
     }
@@ -102,6 +84,10 @@ public final class TelemetryConfiguration {
     }
 
     public void setInstrumentationKey(String key) {
+        if (!Sanitizer.isUUID(key)) {
+            InternalLogger.INSTANCE.log("Telemetry Configuration: illegal instrumentation key: %s ignored", key);
+        }
+
         // A non null, non empty instrumentation key is a must
         if (Strings.isNullOrEmpty(key)) {
             throw new IllegalArgumentException("key");

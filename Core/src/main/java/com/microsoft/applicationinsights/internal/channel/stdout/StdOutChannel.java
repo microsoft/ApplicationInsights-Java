@@ -2,9 +2,9 @@ package com.microsoft.applicationinsights.internal.channel.stdout;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
@@ -29,7 +29,7 @@ public class StdOutChannel implements TelemetryChannel
         this(null);
     }
 
-    public StdOutChannel(TelemetryConfiguration configuration) {
+    public StdOutChannel(Map<String, String> namesAndValues) {
     }
 
     @Override

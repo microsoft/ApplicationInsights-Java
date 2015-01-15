@@ -32,7 +32,7 @@ public class TelemetryClientTests {
     @BeforeClass
     public static void classInitialize() {
         TelemetryConfiguration configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey("IKey");
+        configuration.setInstrumentationKey("c9341531-05ac-4d8c-972e-36e97601d5ff");
 
         client = new DefaultTelemetryClient(configuration);
     }

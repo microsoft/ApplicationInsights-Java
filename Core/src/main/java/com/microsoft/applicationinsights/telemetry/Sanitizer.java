@@ -3,13 +3,14 @@ package com.microsoft.applicationinsights.telemetry;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.google.common.base.Strings;
 
 /**
  * Created by gupele on 1/7/2015.
  */
-final class Sanitizer {
+public final class Sanitizer {
     public final static int MAX_MAP_NAME_LENGTH = 150;
     public final static int MAX_VALUE_LENGTH = 1024;
     public final static int MAX_NAME_LENGTH = 1024;
@@ -78,6 +79,16 @@ final class Sanitizer {
 
     public static String sanitizeMessage(String message) {
         return trimAndTruncate(message, MAX_MESSAGE_LENGTH);
+    }
+
+    public static boolean isUUID(String possibleUUID) {
+        try {
+            UUID.fromString(possibleUUID);
+            return true;
+        } catch (Exception e) {
+        }
+
+        return false;
     }
 
     public static URI safeStringToUri(String url) {

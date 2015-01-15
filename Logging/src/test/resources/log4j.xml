@@ -3,7 +3,7 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
     <appender name="test" class="com.microsoft.applicationinsights.log4j.v1_2.ApplicationInsightsAppender">
-        <param name="instrumentationKey" value="Test_Instrumentation_Key" />
+        <param name="instrumentationKey" value="c9341531-05ac-4d8c-972e-36e97601d5ff" />
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%-5p %c{1} - %m%n"/>
         </layout>
