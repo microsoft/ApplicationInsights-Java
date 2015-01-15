@@ -10,6 +10,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 
 public final class SanitizerTest {
@@ -67,6 +68,42 @@ public final class SanitizerTest {
         Map.Entry<String, String> entry = properties.entrySet().iterator().next();
         assertEquals(entry.getKey(), validKey);
         assertEquals(entry.getValue(), VALID_VALUE_PROPERTY);
+    }
+
+    @Test
+    public void testNonValidEmptyUUID() {
+        boolean valid = Sanitizer.isUUID("");
+        assertFalse(valid);
+    }
+
+    @Test
+    public void testNonValidNullUUID() {
+        boolean valid = Sanitizer.isUUID(null);
+        assertFalse(valid);
+    }
+
+    @Test
+    public void testNonValidBadFormat1UUID() {
+        boolean valid = Sanitizer.isUUID("sadfsa");
+        assertFalse(valid);
+    }
+
+    @Test
+    public void testNonValidBadFormat2UUID() {
+        boolean valid = Sanitizer.isUUID("c934153105ac4d8c972e36e97601d5ffc934153105ac4d8c972e36e97601d5ff");
+        assertFalse(valid);
+    }
+
+    @Test
+    public void testValidUUIDWithComma() {
+        boolean valid = Sanitizer.isUUID("c9341531-05ac-4d8c-972e-36e97601d5ff");
+        assertTrue(valid);
+    }
+
+    @Test
+    public void testValidUUIDWithoutComma() {
+        boolean valid = Sanitizer.isUUID("c934153105ac4d8c972e36e97601d5ff");
+        assertFalse(valid);
     }
 
     @Test

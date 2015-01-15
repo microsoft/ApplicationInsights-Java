@@ -1,10 +1,14 @@
 package com.microsoft.applicationinsights.internal.channel.inprocess;
 
+import java.net.URI;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.telemetry.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
@@ -35,18 +39,43 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     private final static int TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS = 10;
 
+    private final static String DEVELOPER_MODE = "DeveloperMode";
+    private final static String EndpointAddress = "EndpointAddress";
+
     private boolean developerMode = false;
 
-    private final TelemetriesTransmitter telemetriesTransmitter;
+    private TelemetriesTransmitter telemetriesTransmitter;
 
-    private final TelemetryBuffer telemetryBuffer;
+    private TelemetryBuffer telemetryBuffer;
 
-    public InProcessTelemetryChannel(TelemetryConfiguration configuration) {
+    public InProcessTelemetryChannel() {
+        this(null, false);
+    }
 
-        // Temporary
-        telemetriesTransmitter = new NoConfigurationTransmitterFactory().create(configuration.getEndpoint());
-        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
-        setDeveloperMode(configuration.isDeveloperMode());
+    /**
+     * Ctor
+     * @param endpointAddress Must be empty string or a valid uri, else an exception will be thrown
+     * @param developerMode True will behave in a 'non-production' mode to ease the debugging
+     */
+    public InProcessTelemetryChannel(String endpointAddress, boolean developerMode) {
+        initialize(endpointAddress, developerMode);
+    }
+
+    /**
+     * This ctor will query the 'namesAndValues' map for data to initialize itself
+     * It will ignore data that is not of its interest, this ctor is useful for building an instance from configuration
+     * @param nameAndValues - The data passed as name and value pairs
+     */
+    public InProcessTelemetryChannel(Map<String, String> nameAndValues) {
+        boolean developerMode = false;
+        String endpointAddress = null;
+
+        if (nameAndValues != null) {
+            developerMode = Boolean.valueOf(nameAndValues.get(DEVELOPER_MODE));
+            endpointAddress = nameAndValues.get(EndpointAddress);
+        }
+
+        initialize(endpointAddress, developerMode);
     }
 
     @Override
@@ -73,8 +102,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
         telemetryBuffer.add(telemetry);
 
-        if (isDeveloperMode())
-        {
+        if (isDeveloperMode()) {
             writeTelemetryToDebugOutput(telemetry);
         }
     }
@@ -86,6 +114,34 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     }
 
     private void writeTelemetryToDebugOutput(Telemetry telemetry) {
-        // TODO: decide what 'debug' is and then implement
+        InternalLogger.INSTANCE.log("InProcessTelemetryChannel sending telemetry");
     }
+
+    private void initialize(String endpointAddress, boolean developerMode) {
+        makeSureEndpointAddressIsValid(endpointAddress);
+
+        // Temporary
+        telemetriesTransmitter = new NoConfigurationTransmitterFactory().create(endpointAddress);
+        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
+        setDeveloperMode(developerMode);
+    }
+
+    /**
+     * The method will throw IllegalArgumentException if the endpointAddress is not a valid uri
+     * Please note that a null or empty string is valid as far as the class is concerned and thus considered valid
+     * @param endpointAddress
+     */
+    private void makeSureEndpointAddressIsValid(String endpointAddress) {
+        if (Strings.isNullOrEmpty(endpointAddress)) {
+            return;
+        }
+
+        URI uri = Sanitizer.sanitizeUri(endpointAddress);
+        if (uri == null) {
+            String errorMessage = String.format("Endpoint address %s is not a valid uri", endpointAddress);
+            InternalLogger.INSTANCE.log(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
 }

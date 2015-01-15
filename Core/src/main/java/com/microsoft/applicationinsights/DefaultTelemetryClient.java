@@ -9,7 +9,15 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.telemetry.*;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionHandledAt;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 import com.google.common.base.Strings;
@@ -28,8 +36,9 @@ public final class DefaultTelemetryClient implements TelemetryClient {
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
      */
     public DefaultTelemetryClient(TelemetryConfiguration configuration) {
-        if (configuration == null)
+        if (configuration == null) {
             configuration = TelemetryConfiguration.getActive();
+        }
 
         synchronized (TELEMETRY_STOP_HOOK_LOCK) {
             Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -351,7 +360,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
             ctx.setInstrumentationKey(configuration.getInstrumentationKey());
         }
 
-        telemetry.getContext().Initialize(ctx);
+        telemetry.getContext().initialize(ctx);
 
         for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
             try {

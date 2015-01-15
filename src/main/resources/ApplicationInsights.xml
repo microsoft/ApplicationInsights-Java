@@ -9,5 +9,10 @@
     <TelemetryInitializers>
     </TelemetryInitializers>
 
+    <!---->
+
+    <Channel type="com.microsoft.applicationinsights.internal.channel.inprocess.InProcessTelemetryChannel">
+    </Channel>
+
 
 </ApplicationInsights>

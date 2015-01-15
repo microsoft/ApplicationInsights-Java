@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.internal.config;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Map;
-import java.util.HashSet;
 import java.util.List;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -30,11 +29,10 @@ public enum TelemetryConfigurationFactory {
     private final static String TELEMETRY_INITIALIZERS_SECTION = "TelemetryInitializers";
     private final static String INITIALIZERS_ADD = "Add";
     private final static String CLASS_TYPE = "Type";
+    private final static String CLASS_TYPE_AS_ATTRIBUTE = "type";
     private final static String CHANNEL_SECTION = "Channel";
     private final static String DISABLE_TELEMETRY_SECTION = "DisableTelemetry";
-    private final static String DEVELOPER_MODE_SECTION = "DeveloperMode";
     private final static String INSTRUMENTATION_KEY_SECTION = "InstrumentationKey";
-    private final static String CHANNEL_ENDPOINT_ADDRESS = "EndpointAddress";
     private final static String LOGGER_SECTION = "SDKLogger";
     private final static String LOGGER_OUTPUT = "OutputType";
     private final static String LOGGER_ENABLED = "Enabled";
@@ -64,16 +62,12 @@ public enum TelemetryConfigurationFactory {
             }
 
             if (!parser.parse(fileToParse)) {
-                configuration.setDeveloperMode(false);
-                configuration.setChannel(new InProcessTelemetryChannel(configuration));
+                configuration.setChannel(new InProcessTelemetryChannel());
                 return;
             }
 
             // Set the logger first so we might have possible errors written
             setInternalLogger(parser, configuration);
-
-            // Set Developer Mode first so it might change our behavior
-            setDeveloperMode(parser, configuration);
 
             setInstrumentationKey(parser, configuration);
 
@@ -99,20 +93,13 @@ public enum TelemetryConfigurationFactory {
         configuration.setTrackingIsDisabled(fetchBooleanValue(parser, DISABLE_TELEMETRY_SECTION, false));
     }
 
-    private void setDeveloperMode(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        configuration.setDeveloperMode(fetchBooleanValue(parser, DEVELOPER_MODE_SECTION, false));
-    }
-
     private void setInternalLogger(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        HashSet<String> itemNames = new HashSet<String>();
-        itemNames.add(LOGGER_OUTPUT);
-        itemNames.add(LOGGER_ENABLED);
-        Map<String, String> loggerData = parser.getStructuredData(LOGGER_SECTION, itemNames);
+        ConfigFileParser.StructuredDataResult loggerData = parser.getStructuredData(LOGGER_SECTION, null);
 
         // The logger output type
-        String loggerOutput = loggerData.get(LOGGER_OUTPUT);
+        String loggerOutput = loggerData.items.get(LOGGER_OUTPUT);
         // Enable the logger?
-        String loggerEnabledAsString = loggerData.get(LOGGER_ENABLED);
+        String loggerEnabledAsString = loggerData.items.get(LOGGER_ENABLED);
         boolean loggerEnabled = Boolean.valueOf(loggerEnabledAsString);
 
         InternalLogger.INSTANCE.initialize(loggerOutput, loggerEnabled);
@@ -128,18 +115,12 @@ public enum TelemetryConfigurationFactory {
      * @return True on success
      */
     private boolean setChannel(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        HashSet<String> itemNames = new HashSet<String>();
-        itemNames.add(CLASS_TYPE);
-        itemNames.add(CHANNEL_ENDPOINT_ADDRESS);
-        Map<String, String> channelData = parser.getStructuredData(CHANNEL_SECTION, itemNames);
+        ConfigFileParser.StructuredDataResult channelData = parser.getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
 
-        String channelEndpoint = channelData.get(CHANNEL_ENDPOINT_ADDRESS);
-        configuration.setEndpoint(channelEndpoint);
-
-        String channelName = channelData.get(CLASS_TYPE);
+        String channelName = channelData.sectionTag;
 
         if (channelName != null) {
-            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, TelemetryConfiguration.class, configuration);
+            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, Map.class, channelData.items);
             if (channel != null) {
                 configuration.setChannel(channel);
                 return true;
@@ -147,7 +128,7 @@ public enum TelemetryConfigurationFactory {
         }
 
         try {
-            configuration.setChannel(new InProcessTelemetryChannel(configuration));
+            configuration.setChannel(new InProcessTelemetryChannel());
             return true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.log("Failed to create InProcessTelemetryChannel, exception: %s", e.getMessage());
@@ -165,13 +146,7 @@ public enum TelemetryConfigurationFactory {
     private boolean setInstrumentationKey(ConfigFileParser parser, TelemetryConfiguration configuration) {
         String iKey = parser.getTrimmedValue(INSTRUMENTATION_KEY_SECTION);
 
-        if (Strings.isNullOrEmpty(iKey)) {
-            return false;
-        }
-
-        configuration.setInstrumentationKey(iKey);
-
-        return true;
+        return configuration.setInstrumentationKey(iKey);
     }
 
     /**

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.DefaultTelemetryClient;
+import com.microsoft.applicationinsights.internal.channel.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -14,12 +15,19 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 class Program {
     public static void main(String[] args) throws IOException {
         validateCore();
+
+        validateMultipleChannels();
+
         traceLog4J12();
         traceLog4J2();
         traceLogback();
 
         System.out.println("Press Enter to terminate...");
         System.in.read();
+    }
+
+    private static void validateMultipleChannels() {
+        InProcessTelemetryChannel channel1 = new InProcessTelemetryChannel();
     }
 
     // region Logging

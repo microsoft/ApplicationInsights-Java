@@ -1,13 +1,29 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by gupele on 12/31/2014.
  */
 interface ConfigFileParser {
+    public static class StructuredDataResult {
+        public final String sectionTag;
+
+        public final Map<String, String> items;
+
+        public StructuredDataResult() {
+            this.sectionTag = null;
+            this.items = Collections.emptyMap();
+        }
+
+        public StructuredDataResult(String sectionTag, Map<String, String> items) {
+            this.sectionTag = sectionTag;
+            this.items = items;
+        }
+    }
+
     /**
      * This method must be called prior to any use of the instance.
      *
@@ -52,9 +68,10 @@ interface ConfigFileParser {
      * which means it might change its data
      *
      * @param sectionName The tag name that is the root of the structure
-     * @param itemNames The tags within the section name that form the needed data
+     * @param sectionAttribute An optional attribute that is in the section name.
+     *                         If the value is not empty the parser will try to find it
      * @return A map containing the data found, an item that is not found is not present.
      * That means that if nothing is found the method will return an empty map
      */
-    Map<String, String> getStructuredData(String sectionName, Set<String> itemNames);
+    StructuredDataResult getStructuredData(String sectionName, String sectionAttribute);
 }
