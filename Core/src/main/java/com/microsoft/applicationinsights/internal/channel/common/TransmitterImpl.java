@@ -103,6 +103,10 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
     private final Semaphore semaphore;
 
     public TransmitterImpl(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, TransmissionsLoader transmissionsLoader) {
+        Preconditions.checkNotNull(transmissionDispatcher, "transmissionDispatcher must be non-null value");
+        Preconditions.checkNotNull(serializer, "serializer must be non-null value");
+        Preconditions.checkNotNull(transmissionsLoader, "transmissionsLoader must be non-null value");
+
         this.transmissionDispatcher = transmissionDispatcher;
         this.serializer = serializer;
 
