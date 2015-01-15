@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
@@ -36,7 +37,7 @@ public class StdOutChannel implements TelemetryChannel
         try {
             StringWriter writer = new StringWriter();
             item.serialize(new JsonTelemetryDataSerializer(writer));
-            System.out.println("TELEMETRY: " + writer.toString());
+            InternalLogger.INSTANCE.log("StdOutChannel, TELEMETRY: %s", writer.toString());
         } catch (IOException ioe) {
         }
     }

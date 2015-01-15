@@ -49,7 +49,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 } catch (Exception e) {
                     InternalLogger.INSTANCE.log("Failed to serialize , exception: %s", e.getMessage());
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.log("Failed to serialize , unknown exception");
+                    InternalLogger.INSTANCE.log("Failed to serialize, unknown exception: %s", t.getMessage());
                 } finally {
                     zipStream.close();
                 }

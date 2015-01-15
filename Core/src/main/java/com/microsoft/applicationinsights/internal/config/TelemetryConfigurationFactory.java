@@ -268,15 +268,15 @@ public enum TelemetryConfigurationFactory {
             T instance = (T)clazz.newInstance();
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, ClassCastException", className);
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, ClassNotFoundException", className);
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, InstantiationException", className);
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, IllegalAccessException", className);
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, Exception: %s", className, e.getMessage());
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         }
 
         return null;
@@ -304,15 +304,15 @@ public enum TelemetryConfigurationFactory {
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, ClassCastException", className);
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, ClassNotFoundException", className);
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, InstantiationException", className);
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, IllegalAccessException", className);
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, Exception: %s", className, e.getMessage());
+            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
         }
 
         return null;

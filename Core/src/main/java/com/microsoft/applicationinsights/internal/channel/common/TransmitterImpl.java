@@ -76,7 +76,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
     private static final class SendNowHandler extends SendHandler implements Runnable {
         private final Collection<Telemetry> telemetries;
 
-        public SendNowHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, Collection<Telemetry> telemetries) {
+        public SendNowHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, Collection<Telemetry   > telemetries) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetries, "telemetries should be non-null value");

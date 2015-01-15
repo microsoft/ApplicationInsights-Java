@@ -67,7 +67,6 @@ public class TransmissionFileSystemOutputTest {
             }
 
             for (int i = 1; i <= 10; ++i) {
-                System.out.println(i);
                 Transmission transmission = tested.fetchOldestFile();
                 assertNotNull(transmission);
 

@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -199,7 +197,7 @@ public class JsonTelemetryDataSerializerTest {
         tested.close();
         String str = stringWriter.toString();
         StubClass bac = new Gson().fromJson(str, StubClass.class);
-        System.out.println(str);
+//        System.out.println(str);
     }
 
 }

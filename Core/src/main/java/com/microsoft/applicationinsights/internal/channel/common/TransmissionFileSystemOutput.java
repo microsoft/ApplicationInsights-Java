@@ -203,11 +203,11 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             input = new ObjectInputStream (buffer);
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
-            InternalLogger.INSTANCE.log("Failed to load transmission, file not found, exception: {0}", e.getMessage());
+            InternalLogger.INSTANCE.log("Failed to load transmission, file not found, exception: %s", e.getMessage());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.log("Failed to load transmission, non transmission, exception: {0}", e.getMessage());
+            InternalLogger.INSTANCE.log("Failed to load transmission, non transmission, exception: %s", e.getMessage());
         } catch (IOException e) {
-            InternalLogger.INSTANCE.log("Failed to load transmission, io exception: {0}", e.getMessage());
+            InternalLogger.INSTANCE.log("Failed to load transmission, io exception: %s", e.getMessage());
         } finally{
             if (input != null) {
                 try {

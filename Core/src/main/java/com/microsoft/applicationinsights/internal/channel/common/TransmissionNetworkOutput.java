@@ -78,7 +78,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         try {
             httpClient.close();
         } catch (IOException e) {
-            InternalLogger.INSTANCE.log("Failed to close client, exception: {0}", e.getMessage());
+            InternalLogger.INSTANCE.log("Failed to close http client, exception: %s", e.getMessage());
         }
     }
 
@@ -103,17 +103,19 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             transmissionDispatcher.dispatch(transmission);
             InternalLogger.INSTANCE.log("Failed to send, timeout exception");
         } catch (IOException ioe) {
-            InternalLogger.INSTANCE.log("Failed to send, exception: {0}", ioe.getMessage());
+            InternalLogger.INSTANCE.log("Failed to send, exception: %s", ioe.getMessage());
             try {
                 if (response != null) {
                     response.close();
                 }
             } catch (IOException ioeIn) {
                 // Returns transmission to the dispatcher
-                InternalLogger.INSTANCE.log("Failed to send and failed to close response, exception: {0}", ioeIn.getMessage());
+                InternalLogger.INSTANCE.log("Failed to send or failed to close response, exception: %s", ioeIn.getMessage());
             }
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to load transmission, file not found, exception: {0}", e.getMessage());
+            InternalLogger.INSTANCE.log("Failed to send, unexpected exception: %s", e.getMessage());
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.log("Failed to send, unexpected error: %s", t.getMessage());
         }
         finally {
             if (request != null) {
