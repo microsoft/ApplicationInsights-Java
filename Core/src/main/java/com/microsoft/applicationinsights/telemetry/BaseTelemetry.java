@@ -33,7 +33,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     @Override
     public void setTimestamp(Date date) {
-        this.timestamp = date;
+        timestamp = date;
     }
 
     @Override

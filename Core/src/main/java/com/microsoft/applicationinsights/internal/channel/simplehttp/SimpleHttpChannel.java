@@ -4,11 +4,12 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.microsoft.applicationinsights.TelemetryClientConfiguration;
-
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -34,7 +35,7 @@ final class SimpleHttpChannel implements TelemetryChannel
         developerMode = value;
     }
 
-    public SimpleHttpChannel(TelemetryClientConfiguration configuration) {
+    public SimpleHttpChannel(TelemetryConfiguration configuration) {
     }
 
     @Override
@@ -51,7 +52,9 @@ final class SimpleHttpChannel implements TelemetryChannel
 
             String payload = writer.toString();
 
-            if (developerMode) System.out.println(payload);
+            if (developerMode) {
+                InternalLogger.INSTANCE.log("SimpleHttpChannel, payload: %s", payload);
+            }
 
             HttpPost request = new HttpPost("https://dc.services.visualstudio.com/v2/track");
             StringEntity body = new StringEntity(payload, ContentType.create("application/x-json-stream"));
@@ -67,11 +70,12 @@ final class SimpleHttpChannel implements TelemetryChannel
                 if (respEntity != null)
                     respEntity.getContent().close();
 
-                if (developerMode) System.out.println("Status: " + response.getStatusLine());
+                if (developerMode) {
+                    InternalLogger.INSTANCE.log("SimpleHttpChannel, response: %s", response.getStatusLine());
+                }
             }
             catch (IOException ioe)
             {
-                ioe.printStackTrace(System.err);
                 try
                 {
                     if (response != null)
@@ -81,13 +85,11 @@ final class SimpleHttpChannel implements TelemetryChannel
                 }
                 catch (IOException ioeIn)
                 {
-                    ioeIn.printStackTrace(System.err);
                 }
             }
         }
         catch (IOException ioe)
         {
-            ioe.printStackTrace(System.err);
         }
     }
 

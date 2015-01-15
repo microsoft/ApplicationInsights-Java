@@ -2,11 +2,11 @@ package com.microsoft.applicationinsights.internal.channel.inprocess;
 
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.TelemetryClientConfiguration;
 
 import com.google.common.base.Preconditions;
 
@@ -41,7 +41,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     private final TelemetryBuffer telemetryBuffer;
 
-    public InProcessTelemetryChannel(TelemetryClientConfiguration configuration) {
+    public InProcessTelemetryChannel(TelemetryConfiguration configuration) {
 
         // Temporary
         telemetriesTransmitter = new NoConfigurationTransmitterFactory().create(configuration.getEndpoint());

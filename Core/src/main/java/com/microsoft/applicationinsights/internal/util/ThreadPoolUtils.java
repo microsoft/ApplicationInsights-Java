@@ -4,6 +4,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
 /**
  * Created by gupele on 12/22/2014.
  */
@@ -25,7 +27,7 @@ public final class ThreadPoolUtils {
                 threadPool.shutdownNow();
 
                 if (!threadPool.awaitTermination(timeout, timeUnit)) {
-                    System.err.println("Pool did not terminate");
+                    InternalLogger.INSTANCE.log("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {
