@@ -144,9 +144,15 @@ public enum TelemetryConfigurationFactory {
      * @return True if success, false otherwise
      */
     private boolean setInstrumentationKey(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        String iKey = parser.getTrimmedValue(INSTRUMENTATION_KEY_SECTION);
+        try {
+            String iKey = parser.getTrimmedValue(INSTRUMENTATION_KEY_SECTION);
 
-        return configuration.setInstrumentationKey(iKey);
+            configuration.setInstrumentationKey(iKey);
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**

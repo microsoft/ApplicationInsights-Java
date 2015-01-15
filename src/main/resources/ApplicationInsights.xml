@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" schemaVersion="2014-05-30">
     <!--YOUR-INSTRUMENTATION-KEY-->
-    <InstrumentationKey></InstrumentationKey>
+    <InstrumentationKey>c9341531-05ac-4d8c-972e-36e97601d5fd</InstrumentationKey>
 
     <ContextInitializers>
     </ContextInitializers>
@@ -12,6 +12,7 @@
     <!---->
 
     <Channel type="com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel">
+        <DeveloperMode>false</DeveloperMode>
     </Channel>
 
 

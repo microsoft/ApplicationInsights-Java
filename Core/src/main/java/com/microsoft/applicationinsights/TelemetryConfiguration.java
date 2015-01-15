@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -82,13 +83,16 @@ public final class TelemetryConfiguration {
         return instrumentationKey;
     }
 
-    public boolean setInstrumentationKey(String key) {
+    public void setInstrumentationKey(String key) {
         if (!Sanitizer.isUUID(key)) {
             InternalLogger.INSTANCE.log("Telemetry Configuration: illegal instrumentation key: %s ignored", key);
-            return false;
+        }
+
+        // A non null, non empty instrumentation key is a must
+        if (Strings.isNullOrEmpty(key)) {
+            throw new IllegalArgumentException("key");
         }
 
         instrumentationKey = key;
-        return true;
     }
 }

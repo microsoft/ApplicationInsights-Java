@@ -109,7 +109,6 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
-
         telemetriesTransmitter.stop(timeout, timeUnit);
     }
 

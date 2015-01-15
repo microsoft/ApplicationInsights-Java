@@ -109,14 +109,12 @@ public final class TelemetryContext implements JsonSerializable {
         return instrumentationKey;
     }
 
-    public boolean setInstrumentationKey(String instrumentationKey) {
+    public void setInstrumentationKey(String instrumentationKey) {
         if (!Sanitizer.isUUID(instrumentationKey)) {
-            InternalLogger.INSTANCE.log("Telemetry Configuration: illegal instrumentation key: %s ignored", instrumentationKey);
-            return false;
+            InternalLogger.INSTANCE.log("Telemetry Configuration: illegal instrumentation key: %s", instrumentationKey);
         }
 
         this.instrumentationKey = instrumentationKey;
-        return true;
     }
 
     public ConcurrentMap<String, String> getProperties() {
