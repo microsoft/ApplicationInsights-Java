@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.internal.channel.inprocess;
+package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
 import java.net.URI;
 import java.util.Map;

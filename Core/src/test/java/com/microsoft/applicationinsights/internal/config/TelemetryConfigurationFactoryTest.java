@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.channel.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
 import org.junit.Test;

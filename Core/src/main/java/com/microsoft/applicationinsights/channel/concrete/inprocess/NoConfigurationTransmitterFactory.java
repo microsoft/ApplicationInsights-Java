@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.internal.channel.inprocess;
+package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;

@@ -11,7 +11,7 @@
 
     <!---->
 
-    <Channel type="com.microsoft.applicationinsights.internal.channel.inprocess.InProcessTelemetryChannel">
+    <Channel type="com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel">
     </Channel>
 
 

@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.channel.inprocess;
 
+import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import org.junit.Test;
 
 import java.util.HashMap;
