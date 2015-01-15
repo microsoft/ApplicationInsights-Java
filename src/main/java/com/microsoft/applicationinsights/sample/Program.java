@@ -16,18 +16,12 @@ class Program {
     public static void main(String[] args) throws IOException {
         validateCore();
 
-        validateMultipleChannels();
-
         traceLog4J12();
         traceLog4J2();
         traceLogback();
 
         System.out.println("Press Enter to terminate...");
         System.in.read();
-    }
-
-    private static void validateMultipleChannels() {
-        InProcessTelemetryChannel channel1 = new InProcessTelemetryChannel();
     }
 
     // region Logging

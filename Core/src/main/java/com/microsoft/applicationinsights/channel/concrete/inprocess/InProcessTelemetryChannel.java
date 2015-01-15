@@ -121,7 +121,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         // Temporary
-        telemetriesTransmitter = new NoConfigurationTransmitterFactory().create(endpointAddress);
+        telemetriesTransmitter = new InProcessTelemetryChannelFactory().create(endpointAddress);
         telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
         setDeveloperMode(developerMode);
     }
