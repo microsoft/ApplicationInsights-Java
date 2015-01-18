@@ -60,26 +60,6 @@ public final class DefaultTelemetryClient implements TelemetryClient {
     }
 
     /**
-     * Gets the channel used by the client.
-     */
-    @Override
-    public TelemetryChannel getChannel() {
-        if (channel == null) {
-            this.channel = configuration.getChannel();
-        }
-
-        return this.channel;
-    }
-
-    /**
-     * Sets the channel used by the client.
-     */
-    @Override
-    public void setChannel(TelemetryChannel channel) {
-        this.channel = channel;
-    }
-
-    /**
      * Gets the current context that will be used to augment telemetry you send.
      * @return A telemetry context used for all records. Changes to it will impact all future telemetry in this
      * application session.
@@ -377,6 +357,17 @@ public final class DefaultTelemetryClient implements TelemetryClient {
         telemetry.sanitize();
 
         getChannel().send(telemetry);
+    }
+
+    /**
+     * Gets the channel used by the client.
+     */
+    TelemetryChannel getChannel() {
+        if (channel == null) {
+            this.channel = configuration.getChannel();
+        }
+
+        return this.channel;
     }
 
     private TelemetryContext createInitializedContext() {

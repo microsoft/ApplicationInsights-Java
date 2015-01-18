@@ -10,9 +10,10 @@ import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
- * Telemetry used to track events.
+ * Telemetry type used to track exceptions.
  */
 public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     private final ExceptionData data;
@@ -25,6 +26,9 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         setExceptionHandledAt(ExceptionHandledAt.Unhandled);
     }
 
+    /**
+     * Initializes a new instance.
+     */
     public ExceptionTelemetry(Exception exception) {
         this();
         setException(exception);
@@ -40,20 +44,28 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         updateException(exception);
     }
 
+    /**
+     * Gets the value indicated where the exception was handled.
+     * @return The value indicating the exception
+     */
     public ExceptionHandledAt getExceptionHandledAt() {
         return Enum.valueOf(ExceptionHandledAt.class, data.getHandledAt());
     }
 
+    /**
+     * Sets the value indicated where the exception was handled.
+     * @param value The value indicating the exception
+     */
     public void setExceptionHandledAt(ExceptionHandledAt value) {
         data.setHandledAt(value.toString());
     }
 
+    /**
+     * Gets a map of application-defined exception metrics.
+     * @return The map of metrics
+     */
     public Map<String,Double> getMetrics() {
         return data.getMeasurements();
-    }
-
-    public List<ExceptionDetails> getExceptions() {
-        return data.getExceptions();
     }
 
     @Override
@@ -64,6 +76,10 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     @Override
     protected ExceptionData getData() {
         return data;
+    }
+
+    private List<ExceptionDetails> getExceptions() {
+        return data.getExceptions();
     }
 
     private void updateException(Exception exception) {

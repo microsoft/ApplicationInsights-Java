@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNull;

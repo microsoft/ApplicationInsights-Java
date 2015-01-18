@@ -17,31 +17,26 @@ import static org.mockito.Mockito.*;
 /**
  * Tests the interface of the telemetry client.
  */
-public class TelemetryClientTests {
+public final class TelemetryClientTests {
 
     // region Members
 
     private List<Telemetry> eventsSent;
-    private static DefaultTelemetryClient client;
+    private DefaultTelemetryClient client;
     private TelemetryChannel channel;
 
     // endregion Members
 
     // region Initialization
 
-    @BeforeClass
-    public static void classInitialize() {
-        TelemetryConfiguration configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey("c9341531-05ac-4d8c-972e-36e97601d5ff");
-
-        client = new DefaultTelemetryClient(configuration);
-    }
-
     @Before
     public void testInitialize() {
-        eventsSent = new LinkedList<Telemetry>();
+        TelemetryConfiguration configuration = new TelemetryConfiguration();
+        configuration.setInstrumentationKey("c9341531-05ac-4d8c-972e-36e97601d5ff");
         channel = mock(TelemetryChannel.class);
+        configuration.setChannel(channel);
 
+        eventsSent = new LinkedList<Telemetry>();
         // Setting the channel to add the sent telemetries to a collection, so they could be verified in tests.
         Mockito.doAnswer(new Answer() {
             @Override
@@ -53,7 +48,7 @@ public class TelemetryClientTests {
             }
         }).when(channel).send(Matchers.any(Telemetry.class));
 
-        client.setChannel(channel);
+        client = new DefaultTelemetryClient(configuration);
     }
 
     // endregion Initialization

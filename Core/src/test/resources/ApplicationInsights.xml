@@ -9,8 +9,7 @@
     </ContextInitializers>
     <TelemetryInitializers>
     </TelemetryInitializers>
-    <Channel>
-        <Type>com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel</Type>
+    <Channel type="com.microsoft.applicationinsights.shared.LogChannelMock">
         <EndpointAddress>
             test-endpoint
         </EndpointAddress>

@@ -13,6 +13,7 @@ public interface Telemetry extends JsonSerializable
      * Gets the time when telemetry was recorded
      */
     Date getTimestamp();
+
     /**
      * Sets the time when telemetry was recorded
      */

@@ -5,22 +5,30 @@ import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
- * Telemetry used to track events.
+ * The class that represents information about collected RDD.
  */
 public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDependencyData> {
     private final RemoteDependencyData data;
 
+    /**
+     * Default Ctor
+     */
     public RemoteDependencyTelemetry() {
         super();
         data = new RemoteDependencyData();
         initialize(this.data.getProperties());
     }
 
+    /**
+     * Initializes an instance with a {@param name}
+     * @param name The resource name
+     */
     public RemoteDependencyTelemetry(String name) {
         this();
-        this.setName(name);
+        setName(name);
     }
 
     public String getName() {
