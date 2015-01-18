@@ -1,5 +1,5 @@
-version = "1.0.0-SNAPSHOT"
-group = "com.microsoft.applicationinsights"
+version = "0.9.0-SNAPSHOT"
+group = "com.microsoft.azure"
 
 // region Publishing tasks
 
@@ -17,7 +17,7 @@ uploadArchives {
                 addFilter('LogbackJar') { artifact, file ->
                     artifact.name == "LogbackJar"
                 }
-                pom('LogbackJar').artifactId = 'logging-logback'
+                pom('LogbackJar').artifactId = 'applicationinsights-logging-logback'
                 pom('LogbackJar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
                     dep -> dep.artifactId == 'logback-classic' || dep.artifactId == 'logback-core'
                 }.toList() }
@@ -25,7 +25,7 @@ uploadArchives {
                 addFilter('Log4j1_2Jar') { artifact, file ->
                     artifact.name == "Log4j1_2Jar"
                 }
-                pom('Log4j1_2Jar').artifactId = 'logging-log4j1_2'
+                pom('Log4j1_2Jar').artifactId = 'applicationinsights-logging-log4j1_2'
                 pom('Log4j1_2Jar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
                     dep -> dep.groupId == 'log4j'
                 }.toList() }
@@ -33,7 +33,7 @@ uploadArchives {
                 addFilter('Log4j2Jar') { artifact, file ->
                     artifact.name == "Log4j2Jar"
                 }
-                pom('Log4j2Jar').artifactId = 'logging-log4j2'
+                pom('Log4j2Jar').artifactId = 'applicationinsights-logging-log4j2'
                 pom('Log4j2Jar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
                     dep -> dep.artifactId == 'log4j-core' || dep.artifactId == 'log4j-api'
                 }.toList() }
