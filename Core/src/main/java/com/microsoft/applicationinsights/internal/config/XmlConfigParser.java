@@ -1,13 +1,11 @@
 package com.microsoft.applicationinsights.internal.config;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -44,10 +42,10 @@ final class XmlConfigParser implements ConfigFileParser {
     @Override
     public boolean parse(String fileName) {
         try {
-            ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
-
-            InputStream inputStream = classLoader.getResourceAsStream(fileName);
+            InputStream inputStream = getConfigurationAsInputStream(fileName);
             if (inputStream == null) {
+                InternalLogger.INSTANCE.log("Could not find configuration file: %s.", fileName);
+
                 return false;
             }
 
@@ -154,6 +152,37 @@ final class XmlConfigParser implements ConfigFileParser {
         return new StructuredDataResult(sectionTagValue, items);
     }
 
+
+    /**
+     * Gets the configuration as input stream.
+     * @param fileName Configuration file name.
+     * @return The configuration file as input stream.
+     */
+    private InputStream getConfigurationAsInputStream(String fileName) {
+
+        // Trying to load configuration as a resource.
+        ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream(fileName);
+
+        // If not found as a resource, trying to load from the executing jar directory
+        if (inputStream == null) {
+            try {
+                String jarFullPath = TelemetryConfigurationFactory.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+                File jarFile = new File(jarFullPath);
+
+                if (jarFile.exists()) {
+                    String jarDirectory = jarFile.getParent();
+                    String configurationPath = jarDirectory + "/" + fileName;
+
+                    inputStream = new FileInputStream(configurationPath);
+                }
+            } catch (URISyntaxException e) {
+            } catch (FileNotFoundException e) {
+            }
+        }
+
+        return inputStream;
+    }
 
     /**
      * An helper method that will return the first Element in the document by the section name

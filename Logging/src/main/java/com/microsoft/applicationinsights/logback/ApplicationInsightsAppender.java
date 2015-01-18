@@ -4,6 +4,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.microsoft.applicationinsights.common.LogTelemetryClientProxy;
 import com.microsoft.applicationinsights.common.TelemetryClientProxy;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
  * LOGBack appender.
@@ -12,6 +13,7 @@ public class ApplicationInsightsAppender extends AppenderBase<ILoggingEvent> {
 
     // region Members
 
+    private boolean isInitialized = false;
     private LogTelemetryClientProxy logTelemetryClientProxy;
     private String instrumentationKey;
 
@@ -41,6 +43,12 @@ public class ApplicationInsightsAppender extends AppenderBase<ILoggingEvent> {
      */
     @Override
     protected void append(ILoggingEvent eventObject) {
+        if (!this.isStarted() || !this.isInitialized) {
+
+            // TODO: trace not started or not initialized.
+            return;
+        }
+
         ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(eventObject);
         this.logTelemetryClientProxy.sendEvent(aiEvent);
     }
@@ -49,6 +57,13 @@ public class ApplicationInsightsAppender extends AppenderBase<ILoggingEvent> {
     public void start() {
         super.start();
 
-        this.logTelemetryClientProxy = new LogTelemetryClientProxy(this.instrumentationKey);
+        try {
+            logTelemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
+            this.isInitialized = true;
+        } catch (Exception e) {
+            // Appender failure must not fail the running application.
+            this.isInitialized = false;
+            InternalLogger.INSTANCE.log("Failed to initialize appender with exception: %s.", e.getMessage());
+        }
     }
 }

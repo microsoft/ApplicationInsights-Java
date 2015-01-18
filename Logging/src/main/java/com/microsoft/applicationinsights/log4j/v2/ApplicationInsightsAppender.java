@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.log4j.v2;
 
 import com.microsoft.applicationinsights.common.LogTelemetryClientProxy;
 import com.microsoft.applicationinsights.common.TelemetryClientProxy;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.logging.log4j.core.*;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -13,7 +14,7 @@ public class ApplicationInsightsAppender extends AbstractAppender {
 
     //region Members
 
-    private boolean isInitialized = true;
+    private boolean isInitialized = false;
     private TelemetryClientProxy telemetryClientProxy;
 
     //endregion Members
@@ -30,10 +31,11 @@ public class ApplicationInsightsAppender extends AbstractAppender {
 
         try {
             telemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
+            this.isInitialized = true;
         } catch (Exception e) {
             // Appender failure must not fail the running application.
-            // TODO: Assert.Debug/warning on exception?
             this.isInitialized = false;
+            InternalLogger.INSTANCE.log("Failed to initialize appender with exception: %s.", e.getMessage());
         }
     }
 

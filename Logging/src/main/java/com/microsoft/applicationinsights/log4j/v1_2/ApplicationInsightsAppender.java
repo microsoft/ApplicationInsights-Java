@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.log4j.v1_2;
 
 import com.microsoft.applicationinsights.common.LogTelemetryClientProxy;
 import com.microsoft.applicationinsights.common.TelemetryClientProxy;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
@@ -9,7 +10,7 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
 
     // region Members
 
-    private boolean isInitialized = true;
+    private boolean isInitialized = false;
     private String instrumentationKey;
     private TelemetryClientProxy telemetryClientProxy;
 
@@ -22,11 +23,8 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
     }
 
     /**
-     * DO NOT REMOVE!
-     * This method is used by Log4j system initializer when reading configuration.
-     *
      * Sets the instrumentation key.
-     *
+     * This method is used by Log4j system initializer when reading configuration.
      * @param key The instrumentation key.
      */
     public void setInstrumentationKey(String key) {
@@ -81,10 +79,11 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
 
         try {
             this.telemetryClientProxy = new LogTelemetryClientProxy(this.instrumentationKey);
+            this.isInitialized = true;
         } catch (Exception e) {
             // Appender failure must not fail the running application.
-            // TODO: Assert.Debug/warning on exception?
             this.isInitialized = false;
+            InternalLogger.INSTANCE.log("Failed to initialize appender with exception: %s.", e.getMessage());
         }
     }
 
