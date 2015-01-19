@@ -106,7 +106,7 @@ public final class TelemetryConfiguration {
     }
 
     /**
-     * Gets the list of {@link} ContextInitializer} objects that supply additional information about application.
+     * Gets the list of {@link ContextInitializer} objects that supply additional information about application.
      *
      * Context initializers extend Application Insights telemetry collection by supplying additional information
      * about application environment, such as 'User' information (in TelemetryContext.getUser or Device (in TelemetryContext.getDevice
@@ -124,7 +124,7 @@ public final class TelemetryConfiguration {
      *
      * Telemetry modules automatically send telemetry describing the application to Application Insights. For example, a telemetry
      * module can handle application exception events and automatically send
-     * @return
+     * @return List of Telemetry Initializers
      */
     public List<TelemetryInitializer> getTelemetryInitializers() {
         return telemetryInitializers;

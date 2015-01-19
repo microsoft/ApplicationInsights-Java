@@ -127,7 +127,7 @@ public final class TelemetryBuffer {
     }
 
     /**
-     * The method will add the incoming {@see Telemetry} to its internal container of Telemetries
+     * The method will add the incoming {@link Telemetry} to its internal container of Telemetries
      *
      * If that is the first instance in the container, we schedule a 'pick-up' in a configurable amount of time
      * If by adding that item we exceeded the maximum number of instances, we trigger a send request now.
@@ -167,7 +167,7 @@ public final class TelemetryBuffer {
      *
      * Please make sure this behavior is kept to avoid unknown scenarios
      *
-     * @return The list of {@see Telemetry} instances that are ready to be sent
+     * @return The list of {@link Telemetry} instances that are ready to be sent
      */
     private List<Telemetry> prepareTelemetriesForSend() {
         ++generation;

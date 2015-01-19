@@ -4,7 +4,7 @@ import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 
 /**
  * Represents an object that implements supporting logic for TelemetryContext.
- * @see com.microsoft.applicationinsights.telemetry.TelemetryContext
+ * {@link com.microsoft.applicationinsights.telemetry.TelemetryContext}
  */
 public interface ContextInitializer
 {
