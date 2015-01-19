@@ -10,12 +10,13 @@ import java.util.concurrent.TimeUnit;
 public interface TelemetryChannel
 {
     /**
-     *  Gets a flag indicating whether this channel is in developer mode.
+     *  Gets value indicating whether this channel is in developer mode.
      */
     boolean isDeveloperMode();
 
     /**
-     *  Sets a flag indicating whether this channel is in developer mode.
+     *  Sets value indicating whether this channel is in developer mode.
+     * @param value True for applying develoer mode
      */
     void setDeveloperMode(boolean value);
 
@@ -25,7 +26,9 @@ public interface TelemetryChannel
     void send(Telemetry item);
 
     /**
-     * Stop on going work
+     * Stops on going work
+     * @param timeout Time to try and stop
+     * @param timeUnit The units of the 'timeout' parameter
      */
     void stop(long timeout, TimeUnit timeUnit);
 }

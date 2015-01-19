@@ -43,36 +43,24 @@ public class EventData extends Domain {
     private ConcurrentMap<String, Double> measurements;
 
     /**
-     * Initializes a new instance of the <see cref="EventData"/> class.
+     * Initializes a new instance of the class.
      */
     public EventData() {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Ver property.
-     */
     public int getVer() {
         return this.ver;
     }
 
-    /**
-     * Gets the Name property.
-     */
     public String getName() {
         return this.name;
     }
 
-    /**
-     * Sets the Name property.
-     */
     public void setName(String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the Properties property.
-     */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
             this.properties = new ConcurrentHashMap<String, String>();
@@ -80,16 +68,10 @@ public class EventData extends Domain {
         return this.properties;
     }
 
-    /**
-     * Sets the Properties property.
-     */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 
-    /**
-     * Gets the Measurements property.
-     */
     public ConcurrentMap<String, Double> getMeasurements() {
         if (this.measurements == null) {
             this.measurements = new ConcurrentHashMap<String, Double>();
@@ -97,18 +79,10 @@ public class EventData extends Domain {
         return this.measurements;
     }
 
-    /**
-     * Sets the Measurements property.
-     */
     public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
 
-
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
 
@@ -128,9 +102,6 @@ public class EventData extends Domain {
         return EVENT_BASE_TYPE;
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
     }
 }

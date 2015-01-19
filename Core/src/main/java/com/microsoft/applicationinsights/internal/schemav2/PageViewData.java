@@ -29,46 +29,29 @@ public class PageViewData extends EventData {
     private long duration;
 
     /**
-     * Initializes a new instance of the <see cref="PageViewData"/> class.
+     * Initializes a new instance of the class.
      */
     public PageViewData()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Url property.
-     */
     public String getUrl() {
         return this.url;
     }
 
-    /**
-     * Sets the Url property.
-     */
     public void setUrl(String value) {
         this.url = value;
     }
 
-    /**
-     * Gets the Duration property.
-     */
     public Long getDuration() {
         return this.duration;
     }
 
-    /**
-     * Sets the Duration property.
-     */
     public void setDuration(Long value) {
         this.duration = value;
     }
 
-
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         super.serializeContent(writer);
 
@@ -76,9 +59,6 @@ public class PageViewData extends EventData {
         writer.write("duration", duration);
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
     }
 }

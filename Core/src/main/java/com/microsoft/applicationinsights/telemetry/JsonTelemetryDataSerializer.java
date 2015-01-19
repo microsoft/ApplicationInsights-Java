@@ -13,7 +13,7 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
- * Created by gupele on 12/24/2014.
+ * This class knows how to transform data that is relevant to {@link Telemetry} instances into JSON
  */
 public final class JsonTelemetryDataSerializer {
 

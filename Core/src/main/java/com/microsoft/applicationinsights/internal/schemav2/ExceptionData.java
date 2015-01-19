@@ -55,37 +55,25 @@ public class ExceptionData extends Domain implements JsonSerializable {
     private ConcurrentMap<String, Double> measurements;
 
     /**
-     * Initializes a new instance of the <see cref="ExceptionData"/> class.
+     * Initializes a new instance of the \class.
      */
     public ExceptionData()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Ver property.
-     */
     public int getVer() {
         return this.ver;
     }
 
-    /**
-     * Gets the HandledAt property.
-     */
     public String getHandledAt() {
         return this.handledAt;
     }
 
-    /**
-     * Sets the HandledAt property.
-     */
     public void setHandledAt(String value) {
         this.handledAt = value;
     }
 
-    /**
-     * Gets the Exceptions property.
-     */
     public ArrayList<ExceptionDetails> getExceptions() {
         if (this.exceptions == null) {
             this.exceptions = new ArrayList<ExceptionDetails>();
@@ -93,30 +81,18 @@ public class ExceptionData extends Domain implements JsonSerializable {
         return this.exceptions;
     }
 
-    /**
-     * Sets the Exceptions property.
-     */
     public void setExceptions(ArrayList<ExceptionDetails> value) {
         this.exceptions = value;
     }
 
-    /**
-     * Gets the SeverityLevel property.
-     */
     public int getSeverityLevel() {
         return this.severityLevel;
     }
 
-    /**
-     * Sets the SeverityLevel property.
-     */
     public void setSeverityLevel(int value) {
         this.severityLevel = value;
     }
 
-    /**
-     * Gets the Properties property.
-     */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
             this.properties = new ConcurrentHashMap<String, String>();
@@ -124,16 +100,10 @@ public class ExceptionData extends Domain implements JsonSerializable {
         return this.properties;
     }
 
-    /**
-     * Sets the Properties property.
-     */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 
-    /**
-     * Gets the Measurements property.
-     */
     public ConcurrentMap<String, Double> getMeasurements() {
         if (this.measurements == null) {
             this.measurements = new ConcurrentHashMap<String, Double>();
@@ -141,20 +111,16 @@ public class ExceptionData extends Domain implements JsonSerializable {
         return this.measurements;
     }
 
-    /**
-     * Sets the Measurements property.
-     */
     public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
 
-
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be thrown during serialization.
      */
-    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
-    {
+    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
 
         super.serializeContent(writer);
@@ -178,9 +144,6 @@ public class ExceptionData extends Domain implements JsonSerializable {
         return EXCEPTION_BASE_TYPE;
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
     }
 }

@@ -8,14 +8,14 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.telemetry.Sanitizer;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Preconditions;
 
 /**
- * One of the main {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
+ * An implementation of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
  *
  * The channel holds two main entities:
  *
@@ -62,8 +62,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     }
 
     /**
-     * This ctor will query the 'namesAndValues' map for data to initialize itself
-     * It will ignore data that is not of its interest, this ctor is useful for building an instance from configuration
+     * This Ctor will query the 'namesAndValues' map for data to initialize itself
+     * It will ignore data that is not of its interest, this Ctor is useful for building an instance from configuration
      * @param nameAndValues - The data passed as name and value pairs
      */
     public InProcessTelemetryChannel(Map<String, String> nameAndValues) {
@@ -78,11 +78,18 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         initialize(endpointAddress, developerMode);
     }
 
+    /**
+     *  Gets value indicating whether this channel is in developer mode.
+     */
     @Override
     public boolean isDeveloperMode() {
         return developerMode;
     }
 
+    /**
+     * Sets value indicating whether this channel is in developer mode.
+     * @param developerMode True or false
+     */
     @Override
     public void setDeveloperMode(boolean developerMode) {
         if (developerMode != this.developerMode) {
@@ -92,6 +99,9 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
     }
 
+    /**
+     *  Sends a Telemetry instance through the channel.
+     */
     @Override
     public void send(Telemetry telemetry) {
         Preconditions.checkNotNull(telemetry, "Telemetry item must be non null");
@@ -107,6 +117,9 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
     }
 
+    /**
+     * Stops on going work
+     */
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
         telemetriesTransmitter.stop(timeout, timeUnit);

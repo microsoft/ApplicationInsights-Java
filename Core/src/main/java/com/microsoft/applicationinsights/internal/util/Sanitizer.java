@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.telemetry;
+package com.microsoft.applicationinsights.internal.util;
 
 import java.net.URI;
 import java.util.HashMap;

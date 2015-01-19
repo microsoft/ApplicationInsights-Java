@@ -39,23 +39,17 @@ public class MetricData extends Domain implements JsonSerializable {
     private ConcurrentMap<String, String> properties;
 
     /**
-     * Initializes a new instance of the <see cref="MetricData"/> class.
+     * Initializes a new instance of the class.
      */
     public MetricData()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Ver property.
-     */
     public int getVer() {
         return this.ver;
     }
 
-    /**
-     * Gets the Metrics property.
-     */
     public List<DataPoint> getMetrics() {
         if (this.metrics == null) {
             this.metrics = new ArrayList<DataPoint>();
@@ -63,16 +57,10 @@ public class MetricData extends Domain implements JsonSerializable {
         return this.metrics;
     }
 
-    /**
-     * Sets the Metrics property.
-     */
     public void setMetrics(List<DataPoint> value) {
         this.metrics = value;
     }
 
-    /**
-     * Gets the Properties property.
-     */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
             this.properties = new ConcurrentHashMap<String, String>();
@@ -80,17 +68,10 @@ public class MetricData extends Domain implements JsonSerializable {
         return this.properties;
     }
 
-    /**
-     * Sets the Properties property.
-     */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         super.serializeContent(writer);
 
@@ -109,10 +90,6 @@ public class MetricData extends Domain implements JsonSerializable {
         return METRIC_BASE_TYPE;
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
-
     }
 }

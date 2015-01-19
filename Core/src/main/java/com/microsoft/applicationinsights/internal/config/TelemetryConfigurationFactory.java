@@ -53,7 +53,7 @@ public enum TelemetryConfigurationFactory {
      * Set Tracking Disabled Mode (default false)
      * Set Context Initializers where they should be written with full package name
      * Set Telemetry Initializers where they should be written with full package name
-     * @param configuration
+     * @param configuration The configuration that will be populated
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
@@ -271,10 +271,10 @@ public enum TelemetryConfigurationFactory {
      *
      * @param className The class we create an instance of
      * @param interfaceClass The class' parent interface we wish to work with
-     * @param argumentClass Type of class to use as argument for ctor
-     * @param argument The argument to pass the ctor
+     * @param argumentClass Type of class to use as argument for Ctor
+     * @param argument The argument to pass the Ctor
      * @param <T> The class type to create
-     * @param <A> The class type as the ctor argument
+     * @param <A> The class type as the Ctor argument
      * @return The instance or null if failed
      */
     @SuppressWarnings("unchecked")

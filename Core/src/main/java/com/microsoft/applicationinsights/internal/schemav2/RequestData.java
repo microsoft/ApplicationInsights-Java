@@ -77,135 +77,81 @@ public class RequestData extends Domain {
     private ConcurrentMap<String, Double> measurements;
 
     /**
-     * Initializes a new instance of the <see cref="RequestData"/> class.
+     * Initializes a new instance of the class.
      */
     public RequestData()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Ver property.
-     */
     public int getVer() {
         return this.ver;
     }
 
-    /**
-     * Gets the Id property.
-     */
     public String getId() {
         return this.id;
     }
 
-    /**
-     * Sets the Id property.
-     */
     public void setId(String value) {
         this.id = value;
     }
 
-    /**
-     * Gets the Name property.
-     */
     public String getName() {
         return this.name;
     }
 
-    /**
-     * Sets the Name property.
-     */
     public void setName(String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the StartTime property.
-     */
     public Date getStartTime() {
         return this.startTime;
     }
 
-    /**
-     * Sets the StartTime property.
-     */
     public void setStartTime(Date value) {
         this.startTime = value;
     }
 
-    /**
-     * Gets the Duration property.
-     */
     public long getDuration() {
         return this.duration;
     }
 
-    /**
-     * Sets the Duration property.
-     */
     public void setDuration(long value) {
         this.duration = value;
     }
 
-    /**
-     * Gets the ResponseCode property.
-     */
     public String getResponseCode() {
         return this.responseCode;
     }
 
-    /**
-     * Sets the ResponseCode property.
-     */
     public void setResponseCode(String value) {
         this.responseCode = value;
     }
 
-    /**
-     * Gets the Success property.
-     */
     public boolean isSuccess() {
         return this.success;
     }
 
-    /**
-     * Sets the Success property.
-     */
     public void setSuccess(boolean value) {
         this.success = value;
     }
 
-    /**
-     * Gets the HttpMethod property.
-     */
     public String getHttpMethod() {
         return this.httpMethod;
     }
 
-    /**
-     * Sets the HttpMethod property.
-     */
     public void setHttpMethod(String value) {
         this.httpMethod = value;
     }
 
-    /**
-     * Gets the Url property.
-     */
     public String getUrl() {
         return this.url;
     }
 
-    /**
-     * Sets the Url property.
-     */
     public void setUrl(String value) {
         this.url = value;
     }
 
-    /**
-     * Gets the Properties property.
-     */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
             this.properties = new ConcurrentHashMap<String, String>();
@@ -213,16 +159,10 @@ public class RequestData extends Domain {
         return this.properties;
     }
 
-    /**
-     * Sets the Properties property.
-     */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 
-    /**
-     * Gets the Measurements property.
-     */
     public ConcurrentMap<String, Double> getMeasurements() {
         if (this.measurements == null) {
             this.measurements = new ConcurrentHashMap<String, Double>();
@@ -230,9 +170,6 @@ public class RequestData extends Domain {
         return this.measurements;
     }
 
-    /**
-     * Sets the Measurements property.
-     */
     public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
@@ -247,10 +184,6 @@ public class RequestData extends Domain {
         return REQUEST_BASE_TYPE;
     }
 
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         super.serializeContent(writer);
 
@@ -267,9 +200,6 @@ public class RequestData extends Domain {
         writer.write("measurements", measurements);
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
     }
 }

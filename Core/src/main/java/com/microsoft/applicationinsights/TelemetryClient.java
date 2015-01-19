@@ -10,10 +10,6 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
  * Created by gupele on 1/5/2015.
  */
 public interface TelemetryClient {
-    void setChannel(TelemetryChannel channel);
-
-    TelemetryChannel getChannel();
-
     TelemetryContext getContext();
 
     void trackEvent(String name, Map<String, String> properties, Map<String, Double> metrics);

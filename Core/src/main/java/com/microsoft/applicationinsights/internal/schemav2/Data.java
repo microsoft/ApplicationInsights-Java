@@ -22,6 +22,7 @@ public class Data<TDomain extends SendableData> extends Base implements Sendable
 
     /**
      * Initializes a new instance of the <see cref="Data{TDomain}"/> class with base data
+     * @param baseData The data this instance works with.
      */
     public Data(TDomain baseData) {
         super();
@@ -29,16 +30,10 @@ public class Data<TDomain extends SendableData> extends Base implements Sendable
         this.InitializeFields();
     }
 
-    /**
-     * Gets the BaseData property.
-     */
     public TDomain getBaseData() {
         return this.baseData;
     }
 
-    /**
-     * Sets the BaseData property.
-     */
     public void setBaseData(TDomain baseData) {
         this.baseData = baseData;
         if (this.baseData != null) {

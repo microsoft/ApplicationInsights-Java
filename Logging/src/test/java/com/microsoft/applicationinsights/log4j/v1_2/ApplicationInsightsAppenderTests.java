@@ -1,14 +1,13 @@
 package com.microsoft.applicationinsights.log4j.v1_2;
 
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.common.LoggingTestHelper;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.junit.*;
 import java.util.LinkedList;
 import java.util.List;
+import org.junit.*;
 
+import com.microsoft.applicationinsights.shared.LogChannelMockVerifier;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 public class ApplicationInsightsAppenderTests {
 
@@ -48,7 +47,7 @@ public class ApplicationInsightsAppenderTests {
         Logger logger = LogManager.getRootLogger();
         logger.trace("New event!");
 
-        Assert.assertEquals(1, telemetriesSent.size());
+        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
     }
 
     // endregion Tests
@@ -63,13 +62,9 @@ public class ApplicationInsightsAppenderTests {
     }
 
     private void setMockTelemetryChannelToAIAppender() {
-        this.telemetriesSent = new LinkedList<Telemetry>();
         ApplicationInsightsAppender appender = getApplicationInsightsAppender();
         appender.activateOptions();
-
-        TelemetryChannel telemetryChannelMock = LoggingTestHelper.createMockTelemetryChannelWithGivenTelemetryCollection(this.telemetriesSent);
-
-        appender.getTelemetryClientProxy().getTelemetryClient().setChannel(telemetryChannelMock);
+        LogChannelMockVerifier.INSTANCE.getTelemetryCollection().clear();
     }
 
     // endregion Private methods

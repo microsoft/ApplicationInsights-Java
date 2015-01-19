@@ -15,8 +15,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
 /**
- * The class is an implementation of the {@see TelemetrySerializer}
- * where the {@see Telemetry} instances are compressed by Gzip after converted to Json format
+ * The class is an implementation of the {@link TelemetrySerializer}
+ * where the {@link Telemetry} instances are compressed by Gzip after converted to Json format
  *
  * Created by gupele on 12/17/2014.
  */

@@ -3,9 +3,10 @@ package com.microsoft.applicationinsights.log4j.v2;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.shared.LogChannelMockVerifier;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.common.LoggingTestHelper;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
@@ -49,7 +50,7 @@ public class ApplicationInsightsAppenderTests {
         Logger logger = LogManager.getRootLogger();
         logger.trace("New event!");
 
-        Assert.assertEquals(1, this.telemetriesSent.size());
+        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
     }
 
     // endregion Tests
@@ -67,12 +68,7 @@ public class ApplicationInsightsAppenderTests {
     }
 
     private void setMockTelemetryChannelToAIAppender() {
-        this.telemetriesSent = new LinkedList<Telemetry>();
-        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
-
-        TelemetryChannel telemetryChannelMock = LoggingTestHelper.createMockTelemetryChannelWithGivenTelemetryCollection(this.telemetriesSent);
-
-        appender.getTelemetryClientProxy().getTelemetryClient().setChannel(telemetryChannelMock);
+        LogChannelMockVerifier.INSTANCE.getTelemetryCollection().clear();
     }
 
     // endregion Private methods
