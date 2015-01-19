@@ -759,7 +759,7 @@ public class ContextTagKeys
     }
 
     /*
-     * @see com.microsoft.bond.BondSerializable#reset()
+     * As describe: com.microsoft.bond.BondSerializable#reset()
      */
     public void reset() {
         reset("ContextTagKeys", "com.microsoft.applicationinsights.extensibility.context.ContextTagKeys");
