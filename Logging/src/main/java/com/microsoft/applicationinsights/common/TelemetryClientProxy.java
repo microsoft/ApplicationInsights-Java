@@ -13,6 +13,7 @@ public interface TelemetryClientProxy {
 
     /**
      * Gets the telemetry client.
+     * @return The telemetry client.
      */
     TelemetryClient getTelemetryClient();
 

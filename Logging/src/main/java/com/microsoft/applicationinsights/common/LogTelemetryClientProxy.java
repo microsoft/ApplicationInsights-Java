@@ -63,7 +63,7 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
     /**
      * Sends the given event to AI.
      *
-     * @param event
+     * @param event The event to send.
      */
     public void sendEvent(ApplicationInsightsEvent event) {
 
