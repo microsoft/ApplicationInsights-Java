@@ -42,7 +42,7 @@ public class MessageData extends Domain implements JsonSerializable {
     private ConcurrentMap<String, String> properties;
 
     /**
-     * Initializes a new instance of the <see cref="MessageData"/> class.
+     * Initializes a new instance of the class.
      */
     public MessageData()
     {
