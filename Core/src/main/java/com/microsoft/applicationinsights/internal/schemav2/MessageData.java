@@ -49,44 +49,26 @@ public class MessageData extends Domain implements JsonSerializable {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Ver property.
-     */
     public int getVer() {
         return this.ver;
     }
 
-    /**
-     * Gets the Message property.
-     */
     public String getMessage() {
         return this.message;
     }
 
-    /**
-     * Sets the Message property.
-     */
     public void setMessage(String value) {
         this.message = value;
     }
 
-    /**
-     * Gets the SeverityLevel property.
-     */
     public SeverityLevel getSeverityLevel() {
         return this.severityLevel;
     }
 
-    /**
-     * Sets the SeverityLevel property.
-     */
     public void setSeverityLevel(SeverityLevel value) {
         this.severityLevel = value;
     }
 
-    /**
-     * Gets the Properties property.
-     */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
             this.properties = new ConcurrentHashMap<String, String>();
@@ -94,20 +76,12 @@ public class MessageData extends Domain implements JsonSerializable {
         return this.properties;
     }
 
-    /**
-     * Sets the Properties property.
-     */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 
 
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
-    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
-    {
+    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         super.serializeContent(writer);
 
         writer.write("ver", ver);
@@ -130,10 +104,6 @@ public class MessageData extends Domain implements JsonSerializable {
         return MESSAGE_BASE_TYPE;
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
-
     }
 }

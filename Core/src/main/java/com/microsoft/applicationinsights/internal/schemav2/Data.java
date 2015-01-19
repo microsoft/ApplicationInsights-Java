@@ -14,14 +14,14 @@ public class Data<TDomain extends SendableData> extends Base implements Sendable
     private TDomain baseData;
 
     /**
-     * Initializes a new instance of the <see cref="Data{TDomain}"/> class.
+     * Initializes a new instance of the class.
      */
     public Data() {
         this(null);
     }
 
     /**
-     * Initializes a new instance of the <see cref="Data{TDomain}"/> class with base data
+     * Initializes a new instance of the class with base data
      * @param baseData The data this instance works with.
      */
     public Data(TDomain baseData) {

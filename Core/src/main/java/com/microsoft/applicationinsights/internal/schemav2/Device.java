@@ -83,7 +83,7 @@ public class Device implements JsonSerializable {
     private String vmName;
 
     /**
-     * Initializes a new instance of the <see cref="Device"/> class.
+     * Initializes a new instance of the class.
      */
     public Device() {
         this.InitializeFields();

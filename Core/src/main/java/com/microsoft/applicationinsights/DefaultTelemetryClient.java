@@ -34,6 +34,7 @@ public final class DefaultTelemetryClient implements TelemetryClient {
 
     /**
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
+     * @param configuration The configuration this instance will work with.
      */
     public DefaultTelemetryClient(TelemetryConfiguration configuration) {
         if (configuration == null) {

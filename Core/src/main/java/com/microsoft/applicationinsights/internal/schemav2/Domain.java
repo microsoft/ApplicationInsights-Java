@@ -22,7 +22,7 @@ public class Domain implements SendableData
     private static final String DOMAIN_BASE_TYPE = "Microsoft.ApplicationInsights.Domain";
 
     /**
-     * Initializes a new instance of the <see cref="Domain"/> class.
+     * Initializes a new instance of the class.
      */
     public Domain() {
         this.InitializeFields();
@@ -43,6 +43,7 @@ public class Domain implements SendableData
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be throw during serialization.
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
     }

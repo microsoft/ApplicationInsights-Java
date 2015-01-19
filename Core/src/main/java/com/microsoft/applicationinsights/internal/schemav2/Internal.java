@@ -20,37 +20,25 @@ public class Internal implements JsonSerializable {
     private String agentVersion;
 
     /**
-     * Initializes a new instance of the <see cref="Internal"/> class.
+     * Initializes a new instance of the class.
      */
     public Internal()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the SdkVersion property.
-     */
     public String getSdkVersion() {
         return this.sdkVersion;
     }
 
-    /**
-     * Sets the SdkVersion property.
-     */
     public void setSdkVersion(String value) {
         this.sdkVersion = value;
     }
 
-    /**
-     * Gets the AgentVersion property.
-     */
     public String getAgentVersion() {
         return this.agentVersion;
     }
 
-    /**
-     * Sets the AgentVersion property.
-     */
     public void setAgentVersion(String value) {
         this.agentVersion = value;
     }
@@ -70,10 +58,10 @@ public class Internal implements JsonSerializable {
         }
     }
 
-
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be throw during serialization.
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
@@ -85,6 +73,7 @@ public class Internal implements JsonSerializable {
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be throw during serialization.
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
@@ -92,10 +81,6 @@ public class Internal implements JsonSerializable {
         writer.write("agentVersion", agentVersion);
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
-
     }
 }

@@ -7,10 +7,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * Represents a communication channel for sending telemetry to application insights.
  */
-public interface TelemetryChannel
-{
+public interface TelemetryChannel {
+
     /**
      *  Gets value indicating whether this channel is in developer mode.
+     * @return The developer mode.
      */
     boolean isDeveloperMode();
 
@@ -22,6 +23,7 @@ public interface TelemetryChannel
 
     /**
      *  Sends a Telemetry instance through the channel.
+     * @param item The Telemetry item to send.
      */
     void send(Telemetry item);
 
