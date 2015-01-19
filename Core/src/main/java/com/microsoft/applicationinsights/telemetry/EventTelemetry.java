@@ -24,6 +24,7 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
 
     /**
      * Initializes a new instance.
+     * @param name The event's name.
      */
     public EventTelemetry(String name) {
         this();
@@ -69,7 +70,7 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
 
     /**
      * Fetches the data structure the instance works with
-     * @return
+     * @return The inner data structure.
      */
     @Override
     protected EventData getData() {

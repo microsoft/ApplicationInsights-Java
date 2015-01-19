@@ -18,23 +18,16 @@ public class Application implements JsonSerializable {
     private String ver;
 
     /**
-     * Initializes a new instance of the <see cref="Application"/> class.
      */
     public Application()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Ver property.
-     */
     public String getVer() {
         return this.ver;
     }
 
-    /**
-     * Sets the Ver property.
-     */
     public void setVer(String value) {
         this.ver = value;
     }
@@ -50,7 +43,6 @@ public class Application implements JsonSerializable {
             map.put("ver", this.ver);
         }
     }
-
 
     /**
      * Serializes the beginning of this object to the passed in writer.

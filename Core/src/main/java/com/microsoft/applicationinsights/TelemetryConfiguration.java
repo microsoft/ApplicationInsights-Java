@@ -148,7 +148,7 @@ public final class TelemetryConfiguration {
      * This instrumentation key value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
      * instances created in the application. This value can be overwritten by setting the Instrumentation Key in
      * {@link com.microsoft.applicationinsights.telemetry.TelemetryContext} class
-     * @return The instrumentation key
+     * @param key The instrumentation key
      * @throws IllegalArgumentException when the new value is null or empty
      */
     public void setInstrumentationKey(String key) {

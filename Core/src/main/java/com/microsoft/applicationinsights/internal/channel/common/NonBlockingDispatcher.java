@@ -10,7 +10,7 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
  * The class implements {@link TransmissionDispatcher}
  *
  * Basically, the class tries to find one {@link TransmissionOutput}
- * that will accept the incoming {@line Transmission}.
+ * that will accept the incoming {@link Transmission}.
  *
  * It is a non blocking behavior in the sense that if no one can accept it will drop the data
  *

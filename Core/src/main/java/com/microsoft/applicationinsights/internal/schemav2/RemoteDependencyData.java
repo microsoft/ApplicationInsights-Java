@@ -86,177 +86,105 @@ public class RemoteDependencyData extends Domain {
     private ConcurrentMap<String, String> properties;
 
     /**
-     * Initializes a new instance of the <see cref="RemoteDependencyData"/> class.
+     * Initializes a new instance of the class.
      */
     public RemoteDependencyData()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Ver property.
-     */
     public int getVer() {
         return this.ver;
     }
 
-    /**
-     * Gets the Name property.
-     */
     public String getName() {
         return this.name;
     }
 
-    /**
-     * Sets the Name property.
-     */
     public void setName(String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the Kind property.
-     */
     public DataPointType getKind() {
         return this.kind;
     }
 
-    /**
-     * Sets the Kind property.
-     */
     public void setKind(DataPointType value) {
         this.kind = value;
     }
 
-    /**
-     * Gets the Value property.
-     */
     public double getValue() {
         return this.value;
     }
 
-    /**
-     * Sets the Value property.
-     */
     public void setValue(double value) {
         this.value = value;
     }
 
-    /**
-     * Gets the Count property.
-     */
     public Integer getCount() {
         return this.count;
     }
 
-    /**
-     * Sets the Count property.
-     */
     public void setCount(Integer value) {
         this.count = value;
     }
 
-    /**
-     * Gets the Min property.
-     */
     public Double getMin() {
         return this.min;
     }
 
-    /**
-     * Sets the Min property.
-     */
     public void setMin(Double value) {
         this.min = value;
     }
 
-    /**
-     * Gets the Max property.
-     */
     public Double getMax() {
         return this.max;
     }
 
-    /**
-     * Sets the Max property.
-     */
     public void setMax(Double value) {
         this.max = value;
     }
 
-    /**
-     * Gets the StdDev property.
-     */
     public Double getStdDev() {
         return this.stdDev;
     }
 
-    /**
-     * Sets the StdDev property.
-     */
     public void setStdDev(Double value) {
         this.stdDev = value;
     }
 
-    /**
-     * Gets the DependencyKind property.
-     */
     public DependencyKind getDependencyKind() {
         return this.dependencyKind;
     }
 
-    /**
-     * Sets the DependencyKind property.
-     */
     public void setDependencyKind(DependencyKind value) {
         this.dependencyKind = value;
     }
 
-    /**
-     * Gets the Success property.
-     */
     public Boolean getSuccess() {
         return this.success;
     }
 
-    /**
-     * Sets the Success property.
-     */
     public void setSuccess(Boolean value) {
         this.success = value;
     }
 
-    /**
-     * Gets the Async property.
-     */
     public Boolean getAsync() {
         return this.async;
     }
 
-    /**
-     * Sets the Async property.
-     */
     public void setAsync(Boolean value) {
         this.async = value;
     }
 
-    /**
-     * Gets the DependencySource property.
-     */
     public DependencySourceType getDependencySource() {
         return this.dependencySource;
     }
 
-    /**
-     * Sets the DependencySource property.
-     */
     public void setDependencySource(DependencySourceType value) {
         this.dependencySource = value;
     }
 
-    /**
-     * Gets the Properties property.
-     */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
             this.properties = new ConcurrentHashMap<String, String>();
@@ -264,17 +192,14 @@ public class RemoteDependencyData extends Domain {
         return this.properties;
     }
 
-    /**
-     * Sets the Properties property.
-     */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
 
-
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be thrown during serialization.
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         super.serializeContent(writer);
@@ -311,9 +236,6 @@ public class RemoteDependencyData extends Domain {
         return REMOTE_BASE_TYPE;
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
     }
 }

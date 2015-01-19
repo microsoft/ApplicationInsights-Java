@@ -15,7 +15,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
  * Encapsulates information about a web request handled by the application.
  *
  * You can send information about requests processed by your web application to Application Insights by
- * passing an instance of this class to the 'trackHttpRequest' method of the {@link com.microsoft.applicationinsights.TelemetryClient}>
+ * passing an instance of this class to the 'trackHttpRequest' method of the {@link com.microsoft.applicationinsights.TelemetryClient}
  */
 public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
     private final RequestData data;
@@ -55,7 +55,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
 
     /**
      * Sets the StartTime. Uses the default behavior and sets the property on the 'data' start time
-     * @param timestamp
+     * @param timestamp he timestamp as Date.
      */
     @Override
     public void setTimestamp(Date timestamp) {
@@ -148,7 +148,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
 
     /**
      * Sets the amount of time it took the application to handle the request.
-     * @return Amount of time in milliseconds
+     * @param milliSeconds Amount of time in milliseconds.
      */
     public void setDuration(long milliSeconds) {
         data.setDuration(milliSeconds);

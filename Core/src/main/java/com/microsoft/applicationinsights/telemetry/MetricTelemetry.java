@@ -131,7 +131,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
 
     /**
      * Sets the standard deviation of this metric.
-     * @return The max value.
+     * @param value The max value.
      */
     public void setStandardDeviation(Double value) {
         metric.setStdDev(value); updateKind();

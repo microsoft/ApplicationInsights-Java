@@ -92,7 +92,7 @@ public final class TelemetryBuffer {
 
     /**
      * Sets the maximum number of telemetries in a batch
-     * @param maxTelemetriesInBatch
+     * @param maxTelemetriesInBatch The max amount of Telemetries that are allowed in a batch.
      */
     public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch)
     {
@@ -110,7 +110,7 @@ public final class TelemetryBuffer {
 
     /**
      * Sets the transmit buffer timeout in seconds
-     * @param transmitBufferTimeoutInSeconds
+     * @param transmitBufferTimeoutInSeconds The amount of time to wait before sending the buffer.
      */
     public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds)
     {
@@ -134,7 +134,7 @@ public final class TelemetryBuffer {
      *
      * Note that a lock is used to make sure we avoid race conditions and to make sure that we cleanly
      * move from a ready to send buffer to a new one
-     * @param telemetry
+     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to add to the buffer.
      */
     public void add(Telemetry telemetry) {
         Preconditions.checkNotNull(telemetry, "Telemetry must be non null value");

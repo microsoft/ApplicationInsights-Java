@@ -42,7 +42,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Sets date and time when event was recorded.
-     * @param date The timestamp as Date
+     * @param date The timestamp as Date.
      */
     @Override
     public void setTimestamp(Date date) {
@@ -79,7 +79,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
     /**
      * Serializes this object in JSON format.
      * @param writer The writer that helps with serializing into Json format
-     * @throws IOException
+     * @throws IOException The exception that might be thrown during the serialization
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
@@ -102,6 +102,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
     /**
      * Concrete classes should implement this method which supplies the
      * data structure that this instance works with, which needs to implement {@link SendableData}
+     * @return The inner data structure
      */
     protected abstract T getData();
 }

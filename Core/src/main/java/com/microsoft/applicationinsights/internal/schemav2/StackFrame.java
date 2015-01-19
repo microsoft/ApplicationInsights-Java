@@ -37,87 +37,57 @@ public class StackFrame implements JsonSerializable {
     private int line;
 
     /**
-     * Initializes a new instance of the <see cref="StackFrame"/> class.
+     * Initializes a new instance of the class.
      */
     public StackFrame()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Level property.
-     */
     public int getLevel() {
         return this.level;
     }
 
-    /**
-     * Sets the Level property.
-     */
     public void setLevel(int value) {
         this.level = value;
     }
 
-    /**
-     * Gets the Method property.
-     */
     public String getMethod() {
         return this.method;
     }
 
-    /**
-     * Sets the Method property.
-     */
     public void setMethod(String value) {
         this.method = value;
     }
 
-    /**
-     * Gets the Assembly property.
-     */
     public String getAssembly() {
         return this.assembly;
     }
 
-    /**
-     * Sets the Assembly property.
-     */
     public void setAssembly(String value) {
         this.assembly = value;
     }
 
-    /**
-     * Gets the FileName property.
-     */
     public String getFileName() {
         return this.fileName;
     }
 
-    /**
-     * Sets the FileName property.
-     */
     public void setFileName(String value) {
         this.fileName = value;
     }
 
-    /**
-     * Gets the Line property.
-     */
     public int getLine() {
         return this.line;
     }
 
-    /**
-     * Sets the Line property.
-     */
     public void setLine(int value) {
         this.line = value;
     }
 
-
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be thrown during serialization.
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
@@ -126,10 +96,6 @@ public class StackFrame implements JsonSerializable {
         this.serializeContent(writer);
     }
 
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         writer.write("level", level);
         writer.write("method", method);
@@ -138,10 +104,6 @@ public class StackFrame implements JsonSerializable {
         writer.write("line", line);
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
-
     }
 }

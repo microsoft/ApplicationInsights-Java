@@ -23,16 +23,10 @@ public abstract class Base implements JsonSerializable, SendableData{
         this.InitializeFields();
     }
 
-    /**
-     * Gets the BaseType property.
-     */
     public String getBaseType() {
         return this.baseType;
     }
 
-    /**
-     * Sets the BaseType property.
-     */
     public void setBaseType(String baseType) {
         this.baseType = baseType;
     }

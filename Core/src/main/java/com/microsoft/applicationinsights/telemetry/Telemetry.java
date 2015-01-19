@@ -11,21 +11,25 @@ public interface Telemetry extends JsonSerializable
 {
     /**
      * Gets the time when telemetry was recorded
+     * @return Recorded time.
      */
     Date getTimestamp();
 
     /**
      * Sets the time when telemetry was recorded
+     * @param date Recorded time.
      */
     void setTimestamp(Date date);
 
     /**
      * Gets the context associated with this telemetry instance.
+     * @return Context associated with this instance.
      */
     TelemetryContext getContext();
 
     /**
      * Gets the map of application-defined property names and values.
+     * @return Map of properties.
      */
     Map<String,String> getProperties();
 

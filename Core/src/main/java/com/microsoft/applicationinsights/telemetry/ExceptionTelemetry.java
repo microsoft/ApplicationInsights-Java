@@ -28,6 +28,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
 
     /**
      * Initializes a new instance.
+     * @param exception The exception to track.
      */
     public ExceptionTelemetry(Exception exception) {
         this();

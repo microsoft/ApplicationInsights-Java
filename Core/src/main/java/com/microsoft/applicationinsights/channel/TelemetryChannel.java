@@ -16,6 +16,7 @@ public interface TelemetryChannel
 
     /**
      *  Sets value indicating whether this channel is in developer mode.
+     * @param value True for applying develoer mode
      */
     void setDeveloperMode(boolean value);
 
@@ -26,6 +27,8 @@ public interface TelemetryChannel
 
     /**
      * Stops on going work
+     * @param timeout Time to try and stop
+     * @param timeUnit The units of the 'timeout' parameter
      */
     void stop(long timeout, TimeUnit timeUnit);
 }

@@ -19,7 +19,7 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
     }
 
     /**
-     * Initializes a new instance of the class with the specified {@param message}.
+     * Initializes a new instance of the class with the specified parameter 'message'.
      * @param message The message.
      */
     public TraceTelemetry(String message) {

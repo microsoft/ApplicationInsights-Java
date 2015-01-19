@@ -53,7 +53,7 @@ public enum TelemetryConfigurationFactory {
      * Set Tracking Disabled Mode (default false)
      * Set Context Initializers where they should be written with full package name
      * Set Telemetry Initializers where they should be written with full package name
-     * @param configuration
+     * @param configuration The configuration that will be populated
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {

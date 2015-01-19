@@ -89,202 +89,117 @@ public class Device implements JsonSerializable {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Id property.
-     */
     public String getId() {
         return this.id;
     }
 
-    /**
-     * Sets the Id property.
-     */
     public void setId(String value) {
         this.id = value;
     }
 
-    /**
-     * Gets the Ip property.
-     */
     public String getIp() {
         return this.ip;
     }
 
-    /**
-     * Sets the Ip property.
-     */
     public void setIp(String value) {
         this.ip = value;
     }
 
-    /**
-     * Gets the Language property.
-     */
     public String getLanguage() {
         return this.language;
     }
 
-    /**
-     * Sets the Language property.
-     */
     public void setLanguage(String value) {
         this.language = value;
     }
 
-    /**
-     * Gets the Locale property.
-     */
     public String getLocale() {
         return this.locale;
     }
 
-    /**
-     * Sets the Locale property.
-     */
     public void setLocale(String value) {
         this.locale = value;
     }
 
-    /**
-     * Gets the Model property.
-     */
     public String getModel() {
         return this.model;
     }
 
-    /**
-     * Sets the Model property.
-     */
     public void setModel(String value) {
         this.model = value;
     }
 
-    /**
-     * Gets the Network property.
-     */
     public String getNetwork() {
         return this.network;
     }
 
-    /**
-     * Sets the Network property.
-     */
     public void setNetwork(String value) {
         this.network = value;
     }
 
-    /**
-     * Gets the OemName property.
-     */
     public String getOemName() {
         return this.oemName;
     }
 
-    /**
-     * Sets the OemName property.
-     */
     public void setOemName(String value) {
         this.oemName = value;
     }
 
-    /**
-     * Gets the Os property.
-     */
     public String getOs() {
         return this.os;
     }
 
-    /**
-     * Sets the Os property.
-     */
     public void setOs(String value) {
         this.os = value;
     }
 
-    /**
-     * Gets the OsVersion property.
-     */
     public String getOsVersion() {
         return this.osVersion;
     }
 
-    /**
-     * Sets the OsVersion property.
-     */
     public void setOsVersion(String value) {
         this.osVersion = value;
     }
 
-    /**
-     * Gets the RoleInstance property.
-     */
     public String getRoleInstance() {
         return this.roleInstance;
     }
 
-    /**
-     * Sets the RoleInstance property.
-     */
     public void setRoleInstance(String value) {
         this.roleInstance = value;
     }
 
-    /**
-     * Gets the RoleName property.
-     */
     public String getRoleName() {
         return this.roleName;
     }
 
-    /**
-     * Sets the RoleName property.
-     */
     public void setRoleName(String value) {
         this.roleName = value;
     }
 
-    /**
-     * Gets the ScreenResolution property.
-     */
     public String getScreenResolution() {
         return this.screenResolution;
     }
 
-    /**
-     * Sets the ScreenResolution property.
-     */
     public void setScreenResolution(String value) {
         this.screenResolution = value;
     }
 
-    /**
-     * Gets the Type property.
-     */
     public String getType() {
         return this.type;
     }
 
-    /**
-     * Sets the Type property.
-     */
     public void setType(String value) {
         this.type = value;
     }
 
-    /**
-     * Gets the VmName property.
-     */
     public String getVmName() {
         return this.vmName;
     }
 
-    /**
-     * Sets the VmName property.
-     */
     public void setVmName(String value) {
         this.vmName = value;
     }
-
 
     /**
      * Adds all members of this class to a hashmap

@@ -50,8 +50,8 @@ public enum InternalLogger {
     /**
      * The main method, will delegate the call to the output
      * only if the logger is enabled, will not allow any exception thrown
-     * @param message
-     * @param args
+     * @param message The message to log with possible placeholders.
+     * @param args The arguments that should be formatted into the placeholders.
      */
     public void log(String message, Object... args) {
         try {

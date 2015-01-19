@@ -48,100 +48,61 @@ public class ExceptionDetails implements JsonSerializable {
     private ArrayList<StackFrame> parsedStack;
 
     /**
-     * Initializes a new instance of the <see cref="ExceptionDetails"/> class.
+     * Initializes a new instance of the class.
      */
     public ExceptionDetails()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the Id property.
-     */
     public int getId() {
         return this.id;
     }
 
-    /**
-     * Sets the Id property.
-     */
     public void setId(int value) {
         this.id = value;
     }
 
-    /**
-     * Gets the OuterId property.
-     */
     public int getOuterId() {
         return this.outerId;
     }
 
-    /**
-     * Sets the OuterId property.
-     */
     public void setOuterId(int value) {
         this.outerId = value;
     }
 
-    /**
-     * Gets the TypeName property.
-     */
     public String getTypeName() {
         return this.typeName;
     }
 
-    /**
-     * Sets the TypeName property.
-     */
     public void setTypeName(String value) {
         this.typeName = value;
     }
 
-    /**
-     * Gets the Message property.
-     */
     public String getMessage() {
         return this.message;
     }
 
-    /**
-     * Sets the Message property.
-     */
     public void setMessage(String value) {
         this.message = value;
     }
 
-    /**
-     * Gets the HasFullStack property.
-     */
     public boolean getHasFullStack() {
         return this.hasFullStack;
     }
 
-    /**
-     * Sets the HasFullStack property.
-     */
     public void setHasFullStack(boolean value) {
         this.hasFullStack = value;
     }
 
-    /**
-     * Gets the Stack property.
-     */
     public String getStack() {
         return this.stack;
     }
 
-    /**
-     * Sets the Stack property.
-     */
     public void setStack(String value) {
         this.stack = value;
     }
 
-    /**
-     * Gets the ParsedStack property.
-     */
     public ArrayList<StackFrame> getParsedStack() {
         if (this.parsedStack == null) {
             this.parsedStack = new ArrayList<StackFrame>();
@@ -149,18 +110,10 @@ public class ExceptionDetails implements JsonSerializable {
         return this.parsedStack;
     }
 
-    /**
-     * Sets the ParsedStack property.
-     */
     public void setParsedStack(ArrayList<StackFrame> value) {
         this.parsedStack = value;
     }
 
-
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
@@ -168,12 +121,7 @@ public class ExceptionDetails implements JsonSerializable {
         this.serializeContent(writer);
     }
 
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
-    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
-    {
+    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         writer.write("id", id);
         writer.write("outerId", outerId);
         writer.write("typeName", typeName);
@@ -183,10 +131,6 @@ public class ExceptionDetails implements JsonSerializable {
         writer.write("parsedStack", parsedStack);
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
-
     }
 }

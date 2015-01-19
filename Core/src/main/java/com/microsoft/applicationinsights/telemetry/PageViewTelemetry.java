@@ -11,7 +11,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
  * Telemetry type used to track page views.
  *
  * You can send information about pages viewed by your application to Application Insights by
- * passing an instance of this class to the 'trackPageView' method of the {@link com.microsoft.applicationinsights.TelemetryClient}>
+ * passing an instance of this class to the 'trackPageView' method of the {@link com.microsoft.applicationinsights.TelemetryClient}
  */
 public final class PageViewTelemetry extends BaseTelemetry<PageViewData> {
     private PageViewData data;
@@ -26,7 +26,8 @@ public final class PageViewTelemetry extends BaseTelemetry<PageViewData> {
     }
 
     /**
-     * Initializes a new instance of the class with the specified {@param pageName}
+     * Initializes a new instance of the class with the specified 'pageName'
+     * @param pageName The name of page to track.
      */
     public PageViewTelemetry(String pageName) {
         this();
