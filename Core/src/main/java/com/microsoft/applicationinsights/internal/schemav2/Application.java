@@ -47,6 +47,7 @@ public class Application implements JsonSerializable {
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be throw during serialization.
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
@@ -55,17 +56,10 @@ public class Application implements JsonSerializable {
         this.serializeContent(writer);
     }
 
-    /**
-     * Serializes the beginning of this object to the passed in writer.
-     * @param writer The writer to serialize this object to.
-     */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         writer.write("ver", ver);
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
     }
 }

@@ -33,69 +33,44 @@ public class User implements JsonSerializable {
     private String id;
 
     /**
-     * Initializes a new instance of the <see cref="User"/> class.
+     * Initializes a new instance of the class.
      */
     public User()
     {
         this.InitializeFields();
     }
 
-    /**
-     * Gets the AccountAcquisitionDate property.
-     */
     public String getAccountAcquisitionDate() {
         return this.accountAcquisitionDate;
     }
 
-    /**
-     * Sets the AccountAcquisitionDate property.
-     */
     public void setAccountAcquisitionDate(String value) {
         this.accountAcquisitionDate = value;
     }
 
-    /**
-     * Gets the AccountId property.
-     */
     public String getAccountId() {
         return this.accountId;
     }
 
-    /**
-     * Sets the AccountId property.
-     */
     public void setAccountId(String value) {
         this.accountId = value;
     }
 
-    /**
-     * Gets the UserAgent property.
-     */
     public String getUserAgent() {
         return this.userAgent;
     }
 
-    /**
-     * Sets the UserAgent property.
-     */
     public void setUserAgent(String value) {
         this.userAgent = value;
     }
 
-    /**
-     * Gets the Id property.
-     */
     public String getId() {
         return this.id;
     }
 
-    /**
-     * Sets the Id property.
-     */
     public void setId(String value) {
         this.id = value;
     }
-
 
     /**
      * Adds all members of this class to a hashmap
@@ -117,10 +92,10 @@ public class User implements JsonSerializable {
         }
     }
 
-
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be throw during serialization.
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
@@ -132,6 +107,7 @@ public class User implements JsonSerializable {
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be throw during serialization.
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         writer.write("accountAcquisitionDate", accountAcquisitionDate);
@@ -140,9 +116,6 @@ public class User implements JsonSerializable {
         writer.write("id", id);
     }
 
-    /**
-     * Optionally initializes fields for the current context.
-     */
     protected void InitializeFields() {
     }
 }

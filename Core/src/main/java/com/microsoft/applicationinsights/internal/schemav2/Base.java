@@ -17,7 +17,7 @@ public abstract class Base implements JsonSerializable, SendableData{
     private String baseType;
 
     /**
-     * Initializes a new instance of the <see cref="Base"/> class.
+     * Initializes a new instance of the class.
      */
     public Base() {
         this.InitializeFields();
@@ -45,6 +45,7 @@ public abstract class Base implements JsonSerializable, SendableData{
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be throw during serialization.
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         writer.write("baseType", baseType);

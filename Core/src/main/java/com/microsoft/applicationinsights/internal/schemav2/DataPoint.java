@@ -47,7 +47,7 @@ public final class DataPoint implements JsonSerializable, SendableData {
     private Double stdDev;
 
     /**
-     * Initializes a new instance of the <see cref="DataPoint"/> class.
+     * Initializes a new instance of the class.
      */
     public DataPoint()
     {
@@ -124,6 +124,7 @@ public final class DataPoint implements JsonSerializable, SendableData {
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
+     * @throws IOException Might be throw during serialization.
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         writer.write("name", name);
