@@ -12,7 +12,7 @@ import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 @SuppressWarnings("ALL")
-class Program {
+public class Program {
     public static void main(String[] args) throws IOException {
         validateCore();
 
