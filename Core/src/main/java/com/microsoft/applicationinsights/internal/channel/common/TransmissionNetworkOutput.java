@@ -11,6 +11,7 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -21,6 +22,8 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+
+import javax.swing.text.html.HTML;
 
 /**
  * The class is responsible for the actual sending of {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
@@ -93,25 +96,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
             HttpEntity respEntity = response.getEntity();
             int code = response.getStatusLine().getStatusCode();
-            if (code != 200) {
-                if (respEntity != null) {
-                    logError(respEntity);
-                }
-            }
+            checkResponse(code, respEntity);
         } catch (org.apache.http.conn.ConnectionPoolTimeoutException e) {
             // We let the Dispatcher decide
             transmissionDispatcher.dispatch(transmission);
             InternalLogger.INSTANCE.log("Failed to send, timeout exception");
         } catch (IOException ioe) {
             InternalLogger.INSTANCE.log("Failed to send, exception: %s", ioe.getMessage());
-            try {
-                if (response != null) {
-                    response.close();
-                }
-            } catch (IOException ioeIn) {
-                // Returns transmission to the dispatcher
-                InternalLogger.INSTANCE.log("Failed to send or failed to close response, exception: %s", ioeIn.getMessage());
-            }
         } catch (Exception e) {
             InternalLogger.INSTANCE.log("Failed to send, unexpected exception: %s", e.getMessage());
         } catch (Throwable t) {
@@ -121,12 +112,54 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             if (request != null) {
                 request.releaseConnection();
             }
+            try {
+                if (response != null) {
+                    response.close();
+                }
+            } catch (IOException ioeIn) {
+                InternalLogger.INSTANCE.log("Failed to send or failed to close response, exception: %s", ioeIn.getMessage());
+            }
         }
 
         return true;
     }
 
-    private void logError(HttpEntity respEntity) {
+    private void checkResponse(int code, HttpEntity respEntity) {
+        if (code == HttpStatus.SC_OK) {
+            return;
+        }
+
+        String errorMessage;
+        if (code < HttpStatus.SC_OK ||
+            (code >= HttpStatus.SC_MULTIPLE_CHOICES && code < HttpStatus.SC_BAD_REQUEST) ||
+            code > HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+
+            errorMessage = String.format("Unexpected response code: %d", code);
+        } else {
+            switch (code) {
+                case 429:
+                    errorMessage = "Throttling (All messages of the transmission were rejected) ";
+                    break;
+
+                case HttpStatus.SC_PARTIAL_CONTENT:
+                    errorMessage = "Throttling (Partial messages of the transmission were rejected) ";
+                    break;
+
+                default:
+                    errorMessage = String.format("Error, response code: %d", code);
+                    break;
+            }
+        }
+
+        logError(errorMessage, respEntity);
+    }
+
+    private void logError(String baseErrorMessage, HttpEntity respEntity) {
+        if (respEntity == null) {
+            InternalLogger.INSTANCE.log(baseErrorMessage);
+            return;
+        }
+
         InputStream inputStream = null;
         try {
             inputStream = respEntity.getContent();
@@ -135,9 +168,17 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             String responseLine = reader.readLine();
             respEntity.getContent().close();
 
-            InternalLogger.INSTANCE.log("Failed to send: %s", responseLine);
+            InternalLogger.INSTANCE.log("Failed to send, %s : %s", baseErrorMessage, responseLine);
         } catch (IOException e) {
-            InternalLogger.INSTANCE.log("Failed to send and failed to log the error");
+            InternalLogger.INSTANCE.log("Failed to send, %s, failed to log the error", baseErrorMessage);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

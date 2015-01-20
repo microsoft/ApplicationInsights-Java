@@ -6,7 +6,7 @@ import java.util.Date;
 
 import static org.junit.Assert.*;
 
-public class EventTelemetryTest {
+public final class EventTelemetryTest {
     @Test
     public void testDefaultCtor() {
         EventTelemetry eventTelemetry = new EventTelemetry();

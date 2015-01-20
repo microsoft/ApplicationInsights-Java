@@ -15,7 +15,6 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
  */
 public final class PageViewTelemetry extends BaseTelemetry<PageViewData> {
     private PageViewData data;
-    private ConcurrentMap<String, Double> metrics;
 
     /**
      * Default Ctor
@@ -67,8 +66,8 @@ public final class PageViewTelemetry extends BaseTelemetry<PageViewData> {
      * Sets the page view Uri.
      * @param url The page view Uri.
      */
-    public void setUrl(URL url) {
-        data.setUrl(url == null ? null : url.getPath());
+    public void setUrl(URI url) {
+        data.setUrl(url == null ? null : url.toString());
     }
 
     /**
@@ -92,7 +91,7 @@ public final class PageViewTelemetry extends BaseTelemetry<PageViewData> {
      * @return Custom defined metrics.
      */
     public ConcurrentMap<String, Double> getMetrics() {
-        return metrics;
+        return data.getMeasurements();
     }
 
     @Override
