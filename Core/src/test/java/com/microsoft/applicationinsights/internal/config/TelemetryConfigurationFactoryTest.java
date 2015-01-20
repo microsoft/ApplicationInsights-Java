@@ -22,6 +22,7 @@ public final class TelemetryConfigurationFactoryTest {
     private final static String LOGGER_SECTION = "SDKLogger";
     private final static String CHANNEL_SECTION = "Channel";
     private final static String CLASS_TYPE_AS_ATTRIBUTE = "type";
+    private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
 
     @Test
     public void testInitializeWithFailingParse() throws Exception {
@@ -95,6 +96,21 @@ public final class TelemetryConfigurationFactoryTest {
         initializeWithFactory(mockParser, mockConfiguration);
 
         assertEquals(mockConfiguration.getChannel().isDeveloperMode(), true);
+    }
+
+    @Test
+    public void testDefaultChannelWithBadData() {
+        HashMap<String, String> channelItems = new HashMap<String, String>();
+        channelItems.put("DeveloperMode", "true");
+        channelItems.put("EndpointAddress", NON_VALID_URL);
+        ConfigFileParser mockParser = createMockParserWithDefaultChannel(true, channelItems);
+        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+
+        assertEquals(mockConfiguration.getChannel().isDeveloperMode(), false);
     }
 
     private ConfigFileParser createMockParserThatFailsToParse() {
