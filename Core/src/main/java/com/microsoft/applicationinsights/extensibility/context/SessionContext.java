@@ -1,16 +1,13 @@
 package com.microsoft.applicationinsights.extensibility.context;
 
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import java.util.concurrent.ConcurrentMap;
+
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 
-import java.io.IOException;
-import java.util.Map;
+public final class SessionContext {
+    private final ConcurrentMap<String, String> tags;
 
-public class SessionContext implements JsonSerializable {
-    private final Map<String, String> tags;
-
-    public SessionContext(Map<String, String> tags) {
+    public SessionContext(ConcurrentMap<String, String> tags) {
         this.tags = tags;
     }
 
@@ -36,12 +33,5 @@ public class SessionContext implements JsonSerializable {
 
     public void setIsNewSession(Boolean version) {
         MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsNew(), version);
-    }
-
-    @Override
-    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-        writer.write("id", this.getId());
-        writer.write("firstSession", this.getIsFirst());
-        writer.write("isNewSession", this.getIsNewSession());
     }
 }

@@ -96,7 +96,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
             HttpEntity respEntity = response.getEntity();
             int code = response.getStatusLine().getStatusCode();
-            checkResponse(code, respEntity);
+
+            if (code != HttpStatus.SC_OK) {
+                checkResponse(code, respEntity);
+            }
         } catch (org.apache.http.conn.ConnectionPoolTimeoutException e) {
             // We let the Dispatcher decide
             transmissionDispatcher.dispatch(transmission);
@@ -124,19 +127,15 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         return true;
     }
 
-    private void checkResponse(int code, HttpEntity respEntity) {
-        if (code == HttpStatus.SC_OK) {
-            return;
-        }
-
+    private void checkResponse(int errorCode, HttpEntity respEntity) {
         String errorMessage;
-        if (code < HttpStatus.SC_OK ||
-            (code >= HttpStatus.SC_MULTIPLE_CHOICES && code < HttpStatus.SC_BAD_REQUEST) ||
-            code > HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+        if (errorCode < HttpStatus.SC_OK ||
+            (errorCode >= HttpStatus.SC_MULTIPLE_CHOICES && errorCode < HttpStatus.SC_BAD_REQUEST) ||
+                errorCode > HttpStatus.SC_INTERNAL_SERVER_ERROR) {
 
-            errorMessage = String.format("Unexpected response code: %d", code);
+            errorMessage = String.format("Unexpected response code: %d", errorCode);
         } else {
-            switch (code) {
+            switch (errorCode) {
                 case 429:
                     errorMessage = "Throttling (All messages of the transmission were rejected) ";
                     break;
@@ -146,7 +145,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                     break;
 
                 default:
-                    errorMessage = String.format("Error, response code: %d", code);
+                    errorMessage = String.format("Error, response code: %d", errorCode);
                     break;
             }
         }

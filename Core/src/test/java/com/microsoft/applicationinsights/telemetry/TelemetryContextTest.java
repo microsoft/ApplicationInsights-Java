@@ -24,13 +24,4 @@ public final class TelemetryContextTest {
 
         assertEquals("key", context.getInstrumentationKey());
     }
-//
-//    @Test
-//    public void testLocation() {
-//        TelemetryContext context = new TelemetryContext();
-//        context.getLocation().setIp("127.255.255.255");
-//
-//        assertEquals(context.getTags().size(), 1);
-//        assertEquals(context.getTags().get(ContextTagKeys.getKeys().getLocationIP()), "127.255.255.255");
-//    }
 }

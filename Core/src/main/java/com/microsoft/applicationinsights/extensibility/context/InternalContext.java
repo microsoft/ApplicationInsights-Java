@@ -1,22 +1,17 @@
 package com.microsoft.applicationinsights.extensibility.context;
 
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import java.util.concurrent.ConcurrentMap;
+
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 
-import java.io.IOException;
-import java.util.Map;
+public final class InternalContext {
+    private final ConcurrentMap<String, String> tags;
 
-public class InternalContext implements JsonSerializable {
-    private final Map<String, String> tags;
-
-    public InternalContext(Map<String, String> tags)
-    {
+    public InternalContext(ConcurrentMap<String, String> tags) {
         this.tags = tags;
     }
 
-    String getSdkVersion()
-    {
+    String getSdkVersion() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalSdkVersion());
     }
 
@@ -30,11 +25,5 @@ public class InternalContext implements JsonSerializable {
 
     public void setAgentVersion(String version) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalAgentVersion(), version);
-    }
-
-    @Override
-    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-        writer.write("sdkVersion", this.getSdkVersion());
-        writer.write("agentVersion", this.getAgentVersion());
     }
 }
