@@ -42,6 +42,16 @@ public class DeviceContext implements JsonSerializable
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceOS(), operatingSystem);
     }
 
+    String getOperatingSystemVersion()
+    {
+        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceOSVersion());
+    }
+
+    public void setOperatingSystemVersion(String operatingSystemVersion)
+    {
+        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceOSVersion(), operatingSystemVersion);
+    }
+
     String getOemName()
     {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceOEMName());
