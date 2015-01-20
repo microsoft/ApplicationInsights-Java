@@ -1,25 +1,24 @@
 package com.microsoft.applicationinsights.extensibility.context;
 
-import java.io.IOException;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 import com.google.common.base.Strings;
 
-public class LocationContext implements JsonSerializable {
-    private final Map<String, String> tags;
+public final class LocationContext {
+    private static final String PATTERN =
+            "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 
-    public LocationContext(Map<String, String> tags)
-    {
+    private final ConcurrentMap<String, String> tags;
+
+    public LocationContext(ConcurrentMap<String, String> tags) {
         this.tags = tags;
     }
 
-    String getIp()
-    {
+    String getIp() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getLocationIP());
     }
 
@@ -29,34 +28,9 @@ public class LocationContext implements JsonSerializable {
         }
     }
 
-    @Override
-    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-        writer.write("ip", this.getIp());
-    }
-
     private boolean isIPV4(String ip) {
-        if ((ip.length() > 15) || ip.length() < 7) {
-            return false;
-        }
-
-        for (char c : ip.toCharArray()) {
-            if (c >= '0' && c <= '9')
-                continue;
-            if (c != '.')
-                return false;
-        }
-
-        String[] strArray = ip.split(".");
-        if (strArray.length != 4) {
-            return false;
-        }
-
-        for (String str : strArray) {
-            if (!LocalStringsUtils.tryParseByte(str)) {
-                return false;
-            }
-        }
-
-        return true;
+        Pattern pattern = Pattern.compile(PATTERN);
+        Matcher matcher = pattern.matcher(ip);
+        return matcher.matches();
     }
 }

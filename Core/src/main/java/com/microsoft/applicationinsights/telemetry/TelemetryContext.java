@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.telemetry;
 
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -20,7 +19,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * Represents a context for sending telemetry to the Application Insights service.
  */
-public final class TelemetryContext implements JsonSerializable {
+public final class TelemetryContext {
     private ConcurrentMap<String,String> properties;
     private ConcurrentMap<String,String> tags;
 
@@ -162,23 +161,6 @@ public final class TelemetryContext implements JsonSerializable {
      */
     public ConcurrentMap<String, String> getTags() {
         return tags;
-    }
-
-    /**
-     * Serializes this object in JSON format.
-     * @param writer The helper.
-     * @throws IOException might be thrown.
-     */
-    @Override
-    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-        writer.write("iKey", this.getInstrumentationKey());
-        writer.write("device", this.getDevice());
-        writer.write("application", this.getComponent());
-        writer.write("user", this.getUser());
-        writer.write("operation", this.getOperation());
-        writer.write("session", this.getSession());
-        writer.write("location", this.getLocation());
-        writer.write("internal", this.getInternal());
     }
 
     public void initialize(TelemetryContext source) {
