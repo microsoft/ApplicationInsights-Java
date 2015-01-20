@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.telemetry;
 
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 
@@ -35,7 +35,7 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
      * Gets a map of application-defined event metrics.
      * @return The map of metrics
      */
-    public Map<String, Double> getMetrics() {
+    public ConcurrentMap<String, Double> getMetrics() {
         return data.getMeasurements();
     }
 

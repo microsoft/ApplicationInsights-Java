@@ -112,7 +112,7 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
      * @param value Max property.
      */
     public void setMax(Double value) {
-        data.setMin(value);
+        data.setMax(value);
     }
 
     /**

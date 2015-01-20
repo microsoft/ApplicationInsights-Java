@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.telemetry;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -35,7 +35,6 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
         initialize(this.data.getProperties());
 
         setId(LocalStringsUtils.generateRandomId());
-        this.setResponseCode("200");
 
         setTimestamp(timestamp);
 
@@ -49,7 +48,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
      * Gets a map of application-defined request metrics.
      * @return The map of metrics
      */
-    Map<String, Double> getMetrics() {
+    ConcurrentMap<String, Double> getMetrics() {
         return data.getMeasurements();
     }
 
@@ -116,9 +115,6 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
      * @param responseCode Application's response code
      */
     public void setResponseCode(String responseCode) {
-        // Validate
-        int code = Integer.parseInt(responseCode);
-        setSuccess(code < 400);
         data.setResponseCode(responseCode);
     }
 

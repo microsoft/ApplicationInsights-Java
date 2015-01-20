@@ -13,7 +13,7 @@ import org.mockito.Mockito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TelemetryConfigurationFactoryTest {
+public final class TelemetryConfigurationFactoryTest {
 
     private final static String MOCK_CONF_FILE = "mockFileName";
     private final static String MOCK_IKEY = "c9341531-05ac-4d8c-972e-36e97601d5ff";
@@ -37,7 +37,7 @@ public class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeWithNullGetInstrumentationKey() throws Exception {
-        ConfigFileParser mockParser = createMockParser(false);
+        ConfigFileParser mockParser = createMockParser(false, true, null);
         Mockito.doReturn(null).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
         ConfigFileParser.StructuredDataResult channelResult = new ConfigFileParser.StructuredDataResult();
         Mockito.doReturn(channelResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
@@ -52,7 +52,7 @@ public class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeWithEmptyGetInstrumentationKey() throws Exception {
-        ConfigFileParser mockParser = createMockParser(false);
+        ConfigFileParser mockParser = createMockParser(false, true, null);
         ConfigFileParser.StructuredDataResult loggerResult = new ConfigFileParser.StructuredDataResult();
         ConfigFileParser.StructuredDataResult channelResult = new ConfigFileParser.StructuredDataResult();
         Mockito.doReturn("").when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
@@ -69,7 +69,7 @@ public class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeAllDefaults() throws Exception {
-        ConfigFileParser mockParser = createMockParser(true);
+        ConfigFileParser mockParser = createMockParser(true, true, null);
         Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
@@ -83,15 +83,33 @@ public class TelemetryConfigurationFactoryTest {
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
     }
 
+    @Test
+    public void testDefaultChannelWithData() {
+        HashMap<String, String> channelItems = new HashMap<String, String>();
+        channelItems.put("DeveloperMode", "true");
+        ConfigFileParser mockParser = createMockParserWithDefaultChannel(true, channelItems);
+        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+
+        assertEquals(mockConfiguration.getChannel().isDeveloperMode(), true);
+    }
+
     private ConfigFileParser createMockParserThatFailsToParse() {
         ConfigFileParser mockParser = Mockito.mock(ConfigFileParser.class);
         Mockito.doReturn(false).when(mockParser).parse(MOCK_CONF_FILE);
         return mockParser;
     }
 
+    private ConfigFileParser createMockParserWithDefaultChannel(boolean withChannel, Map<String, String> data) {
+        return createMockParser(withChannel, false, data);
+    }
+
         // Suppress non relevant warning due to mockito internal stuff
     @SuppressWarnings("unchecked")
-    private ConfigFileParser createMockParser(boolean withChannel) {
+    private ConfigFileParser createMockParser(boolean withChannel, boolean setChannel, Map<String, String> data) {
         ConfigFileParser mockParser = Mockito.mock(ConfigFileParser.class);
         Mockito.doReturn(true).when(mockParser).parse(MOCK_CONF_FILE);
 
@@ -101,8 +119,13 @@ public class TelemetryConfigurationFactoryTest {
             Map<String, String> mockChannel = new HashMap<String, String>();
             mockChannel.put("EndpointAddress", MOCK_ENDPOINT);
 
-            ConfigFileParser.StructuredDataResult channelResult =
-                    new ConfigFileParser.StructuredDataResult("com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel", new HashMap<String, String>());
+            Map<String, String> channelItems = data != null ? data : new HashMap<String, String>();
+
+            String channelType = null;
+            if (setChannel) {
+                channelType = "com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel";
+            }
+            ConfigFileParser.StructuredDataResult channelResult = new ConfigFileParser.StructuredDataResult(channelType, channelItems);
             Mockito.doReturn(channelResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
         }
 

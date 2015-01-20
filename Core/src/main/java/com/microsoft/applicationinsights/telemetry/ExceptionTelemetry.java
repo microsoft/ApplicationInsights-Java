@@ -2,7 +2,7 @@ package com.microsoft.applicationinsights.telemetry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
@@ -33,7 +33,6 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     public ExceptionTelemetry(Exception exception) {
         this();
         setException(exception);
-
     }
 
     public Exception getException() {
@@ -65,7 +64,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
      * Gets a map of application-defined exception metrics.
      * @return The map of metrics
      */
-    public Map<String,Double> getMetrics() {
+    public ConcurrentMap<String,Double> getMetrics() {
         return data.getMeasurements();
     }
 
@@ -79,7 +78,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         return data;
     }
 
-    private List<ExceptionDetails> getExceptions() {
+    protected List<ExceptionDetails> getExceptions() {
         return data.getExceptions();
     }
 
