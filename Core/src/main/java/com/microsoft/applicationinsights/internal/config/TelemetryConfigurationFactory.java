@@ -132,10 +132,10 @@ public enum TelemetryConfigurationFactory {
             configuration.setChannel(new InProcessTelemetryChannel(channelData.items));
             return true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to create InProcessTelemetryChannel, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.log("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.getMessage());
+            configuration.setChannel(new InProcessTelemetryChannel());
+            return true;
         }
-
-        return false;
     }
 
     /**
