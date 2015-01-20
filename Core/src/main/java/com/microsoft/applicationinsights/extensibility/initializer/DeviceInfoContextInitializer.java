@@ -17,6 +17,7 @@ public class DeviceInfoContextInitializer implements ContextInitializer
     {
         DeviceContext device = context.getDevice();
         device.setOperatingSystem(DeviceInfo.getOperatingSystem());
+        device.setOperatingSystemVersion(DeviceInfo.getOperatingSystemVersion());
         device.setId(DeviceInfo.getHostName());
         device.setLanguage(Locale.getDefault().toString());
     }
