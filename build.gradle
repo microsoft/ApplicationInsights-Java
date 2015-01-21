@@ -10,11 +10,18 @@ dependencies {
     compile project(':logging')
 }
 
+// region global variables
+
+project.ext.set("msftAppInsights", "Microsoft Application Insights")
+
+// endregion global variables
+
 // region Shared sub-projects configuration
 
 allprojects {
     apply plugin: 'java'
     apply plugin: 'maven'
+
 
     task checkUploadProperties << {
         if (!this.hasProperty("mavenUserPassword")) {
@@ -55,6 +62,30 @@ allprojects {
     dependencies {
         testCompile group: 'junit', name: 'junit', version: '4.11'
         testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
+    }
+}
+
+// Azure SDK Pom as a reference: https://repo1.maven.org/maven2/com/microsoft/azure/azure-core/0.7.0/azure-core-0.7.0.pom
+def updatePomWithGeneralProjectInformation(pomObject) {
+    pomObject.project {
+        licenses {
+            license {
+                name = "MIT License"
+                url = "http://www.opensource.org/licenses/mit-license.php"
+            }
+        }
+
+        scm {
+            url = "scm:git:https://github.com/Microsoft/AppInsights-Java"
+            connection = "scm:git:git://github.com/Microsoft/AppInsights-Java.git"
+        }
+
+        developers {
+            developer {
+                id = "microsoft"
+                name = "Microsoft"
+            }
+        }
     }
 }
 
