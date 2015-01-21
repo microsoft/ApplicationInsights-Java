@@ -68,6 +68,8 @@ allprojects {
 // Azure SDK Pom as a reference: https://repo1.maven.org/maven2/com/microsoft/azure/azure-core/0.7.0/azure-core-0.7.0.pom
 def updatePomWithGeneralProjectInformation(pomObject) {
     pomObject.project {
+        url = "https://github.com/Microsoft/AppInsights-Java"
+
         licenses {
             license {
                 name = "MIT License"
