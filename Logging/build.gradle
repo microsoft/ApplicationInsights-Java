@@ -17,26 +17,50 @@ uploadArchives {
                 addFilter('LogbackJar') { artifact, file ->
                     artifact.name == "LogbackJar"
                 }
-                pom('LogbackJar').artifactId = 'applicationinsights-logging-logback'
-                pom('LogbackJar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
-                    dep -> dep.artifactId == 'logback-classic' || dep.artifactId == 'logback-core'
-                }.toList() }
+                pom('LogbackJar') {
+                    artifactId = 'applicationinsights-logging-logback'
+                    whenConfigured { p -> p.dependencies = p.dependencies.findAll {
+                        dep -> dep.artifactId == 'logback-classic' || dep.artifactId == 'logback-core'
+                    }.toList() }
+
+                    project {
+                        name = "Microsoft Application Insights Logback Appender"
+                        description = "This module provides an Application Insights appender implementation for Logback framework"
+                    }
+                }
+                updatePomWithProjectInformation(pom('LogbackJar'))
 
                 addFilter('Log4j1_2Jar') { artifact, file ->
                     artifact.name == "Log4j1_2Jar"
                 }
-                pom('Log4j1_2Jar').artifactId = 'applicationinsights-logging-log4j1_2'
-                pom('Log4j1_2Jar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
-                    dep -> dep.groupId == 'log4j'
-                }.toList() }
+                pom('Log4j1_2Jar') {
+                    artifactId = 'applicationinsights-logging-log4j1_2'
+                    whenConfigured { p -> p.dependencies = p.dependencies.findAll {
+                        dep -> dep.groupId == 'log4j'
+                    }.toList() }
+
+                    project {
+                        name = "Microsoft Application Insights Log4j 1.2 Appender"
+                        description = "This module provides an Application Insights appender implementation for Log4j 1.2 framework"
+                    }
+                }
+                updatePomWithProjectInformation(pom('Log4j1_2Jar'))
 
                 addFilter('Log4j2Jar') { artifact, file ->
                     artifact.name == "Log4j2Jar"
                 }
-                pom('Log4j2Jar').artifactId = 'applicationinsights-logging-log4j2'
-                pom('Log4j2Jar').whenConfigured { p -> p.dependencies = p.dependencies.findAll {
-                    dep -> dep.artifactId == 'log4j-core' || dep.artifactId == 'log4j-api'
-                }.toList() }
+                pom('Log4j2Jar') {
+                    artifactId = 'applicationinsights-logging-log4j2'
+                    whenConfigured { p -> p.dependencies = p.dependencies.findAll {
+                        dep -> dep.artifactId == 'log4j-core' || dep.artifactId == 'log4j-api'
+                    }.toList() }
+
+                    project {
+                        name = "Microsoft Application Insights Log4j 2 Appender"
+                        description = "This module provides an Application Insights appender implementation for Log4j 2 framework"
+                    }
+                }
+                updatePomWithProjectInformation(pom('Log4j2Jar'))
             }
         }
     }
