@@ -281,6 +281,10 @@ public enum TelemetryConfigurationFactory {
     @SuppressWarnings("unchecked")
     private <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
         try {
+            if (Strings.isNullOrEmpty(className)) {
+                return null;
+            }
+
             Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
             Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
             T instance = (T)clazzConstructor.newInstance(argument);
