@@ -39,3 +39,12 @@ uploadArchives {
 }
 
 // endregion Publishing tasks
+
+// region Creating Sources jar
+
+task generateCoreSourcesJar(type: Jar) {
+    classifier = 'core-sources'
+    from sourceSets.main.allJava
+}
+
+// endregion Creating Sources jar

@@ -136,3 +136,81 @@ artifacts {
 }
 
 // endregion Create artifacts
+
+// Defining logging frameworks sources.
+def logbackSources = sourceSets.main.allJava.matching { f ->
+    f.include "com/microsoft/applicationinsights/logback/**"
+    f.include "com/microsoft/applicationinsights/common/**"
+}
+
+def log4j2Sources = sourceSets.main.allJava.matching { f ->
+    f.include "com/microsoft/applicationinsights/log4j/v2/**"
+    f.include "com/microsoft/applicationinsights/common/**"
+}
+
+def log4j1_2Sources = sourceSets.main.allJava.matching { f ->
+    f.include "com/microsoft/applicationinsights/log4j/v1_2/**"
+    f.include "com/microsoft/applicationinsights/common/**"
+}
+
+// region Creating Javadoc
+
+// TODO: currently when running the Javadoc tasks, they fail with errors which are not shown when running the built-in
+// Javadoc task. The same happens when running on the Core project.
+// Therefore all javadocs tasks are marked with failOnError=false so that it won't stop generating the javadoc when error
+// detected. This flag is relevant only to the javadoc tasks and not to the build itself.
+// Those errors should be investigated and resolved.
+
+// Creating Logback javadoc jar
+task createLogbackJavadoc(type: Javadoc) {
+    source = logbackSources
+    destinationDir = file("$buildDir/docs/logback")
+    failOnError = false
+}
+
+// Creating Log4j 2 javadoc jar
+task createLog4j2Javadoc(type: Javadoc) {
+    source = log4j2Sources
+    destinationDir = file("$buildDir/docs/log4j2")
+    failOnError = false
+}
+
+// Creating Log4j 1.2 javadoc jar
+task createLog4j1_2Javadoc(type: Javadoc) {
+    source = log4j1_2Sources
+    destinationDir = file("$buildDir/docs/log4j1_2")
+    failOnError = false
+}
+
+task generateLoggingJavadocs << {
+    createLogbackJavadoc.execute()
+    createLog4j2Javadoc.execute()
+    createLog4j1_2Javadoc.execute()
+}
+
+// endregion Creating Javadoc
+
+// region Creating sources jars
+
+task generateLogbackSourcesJar(type: Jar) {
+    classifier = 'logback-sources'
+    from logbackSources
+}
+
+task generateLog4j2SourcesJar(type: Jar) {
+    classifier = 'log4j2-sources'
+    from log4j2Sources
+}
+
+task generateLog4j1_2SourcesJar(type: Jar) {
+    classifier = 'log4j1_2-sources'
+    from log4j1_2Sources
+}
+
+task generateLoggingSources << {
+    generateLogbackSourcesJar.execute()
+    generateLog4j2SourcesJar.execute()
+    generateLog4j1_2SourcesJar.execute()
+}
+
+// endregion Creating sources jars
