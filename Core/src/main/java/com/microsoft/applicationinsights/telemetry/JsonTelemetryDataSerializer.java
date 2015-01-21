@@ -162,7 +162,7 @@ public final class JsonTelemetryDataSerializer {
 
         writeName(name);
         out.write(JSON_COMMA);
-        out.write(value);
+        writeEscapedString(value);
         out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
@@ -271,5 +271,36 @@ public final class JsonTelemetryDataSerializer {
         out.write(name);
         out.write(JSON_COMMA);
         out.write(JSON_NAME_VALUE_SEPARATOR);
+    }
+
+    protected void writeEscapedString(String value) throws IOException {
+        for (char c : value.toCharArray()) {
+            switch (c) {
+                case '\\':
+                    out.write("\\\\");
+                    break;
+                case '"':
+                    out.write("\\\"");
+                    break;
+                case '\n':
+                    out.write("\\n");
+                    break;
+                case '\b':
+                    out.write("\\b");
+                    break;
+                case '\f':
+                    out.write("\\f");
+                    break;
+                case '\r':
+                    out.write("\\r");
+                    break;
+                case '\t':
+                    out.write("\\t");
+                    break;
+                default:
+                    out.write(c);
+                    break;
+            }
+        }
     }
 }

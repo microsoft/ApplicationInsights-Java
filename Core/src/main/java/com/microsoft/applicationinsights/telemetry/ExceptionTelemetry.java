@@ -112,24 +112,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         exceptionDetails.setTypeName(exception.getClass().getName());
 
         String exceptionMessage = exception.getMessage();
-        if (!Strings.isNullOrEmpty(exceptionMessage)) {
-            int index = exceptionMessage.indexOf("\"");
-            if (index != -1) {
-                int prevIndex = index + 1;
-                StringBuilder sb = new StringBuilder();
-                sb.append(exceptionMessage.substring(0, index));
-                sb.append("\\\"");
-                index = exceptionMessage.indexOf("\"", index + 1);
-                while (index != -1) {
-                    sb.append(exceptionMessage.substring(prevIndex, index));
-                    sb.append("\\\"");
-                    index = exceptionMessage.indexOf("\"", index + 1);
-                    prevIndex = index + 1;
-                }
-
-                exceptionMessage = sb.toString();
-            }
-        } else {
+        if (Strings.isNullOrEmpty(exceptionMessage)) {
             exceptionMessage = exception.getClass().getName();
         }
         exceptionDetails.setMessage(exceptionMessage);
