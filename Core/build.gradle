@@ -25,6 +25,14 @@ uploadArchives {
                 repository(url: mavenRepositoryUrl) {
                     authentication(userName: mavenUsername, password: mavenUserPassword)
                 }
+
+                updatePomWithGeneralProjectInformation(pom)
+
+                // Updating Core pom specific values.
+                pom.project {
+                    name = project.msftAppInsights + " Java SDK Core"
+                    description = "This is the core module of " + project.msftAppInsights + " Java SDK"
+                }
             }
         }
     }
