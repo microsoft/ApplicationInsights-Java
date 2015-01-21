@@ -25,6 +25,14 @@ uploadArchives {
                 repository(url: mavenRepositoryUrl) {
                     authentication(userName: mavenUsername, password: mavenUserPassword)
                 }
+
+                updatePomWithProjectInformation(pom)
+
+                // Updating Core pom specific values.
+                pom.project {
+                    name = "Microsoft Application Insights Java SDK Core"
+                    description = "This is the core module of Microsoft Application Insights Java SDK"
+                }
             }
         }
     }
