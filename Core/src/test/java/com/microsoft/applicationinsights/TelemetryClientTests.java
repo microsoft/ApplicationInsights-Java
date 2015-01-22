@@ -22,7 +22,7 @@ public final class TelemetryClientTests {
     // region Members
 
     private List<Telemetry> eventsSent;
-    private DefaultTelemetryClient client;
+    private TelemetryClient client;
     private TelemetryChannel channel;
 
     // endregion Members
@@ -48,7 +48,7 @@ public final class TelemetryClientTests {
             }
         }).when(channel).send(Matchers.any(Telemetry.class));
 
-        client = new DefaultTelemetryClient(configuration);
+        client = new TelemetryClient(configuration);
     }
 
     // endregion Initialization

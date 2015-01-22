@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.DefaultTelemetryClient;
-import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -47,7 +45,7 @@ public class Program {
     // region Core
 
     private static void validateCore() throws IOException {
-        TelemetryClient appInsights = new DefaultTelemetryClient();
+        TelemetryClient appInsights = new TelemetryClient();
         appInsights.getContext().getProperties().put("programmatic", "works");
 
         appInsights.trackPageView("default page");

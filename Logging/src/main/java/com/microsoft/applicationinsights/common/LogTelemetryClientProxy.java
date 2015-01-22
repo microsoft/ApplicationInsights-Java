@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.common;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.DefaultTelemetryClient;
 import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
@@ -49,7 +48,7 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
      * @param instrumentationKey The instrumentation key for sending the events.
      */
     public LogTelemetryClientProxy(String instrumentationKey) {
-        this(new DefaultTelemetryClient(), instrumentationKey);
+        this(new TelemetryClient(), instrumentationKey);
     }
 
     // endregion Constructor
