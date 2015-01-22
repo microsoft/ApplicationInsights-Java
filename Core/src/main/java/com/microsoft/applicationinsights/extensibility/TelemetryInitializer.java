@@ -10,5 +10,5 @@ public interface TelemetryInitializer {
      Initializes properties of the specified object.
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
      */
-    void Initialize(Telemetry telemetry);
+    void initialize(Telemetry telemetry);
 }

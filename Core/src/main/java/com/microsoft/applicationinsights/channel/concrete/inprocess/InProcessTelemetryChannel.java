@@ -35,7 +35,7 @@ import com.google.common.base.Preconditions;
  * Created by gupele on 12/17/2014.
  */
 public final class InProcessTelemetryChannel implements TelemetryChannel {
-    private final static int DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 128;
+    private final static int DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 500;
 
     private final static int TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS = 10;
 

@@ -315,8 +315,6 @@ public class TelemetryClient {
             return;
         }
 
-        telemetry.setTimestamp(new Date());
-
         TelemetryContext ctx = this.getContext();
 
         if (Strings.isNullOrEmpty(ctx.getInstrumentationKey())) {
@@ -327,7 +325,7 @@ public class TelemetryClient {
 
         for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
             try {
-                initializer.Initialize(telemetry);
+                initializer.initialize(telemetry);
             } catch (Exception e) {
                 InternalLogger.INSTANCE.log("Failed during telemetry initialization, exception: %s", e.getMessage());
             }

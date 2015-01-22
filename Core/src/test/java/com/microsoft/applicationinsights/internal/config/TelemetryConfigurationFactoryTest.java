@@ -1,12 +1,16 @@
 package com.microsoft.applicationinsights.internal.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -23,6 +27,44 @@ public final class TelemetryConfigurationFactoryTest {
     private final static String CHANNEL_SECTION = "Channel";
     private final static String CLASS_TYPE_AS_ATTRIBUTE = "type";
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
+
+    @Test
+    public void testTelemetryContextInitializers() {
+        ConfigFileParser mockParser = createMockParser(true, true, null);
+        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
+        List<String> contexts = new ArrayList<String>();
+        contexts.add("com.microsoft.applicationinsights.extensibility.initializer.TimestampPropertyInitializer");
+        Mockito.doReturn(contexts).when(mockParser).getList("TelemetryInitializers", "Add", "type");
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+
+        assertEquals(mockConfiguration.isTrackingDisabled(), false);
+        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
+        assertEquals(mockConfiguration.getTelemetryInitializers().size(), 1);
+        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+    }
+
+    @Test
+    public void testContextInitializers() {
+        ConfigFileParser mockParser = createMockParser(true, true, null);
+        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
+        List<String> contexts = new ArrayList<String>();
+        contexts.add("com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer");
+        Mockito.doReturn(contexts).when(mockParser).getList("ContextInitializers", "Add", "type");
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+
+        assertEquals(mockConfiguration.isTrackingDisabled(), false);
+        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(mockConfiguration.getContextInitializers().size(), 3);
+        assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
+        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+    }
 
     @Test
     public void testInitializeWithFailingParse() throws Exception {
