@@ -28,7 +28,6 @@ public enum TelemetryConfigurationFactory {
     private final static String CONTEXT_INITIALIZERS_SECTION = "ContextInitializers";
     private final static String TELEMETRY_INITIALIZERS_SECTION = "TelemetryInitializers";
     private final static String INITIALIZERS_ADD = "Add";
-    private final static String CLASS_TYPE = "Type";
     private final static String CLASS_TYPE_AS_ATTRIBUTE = "type";
     private final static String CHANNEL_SECTION = "Channel";
     private final static String DISABLE_TELEMETRY_SECTION = "DisableTelemetry";
@@ -224,7 +223,7 @@ public enum TelemetryConfigurationFactory {
             String sectionName,
             String itemName,
             List<T> list) {
-        Collection<String> classNames = parser.getList(sectionName, itemName, CLASS_TYPE);
+        Collection<String> classNames = parser.getList(sectionName, itemName, CLASS_TYPE_AS_ATTRIBUTE);
         for (String className : classNames) {
             T initializer = createInstance(className, clazz);
             if (initializer != null) {
@@ -246,6 +245,10 @@ public enum TelemetryConfigurationFactory {
     @SuppressWarnings("unchecked")
     private <T> T createInstance(String className, Class<T> interfaceClass) {
         try {
+            if (Strings.isNullOrEmpty(className)) {
+                return null;
+            }
+
             Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
             T instance = (T)clazz.newInstance();
             return instance;
