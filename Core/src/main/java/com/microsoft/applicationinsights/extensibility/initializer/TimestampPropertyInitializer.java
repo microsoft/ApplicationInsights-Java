@@ -7,7 +7,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
  * An {@link TelemetryInitializer} implementation that sets the timestamp on the {@link com.microsoft.applicationinsights.telemetry.Telemetry}
- * unless the timestamp is already set>.
+ * unless the timestamp is already set.
  */
 public final class TimestampPropertyInitializer implements TelemetryInitializer {
 

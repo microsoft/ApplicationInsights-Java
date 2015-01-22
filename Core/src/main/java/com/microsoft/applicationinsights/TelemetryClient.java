@@ -159,6 +159,7 @@ public class TelemetryClient {
 
     /**
      * Sends a TraceTelemetry record for display in Diagnostic Search.
+     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void trackTrace(TraceTelemetry telemetry) {
         this.track(telemetry);
@@ -207,6 +208,7 @@ public class TelemetryClient {
 
     /**
      * Send a MetricTelemetry record for aggregation in Metric Explorer.
+     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void trackMetric(MetricTelemetry telemetry) {
         track(telemetry);
@@ -305,6 +307,7 @@ public class TelemetryClient {
 
     /**
      * This method is part of the Application Insights infrastructure. Do not call it directly.
+     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void track(Telemetry telemetry) {
         if (telemetry == null) {
