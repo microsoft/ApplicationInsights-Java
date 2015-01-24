@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.log4j.v2;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 

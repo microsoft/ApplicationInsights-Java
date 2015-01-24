@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.shared;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 

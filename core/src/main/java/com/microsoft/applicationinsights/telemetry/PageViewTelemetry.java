@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;

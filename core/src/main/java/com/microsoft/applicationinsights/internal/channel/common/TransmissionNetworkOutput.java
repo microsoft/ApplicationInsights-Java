@@ -44,8 +44,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
-import javax.swing.text.html.HTML;
-
 /**
  * The class is responsible for the actual sending of {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
  *
