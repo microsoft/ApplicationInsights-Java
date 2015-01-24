@@ -30,7 +30,6 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 // TODO: Some of the tests should be expanded. currently we just doing sanity checks by verified that

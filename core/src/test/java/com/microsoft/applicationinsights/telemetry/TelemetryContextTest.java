@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.extensibility.context.ContextTagKeys;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNull;
