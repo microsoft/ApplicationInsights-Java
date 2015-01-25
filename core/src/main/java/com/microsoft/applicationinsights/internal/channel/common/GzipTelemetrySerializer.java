@@ -65,8 +65,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 GZIPOutputStream zipStream = new GZIPOutputStream(byteStream);
 
                 try {
-                    serializeAndCompress(zipStream, telemetries);
-                    succeeded = true;
+                    succeeded = serializeAndCompress(zipStream, telemetries);
                 } catch (Exception e) {
                     InternalLogger.INSTANCE.log("Failed to serialize , exception: %s", e.getMessage());
                 } catch (Throwable t) {
@@ -89,7 +88,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
         return Optional.fromNullable(result);
     }
 
-    private void serializeAndCompress(GZIPOutputStream zipStream, Collection<Telemetry> telemetries) throws IOException {
+    private boolean serializeAndCompress(GZIPOutputStream zipStream, Collection<Telemetry> telemetries) throws IOException {
         int counter = 0;
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
@@ -104,18 +103,22 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 zipStream.write(newlineString);
             }
 
-            ++counter;
-
-            telemetry.serialize(jsonWriter);
-            jsonWriter.close();
-
-            String asJson = writer.toString();
-            zipStream.write(asJson.getBytes());
+            try {
+                telemetry.serialize(jsonWriter);
+                ++counter;
+                jsonWriter.close();
+                String asJson = writer.toString();
+                zipStream.write(asJson.getBytes());
+            } catch (Exception e) {
+                InternalLogger.INSTANCE.log("Failed to serialize , exception: %s", e.getMessage());
+            }
 
             if (counter < telemetries.size()) {
                 writer.getBuffer().setLength(0);
                 jsonWriter.reset(writer);
             }
         }
+
+        return counter > 0;
     }
 }
