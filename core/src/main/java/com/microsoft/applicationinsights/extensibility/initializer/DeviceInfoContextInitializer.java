@@ -31,10 +31,10 @@ import java.util.Locale;
 /**
  * Initializer class for device context information.
  */
-public class DeviceInfoContextInitializer implements ContextInitializer
+public final class DeviceInfoContextInitializer implements ContextInitializer
 {
     @Override
-    public void Initialize(TelemetryContext context)
+    public void initialize(TelemetryContext context)
     {
         DeviceContext device = context.getDevice();
         device.setOperatingSystem(DeviceInfo.getOperatingSystem());
