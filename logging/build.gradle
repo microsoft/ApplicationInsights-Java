@@ -1,4 +1,4 @@
-version = "0.9.0-SNAPSHOT"
+version = (version == "unspecified") ? "0.9.0-SNAPSHOT" : version
 group = "com.microsoft.azure"
 archivesBaseName = 'applicationinsights-logging'
 
@@ -18,7 +18,6 @@ uploadArchives {
                 addFilter('LogbackJar') { artifact, file ->
                     artifact.name == "LogbackJar"
                 }
-
                 pom('LogbackJar') {
                     artifactId = 'applicationinsights-logging-logback'
                     whenConfigured { p -> p.dependencies = p.dependencies.findAll {

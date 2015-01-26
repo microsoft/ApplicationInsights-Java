@@ -54,15 +54,13 @@ allprojects {
         }
     }
 
-    task checkIfReleaseAndUpdateVersion << {
+    task checkIfReleaseAndUpdateVersion {
         if (this.hasProperty("releaseVersion")) {
             version = releaseVersion
-
             subprojects.findAll { p -> p.version = releaseVersion }
         }
     }
-    tasks.uploadArchives.dependsOn(checkUploadProperties)
-    tasks.uploadArchives.dependsOn(checkIfReleaseAndUpdateVersion)
+    tasks.uploadArchives.dependsOn checkUploadProperties, checkIfReleaseAndUpdateVersion
 
     compileJava {
         sourceCompatibility = 1.6
