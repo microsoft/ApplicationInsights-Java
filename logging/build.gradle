@@ -1,5 +1,6 @@
 version = "0.9.0-SNAPSHOT"
 group = "com.microsoft.azure"
+archivesBaseName = 'applicationinsights-logging'
 
 // region Publishing tasks
 
@@ -85,24 +86,21 @@ dependencies {
 task createLog4j1_2Jar(type: Jar) {
     from(sourceSets.main.output) {
         include "com/microsoft/applicationinsights/log4j/v1_2/**", "com/microsoft/applicationinsights/common/**"
-        baseName = 'Log4j1.2'
-        archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
+        appendix = 'log4j1_2'
     }
 }
 
 task createLog4j2Jar(type: Jar) {
     from(sourceSets.main.output) {
         include "com/microsoft/applicationinsights/log4j/v2/**", "com/microsoft/applicationinsights/common/**"
-        baseName = "Log4j2"
-        archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
+        appendix = 'log4j2'
     }
 }
 
 task createLogbackJar(type: Jar) {
     from(sourceSets.main.output) {
         include "com/microsoft/applicationinsights/logback/**", "com/microsoft/applicationinsights/common/**"
-        baseName = 'Logback'
-        archiveName = 'appinsights-appender-' + baseName + '-' + version + '.jar'
+        appendix = 'logback'
     }
 }
 
@@ -113,9 +111,7 @@ task buildJars << {
 }
 
 tasks.uploadArchives.dependsOn(buildJars)
-tasks.buildJars.dependsOn(createLog4j1_2Jar)
-tasks.buildJars.dependsOn(createLog4j2Jar)
-tasks.buildJars.dependsOn(createLogbackJar)
+tasks.buildJars.dependsOn createLog4j1_2Jar, createLog4j2Jar, createLogbackJar
 
 // endregion Create JAR tasks
 
@@ -138,6 +134,7 @@ artifacts {
 // endregion Create artifacts
 
 // Defining logging frameworks sources.
+
 def logbackSources = sourceSets.main.allJava.matching { f ->
     f.include "com/microsoft/applicationinsights/logback/**"
     f.include "com/microsoft/applicationinsights/common/**"
@@ -153,57 +150,81 @@ def log4j1_2Sources = sourceSets.main.allJava.matching { f ->
     f.include "com/microsoft/applicationinsights/common/**"
 }
 
-// region Creating Javadoc
+// region Creating Javadoc jars
 
-// TODO: currently when running the Javadoc tasks, they fail with errors which are not shown when running the built-in
-// Javadoc task. The same happens when running on the Core project.
-// Therefore all javadocs tasks are marked with failOnError=false so that it won't stop generating the javadoc when error
-// detected. This flag is relevant only to the javadoc tasks and not to the build itself.
-// Those errors should be investigated and resolved.
-
-// Creating Logback javadoc jar
 task createLogbackJavadoc(type: Javadoc) {
     source = logbackSources
     destinationDir = file("$buildDir/docs/logback")
     classpath = configurations.compile
 }
 
-// Creating Log4j 2 javadoc jar
 task createLog4j2Javadoc(type: Javadoc) {
     source = log4j2Sources
     destinationDir = file("$buildDir/docs/log4j2")
     classpath = configurations.compile
 }
 
-// Creating Log4j 1.2 javadoc jar
 task createLog4j1_2Javadoc(type: Javadoc) {
     source = log4j1_2Sources
     destinationDir = file("$buildDir/docs/log4j1_2")
     classpath = configurations.compile
 }
 
-task generateLoggingJavadocs << {
-    createLogbackJavadoc.execute()
-    createLog4j2Javadoc.execute()
-    createLog4j1_2Javadoc.execute()
+task createLogbackJavadocJar(type: Jar) {
+    doFirst {
+        createLogbackJavadoc.execute()
+    }
+
+    from "$buildDir/docs/logback"
+    appendix = 'logback'
+    classifier = 'javadoc'
 }
 
-// endregion Creating Javadoc
+task createLog4j2JavadocJar(type: Jar) {
+    doFirst {
+        createLog4j2Javadoc.execute()
+    }
+
+    from "$buildDir/docs/log4j2"
+    appendix = 'log4j2'
+    classifier = 'javadoc'
+}
+
+task createLog4j1_2JavadocJar(type: Jar) {
+    doFirst {
+        createLog4j1_2Javadoc.execute()
+    }
+
+    from "$buildDir/docs/log4j1_2"
+    appendix = 'log4j1_2'
+    classifier = 'javadoc'
+}
+
+task generateLoggingJavadocs << {
+    createLogbackJavadocJar.execute()
+    createLog4j2JavadocJar.execute()
+    createLog4j1_2JavadocJar.execute()
+}
+
+// endregion Creating Javadoc jars
 
 // region Creating sources jars
 
 task generateLogbackSourcesJar(type: Jar) {
-    classifier = 'logback-sources'
+    appendix = 'logback'
+    classifier = 'sources'
     from logbackSources
 }
 
 task generateLog4j2SourcesJar(type: Jar) {
-    classifier = 'log4j2-sources'
+    appendix = 'log4j2'
+    classifier = 'sources'
     from log4j2Sources
 }
 
 task generateLog4j1_2SourcesJar(type: Jar) {
-    classifier = 'log4j1_2-sources'
+    appendix = 'log4j1_2'
+    classifier = 'sources'
     from log4j1_2Sources
 }
 
@@ -213,4 +234,11 @@ task generateLoggingSources << {
     generateLog4j1_2SourcesJar.execute()
 }
 
+assemble.doLast {
+    generateLoggingJavadocs.execute()
+    generateLoggingSources.execute()
+    copyLibsToGlobalArtifactsFolder {
+        from 'build/libs'
+    }.execute()
+}
 // endregion Creating sources jars
