@@ -34,6 +34,7 @@ dependencies {
 // region global variables
 
 project.ext.set("msftAppInsights", "Microsoft Application Insights")
+project.ext.set("artifactsDirectory", new File(rootProject.getProjectDir(), 'artifacts'))
 
 // endregion global variables
 
@@ -86,7 +87,7 @@ allprojects {
     }
 
     task copyLibsToGlobalArtifactsFolder(type: Copy) {
-        into new File(rootProject.getProjectDir(), 'artifacts')
+        into artifactsDirectory
     }
 }
 
@@ -115,5 +116,13 @@ def updatePomWithGeneralProjectInformation(pomObject) {
         }
     }
 }
+
+def writePomToArtifactsDirectory(pomObject) {
+    def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
+    pomObject.writeTo(new File(artifactsDirectory, pomFilename))
+}
+
+// Removing artifacts directory
+clean.doLast { delete(((File)artifactsDirectory).getAbsolutePath()).clean() }
 
 // endregion Shared sub-projects configuration

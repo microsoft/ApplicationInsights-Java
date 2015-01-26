@@ -20,9 +20,10 @@ uploadArchives {
                 }
                 pom('LogbackJar') {
                     artifactId = 'applicationinsights-logging-logback'
-                    whenConfigured { p -> p.dependencies = p.dependencies.findAll {
-                        dep -> dep.artifactId == 'logback-classic' || dep.artifactId == 'logback-core' || dep.artifactId == 'applicationinsights-core'
-                    }.toList() }
+                    whenConfigured { p ->
+                        p.dependencies = p.dependencies.findAll { dep -> dep.artifactId == 'logback-classic' || dep.artifactId == 'logback-core' || dep.artifactId == 'applicationinsights-core' }.toList()
+                        writePomToArtifactsDirectory(p)
+                    }
 
                     project {
                         name = project.msftAppInsights + " Logback Appender"
@@ -36,9 +37,10 @@ uploadArchives {
                 }
                 pom('Log4j1_2Jar') {
                     artifactId = 'applicationinsights-logging-log4j1_2'
-                    whenConfigured { p -> p.dependencies = p.dependencies.findAll {
-                        dep -> dep.groupId == 'log4j' || dep.artifactId == 'applicationinsights-core'
-                    }.toList() }
+                    whenConfigured { p ->
+                        p.dependencies = p.dependencies.findAll { dep -> dep.groupId == 'log4j' || dep.artifactId == 'applicationinsights-core' }.toList()
+                        writePomToArtifactsDirectory(p)
+                    }
 
                     project {
                         name = project.msftAppInsights + " Log4j 1.2 Appender"
@@ -52,9 +54,11 @@ uploadArchives {
                 }
                 pom('Log4j2Jar') {
                     artifactId = 'applicationinsights-logging-log4j2'
-                    whenConfigured { p -> p.dependencies = p.dependencies.findAll {
-                        dep -> dep.artifactId == 'log4j-core' || dep.artifactId == 'log4j-api' || dep.artifactId == 'applicationinsights-core'
-                    }.toList() }
+                    whenConfigured { p ->
+                        p.dependencies = p.dependencies.findAll {
+                            dep -> dep.artifactId == 'log4j-core' || dep.artifactId == 'log4j-api' || dep.artifactId == 'applicationinsights-core' }.toList()
+                        writePomToArtifactsDirectory(p)
+                    }
 
                     project {
                         name = project.msftAppInsights + " Log4j 2 Appender"

@@ -29,6 +29,8 @@ uploadArchives {
                     name = project.msftAppInsights + " Java SDK Core"
                     description = "This is the core module of " + project.msftAppInsights + " Java SDK"
                 }
+
+                pom.whenConfigured { p -> writePomToArtifactsDirectory(p) }
             }
         }
     }
