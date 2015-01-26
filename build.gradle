@@ -57,6 +57,8 @@ allprojects {
     task checkIfReleaseAndUpdateVersion << {
         if (this.hasProperty("releaseVersion")) {
             version = releaseVersion
+
+            subprojects.findAll { p -> p.version = releaseVersion }
         }
     }
     tasks.uploadArchives.dependsOn(checkUploadProperties)
