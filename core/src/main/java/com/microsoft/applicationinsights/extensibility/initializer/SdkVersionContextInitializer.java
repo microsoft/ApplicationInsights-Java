@@ -27,11 +27,12 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 /**
  * Initializer for SDK version.
  */
-public class SdkVersionContextInitializer implements ContextInitializer {
+public final class SdkVersionContextInitializer implements ContextInitializer {
+
 
     @Override
-    public void Initialize(TelemetryContext context) {
-        context.getInternal().setSdkVersion("0.9");
+    public void initialize(TelemetryContext context) {
+        context.getInternal().setSdkVersion("0.9.0");
 //        context.getInternal().setAgentVersion("0.9");
     }
 }

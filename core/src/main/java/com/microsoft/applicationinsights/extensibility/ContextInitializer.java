@@ -33,5 +33,5 @@ public interface ContextInitializer
      * Initializes the given TelemetryContext.
      * @param context A TelemetryContext to initialize.
      */
-    void Initialize(TelemetryContext context);
+    void initialize(TelemetryContext context);
 }

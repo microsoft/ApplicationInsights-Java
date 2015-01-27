@@ -21,16 +21,38 @@
 
 package com.microsoft.applicationinsights;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Date;
+import java.util.LinkedList;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.telemetry.*;
-import org.junit.*;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.Assert;
+import org.junit.Ignore;
+
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 // TODO: Some of the tests should be expanded. currently we just doing sanity checks by verified that
 // all events are sent, without validating their values that added by the client.
@@ -41,6 +63,7 @@ public final class TelemetryClientTests {
 
     // region Members
 
+    private TelemetryConfiguration configuration;
     private List<Telemetry> eventsSent;
     private TelemetryClient client;
     private TelemetryChannel channel;
@@ -51,8 +74,8 @@ public final class TelemetryClientTests {
 
     @Before
     public void testInitialize() {
-        TelemetryConfiguration configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey("c9341531-05ac-4d8c-972e-36e97601d5ff");
+        configuration = new TelemetryConfiguration();
+        configuration.setInstrumentationKey("00000000-0000-0000-0000-000000000000");
         channel = mock(TelemetryChannel.class);
         configuration.setChannel(channel);
 
@@ -74,6 +97,66 @@ public final class TelemetryClientTests {
     // endregion Initialization
 
     // region Track tests
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNullTrackTelemetry() {
+        client.track(null);
+    }
+
+    @Test
+    public void testTrackTelemetryWithDisabled() {
+        configuration.setTrackingIsDisabled(true);
+        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+
+        client.track(mockTelemetry);
+
+        Mockito.verifyZeroInteractions(channel, mockTelemetry);
+    }
+
+    @Test
+    public void testUseConfigurationInstrumentationKeyWithNull() {
+        testUseConfigurationInstrumentatonKey(null);
+    }
+
+    @Test
+    public void testUseConfigurationInstrumentationKeyWithEmpty() {
+        testUseConfigurationInstrumentatonKey("");
+    }
+
+    @Test
+    public void testMethodsOnTelemetryAreCalledWhenTracking() {
+        TelemetryChannel mockChannel = Mockito.mock(TelemetryChannel.class);
+        configuration.setChannel(mockChannel);
+
+        TelemetryContext mockContext = new TelemetryContext();
+        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+        Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
+
+        TelemetryClient telemetryClient = new TelemetryClient(configuration);
+
+        telemetryClient.track(mockTelemetry);
+
+        Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
+
+        Mockito.verify(mockTelemetry, Mockito.times(1)).setTimestamp(any(Date.class));
+        Mockito.verify(mockTelemetry, Mockito.times(1)).sanitize();
+    }
+
+    @Test
+    public void testTelemetryContextsAreCalled() {
+        ContextInitializer mockContextInitializer = Mockito.mock(ContextInitializer.class);
+        configuration.getContextInitializers().add(mockContextInitializer);
+        TelemetryInitializer mockTelemetryInitializer = Mockito.mock(TelemetryInitializer.class);
+        configuration.getTelemetryInitializers().add(mockTelemetryInitializer);
+
+        TelemetryContext mockContext = new TelemetryContext();
+        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+        Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
+        client.track(mockTelemetry);
+
+        Mockito.verify(mockContextInitializer, Mockito.times(1)).initialize(any(TelemetryContext.class));
+        Mockito.verify(mockTelemetryInitializer, Mockito.times(1)).initialize(mockTelemetry);
+    }
 
     @Test
     public void testTrackEventWithPropertiesAndMetrics() {
@@ -221,6 +304,25 @@ public final class TelemetryClientTests {
     // endregion Track tests
 
     // region Private methods
+
+    private void testUseConfigurationInstrumentatonKey(String contextInstrumentationKey) {
+        TelemetryConfiguration configuration = new TelemetryConfiguration();
+        TelemetryChannel mockChannel = Mockito.mock(TelemetryChannel.class);
+        configuration.setChannel(mockChannel);
+        configuration.setInstrumentationKey("00000000-0000-0000-0000-000000000000");
+
+        TelemetryContext mockContext = new TelemetryContext();
+        mockContext.setInstrumentationKey(contextInstrumentationKey);
+        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+        Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
+
+        TelemetryClient telemetryClient = new TelemetryClient(configuration);
+
+        telemetryClient.track(mockTelemetry);
+
+        Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
+        assertEquals(mockContext.getInstrumentationKey(), "00000000-0000-0000-0000-000000000000");
+    }
 
     private Telemetry verifyAndGetLastEventSent() {
         verify(channel, times(1)).send(any(Telemetry.class));

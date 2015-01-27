@@ -381,7 +381,7 @@ public class TelemetryClient {
         TelemetryContext ctx = new TelemetryContext();
         ctx.setInstrumentationKey(configuration.getInstrumentationKey());
         for (ContextInitializer init : configuration.getContextInitializers()) {
-            init.Initialize(ctx);
+            init.initialize(ctx);
         }
 
         return ctx;

@@ -118,7 +118,8 @@ public final class SanitizerTest {
 
     @Test
     public void testValidUUIDWithComma() {
-        boolean valid = Sanitizer.isUUID("c9341531-05ac-4d8c-972e-36e97601d5ff");
+//      boolean valid = Sanitizer.isUUID("c9341531-05ac-4d8c-972e-36e97601d5ff");
+        boolean valid = Sanitizer.isUUID("00000000-0000-0000-0000-000000000000");
         assertTrue(valid);
     }
 
