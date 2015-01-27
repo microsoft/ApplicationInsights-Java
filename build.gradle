@@ -120,20 +120,29 @@ def updatePomWithGeneralProjectInformation(pomObject) {
 
 def writePomToArtifactsDirectory(pomObject) {
     def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
-    def pomWriter = generatePomWriter(pomFilename)
-    pomObject.writeTo(pomWriter)
-}
+    def pomWriter = new FileWriter(new File(artifactsDirectory, pomFilename), false)
 
-// This methods generates a POM writer object, and adding the required license at the beginning of the file.
-def generatePomWriter(pomFilename) {
-    FileWriter writer = new FileWriter(new File(artifactsDirectory, pomFilename), false)
+    // Converting the POM object to string, to be able to read one by line.
+    StringWriter stringWriter = new StringWriter()
+    pomObject.writeTo(stringWriter)
+    StringReader reader = new StringReader(stringWriter.toString())
+
+    // Appending xml schema first
+    String schema = reader.readLine()
+    pomWriter.append(schema + "\n")
+
+    // Appending license text
     def licenseText = GFileUtils.readFile(new File("LICENSE.TXT"))
+    pomWriter.append("<!--\n")
+    pomWriter.append(licenseText + "\n")
+    pomWriter.append("-->\n")
 
-    writer.append("<!--\n")
-    writer.append(licenseText + "\n")
-    writer.append("-->\n")
+    // Appending the rest of the pom file.
+    for (String line : reader.readLines()) {
+        pomWriter.append(line + "\n")
+    }
 
-    return writer
+    pomWriter.close()
 }
 
 // Removing artifacts directory
