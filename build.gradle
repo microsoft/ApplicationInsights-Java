@@ -62,6 +62,7 @@ allprojects {
         }
     }
     tasks.uploadArchives.dependsOn checkUploadProperties, checkIfReleaseAndUpdateVersion
+    tasks.uploadArchives.doFirst { ((File)artifactsDirectory).mkdir() }
 
     compileJava {
         sourceCompatibility = 1.6
@@ -125,7 +126,7 @@ def writePomToArtifactsDirectory(pomObject) {
 
 // This methods generates a POM writer object, and adding the required license at the beginning of the file.
 def generatePomWriter(pomFilename) {
-    FileWriter writer = new FileWriter(new File(artifactsDirectory, pomFilename), append: false)
+    FileWriter writer = new FileWriter(new File(artifactsDirectory, pomFilename), false)
     def licenseText = GFileUtils.readFile(new File("LICENSE.TXT"))
 
     writer.append("<!--\n")
