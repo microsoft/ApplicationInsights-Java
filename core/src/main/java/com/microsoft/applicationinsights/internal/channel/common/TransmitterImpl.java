@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
@@ -111,7 +112,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
         }
     }
 
-    private final static int MAX_PENDING_SCHEDULE_REQUESTS = 2048;
+    private final static int MAX_PENDING_SCHEDULE_REQUESTS = 16384;
 
     private final TransmissionDispatcher transmissionDispatcher;
 
