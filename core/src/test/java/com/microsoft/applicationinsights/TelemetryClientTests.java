@@ -309,7 +309,7 @@ public final class TelemetryClientTests {
         TelemetryConfiguration configuration = new TelemetryConfiguration();
         TelemetryChannel mockChannel = Mockito.mock(TelemetryChannel.class);
         configuration.setChannel(mockChannel);
-        configuration.setInstrumentationKey("c9341531-05ac-4d8c-972e-36e97601d5ff");
+        configuration.setInstrumentationKey("00000000-0000-0000-0000-000000000000");
 
         TelemetryContext mockContext = new TelemetryContext();
         mockContext.setInstrumentationKey(contextInstrumentationKey);
@@ -321,7 +321,7 @@ public final class TelemetryClientTests {
         telemetryClient.track(mockTelemetry);
 
         Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
-        assertEquals(mockContext.getInstrumentationKey(), "c9341531-05ac-4d8c-972e-36e97601d5ff");
+        assertEquals(mockContext.getInstrumentationKey(), "00000000-0000-0000-0000-000000000000");
     }
 
     private Telemetry verifyAndGetLastEventSent() {
