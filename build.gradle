@@ -56,7 +56,7 @@ allprojects {
 
     task checkIfReleaseAndUpdateVersion {
         def releaseVersion = System.getenv("releaseVersion")
-        if (releaseVersion != null) {
+        if (releaseVersion?.trim()) {
             version = releaseVersion
             subprojects.findAll { p -> p.version = releaseVersion }
         }
