@@ -34,7 +34,7 @@
     </ContextInitializers>
     <TelemetryInitializers>
     </TelemetryInitializers>
-    <Channel type="com.microsoft.applicationinsights.shared.LogChannelMock">
+    <Channel type="com.microsoft.applicationinsights.internal.shared.LogChannelMock">
         <EndpointAddress>
             test-endpoint
         </EndpointAddress>

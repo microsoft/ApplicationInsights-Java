@@ -20,7 +20,7 @@
   -->
 
 <configuration>
-    <appender name="test" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender">
+    <appender name="test" class="com.microsoft.applicationinsights.internal.logback.ApplicationInsightsAppender">
         <instrumentationKey>c9341531-05ac-4d8c-972e-36e97601d5ff</instrumentationKey>
     </appender>
 

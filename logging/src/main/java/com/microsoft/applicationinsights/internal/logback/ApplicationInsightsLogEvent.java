@@ -19,15 +19,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.logback;
+package com.microsoft.applicationinsights.internal.logback;
 
 import java.util.HashMap;
 import java.util.Map;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
-import com.microsoft.applicationinsights.common.ApplicationInsightsEvent;
+import com.microsoft.applicationinsights.internal.common.ApplicationInsightsEvent;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import org.apache.log4j.Level;
 
-public class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
+public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
 
     private ILoggingEvent loggingEvent;
 
@@ -73,5 +76,32 @@ public class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
         // TODO: Should check, seems that it is not included in Log4j2.
 
         return metaData;
+    }
+
+    @Override
+    public SeverityLevel getSeverityLevel() {
+        int log4jLevelAsInt = loggingEvent.getLevel().toInt();
+        switch (log4jLevelAsInt) {
+            case Level.FATAL_INT: // FATAL
+                return SeverityLevel.Critical;
+
+            case Level.ERROR_INT: // ERROR
+                return SeverityLevel.Error;
+
+            case Level.WARN_INT: // WARN
+                return SeverityLevel.Warning;
+
+            case Level.INFO_INT: // INFO
+                return SeverityLevel.Information;
+
+            case Level.TRACE_INT: // TRACE
+            case Level.DEBUG_INT: // DEBUG
+            case Level.ALL_INT:   // ALL
+                return SeverityLevel.Verbose;
+
+            default:
+                InternalLogger.INSTANCE.log("Unknown Logback option, %d, using TRACE level as default", log4jLevelAsInt);
+                return SeverityLevel.Verbose;
+        }
     }
 }

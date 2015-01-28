@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.common;
+package com.microsoft.applicationinsights.internal.common;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 

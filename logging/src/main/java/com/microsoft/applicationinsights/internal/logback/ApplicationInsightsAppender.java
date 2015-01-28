@@ -19,12 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.logback;
+package com.microsoft.applicationinsights.internal.logback;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
-import com.microsoft.applicationinsights.common.LogTelemetryClientProxy;
-import com.microsoft.applicationinsights.common.TelemetryClientProxy;
+import com.microsoft.applicationinsights.internal.common.LogTelemetryClientProxy;
+import com.microsoft.applicationinsights.internal.common.TelemetryClientProxy;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**

@@ -19,37 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.shared;
+package com.microsoft.applicationinsights.internal.common;
 
+import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
- * Created by gupele on 1/18/2015.
+ * Interface for
  */
-public final class LogChannelMock implements TelemetryChannel {
+public abstract class ApplicationInsightsEvent {
 
-    public LogChannelMock(Map<String, String> properties) {
+    public abstract String getMessage();
+
+    public abstract boolean isException();
+
+    public abstract Exception getException();
+
+    public abstract Map<String, String> getCustomParameters();
+
+    public abstract SeverityLevel getSeverityLevel();
+
+    protected static void addLogEventProperty(String key, String value, Map<String, String> metaData) {
+        if (value != null) {
+            metaData.put(key, value);
+        }
     }
 
-    @Override
-    public boolean isDeveloperMode() {
-        return false;
-    }
-
-    @Override
-    public void setDeveloperMode(boolean value) {
-    }
-
-    @Override
-    public void send(Telemetry item) {
-        LogChannelMockVerifier.INSTANCE.add(item);
-    }
-
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
+    protected static String getFormattedDate(long dateInMilliseconds) {
+        return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).format(new Date(dateInMilliseconds));
     }
 }

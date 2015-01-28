@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
+import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
@@ -72,5 +73,13 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
     @Override
     protected MessageData getData() {
         return data;
+    }
+
+    public void setSeverityLevel(SeverityLevel severityLevel) {
+        data.setSeverityLevel(severityLevel);
+    }
+
+    public SeverityLevel getSeverityLevel() {
+        return data.getSeverityLevel();
     }
 }

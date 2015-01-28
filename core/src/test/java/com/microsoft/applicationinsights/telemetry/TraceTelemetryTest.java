@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.junit.Test;
 
@@ -56,5 +57,13 @@ public final class TraceTelemetryTest {
 
         telemetry.sanitize();
         assertEquals(telemetry.getMessage().length(), Sanitizer.MAX_NAME_LENGTH);
+    }
+
+    @Test
+    public void testSetSeverityLevel() {
+        TraceTelemetry telemetry = new TraceTelemetry(TelemetryTestsUtils.createString(Sanitizer.MAX_NAME_LENGTH));
+
+        telemetry.setSeverityLevel(SeverityLevel.Error);
+        assertEquals(telemetry.getSeverityLevel(), SeverityLevel.Error);
     }
 }

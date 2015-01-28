@@ -19,10 +19,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.log4j.v1_2;
+package com.microsoft.applicationinsights.internal.log4j.v1_2;
 
-import com.microsoft.applicationinsights.common.LogTelemetryClientProxy;
-import com.microsoft.applicationinsights.common.TelemetryClientProxy;
+import com.microsoft.applicationinsights.internal.common.LogTelemetryClientProxy;
+import com.microsoft.applicationinsights.internal.common.TelemetryClientProxy;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;

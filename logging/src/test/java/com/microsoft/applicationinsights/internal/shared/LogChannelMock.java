@@ -19,33 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.common;
+package com.microsoft.applicationinsights.internal.shared;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
- * Interface for
+ * Created by gupele on 1/18/2015.
  */
-public abstract class ApplicationInsightsEvent {
+public final class LogChannelMock implements TelemetryChannel {
 
-    public abstract String getMessage();
-
-    public abstract boolean isException();
-
-    public abstract Exception getException();
-
-    public abstract Map<String, String> getCustomParameters();
-
-    protected static void addLogEventProperty(String key, String value, Map<String, String> metaData) {
-        if (value != null) {
-            metaData.put(key, value);
-        }
+    public LogChannelMock(Map<String, String> properties) {
     }
 
-    protected static String getFormattedDate(long dateInMilliseconds) {
-        return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).format(new Date(dateInMilliseconds));
+    @Override
+    public boolean isDeveloperMode() {
+        return false;
+    }
+
+    @Override
+    public void setDeveloperMode(boolean value) {
+    }
+
+    @Override
+    public void send(Telemetry item) {
+        LogChannelMockVerifier.INSTANCE.add(item);
+    }
+
+    @Override
+    public void stop(long timeout, TimeUnit timeUnit) {
     }
 }
