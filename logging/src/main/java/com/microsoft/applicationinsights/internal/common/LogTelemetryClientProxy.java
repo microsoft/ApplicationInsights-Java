@@ -94,7 +94,9 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
 
         Telemetry telemetry;
         if (event.isException()) {
-            telemetry = new ExceptionTelemetry(event.getException());
+            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(event.getException());
+            exceptionTelemetry.setSeverityLevel(event.getSeverityLevel());
+            telemetry = exceptionTelemetry;
         } else {
             TraceTelemetry traceTelemetry = new TraceTelemetry(formattedMessage);
             traceTelemetry.setSeverityLevel(event.getSeverityLevel());

@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.internal.log4j.v1_2;
 
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;

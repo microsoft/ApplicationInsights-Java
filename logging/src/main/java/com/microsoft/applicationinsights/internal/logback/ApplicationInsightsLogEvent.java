@@ -27,7 +27,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import com.microsoft.applicationinsights.internal.common.ApplicationInsightsEvent;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import org.apache.log4j.Level;
 
 public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {

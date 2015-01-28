@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.common;
 
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.common.ApplicationInsightsEvent;
@@ -79,8 +78,6 @@ public class LogTelemetryClientProxyTests {
         Telemetry telemetry = sendAIEventAndGetOutputTelemetry(false);
 
         Assert.assertTrue("Exactly one Trace telemetry should be sent.", telemetry instanceof TraceTelemetry);
-        TraceTelemetry traceTelemetry = (TraceTelemetry)telemetry;
-        traceTelemetry.getSeverityLevel();
     }
 
     @Test
@@ -138,13 +135,6 @@ public class LogTelemetryClientProxyTests {
         Assert.assertTrue("Proxy should should have been initialized correctly.", this.telemetryClientProxy.isInitialized());
     }
 
-//    private ApplicationInsightsEvent createApplicationInsightLogEvent() {
-//        ApplicationInsightsEvent event = createApplicationInsightEvent(false);
-//        Mockito.when(event.getSeverityLevel()).thenReturn(isExceptionEvent);
-//
-//        return event;
-//    }
-//
     private ApplicationInsightsEvent createApplicationInsightEvent(boolean isExceptionEvent) {
         ApplicationInsightsEvent event = Mockito.mock(ApplicationInsightsEvent.class);
         Mockito.when(event.isException()).thenReturn(isExceptionEvent);

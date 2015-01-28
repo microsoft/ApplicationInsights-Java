@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
@@ -152,7 +153,7 @@ public class TelemetryClient {
      * @param message A log message.
      * @param properties Named string values you can use to search and classify trace messages.
      */
-    public void trackTrace(String message, Map<String, String> properties) {
+    public void trackTrace(String message, SeverityLevel severityLevel, Map<String, String> properties) {
         if (isDisabled()) {
             return;
         }
@@ -161,7 +162,7 @@ public class TelemetryClient {
             message = "";
         }
 
-        TraceTelemetry et = new TraceTelemetry(message);
+        TraceTelemetry et = new TraceTelemetry(message, severityLevel);
 
         if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, et.getContext().getProperties());
@@ -175,7 +176,11 @@ public class TelemetryClient {
      * @param message A log message.
      */
     public void trackTrace(String message) {
-        trackTrace(message, null);
+        trackTrace(message, null, null);
+    }
+
+    public void trackTrace(String message, SeverityLevel severityLevel) {
+        trackTrace(message, severityLevel, null);
     }
 
     /**

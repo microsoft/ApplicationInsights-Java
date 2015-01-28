@@ -29,14 +29,7 @@ import java.util.LinkedList;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +42,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -186,11 +181,29 @@ public final class TelemetryClientTests {
     }
 
     @Test
+    public void testTrackTraceAll() {
+        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
+        client.trackTrace("Trace", SeverityLevel.Error, properties);
+
+        Telemetry telemetry = verifyAndGetLastEventSent();
+        verifyTraceTelemetry(telemetry, SeverityLevel.Error, properties);
+    }
+
+    @Test
     public void testTrackTraceWithProperties() {
         Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        client.trackTrace("Trace", properties);
+        client.trackTrace("Trace", null, properties);
 
-        verifyAndGetLastEventSent();
+        Telemetry telemetry = verifyAndGetLastEventSent();
+        verifyTraceTelemetry(telemetry, null, properties);
+    }
+
+    @Test
+    public void testTrackTraceWithSeverityLevel() {
+        client.trackTrace("Trace", SeverityLevel.Critical);
+
+        Telemetry telemetry = verifyAndGetLastEventSent();
+        verifyTraceTelemetry(telemetry, SeverityLevel.Critical, null);
     }
 
     @Test
@@ -304,6 +317,17 @@ public final class TelemetryClientTests {
     // endregion Track tests
 
     // region Private methods
+
+    private static void verifyTraceTelemetry(Telemetry telemetry, SeverityLevel expectedSeverityLevel, Map<String, String> expectedProperties) {
+        assertNotNull(telemetry);
+        assertTrue(telemetry instanceof TraceTelemetry);
+
+        TraceTelemetry traceTelemetry = (TraceTelemetry)telemetry;
+        assertEquals(traceTelemetry.getSeverityLevel(), expectedSeverityLevel);
+        if (expectedProperties != null) {
+            assertEquals(traceTelemetry.getContext().getProperties(), expectedProperties);
+        }
+    }
 
     private void testUseConfigurationInstrumentatonKey(String contextInstrumentationKey) {
         TelemetryConfiguration configuration = new TelemetryConfiguration();
