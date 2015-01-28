@@ -44,7 +44,6 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'maven'
 
-
     task checkUploadProperties << {
         if (!this.hasProperty("mavenUserPassword")) {
             throw new GroovyRuntimeException("Property mavenUserPassword should be defined for uploadArchives task")
@@ -56,7 +55,8 @@ allprojects {
     }
 
     task checkIfReleaseAndUpdateVersion {
-        if (this.hasProperty("releaseVersion")) {
+        def releaseVersion = System.getenv("releaseVersion")
+        if (releaseVersion != null) {
             version = releaseVersion
             subprojects.findAll { p -> p.version = releaseVersion }
         }
