@@ -22,7 +22,7 @@
 
 <ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" schemaVersion="2014-05-30">
     <!--YOUR-INSTRUMENTATION-KEY-->
-    <InstrumentationKey>c9341531-05ac-4d8c-972e-36e97601d5fd</InstrumentationKey>
+    <InstrumentationKey></InstrumentationKey>
 
     <ContextInitializers>
     </ContextInitializers>

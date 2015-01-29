@@ -109,21 +109,21 @@ dependencies {
 
 task createLog4j1_2Jar(type: Jar) {
     from(sourceSets.main.output) {
-        include "com/microsoft/applicationinsights/log4j/v1_2/**", "com/microsoft/applicationinsights/common/**"
+        include "com/microsoft/applicationinsights/internal/log4j/v1_2/**", "com/microsoft/applicationinsights/internal/common/**"
         appendix = 'log4j1_2'
     }
 }
 
 task createLog4j2Jar(type: Jar) {
     from(sourceSets.main.output) {
-        include "com/microsoft/applicationinsights/log4j/v2/**", "com/microsoft/applicationinsights/common/**"
+        include "com/microsoft/applicationinsights/internal/log4j/v2/**", "com/microsoft/applicationinsights/internal/common/**"
         appendix = 'log4j2'
     }
 }
 
 task createLogbackJar(type: Jar) {
     from(sourceSets.main.output) {
-        include "com/microsoft/applicationinsights/logback/**", "com/microsoft/applicationinsights/common/**"
+        include "com/microsoft/applicationinsights/internal/logback/**", "com/microsoft/applicationinsights/internal/common/**"
         appendix = 'logback'
     }
 }
@@ -160,18 +160,18 @@ artifacts {
 // Defining logging frameworks sources.
 
 def logbackSources = sourceSets.main.allJava.matching { f ->
-    f.include "com/microsoft/applicationinsights/logback/**"
-    f.include "com/microsoft/applicationinsights/common/**"
+    f.include "com/microsoft/applicationinsights/internal/logback/**"
+    f.include "com/microsoft/applicationinsights/internal/common/**"
 }
 
 def log4j2Sources = sourceSets.main.allJava.matching { f ->
-    f.include "com/microsoft/applicationinsights/log4j/v2/**"
-    f.include "com/microsoft/applicationinsights/common/**"
+    f.include "com/microsoft/applicationinsights/internal/log4j/v2/**"
+    f.include "com/microsoft/applicationinsights/internal/common/**"
 }
 
 def log4j1_2Sources = sourceSets.main.allJava.matching { f ->
-    f.include "com/microsoft/applicationinsights/log4j/v1_2/**"
-    f.include "com/microsoft/applicationinsights/common/**"
+    f.include "com/microsoft/applicationinsights/internal/log4j/v1_2/**"
+    f.include "com/microsoft/applicationinsights/internal/common/**"
 }
 
 // region Creating Javadoc jars
