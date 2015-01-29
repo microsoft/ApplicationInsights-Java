@@ -19,33 +19,25 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.common;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
+package com.microsoft.applicationinsights.telemetry;
 
 /**
- * Interface for
+ * Enum SeverityLevel.
  */
-public abstract class ApplicationInsightsEvent {
+public enum SeverityLevel {
+    Verbose(0),
+    Information(1),
+    Warning(2),
+    Error(3),
+    Critical(4);
 
-    public abstract String getMessage();
+    private final int id;
 
-    public abstract boolean isException();
-
-    public abstract Exception getException();
-
-    public abstract Map<String, String> getCustomParameters();
-
-    protected static void addLogEventProperty(String key, String value, Map<String, String> metaData) {
-        if (value != null) {
-            metaData.put(key, value);
-        }
+    public int getValue() {
+        return id;
     }
 
-    protected static String getFormattedDate(long dateInMilliseconds) {
-        return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).format(new Date(dateInMilliseconds));
+    SeverityLevel(int id) {
+        this.id = id;
     }
 }

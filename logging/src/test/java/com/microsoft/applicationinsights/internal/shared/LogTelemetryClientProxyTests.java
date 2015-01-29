@@ -19,19 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.shared;
+package com.microsoft.applicationinsights.internal.shared;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.common.ApplicationInsightsEvent;
+import com.microsoft.applicationinsights.internal.common.ApplicationInsightsEvent;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import com.microsoft.applicationinsights.common.LogTelemetryClientProxy;
+import com.microsoft.applicationinsights.internal.common.LogTelemetryClientProxy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,6 +75,13 @@ public class LogTelemetryClientProxyTests {
 
     @Test
     public void testTraceIsClassifiedAndSentCorrectly() {
+        Telemetry telemetry = sendAIEventAndGetOutputTelemetry(false);
+
+        Assert.assertTrue("Exactly one Trace telemetry should be sent.", telemetry instanceof TraceTelemetry);
+    }
+
+    @Test
+    public void testTraceIsClassifiedAndSentCorrectlyWithLogLevel() {
         Telemetry telemetry = sendAIEventAndGetOutputTelemetry(false);
 
         Assert.assertTrue("Exactly one Trace telemetry should be sent.", telemetry instanceof TraceTelemetry);

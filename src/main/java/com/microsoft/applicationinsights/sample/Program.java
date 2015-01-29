@@ -36,8 +36,13 @@ public class Program {
         validateCore();
 
         traceLog4J12();
+        infoLog4J12();
+
         traceLog4J2();
+        infoLog4J2();
+
         traceLogback();
+        infoLogback();
 
         System.out.println("Press Enter to terminate...");
         System.in.read();
@@ -50,15 +55,29 @@ public class Program {
         logger.trace("New Log4j 1.2 event!");
     }
 
+    private static void infoLog4J12() {
+        org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getRootLogger();
+        logger.info("info: New Log4j 1.2 event!");
+    }
+
     private static void traceLog4J2() {
         org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getRootLogger();
         logger.trace("New Log4j 2 event!");
     }
 
-    private static void traceLogback() {
+    private static void infoLog4J2() {
+        org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getRootLogger();
+        logger.info("info: New Log4j 2 event!");
+    }
 
+    private static void traceLogback() {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("root");
         logger.trace("New Logback event!");
+    }
+
+    private static void infoLogback() {
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("root");
+        logger.info("info: New Logback event!");
     }
 
     // endregion Logging

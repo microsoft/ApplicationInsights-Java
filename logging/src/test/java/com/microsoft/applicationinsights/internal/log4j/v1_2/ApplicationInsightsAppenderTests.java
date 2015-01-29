@@ -19,18 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.log4j.v2;
+package com.microsoft.applicationinsights.internal.log4j.v1_2;
 
 import java.util.List;
-import java.util.Map;
-
-import com.microsoft.applicationinsights.shared.LogChannelMockVerifier;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Appender;
 import org.junit.*;
+
+import com.microsoft.applicationinsights.internal.shared.LogChannelMockVerifier;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 public class ApplicationInsightsAppenderTests {
 
@@ -79,15 +76,14 @@ public class ApplicationInsightsAppenderTests {
 
     private ApplicationInsightsAppender getApplicationInsightsAppender() {
         Logger logger = LogManager.getRootLogger();
-        org.apache.logging.log4j.core.Logger coreLogger = (org.apache.logging.log4j.core.Logger)logger;
-
-        Map<String, Appender> appenderMap = coreLogger.getAppenders();
-        ApplicationInsightsAppender appender = (ApplicationInsightsAppender) appenderMap.get("test");
+        ApplicationInsightsAppender appender = (ApplicationInsightsAppender)logger.getAppender("test");
 
         return appender;
     }
 
     private void setMockTelemetryChannelToAIAppender() {
+        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+        appender.activateOptions();
         LogChannelMockVerifier.INSTANCE.getTelemetryCollection().clear();
     }
 

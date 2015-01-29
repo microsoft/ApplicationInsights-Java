@@ -19,13 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.common;
+package com.microsoft.applicationinsights.internal.common;
 
 import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
@@ -89,11 +89,19 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
 
         String formattedMessage = event.getMessage();
 
-        BaseTelemetry telemetry = event.isException() ?
-                new ExceptionTelemetry(event.getException()) :
-                new TraceTelemetry(formattedMessage);
-
         Map<String, String> customParameters = event.getCustomParameters();
+
+        Telemetry telemetry;
+        if (event.isException()) {
+            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(event.getException());
+            exceptionTelemetry.setSeverityLevel(event.getNormalizedSeverityLevel());
+            telemetry = exceptionTelemetry;
+        } else {
+            TraceTelemetry traceTelemetry = new TraceTelemetry(formattedMessage);
+            traceTelemetry.setSeverityLevel(event.getNormalizedSeverityLevel());
+            telemetry = traceTelemetry;
+        }
+
         telemetry.getContext().getProperties().putAll(customParameters);
 
         telemetryClient.track(telemetry);

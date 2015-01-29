@@ -69,4 +69,27 @@ public final class ExceptionTelemetryTest {
 
         assertEquals(exceptionTelemetry.getExceptions().size(), 2);
     }
+
+    @Test
+    public void testSetSeverityLevel() {
+        testSeverityLevel(SeverityLevel.Error);
+    }
+
+    @Test
+    public void testSetSeverityLevelWithNull() {
+        testSeverityLevel(null);
+    }
+
+    @Test
+    public void testFirstValueIsNull() {
+        ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
+        assertEquals(telemetry.getSeverityLevel(), null);
+    }
+
+    private static void testSeverityLevel(SeverityLevel severityLevel) {
+        ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
+
+        telemetry.setSeverityLevel(severityLevel);
+        assertEquals(telemetry.getSeverityLevel(), severityLevel);
+    }
 }

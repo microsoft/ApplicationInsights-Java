@@ -19,25 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.internal.shared;
+
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
- * Enum SeverityLevel.
+ * Created by gupele on 1/18/2015.
  */
-public enum SeverityLevel {
-    Verbose(0),
-    Information(1),
-    Warning(2),
-    Error(3),
-    Critical(4);
+public final class LogChannelMock implements TelemetryChannel {
 
-    private final int id;
-
-    public int getValue() {
-        return id;
+    public LogChannelMock(Map<String, String> properties) {
     }
 
-    SeverityLevel(int id) {
-        this.id = id;
+    @Override
+    public boolean isDeveloperMode() {
+        return false;
+    }
+
+    @Override
+    public void setDeveloperMode(boolean value) {
+    }
+
+    @Override
+    public void send(Telemetry item) {
+        LogChannelMockVerifier.INSTANCE.add(item);
+    }
+
+    @Override
+    public void stop(long timeout, TimeUnit timeUnit) {
     }
 }

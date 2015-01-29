@@ -19,28 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.common;
+package com.microsoft.applicationinsights.internal.common;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
-public interface TelemetryClientProxy {
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
 
-    /**
-     * Sends the given event to AI.
-     *
-     * @param event Event to send.
-     */
-    void sendEvent(ApplicationInsightsEvent event);
+/**
+ * Interface for
+ */
+public abstract class ApplicationInsightsEvent {
 
-    /**
-     * Gets the telemetry client.
-     * @return The telemetry client.
-     */
-    TelemetryClient getTelemetryClient();
+    public abstract String getMessage();
 
-    /**
-     * Gets a value indicating whether the proxy has been initialized.
-     * @return True if initialized, false otherwise.
-     */
-    boolean isInitialized();
+    public abstract boolean isException();
+
+    public abstract Exception getException();
+
+    public abstract Map<String, String> getCustomParameters();
+
+    public abstract SeverityLevel getNormalizedSeverityLevel();
+
+    protected static void addLogEventProperty(String key, String value, Map<String, String> metaData) {
+        if (value != null) {
+            metaData.put(key, value);
+        }
+    }
+
+    protected static String getFormattedDate(long dateInMilliseconds) {
+        return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).format(new Date(dateInMilliseconds));
+    }
 }

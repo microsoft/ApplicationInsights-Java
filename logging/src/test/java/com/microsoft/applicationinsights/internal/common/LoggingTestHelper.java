@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.common;
+package com.microsoft.applicationinsights.internal.common;
 
 import java.util.List;
 import com.microsoft.applicationinsights.telemetry.Telemetry;

@@ -89,6 +89,14 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         return data.getMeasurements();
     }
 
+    public void setSeverityLevel(SeverityLevel severityLevel) {
+        data.setSeverityLevel(severityLevel);
+    }
+
+    public SeverityLevel getSeverityLevel() {
+        return data.getSeverityLevel();
+    }
+
     @Override
     protected void additionalSanitize() {
         Sanitizer.sanitizeMeasurements(this.getMetrics());

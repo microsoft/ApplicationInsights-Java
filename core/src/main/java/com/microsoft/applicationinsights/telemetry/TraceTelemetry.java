@@ -34,18 +34,25 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
      * Default Ctor
      */
     public TraceTelemetry() {
-        super();
-        data = new MessageData();
-        initialize(data.getProperties());
+        this("");
+    }
+
+    public TraceTelemetry(String message) {
+        this(message, null);
     }
 
     /**
      * Initializes a new instance of the class with the specified parameter 'message'.
      * @param message The message.
      */
-    public TraceTelemetry(String message) {
-        this();
-        this.setMessage(message);
+    public TraceTelemetry(String message, SeverityLevel severityLevel) {
+        super();
+
+        data = new MessageData();
+        initialize(data.getProperties());
+
+        setMessage(message);
+        setSeverityLevel(severityLevel);
     }
 
     /**
@@ -72,5 +79,13 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
     @Override
     protected MessageData getData() {
         return data;
+    }
+
+    public void setSeverityLevel(SeverityLevel severityLevel) {
+        data.setSeverityLevel(severityLevel);
+    }
+
+    public SeverityLevel getSeverityLevel() {
+        return data.getSeverityLevel();
     }
 }

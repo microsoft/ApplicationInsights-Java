@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
 /**
  * Data contract class ExceptionData.
@@ -63,7 +64,7 @@ public class ExceptionData extends Domain implements JsonSerializable {
     /**
      * Backing field for property SeverityLevel.
      */
-    private int severityLevel;
+    private SeverityLevel severityLevel = null;
 
     /**
      * Backing field for property Properties.
@@ -106,11 +107,11 @@ public class ExceptionData extends Domain implements JsonSerializable {
         this.exceptions = value;
     }
 
-    public int getSeverityLevel() {
+    public SeverityLevel getSeverityLevel() {
         return this.severityLevel;
     }
 
-    public void setSeverityLevel(int value) {
+    public void setSeverityLevel(SeverityLevel value) {
         this.severityLevel = value;
     }
 
@@ -150,7 +151,11 @@ public class ExceptionData extends Domain implements JsonSerializable {
         writer.write("handledAt", handledAt);
         writer.write("exceptions", exceptions);
         writer.write("measurements", measurements);
-        writer.write("severityLevel", severityLevel);
+
+        if (severityLevel != null) {
+            writer.write("severityLevel", severityLevel.toString());
+        }
+
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

@@ -19,16 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.log4j.v1_2;
+package com.microsoft.applicationinsights.internal.log4j.v1_2;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.common.ApplicationInsightsEvent;
+import com.microsoft.applicationinsights.internal.common.ApplicationInsightsEvent;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import org.apache.log4j.Level;
+import org.apache.log4j.Priority;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 
-public class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
+public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
 
     private LoggingEvent loggingEvent;
 
@@ -84,5 +88,32 @@ public class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
         // TODO: Should check, seems that it is not included in Log4j2.
 
         return metaData;
+    }
+
+    @Override
+    public SeverityLevel getNormalizedSeverityLevel() {
+        int log4jLevelAsInt = loggingEvent.getLevel().toInt();
+        switch (log4jLevelAsInt) {
+            case Priority.FATAL_INT: // FATAL
+                return SeverityLevel.Critical;
+
+            case Priority.ERROR_INT: // ERROR
+                return SeverityLevel.Error;
+
+            case Priority.WARN_INT: // WARN
+                return SeverityLevel.Warning;
+
+            case Priority.INFO_INT: // INFO
+                return SeverityLevel.Information;
+
+            case Level.TRACE_INT:    // TRACE
+            case Priority.DEBUG_INT: // DEBUG
+            case Priority.ALL_INT:   // ALL
+                return SeverityLevel.Verbose;
+
+            default:
+                InternalLogger.INSTANCE.log("Unknown Log4j v1.2 option, %d, using TRACE level as default", log4jLevelAsInt);
+                return SeverityLevel.Verbose;
+        }
     }
 }

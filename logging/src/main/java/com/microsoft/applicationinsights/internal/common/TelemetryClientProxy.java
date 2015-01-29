@@ -19,37 +19,28 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.shared;
+package com.microsoft.applicationinsights.internal.common;
 
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import com.microsoft.applicationinsights.TelemetryClient;
 
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+public interface TelemetryClientProxy {
 
-/**
- * Created by gupele on 1/18/2015.
- */
-public final class LogChannelMock implements TelemetryChannel {
+    /**
+     * Sends the given event to AI.
+     *
+     * @param event Event to send.
+     */
+    void sendEvent(ApplicationInsightsEvent event);
 
-    public LogChannelMock(Map<String, String> properties) {
-    }
+    /**
+     * Gets the telemetry client.
+     * @return The telemetry client.
+     */
+    TelemetryClient getTelemetryClient();
 
-    @Override
-    public boolean isDeveloperMode() {
-        return false;
-    }
-
-    @Override
-    public void setDeveloperMode(boolean value) {
-    }
-
-    @Override
-    public void send(Telemetry item) {
-        LogChannelMockVerifier.INSTANCE.add(item);
-    }
-
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-    }
+    /**
+     * Gets a value indicating whether the proxy has been initialized.
+     * @return True if initialized, false otherwise.
+     */
+    boolean isInitialized();
 }

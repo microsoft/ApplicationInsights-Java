@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
 /**
  * Data contract class MessageData.
@@ -55,7 +56,7 @@ public class MessageData extends Domain implements JsonSerializable {
     /**
      * Backing field for property SeverityLevel.
      */
-    private SeverityLevel severityLevel = SeverityLevel.Verbose;
+    private SeverityLevel severityLevel = null;
 
     /**
      * Backing field for property Properties.
@@ -108,8 +109,8 @@ public class MessageData extends Domain implements JsonSerializable {
         writer.write("ver", ver);
         writer.write("message", message);
 
-        if (!severityLevel.equals(SeverityLevel.Verbose)) {
-            writer.write("severityLevel", severityLevel.getValue());
+        if (severityLevel != null) {
+            writer.write("severityLevel", severityLevel.toString());
         }
 
         writer.write("properties", properties);

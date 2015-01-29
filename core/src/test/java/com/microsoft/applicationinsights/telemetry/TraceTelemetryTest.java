@@ -32,7 +32,7 @@ public final class TraceTelemetryTest {
     public void testEmptyCtor() {
         TraceTelemetry telemetry = new TraceTelemetry();
 
-        assertNull(telemetry.getMessage());
+        assertEquals("", telemetry.getMessage());
     }
 
     @Test
@@ -56,5 +56,28 @@ public final class TraceTelemetryTest {
 
         telemetry.sanitize();
         assertEquals(telemetry.getMessage().length(), Sanitizer.MAX_NAME_LENGTH);
+    }
+
+    @Test
+    public void testSetSeverityLevel() {
+        testSeverityLevel(SeverityLevel.Error);
+    }
+
+    @Test
+    public void testSetSeverityLevelWithNull() {
+        testSeverityLevel(null);
+    }
+
+    @Test
+    public void testFirstValueIsNull() {
+        TraceTelemetry telemetry = new TraceTelemetry("Mock");
+        assertEquals(telemetry.getSeverityLevel(), null);
+    }
+
+    private static void testSeverityLevel(SeverityLevel severityLevel) {
+        TraceTelemetry telemetry = new TraceTelemetry("Mock");
+
+        telemetry.setSeverityLevel(severityLevel);
+        assertEquals(telemetry.getSeverityLevel(), severityLevel);
     }
 }
