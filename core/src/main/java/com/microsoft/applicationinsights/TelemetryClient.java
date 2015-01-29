@@ -151,6 +151,7 @@ public class TelemetryClient {
     /**
      * Sends a TraceTelemetry record for display in Diagnostic Search.
      * @param message A log message.
+     * @param severityLevel The severity level.
      * @param properties Named string values you can use to search and classify trace messages.
      */
     public void trackTrace(String message, SeverityLevel severityLevel, Map<String, String> properties) {
