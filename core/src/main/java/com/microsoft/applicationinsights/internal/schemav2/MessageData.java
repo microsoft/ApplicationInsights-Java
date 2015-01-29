@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**

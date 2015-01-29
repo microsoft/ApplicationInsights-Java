@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
 
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**

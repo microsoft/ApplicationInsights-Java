@@ -26,7 +26,6 @@ import java.io.IOException;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Data contract class Domain.

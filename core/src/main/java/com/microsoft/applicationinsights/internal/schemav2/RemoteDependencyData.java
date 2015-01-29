@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.telemetry.DependencyKind;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
