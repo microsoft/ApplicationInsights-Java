@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package Core.src.test.java.com.microsoft.applicationinsights.internal.util;
+package com.microsoft.applicationinsights.internal.util;
 
 import static org.junit.Assert.*;
 
