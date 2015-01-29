@@ -48,6 +48,6 @@ public final class ApplicationInsightsLogEventTest {
         LoggingEvent loggingEvent = new LoggingEvent("mockClass", Logger.getLogger("com.microsoft.applicationinsights.internal.log4j.v1_2.ApplicationInsightsLogEventTest"), 0L, level, "MockMessage", null);
         ApplicationInsightsLogEvent event = new ApplicationInsightsLogEvent(loggingEvent);
 
-        assertEquals(expected, event.getSeverityLevel());
+        assertEquals(expected, event.getNormalizedSeverityLevel());
     }
 }

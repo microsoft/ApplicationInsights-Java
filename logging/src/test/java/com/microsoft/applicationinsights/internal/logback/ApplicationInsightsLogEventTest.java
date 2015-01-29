@@ -124,6 +124,6 @@ public class ApplicationInsightsLogEventTest {
         };
         ApplicationInsightsLogEvent event = new com.microsoft.applicationinsights.internal.logback.ApplicationInsightsLogEvent(loggingEvent);
 
-        assertEquals(expected, event.getSeverityLevel());
+        assertEquals(expected, event.getNormalizedSeverityLevel());
     }
 }

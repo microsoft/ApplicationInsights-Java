@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.common;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
@@ -95,11 +94,11 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
         Telemetry telemetry;
         if (event.isException()) {
             ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(event.getException());
-            exceptionTelemetry.setSeverityLevel(event.getSeverityLevel());
+            exceptionTelemetry.setSeverityLevel(event.getNormalizedSeverityLevel());
             telemetry = exceptionTelemetry;
         } else {
             TraceTelemetry traceTelemetry = new TraceTelemetry(formattedMessage);
-            traceTelemetry.setSeverityLevel(event.getSeverityLevel());
+            traceTelemetry.setSeverityLevel(event.getNormalizedSeverityLevel());
             telemetry = traceTelemetry;
         }
 

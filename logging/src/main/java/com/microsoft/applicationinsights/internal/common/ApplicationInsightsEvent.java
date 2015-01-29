@@ -41,7 +41,7 @@ public abstract class ApplicationInsightsEvent {
 
     public abstract Map<String, String> getCustomParameters();
 
-    public abstract SeverityLevel getSeverityLevel();
+    public abstract SeverityLevel getNormalizedSeverityLevel();
 
     protected static void addLogEventProperty(String key, String value, Map<String, String> metaData) {
         if (value != null) {

@@ -79,7 +79,7 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
     }
 
     @Override
-    public SeverityLevel getSeverityLevel() {
+    public SeverityLevel getNormalizedSeverityLevel() {
         int log4jLevelAsInt = loggingEvent.getLevel().toInt();
         switch (log4jLevelAsInt) {
             case Level.FATAL_INT: // FATAL

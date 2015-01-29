@@ -133,6 +133,6 @@ public final class ApplicationInsightsLogEventTest {
         };
         ApplicationInsightsLogEvent event = new com.microsoft.applicationinsights.internal.log4j.v2.ApplicationInsightsLogEvent(logEvent);
 
-        assertEquals(expected, event.getSeverityLevel());
+        assertEquals(expected, event.getNormalizedSeverityLevel());
     }
 }
