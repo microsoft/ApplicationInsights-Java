@@ -23,6 +23,9 @@ package com.microsoft.applicationinsights.internal.schemav2;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -31,11 +34,12 @@ import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Data contract class ExceptionData.
  */
-public class ExceptionData extends Domain implements JsonSerializable {
+public final class ExceptionData extends Domain implements JsonSerializable {
     /**
      * Envelope Name for this telemetry.
      */
@@ -59,7 +63,7 @@ public class ExceptionData extends Domain implements JsonSerializable {
     /**
      * Backing field for property Exceptions.
      */
-    private ArrayList<ExceptionDetails> exceptions;
+    private List<ExceptionDetails> exceptions;
 
     /**
      * Backing field for property SeverityLevel.
@@ -96,14 +100,14 @@ public class ExceptionData extends Domain implements JsonSerializable {
         this.handledAt = value;
     }
 
-    public ArrayList<ExceptionDetails> getExceptions() {
+    public List<ExceptionDetails> getExceptions() {
         if (this.exceptions == null) {
             this.exceptions = new ArrayList<ExceptionDetails>();
         }
         return this.exceptions;
     }
 
-    public void setExceptions(ArrayList<ExceptionDetails> value) {
+    public void setExceptions(List<ExceptionDetails> value) {
         this.exceptions = value;
     }
 
@@ -150,7 +154,6 @@ public class ExceptionData extends Domain implements JsonSerializable {
         writer.write("ver", ver);
         writer.write("handledAt", handledAt);
         writer.write("exceptions", exceptions);
-        writer.write("measurements", measurements);
 
         if (severityLevel != null) {
             writer.write("severityLevel", severityLevel.toString());
@@ -168,6 +171,41 @@ public class ExceptionData extends Domain implements JsonSerializable {
     @Override
     public String getBaseTypeName() {
         return EXCEPTION_BASE_TYPE;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof ExceptionData)) {
+            return false;
+        }
+
+        boolean rv = super.equals( other );
+
+        ExceptionData that = (ExceptionData)other;
+        return this.ver == that.getVer() &&
+               this.handledAt == null ? that.getHandledAt() == null : this.handledAt.equals(that.getHandledAt()) &&
+               this.severityLevel == null ? that.getSeverityLevel() == null : this.severityLevel.equals(that.getSeverityLevel()) &&
+               this.getMeasurements().equals(that.getMeasurements()) &&
+               this.getProperties().equals(that.getProperties());
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31).
+                append(ver).
+                append(handledAt).
+                append(severityLevel).
+                append(getMeasurements()).
+                append(getProperties()).
+                toHashCode();
     }
 
     protected void InitializeFields() {

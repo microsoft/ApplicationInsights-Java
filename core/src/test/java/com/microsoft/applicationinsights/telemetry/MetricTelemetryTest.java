@@ -25,17 +25,18 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public final class MetricTelemetryTest {
     @Test
     public void testEmptyCtor() {
         MetricTelemetry telemetry = new MetricTelemetry();
 
-        assertEquals(telemetry.getName(), null);
-        assertEquals(telemetry.getValue(), 0.0, 0);
-        assertEquals(telemetry.getCount(), null);
-        assertEquals(telemetry.getMin(), null);
-        assertEquals(telemetry.getMax(), null);
+        assertNull(telemetry.getName());
+        assertNull(telemetry.getValue());
+        assertNull(telemetry.getCount());
+        assertNull(telemetry.getMin());
+        assertNull(telemetry.getMax());
         assertEquals(telemetry.getStandardDeviation(), null);
     }
 
@@ -47,9 +48,9 @@ public final class MetricTelemetryTest {
         assertEquals(telemetry.getName(), "MockName");
         assertEquals(telemetry.getValue(), 120.1, 0);
         assertEquals(telemetry.getCount(), null);
-        assertEquals(telemetry.getCount(), null);
-        assertEquals(telemetry.getMin(), null);
-        assertEquals(telemetry.getMax(), null);
+        assertNull(telemetry.getCount());
+        assertNull(telemetry.getMin());
+        assertNull(telemetry.getMax());
         assertEquals(telemetry.getStandardDeviation(), null);
     }
 

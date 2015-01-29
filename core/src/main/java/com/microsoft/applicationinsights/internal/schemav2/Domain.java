@@ -26,6 +26,7 @@ import java.io.IOException;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Data contract class Domain.
@@ -70,6 +71,23 @@ public class Domain implements SendableData
     }
 
     protected void InitializeFields() {
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof Domain)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override

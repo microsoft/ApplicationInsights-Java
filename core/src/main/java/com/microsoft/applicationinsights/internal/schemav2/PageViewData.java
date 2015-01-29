@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
 
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Data contract class PageViewData.
@@ -32,12 +33,12 @@ public class PageViewData extends EventData {
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String EnvelopeName = "Microsoft.ApplicationInsights.PageView";
+    public static final String PAGE_VIEW_ENVELOPE_NAME = "Microsoft.ApplicationInsights.PageView";
 
     /**
      * Base Type for this telemetry.
      */
-    public static final String BaseType = "Microsoft.ApplicationInsights.PageViewData";
+    public static final String PAGE_VIEW_BASE_TYPE = "Microsoft.ApplicationInsights.PageViewData";
 
     /**
      * Backing field for property Url.
@@ -78,6 +79,45 @@ public class PageViewData extends EventData {
 
         writer.write("url", url);
         writer.write("duration", duration);
+    }
+
+    @Override
+    public String getEnvelopName() {
+        return PAGE_VIEW_ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return PAGE_VIEW_BASE_TYPE;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof PageViewData)) {
+            return false;
+        }
+
+        PageViewData that = (PageViewData)other;
+        return this.url == null ? that.getUrl() == null : this.url.equals(that.getUrl()) &&
+               this.duration == that.getDuration() &&
+               this.getProperties().equals(that.getProperties());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        return hash * 89 + new HashCodeBuilder(17, 31).
+                append(duration).
+                append(getProperties()).
+                toHashCode();
     }
 
     protected void InitializeFields() {

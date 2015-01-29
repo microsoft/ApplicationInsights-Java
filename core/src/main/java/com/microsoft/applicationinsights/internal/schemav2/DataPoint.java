@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Data contract class DataPoint.
@@ -45,7 +46,7 @@ public final class DataPoint implements JsonSerializable, SendableData {
     /**
      * Backing field for property Value.
      */
-    private double value;
+    private Double value;
 
     /**
      * Backing field for property Count.
@@ -91,11 +92,11 @@ public final class DataPoint implements JsonSerializable, SendableData {
         this.kind = value;
     }
 
-    public double getValue() {
+    public Double getValue() {
         return this.value;
     }
 
-    public void setValue(double value) {
+    public void setValue(Double value) {
         this.value = value;
     }
 
@@ -150,10 +151,7 @@ public final class DataPoint implements JsonSerializable, SendableData {
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
         writer.write("name", name);
 
-        if (!DataPointType.Measurement.equals(kind)) {
-            writer.write("kind", kind.getValue());
-        }
-
+        writer.write("kind", kind.toString());
         writer.write("value", value);
         writer.write("count", count);
         writer.write("min", min);
@@ -175,5 +173,38 @@ public final class DataPoint implements JsonSerializable, SendableData {
     @Override
     public String getBaseTypeName() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof DataPoint)) {
+            return false;
+        }
+
+        DataPoint that = (DataPoint)other;
+        return this.name == null ? that.getName() == null : this.name.equals(that.getName()) &&
+               this.kind == null ? that.getKind() == null : this.kind.equals(that.getKind()) &&
+               this.value == null ? that.getValue() == null : this.value.equals(that.getValue()) &&
+               this.count == null ? that.getCount() == null : this.count.equals(that.getCount()) &&
+               this.min == null ? that.getMin() == null : this.min.equals(that.getMin()) &&
+               this.max == null ? that.getMax() == null : this.max.equals(that.getMax()) &&
+               this.stdDev == null ? that.getStdDev() == null : this.stdDev.equals(that.getStdDev());
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31).
+                append(name).
+                append(kind).
+                append(value).
+                append(count).
+                append(min).
+                append(max).
+                append(stdDev).
+                toHashCode();
     }
 }

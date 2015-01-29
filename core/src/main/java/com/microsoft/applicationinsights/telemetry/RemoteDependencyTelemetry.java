@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
+import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 
@@ -40,6 +40,7 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     public RemoteDependencyTelemetry() {
         super();
         data = new RemoteDependencyData();
+        data.setKind(DataPointType.Aggregation);
         initialize(this.data.getProperties());
     }
 
@@ -102,54 +103,6 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
      */
     public void setCount(Integer value) {
         data.setCount(value);
-    }
-
-    /**
-     * Gets the Min property.
-     * @return Min property.
-     */
-    public Double getMin() {
-        return data.getMin();
-    }
-
-    /**
-     * Sets the Min property.
-     * @param value Min property.
-     */
-    public void setMin(Double value) {
-        data.setMin(value);
-    }
-
-    /**
-     * Gets the Max property.
-     * @return Max property.
-     */
-    public Double getMax() {
-        return data.getMax();
-    }
-
-    /**
-     * Sets the Max property.
-     * @param value Max property.
-     */
-    public void setMax(Double value) {
-        data.setMax(value);
-    }
-
-    /**
-     * Gets the Standard Deviation property.
-     * @return Standard Deviation property.
-     */
-    public Double getStdDev() {
-        return data.getStdDev();
-    }
-
-    /**
-     * Sets the StdDev property.
-     * @param value Standard Deviation property.
-     */
-    public void setStdDev(Double value) {
-        data.setStdDev(value);
     }
 
     /**

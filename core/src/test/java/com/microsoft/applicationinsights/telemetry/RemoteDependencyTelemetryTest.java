@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import org.junit.Test;
 
@@ -37,9 +36,6 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getName());
         assertEquals(telemetry.getValue(), 0.0, 0);
         assertNull(telemetry.getCount());
-        assertNull(telemetry.getMin());
-        assertNull(telemetry.getMax());
-        assertNull(telemetry.getStdDev());
         assertEquals(telemetry.getDependencyKind(), DependencyKind.Undefined);
         assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
         assertTrue(telemetry.getProperties().isEmpty());
@@ -52,9 +48,6 @@ public final class RemoteDependencyTelemetryTest {
         assertEquals(telemetry.getName(), "MockName");
         assertEquals(telemetry.getValue(), 0.0, 0);
         assertNull(telemetry.getCount());
-        assertNull(telemetry.getMin());
-        assertNull(telemetry.getMax());
-        assertNull(telemetry.getStdDev());
         assertEquals(telemetry.getDependencyKind(), DependencyKind.Undefined);
         assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
         assertTrue(telemetry.getProperties().isEmpty());
@@ -82,30 +75,6 @@ public final class RemoteDependencyTelemetryTest {
 
         telemetry.setCount(new Integer(1));
         assertEquals(telemetry.getCount(), new Integer(1));
-    }
-
-    @Test
-    public void testSetMin() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setMin(new Double(1));
-        assertEquals(telemetry.getMin(), new Double(1));
-    }
-
-    @Test
-    public void testSetMax() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setMax(new Double(1));
-        assertEquals(telemetry.getMax(), new Double(1));
-    }
-
-    @Test
-    public void testSetStdDev() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setStdDev(new Double(1));
-        assertEquals(telemetry.getStdDev(), new Double(1));
     }
 
     @Test
