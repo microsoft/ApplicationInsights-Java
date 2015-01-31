@@ -237,7 +237,7 @@ public final class TelemetryClientTests {
 
     @Test
     public void testTrackMetricWithMetricTelemetry() {
-        MetricTelemetry telemetry = new MetricTelemetry("Metric", 1);
+        MetricTelemetry telemetry = new MetricTelemetry("Metric", 1.0);
         client.trackMetric(telemetry);
 
         verifyAndGetLastEventSent();

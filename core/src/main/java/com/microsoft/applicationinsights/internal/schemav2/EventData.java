@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.google.common.base.Preconditions;
 
 /**
@@ -111,6 +113,38 @@ public class EventData extends Domain {
         writer.write("name", name);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof PageViewData)) {
+            return false;
+        }
+
+        EventData that = (EventData)other;
+        return this.ver == that.getVer() &&
+               this.name == null ? that.getName() == null : this.name.equals(that.getName()) &&
+               this.getMeasurements().equals(that.getMeasurements()) &&
+               this.getProperties().equals(that.getProperties());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        return hash * 89 + new HashCodeBuilder(17, 31).
+                append(ver).
+                append(name).
+                append(getMeasurements()).
+                append(getProperties()).
+                toHashCode();
     }
 
     @Override

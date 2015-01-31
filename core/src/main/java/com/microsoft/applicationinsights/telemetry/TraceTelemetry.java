@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 

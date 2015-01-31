@@ -30,10 +30,12 @@ import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * Data contract class MetricData.
  */
-public class MetricData extends Domain implements JsonSerializable {
+public final class MetricData extends Domain implements JsonSerializable {
     /**
      * Envelope Name for this telemetry.
      */
@@ -109,6 +111,36 @@ public class MetricData extends Domain implements JsonSerializable {
     @Override
     public String getBaseTypeName() {
         return METRIC_BASE_TYPE;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof MetricData)) {
+            return false;
+        }
+
+        MetricData that = (MetricData)other;
+        return this.ver == that.getVer() &&
+               this.getMetrics().equals(that.getMetrics()) &&
+               this.getProperties().equals(that.getProperties());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        return hash * 89 + new HashCodeBuilder(17, 31).
+                append(ver).
+                append(getMetrics()).
+                append(getProperties()).
+                toHashCode();
     }
 
     protected void InitializeFields() {

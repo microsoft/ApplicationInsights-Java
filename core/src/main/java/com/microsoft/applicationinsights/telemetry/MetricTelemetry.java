@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     private final MetricData data;
     private final DataPoint metric;
+    private boolean isAggregation = false;
 
     /**
      * Default constructor
@@ -52,7 +53,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
      * @param name The name of the metric
      * @param value The value of the metric
      */
-    public MetricTelemetry(String name, double value) {
+    public MetricTelemetry(String name, Double value) {
         this();
         setName(name);
         metric.setValue(value);
@@ -82,7 +83,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
      * Gets The value of the metric.
      * @return The value of the metric.
      */
-    public double getValue() {
+    public Double getValue() {
         return metric.getValue();
     }
 
@@ -90,7 +91,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
      * Sets The value of the metric.
      * @param value The value of the metric.
      */
-    public void setValue(double value) {
+    public void setValue(Double value) {
         metric.setValue(value);
     }
 
@@ -175,11 +176,14 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
             (metric.getMax() != null) ||
             (metric.getStdDev() != null);
 
-        if ((metric.getCount() != null) && metric.getCount() == 1) {
-            // Singular data point. This is not an aggregation.
-            isAggregation = false;
+        if (this.isAggregation != isAggregation) {
+            if (isAggregation) {
+                this.metric.setKind(DataPointType.Aggregation);
+            } else {
+                this.metric.setKind(DataPointType.Measurement);
+            }
         }
 
-        metric.setKind(isAggregation ? DataPointType.Aggregation : DataPointType.Measurement);
+        this.isAggregation = isAggregation;
     }
 }

@@ -73,6 +73,23 @@ public class Domain implements SendableData
     }
 
     @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof Domain)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
     public String getEnvelopName() {
         return DOMAIN_ENVELOPE_NAME;
     }

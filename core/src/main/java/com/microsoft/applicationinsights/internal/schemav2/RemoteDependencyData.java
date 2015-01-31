@@ -25,7 +25,10 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.microsoft.applicationinsights.telemetry.DependencyKind;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Data contract class RemoteDependencyData.
@@ -65,21 +68,6 @@ public class RemoteDependencyData extends Domain {
      * Backing field for property Count.
      */
     private Integer count;
-
-    /**
-     * Backing field for property Min.
-     */
-    private Double min;
-
-    /**
-     * Backing field for property Max.
-     */
-    private Double max;
-
-    /**
-     * Backing field for property StdDev.
-     */
-    private Double stdDev;
 
     /**
      * Backing field for property DependencyKind.
@@ -150,30 +138,6 @@ public class RemoteDependencyData extends Domain {
         this.count = value;
     }
 
-    public Double getMin() {
-        return this.min;
-    }
-
-    public void setMin(Double value) {
-        this.min = value;
-    }
-
-    public Double getMax() {
-        return this.max;
-    }
-
-    public void setMax(Double value) {
-        this.max = value;
-    }
-
-    public Double getStdDev() {
-        return this.stdDev;
-    }
-
-    public void setStdDev(Double value) {
-        this.stdDev = value;
-    }
-
     public DependencyKind getDependencyKind() {
         return this.dependencyKind;
     }
@@ -228,23 +192,15 @@ public class RemoteDependencyData extends Domain {
         writer.write("ver", ver);
         writer.write("name", name);
 
-        if (!DataPointType.Measurement.equals(kind)) {
-            writer.write("kind", kind.getValue());
-        }
+        writer.write("kind", kind.getValue());
 
         writer.write("value", value);
         writer.write("count", count);
-        writer.write("min", min);
-        writer.write("max", max);
-        writer.write("stdDev", stdDev);
+
         writer.write("dependencyKind", dependencyKind.getValue());
         writer.write("success", success);
         writer.write("async", async);
-
-        if (!DependencySourceType.Undefined.equals(dependencyKind)) {
-            writer.write("dependencySource", dependencySource.getValue());
-        }
-
+        writer.write("dependencySource", dependencySource.getValue());
         writer.write("properties", properties);
     }
 
@@ -255,6 +211,48 @@ public class RemoteDependencyData extends Domain {
     @Override
     public String getBaseTypeName() {
         return REMOTE_BASE_TYPE;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof RemoteDependencyData)) {
+            return false;
+        }
+
+        RemoteDependencyData that = (RemoteDependencyData)other;
+        return this.ver == that.getVer() &&
+               this.success == null ? that.getSuccess() == null : this.success.equals(that.getSuccess()) &&
+               this.async == null ? that.getAsync() == null : this.async.equals(that.getAsync()) &&
+               this.value == that.getValue() &&
+               this.count == that.getCount() &&
+               this.name == null ? that.getName() == null : this.name.equals(that.getName()) &&
+               this.dependencyKind == null ? that.getDependencyKind() == null : this.dependencyKind.equals(that.getDependencyKind()) &&
+               this.dependencySource == null ? that.getDependencySource() == null : this.dependencySource.equals(that.getDependencySource()) &&
+               this.getProperties().equals(that.getProperties());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        return hash * 89 + new HashCodeBuilder(17, 31).
+                append(ver).
+                append(success).
+                append(async).
+                append(value).
+                append(count).
+                append(name).
+                append(dependencyKind).
+                append(dependencySource).
+                append(getProperties()).
+                toHashCode();
     }
 
     protected void InitializeFields() {

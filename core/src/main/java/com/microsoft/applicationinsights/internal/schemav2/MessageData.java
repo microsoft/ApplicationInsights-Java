@@ -29,10 +29,12 @@ import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * Data contract class MessageData.
  */
-public class MessageData extends Domain implements JsonSerializable {
+public final class MessageData extends Domain implements JsonSerializable {
     /**
      * Envelope Name for this telemetry.
      */
@@ -114,6 +116,37 @@ public class MessageData extends Domain implements JsonSerializable {
         }
 
         writer.write("properties", properties);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof MessageData)) {
+            return false;
+        }
+
+        MessageData that = (MessageData)other;
+        return this.ver == that.getVer() &&
+                this.message == null ? that.getMessage() == null : this.message.equals(that.getMessage()) &&
+                this.severityLevel == null ? that.getSeverityLevel() == null : this.severityLevel.equals(that.getSeverityLevel()) &&
+                this.getProperties().equals(that.getProperties());
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31).
+                append(ver).
+                append(message).
+                append(severityLevel).
+                append(getProperties()).
+                toHashCode();
     }
 
     @Override
