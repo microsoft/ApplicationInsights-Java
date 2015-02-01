@@ -19,7 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-rootProject.name = 'AppInsights Java'
+apply plugin: 'java'
 
-include 'core', 'logging', 'samples'
+jar {
+    version = '1.0'
+    baseName = 'samples'
+}
 
+dependencies {
+    compile project(':core')
+    compile project(':logging')
+}
