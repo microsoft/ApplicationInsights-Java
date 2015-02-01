@@ -54,8 +54,6 @@ public enum TelemetryConfigurationFactory {
     private final static String DISABLE_TELEMETRY_SECTION = "DisableTelemetry";
     private final static String INSTRUMENTATION_KEY_SECTION = "InstrumentationKey";
     private final static String LOGGER_SECTION = "SDKLogger";
-    private final static String LOGGER_OUTPUT = "OutputType";
-    private final static String LOGGER_ENABLED = "Enabled";
 
     private ConfigFileParser parser;
     private String fileToParse;
@@ -100,7 +98,7 @@ public enum TelemetryConfigurationFactory {
             setContextInitializers(parser, configuration);
             setTelemetryInitializers(parser, configuration);
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to initialize configuration, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to initialize configuration, exception: %s", e.getMessage());
         }
     }
 
@@ -114,15 +112,12 @@ public enum TelemetryConfigurationFactory {
     }
 
     private void setInternalLogger(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        ConfigFileParser.StructuredDataResult loggerData = parser.getStructuredData(LOGGER_SECTION, null);
+        ConfigFileParser.StructuredDataResult loggerData = parser.getStructuredData(LOGGER_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
 
         // The logger output type
-        String loggerOutput = loggerData.items.get(LOGGER_OUTPUT);
-        // Enable the logger?
-        String loggerEnabledAsString = loggerData.items.get(LOGGER_ENABLED);
-        boolean loggerEnabled = Boolean.valueOf(loggerEnabledAsString);
+        String loggerOutput = loggerData.sectionTag;
 
-        InternalLogger.INSTANCE.initialize(loggerOutput, loggerEnabled);
+        InternalLogger.INSTANCE.initialize(loggerOutput, loggerData.items);
     }
 
     /**
@@ -152,7 +147,7 @@ public enum TelemetryConfigurationFactory {
             configuration.setChannel(new InProcessTelemetryChannel(channelData.items));
             return true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.getMessage());
             configuration.setChannel(new InProcessTelemetryChannel());
             return true;
         }
@@ -274,15 +269,15 @@ public enum TelemetryConfigurationFactory {
             T instance = (T)clazz.newInstance();
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         }
 
         return null;
@@ -314,15 +309,15 @@ public enum TelemetryConfigurationFactory {
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         }
 
         return null;

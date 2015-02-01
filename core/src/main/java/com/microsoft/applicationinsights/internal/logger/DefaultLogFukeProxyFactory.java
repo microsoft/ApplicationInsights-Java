@@ -22,10 +22,7 @@
 package com.microsoft.applicationinsights.internal.logger;
 
 /**
- * Created by gupele on 1/14/2015.
+ * Created by gupele on 2/1/2015.
  */
-public interface LoggerOutput {
-    void log(String message);
-
-    void close();
+public class DefaultLogFukeProxyFactory {
 }

@@ -74,7 +74,7 @@ final class SimpleHttpChannel implements TelemetryChannel
             String payload = writer.toString();
 
             if (developerMode) {
-                InternalLogger.INSTANCE.log("SimpleHttpChannel, payload: %s", payload);
+                InternalLogger.INSTANCE.trace("SimpleHttpChannel, payload: %s", payload);
             }
 
             HttpPost request = new HttpPost("https://dc.services.visualstudio.com/v2/track");
@@ -92,7 +92,7 @@ final class SimpleHttpChannel implements TelemetryChannel
                     respEntity.getContent().close();
 
                 if (developerMode) {
-                    InternalLogger.INSTANCE.log("SimpleHttpChannel, response: %s", response.getStatusLine());
+                    InternalLogger.INSTANCE.trace("SimpleHttpChannel, response: %s", response.getStatusLine());
                 }
             }
             catch (IOException ioe)

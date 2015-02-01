@@ -62,7 +62,7 @@ public class DeviceInfo
         }
         catch (UnknownHostException e)
         {
-            InternalLogger.INSTANCE.log("Failed to get canonical host name, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to get canonical host name, exception: %s", e.getMessage());
         }
         return null;
     }

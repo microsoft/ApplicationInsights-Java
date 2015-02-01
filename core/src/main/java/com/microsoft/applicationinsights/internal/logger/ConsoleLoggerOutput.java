@@ -29,4 +29,8 @@ public final class ConsoleLoggerOutput implements LoggerOutput {
     public void log(String message) {
         System.err.println(message);
     }
+
+    @Override
+    public void close() {
+    }
 }

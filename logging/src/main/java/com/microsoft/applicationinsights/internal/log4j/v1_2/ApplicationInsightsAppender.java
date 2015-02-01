@@ -104,7 +104,7 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             this.isInitialized = false;
-            InternalLogger.INSTANCE.log("Failed to initialize appender with exception: %s.", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s.", e.getMessage());
         }
     }
 

@@ -48,7 +48,7 @@ public final class ThreadPoolUtils {
                 threadPool.shutdownNow();
 
                 if (!threadPool.awaitTermination(timeout, timeUnit)) {
-                    InternalLogger.INSTANCE.log("Pool did not terminate");
+                    InternalLogger.INSTANCE.trace("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {

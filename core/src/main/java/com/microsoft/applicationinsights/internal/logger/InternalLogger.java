@@ -23,6 +23,10 @@ package com.microsoft.applicationinsights.internal.logger;
 
 import com.google.common.base.Strings;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
+
 /**
  * A first, very simple version of an internal logger
  *
@@ -38,13 +42,27 @@ import com.google.common.base.Strings;
 public enum InternalLogger {
     INSTANCE;
 
+    private final static String LOGGER_LEVEL = "Level";
+
     public enum LoggingLevel {
-        ON,
-        OFF
+        TRACE(0),
+        ERROR(1),
+        OFF (2);
+
+        private int value;
+
+        LoggingLevel(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
     }
 
     public enum LoggerOutputType {
-        CONSOLE
+        CONSOLE,
+        FILE
     }
 
     private boolean initialized = false;
@@ -56,51 +74,85 @@ public enum InternalLogger {
     private InternalLogger() {
     }
 
-    public synchronized void initialize(String loggerOutput, boolean isEnabled) {
+    public synchronized void initialize(String loggerOutput, Map<String, String> loggerData) {
         if (!initialized) {
-            setLoggerOutput(loggerOutput);
-            setEnabled(isEnabled);
+            String loggerLevel = loggerData.remove(LOGGER_LEVEL);
+            if (Strings.isNullOrEmpty(loggerLevel)) {
+                loggingLevel = LoggingLevel.OFF;
+            } else {
+                try {
+                    loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+                } catch (Exception e) {
+                    loggingLevel = LoggingLevel.OFF;
+                }
+            }
+
+            setLoggerOutput(loggerOutput, loggerData);
             initialized = true;
         }
     }
 
-    public boolean isEnabled() {
-        return loggingLevel == LoggingLevel.ON;
+    public boolean isTraceEnabled() {
+        return loggingLevel.getValue() <= LoggingLevel.TRACE.getValue();
+    }
+
+    public boolean isErrorEnabled() {
+        return loggingLevel.getValue() <= LoggingLevel.ERROR.getValue();
     }
 
     /**
      * The main method, will delegate the call to the output
-     * only if the logger is enabled, will not allow any exception thrown
+     * only if the logger is enabled for errors, will not allow any exception thrown
      * @param message The message to log with possible placeholders.
      * @param args The arguments that should be formatted into the placeholders.
      */
-    public void log(String message, Object... args) {
+    public void error(String message, Object... args) {
         try {
-            if (isEnabled()) {
-                loggerOutput.log(String.format(message, args));
+            if (isErrorEnabled()) {
+                loggerOutput.log(createMessage("ERROR:", message, args));
             }
         } catch (Throwable t) {
         }
     }
 
-    private void setLoggerOutput(String loggerOutputType) {
-        if (Strings.isNullOrEmpty(loggerOutputType)) {
-            return;
-        }
-
+    /**
+     * The main method, will delegate the call to the output
+     * only if the logger is enabled for at least trace level, will not allow any exception thrown
+     * @param message The message to log with possible placeholders.
+     * @param args The arguments that should be formatted into the placeholders.
+     */
+    public void trace(String message, Object... args) {
         try {
-            LoggerOutputType type = LoggerOutputType.valueOf(loggerOutputType);
+            if (isTraceEnabled()) {
+                loggerOutput.log(createMessage("TRACE:", message, args));
+            }
+        } catch (Throwable t) {
+        }
+    }
+
+    private static String createMessage(String prefix, String message, Object... args) {
+        String currentDateAsString = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+        String formattedMessage = String.format(message, args);
+        String theMessage = String.format("%s %s, %d: %s", prefix, currentDateAsString, Thread.currentThread().getId(), formattedMessage);
+        return theMessage;
+    }
+
+    private void setLoggerOutput(String loggerOutputType, Map<String, String> loggerData) {
+        try {
+            LoggerOutputType type = Strings.isNullOrEmpty(loggerOutputType) ? LoggerOutputType.CONSOLE : LoggerOutputType.valueOf(loggerOutputType.toUpperCase());
             switch (type) {
                 case CONSOLE:
                     loggerOutput = new ConsoleLoggerOutput();
+                    return;
+
+                case FILE:
+                    loggerOutput = new FileLoggerOutput(loggerData);
+                    return;
+
+                default:
                     return;
             }
         } catch (Exception e) {
         }
     }
-
-    private void setEnabled(boolean enabled) {
-        loggingLevel = enabled ? LoggingLevel.ON : LoggingLevel.OFF;
-    }
-
 }

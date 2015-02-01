@@ -21,11 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
-/**
- * Created by gupele on 1/14/2015.
- */
-public interface LoggerOutput {
-    void log(String message);
+import java.io.File;
+import java.io.IOException;
 
-    void close();
+/**
+ * Created by gupele on 2/1/2015.
+ */
+public interface LogFileProxyFactory {
+    LogFileProxy create(File baseFolder, int maxSizeInMB) throws IOException;
 }

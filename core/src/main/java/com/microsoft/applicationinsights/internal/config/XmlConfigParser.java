@@ -65,7 +65,7 @@ final class XmlConfigParser implements ConfigFileParser {
         try {
             InputStream inputStream = getConfigurationAsInputStream(fileName);
             if (inputStream == null) {
-                InternalLogger.INSTANCE.log("Could not find configuration file: %s.", fileName);
+                InternalLogger.INSTANCE.error("Could not find configuration file: %s.", fileName);
 
                 return false;
             }
@@ -77,13 +77,13 @@ final class XmlConfigParser implements ConfigFileParser {
 
             return true;
         } catch (ParserConfigurationException e) {
-            InternalLogger.INSTANCE.log("Failed to parse file %s, exception: %s", fileName, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to parse file %s, exception: %s", fileName, e.getMessage());
         } catch (SAXException e) {
-            InternalLogger.INSTANCE.log("Failed to parse file %s, exception: %s", fileName, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to parse file %s, exception: %s", fileName, e.getMessage());
         } catch (IOException e) {
-            InternalLogger.INSTANCE.log("Failed to parse file %s, exception: %s", fileName, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to parse file %s, exception: %s", fileName, e.getMessage());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.log("Failed to parse file %s, exception: %s", fileName, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to parse file %s, exception: %s", fileName, e.getMessage());
         }
 
         return false;
