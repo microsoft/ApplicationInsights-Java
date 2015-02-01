@@ -43,7 +43,7 @@ uploadArchives {
                     artifactId = 'applicationinsights-logging-logback'
                     whenConfigured { p ->
                         p.dependencies = p.dependencies.findAll { dep -> dep.artifactId == 'logback-classic' || dep.artifactId == 'logback-core' || dep.artifactId == 'applicationinsights-core' }.toList()
-                        writePomToArtifactsDirectory(p)
+                        writePomToArtifactsDirectory(p, 'logback')
                     }
 
                     project {
@@ -60,7 +60,7 @@ uploadArchives {
                     artifactId = 'applicationinsights-logging-log4j1_2'
                     whenConfigured { p ->
                         p.dependencies = p.dependencies.findAll { dep -> dep.groupId == 'log4j' || dep.artifactId == 'applicationinsights-core' }.toList()
-                        writePomToArtifactsDirectory(p)
+                        writePomToArtifactsDirectory(p, 'log4j1_2')
                     }
 
                     project {
@@ -78,7 +78,7 @@ uploadArchives {
                     whenConfigured { p ->
                         p.dependencies = p.dependencies.findAll {
                             dep -> dep.artifactId == 'log4j-core' || dep.artifactId == 'log4j-api' || dep.artifactId == 'applicationinsights-core' }.toList()
-                        writePomToArtifactsDirectory(p)
+                        writePomToArtifactsDirectory(p, 'log4j2')
                     }
 
                     project {
@@ -112,6 +112,8 @@ task createLog4j1_2Jar(type: Jar) {
         include "com/microsoft/applicationinsights/internal/log4j/v1_2/**", "com/microsoft/applicationinsights/internal/common/**"
         appendix = 'log4j1_2'
     }
+
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task createLog4j2Jar(type: Jar) {
@@ -119,6 +121,8 @@ task createLog4j2Jar(type: Jar) {
         include "com/microsoft/applicationinsights/internal/log4j/v2/**", "com/microsoft/applicationinsights/internal/common/**"
         appendix = 'log4j2'
     }
+
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task createLogbackJar(type: Jar) {
@@ -126,6 +130,8 @@ task createLogbackJar(type: Jar) {
         include "com/microsoft/applicationinsights/internal/logback/**", "com/microsoft/applicationinsights/internal/common/**"
         appendix = 'logback'
     }
+
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task buildJars << {
@@ -202,6 +208,7 @@ task createLogbackJavadocJar(type: Jar) {
     from "$buildDir/docs/logback"
     appendix = 'logback'
     classifier = 'javadoc'
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task createLog4j2JavadocJar(type: Jar) {
@@ -212,6 +219,7 @@ task createLog4j2JavadocJar(type: Jar) {
     from "$buildDir/docs/log4j2"
     appendix = 'log4j2'
     classifier = 'javadoc'
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task createLog4j1_2JavadocJar(type: Jar) {
@@ -222,6 +230,7 @@ task createLog4j1_2JavadocJar(type: Jar) {
     from "$buildDir/docs/log4j1_2"
     appendix = 'log4j1_2'
     classifier = 'javadoc'
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task generateLoggingJavadocs << {
@@ -238,18 +247,21 @@ task generateLogbackSourcesJar(type: Jar) {
     appendix = 'logback'
     classifier = 'sources'
     from logbackSources
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task generateLog4j2SourcesJar(type: Jar) {
     appendix = 'log4j2'
     classifier = 'sources'
     from log4j2Sources
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task generateLog4j1_2SourcesJar(type: Jar) {
     appendix = 'log4j1_2'
     classifier = 'sources'
     from log4j1_2Sources
+    destinationDir = new File("$buildDir/libs/" + appendix)
 }
 
 task generateLoggingSources << {

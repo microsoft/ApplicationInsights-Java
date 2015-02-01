@@ -34,7 +34,7 @@ dependencies {
 // region global variables
 
 project.ext.set("msftAppInsights", "Microsoft Application Insights")
-project.ext.set("artifactsDirectory", new File(rootProject.getProjectDir(), 'artifacts'))
+project.ext.set("artifactsDirectoryRoot", new File(rootProject.getProjectDir(), 'artifacts'))
 
 // endregion global variables
 
@@ -62,7 +62,6 @@ allprojects {
         }
     }
     tasks.uploadArchives.dependsOn checkUploadProperties, checkIfReleaseAndUpdateVersion
-    tasks.uploadArchives.doFirst { ((File)artifactsDirectory).mkdir() }
 
     compileJava {
         sourceCompatibility = 1.6
@@ -88,7 +87,7 @@ allprojects {
     }
 
     task copyLibsToGlobalArtifactsFolder(type: Copy) {
-        into artifactsDirectory
+        into artifactsDirectoryRoot
     }
 }
 
@@ -118,9 +117,10 @@ def updatePomWithGeneralProjectInformation(pomObject) {
     }
 }
 
-def writePomToArtifactsDirectory(pomObject) {
+def writePomToArtifactsDirectory(pomObject, directoryName) {
     def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
-    def pomWriter = new FileWriter(new File(artifactsDirectory, pomFilename), false)
+    def artifactsDir = getArtifactsDirectory(directoryName)
+    def pomWriter = new FileWriter(new File(artifactsDir, pomFilename), false)
 
     // Converting the POM object to string, to be able to read one by line.
     StringWriter stringWriter = new StringWriter()
@@ -145,7 +145,14 @@ def writePomToArtifactsDirectory(pomObject) {
     pomWriter.close()
 }
 
+def getArtifactsDirectory(artifactId) {
+    File dir = new File(artifactsDirectoryRoot, artifactId)
+    dir.mkdirs()
+
+    return dir
+}
+
 // Removing artifacts directory
-clean.doLast { delete(((File)artifactsDirectory).getAbsolutePath()).clean() }
+clean.doLast { delete(((File)artifactsDirectoryRoot).getAbsolutePath()).clean() }
 
 // endregion Shared sub-projects configuration

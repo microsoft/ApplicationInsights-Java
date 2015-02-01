@@ -22,6 +22,9 @@
 version = (version == "unspecified") ? "0.9.0-SNAPSHOT" : version
 group = "com.microsoft.azure"
 archivesBaseName = 'applicationinsights-core'
+jar {
+    destinationDir = new File("$buildDir/libs/core")
+}
 
 dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
@@ -51,7 +54,7 @@ uploadArchives {
                     description = "This is the core module of " + project.msftAppInsights + " Java SDK"
                 }
 
-                pom.whenConfigured { p -> writePomToArtifactsDirectory(p) }
+                pom.whenConfigured { p -> writePomToArtifactsDirectory(p, 'core') }
             }
         }
     }
@@ -64,6 +67,7 @@ uploadArchives {
 task generateCoreSourcesJar(type: Jar) {
     archiveName = archivesBaseName + '-' + version + '-sources.jar'
     from sourceSets.main.allJava
+    destinationDir = new File("$buildDir/libs/core")
 }
 
 task generateCoreJavadocJar(type: Jar) {
@@ -73,6 +77,7 @@ task generateCoreJavadocJar(type: Jar) {
 
     archiveName = archivesBaseName + '-' + version + '-javadoc.jar'
     from javadoc
+    destinationDir = new File("$buildDir/libs/core")
 }
 
 assemble.doLast {
