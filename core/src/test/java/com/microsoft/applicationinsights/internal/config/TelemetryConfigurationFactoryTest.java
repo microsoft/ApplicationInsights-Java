@@ -113,11 +113,13 @@ public final class TelemetryConfigurationFactoryTest {
     @Test
     public void testInitializeWithEmptyGetInstrumentationKey() throws Exception {
         ConfigFileParser mockParser = createMockParser(false, true, null);
-        ConfigFileParser.StructuredDataResult loggerResult = new ConfigFileParser.StructuredDataResult();
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("Level", "");
+        ConfigFileParser.StructuredDataResult loggerResult = new ConfigFileParser.StructuredDataResult("", map);
         ConfigFileParser.StructuredDataResult channelResult = new ConfigFileParser.StructuredDataResult();
         Mockito.doReturn("").when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
-        Mockito.doReturn(channelResult).when(mockParser).getStructuredData(LOGGER_SECTION, null);
-        Mockito.doReturn(loggerResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+        Mockito.doReturn(channelResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+        Mockito.doReturn(loggerResult).when(mockParser).getStructuredData(LOGGER_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 

@@ -81,10 +81,10 @@ public final class FileLoggerOutput implements LoggerOutput {
 
         baseFolder = new File(System.getProperty("java.io.tmpdir"), baseFolderName);
         if (!baseFolder.exists()) {
-            baseFolder.mkdir();
+            baseFolder.mkdirs();
+        } else {
+            cleanOld();
         }
-
-        cleanOld();
 
         if (numberOfFiles < MIN_NUMBER_OF_LOG_FILES) {
             numberOfFiles = MIN_NUMBER_OF_LOG_FILES;
@@ -106,7 +106,7 @@ public final class FileLoggerOutput implements LoggerOutput {
     @Override
     public synchronized void log(String message) {
         try {
-            LogFileProxy logFileProxy = prepareLogFileProxy();
+            LogFileProxy logFileProxy = getCurrentLogFileProxy();
             if (logFileProxy != null) {
                 logFileProxy.writeLine(message);
             }
@@ -130,7 +130,7 @@ public final class FileLoggerOutput implements LoggerOutput {
         this.factory = factory;
     }
 
-    private LogFileProxy prepareLogFileProxy() throws IOException {
+    private LogFileProxy getCurrentLogFileProxy() throws IOException {
         LogFileProxy currentProxy = files[currentLogFileIndex];
         if (currentProxy != null && !currentProxy.isFull()) {
             return currentProxy;

@@ -55,12 +55,12 @@ public final class FileLoggerOutputTest {
 
     @Test
     public void testOneLine() throws IOException {
-        test(new String[]{"line 1"});
+        testFileLoggerOutputWithRealFiles(new String[]{"line 1"});
     }
 
     @Test
     public void testTwoLines() throws IOException {
-        test(new String[]{"line 1", "line 2"});
+        testFileLoggerOutputWithRealFiles(new String[]{"line 1", "line 2"});
     }
 
     @Test
@@ -69,7 +69,7 @@ public final class FileLoggerOutputTest {
         for (int i = 0; i < 200; ++i) {
             lines[i] = "line " + String.valueOf(i);
         }
-        test(lines);
+        testFileLoggerOutputWithRealFiles(lines);
     }
 
 //    private final static class StubLogFileProxy implements LogFileProxy
@@ -129,7 +129,7 @@ public final class FileLoggerOutputTest {
         Mockito.verify(mockProxy3, Mockito.never()).delete();
     }
 
-    private void test(String[] lines) throws IOException {
+    private void testFileLoggerOutputWithRealFiles(String[] lines) throws IOException {
         File folder = createFolderForTest();
         FileLoggerOutput tested = createFileLoggerOutput();
         try {

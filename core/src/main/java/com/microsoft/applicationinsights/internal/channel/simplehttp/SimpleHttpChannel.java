@@ -44,6 +44,8 @@ import org.apache.http.impl.client.HttpClients;
  */
 final class SimpleHttpChannel implements TelemetryChannel
 {
+    private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
+
     @Override
     public boolean isDeveloperMode()
     {
@@ -77,7 +79,7 @@ final class SimpleHttpChannel implements TelemetryChannel
                 InternalLogger.INSTANCE.trace("SimpleHttpChannel, payload: %s", payload);
             }
 
-            HttpPost request = new HttpPost("https://dc.services.visualstudio.com/v2/track");
+            HttpPost request = new HttpPost(DEFAULT_SERVER_URI);
             StringEntity body = new StringEntity(payload, ContentType.create("application/x-json-stream"));
             request.setEntity(body);
 

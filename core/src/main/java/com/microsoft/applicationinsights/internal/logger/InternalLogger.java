@@ -79,12 +79,12 @@ public enum InternalLogger {
             String loggerLevel = loggerData.remove(LOGGER_LEVEL);
             if (Strings.isNullOrEmpty(loggerLevel)) {
                 loggingLevel = LoggingLevel.OFF;
-            } else {
-                try {
-                    loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
-                } catch (Exception e) {
-                    loggingLevel = LoggingLevel.OFF;
-                }
+            }
+            try {
+                loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+            } catch (Exception e) {
+                loggingLevel = LoggingLevel.OFF;
+                new ConsoleLoggerOutput().log(String.format("Error: Illegal value '%s' for the SDK internal logger. Logging level is therefore set to 'OFF'", loggerLevel));
             }
 
             setLoggerOutput(loggerOutput, loggerData);
@@ -108,9 +108,7 @@ public enum InternalLogger {
      */
     public void error(String message, Object... args) {
         try {
-            if (isErrorEnabled()) {
-                loggerOutput.log(createMessage("ERROR:", message, args));
-            }
+            log(LoggingLevel.ERROR, message, args);
         } catch (Throwable t) {
         }
     }
@@ -123,9 +121,7 @@ public enum InternalLogger {
      */
     public void trace(String message, Object... args) {
         try {
-            if (isTraceEnabled()) {
-                loggerOutput.log(createMessage("TRACE:", message, args));
-            }
+            log(LoggingLevel.TRACE, message, args);
         } catch (Throwable t) {
         }
     }
@@ -138,21 +134,41 @@ public enum InternalLogger {
     }
 
     private void setLoggerOutput(String loggerOutputType, Map<String, String> loggerData) {
-        try {
-            LoggerOutputType type = Strings.isNullOrEmpty(loggerOutputType) ? LoggerOutputType.CONSOLE : LoggerOutputType.valueOf(loggerOutputType.toUpperCase());
-            switch (type) {
-                case CONSOLE:
-                    loggerOutput = new ConsoleLoggerOutput();
-                    return;
-
-                case FILE:
-                    loggerOutput = new FileLoggerOutput(loggerData);
-                    return;
-
-                default:
-                    return;
+        LoggerOutputType type = LoggerOutputType.CONSOLE;
+        if (!Strings.isNullOrEmpty(loggerOutputType)) {
+            try {
+                // If the user asked for a logger type
+                type = LoggerOutputType.valueOf(loggerOutputType.toUpperCase());
+            } catch (Exception e) {
+                // The user picked a non-valid name, we will notify and use the default 'CONSOLE'
+                new ConsoleLoggerOutput().log(String.format("Error: Illegal value '%s' for the SDK Internal Logger type. SDK Internal Logger is therefore set to 'CONSOLE'", loggerOutputType));
             }
-        } catch (Exception e) {
+        }
+        switch (type) {
+            case CONSOLE:
+                loggerOutput = new ConsoleLoggerOutput();
+                return;
+
+            case FILE:
+                try {
+                    loggerOutput = new FileLoggerOutput(loggerData);
+                } catch (Exception e) {
+                    // The constructor threw an exception, we catch that and move to 'CONSOLE' logger
+                    loggerOutput = new ConsoleLoggerOutput();
+
+                    // Let the user know about that
+                    error("SDK Internal Logger Internal error while initializing 'FILE': '%s'. SDK Internal Logger is therefore set to 'CONSOLE'", e.getMessage());
+                }
+                return;
+
+            default:
+                return;
+        }
+    }
+
+    private void log(LoggingLevel requestLevel, String message, Object... args) {
+        if (requestLevel.getValue() >= loggingLevel.getValue()) {
+            loggerOutput.log(createMessage(requestLevel.toString(), message, args));
         }
     }
 }
