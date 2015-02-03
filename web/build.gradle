@@ -1,0 +1,43 @@
+version = (version == "unspecified") ? "0.9.0-SNAPSHOT" : version
+group = "com.microsoft.azure"
+archivesBaseName = 'applicationinsights-web'
+jar {
+    destinationDir = new File("$buildDir/libs/web")
+}
+
+group = "com.microsoft.azure"
+
+uploadArchives {
+    if (this.hasProperty("mavenUserPassword")) {
+        repositories {
+            mavenDeployer {
+                configuration = configurations.deployerJars
+
+                repository(url: mavenRepositoryUrl) {
+                    authentication(userName: mavenUsername, password: mavenUserPassword)
+                }
+
+                updatePomWithGeneralProjectInformation(pom)
+
+                // Updating web pom specific values.
+                pom.project {
+                    name = project.msftAppInsights + " Java SDK Web Module"
+                    description = "This is the web module of " + project.msftAppInsights + " Java SDK"
+                }
+
+                pom.whenConfigured { p -> writePomToArtifactsDirectory(p, 'web') }
+            }
+        }
+    }
+}
+
+// endregion Publishing tasks
+
+dependencies {
+    compile project(':core')
+    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.+'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.+'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.+'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '9.+'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
+}

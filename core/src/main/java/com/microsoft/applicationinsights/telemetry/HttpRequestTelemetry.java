@@ -41,6 +41,18 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
     private final RequestData data;
 
+    /**
+     * Initializes a new instance of the HttpRequestTelemetry class.
+     */
+    public HttpRequestTelemetry() {
+        this.data = new RequestData();
+        initialize(this.data.getProperties());
+
+        // Setting mandatory fields.
+        setTimestamp(new Date());
+        setResponseCode("200");
+        setSuccess(true);
+    }
 
     /**
      * Initializes a new instance of the HttpRequestTelemetry class with the given name,

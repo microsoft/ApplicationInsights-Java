@@ -28,6 +28,9 @@
     </ContextInitializers>
     <TelemetryInitializers>
     </TelemetryInitializers>
+    <TelemetryModules>
+        <Add type="com.microsoft.applicationinsights.web.extensibility.WebRequestTrackingTelemetryModule"/>
+    </TelemetryModules>
     <Channel type="com.microsoft.applicationinsights.internal.shared.LogChannelMock">
         <EndpointAddress>
             test-endpoint
