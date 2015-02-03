@@ -72,7 +72,10 @@ public final class FileLoggerOutputTest {
         testFileLoggerOutputWithRealFiles(lines);
     }
 
-//    private final static class StubLogFileProxy implements LogFileProxy
+    @Test(expected = IllegalArgumentException.class)
+    public void testFileOutputWithoutPrefix() {
+        createFileLoggerOutputWithoutPrefix();
+    }
 
     @Test
     public void testChangeOfFiles() throws IOException {
@@ -96,7 +99,7 @@ public final class FileLoggerOutputTest {
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         return proxies.remove();
                     }
-                }).when(mockFactory).create((File)anyObject(), anyInt());
+                }).when(mockFactory).create((File)anyObject(), anyString(), anyInt());
 
         File folder = createFolderForTest();
         FileLoggerOutput tested = createFileLoggerOutput();
@@ -111,7 +114,7 @@ public final class FileLoggerOutputTest {
             }
         }
 
-        Mockito.verify(mockFactory, Mockito.times(3)).create((File)anyObject(), anyInt());
+        Mockito.verify(mockFactory, Mockito.times(3)).create((File)anyObject(), anyString(), anyInt());
 
         Mockito.verify(mockProxy1, Mockito.times(1)).writeLine(anyString());
         Mockito.verify(mockProxy1, Mockito.times(1)).writeLine("line1");
@@ -173,11 +176,22 @@ public final class FileLoggerOutputTest {
         }
     }
 
+    private FileLoggerOutput createFileLoggerOutputWithoutPrefix() {
+        return createFileLoggerOutput(false);
+    }
+
     private FileLoggerOutput createFileLoggerOutput() {
+        return createFileLoggerOutput(true);
+    }
+
+    private FileLoggerOutput createFileLoggerOutput(boolean withPrefix) {
         Map<String, String> data = new HashMap<String, String>();
         data.put("BaseFolder", TEMP_LOG_TEST_FOLDER);
         data.put("NumberOfTotalSizeInMB", "2");
         data.put("NumberOfFiles", "2");
+        if (withPrefix) {
+            data.put("UniquePrefix", "UniquePrefix");
+        }
         FileLoggerOutput tested = new FileLoggerOutput(data);
         return tested;
     }

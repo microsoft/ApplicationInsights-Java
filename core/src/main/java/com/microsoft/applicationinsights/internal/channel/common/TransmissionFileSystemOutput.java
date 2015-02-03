@@ -248,7 +248,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             size.addAndGet(transmissionFile.length());
             return true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Rename To Permanent Name, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Rename To Permanent Name failed, exception: %s", e.getMessage());
         }
 
         return false;
@@ -262,7 +262,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             size.addAndGet(-renamedFile.length());
             transmissionFile = renamedFile;
         } catch (Exception ignore) {
-            InternalLogger.INSTANCE.error("Rename To Temporary Name, exception: %s", ignore.getMessage());
+            InternalLogger.INSTANCE.error("Rename To Temporary Name failed, exception: %s", ignore.getMessage());
             // Consume the exception, since there isn't anything 'smart' to do now
         }
 

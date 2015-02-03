@@ -113,6 +113,9 @@ public enum TelemetryConfigurationFactory {
 
     private void setInternalLogger(ConfigFileParser parser, TelemetryConfiguration configuration) {
         ConfigFileParser.StructuredDataResult loggerData = parser.getStructuredData(LOGGER_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+        if (!loggerData.found) {
+            return;
+        }
 
         // The logger output type
         String loggerOutput = loggerData.sectionTag;
@@ -132,13 +135,15 @@ public enum TelemetryConfigurationFactory {
     private boolean setChannel(ConfigFileParser parser, TelemetryConfiguration configuration) {
         ConfigFileParser.StructuredDataResult channelData = parser.getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
 
-        String channelName = channelData.sectionTag;
+        if (channelData.found) {
+            String channelName = channelData.sectionTag;
 
-        if (channelName != null) {
-            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, Map.class, channelData.items);
-            if (channel != null) {
-                configuration.setChannel(channel);
-                return true;
+            if (channelName != null) {
+                TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, Map.class, channelData.items);
+                if (channel != null) {
+                    configuration.setChannel(channel);
+                    return true;
+                }
             }
         }
 

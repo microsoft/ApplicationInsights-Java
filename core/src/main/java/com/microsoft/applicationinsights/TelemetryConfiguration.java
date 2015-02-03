@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -32,6 +31,8 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+
+import com.google.common.base.Strings;
 
 /**
  * Encapsulates the global telemetry configuration typically loaded from the ApplicationInsights.xml file.
@@ -174,7 +175,7 @@ public final class TelemetryConfiguration {
      */
     public void setInstrumentationKey(String key) {
         if (!Sanitizer.isUUID(key)) {
-            InternalLogger.INSTANCE.trace("Telemetry Configuration: illegal instrumentation key: %s ignored", key);
+            InternalLogger.INSTANCE.trace("Telemetry Configuration: instrumentation key '%s' is not in UUID format", key);
         }
 
         // A non null, non empty instrumentation key is a must

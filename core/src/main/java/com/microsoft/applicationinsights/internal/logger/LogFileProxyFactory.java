@@ -28,5 +28,7 @@ import java.io.IOException;
  * Created by gupele on 2/1/2015.
  */
 public interface LogFileProxyFactory {
-    LogFileProxy create(File baseFolder, int maxSizeInMB) throws IOException;
+    LogFileProxy create(File baseFolder, String uniquePrefix, int maxSizeInMB) throws IOException;
+
+    LogFileProxy attach(File logFile, int maxSizeInMB) throws IOException;
 }

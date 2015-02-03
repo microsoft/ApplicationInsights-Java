@@ -30,17 +30,20 @@ import java.io.IOException;
  */
 public final class DefaultLogFileProxy implements LogFileProxy {
     private static String NEW_LINE = System.getProperty("line.separator");
-    private final static String LOG_FILE_PREFIX = "JavaSDKLog";
+    private final static String LOG_FILE_PREFIX = "-JavaSDKLog";
     private final static String LOG_FILE_SUFFIX = ".jsl";
+    private final static int SIZE_OF_MB = 1048576;
 
     private FileWriter out;
     private File file;
     private int maxSizePerFileInMB;
 
-    public DefaultLogFileProxy(File baseFolder, int maxSizePerFileInMB) throws IOException {
-        this.maxSizePerFileInMB = maxSizePerFileInMB;
-        file = File.createTempFile(LOG_FILE_PREFIX, LOG_FILE_SUFFIX, baseFolder);
-        out = new FileWriter(file);
+    public static DefaultLogFileProxy createNew(File baseFolder, String uniquePrefix, int maxSizePerFileInMB) throws IOException {
+        return new DefaultLogFileProxy(baseFolder, uniquePrefix, maxSizePerFileInMB);
+    }
+
+    public static DefaultLogFileProxy attachToExistingFile(File file, int maxSizePerFileInMB) throws IOException {
+        return new DefaultLogFileProxy(file, maxSizePerFileInMB);
     }
 
     public void close() throws IOException {
@@ -57,7 +60,7 @@ public final class DefaultLogFileProxy implements LogFileProxy {
     }
 
     public boolean isFull() {
-        long fileSizeInMB = file.length() / 1000000;
+        long fileSizeInMB = file.length() / SIZE_OF_MB;
         return maxSizePerFileInMB < fileSizeInMB;
     }
 
@@ -66,5 +69,19 @@ public final class DefaultLogFileProxy implements LogFileProxy {
             out.flush();
         } catch (IOException e) {
         }
+    }
+
+    private DefaultLogFileProxy(File baseFolder, String uniquePrefix, int maxSizePerFileInMB) throws IOException {
+        initialize(File.createTempFile(uniquePrefix + LOG_FILE_PREFIX, LOG_FILE_SUFFIX, baseFolder), maxSizePerFileInMB);
+    }
+
+    private DefaultLogFileProxy(File file, int maxSizePerFileInMB) throws IOException {
+        initialize(file, maxSizePerFileInMB);
+    }
+
+    private void initialize(File file, int maxSizePerFileInMB) throws IOException {
+        this.maxSizePerFileInMB = maxSizePerFileInMB;
+        this.file = file;
+        out = new FileWriter(file);
     }
 }
