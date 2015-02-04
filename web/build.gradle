@@ -28,7 +28,7 @@ jar {
 
 dependencies {
     compile project(':core')
-    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.+'
+    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
     testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.+'
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.+'
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '9.+'
