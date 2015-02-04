@@ -19,7 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-rootProject.name = 'AppInsights Java'
+package com.microsoft.applicationinsights.extensibility;
 
-include 'core', 'logging', 'samples', 'web'
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 
+/**
+ * Created by yonisha on 2/2/2015.
+ */
+public interface TelemetryModule {
+    void initialize(TelemetryConfiguration configuration);
+}

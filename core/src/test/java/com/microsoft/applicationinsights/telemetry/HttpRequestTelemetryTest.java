@@ -21,15 +21,25 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import org.junit.Test;
-
 import java.util.Date;
-
+import org.junit.Test;
+import org.apache.http.HttpStatus;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public final class HttpRequestTelemetryTest {
+
     @Test
-    public void testCtor() {
+    public void testDefaultCtor() {
+        HttpRequestTelemetry requestTelemetry = new HttpRequestTelemetry();
+
+        assertNotNull(requestTelemetry.getTimestamp());
+        assertEquals(requestTelemetry.getResponseCode(), Integer.toString(HttpStatus.SC_OK));
+        assertEquals(requestTelemetry.isSuccess(), true);
+    }
+
+    @Test
+    public void testParameterizedCtor() {
         Date date = new Date();
         HttpRequestTelemetry requestTelemetry = new HttpRequestTelemetry("mockName", date, 1010, "200", true);
 

@@ -21,20 +21,19 @@
 
 version = (version == "unspecified") ? "0.9.0-SNAPSHOT" : version
 group = "com.microsoft.azure"
-archivesBaseName = 'applicationinsights-core'
+archivesBaseName = 'applicationinsights-web'
 jar {
-    destinationDir = new File("$buildDir/libs/core")
+    destinationDir = new File("$buildDir/libs/web")
 }
 
 dependencies {
-    compile group: 'commons-io', name: 'commons-io', version: '2.4'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.1'
-    compile group: 'com.google.guava', name: 'guava', version: '12.0.1'
-    testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
+    compile project(':core')
+    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.+'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.+'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.+'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '9.+'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
 }
-
-// region Publishing tasks
 
 uploadArchives {
     if (this.hasProperty("mavenUserPassword")) {
@@ -48,13 +47,13 @@ uploadArchives {
 
                 updatePomWithGeneralProjectInformation(pom)
 
-                // Updating Core pom specific values.
+                // Updating web pom specific values.
                 pom.project {
-                    name = project.msftAppInsights + " Java SDK Core"
-                    description = "This is the core module of " + project.msftAppInsightsJavaSdk
+                    name = project.msftAppInsights + " Java SDK Web Module"
+                    description = "This is the web module of " + project.msftAppInsightsJavaSdk
                 }
 
-                pom.whenConfigured { p -> writePomToArtifactsDirectory(p, 'core') }
+                pom.whenConfigured { p -> writePomToArtifactsDirectory(p, 'web') }
             }
         }
     }
@@ -64,25 +63,25 @@ uploadArchives {
 
 // region Creating Sources & Javadocs jars
 
-task generateCoreSourcesJar(type: Jar) {
+task generateWebSourcesJar(type: Jar) {
     archiveName = archivesBaseName + '-' + version + '-sources.jar'
     from sourceSets.main.allJava
-    destinationDir = new File("$buildDir/libs/core")
+    destinationDir = new File("$buildDir/libs/web")
 }
 
-task generateCoreJavadocJar(type: Jar) {
+task generateWebJavadocJar(type: Jar) {
     doFirst {
         javadoc.execute()
     }
 
     archiveName = archivesBaseName + '-' + version + '-javadoc.jar'
     from javadoc
-    destinationDir = new File("$buildDir/libs/core")
+    destinationDir = new File("$buildDir/libs/web")
 }
 
 assemble.doLast {
-    generateCoreSourcesJar.execute()
-    generateCoreJavadocJar.execute()
+    generateWebSourcesJar.execute()
+    generateWebJavadocJar.execute()
     copyLibsToGlobalArtifactsFolder {
         from 'build/libs'
     }.execute()

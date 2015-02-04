@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -48,6 +49,7 @@ public enum TelemetryConfigurationFactory {
 
     private final static String CONTEXT_INITIALIZERS_SECTION = "ContextInitializers";
     private final static String TELEMETRY_INITIALIZERS_SECTION = "TelemetryInitializers";
+    private final static String TELEMETRY_MODULES_SECTION = "TelemetryModules";
     private final static String INITIALIZERS_ADD = "Add";
     private final static String CLASS_TYPE_AS_ATTRIBUTE = "type";
     private final static String CHANNEL_SECTION = "Channel";
@@ -97,6 +99,9 @@ public enum TelemetryConfigurationFactory {
 
             setContextInitializers(parser, configuration);
             setTelemetryInitializers(parser, configuration);
+            setTelemetryModules(parser, configuration);
+
+            initializeComponents(configuration);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to initialize configuration, exception: %s", e.getMessage());
         }
@@ -192,7 +197,7 @@ public enum TelemetryConfigurationFactory {
         initializerList.add(new SdkVersionContextInitializer());
         initializerList.add(new DeviceInfoContextInitializer());
 
-        setInitializers(ContextInitializer.class, parser, CONTEXT_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
+        loadComponents(ContextInitializer.class, parser, CONTEXT_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
     }
 
     /**
@@ -203,7 +208,12 @@ public enum TelemetryConfigurationFactory {
      */
     private void setTelemetryInitializers(ConfigFileParser parser, TelemetryConfiguration configuration) {
         List<TelemetryInitializer> initializerList = configuration.getTelemetryInitializers();
-        setInitializers(TelemetryInitializer.class, parser, TELEMETRY_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
+        loadComponents(TelemetryInitializer.class, parser, TELEMETRY_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
+    }
+
+    private void setTelemetryModules(ConfigFileParser parser, TelemetryConfiguration configuration) {
+        List<TelemetryModule> modules = configuration.getTelemetryModules();
+        loadComponents(TelemetryModule.class, parser, TELEMETRY_MODULES_SECTION, INITIALIZERS_ADD, modules);
     }
 
     /**
@@ -238,7 +248,7 @@ public enum TelemetryConfigurationFactory {
      * @param list The container of instances, this is where we store our instances that we create
      * @param <T>
      */
-    private <T> void setInitializers(
+    private <T> void loadComponents(
             Class<T> clazz,
             ConfigFileParser parser,
             String sectionName,
@@ -272,6 +282,7 @@ public enum TelemetryConfigurationFactory {
 
             Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
             T instance = (T)clazz.newInstance();
+
             return instance;
         } catch (ClassCastException e) {
             InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
@@ -326,5 +337,19 @@ public enum TelemetryConfigurationFactory {
         }
 
         return null;
+    }
+
+    // TODO: include context/telemetry initializers - where do they initialized?
+    private void initializeComponents(TelemetryConfiguration configuration) {
+        List<TelemetryModule> telemetryModules = configuration.getTelemetryModules();
+
+        for (TelemetryModule module : telemetryModules) {
+            try {
+                module.initialize(configuration);
+            } catch (Exception e) {
+                InternalLogger.INSTANCE.error(
+                        "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Excepption");
+            }
+        }
     }
 }
