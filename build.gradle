@@ -45,6 +45,16 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'maven'
 
+    compileJava {
+        sourceCompatibility = 1.6
+        targetCompatibility = 1.6
+        options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar"
+    }
+
+    if (project == "performance") {
+        return;
+    }
+
     task checkUploadProperties << {
         if (!this.hasProperty("mavenUserPassword")) {
             throw new GroovyRuntimeException("Property mavenUserPassword should be defined for uploadArchives task")
@@ -63,12 +73,6 @@ allprojects {
         }
     }
     tasks.uploadArchives.dependsOn checkUploadProperties, checkIfReleaseAndUpdateVersion
-
-    compileJava {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
-        options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar"
-    }
 
     configurations {
         deployerJars

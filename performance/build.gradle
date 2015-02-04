@@ -1,0 +1,7 @@
+apply plugin: 'application'
+
+mainClassName = "com.microsoft.applicationinsights.core.ThroughputTest"
+
+dependencies {
+    compile project(':core')
+}

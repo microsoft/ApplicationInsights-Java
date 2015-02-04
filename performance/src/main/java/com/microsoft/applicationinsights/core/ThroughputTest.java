@@ -19,7 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-rootProject.name = 'AppInsights Java'
+package com.microsoft.applicationinsights.core;
 
-include 'core', 'logging', 'samples', 'web', 'performance'
-
+/**
+ * Created by gupele on 2/4/2015.
+ */
+public final class ThroughputTest {
+    public static void main(String[] args) {
+        System.out.println("Hi there");
+    }
+}
