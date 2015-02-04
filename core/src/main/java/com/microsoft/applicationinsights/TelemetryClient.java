@@ -51,8 +51,7 @@ import com.google.common.base.Strings;
 public class TelemetryClient {
     private final class TelemetryClientChannelFetcher implements ChannelFetcher {
         public TelemetryChannel fetch() {
-            // Note that 'getChanel' might instantiate the channel
-            return channel;
+            return getChannel();
         }
     }
 
