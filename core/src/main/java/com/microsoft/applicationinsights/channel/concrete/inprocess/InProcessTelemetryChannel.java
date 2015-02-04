@@ -65,6 +65,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     private boolean developerMode = false;
 
+    private boolean stopped = false;
+
     private TelemetriesTransmitter telemetriesTransmitter;
 
     private TelemetryBuffer telemetryBuffer;
@@ -142,8 +144,16 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
      * Stops on going work
      */
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-        telemetriesTransmitter.stop(timeout, timeUnit);
+    public synchronized void stop(long timeout, TimeUnit timeUnit) {
+        try {
+            if (stopped) {
+                return;
+            }
+
+            telemetriesTransmitter.stop(timeout, timeUnit);
+            stopped = true;
+        } catch (Throwable t) {
+        }
     }
 
     private void writeTelemetryToDebugOutput(Telemetry telemetry) {
