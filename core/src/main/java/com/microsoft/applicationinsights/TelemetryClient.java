@@ -23,11 +23,12 @@ package com.microsoft.applicationinsights;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
+import com.microsoft.applicationinsights.internal.util.SDKShutdownActivity;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
@@ -48,6 +49,13 @@ import com.google.common.base.Strings;
  * Created by gupele on 1/5/2015.
  */
 public class TelemetryClient {
+    private final class TelemetryClientChannelFetcher implements ChannelFetcher {
+        public TelemetryChannel fetch() {
+            // Note that 'getChanel' might instantiate the channel
+            return channel;
+        }
+    }
+
     private final TelemetryConfiguration configuration;
     private TelemetryContext context;
     private TelemetryChannel channel;
@@ -64,12 +72,7 @@ public class TelemetryClient {
         }
 
         synchronized (TELEMETRY_STOP_HOOK_LOCK) {
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    getChannel().stop(1L, TimeUnit.SECONDS);
-                }
-            });
+            SDKShutdownActivity.INSTANCE.register(new TelemetryClientChannelFetcher());
         }
 
         this.configuration = configuration;
