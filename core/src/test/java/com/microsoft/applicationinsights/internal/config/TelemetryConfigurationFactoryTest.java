@@ -21,15 +21,13 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -115,11 +113,13 @@ public final class TelemetryConfigurationFactoryTest {
     @Test
     public void testInitializeWithEmptyGetInstrumentationKey() throws Exception {
         ConfigFileParser mockParser = createMockParser(false, true, null);
-        ConfigFileParser.StructuredDataResult loggerResult = new ConfigFileParser.StructuredDataResult();
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("Level", "");
+        ConfigFileParser.StructuredDataResult loggerResult = new ConfigFileParser.StructuredDataResult("", map);
         ConfigFileParser.StructuredDataResult channelResult = new ConfigFileParser.StructuredDataResult();
         Mockito.doReturn("").when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
-        Mockito.doReturn(channelResult).when(mockParser).getStructuredData(LOGGER_SECTION, null);
-        Mockito.doReturn(loggerResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+        Mockito.doReturn(channelResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+        Mockito.doReturn(loggerResult).when(mockParser).getStructuredData(LOGGER_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -191,7 +191,7 @@ public final class TelemetryConfigurationFactoryTest {
         Mockito.doReturn(true).when(mockParser).parse(MOCK_CONF_FILE);
 
         ConfigFileParser.StructuredDataResult loggerResult = new ConfigFileParser.StructuredDataResult();
-        Mockito.doReturn(loggerResult).when(mockParser).getStructuredData(LOGGER_SECTION, null);
+        Mockito.doReturn(loggerResult).when(mockParser).getStructuredData(LOGGER_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
         if (withChannel) {
             Map<String, String> mockChannel = new HashMap<String, String>();
             mockChannel.put("EndpointAddress", MOCK_ENDPOINT);

@@ -86,9 +86,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                     try {
                         barrier.await();
                     } catch (InterruptedException e) {
-                        InternalLogger.INSTANCE.log("Interrupted during barrier wait, exception: %s", e.getMessage());
+                        InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.getMessage());
                     } catch (BrokenBarrierException e) {
-                        InternalLogger.INSTANCE.log("Failed during barrier wait, exception: %s", e.getMessage());
+                        InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.getMessage());
                     }
 
                     // Avoid un-expected exit of threads
@@ -129,9 +129,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
             barrier.await();
             return true;
         } catch (InterruptedException e) {
-            InternalLogger.INSTANCE.log("Interrupted during barrier wait, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.getMessage());
         } catch (BrokenBarrierException e) {
-            InternalLogger.INSTANCE.log("Failed during barrier wait, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.getMessage());
         }
 
         return false;
@@ -144,7 +144,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
             try {
                 thread.join();
             } catch (InterruptedException e) {
-                InternalLogger.INSTANCE.log("Interrupted during join of active transmission loader, exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.getMessage());
             }
         }
     }

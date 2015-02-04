@@ -26,4 +26,6 @@ package com.microsoft.applicationinsights.internal.logger;
  */
 public interface LoggerOutput {
     void log(String message);
+
+    void close();
 }

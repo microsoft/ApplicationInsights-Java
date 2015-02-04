@@ -21,19 +21,30 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
- * Created by gupele on 1/14/2015.
+ * Created by gupele on 2/1/2015.
  */
-public final class ConsoleLoggerOutput implements LoggerOutput {
-    ConsoleLoggerOutput() {
+public final class DefaultLogFileProxyFactory implements LogFileProxyFactory {
+    @Override
+    public LogFileProxy create(File baseFolder, String uniquePrefix, int maxSizeInMB) throws IOException{
+        try {
+            LogFileProxy result = DefaultLogFileProxy.createNew(baseFolder, uniquePrefix, maxSizeInMB);
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
-    public void log(String message) {
-        System.err.println(message);
-    }
-
-    @Override
-    public void close() {
+    public LogFileProxy attach(File logFile, int maxSizeInMB) throws IOException {
+        try {
+            LogFileProxy result = DefaultLogFileProxy.attachToExistingFile(logFile, maxSizeInMB);
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

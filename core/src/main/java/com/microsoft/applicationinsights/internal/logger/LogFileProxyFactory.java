@@ -21,17 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
-public class InternalLoggerTest {
-    private static final class StubLoggerOutput implements LoggerOutput {
-        private String message;
+import java.io.File;
+import java.io.IOException;
 
-        @Override
-        public void log(String message) {
-            this.message = message;
-        }
+/**
+ * Created by gupele on 2/1/2015.
+ */
+public interface LogFileProxyFactory {
+    LogFileProxy create(File baseFolder, String uniquePrefix, int maxSizeInMB) throws IOException;
 
-        public String getMessage() {
-            return message;
-        }
-    }
+    LogFileProxy attach(File logFile, int maxSizeInMB) throws IOException;
 }

@@ -21,19 +21,19 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
+import java.io.IOException;
+
 /**
- * Created by gupele on 1/14/2015.
+ * Created by gupele on 2/1/2015.
  */
-public final class ConsoleLoggerOutput implements LoggerOutput {
-    ConsoleLoggerOutput() {
-    }
+public interface LogFileProxy {
+    void close() throws IOException;
 
-    @Override
-    public void log(String message) {
-        System.err.println(message);
-    }
+    void delete();
 
-    @Override
-    public void close() {
-    }
+    void writeLine(String line) throws IOException;
+
+    boolean isFull();
+
+    void flush();
 }

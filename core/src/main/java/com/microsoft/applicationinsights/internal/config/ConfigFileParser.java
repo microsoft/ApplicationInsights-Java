@@ -34,14 +34,18 @@ interface ConfigFileParser {
 
         public final Map<String, String> items;
 
+        public final boolean found;
+
         public StructuredDataResult() {
             this.sectionTag = null;
             this.items = Collections.emptyMap();
+            this.found = false;
         }
 
         public StructuredDataResult(String sectionTag, Map<String, String> items) {
             this.sectionTag = sectionTag;
             this.items = items;
+            this.found = true;
         }
     }
 

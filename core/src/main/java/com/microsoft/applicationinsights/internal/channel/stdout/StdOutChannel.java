@@ -58,7 +58,7 @@ public class StdOutChannel implements TelemetryChannel
         try {
             StringWriter writer = new StringWriter();
             item.serialize(new JsonTelemetryDataSerializer(writer));
-            InternalLogger.INSTANCE.log("StdOutChannel, TELEMETRY: %s", writer.toString());
+            InternalLogger.INSTANCE.trace("StdOutChannel, TELEMETRY: %s", writer.toString());
         } catch (IOException ioe) {
         }
     }

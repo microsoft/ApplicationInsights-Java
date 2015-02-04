@@ -112,7 +112,7 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
                 return SeverityLevel.Verbose;
 
             default:
-                InternalLogger.INSTANCE.log("Unknown Log4j v1.2 option, %d, using TRACE level as default", log4jLevelAsInt);
+                InternalLogger.INSTANCE.error("Unknown Log4j v1.2 option, %d, using TRACE level as default", log4jLevelAsInt);
                 return SeverityLevel.Verbose;
         }
     }

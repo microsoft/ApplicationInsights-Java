@@ -147,7 +147,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     }
 
     private void writeTelemetryToDebugOutput(Telemetry telemetry) {
-        InternalLogger.INSTANCE.log("InProcessTelemetryChannel sending telemetry");
+        InternalLogger.INSTANCE.trace("InProcessTelemetryChannel sending telemetry");
     }
 
     private void initialize(String endpointAddress, boolean developerMode) {
@@ -172,7 +172,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         URI uri = Sanitizer.sanitizeUri(endpointAddress);
         if (uri == null) {
             String errorMessage = String.format("Endpoint address %s is not a valid uri", endpointAddress);
-            InternalLogger.INSTANCE.log(errorMessage);
+            InternalLogger.INSTANCE.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
     }

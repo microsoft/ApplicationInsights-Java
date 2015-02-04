@@ -21,86 +21,213 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
+
 import com.google.common.base.Strings;
 
 /**
  * A first, very simple version of an internal logger
  *
- * Note: this class is for the SDK internal use only.
+ * Note: this class is for the SDK internal use only, and therefore should ONLY be used by SDK classes.
  *
  * By default the logger will not log messages since it will
  * use the 'NullLoggerOutput' and LoggerLevel of 'OFF' which both deny the output
- *
- * TODO: Add logger output implementation, factory, logging Levels? etc.
  *
  * Created by gupele on 1/13/2015.
  */
 public enum InternalLogger {
     INSTANCE;
 
+    private final static String LOGGER_LEVEL = "Level";
+
     public enum LoggingLevel {
-        ON,
-        OFF
+        ALL(Integer.MIN_VALUE),
+        TRACE(10000),
+        ERROR(20000),
+        OFF(30000);
+
+        private int value;
+
+        LoggingLevel(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
     }
 
     public enum LoggerOutputType {
-        CONSOLE
+        CONSOLE,
+        FILE
     }
 
     private boolean initialized = false;
 
     private LoggingLevel loggingLevel = LoggingLevel.OFF;
 
-    private LoggerOutput loggerOutput = new ConsoleLoggerOutput();
+    private LoggerOutput loggerOutput = null;
 
     private InternalLogger() {
     }
 
-    public synchronized void initialize(String loggerOutput, boolean isEnabled) {
+    /**
+     * The method will first try to find the logger level and then the logger type.
+     * Note that if there are problems initializing the data the internal logger will
+     * move to its default state which is LoggerLevel.OFF and no logger output (loggerOutput = null).
+     * @param loggerOutputType The requested logger type
+     * @param loggerData The data for the internal logger
+     */
+    public synchronized void initialize(String loggerOutputType, Map<String, String> loggerData) {
         if (!initialized) {
-            setLoggerOutput(loggerOutput);
-            setEnabled(isEnabled);
-            initialized = true;
+            try {
+                String loggerLevel = loggerData.remove(LOGGER_LEVEL);
+                if (Strings.isNullOrEmpty(loggerLevel)) {
+                    // The user didn't specify the logging level, therefore by default we set that to 'TRACE'
+                    loggingLevel = LoggingLevel.TRACE;
+                    setLoggerOutput(loggerOutputType, loggerData);
+                } else {
+                    try {
+                        // Try to match the user request logging level into our enum.
+                        loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+                        setLoggerOutput(loggerOutputType, loggerData);
+                    } catch (Exception e) {
+                        // Failed
+                        onInitializationError(String.format("Error: Illegal value '%s' for the SDK internal logger. Logging level is therefore set to 'OFF'", loggerLevel));
+                    }
+                }
+            } finally {
+                initialized = true;
+            }
         }
-    }
-
-    public boolean isEnabled() {
-        return loggingLevel == LoggingLevel.ON;
     }
 
     /**
-     * The main method, will delegate the call to the output
-     * only if the logger is enabled, will not allow any exception thrown
-     * @param message The message to log with possible placeholders.
-     * @param args The arguments that should be formatted into the placeholders.
+     * Closes the Internal Logger for messages.
+     * This method should only be called when the internal logger is not needed
+     * which is currently prior to the process exits, i.e. prior to shutdown of the process
      */
-    public void log(String message, Object... args) {
-        try {
-            if (isEnabled()) {
-                loggerOutput.log(String.format(message, args));
-            }
-        } catch (Throwable t) {
-        }
-    }
-
-    private void setLoggerOutput(String loggerOutputType) {
-        if (Strings.isNullOrEmpty(loggerOutputType)) {
+    public synchronized void stop() {
+        if (loggingLevel.equals(LoggingLevel.OFF)) {
             return;
         }
 
         try {
-            LoggerOutputType type = LoggerOutputType.valueOf(loggerOutputType);
-            switch (type) {
-                case CONSOLE:
-                    loggerOutput = new ConsoleLoggerOutput();
-                    return;
+            if (loggerOutput != null) {
+                loggerOutput.close();
             }
+        } catch (Throwable t) {
+        }
+
+        // Prevent further logging of messages
+        loggingLevel = LoggingLevel.OFF;
+    }
+
+    public boolean isTraceEnabled() {
+        return loggingLevel.getValue() <= LoggingLevel.TRACE.getValue();
+    }
+
+    public boolean isErrorEnabled() {
+        return loggingLevel.getValue() <= LoggingLevel.ERROR.getValue();
+    }
+
+    /**
+     * The main method, will delegate the call to the output
+     * only if the logger is enabled for errors, will not allow any exception thrown
+     * @param message The message to log with possible placeholders.
+     * @param args The arguments that should be formatted into the placeholders.
+     */
+    public void error(String message, Object... args) {
+        try {
+            log(LoggingLevel.ERROR, message, args);
+        } catch (Throwable t) {
+        }
+    }
+
+    /**
+     * The main method, will delegate the call to the output
+     * only if the logger is enabled for at least trace level, will not allow any exception thrown
+     * @param message The message to log with possible placeholders.
+     * @param args The arguments that should be formatted into the placeholders.
+     */
+    public void trace(String message, Object... args) {
+        try {
+            log(LoggingLevel.TRACE, message, args);
+        } catch (Throwable t) {
+        }
+    }
+
+    /**
+     * Creates the message that contains the prefix, thread id and the message.
+     * @param prefix The prefix to attach to the message.
+     * @param message The message to write with possible place holders.
+     * @param args T The args that are part of the message.
+     * @return The formatted message with all the needed data.
+     */
+    private static String createMessage(String prefix, String message, Object... args) {
+        String currentDateAsString = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+        String formattedMessage = String.format(message, args);
+        String theMessage = String.format("%s %s, %d: %s", prefix, currentDateAsString, Thread.currentThread().getId(), formattedMessage);
+        return theMessage;
+    }
+
+    /**
+     * Setting the output is only relevant if the logging level is different than LoggingLevel.OFF.
+     * If the loggerOutputType is empty, then we will use the default logger which is the CONSOLE logger.
+     * @param loggerOutputType The requested logger to use, if empty we will use the default, CONSOLE.
+     * @param loggerData The data that might be relevant for the logger output
+     */
+    private void setLoggerOutput(String loggerOutputType, Map<String, String> loggerData) {
+        if (loggingLevel.equals(LoggingLevel.OFF)) {
+            loggerOutput = null;
+            return;
+        }
+
+        LoggerOutputType type = LoggerOutputType.CONSOLE;
+        if (!Strings.isNullOrEmpty(loggerOutputType)) {
+            try {
+                // If the user asked for a logger type
+                type = LoggerOutputType.valueOf(loggerOutputType.toUpperCase());
+            } catch (Exception e) {
+                onInitializationError(String.format("Error: Illegal value '%s' for the SDK Internal Logger type.", loggerOutputType));
+                return;
+            }
+        }
+
+        switch (type) {
+            case CONSOLE:
+                loggerOutput = new ConsoleLoggerOutput();
+                return;
+
+            case FILE:
+                try {
+                    loggerOutput = new FileLoggerOutput(loggerData);
+                } catch (Exception e) {
+                    onInitializationError(String.format("SDK Internal Logger internal error while initializing 'FILE': '%s'.", e.getMessage()));
+                }
+                return;
+
+            default:
+                return;
+        }
+    }
+
+    private void onInitializationError(String errorMessage) {
+        try {
+            loggerOutput = null;
+            loggingLevel = LoggingLevel.OFF;
+
+            // Notify the user
+            new ConsoleLoggerOutput().log(errorMessage);
         } catch (Exception e) {
         }
     }
 
-    private void setEnabled(boolean enabled) {
-        loggingLevel = enabled ? LoggingLevel.ON : LoggingLevel.OFF;
+    private void log(LoggingLevel requestLevel, String message, Object... args) {
+        if (requestLevel.getValue() >= loggingLevel.getValue()) {
+            loggerOutput.log(createMessage(requestLevel.toString(), message, args));
+        }
     }
-
 }

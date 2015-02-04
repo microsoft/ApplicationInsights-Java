@@ -359,7 +359,7 @@ public class TelemetryClient {
             try {
                 initializer.initialize(telemetry);
             } catch (Exception e) {
-                InternalLogger.INSTANCE.log("Failed during telemetry initialization, exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Failed during telemetry initialization, exception: %s", e.getMessage());
             }
         }
 
