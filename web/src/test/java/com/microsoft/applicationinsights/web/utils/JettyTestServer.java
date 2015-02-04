@@ -19,41 +19,39 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal;
+package com.microsoft.applicationinsights.web.utils;
 
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import javax.servlet.DispatcherType;
+import java.util.EnumSet;
+import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 
 /**
- * Created by yonisha on 2/2/2015.
+ * Created by yonisha on 2/3/2015.
  */
-public class RequestTelemetryContext {
-    private HttpRequestTelemetry requestTelemetry;
-    private long requestStartTimeTicks;
+public class JettyTestServer {
+    private Server server;
 
-    public static final String CONTEXT_ATTR_KEY = "CONTEXT_ATTR";
+    public void start() throws Exception {
+        server = new Server(1234);
 
-    /**
-     * Constructs new RequestTelemetryContext object.
-     * @param ticks The time in ticks
-     */
-    public RequestTelemetryContext(long ticks) {
-        requestTelemetry = new HttpRequestTelemetry();
-        requestStartTimeTicks = ticks;
+        //Initialize the server
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.setContextPath("/");
+        context.addServlet(TestServlet.class, "/");
+        context.addFilter(WebRequestTrackingFilter.class, "/*", EnumSet.of(DispatcherType.INCLUDE, DispatcherType.REQUEST));
+
+        server.setHandler(context);
+        server.start();
     }
 
-    /**
-     * Gets the http request telemetry associated with the context.
-     * @return The http request telemetry.
-     */
-    public HttpRequestTelemetry getHttpRequestTelemetry() {
-        return requestTelemetry;
-    }
+    public void shutdown() throws Exception {
+        if (server == null) {
+            return;
+        }
 
-    /**
-     * Gets the request start time in ticks
-     * @return Request start time in ticks
-     */
-    public long getRequestStartTimeTicks() {
-        return requestStartTimeTicks;
+        server.stop();
+        server.destroy();
     }
 }

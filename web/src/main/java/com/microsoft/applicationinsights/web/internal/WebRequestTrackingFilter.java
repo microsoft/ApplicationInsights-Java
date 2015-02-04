@@ -1,3 +1,24 @@
+/*
+ * AppInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.web.internal;
 
 import javax.servlet.*;
@@ -45,22 +66,27 @@ public final class WebRequestTrackingFilter implements Filter {
 
     /**
      * Initializes the filter from the given config.
-     *
      * @param config The filter configuration.
      */
     public void init(FilterConfig config){
-        TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
+        try {
+            TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
 
-        if (configuration == null) {
-            InternalLogger.INSTANCE.log("Java SDK configuration cannot be null");
+            if (configuration == null) {
+                InternalLogger.INSTANCE.log(
+                        "Java SDK configuration cannot be null. Web request tracking filter will be disabled.");
 
-            return;
+                return;
+            }
+
+            webModulesContainer = new WebModulesContainer(configuration);
+            isInitialized = true;
+        } catch (Exception e) {
+            String filterName = this.getClass().getSimpleName();
+            InternalLogger.INSTANCE.log(
+                    "Application Insights filter %s has been failed to initialized.\n" +
+                    "Web request tracking filter will be disabled. Exception: %s", filterName, e.getMessage());
         }
-
-        List<WebTelemetryModule> modules = (List<WebTelemetryModule>)(List<?>)configuration.getTelemetryModules();
-        webModulesContainer = new WebModulesContainer(modules);
-
-        isInitialized = true;
     }
 
     /**

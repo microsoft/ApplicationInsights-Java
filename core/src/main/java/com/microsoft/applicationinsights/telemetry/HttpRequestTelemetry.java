@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.http.HttpStatus;
 
 /**
  * Encapsulates information about a web request handled by the application.
@@ -47,10 +48,11 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
     public HttpRequestTelemetry() {
         this.data = new RequestData();
         initialize(this.data.getProperties());
+        setId(LocalStringsUtils.generateRandomId());
 
         // Setting mandatory fields.
         setTimestamp(new Date());
-        setResponseCode("200");
+        setResponseCode(Integer.toString(HttpStatus.SC_OK));
         setSuccess(true);
     }
 

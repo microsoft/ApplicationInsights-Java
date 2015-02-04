@@ -21,7 +21,5 @@
 
 rootProject.name = 'AppInsights Java'
 
-include 'core', 'logging'
-
-include 'web'
+include 'core', 'logging', 'web'
 

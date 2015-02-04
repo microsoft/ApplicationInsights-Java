@@ -34,6 +34,7 @@ dependencies {
 // region global variables
 
 project.ext.set("msftAppInsights", "Microsoft Application Insights")
+project.ext.set("msftAppInsightsJavaSdk", msftAppInsights + " Java SDK")
 project.ext.set("artifactsDirectoryRoot", new File(rootProject.getProjectDir(), 'artifacts'))
 
 // endregion global variables

@@ -24,6 +24,8 @@
     <InstrumentationKey>
         A-test-instrumentation-key
     </InstrumentationKey>
+    <TelemetryModules>
+    </TelemetryModules>
     <ContextInitializers>
     </ContextInitializers>
     <TelemetryInitializers>

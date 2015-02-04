@@ -344,7 +344,12 @@ public enum TelemetryConfigurationFactory {
         List<TelemetryModule> telemetryModules = configuration.getTelemetryModules();
 
         for (TelemetryModule module : telemetryModules) {
-            module.initialize(configuration);
+            try {
+                module.initialize(configuration);
+            } catch (Exception e) {
+                InternalLogger.INSTANCE.log(
+                        "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Excepption");
+            }
         }
     }
 }
