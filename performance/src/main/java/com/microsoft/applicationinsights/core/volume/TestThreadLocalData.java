@@ -19,13 +19,21 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.core;
+package com.microsoft.applicationinsights.core.volume;
 
 /**
- * Created by gupele on 2/4/2015.
+ * Created by gupele on 2/5/2015.
  */
-public final class ThroughputTest {
-    public static void main(String[] args) {
-        System.out.println("Hi there");
+class TestThreadLocalData {
+    private static final ThreadLocal<FakeTransmissionOutput> currentOutput = new ThreadLocal<FakeTransmissionOutput>() {
+        @Override
+        protected FakeTransmissionOutput initialValue() {
+            TestResultsVerifier testResultsVerifier = new TestResultsVerifier();
+            return new FakeTransmissionOutput(testResultsVerifier);
+        }
+    };
+
+    public static FakeTransmissionOutput get() {
+        return currentOutput.get();
     }
 }

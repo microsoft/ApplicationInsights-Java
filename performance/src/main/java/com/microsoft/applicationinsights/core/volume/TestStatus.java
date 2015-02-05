@@ -19,10 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply plugin: 'application'
+package com.microsoft.applicationinsights.core.volume;
 
-mainClassName = "com.microsoft.applicationinsights.core.volume.ThroughputTest"
-
-dependencies {
-    compile project(':core')
+/**
+ * Created by gupele on 2/5/2015.
+ */
+enum TestStatus {
+    WAITING,
+    FAILED,
+    SUCCEEDED,
+    EXPIRED
 }
