@@ -30,6 +30,7 @@
     </TelemetryInitializers>
     <TelemetryModules>
         <Add type="com.microsoft.applicationinsights.web.extensibility.WebRequestTrackingTelemetryModule"/>
+        <Add type="com.microsoft.applicationinsights.web.extensibility.WebSessionTrackingTelemetryModule"/>
     </TelemetryModules>
     <Channel type="com.microsoft.applicationinsights.internal.shared.LogChannelMock">
         <EndpointAddress>

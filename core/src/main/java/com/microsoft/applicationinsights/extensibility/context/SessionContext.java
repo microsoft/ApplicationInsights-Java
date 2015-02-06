@@ -32,7 +32,7 @@ public final class SessionContext {
         this.tags = tags;
     }
 
-    String getId() {
+    public String getId() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getSessionId());
     }
 
@@ -48,7 +48,7 @@ public final class SessionContext {
         MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsFirst(), version);
     }
 
-    Boolean getIsNewSession() {
+    public Boolean getIsNewSession() {
         return MapUtil.getBoolValueOrNull(tags, ContextTagKeys.getKeys().getSessionIsNew());
     }
 

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import java.util.Date;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 
 /**
@@ -29,6 +30,8 @@ import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 public class RequestTelemetryContext {
     private HttpRequestTelemetry requestTelemetry;
     private long requestStartTimeTicks;
+    private Date sessionAcquisitionTime;
+    private Date sessionLastRenewalTime;
 
     public static final String CONTEXT_ATTR_KEY = "CONTEXT_ATTR";
 
@@ -55,5 +58,37 @@ public class RequestTelemetryContext {
      */
     public long getRequestStartTimeTicks() {
         return requestStartTimeTicks;
+    }
+
+    /**
+     * Sets the session acquisition time.
+     * @param sessionAcquisitionTime The session acquisition time.
+     */
+    public void setSessionAcquisitionDate(Date sessionAcquisitionTime) {
+        this.sessionAcquisitionTime = sessionAcquisitionTime;
+    }
+
+    /**
+     * Gets the session acquisition time.
+     * @return Session acquisition time.
+     */
+    public Date getSessionAcquisitionDate() {
+        return sessionAcquisitionTime;
+    }
+
+    /**
+     * Sets the session last renewal time.
+     * @param sessionLastRenewTime The session last renewal time.
+     */
+    public void setSessionLastRenewalDate(Date sessionLastRenewTime) {
+        this.sessionLastRenewalTime = sessionLastRenewTime;
+    }
+
+    /**
+     * Gets the session last renewal time.
+     * @return Session last renewal time.
+     */
+    public Date getSessionLastRenewalDate() {
+        return sessionLastRenewalTime;
     }
 }
