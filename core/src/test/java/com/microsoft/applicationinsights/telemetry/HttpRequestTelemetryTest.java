@@ -45,7 +45,7 @@ public final class HttpRequestTelemetryTest {
 
         assertEquals(requestTelemetry.getName(), "mockName");
         assertEquals(requestTelemetry.getTimestamp(), date);
-        assertEquals(requestTelemetry.getDuration(), 1010);
+        assertEquals(requestTelemetry.getDuration().toString(), "00:00:01.0100000");
         assertEquals(requestTelemetry.getResponseCode(), "200");
         assertEquals(requestTelemetry.isSuccess(), true);
     }

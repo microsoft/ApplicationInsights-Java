@@ -22,10 +22,13 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 /**
@@ -65,7 +68,7 @@ public class RequestData extends Domain {
     /**
      * Backing field for property Duration.
      */
-    private long duration;
+    private Duration duration;
 
     /**
      * Backing field for property ResponseCode.
@@ -133,11 +136,11 @@ public class RequestData extends Domain {
         this.startTime = value;
     }
 
-    public long getDuration() {
+    public Duration getDuration() {
         return this.duration;
     }
 
-    public void setDuration(long value) {
+    public void setDuration(Duration value) {
         this.duration = value;
     }
 
@@ -212,7 +215,7 @@ public class RequestData extends Domain {
         writer.write("id", id);
         writer.write("name", name);
         writer.write("startTime", startTime);
-        writer.write("duration", duration);
+        writer.write("duration", duration != null ? duration.toString() : "");
         writer.write("responseCode", responseCode);
         writer.write("success", success);
         writer.write("httpMethod", httpMethod);
