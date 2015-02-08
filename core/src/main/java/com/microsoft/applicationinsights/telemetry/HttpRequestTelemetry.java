@@ -66,6 +66,19 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
      * @param success 'true' if the request was a success, 'false' otherwise.
      */
     public HttpRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
+        this(name, timestamp, new Duration(duration), responseCode, success);
+    }
+
+    /**
+     * Initializes a new instance of the HttpRequestTelemetry class with the given name,
+     * time stamp, duration, HTTP response code and success property values.
+     * @param name A user-friendly name for the request.
+     * @param timestamp The time of the request.
+     * @param duration The duration, as an {@link com.microsoft.applicationinsights.telemetry.Duration} instance, of the request processing.
+     * @param responseCode The HTTP response code.
+     * @param success 'true' if the request was a success, 'false' otherwise.
+     */
+    public HttpRequestTelemetry(String name, Date timestamp, Duration duration, String responseCode, boolean success) {
         this.data = new RequestData();
         initialize(this.data.getProperties());
 
@@ -173,7 +186,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
      * Gets the amount of time it took the application to handle the request.
      * @return Amount of time in milliseconds
      */
-    public long getDuration() {
+    public Duration getDuration() {
         return data.getDuration();
     }
 
@@ -181,7 +194,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
      * Sets the amount of time it took the application to handle the request.
      * @param milliSeconds Amount of time in milliseconds.
      */
-    public void setDuration(long milliSeconds) {
+    public void setDuration(Duration milliSeconds) {
         data.setDuration(milliSeconds);
     }
 
