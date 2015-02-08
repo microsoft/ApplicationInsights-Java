@@ -41,7 +41,7 @@ final class TestResultsVerifier {
     public void reset(int numberOfExpected) {
         arrivedEvents.set(0);
         this.numberOfExpected = numberOfExpected;
-        status = TestStatus.WAITING;
+        status = null;
         done = false;
         elapsed = System.nanoTime();
     }

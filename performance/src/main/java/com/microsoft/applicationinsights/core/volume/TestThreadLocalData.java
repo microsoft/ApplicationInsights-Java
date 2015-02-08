@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.core.volume;
 /**
  * Created by gupele on 2/5/2015.
  */
-class TestThreadLocalData {
+final class TestThreadLocalData {
     private static final ThreadLocal<FakeTransmissionOutput> currentOutput = new ThreadLocal<FakeTransmissionOutput>() {
         @Override
         protected FakeTransmissionOutput initialValue() {
@@ -33,7 +33,7 @@ class TestThreadLocalData {
         }
     };
 
-    public static FakeTransmissionOutput get() {
+    public static FakeTransmissionOutput getTransmissionOutput() {
         return currentOutput.get();
     }
 }

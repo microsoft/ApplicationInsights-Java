@@ -22,10 +22,15 @@
 package com.microsoft.applicationinsights.core.volume;
 
 /**
+ * The following represents the outcome of the test:
+ *
+ * FAILED    - The test failed, the amount of telemetries that reached the endpoint is either less or more than expected
+ *             but within the timeout defined
+ * SUCCEEDED - The amount of telemetries that reached the endpoint is exactly as expected and in the expected timeout
+ * EXPIRED   - The timeout that was defined for waiting for the telemetries to reach the endpoint expired
  * Created by gupele on 2/5/2015.
  */
 enum TestStatus {
-    WAITING,
     FAILED,
     SUCCEEDED,
     EXPIRED

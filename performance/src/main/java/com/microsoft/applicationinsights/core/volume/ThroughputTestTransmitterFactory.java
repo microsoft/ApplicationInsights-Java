@@ -41,7 +41,7 @@ final class ThroughputTestTransmitterFactory implements TransmitterFactory {
     @Override
     public TelemetriesTransmitter create(String endpoint) {
         // An active object with the network sender
-        TransmissionOutput actualNetworkSender = TestThreadLocalData.get();
+        TransmissionOutput actualNetworkSender = TestThreadLocalData.getTransmissionOutput();
         TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender);
 
         // An active object with the file system sender

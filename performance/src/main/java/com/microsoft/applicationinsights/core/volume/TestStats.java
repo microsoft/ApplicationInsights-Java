@@ -33,7 +33,12 @@ final class TestStats {
     private final double eventsPerSecond;
     private final int acceptedUntilEndOfSending;
 
-    public TestStats(int numberOfSentEvents, int numberOfAcceptedEvents, TestStatus status, long timeToFinishInNanos, long sendTimeInNanos, int acceptedUntilEndOfSending) {
+    public TestStats(int numberOfSentEvents,
+                     int numberOfAcceptedEvents,
+                     TestStatus status,
+                     long timeToFinishInNanos,
+                     long sendTimeInNanos,
+                     int acceptedUntilEndOfSending) {
         this.numberOfSentEvents = numberOfSentEvents;
         this.numberOfAcceptedEvents = numberOfAcceptedEvents;
         this.status = status;

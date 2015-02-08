@@ -29,6 +29,11 @@ import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTel
  * Created by gupele on 2/5/2015.
  */
 final class Tester {
+    private final static String MOCK_EVENT_NAME  = "MOCK_EVENT";
+    private final static String MOCK_TRACE_NAME  = "MOCK_TRACE_NAME";
+    private final static String MOCK_PAGE_VIEW_NAME  = "MOCK_PAGE_VIEW_NAME";
+    private final static String MOCK_METRIC_NAME  = "MOCK_METRIC_NAME";
+    private final static double MOCK_METRIC_VALUE  = 120.9;
     private final static String TEST_IKEY = "00000000-0000-0000-0000-000000000000";
 
     private int numberOfTelemetries;
@@ -49,7 +54,7 @@ final class Tester {
         TelemetryConfiguration configuration = new TelemetryConfiguration();
         configuration.setInstrumentationKey(TEST_IKEY);
         configuration.setChannel(new InProcessTelemetryChannel());
-        fakeTransmissionOutput = TestThreadLocalData.get();
+        fakeTransmissionOutput = TestThreadLocalData.getTransmissionOutput();
         testResultsVerifier = fakeTransmissionOutput.getTestResultsVerifier();
         telemetryClient = new TelemetryClient(configuration);
     }
@@ -75,19 +80,19 @@ final class Tester {
                     int mod = i % 4;
                     switch (mod) {
                         case 0:
-                            telemetryClient.trackEvent("EName");
+                            telemetryClient.trackEvent(MOCK_EVENT_NAME);
                             break;
 
                         case 1:
-                            telemetryClient.trackMetric("Name", 120.9);
+                            telemetryClient.trackMetric(MOCK_METRIC_NAME, MOCK_METRIC_VALUE);
                             break;
 
                         case 2:
-                            telemetryClient.trackTrace("TMessage");
+                            telemetryClient.trackTrace(MOCK_TRACE_NAME);
                             break;
 
                         default:
-                            telemetryClient.trackPageView("PName");
+                            telemetryClient.trackPageView(MOCK_PAGE_VIEW_NAME);
                             break;
                     }
                 }

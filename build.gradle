@@ -51,10 +51,6 @@ allprojects {
         options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar"
     }
 
-    if (project == "performance") {
-        return;
-    }
-
     task checkUploadProperties << {
         if (!this.hasProperty("mavenUserPassword")) {
             throw new GroovyRuntimeException("Property mavenUserPassword should be defined for uploadArchives task")
