@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import org.apache.http.HttpStatus;
@@ -104,7 +105,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             HttpServletResponse response = (HttpServletResponse)res;
             telemetry.setSuccess(HttpStatus.SC_OK == response.getStatus());
             telemetry.setResponseCode(Integer.toString(response.getStatus()));
-            telemetry.setDuration(endTime - context.getRequestStartTimeTicks());
+            telemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
 
             telemetryClient.track(telemetry);
         } catch (Exception e) {
