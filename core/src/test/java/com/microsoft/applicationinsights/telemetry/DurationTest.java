@@ -26,9 +26,56 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public final class DurationTest {
+    @Test(expected = IllegalArgumentException.class)
+    public void testNovValidNegativeHours() {
+        new Duration(0, -24, 0, 0, 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNovValidPositiveHours() {
+        new Duration(0, 24, 0, 0, 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNovValidNegativeMinutes() {
+        new Duration(0, 0, -60, 0, 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNovValidPositiveMinutes() {
+        new Duration(0, 0, -60, 0, 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNovValidNegativeSeconds() {
+        new Duration(0, 0, 0, -60, 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNovValidPositiveSeconds() {
+        new Duration(0, 0, 0, 60, 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNovValidPositiveMilliseconds() {
+        new Duration(0, 0, 0, 0, 1000);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNovValidNegativeMilliseconds() {
+        new Duration(0, 0, 0, 0, -1);
+    }
+
     @Test
     public void testZero() {
         Duration duration = new Duration(0);
+
+        verify(duration, 0, 0, 0, 0, 0, "00:00:00");
+    }
+
+    @Test
+    public void testZeroWithAllArgs() {
+        Duration duration = new Duration(0, 0, 0, 0, 0);
 
         verify(duration, 0, 0, 0, 0, 0, "00:00:00");
     }
@@ -41,22 +88,87 @@ public final class DurationTest {
     }
 
     @Test
+    public void testMinNegativeDays() {
+        Duration duration = new Duration(Integer.MIN_VALUE, 0, 0, 0, 0);
+
+        String minValue = String.valueOf(Integer.MIN_VALUE);
+        verify(duration, Integer.MIN_VALUE, 0, 0, 0, 0, minValue + ".00:00:00");
+    }
+
+    @Test
+    public void testMaxPositiveDays() {
+        Duration duration = new Duration(Integer.MAX_VALUE, 0, 0, 0, 0);
+
+        String maxValue = String.valueOf(Integer.MAX_VALUE);
+        verify(duration, Integer.MAX_VALUE, 0, 0, 0, 0, maxValue + ".00:00:00");
+    }
+
+    @Test
+    public void testMinNegativeHours() {
+        Duration duration = new Duration(0, -23, 0, 0, 0);
+
+        verify(duration, 0, -23, 0, 0, 0, "-23:00:00");
+    }
+
+    @Test
+    public void testMaxPositiveHours() {
+        Duration duration = new Duration(0, 23, 0, 0, 0);
+
+        verify(duration, 0, 23, 0, 0, 0, "23:00:00");
+    }
+
+    @Test
+    public void testMinNegativeMinutes() {
+        Duration duration = new Duration(0, 0, -59, 0, 0);
+
+        verify(duration, 0, 0, -59, 0, 0, "00:-59:00");
+    }
+
+    @Test
+    public void testMaxPositiveMinutes() {
+        Duration duration = new Duration(0, 0, 59, 0, 0);
+
+        verify(duration, 0, 0, 59, 0, 0, "00:59:00");
+    }
+
+    @Test
+    public void testMinNegativeSeconds() {
+        Duration duration = new Duration(0, 0, 0, -59, 0);
+
+        verify(duration, 0, 0, 0, -59, 0, "00:00:-59");
+    }
+
+    @Test
+    public void testMaxPositiveSeconds() {
+        Duration duration = new Duration(0, 0, 0, 59, 0);
+
+        verify(duration, 0, 0, 0, 59, 0, "00:00:59");
+    }
+
+    @Test
+    public void testMaxMilliseconds() {
+        Duration duration = new Duration(0, 0, 0, 0, 999);
+
+        verify(duration, 0, 0, 0, 0, 999, "00:00:00.9990000");
+    }
+
+    @Test
     public void testOneHourTwoMinThreeSec() {
-        Duration duration = new Duration(1, 2, 3);
+        Duration duration = new Duration(0, 1, 2, 3, 0);
 
         verify(duration, 0, 1, 2, 3, 0, "01:02:03");
     }
 
     @Test
     public void test2Days0Hours2Min3Sec() {
-        Duration duration = new Duration(2, 0, 2, 3);
+        Duration duration = new Duration(2, 0, 2, 3, 0);
 
         verify(duration, 2, 0, 2, 3, 0, "02.00:02:03");
     }
 
     @Test
     public void test0Days0Hours2Min3Sec() {
-        Duration duration = new Duration(0, 0, 2, 3);
+        Duration duration = new Duration(0, 0, 2, 3, 0);
 
         verify(duration, 0, 0, 2, 3, 0, "00:02:03");
     }
@@ -66,6 +178,20 @@ public final class DurationTest {
         Duration duration = new Duration(0, 0, 0, 0, 250);
 
         verify(duration, 0, 0, 0, 0, 250, "00:00:00.2500000");
+    }
+
+    @Test
+    public void testMilliCtorWithLongMaxValue() {
+        Duration duration = new Duration(Long.MAX_VALUE);
+
+        verify(duration, 106751991167L, 7, 12, 55, 807, "106751991167.07:12:55.8070000");
+    }
+
+    @Test
+    public void test1DayAndOneMilliWithMilliCtor() {
+        Duration duration = new Duration(86400001);
+
+        verify(duration, 1, 0, 0, 0, 1, "01.00:00:00.0010000");
     }
 
     @Test
@@ -84,7 +210,7 @@ public final class DurationTest {
 
     @Test
     public void test3Hours() {
-        Duration duration = new Duration(3, 0, 0);
+        Duration duration = new Duration(0, 3, 0, 0, 0);
 
         verify(duration, 0, 3, 0, 0, 0, "03:00:00");
     }
@@ -112,7 +238,7 @@ public final class DurationTest {
     }
 
     private static void verify(Duration duration,
-                               int expectedDays,
+                               long expectedDays,
                                int expectedHours,
                                int expectedMinutes,
                                int expectedSeconds,
