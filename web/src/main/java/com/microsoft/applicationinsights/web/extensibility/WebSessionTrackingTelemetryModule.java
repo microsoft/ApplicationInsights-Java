@@ -141,7 +141,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     }
 
     private void setSessionCookie(HttpServletResponse response, String formattedCookie, Date sessionLastRenewalDate) {
-        Cookie cookie = new Cookie(SessionCookie.SESSION_COOKIE_NAME, formattedCookie);
+        Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
 
         Date expirationDate = DateTimeUtils.addToDate(
                 sessionLastRenewalDate,

@@ -19,76 +19,30 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal;
+package com.microsoft.applicationinsights.web.utils;
 
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 
 /**
- * Created by yonisha on 2/2/2015.
+ * Created by yonisha on 2/9/2015.
  */
-public class RequestTelemetryContext {
-    private HttpRequestTelemetry requestTelemetry;
-    private long requestStartTimeTicks;
+public class CookiesContainer {
     private SessionCookie sessionCookie;
     private UserCookie userCookie;
 
-    public static final String CONTEXT_ATTR_KEY = "CONTEXT_ATTR";
-
-    /**
-     * Constructs new RequestTelemetryContext object.
-     * @param ticks The time in ticks
-     */
-    public RequestTelemetryContext(long ticks) {
-        requestTelemetry = new HttpRequestTelemetry();
-        requestStartTimeTicks = ticks;
-    }
-
-    /**
-     * Gets the http request telemetry associated with the context.
-     * @return The http request telemetry.
-     */
-    public HttpRequestTelemetry getHttpRequestTelemetry() {
-        return requestTelemetry;
-    }
-
-    /**
-     * Gets the request start time in ticks
-     * @return Request start time in ticks
-     */
-    public long getRequestStartTimeTicks() {
-        return requestStartTimeTicks;
-    }
-
-    /**
-     * Sets the session cookie.
-     * @param sessionCookie The session cookie.
-     */
     public void setSessionCookie(SessionCookie sessionCookie) {
         this.sessionCookie = sessionCookie;
     }
 
-    /**
-     * Gets the session cookie.
-     * @return Session cookie.
-     */
     public SessionCookie getSessionCookie() {
         return sessionCookie;
     }
 
-    /**
-     * Sets the user cookie.
-     * @param userCookie The user cookie.
-     */
     public void setUserCookie(UserCookie userCookie) {
         this.userCookie = userCookie;
     }
 
-    /**
-     * Gets the user cookie.
-     * @return The user cookie.
-     */
     public UserCookie getUserCookie() {
         return userCookie;
     }

@@ -37,7 +37,7 @@ public class CookieUtils {
      * @return The session cookie, or null if not exists.
      */
     public static SessionCookie getSessionCookie(HttpServletRequest request) {
-        Cookie cookie = getCookie(request, SessionCookie.SESSION_COOKIE_NAME);
+        Cookie cookie = getCookie(request, SessionCookie.COOKIE_NAME);
 
         SessionCookie sessionCookie = null;
         if (cookie != null) {
@@ -48,6 +48,25 @@ public class CookieUtils {
         }
 
         return sessionCookie;
+    }
+
+    /**
+     * Gets the user cookie from the given http request.
+     * @param request The request containing the cookie.
+     * @return The user cookie, or null if not exists.
+     */
+    public static UserCookie getUserCookie(HttpServletRequest request) {
+        Cookie cookie = getCookie(request, UserCookie.COOKIE_NAME);
+
+        UserCookie userCookie = null;
+        if (cookie != null) {
+            try {
+                userCookie = new UserCookie(cookie);
+            } catch (Exception e) {
+            }
+        }
+
+        return userCookie;
     }
 
     // endregion Public

@@ -26,20 +26,17 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 
 /**
- * Created by yonisha on 2/5/2015.
+ * Created by yonisha on 2/9/2015.
  */
-public class WebSessionTrackingTelemetryModuleTests {
-
+public class WebUserTrackingTelemetryModuleTests {
     // region Members
 
-    private static String sessionCookieFormatted;
+    private static String userCookieFormatted;
     private static JettyTestServer server = new JettyTestServer();
 
     // endregion Members
@@ -53,7 +50,7 @@ public class WebSessionTrackingTelemetryModuleTests {
 
     @Before
     public void testInitialize() {
-        sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(false);
+        userCookieFormatted = HttpHelper.getFormattedUserCookieHeader();
     }
 
     @AfterClass
@@ -66,30 +63,17 @@ public class WebSessionTrackingTelemetryModuleTests {
     // region Tests
 
     @Test
-    public void testNewSessionIsCreatedWhenCookieNotExist() throws Exception {
+    public void testNewUserCookieIsCreatedWhenCookieNotExist() throws Exception {
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
 
-        SessionCookie cookie = cookiesContainer.getSessionCookie();
-
-        Assert.assertTrue(Sanitizer.isUUID(cookie.getSessionId()));
+        Assert.assertNotNull("User cookie shouldn't be null.", cookiesContainer.getUserCookie());
     }
 
     @Test
-    public void testNoSessionCreatedWhenValidSessionExists() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
+    public void testNoUserCookieCreatedWhenValidCookieExists() throws Exception {
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(userCookieFormatted);
 
-        Assert.assertNull(cookiesContainer.getSessionCookie());
-    }
-
-    @Test
-    public void testNewSessionIsCreatedWhenCookieSessionExpired() throws Exception {
-        sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
-
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
-        SessionCookie sessionCookie = cookiesContainer.getSessionCookie();
-
-        Assert.assertNotNull(sessionCookie);
-        Assert.assertFalse(sessionCookieFormatted.contains(sessionCookie.getSessionId()));
+        Assert.assertNull(cookiesContainer.getUserCookie());
     }
 
     // endregion Tests
