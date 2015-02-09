@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
+import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
@@ -64,6 +65,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     private final static String EndpointAddress = "EndpointAddress";
 
     private boolean developerMode = false;
+    private static TransmitterFactory s_transmitterFactory;
 
     private boolean stopped = false;
 
@@ -160,11 +162,14 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         InternalLogger.INSTANCE.trace("InProcessTelemetryChannel sending telemetry");
     }
 
-    private void initialize(String endpointAddress, boolean developerMode) {
+    private synchronized void initialize(String endpointAddress, boolean developerMode) {
         makeSureEndpointAddressIsValid(endpointAddress);
 
-        // Temporary
-        telemetriesTransmitter = new InProcessTelemetryChannelFactory().create(endpointAddress);
+        if (s_transmitterFactory == null) {
+            s_transmitterFactory = new InProcessTelemetryChannelFactory();
+        }
+
+        telemetriesTransmitter = s_transmitterFactory.create(endpointAddress);
         telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
         setDeveloperMode(developerMode);
     }

@@ -19,7 +19,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-rootProject.name = 'AppInsights Java'
+apply plugin: 'application'
 
-include 'core', 'logging', 'samples', 'web', 'performance'
+mainClassName = "com.microsoft.applicationinsights.core.volume.ThroughputTest"
 
+dependencies {
+    compile project(':core')
+}

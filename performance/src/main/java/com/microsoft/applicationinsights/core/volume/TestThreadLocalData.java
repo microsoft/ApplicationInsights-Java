@@ -19,7 +19,21 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-rootProject.name = 'AppInsights Java'
+package com.microsoft.applicationinsights.core.volume;
 
-include 'core', 'logging', 'samples', 'web', 'performance'
+/**
+ * Created by gupele on 2/5/2015.
+ */
+final class TestThreadLocalData {
+    private static final ThreadLocal<FakeTransmissionOutput> currentOutput = new ThreadLocal<FakeTransmissionOutput>() {
+        @Override
+        protected FakeTransmissionOutput initialValue() {
+            TestResultsVerifier testResultsVerifier = new TestResultsVerifier();
+            return new FakeTransmissionOutput(testResultsVerifier);
+        }
+    };
 
+    public static FakeTransmissionOutput getTransmissionOutput() {
+        return currentOutput.get();
+    }
+}
