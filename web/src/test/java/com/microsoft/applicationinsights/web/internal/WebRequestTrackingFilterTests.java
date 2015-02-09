@@ -21,13 +21,13 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import javax.servlet.*;
-import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import javax.servlet.*;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import com.microsoft.applicationinsights.web.utils.ServletUtils;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -42,8 +42,8 @@ public class WebRequestTrackingFilterTests {
         Filter filter = createInitializedFilter();
         WebModulesContainer container = ServletUtils.getWebModuleContainer(filter);
 
-        Assert.assertNotNull("Something went wrong, container shouldn't be null", container);
-        Assert.assertEquals("Exactly one telemetry module should be loaded", 1, container.getModulesCount());
+        Assert.assertNotNull("Container shouldn't be null", container);
+        Assert.assertTrue("Modules container shouldn't be empty", container.getModulesCount() > 0);
     }
 
     @Test

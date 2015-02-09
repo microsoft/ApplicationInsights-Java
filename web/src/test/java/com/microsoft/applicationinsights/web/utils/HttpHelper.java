@@ -21,39 +21,63 @@
 
 package com.microsoft.applicationinsights.web.utils;
 
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 
 /**
  * Created by yonisha on 2/2/2015.
  */
 public class HttpHelper {
-    public static void sendGetRequestAndWait(String url) throws Exception {
-        HttpURLConnection con = (HttpURLConnection) (new URL(url)).openConnection();
+
+    private static final String FORMATTED_SESSION_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s|%s";
+
+    public static String sendRequestAndGetResponseCookie(String requestFormattedCookie) throws Exception {
+        HttpURLConnection con = (HttpURLConnection) (new URL("http://localhost:1234")).openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.4; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko");
+
+        if (requestFormattedCookie != null) {
+            con.setRequestProperty("Cookie", requestFormattedCookie);
+        }
+
         int responseCode = con.getResponseCode();
 
-        try {
-            InputStream inputStream = con.getInputStream();
-            while (inputStream.read() > 0) {
-            }
-            inputStream.close();
-        } catch (Exception exc) {
+        String formattedCookieWithExpiration = con.getHeaderField("Set-Cookie");
+
+        if (formattedCookieWithExpiration == null) {
+            return null;
         }
 
-        try {
-            InputStream errorStream = con.getErrorStream();
-            while (errorStream .read() > 0) {}
-            errorStream .close();
-        } catch (Exception exc) {
+        String formattedCookie = formattedCookieWithExpiration.split("=")[1].split(";")[0];
+
+        return formattedCookie;
+    }
+
+    public static String sendRequestAndGetResponseCookie() throws Exception {
+        return sendRequestAndGetResponseCookie(null);
+    }
+
+    public static String getFormattedSessionCookieHeader(boolean expired) {
+        String formattedSessionCookie = getFormattedSessionCookie(expired);
+
+        return String.format("%s=%s", SessionCookie.SESSION_COOKIE_NAME, formattedSessionCookie);
+    }
+
+    public static String getFormattedSessionCookie(boolean expired) {
+        Date sessionAcquisitionTime = new Date();
+        if (expired) {
+            sessionAcquisitionTime = DateTimeUtils.addToDate(sessionAcquisitionTime, Calendar.MONTH, -1);
         }
 
-        //wait a little to allow server to complete request
-        Thread.sleep(1000);
+        long sessionAcquisitionTimeLong = sessionAcquisitionTime.getTime();
 
-        System.out.println("Sent GET request to: " + url);
-        System.out.println("Response Code: " + responseCode);
+        return String.format(
+                FORMATTED_SESSION_COOKIE_TEMPLATE,
+                String.valueOf(sessionAcquisitionTimeLong),
+                String.valueOf(sessionAcquisitionTimeLong + 1));
     }
 }

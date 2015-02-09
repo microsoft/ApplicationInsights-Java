@@ -19,18 +19,35 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.extensibility;
+package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Created by yonisha on 2/2/2015.
+ * Created by yonisha on 2/5/2015.
  */
-public interface TelemetryModule {
+public class DateTimeUtils {
 
-    /**
-     * Initializes the telemetry module.
-     * @param configuration The configuration to used to initialize the module.
-     */
-    void initialize(TelemetryConfiguration configuration);
+    private DateTimeUtils() {
+    }
+
+    public static Date getDateTimeNow() {
+        return new Date();
+    }
+
+    public static Date addToDate(Date date, int field, int amount) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(field, amount);
+
+        return calendar.getTime();
+    }
+
+    public static long getDateDiff(Date laterDate, Date date, TimeUnit timeUnit) {
+        long diffInMs = laterDate.getTime() - date.getTime();
+
+        return timeUnit.convert(diffInMs, TimeUnit.MILLISECONDS);
+    }
 }

@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -29,6 +30,7 @@ import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 public class RequestTelemetryContext {
     private HttpRequestTelemetry requestTelemetry;
     private long requestStartTimeTicks;
+    private SessionCookie sessionCookie;
 
     public static final String CONTEXT_ATTR_KEY = "CONTEXT_ATTR";
 
@@ -55,5 +57,21 @@ public class RequestTelemetryContext {
      */
     public long getRequestStartTimeTicks() {
         return requestStartTimeTicks;
+    }
+
+    /**
+     * Sets the session cookie.
+     * @param sessionCookie The session cookie.
+     */
+    public void setSessionCookie(SessionCookie sessionCookie) {
+        this.sessionCookie = sessionCookie;
+    }
+
+    /**
+     * Gets the session cookie.
+     * @return Session cookie.
+     */
+    public SessionCookie getSessionCookie() {
+        return sessionCookie;
     }
 }

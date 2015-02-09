@@ -25,6 +25,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import javax.servlet.ServletRequest;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -34,10 +35,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import javax.servlet.ServletRequest;
-
 import static org.junit.Assert.assertEquals;
-import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendGetRequestAndWait;
+import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -72,7 +71,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         TelemetryConfiguration.getActive().setChannel(channel);
         TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
 
-        sendGetRequestAndWait("http://localhost:1234");
+        sendRequestAndGetResponseCookie();
 
         List<Telemetry> items = channel.getTelemetryItems();
         assertEquals(1, items.size());
