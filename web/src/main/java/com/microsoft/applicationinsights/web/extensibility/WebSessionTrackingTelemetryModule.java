@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.cookies.CookieUtils;
@@ -70,8 +71,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         if (sessionCookie != null && !sessionCookie.isSessionExpired()) {
             // Update ai context with session details.
             getTelemetrySessionContext(context).setId(sessionCookie.getSessionId());
-            context.setSessionAcquisitionDate(sessionCookie.getSessionAcquisitionDate());
-            context.setSessionRenewalDate(sessionCookie.getSessionRenewalDate());
+            context.setSessionCookie(sessionCookie);
         } else {
             startNewSession(context);
         }
@@ -94,17 +94,17 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
             return;
         }
 
-        context.setSessionRenewalDate(DateTimeUtils.getDateTimeNow());
+        Date renewalDate = DateTimeUtils.getDateTimeNow();
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 getTelemetrySessionContext(context).getId(),
-                String.valueOf(context.getSessionAcquisitionDate().getTime()),
-                String.valueOf(context.getSessionRenewalDate().getTime())
+                String.valueOf(context.getSessionCookie().getSessionAcquisitionDate().getTime()),
+                String.valueOf(renewalDate.getTime())
 
         });
 
         HttpServletResponse response = (HttpServletResponse)res;
-        setSessionCookie(response, formattedCookie, context.getSessionRenewalDate());
+        setSessionCookie(response, formattedCookie, renewalDate);
     }
 
     // endregion Public
@@ -122,26 +122,22 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         session.setId(sessionId);
         session.setIsNewSession(true);
 
-        Date now = DateTimeUtils.getDateTimeNow();
-        aiContext.setSessionAcquisitionDate(now);
-        aiContext.setSessionRenewalDate(now);
+        try {
+            aiContext.setSessionCookie(new SessionCookie(sessionId));
+        } catch (Exception e) {
+            // TODO: change when creating dedicated parse exception.
+            // This exception is not expected in any case.
+            InternalLogger.INSTANCE.error("Failed to create session cookie with error: %s", e.getMessage());
+        }
     }
 
     private boolean isSessionCookieUpToDate(RequestTelemetryContext context) {
         boolean isNewSession = getTelemetrySessionContext(context).getIsNewSession();
-        boolean isExpiredSession = isExpired(context.getSessionRenewalDate());
+
+        SessionCookie sessionCookie = context.getSessionCookie();
+        boolean isExpiredSession = sessionCookie == null || sessionCookie.isSessionExpired();
 
         return !isNewSession && !isExpiredSession;
-    }
-
-    private boolean isExpired(Date renewDate) {
-        Date renewalTime = DateTimeUtils.addToDate(
-                renewDate,
-                Calendar.MINUTE,
-                SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES);
-        Date now = DateTimeUtils.getDateTimeNow();
-
-        return now.after(renewalTime);
     }
 
     private void setSessionCookie(HttpServletResponse response, String formattedCookie, Date sessionLastRenewalDate) {

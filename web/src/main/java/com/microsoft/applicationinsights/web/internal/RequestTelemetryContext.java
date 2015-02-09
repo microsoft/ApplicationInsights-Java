@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import java.util.Date;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -30,8 +30,7 @@ import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 public class RequestTelemetryContext {
     private HttpRequestTelemetry requestTelemetry;
     private long requestStartTimeTicks;
-    private Date sessionAcquisitionDate;
-    private Date sessionRenewalDate;
+    private SessionCookie sessionCookie;
 
     public static final String CONTEXT_ATTR_KEY = "CONTEXT_ATTR";
 
@@ -61,34 +60,18 @@ public class RequestTelemetryContext {
     }
 
     /**
-     * Sets the session acquisition date.
-     * @param sessionAcquisitionDate The session acquisition date.
+     * Sets the session cookie.
+     * @param sessionCookie The session cookie.
      */
-    public void setSessionAcquisitionDate(Date sessionAcquisitionDate) {
-        this.sessionAcquisitionDate = sessionAcquisitionDate;
+    public void setSessionCookie(SessionCookie sessionCookie) {
+        this.sessionCookie = sessionCookie;
     }
 
     /**
-     * Gets the session acquisition date.
-     * @return Session acquisition date.
+     * Gets the session cookie.
+     * @return Session cookie.
      */
-    public Date getSessionAcquisitionDate() {
-        return sessionAcquisitionDate;
-    }
-
-    /**
-     * Sets the session renewal date.
-     * @param sessionRenewalDate The session renewal date.
-     */
-    public void setSessionRenewalDate(Date sessionRenewalDate) {
-        this.sessionRenewalDate = sessionRenewalDate;
-    }
-
-    /**
-     * Gets the session renewal date.
-     * @return Session renewal date.
-     */
-    public Date getSessionRenewalDate() {
-        return sessionRenewalDate;
+    public SessionCookie getSessionCookie() {
+        return sessionCookie;
     }
 }

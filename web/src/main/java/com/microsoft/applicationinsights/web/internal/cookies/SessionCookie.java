@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import javax.servlet.http.Cookie;
 
+import com.microsoft.applicationinsights.internal.schemav2.Session;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.apache.commons.lang3.StringUtils;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
@@ -64,6 +65,21 @@ public class SessionCookie {
      * @throws Exception Thrown when the cookie information cannot be parsed.
      */
     public SessionCookie(Cookie cookie) throws Exception {
+        parseCookie(cookie);
+    }
+
+    /**
+     * Consrtucts new SessionCookie with the given session ID.
+     * @param sessionId The session ID.
+     * @throws Exception Thrown when the cookie information cannot be parsed.
+     */
+    public SessionCookie(String sessionId) throws Exception {
+        long nowTicks = DateTimeUtils.getDateTimeNow().getTime();
+        String[] cookieRawValues = new String[] { sessionId, String.valueOf(nowTicks), String.valueOf(nowTicks) };
+        String formattedCookie = SessionCookie.formatCookie(cookieRawValues);
+
+        Cookie cookie = new Cookie(SESSION_COOKIE_NAME, formattedCookie);
+
         parseCookie(cookie);
     }
 
