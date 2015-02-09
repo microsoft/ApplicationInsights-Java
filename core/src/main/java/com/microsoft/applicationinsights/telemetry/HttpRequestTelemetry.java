@@ -192,10 +192,10 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
 
     /**
      * Sets the amount of time it took the application to handle the request.
-     * @param milliSeconds Amount of time in milliseconds.
+     * @param duration Amount of time in captured in a {@link com.microsoft.applicationinsights.telemetry.Duration}.
      */
-    public void setDuration(Duration milliSeconds) {
-        data.setDuration(milliSeconds);
+    public void setDuration(Duration duration) {
+        data.setDuration(duration);
     }
 
     /**

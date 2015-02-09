@@ -21,20 +21,26 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Preconditions;
+
 /**
  * This class lets its users to define an interval of time
  * which can be defined in terms of days, hours, minutes, seconds and milliseconds.
  *
  * It has various constructors to let the user easily define an interval of time.
- *
- * Created by gupele on 2/8/2015.
  */
 public final class Duration {
     private final static String DAYS_FORMAT = "%02d.";
     private final static String HH_MM_SS_FORMAT = "%02d:%02d:%02d";
     private final static String MILLISECONDS_FORMAT = ".%03d0000";
 
-    private final int days;
+    private final static long SECONDS_IN_ONE_MINUTE = 60;
+    private final static long SECONDS_IN_ONE_HOUR = 3600;
+    private final static long SECONDS_IN_ONE_DAY = 86400;
+    private final static long MINUTES_IN_ONE_HOUR = 60;
+    private final static long HOURS_IN_ONE_DAY = 24;
+
+    private final long days;
     private final int hours;
     private final int minutes;
     private final int seconds;
@@ -42,13 +48,18 @@ public final class Duration {
 
     /**
      * The interval is set by setting all the possible values.
-     * @param days Day(s) of interval (up to 99).
-     * @param hours Hour(s) of interval (up to 99).
-     * @param minutes Minute(s) of interval (up to 99).
-     * @param seconds Second(s) of interval (up to 99).
-     * @param milliseconds Milliseconds (up to 999).
+     * @param days Day(s).
+     * @param hours Hour(s) in range [-23, 23].
+     * @param minutes Minute(s) in range [-59, 59].
+     * @param seconds Second(s) in range [-59, 59].
+     * @param milliseconds Milliseconds in range [0, 999].
      */
-    public Duration(int days, int hours, int minutes, int seconds, int milliseconds) {
+    public Duration(long days, int hours, int minutes, int seconds, int milliseconds) {
+        Preconditions.checkArgument(hours >= -23 && hours <= 23, "hours argument should be in the [-23, 23] range");
+        Preconditions.checkArgument(minutes >= -59 && minutes <= 59, "minutes argument should be in the [-59, 59] range");
+        Preconditions.checkArgument(seconds >= -59 && seconds <= 59, "seconds argument should be in the [-59, 59] range");
+        Preconditions.checkArgument(milliseconds >= 0 && milliseconds <= 999, "milliseconds argument should be in the [0, 999] range");
+
         this.days = days;
         this.hours = hours;
         this.minutes = minutes;
@@ -57,58 +68,56 @@ public final class Duration {
     }
 
     /**
-     * The interval is set by setting all the possible values except the milliseconds.
-     * @param days Day(s) of interval (up to 99).
-     * @param hours Hour(s) of interval (up to 99).
-     * @param minutes Minute(s) of interval (up to 99).
-     * @param seconds Second(s) of interval (up to 99).
-     */
-    public Duration(int days, int hours, int minutes, int seconds) {
-        this(days, hours, minutes, seconds, 0);
-    }
-
-    /**
-     * The interval is defined by hours, minutes and seconds.
-     * @param hours Hour(s) of interval (up to 99).
-     * @param minutes Minute(s) of interval (up to 99).
-     * @param seconds Second(s) of interval (up to 99).
-     */
-    public Duration(int hours, int minutes, int seconds) {
-        this(0, hours, minutes, seconds, 0);
-
-    }
-
-    /**
      * The duration is defined by milliseconds.
      * The class will calculate the number of days, hours, minutes, seconds and milliseconds from that value.
      * @param duration The duration in milliseconds.
      */
     public Duration(long duration) {
-        int div1000 = (int) (duration / 1000);
-        milliseconds = (int) (duration % 1000);
+        milliseconds = (int)(duration % 1000);
 
-        seconds = div1000 % 60;
-        minutes = (div1000 / 60) % 60;
-        hours = (div1000 / 3600) % 24;
-        days = div1000 / 86400;
+        long durationInSeconds = duration / 1000;
+        seconds = (int)(durationInSeconds % SECONDS_IN_ONE_MINUTE);
+        minutes = (int)((durationInSeconds / SECONDS_IN_ONE_MINUTE) % MINUTES_IN_ONE_HOUR);
+        hours = (int)((durationInSeconds / SECONDS_IN_ONE_HOUR) % HOURS_IN_ONE_DAY);
+        days = durationInSeconds / SECONDS_IN_ONE_DAY;
     }
 
-    public int getDays() {
+    /**
+     * Gets the days part of the duration.
+     * @return The days part of the duration.
+     */
+    public long getDays() {
         return days;
     }
 
+    /**
+     * Gets the hours part of the duration.
+     * @return The hours part of the duration.
+     */
     public int getHours() {
         return hours;
     }
 
+    /**
+     * Gets the minutes part of the duration.
+     * @return The minutes part of the duration.
+     */
     public int getMinutes() {
         return minutes;
     }
 
+    /**
+     * Gets the seconds part of the duration.
+     * @return The seconds part of the duration.
+     */
     public int getSeconds() {
         return seconds;
     }
 
+    /**
+     * Gets the milliseconds part of the duration.
+     * @return The milliseconds part of the duration.
+     */
     public int getMilliseconds() {
         return milliseconds;
     }
@@ -149,11 +158,11 @@ public final class Duration {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + this.days;
-        hash = 89 * hash + this.hours;
-        hash = 89 * hash + this.minutes;
-        hash = 89 * hash + this.seconds;
-        hash = 89 * hash + this.milliseconds;
+        hash = 89 * hash + (int)((days ^ (days >>> 32)));
+        hash = 89 * hash + hours;
+        hash = 89 * hash + minutes;
+        hash = 89 * hash + seconds;
+        hash = 89 * hash + milliseconds;
         return hash;
     }
 }
