@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
  */
 public class HttpHelper {
 
-    private static final String FORMATTED_SESSION_COOKIE_TEMPLATE = "6def15a4-78c2-4e34-8925-c0771ba28851|%s|%s";
+    private static final String FORMATTED_SESSION_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s|%s";
 
     public static String sendRequestAndGetResponseCookie(String requestFormattedCookie) throws Exception {
         HttpURLConnection con = (HttpURLConnection) (new URL("http://localhost:1234")).openConnection();

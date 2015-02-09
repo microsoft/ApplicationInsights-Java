@@ -30,8 +30,8 @@ import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 public class RequestTelemetryContext {
     private HttpRequestTelemetry requestTelemetry;
     private long requestStartTimeTicks;
-    private Date sessionAcquisitionTime;
-    private Date sessionLastRenewalTime;
+    private Date sessionAcquisitionDate;
+    private Date sessionRenewalDate;
 
     public static final String CONTEXT_ATTR_KEY = "CONTEXT_ATTR";
 
@@ -61,34 +61,34 @@ public class RequestTelemetryContext {
     }
 
     /**
-     * Sets the session acquisition time.
-     * @param sessionAcquisitionTime The session acquisition time.
+     * Sets the session acquisition date.
+     * @param sessionAcquisitionDate The session acquisition date.
      */
-    public void setSessionAcquisitionDate(Date sessionAcquisitionTime) {
-        this.sessionAcquisitionTime = sessionAcquisitionTime;
+    public void setSessionAcquisitionDate(Date sessionAcquisitionDate) {
+        this.sessionAcquisitionDate = sessionAcquisitionDate;
     }
 
     /**
-     * Gets the session acquisition time.
-     * @return Session acquisition time.
+     * Gets the session acquisition date.
+     * @return Session acquisition date.
      */
     public Date getSessionAcquisitionDate() {
-        return sessionAcquisitionTime;
+        return sessionAcquisitionDate;
     }
 
     /**
-     * Sets the session last renewal time.
-     * @param sessionLastRenewTime The session last renewal time.
+     * Sets the session renewal date.
+     * @param sessionRenewalDate The session renewal date.
      */
-    public void setSessionLastRenewalDate(Date sessionLastRenewTime) {
-        this.sessionLastRenewalTime = sessionLastRenewTime;
+    public void setSessionRenewalDate(Date sessionRenewalDate) {
+        this.sessionRenewalDate = sessionRenewalDate;
     }
 
     /**
-     * Gets the session last renewal time.
-     * @return Session last renewal time.
+     * Gets the session renewal date.
+     * @return Session renewal date.
      */
-    public Date getSessionLastRenewalDate() {
-        return sessionLastRenewalTime;
+    public Date getSessionRenewalDate() {
+        return sessionRenewalDate;
     }
 }

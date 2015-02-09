@@ -27,7 +27,10 @@ import java.util.UUID;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import javax.servlet.http.Cookie;
 
 /**
@@ -60,6 +63,8 @@ public class SessionCookieTests {
     }
 
     // region Tests
+    @Rule
+    public ExpectedException thrown= ExpectedException.none();
 
     @Test
     public void testCookieParsedSuccessfully() throws Exception {
@@ -67,7 +72,7 @@ public class SessionCookieTests {
 
         Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
         Assert.assertEquals("Wrong session acquisition time", sessionAcquisitionTime, sessionCookie.getSessionAcquisitionDate());
-        Assert.assertEquals("Wrong session renewal time", sessionRenewalTime, sessionCookie.getSessionLastRenewDate());
+        Assert.assertEquals("Wrong session renewal time", sessionRenewalTime, sessionCookie.getSessionRenewalDate());
     }
 
     @Test
@@ -79,5 +84,53 @@ public class SessionCookieTests {
         Assert.assertTrue("Expired session expected.", sessionCookie.isSessionExpired());
     }
 
+    @Test
+    public void testCorruptedSessionIdValueThrowsExceptionOnCookieParsing() throws Exception {
+        thrown.expect(Exception.class);
+
+        String formattedCookie = SessionCookie.formatCookie(new String[] {
+                "non-UUID-string",
+                String.valueOf(sessionAcquisitionTime.getTime()),
+                String.valueOf(sessionRenewalTime.getTime())
+        });
+
+        createSessionCookie(formattedCookie);
+    }
+
+    @Test
+    public void testCorruptedSessionAcquisitionTimeValueThrowsExceptionOnCookieParsing() throws Exception {
+        thrown.expect(Exception.class);
+
+        String formattedCookie = SessionCookie.formatCookie(new String[] {
+                sessionId,
+                "corruptedAcquisitionTime",
+                String.valueOf(sessionRenewalTime.getTime())
+        });
+
+        createSessionCookie(formattedCookie);
+    }
+
+    @Test
+    public void testCorruptedSessionRenewalTimeValueThrowsExceptionOnCookieParsing() throws Exception {
+        thrown.expect(Exception.class);
+
+        String formattedCookie = SessionCookie.formatCookie(new String[] {
+                sessionId,
+                "corruptedAcquisitionTime",
+                String.valueOf(sessionRenewalTime.getTime())
+        });
+
+        createSessionCookie(formattedCookie);
+    }
+
     // endregion Tests
+
+    // region Private
+
+    private void createSessionCookie(String cookieValue) throws Exception {
+        Cookie corruptedCookie = new Cookie(SessionCookie.SESSION_COOKIE_NAME, cookieValue);
+        new SessionCookie(corruptedCookie);
+    }
+
+    // endregion Private
 }

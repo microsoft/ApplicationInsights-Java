@@ -24,8 +24,9 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 import java.util.Calendar;
 import java.util.Date;
 import javax.servlet.http.Cookie;
+
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.apache.commons.lang3.StringUtils;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
 /**
@@ -35,12 +36,12 @@ public class SessionCookie {
 
     // region Consts
 
-    private static final int SESSION_COOKIE_SESSION_ID_INDEX = 0;
-    private static final int SESSION_COOKIE_SESSION_ACQUISITION_DATE_INDEX = 1;
-    private static final int SESSION_COOKIE_SESSION_LAST_UPDATE_DATE_INDEX = 2;
-    private static final int SESSION_COOKIE_EXPECTED_VALUES_COUNT = 3;
-    private static final String SESSION_COOKIE_DELIMITER = "|";
-    private static final String SESSION_COOKIE_SPLIT_DELIMITER = "\\" + SESSION_COOKIE_DELIMITER;
+    private static final int RAW_COOKIE_SESSION_ID_INDEX = 0;
+    private static final int RAW_COOKIE_SESSION_ACQUISITION_DATE_INDEX = 1;
+    private static final int RAW_COOKIE_SESSION_LAST_UPDATE_DATE_INDEX = 2;
+    private static final int RAW_COOKIE_EXPECTED_VALUES_COUNT = 3;
+    private static final String RAW_COOKIE_DELIMITER = "|";
+    private static final String RAW_COOKIE_SPLIT_DELIMITER = "\\" + RAW_COOKIE_DELIMITER;
 
     public static final String SESSION_COOKIE_NAME = "ai_session";
     public static final int SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES = 30;
@@ -51,7 +52,7 @@ public class SessionCookie {
 
     private String sessionId;
     private Date acquisitionDate;
-    private Date lastRenewDate;
+    private Date renewalDate;
 
     // endregion Members
 
@@ -71,7 +72,7 @@ public class SessionCookie {
     // region Public
 
     public static String formatCookie(String[] values) {
-        return StringUtils.join(values, SESSION_COOKIE_DELIMITER);
+        return StringUtils.join(values, RAW_COOKIE_DELIMITER);
     }
 
     /**
@@ -83,19 +84,19 @@ public class SessionCookie {
     }
 
     /**
-     * Gets the session acquisition time.
-     * @return The session acquisition time.
+     * Gets the session acquisition date.
+     * @return The session acquisition date.
      */
     public Date getSessionAcquisitionDate() {
         return acquisitionDate;
     }
 
     /**
-     * Gets the session last renewal date.
-     * @return The session last renewal date.
+     * Gets the session renewal date.
+     * @return The session renewal date.
      */
-    public Date getSessionLastRenewDate() {
-        return lastRenewDate;
+    public Date getSessionRenewalDate() {
+        return renewalDate;
     }
 
     /**
@@ -103,13 +104,13 @@ public class SessionCookie {
      * @return True if the session has expired, false otherwise.
      */
     public boolean isSessionExpired() {
-        Date expirationTime = DateTimeUtils.addToDate(
+        Date expirationDate = DateTimeUtils.addToDate(
                 this.getSessionAcquisitionDate(),
                 Calendar.MINUTE,
                 SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES);
         Date now = new Date();
 
-        return  now.after(expirationTime);
+        return  now.after(expirationDate);
     }
 
     // endregion Public
@@ -122,9 +123,9 @@ public class SessionCookie {
      * @throws Exception Thrown when the cookie information cannot be parsed.
      */
     private void parseCookie(Cookie cookie) throws Exception {
-        String[] split = cookie.getValue().split(SESSION_COOKIE_SPLIT_DELIMITER);
+        String[] split = cookie.getValue().split(RAW_COOKIE_SPLIT_DELIMITER);
 
-        if (split.length < SESSION_COOKIE_EXPECTED_VALUES_COUNT) {
+        if (split.length < RAW_COOKIE_EXPECTED_VALUES_COUNT) {
 
             // TODO: dedicated exception
             String errorMessage = String.format("Session cookie is not in the correct format: %s", cookie.getValue());
@@ -133,15 +134,33 @@ public class SessionCookie {
         }
 
         try {
-            sessionId = split[SESSION_COOKIE_SESSION_ID_INDEX];
-            acquisitionDate = new Date(Long.parseLong(split[SESSION_COOKIE_SESSION_ACQUISITION_DATE_INDEX]));
-            lastRenewDate = new Date(Long.parseLong(split[SESSION_COOKIE_SESSION_LAST_UPDATE_DATE_INDEX]));
+            sessionId = getAndValidateSessionId(split);
+            acquisitionDate = new Date(Long.parseLong(split[RAW_COOKIE_SESSION_ACQUISITION_DATE_INDEX]));
+            renewalDate = new Date(Long.parseLong(split[RAW_COOKIE_SESSION_LAST_UPDATE_DATE_INDEX]));
         } catch (Exception e) {
             String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.getMessage());
 
             // TODO: dedicated exception
             throw new Exception(errorMessage);
         }
+    }
+
+    /**
+     * Gets and validates the session ID from the raw cookie values.
+     * @param rawCookieValues A collection contains the raw cookie values.
+     * @return The session ID.
+     * @throws Exception Thrown if the session ID string is not a UUID.
+     */
+    private String getAndValidateSessionId(String[] rawCookieValues) throws Exception {
+        String sessionId = rawCookieValues[RAW_COOKIE_SESSION_ID_INDEX];
+
+        if (!Sanitizer.isUUID(sessionId)) {
+            String errorMessage  = String.format("Session ID '%s' is not of type UUID.", sessionId);
+
+            throw new Exception(errorMessage);
+        }
+
+        return sessionId;
     }
 
     // endregion Private
