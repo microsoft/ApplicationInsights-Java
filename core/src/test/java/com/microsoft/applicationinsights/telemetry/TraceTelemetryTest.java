@@ -25,7 +25,6 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public final class TraceTelemetryTest {
     @Test
