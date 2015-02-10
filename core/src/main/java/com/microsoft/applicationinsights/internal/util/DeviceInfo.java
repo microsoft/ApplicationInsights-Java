@@ -26,6 +26,8 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.lang.management.OperatingSystemMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  * A view into the context information specific to device information.
@@ -65,5 +67,29 @@ public class DeviceInfo
             InternalLogger.INSTANCE.error("Failed to get canonical host name, exception: %s", e.getMessage());
         }
         return null;
+    }
+
+    public static String getLocale()
+    {
+        final String languageTagMethodName = "toLanguageTag";
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            return (String)Locale.class.getMethod(languageTagMethodName).invoke(defaultLocale);
+        } catch (Exception e) {
+            // Just log - we'll handle it in the fallback path below
+            InternalLogger.INSTANCE.trace("Method '%s' could not be found in Locale class - moving to fallback path.", languageTagMethodName);
+        }
+
+        final String localeFileName = "locales.properties";
+        Properties localesMap = null;
+        try {
+            localesMap = PropertyHelper.getProperties(localeFileName);
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Could not find locale mapping file '%s'", localeFileName);
+        }
+
+        String localeString = defaultLocale.toString();
+        String localeTag = localesMap != null ?  localesMap.getProperty(localeString) : null;
+        return localeTag != null ? localeTag : localeString;
     }
 }

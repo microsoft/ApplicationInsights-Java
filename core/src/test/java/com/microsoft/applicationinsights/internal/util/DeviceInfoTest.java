@@ -21,38 +21,39 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
+import org.junit.Test;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.util.Locale;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Helper class for reading data from a properties file found on the class path.
+ * Created by amnonsh on 2/10/2015.
  */
-public class PropertyHelper
-{
-    /**
-     * Reads the properties from a properties file.
-     * @param name of the properties file.
-     * @return A {@link Properties} object containing the properties read from the provided file.
-     * @throws IOException in case
-     */
-    public static Properties getProperties(String name) throws IOException
-    {
-        Properties props = new Properties();
-        ClassLoader classLoader = PropertyHelper.class.getClassLoader();
+public class DeviceInfoTest {
 
-        // Look in the class loader's default location.
-        InputStream inputStream = classLoader.getResourceAsStream(name);
-        if (inputStream != null)
-        {
-            try {
-                props.load(inputStream);
-            } finally {
-                inputStream.close();
-            }
-        }
+    @Test
+    public void testSimpleLocale() throws IOException {
+        Locale.setDefault(new Locale("en", "us"));
+        String tag = DeviceInfo.getLocale();
 
-        return props;
+        assertEquals(tag, "en-US");
+    }
+
+    @Test
+    public void testSpecialLocale() throws IOException {
+        Locale.setDefault(new Locale("iw", "il"));
+        String tag = DeviceInfo.getLocale();
+
+        assertEquals(tag, "he-IL");
+    }
+
+    @Test
+    public void testBadLocale() throws IOException {
+        Locale.setDefault(new Locale("BadLocale"));
+        String tag = DeviceInfo.getLocale();
+
+        assertEquals(tag, "und");
     }
 }
-
