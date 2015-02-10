@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
