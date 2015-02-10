@@ -29,7 +29,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 /**

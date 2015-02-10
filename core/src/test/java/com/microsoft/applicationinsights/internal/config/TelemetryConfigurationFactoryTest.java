@@ -27,7 +27,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.junit.Test;
 import org.mockito.Mockito;
 

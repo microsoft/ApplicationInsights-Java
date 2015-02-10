@@ -24,10 +24,9 @@ package com.microsoft.applicationinsights.web.internal;
 import javax.servlet.*;
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
+
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.web.extensibility.WebTelemetryModule;
 
 /**
  * Created by yonisha on 2/2/2015.
