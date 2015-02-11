@@ -32,21 +32,33 @@ import com.google.common.base.Strings;
  *
  * Created by gupele on 12/17/2014.
  */
-public final class Transmission implements Serializable{
+public final class Transmission implements Serializable {
+    private int version;
+
+    private int numberOfSends;
+
+    private int numberOfPersistence;
+
     private final byte[] content;
 
     private final String webContentType;
 
     private final String webContentEncodingType;
 
-    public Transmission(byte[] content, String webContentType, String webContentEncodingType) {
+    public Transmission(byte[] content, String webContentType, String webContentEncodingType, int version) {
         Preconditions.checkNotNull(content, "Content must be non-null value");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(webContentType), "webContentType must be a non empty string");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(webContentEncodingType), "webContentEncodingType must be a non empty string");
 
+        numberOfSends = numberOfPersistence = 0;
+        this.version = version;
         this.content = content;
         this.webContentType = webContentType;
         this.webContentEncodingType = webContentEncodingType;
+    }
+
+    public Transmission(byte[] content, String webContentType, String webContentEncodingType) {
+        this(content, webContentType, webContentEncodingType, 1);
     }
 
     public byte[] getContent() {
@@ -59,5 +71,33 @@ public final class Transmission implements Serializable{
 
     public String getWebContentEncodingType() {
         return webContentEncodingType;
+    }
+
+    public void incrementNumberOfSends() {
+        ++numberOfSends;
+    }
+
+    public void incrementNumberOfPersistence() {
+        ++numberOfPersistence;
+    }
+
+    public int getNumberOfSends() {
+        return numberOfSends;
+    }
+
+    public void setNumberOfSends(int numberOfSends) {
+        this.numberOfSends = numberOfSends;
+    }
+
+    public int getNumberOfPersistence() {
+        return numberOfPersistence;
+    }
+
+    public void setNumberOfPersistence(int numberOfPersistence) {
+        this.numberOfPersistence = numberOfPersistence;
+    }
+
+    public int getVersion() {
+        return version;
     }
 }
