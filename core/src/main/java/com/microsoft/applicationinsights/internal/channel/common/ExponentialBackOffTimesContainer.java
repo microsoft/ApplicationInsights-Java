@@ -28,7 +28,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
  *
  * Created by gupele on 2/10/2015.
  */
-public final class ExponentialBackOffTimesContainer implements BackOffTimesContainer {
+final class ExponentialBackOffTimesContainer implements BackOffTimesContainer {
     private static final long FIVE_SECONDS = 5;
     private static final long TEN_SECONDS = 10;
     private static final long FIFTEEN_SECONDS = 15;

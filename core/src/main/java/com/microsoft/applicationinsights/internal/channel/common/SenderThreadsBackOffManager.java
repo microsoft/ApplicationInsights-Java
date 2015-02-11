@@ -41,7 +41,7 @@ import com.google.common.primitives.Longs;
  *
  * Created by gupele on 2/9/2015.
  */
-public final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalData> {
+final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalData> {
     // The back-off timeouts that will be used by sender threads when need to back-off.
     private long[] backOffTimeoutsInSeconds = null;
 

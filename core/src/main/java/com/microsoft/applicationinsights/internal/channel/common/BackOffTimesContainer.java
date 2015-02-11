@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 /**
  * Created by gupele on 2/9/2015.
  */
-public interface BackOffTimesContainer {
+interface BackOffTimesContainer {
     public final static long MIN_TIME_TO_BACK_OFF_IN_MILLS = 5;
 
     long[] getBackOffTimeoutsInSeconds();

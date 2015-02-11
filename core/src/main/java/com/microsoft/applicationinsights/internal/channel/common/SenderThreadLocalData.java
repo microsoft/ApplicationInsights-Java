@@ -41,7 +41,7 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 2/9/2015.
  */
-public final class SenderThreadLocalData {
+final class SenderThreadLocalData {
     private final ReentrantLock lock;
     private final Condition backOffCondition;
     private int currentBackOffIndex;
