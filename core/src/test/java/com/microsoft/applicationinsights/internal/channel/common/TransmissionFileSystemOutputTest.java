@@ -34,14 +34,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-public class TransmissionFileSystemOutputTest {
+public final class TransmissionFileSystemOutputTest {
     private final static String TRANSMISSION_FILE_EXTENSION = "trn";
     private final static int SIZE_OF_TRANSMISSION_CONTENT = 10;
     private final static String TEMP_TEST_FOLDER = "TransmissionTests";
     private final static String MOCK_CONTENT = "MockContent";
     private final static String MOCK_CONTENT_TYPE_BASE = "MockContent";
     private final static String MOCK_ENCODING_TYPE_BASE = "MockEncodingType";
-    private final static int SIZE_OF_MOCK_TRANSMISSION = 228;
+    private final static int SIZE_OF_MOCK_TRANSMISSION = 300;
 
     private final String workingFolder;
 

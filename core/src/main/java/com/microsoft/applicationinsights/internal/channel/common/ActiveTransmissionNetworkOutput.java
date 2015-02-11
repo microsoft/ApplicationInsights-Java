@@ -34,7 +34,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  */
 public final class ActiveTransmissionNetworkOutput implements TransmissionOutput {
     private final static int DEFAULT_MAX_MESSAGES_IN_BUFFER = 128;
-    private final static int DEFAULT_MIN_NUMBER_OF_THREADS = 1;
+    private final static int DEFAULT_MIN_NUMBER_OF_THREADS = 7;
     private final static int DEFAULT_MAX_NUMBER_OF_THREADS = 7;
     private final static long DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS = 60L;
 

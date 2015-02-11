@@ -25,7 +25,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
@@ -36,6 +39,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -61,10 +65,14 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     private final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
     private final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
 
+    private static SenderThreadsBackOffManager s_senderThreadsManager;
+
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
 
     private final String serverUri;
+
+    private volatile boolean stopped;
 
     // Use one instance for optimization
     private final CloseableHttpClient httpClient;
@@ -75,10 +83,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     public static TransmissionNetworkOutput create(String endpoint) {
         String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
-        return new TransmissionNetworkOutput(realEndpoint);
+        return new TransmissionNetworkOutput(realEndpoint, null);
     }
 
-    private TransmissionNetworkOutput(String serverUri) {
+    private TransmissionNetworkOutput(String serverUri, String backOffContainerName) {
         Preconditions.checkNotNull(serverUri, "serverUri should be a valid non-null value");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(serverUri), "serverUri should be a valid non-null value");
 
@@ -89,6 +97,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
 
         httpClient = HttpClients.custom().setConnectionManager(cm).build();
+        stopped = false;
+        initializeSenderThreadsManager(backOffContainerName);
     }
 
     public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
@@ -96,16 +106,41 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
+    public synchronized void stop(long timeout, TimeUnit timeUnit) {
+        if (stopped) {
+            return;
+        }
         try {
+            s_senderThreadsManager.stopAllSendersBackOffActivities();
             httpClient.close();
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to close http client, exception: %s", e.getMessage());
         }
+        stopped = true;
     }
 
     @Override
     public boolean send(Transmission transmission) {
+        while (!stopped) {
+            TransmissionSendResult result = doSend(transmission);
+            switch (result) {
+                case THROTTLED:
+                    boolean backOffDone = s_senderThreadsManager.backOffCurrentSenderThread();
+                    if (!backOffDone) {
+                        return true;
+                    }
+                    break;
+
+                default:
+                   s_senderThreadsManager.onDoneSending();
+                   return true;
+            }
+        }
+
+        return true;
+    }
+
+    private TransmissionSendResult doSend(Transmission transmission) {
         CloseableHttpResponse response = null;
         HttpPost request = null;
         try {
@@ -116,19 +151,25 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             HttpEntity respEntity = response.getEntity();
             int code = response.getStatusLine().getStatusCode();
 
-            if (code != HttpStatus.SC_OK) {
-                checkResponse(code, respEntity);
-            }
-        } catch (org.apache.http.conn.ConnectionPoolTimeoutException e) {
-            // We let the Dispatcher decide
-            transmissionDispatcher.dispatch(transmission);
-            InternalLogger.INSTANCE.error("Failed to send, timeout exception");
+            return translateResponse(code, respEntity);
+        } catch (ConnectionPoolTimeoutException e) {
+            InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
+            return TransmissionSendResult.FAILED_TO_SEND_DUE_TO_CONNECTION_POOL;
+        } catch (SocketException e) {
+            InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
+            return TransmissionSendResult.FAILED_TO_RECEIVE_DUE_TO_TIMEOUT;
+        } catch (UnknownHostException e) {
+            InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
+            return TransmissionSendResult.FAILED_TO_SEND_DUE_TO_NETWORK_ISSUES;
         } catch (IOException ioe) {
             InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
+            return TransmissionSendResult.FAILED_TO_READ_RESPONSE;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
+            return TransmissionSendResult.UNKNOWN_ERROR;
         } catch (Throwable t) {
             InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
+            return TransmissionSendResult.UNKNOWN_ERROR;
         }
         finally {
             if (request != null) {
@@ -142,38 +183,57 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 InternalLogger.INSTANCE.error("Failed to send or failed to close response, exception: %s", ioeIn.getMessage());
             }
         }
-
-        return true;
     }
 
-    private void checkResponse(int errorCode, HttpEntity respEntity) {
-        String errorMessage;
-        if (errorCode < HttpStatus.SC_OK ||
-            (errorCode >= HttpStatus.SC_MULTIPLE_CHOICES && errorCode < HttpStatus.SC_BAD_REQUEST) ||
-                errorCode > HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+    private TransmissionSendResult translateResponse(int code, HttpEntity respEntity) {
+        if (code == HttpStatus.SC_OK) {
+            return TransmissionSendResult.SENT_SUCCESSFULLY;
+        }
 
-            errorMessage = String.format("Unexpected response code: %d", errorCode);
+        TransmissionSendResult result;
+
+        String errorMessage;
+        if (code < HttpStatus.SC_OK ||
+            (code >= HttpStatus.SC_MULTIPLE_CHOICES && code < HttpStatus.SC_BAD_REQUEST) ||
+                code > HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+
+            errorMessage = String.format("Unexpected response code: %d", code);
+            result = TransmissionSendResult.REJECTED_BY_SERVER;
         } else {
-            switch (errorCode) {
+            switch (code) {
+                case HttpStatus.SC_BAD_REQUEST:
+                    errorMessage = "Bad request ";
+                    result = TransmissionSendResult.BAD_REQUEST;
+                    break;
+
                 case 429:
+                    result = TransmissionSendResult.THROTTLED;
                     errorMessage = "Throttling (All messages of the transmission were rejected) ";
                     break;
 
                 case HttpStatus.SC_PARTIAL_CONTENT:
+                    result = TransmissionSendResult.PARTIALLY_THROTTLED;
                     errorMessage = "Throttling (Partial messages of the transmission were rejected) ";
                     break;
 
+                case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+                    errorMessage = "Internal server error ";
+                    result = TransmissionSendResult.INTERNAL_SERVER_ERROR;
+                    break;
+
                 default:
-                    errorMessage = String.format("Error, response code: %d", errorCode);
+                    result = TransmissionSendResult.REJECTED_BY_SERVER;
+                    errorMessage = String.format("Error, response code: %d", code);
                     break;
             }
         }
 
         logError(errorMessage, respEntity);
+        return result;
     }
 
     private void logError(String baseErrorMessage, HttpEntity respEntity) {
-        if (respEntity == null) {
+        if (respEntity == null || !InternalLogger.INSTANCE.isErrorEnabled()) {
             InternalLogger.INSTANCE.error(baseErrorMessage);
             return;
         }
@@ -194,7 +254,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -210,6 +269,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
+                .setSocketTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
                 .setConnectTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
                 .setSocketTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS).build();
 
@@ -217,4 +277,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
         return request;
     }
+
+    private synchronized void initializeSenderThreadsManager(String backOffContainerName) {
+        if (s_senderThreadsManager != null) {
+            return;
+        }
+
+        s_senderThreadsManager = new SenderThreadsBackOffManager(new BackOffTimesContainerFactory().create(backOffContainerName));
+    }
+
 }
