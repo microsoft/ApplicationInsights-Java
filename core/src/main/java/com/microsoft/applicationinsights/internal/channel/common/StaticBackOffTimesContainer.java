@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 /**
  * Created by gupele on 2/10/2015.
  */
-public final class StaticBackOffTimesContainer implements BackOffTimesContainer {
+final class StaticBackOffTimesContainer implements BackOffTimesContainer {
     public static final int NUMBER_OF_BACK_OFFS = 20;
 
     private static final long TEN_SECONDS = 10;

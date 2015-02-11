@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  *
  * Created by gupele on 2/10/2015.
  */
-public final class BackOffTimesContainerFactory {
+final class BackOffTimesContainerFactory {
     private enum ContainerType {
         EXPONENTIAL,
         STATIC
