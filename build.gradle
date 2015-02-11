@@ -45,6 +45,16 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'maven'
 
+    if (this.hasProperty("testEnvName")) {
+        def newTestResultsDirName = testResultsDirName + "/" + testEnvName
+        println "Setting test results folder to " + newTestResultsDirName
+        testResultsDirName = newTestResultsDirName
+
+        def newTestReportDirName = testReportDirName + "/" + testEnvName
+        println "Setting test reports folder to " + newTestReportDirName
+        testReportDirName = newTestReportDirName
+    }
+
     compileJava {
         sourceCompatibility = 1.6
         targetCompatibility = 1.6
