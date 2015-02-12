@@ -56,64 +56,66 @@ subprojects {
 }
 
 // Azure SDK Pom as a reference: https://repo1.maven.org/maven2/com/microsoft/azure/azure-core/0.7.0/azure-core-0.7.0.pom
-def updatePomWithGeneralProjectInformation(pomObject) {
-    pomObject.project {
-        url = "https://github.com/Microsoft/AppInsights-Java"
+project.ext.set("updatePomWithGeneralProjectInformation", {
+    pomObject ->
+        pomObject.project {
+            url = "https://github.com/Microsoft/AppInsights-Java"
 
-        licenses {
-            license {
-                name = "MIT License"
-                url = "http://www.opensource.org/licenses/mit-license.php"
+            licenses {
+                license {
+                    name = "MIT License"
+                    url = "http://www.opensource.org/licenses/mit-license.php"
+                }
+            }
+
+            scm {
+                url = "scm:git:https://github.com/Microsoft/AppInsights-Java"
+                connection = "scm:git:git://github.com/Microsoft/AppInsights-Java.git"
+            }
+
+            developers {
+                developer {
+                    id = "microsoft"
+                    name = "Microsoft"
+                }
             }
         }
+})
 
-        scm {
-            url = "scm:git:https://github.com/Microsoft/AppInsights-Java"
-            connection = "scm:git:git://github.com/Microsoft/AppInsights-Java.git"
+project.ext.set("writePomToArtifactsDirectory", {
+    pomObject, directoryName ->
+        def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
+        def artifactsDir = getArtifactsDirectory(directoryName)
+        def pomWriter = new FileWriter(new File(artifactsDir, pomFilename), false)
+
+        // Converting the POM object to string, to be able to read one by line.
+        StringWriter stringWriter = new StringWriter()
+        pomObject.writeTo(stringWriter)
+        StringReader reader = new StringReader(stringWriter.toString())
+
+        // Appending xml schema first
+        String schema = reader.readLine()
+        pomWriter.append(schema + "\n")
+
+        // Appending license text
+        def licenseText = GFileUtils.readFile(new File("LICENSE.TXT"))
+        pomWriter.append("<!--\n")
+        pomWriter.append(licenseText + "\n")
+        pomWriter.append("-->\n")
+
+        // Appending the rest of the pom file.
+        for (String line : reader.readLines()) {
+            pomWriter.append(line + "\n")
         }
 
-        developers {
-            developer {
-                id = "microsoft"
-                name = "Microsoft"
-            }
-        }
-    }
-}
+        pomWriter.close()
+})
 
-def writePomToArtifactsDirectory(pomObject, directoryName) {
-    def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
-    def artifactsDir = getArtifactsDirectory(directoryName)
-    def pomWriter = new FileWriter(new File(artifactsDir, pomFilename), false)
-
-    // Converting the POM object to string, to be able to read one by line.
-    StringWriter stringWriter = new StringWriter()
-    pomObject.writeTo(stringWriter)
-    StringReader reader = new StringReader(stringWriter.toString())
-
-    // Appending xml schema first
-    String schema = reader.readLine()
-    pomWriter.append(schema + "\n")
-
-    // Appending license text
-    def licenseText = GFileUtils.readFile(new File("LICENSE.TXT"))
-    pomWriter.append("<!--\n")
-    pomWriter.append(licenseText + "\n")
-    pomWriter.append("-->\n")
-
-    // Appending the rest of the pom file.
-    for (String line : reader.readLines()) {
-        pomWriter.append(line + "\n")
-    }
-
-    pomWriter.close()
-}
-
-def getArtifactsDirectory(artifactId) {
-    File dir = new File(artifactsDirectoryRoot, artifactId)
-    dir.mkdirs()
-
-    return dir
-}
+project.ext.set("getArtifactsDirectory", {
+    artifactId ->
+        File dir = new File(artifactsDirectoryRoot, artifactId)
+        dir.mkdirs()
+        return dir
+})
 
 // endregion Shared sub-projects configuration
