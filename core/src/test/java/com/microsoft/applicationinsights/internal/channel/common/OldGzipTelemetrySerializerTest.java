@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -44,12 +43,15 @@ import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
 
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 
-public final class GzipTelemetrySerializerTest {
+public final class OldGzipTelemetrySerializerTest {
     private static class StubTelemetry implements Telemetry {
         private final String telemetryName;
 
@@ -98,7 +100,7 @@ public final class GzipTelemetrySerializerTest {
             StubTelemetry that = (StubTelemetry)other;
             return
                     this.telemetryName.equals(that.getTelemetryName()) &&
-                    this.getProperties().equals(that.getProperties());
+                            this.getProperties().equals(that.getProperties());
         }
 
         public String getTelemetryName() {
@@ -113,6 +115,41 @@ public final class GzipTelemetrySerializerTest {
         }
     }
 
+    @Test
+    public void testOneBadOneOk() throws Exception {
+        testMultipleTelemetriesWithExceptions(new IOException(), 2, new Integer[] {0}, false);
+    }
+
+    @Test
+    public void testOneOkOneBad() throws Exception {
+        testMultipleTelemetriesWithExceptions(new IOException(), 2, new Integer[] {1}, false);
+    }
+
+    @Test
+    public void testOneOfTwoOne() throws Exception {
+        testMultipleTelemetriesWithExceptions(new IOException(), 1, new Integer[] {0}, true);
+    }
+
+    @Test
+    public void testTwoOfTwoBad() throws Exception {
+        testMultipleTelemetriesWithExceptions(new IOException(), 2, new Integer[] {0, 1}, true);
+    }
+
+    @Test
+    public void testNineOfNineBad() throws Exception {
+        testMultipleTelemetriesWithExceptions(new IOException(), 9, new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8}, true);
+    }
+
+    @Test
+    public void testTelemetryThatThrowsIOException() throws Exception {
+        testException(new IOException());
+    }
+
+    @Test
+    public void testTelemetryThatThrowsNullPointerException() throws Exception {
+        testException(new NullPointerException());
+    }
+
     @Test(expected = NullPointerException.class)
     public void testNull() throws Exception {
         GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
@@ -121,8 +158,8 @@ public final class GzipTelemetrySerializerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoData() throws Exception {
-        GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
-        tested.serialize(new ArrayList<String>());
+        OldGzipTelemetrySerializer tested = new OldGzipTelemetrySerializer();
+        tested.serialize(new ArrayList<Telemetry>());
     }
 
     @Test
@@ -141,31 +178,20 @@ public final class GzipTelemetrySerializerTest {
     }
 
     private void testSerialization(int amount) throws Exception {
-        GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
+        OldGzipTelemetrySerializer tested = new OldGzipTelemetrySerializer();
 
         List<Telemetry> telemetries = new ArrayList<Telemetry>(amount);
-        List<String> telemetriesSerialized = new ArrayList<String>(amount);
 
         HashMap<String, StubTelemetry> expected = new HashMap<String, StubTelemetry>();
 
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         for (int i = 0; i < amount; ++i) {
             StubTelemetry stubTelemetry = createStubTelemetry(String.valueOf(i));
             telemetries.add(stubTelemetry);
 
-            stubTelemetry.serialize(jsonWriter);
-            jsonWriter.close();
-            String asJson = writer.toString();
-
-            telemetriesSerialized.add(asJson);
-            writer.getBuffer().setLength(0);
-            jsonWriter.reset(writer);
-
             expected.put(stubTelemetry.getTelemetryName(), stubTelemetry);
         }
 
-        Optional<Transmission> result = tested.serialize(telemetriesSerialized);
+        Optional<Transmission> result = tested.serialize(telemetries);
 
         assertNotNull(result);
 
@@ -204,6 +230,40 @@ public final class GzipTelemetrySerializerTest {
             assertTrue(false);
         } finally {
             gis.close();
+        }
+    }
+
+    private void testException(Exception exception) throws IOException {
+        OldGzipTelemetrySerializer tested = new OldGzipTelemetrySerializer();
+        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+        Mockito.doThrow(exception).when(mockTelemetry).serialize(any(JsonTelemetryDataSerializer.class));
+        List<Telemetry> telemetries = new ArrayList<Telemetry>();
+        telemetries.add(mockTelemetry);
+        Optional<Transmission> result = tested.serialize(telemetries);
+
+        assertNotNull(result);
+        assertFalse(result.isPresent());
+    }
+
+    private void testMultipleTelemetriesWithExceptions(Exception exception, int amount, Integer[] mockExceptions, boolean expectedIsNull) throws IOException {
+        Set<Integer> exceptions = new HashSet<Integer>();
+        exceptions.addAll(Arrays.asList(mockExceptions));
+        List<Telemetry> telemetries = new ArrayList<Telemetry>();
+        for (int i = 0; i < amount; ++i) {
+            Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+            if (exceptions.contains(i)) {
+                Mockito.doThrow(exception).when(mockTelemetry).serialize(any(JsonTelemetryDataSerializer.class));
+            }
+            telemetries.add(mockTelemetry);
+        }
+        OldGzipTelemetrySerializer tested = new OldGzipTelemetrySerializer();
+        Optional<Transmission> result = tested.serialize(telemetries);
+
+        assertNotNull(result);
+        if (expectedIsNull) {
+            assertFalse(result.isPresent());
+        } else {
+            assertTrue(result.isPresent());
         }
     }
 

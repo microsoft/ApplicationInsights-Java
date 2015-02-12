@@ -28,8 +28,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
-import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
+import com.microsoft.applicationinsights.internal.channel.OldTelemetriesTransmitter;
+import com.microsoft.applicationinsights.internal.channel.OldTelemetrySerializer;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -38,7 +38,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
 /**
- * The default implementation of the {@link TelemetriesTransmitter}
+ * The default implementation of the {@link OldTelemetriesTransmitter}
  *
  * The class is responsible holds the classes that do the actual sending to the server
  * Telemetry instances buffered in a collection are sent through this class.
@@ -48,13 +48,13 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmitterImpl implements TelemetriesTransmitter {
+public final class OldTransmitterImpl implements OldTelemetriesTransmitter {
     private static abstract class SendHandler {
         protected final TransmissionDispatcher transmissionDispatcher;
 
-        protected final TelemetrySerializer serializer;
+        protected final OldTelemetrySerializer serializer;
 
-        protected SendHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer) {
+        protected SendHandler(TransmissionDispatcher transmissionDispatcher, OldTelemetrySerializer serializer) {
             Preconditions.checkNotNull(transmissionDispatcher, "transmissionDispatcher should be a non-null value");
             Preconditions.checkNotNull(serializer, "serializer should be a non-null value");
 
@@ -62,7 +62,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
             this.serializer = serializer;
         }
 
-        protected void dispatch(Collection<String> telemetries) {
+        protected void dispatch(Collection<Telemetry> telemetries) {
             if (telemetries.isEmpty()) {
                 return;
             }
@@ -79,7 +79,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
     private static final class ScheduledSendHandler extends SendHandler implements Runnable {
         private final TelemetriesFetcher telemetriesFetcher;
 
-        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher telemetriesFetcher, TelemetrySerializer serializer) {
+        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher telemetriesFetcher, OldTelemetrySerializer serializer) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetriesFetcher, "telemetriesFetcher should be a non-null value");
@@ -89,15 +89,15 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
 
         @Override
         public void run() {
-            Collection<String> telemetriesToSend = telemetriesFetcher.fetch();
+            Collection<Telemetry> telemetriesToSend = telemetriesFetcher.fetch();
             dispatch(telemetriesToSend);
         }
     }
 
     private static final class SendNowHandler extends SendHandler implements Runnable {
-        private final Collection<String> telemetries;
+        private final Collection<Telemetry> telemetries;
 
-        public SendNowHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, Collection<String> telemetries) {
+        public SendNowHandler(TransmissionDispatcher transmissionDispatcher, OldTelemetrySerializer serializer, Collection<Telemetry   > telemetries) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetries, "telemetries should be non-null value");
@@ -115,7 +115,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
 
     private final TransmissionDispatcher transmissionDispatcher;
 
-    private final TelemetrySerializer serializer;
+    private final OldTelemetrySerializer serializer;
 
     private final ScheduledThreadPoolExecutor threadPool;
 
@@ -123,7 +123,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
 
     private final Semaphore semaphore;
 
-    public TransmitterImpl(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, TransmissionsLoader transmissionsLoader) {
+    public OldTransmitterImpl(TransmissionDispatcher transmissionDispatcher, OldTelemetrySerializer serializer, TransmissionsLoader transmissionsLoader) {
         Preconditions.checkNotNull(transmissionDispatcher, "transmissionDispatcher must be non-null value");
         Preconditions.checkNotNull(serializer, "serializer must be non-null value");
         Preconditions.checkNotNull(transmissionsLoader, "transmissionsLoader must be non-null value");
@@ -163,7 +163,6 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
                         semaphore.release();
                         command.run();
                     } catch (Exception e) {
-                        e.printStackTrace();
                     } catch (Throwable t) {
                     } finally {
                     }
@@ -181,7 +180,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
     }
 
     @Override
-    public boolean sendNow(Collection<String> telemetries) {
+    public boolean sendNow(Collection<Telemetry> telemetries) {
         Preconditions.checkNotNull(telemetries, "telemetries should be non-null value");
 
         if (!semaphore.tryAcquire()) {
