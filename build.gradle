@@ -19,151 +19,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply plugin: 'java'
-
-jar {
-    version = '1.0'
-    baseName = 'manual-tests'
-}
-
-dependencies {
-    compile project(':core')
-    compile project(':logging')
-}
+apply from: 'gradle/common.gradle'
+apply from: 'gradle/publishing.gradle'
 
 // region global variables
 
 project.ext.set("msftAppInsights", "Microsoft Application Insights")
 project.ext.set("msftAppInsightsJavaSdk", msftAppInsights + " Java SDK")
-project.ext.set("artifactsDirectoryRoot", new File(rootProject.getProjectDir(), 'artifacts'))
+def rootProjectBuildFolder = getProjectDir().toString() + "/build"
 
 // endregion global variables
 
-// region Shared sub-projects configuration
-
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
-
-    if (this.hasProperty("testEnvName")) {
-        def newTestResultsDirName = testResultsDirName + "/" + testEnvName
-        println "Setting test results folder to " + newTestResultsDirName
-        testResultsDirName = newTestResultsDirName
-
-        def newTestReportDirName = testReportDirName + "/" + testEnvName
-        println "Setting test reports folder to " + newTestReportDirName
-        testReportDirName = newTestReportDirName
-    }
-
-    compileJava {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
-        options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar"
-    }
-
-    task checkUploadProperties << {
-        if (!this.hasProperty("mavenUserPassword")) {
-            throw new GroovyRuntimeException("Property mavenUserPassword should be defined for uploadArchives task")
-        } else if (!this.hasProperty("mavenUsername")) {
-            throw new GroovyRuntimeException("Property mavenUsername should be defined for uploadArchives task")
-        } else if (!this.hasProperty("mavenRepositoryUrl")) {
-            throw new GroovyRuntimeException("Property mavenRepositoryUrl should be defined for uploadArchives task")
-        }
-    }
-
-    task checkIfReleaseAndUpdateVersion {
-        def releaseVersion = System.getenv("releaseVersion")
-        if (releaseVersion?.trim()) {
-            version = releaseVersion
-            subprojects.findAll { p -> p.version = releaseVersion }
-        }
-    }
-    tasks.uploadArchives.dependsOn checkUploadProperties, checkIfReleaseAndUpdateVersion
-
-    configurations {
-        deployerJars
-    }
-
-    dependencies {
-        deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        testCompile group: 'junit', name: 'junit', version: '4.11'
-        testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
-    }
-
-    task copyLibsToGlobalArtifactsFolder(type: Copy) {
-        into artifactsDirectoryRoot
-    }
+task clean {
+    delete(rootProjectBuildFolder)
 }
-
-// Azure SDK Pom as a reference: https://repo1.maven.org/maven2/com/microsoft/azure/azure-core/0.7.0/azure-core-0.7.0.pom
-def updatePomWithGeneralProjectInformation(pomObject) {
-    pomObject.project {
-        url = "https://github.com/Microsoft/AppInsights-Java"
-
-        licenses {
-            license {
-                name = "MIT License"
-                url = "http://www.opensource.org/licenses/mit-license.php"
-            }
-        }
-
-        scm {
-            url = "scm:git:https://github.com/Microsoft/AppInsights-Java"
-            connection = "scm:git:git://github.com/Microsoft/AppInsights-Java.git"
-        }
-
-        developers {
-            developer {
-                id = "microsoft"
-                name = "Microsoft"
-            }
-        }
-    }
-}
-
-def writePomToArtifactsDirectory(pomObject, directoryName) {
-    def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
-    def artifactsDir = getArtifactsDirectory(directoryName)
-    def pomWriter = new FileWriter(new File(artifactsDir, pomFilename), false)
-
-    // Converting the POM object to string, to be able to read one by line.
-    StringWriter stringWriter = new StringWriter()
-    pomObject.writeTo(stringWriter)
-    StringReader reader = new StringReader(stringWriter.toString())
-
-    // Appending xml schema first
-    String schema = reader.readLine()
-    pomWriter.append(schema + "\n")
-
-    // Appending license text
-    def licenseText = GFileUtils.readFile(new File("LICENSE.TXT"))
-    pomWriter.append("<!--\n")
-    pomWriter.append(licenseText + "\n")
-    pomWriter.append("-->\n")
-
-    // Appending the rest of the pom file.
-    for (String line : reader.readLines()) {
-        pomWriter.append(line + "\n")
-    }
-
-    pomWriter.close()
-}
-
-def getArtifactsDirectory(artifactId) {
-    File dir = new File(artifactsDirectoryRoot, artifactId)
-    dir.mkdirs()
-
-    return dir
-}
-
-// Removing artifacts directory
-clean.doLast { delete(((File)artifactsDirectoryRoot).getAbsolutePath()).clean() }
-
-// endregion Shared sub-projects configuration
