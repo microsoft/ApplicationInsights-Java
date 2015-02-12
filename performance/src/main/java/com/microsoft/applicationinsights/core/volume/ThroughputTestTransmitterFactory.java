@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.core.volume;
 
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
+import com.microsoft.applicationinsights.internal.channel.OldTelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
@@ -32,12 +33,36 @@ import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmiss
 import com.microsoft.applicationinsights.internal.channel.common.NonBlockingDispatcher;
 import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionLoader;
 import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
+import com.microsoft.applicationinsights.internal.channel.common.OldTransmitterImpl;
 import com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySerializer;
+import com.microsoft.applicationinsights.internal.channel.common.OldGzipTelemetrySerializer;
 
 /**
  * Created by gupele on 2/4/2015.
  */
 final class ThroughputTestTransmitterFactory implements TransmitterFactory {
+    @Override
+    public OldTelemetriesTransmitter createOld(String endpoint) {
+        // An active object with the network sender
+        TransmissionOutput actualNetworkSender = TestThreadLocalData.getTransmissionOutput();
+        TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender);
+
+        // An active object with the file system sender
+        TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput();
+        TransmissionOutput activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender);
+
+        // The dispatcher works with the two active senders
+        TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[] {networkSender, activeFileSystemOutput});
+
+        // The loader works with the file system loader as the active one does
+        TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, dispatcher);
+
+        // The Transmitter manage all
+        OldTelemetriesTransmitter telemetriesTransmitter = new OldTransmitterImpl(dispatcher, new OldGzipTelemetrySerializer(), transmissionsLoader);
+
+        return telemetriesTransmitter;
+    }
+
     @Override
     public TelemetriesTransmitter create(String endpoint) {
         // An active object with the network sender
