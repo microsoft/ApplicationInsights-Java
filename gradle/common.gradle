@@ -19,5 +19,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-include 'core', 'logging', 'samples', 'web', 'performance'
+project.ext.set("artifactsDirectoryRoot", new File(rootProject.getProjectDir(), 'build/artifacts'))
 
+// region Shared sub-projects configuration
+
+subprojects {
+    apply plugin: 'java'
+
+    compileJava {
+        sourceCompatibility = 1.6
+        targetCompatibility = 1.6
+        options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar"
+    }
+
+    if (this.hasProperty("testEnvName")) {
+        testResultsDirName = testResultsDirName + "/" + testEnvName
+        logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
+
+        testReportDirName = testReportDirName + "/" + testEnvName
+        logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    task copyLibsToGlobalArtifactsFolder(type: Copy) {
+        into artifactsDirectoryRoot
+    }
+}
+
+// endregion Shared sub-projects configuration

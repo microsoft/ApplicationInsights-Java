@@ -1,0 +1,119 @@
+/*
+ * AppInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+// Azure SDK Pom as a reference: https://repo1.maven.org/maven2/com/microsoft/azure/azure-core/0.7.0/azure-core-0.7.0.pom
+subprojects {
+    apply plugin: 'maven'
+
+    task checkUploadProperties << {
+        if (!this.hasProperty("mavenUserPassword")) {
+            throw new GroovyRuntimeException("Property mavenUserPassword should be defined for uploadArchives task")
+        } else if (!this.hasProperty("mavenUsername")) {
+            throw new GroovyRuntimeException("Property mavenUsername should be defined for uploadArchives task")
+        } else if (!this.hasProperty("mavenRepositoryUrl")) {
+            throw new GroovyRuntimeException("Property mavenRepositoryUrl should be defined for uploadArchives task")
+        }
+    }
+
+    task checkIfReleaseAndUpdateVersion {
+        def releaseVersion = System.getenv("releaseVersion")
+        if (releaseVersion?.trim()) {
+            version = releaseVersion
+            subprojects.findAll { p -> p.version = releaseVersion }
+        }
+    }
+    tasks.uploadArchives.dependsOn checkUploadProperties, checkIfReleaseAndUpdateVersion
+
+    repositories {
+        mavenCentral()
+    }
+
+    configurations {
+        deployerJars
+    }
+
+    dependencies {
+        deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
+    }
+}
+
+// Azure SDK Pom as a reference: https://repo1.maven.org/maven2/com/microsoft/azure/azure-core/0.7.0/azure-core-0.7.0.pom
+def updatePomWithGeneralProjectInformation(pomObject) {
+    pomObject.project {
+        url = "https://github.com/Microsoft/AppInsights-Java"
+
+        licenses {
+            license {
+                name = "MIT License"
+                url = "http://www.opensource.org/licenses/mit-license.php"
+            }
+        }
+
+        scm {
+            url = "scm:git:https://github.com/Microsoft/AppInsights-Java"
+            connection = "scm:git:git://github.com/Microsoft/AppInsights-Java.git"
+        }
+
+        developers {
+            developer {
+                id = "microsoft"
+                name = "Microsoft"
+            }
+        }
+    }
+}
+
+def writePomToArtifactsDirectory(pomObject, directoryName) {
+    def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
+    def artifactsDir = getArtifactsDirectory(directoryName)
+    def pomWriter = new FileWriter(new File(artifactsDir, pomFilename), false)
+
+    // Converting the POM object to string, to be able to read one by line.
+    StringWriter stringWriter = new StringWriter()
+    pomObject.writeTo(stringWriter)
+    StringReader reader = new StringReader(stringWriter.toString())
+
+    // Appending xml schema first
+    String schema = reader.readLine()
+    pomWriter.append(schema + "\n")
+
+    // Appending license text
+    def licenseText = GFileUtils.readFile(new File("LICENSE.TXT"))
+    pomWriter.append("<!--\n")
+    pomWriter.append(licenseText + "\n")
+    pomWriter.append("-->\n")
+
+    // Appending the rest of the pom file.
+    for (String line : reader.readLines()) {
+        pomWriter.append(line + "\n")
+    }
+
+    pomWriter.close()
+}
+
+def getArtifactsDirectory(artifactId) {
+    File dir = new File(artifactsDirectoryRoot, artifactId)
+    dir.mkdirs()
+
+    return dir
+}
+
+// endregion Shared sub-projects configuration
