@@ -28,48 +28,48 @@ import static org.junit.Assert.*;
 public final class SenderThreadLocalDataTest {
     @Test(expected = NullPointerException.class)
     public void testNotSupplyingBackOffTimesContainer() {
-        new SenderThreadLocalData(null, 0);
+        new SenderThreadLocalBackOffData(null, 0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWithEmptyBackOffTimesContainer() {
-        new SenderThreadLocalData(new long[]{}, 0);
+        new SenderThreadLocalBackOffData(new long[]{}, 0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWithEmptyNegativeAddSeconds() {
-        new SenderThreadLocalData(new long[]{1}, -1);
+        new SenderThreadLocalBackOffData(new long[]{1}, -1);
     }
 
     @Test
     public void testStateAfterCtor() {
-        final SenderThreadLocalData sender = createSenderThreadLocalData(new long[] {1});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1});
 
         assertFalse(sender.isTryingToSend());
     }
 
     @Test
     public void testMultipleOnFailedSending() {
-        final SenderThreadLocalData sender = createSenderThreadLocalData(new long[] {1,2,1});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1,2,1});
         verifyBackOff(sender, 3, 4);
     }
 
     @Test
     public void testOnDoneSending() {
-        final SenderThreadLocalData sender = createSenderThreadLocalData(new long[] {1});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1});
         verifyOnDoneSending(sender);
     }
 
     @Test
     public void testDoneSendingAfterFailedSending() {
-        final SenderThreadLocalData sender = createSenderThreadLocalData(new long[]{1});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[]{1});
         verifyBackOff(sender, 1, 1);
         verifyOnDoneSending(sender);
     }
 
     @Test
     public void testStopWhileWaiting() throws InterruptedException {
-        final SenderThreadLocalData sender = createSenderThreadLocalData(new long[]{10});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[]{10});
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -83,12 +83,12 @@ public final class SenderThreadLocalDataTest {
         thread.join();
     }
 
-    private SenderThreadLocalData createSenderThreadLocalData(long[] backOffs) {
-        SenderThreadLocalData sender = new SenderThreadLocalData(backOffs, 0);
+    private SenderThreadLocalBackOffData createSenderThreadLocalData(long[] backOffs) {
+        SenderThreadLocalBackOffData sender = new SenderThreadLocalBackOffData(backOffs, 0);
         return sender;
     }
 
-    private static void verifyBackOff(SenderThreadLocalData sender, int backOffTimes, int expectedSeconds) {
+    private static void verifyBackOff(SenderThreadLocalBackOffData sender, int backOffTimes, int expectedSeconds) {
         long started = System.nanoTime();
         for (int i = 0; i < backOffTimes; ++i) {
             sender.backOff();
@@ -100,7 +100,7 @@ public final class SenderThreadLocalDataTest {
         assertTrue(sender.isTryingToSend());
     }
 
-    private static void verifyOnDoneSending(SenderThreadLocalData sender) {
+    private static void verifyOnDoneSending(SenderThreadLocalBackOffData sender) {
         sender.onDoneSending();
 
         assertFalse(sender.isTryingToSend());

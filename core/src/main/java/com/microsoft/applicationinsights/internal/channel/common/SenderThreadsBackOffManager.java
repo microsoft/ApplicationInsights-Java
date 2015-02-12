@@ -41,50 +41,50 @@ import com.google.common.primitives.Longs;
  *
  * Created by gupele on 2/9/2015.
  */
-final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalData> {
+final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBackOffData> {
     // The back-off timeouts that will be used by sender threads when need to back-off.
     private long[] backOffTimeoutsInSeconds = null;
 
     // All the thread local data
-    private final ArrayList<SenderThreadLocalData> allSendersData;
+    private final ArrayList<SenderThreadLocalBackOffData> allSendersData;
 
     // A way to distinct
     private final AtomicInteger threadsSecondsDifference = new AtomicInteger(-1);
 
-    private SenderThreadLocalData senderThreadLocalData;
+    private SenderThreadLocalBackOffData senderThreadLocalData;
     private boolean stopped;
 
     public SenderThreadsBackOffManager(BackOffTimesContainer backOffTimesContainer) {
-        allSendersData = new ArrayList<SenderThreadLocalData>();
+        allSendersData = new ArrayList<SenderThreadLocalBackOffData>();
         initializeBackOffTimeouts(backOffTimesContainer);
     }
 
     public void onDoneSending() {
-        SenderThreadLocalData currentThreadData = this.get();
+        SenderThreadLocalBackOffData currentThreadData = this.get();
         currentThreadData.onDoneSending();
     }
 
     public boolean backOffCurrentSenderThread() {
-        SenderThreadLocalData currentThreadData = this.get();
+        SenderThreadLocalBackOffData currentThreadData = this.get();
         return currentThreadData.backOff();
     }
 
     public synchronized void stopAllSendersBackOffActivities() {
-        for (SenderThreadLocalData sender : allSendersData) {
+        for (SenderThreadLocalBackOffData sender : allSendersData) {
             sender.stop();
         }
         stopped = true;
     }
 
     @Override
-    protected SenderThreadLocalData initialValue() {
+    protected SenderThreadLocalBackOffData initialValue() {
         int addSeconds = threadsSecondsDifference.incrementAndGet();
-        senderThreadLocalData = new SenderThreadLocalData(backOffTimeoutsInSeconds, addSeconds);
+        senderThreadLocalData = new SenderThreadLocalBackOffData(backOffTimeoutsInSeconds, addSeconds);
         registerSenderData(senderThreadLocalData);
         return senderThreadLocalData;
     }
 
-    private synchronized void registerSenderData(SenderThreadLocalData senderData) {
+    private synchronized void registerSenderData(SenderThreadLocalBackOffData senderData) {
         if (stopped) {
             senderData.stop();
         }
@@ -103,7 +103,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalDat
         }
 
         if (container == null) {
-            backOffTimeoutsInSeconds = new ExponentialBackOffTimesContainer().getBackOffTimeoutsInSeconds();
+            backOffTimeoutsInSeconds = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInSeconds();
             InternalLogger.INSTANCE.trace("No BackOffTimesContainer, using default values.");
             return;
         }
@@ -121,7 +121,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalDat
         }
 
         if (validBackOffTimeoutsInSeconds.isEmpty()) {
-            backOffTimeoutsInSeconds = new ExponentialBackOffTimesContainer().getBackOffTimeoutsInSeconds();
+            backOffTimeoutsInSeconds = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInSeconds();
             InternalLogger.INSTANCE.trace("BackOff timeouts are not supplied or not valid, using default values.");
             return;
         }
