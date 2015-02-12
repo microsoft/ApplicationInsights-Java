@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class TransmissionTest {
+public final class TransmissionTest {
     private final static String MOCK_WEB_CONTENT_TYPE = "MockContent";
     private final static String MOCK_WEB_ENCODING_TYPE = "MockEncoding";
 
@@ -59,6 +59,43 @@ public class TransmissionTest {
     }
 
     @Test
+    public void testVersion() throws Exception {
+        Transmission tested = createMockTransmission();
+
+        assertEquals(1, tested.getVersion());
+    }
+
+    @Test
+    public void testNumberOfSends() throws Exception {
+        Transmission tested = createMockTransmission();
+
+        assertEquals(0, tested.getNumberOfSends());
+    }
+
+    @Test
+    public void testIncrementNumberOfSends() throws Exception {
+        Transmission tested = createMockTransmission();
+
+        tested.incrementNumberOfSends();
+        assertEquals(1, tested.getNumberOfSends());
+    }
+
+    @Test
+    public void testNumberOfPersistence() throws Exception {
+        Transmission tested = createMockTransmission();
+
+        assertEquals(0, tested.getNumberOfPersistence());
+    }
+
+    @Test
+    public void testIncrementNumberOfPersistence() throws Exception {
+        Transmission tested = createMockTransmission();
+
+        tested.incrementNumberOfPersistence();
+        assertEquals(1, tested.getNumberOfPersistence());
+    }
+
+    @Test
     public void testGetContent() throws Exception {
         byte[] mockContent = new byte[2];
         Transmission tested = new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, MOCK_WEB_ENCODING_TYPE);
@@ -68,17 +105,21 @@ public class TransmissionTest {
 
     @Test
     public void testGetWebContentType() throws Exception {
-        byte[] mockContent = new byte[2];
-        Transmission tested = new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, MOCK_WEB_ENCODING_TYPE);
+        Transmission tested = createMockTransmission();
 
         assertEquals(MOCK_WEB_CONTENT_TYPE, tested.getWebContentType());
     }
 
     @Test
     public void testGetWebContentEncodingType() throws Exception {
-        byte[] mockContent = new byte[2];
-        Transmission tested = new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, MOCK_WEB_ENCODING_TYPE);
+        Transmission tested = createMockTransmission();
 
         assertEquals(MOCK_WEB_ENCODING_TYPE, tested.getWebContentEncodingType());
+    }
+
+    private static Transmission createMockTransmission() {
+        byte[] mockContent = new byte[2];
+        Transmission tested = new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, MOCK_WEB_ENCODING_TYPE);
+        return tested;
     }
 }
