@@ -57,7 +57,7 @@ public class UserCookieTests {
 
     // region Tests
     @Rule
-    public ExpectedException thrown= ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testCookieParsedSuccessfully() throws Exception {
@@ -68,24 +68,23 @@ public class UserCookieTests {
     }
 
     @Test
-    public void testCorruptedUserIdValueThrowsExceptionOnCookieParsing() throws Exception {
-        thrown.expect(Exception.class);
-
-        String formattedCookie = UserCookie.formatCookie(new String[] {
-                "non-UUID-string",
-                String.valueOf(acquisitionTime.getTime())
-        });
-
-        createUserCookie(formattedCookie);
-    }
-
-    @Test
     public void testCorruptedAcquisitionDateValueThrowsExceptionOnCookieParsing() throws Exception {
         thrown.expect(Exception.class);
 
         String formattedCookie = UserCookie.formatCookie(new String[] {
                 userId,
                 "corruptedAcquisitionTime"
+        });
+
+        createUserCookie(formattedCookie);
+    }
+
+    @Test
+    public void testUnexpectedCookieValuesCountThrowsException() throws Exception {
+        thrown.expect(Exception.class);
+
+        String formattedCookie = SessionCookie.formatCookie(new String[] {
+                "singleValueCookie"
         });
 
         createUserCookie(formattedCookie);

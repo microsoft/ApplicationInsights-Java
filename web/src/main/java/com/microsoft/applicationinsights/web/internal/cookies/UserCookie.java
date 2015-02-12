@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 import javax.servlet.http.Cookie;
 import java.util.Date;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
 /**
@@ -35,9 +34,6 @@ public class UserCookie extends com.microsoft.applicationinsights.web.internal.c
     // region Consts
 
     public static final String COOKIE_NAME = "ai_user";
-    private static final int RAW_COOKIE_USER_ID_INDEX = 0;
-    private static final int RAW_COOKIE_ACQUISITION_DATE_INDEX = 1;
-    private static final int RAW_COOKIE_EXPECTED_VALUES_COUNT = 2;
 
     // endregion Consts
 
@@ -46,6 +42,19 @@ public class UserCookie extends com.microsoft.applicationinsights.web.internal.c
     private boolean isNewUser;
     private String userId;
     private Date acquisitionDate;
+
+    private enum CookieFields {
+        USER_ID(0),
+        ACQUISITION_DATE(1);
+
+        private final int value;
+
+        CookieFields(int value) {
+            this.value = value;
+        }
+
+        public int getValue() { return value; }
+    }
 
     // endregion Members
 
@@ -78,15 +87,6 @@ public class UserCookie extends com.microsoft.applicationinsights.web.internal.c
         return isNewUser;
     }
 
-    /**
-     * Formats the given values to a user cookie value.
-     * @param values The values to format.
-     * @return Formatted user cookie.
-     */
-    public static String formatCookie(String[] values) {
-        return StringUtils.join(values, RAW_COOKIE_DELIMITER);
-    }
-
     // endregion Public
 
     // region Private
@@ -94,7 +94,7 @@ public class UserCookie extends com.microsoft.applicationinsights.web.internal.c
     private void parseCookie(Cookie cookie) throws Exception {
         String[] split = cookie.getValue().split(RAW_COOKIE_SPLIT_DELIMITER);
 
-        if (split.length < RAW_COOKIE_EXPECTED_VALUES_COUNT) {
+        if (split.length < CookieFields.values().length) {
 
             // TODO: dedicated exception
             String errorMessage = String.format("Session cookie is not in the correct format: %s", cookie.getValue());
@@ -103,10 +103,8 @@ public class UserCookie extends com.microsoft.applicationinsights.web.internal.c
         }
 
         try {
-            userId = split[RAW_COOKIE_USER_ID_INDEX];
-            validateUUID(userId);
-
-            acquisitionDate = new Date(Long.parseLong(split[RAW_COOKIE_ACQUISITION_DATE_INDEX]));
+            userId = split[CookieFields.USER_ID.getValue()];
+            acquisitionDate = new Date(Long.parseLong(split[CookieFields.ACQUISITION_DATE.getValue()]));
         } catch (Exception e) {
             String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.getMessage());
 

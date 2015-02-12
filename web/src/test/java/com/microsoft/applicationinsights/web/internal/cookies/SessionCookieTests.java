@@ -84,19 +84,6 @@ public class SessionCookieTests {
     }
 
     @Test
-    public void testCorruptedSessionIdValueThrowsExceptionOnCookieParsing() throws Exception {
-        thrown.expect(Exception.class);
-
-        String formattedCookie = SessionCookie.formatCookie(new String[] {
-                "non-UUID-string",
-                String.valueOf(sessionAcquisitionTime.getTime()),
-                String.valueOf(sessionRenewalTime.getTime())
-        });
-
-        createSessionCookie(formattedCookie);
-    }
-
-    @Test
     public void testCorruptedSessionAcquisitionTimeValueThrowsExceptionOnCookieParsing() throws Exception {
         thrown.expect(Exception.class);
 
@@ -117,6 +104,17 @@ public class SessionCookieTests {
                 sessionId,
                 "corruptedAcquisitionTime",
                 String.valueOf(sessionRenewalTime.getTime())
+        });
+
+        createSessionCookie(formattedCookie);
+    }
+
+    @Test
+    public void testUnexpectedCookieValuesCountThrowsException() throws Exception {
+        thrown.expect(Exception.class);
+
+        String formattedCookie = SessionCookie.formatCookie(new String[] {
+                "singleValueCookie"
         });
 
         createSessionCookie(formattedCookie);

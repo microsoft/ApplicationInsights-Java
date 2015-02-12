@@ -30,7 +30,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.cookies.CookieUtils;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 
 /**
@@ -60,7 +59,9 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
         HttpServletRequest request = (HttpServletRequest)req;
         RequestTelemetryContext context = (RequestTelemetryContext)request.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
 
-        UserCookie userCookie = CookieUtils.getUserCookie(request);
+        UserCookie userCookie =
+                com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+                        UserCookie.class, request, UserCookie.COOKIE_NAME);
 
         if (userCookie == null) {
             userCookie = new UserCookie();
@@ -70,6 +71,10 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
         UserContext userContext = context.getHttpRequestTelemetry().getContext().getUser();
         userContext.setId(userCookie.getUserId());
         userContext.setAcquisitionDate(userCookie.getAcquisitionDate());
+
+        if (context.getUserCookie().isNewUser()) {
+            setUserCookie(res, context);
+        }
     }
 
     /**
@@ -80,12 +85,6 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
      */
     @Override
     public void onEndRequest(ServletRequest req, ServletResponse res) {
-        HttpServletRequest request = (HttpServletRequest)req;
-        RequestTelemetryContext context = (RequestTelemetryContext)request.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
-
-        if (context.getUserCookie().isNewUser()) {
-            setUserCookie(res, context);
-        }
     }
 
     // endregion Public

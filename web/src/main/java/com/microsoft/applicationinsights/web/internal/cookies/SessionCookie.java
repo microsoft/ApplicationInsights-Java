@@ -24,20 +24,14 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 import java.util.Calendar;
 import java.util.Date;
 import javax.servlet.http.Cookie;
-import org.apache.commons.lang3.StringUtils;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
 /**
  * Created by yonisha on 2/4/2015.
  */
-public class SessionCookie extends com.microsoft.applicationinsights.web.internal.cookies.Cookie{
+public class SessionCookie extends com.microsoft.applicationinsights.web.internal.cookies.Cookie {
 
     // region Consts
-
-    private static final int RAW_COOKIE_SESSION_ID_INDEX = 0;
-    private static final int RAW_COOKIE_SESSION_ACQUISITION_DATE_INDEX = 1;
-    private static final int RAW_COOKIE_SESSION_LAST_UPDATE_DATE_INDEX = 2;
-    private static final int RAW_COOKIE_EXPECTED_VALUES_COUNT = 3;
 
     public static final String COOKIE_NAME = "ai_session";
     public static final int SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES = 30;
@@ -49,6 +43,20 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
     private String sessionId;
     private Date acquisitionDate;
     private Date renewalDate;
+
+    private enum CookieFields {
+        SESSION_ID(0),
+        SESSION_ACQUISITION_DATE(1),
+        SESSION_LAST_UPDATE_DATE(2);
+
+        private final int value;
+
+        CookieFields(int value) {
+            this.value = value;
+        }
+
+        public int getValue() { return value; }
+    }
 
     // endregion Members
 
@@ -81,15 +89,6 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
     // endregion Ctor
 
     // region Public
-
-    /**
-     * Formats the given values to a session cookie value.
-     * @param values The values to format.
-     * @return Formatted session cookie.
-     */
-    public static String formatCookie(String[] values) {
-        return StringUtils.join(values, RAW_COOKIE_DELIMITER);
-    }
 
     /**
      * Gets the session id.
@@ -141,7 +140,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
     private void parseCookie(Cookie cookie) throws Exception {
         String[] split = cookie.getValue().split(RAW_COOKIE_SPLIT_DELIMITER);
 
-        if (split.length < RAW_COOKIE_EXPECTED_VALUES_COUNT) {
+        if (split.length < CookieFields.values().length) {
 
             // TODO: dedicated exception
             String errorMessage = String.format("Session cookie is not in the correct format: %s", cookie.getValue());
@@ -150,11 +149,9 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
         }
 
         try {
-            sessionId = split[RAW_COOKIE_SESSION_ID_INDEX];
-            validateUUID(sessionId);
-
-            acquisitionDate = new Date(Long.parseLong(split[RAW_COOKIE_SESSION_ACQUISITION_DATE_INDEX]));
-            renewalDate = new Date(Long.parseLong(split[RAW_COOKIE_SESSION_LAST_UPDATE_DATE_INDEX]));
+            sessionId = split[CookieFields.SESSION_ID.getValue()];
+            acquisitionDate = new Date(Long.parseLong(split[CookieFields.SESSION_ACQUISITION_DATE.getValue()]));
+            renewalDate = new Date(Long.parseLong(split[CookieFields.SESSION_LAST_UPDATE_DATE.getValue()]));
         } catch (Exception e) {
             String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.getMessage());
 

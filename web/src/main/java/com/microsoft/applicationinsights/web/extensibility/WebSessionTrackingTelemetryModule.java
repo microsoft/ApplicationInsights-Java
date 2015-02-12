@@ -36,7 +36,6 @@ import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.cookies.CookieUtils;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 
 /**
@@ -66,7 +65,9 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         HttpServletRequest request = (HttpServletRequest)req;
         RequestTelemetryContext context = (RequestTelemetryContext)request.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
 
-        SessionCookie sessionCookie = CookieUtils.getSessionCookie(request);
+        SessionCookie sessionCookie =
+                com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+                        SessionCookie.class, request, SessionCookie.COOKIE_NAME);
 
         if (sessionCookie != null && !sessionCookie.isSessionExpired()) {
             // Update ai context with session details.
@@ -75,6 +76,8 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         } else {
             startNewSession(context);
         }
+
+        setSessionCookie(request, (HttpServletResponse)res);
     }
 
     /**
@@ -87,9 +90,14 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      */
     @Override
     public void onEndRequest(ServletRequest req, ServletResponse res) {
-        HttpServletRequest request = (HttpServletRequest)req;
-        RequestTelemetryContext context = (RequestTelemetryContext)request.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
+    }
 
+    // endregion Public
+
+    // region Private
+
+    private void setSessionCookie(HttpServletRequest req, HttpServletResponse res) {
+        RequestTelemetryContext context = (RequestTelemetryContext)req.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
         if (isSessionCookieUpToDate(context)) {
             return;
         }
@@ -103,13 +111,17 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
         });
 
-        HttpServletResponse response = (HttpServletResponse)res;
-        setSessionCookie(response, formattedCookie, renewalDate);
+        Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
+
+        Date expirationDate = DateTimeUtils.addToDate(
+                renewalDate,
+                Calendar.MINUTE,
+                SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES);
+        long timeDiffInMinutes = DateTimeUtils.getDateDiff(expirationDate, DateTimeUtils.getDateTimeNow(), TimeUnit.MINUTES);
+
+        cookie.setMaxAge((int)timeDiffInMinutes);
+        res.addCookie(cookie);
     }
-
-    // endregion Public
-
-    // region Private
 
     private SessionContext getTelemetrySessionContext(RequestTelemetryContext aiContext) {
         return aiContext.getHttpRequestTelemetry().getContext().getSession();
@@ -138,19 +150,6 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         boolean isExpiredSession = sessionCookie == null || sessionCookie.isSessionExpired();
 
         return !isNewSession && !isExpiredSession;
-    }
-
-    private void setSessionCookie(HttpServletResponse response, String formattedCookie, Date sessionLastRenewalDate) {
-        Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
-
-        Date expirationDate = DateTimeUtils.addToDate(
-                sessionLastRenewalDate,
-                Calendar.MINUTE,
-                SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES);
-        long timeDiffInMinutes = DateTimeUtils.getDateDiff(expirationDate, DateTimeUtils.getDateTimeNow(), TimeUnit.MINUTES);
-
-        cookie.setMaxAge((int)timeDiffInMinutes);
-        response.addCookie(cookie);
     }
 
     // endregion Private
