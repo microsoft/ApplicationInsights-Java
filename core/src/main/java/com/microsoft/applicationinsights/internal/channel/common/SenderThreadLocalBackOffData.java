@@ -41,7 +41,7 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 2/9/2015.
  */
-final class SenderThreadLocalData {
+final class SenderThreadLocalBackOffData {
     private final ReentrantLock lock;
     private final Condition backOffCondition;
     private int currentBackOffIndex;
@@ -54,7 +54,7 @@ final class SenderThreadLocalData {
      * @param backOffTimeoutsInSeconds The array of timeouts that will be used when the thread needs to back off.
      * @param addSeconds The amount of seconds that will be added to the 'large' intervals to distinct between sender threads.
      */
-    public SenderThreadLocalData(long[] backOffTimeoutsInSeconds, int addSeconds) {
+    public SenderThreadLocalBackOffData(long[] backOffTimeoutsInSeconds, int addSeconds) {
         Preconditions.checkNotNull(backOffTimeoutsInSeconds, "backOffTimeoutsInSeconds must be not null");
         Preconditions.checkArgument(backOffTimeoutsInSeconds.length > 0, "backOffTimeoutsInSeconds must not be empty");
         Preconditions.checkArgument(addSeconds >= 0, "addSeconds must not be >= 0");

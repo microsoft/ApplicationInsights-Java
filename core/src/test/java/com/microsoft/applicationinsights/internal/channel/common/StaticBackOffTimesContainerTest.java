@@ -7,10 +7,10 @@ import static org.junit.Assert.*;
 public final class StaticBackOffTimesContainerTest {
     @Test
     public void testBackOffs() {
-        long[] backOffs = new StaticBackOffTimesContainer().getBackOffTimeoutsInSeconds();
+        long[] backOffs = new StaticBackOffTimesPolicy().getBackOffTimeoutsInSeconds();
         assertNotNull(backOffs);
-        assertEquals(backOffs.length, StaticBackOffTimesContainer.NUMBER_OF_BACK_OFFS);
-        int couples = StaticBackOffTimesContainer.NUMBER_OF_BACK_OFFS;
+        assertEquals(backOffs.length, StaticBackOffTimesPolicy.NUMBER_OF_BACK_OFFS);
+        int couples = StaticBackOffTimesPolicy.NUMBER_OF_BACK_OFFS;
         long oddValue = -1;
         for (int i = 0; i < couples; ++i) {
             if (i % 2 == 0) {

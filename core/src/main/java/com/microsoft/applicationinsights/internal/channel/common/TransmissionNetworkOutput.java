@@ -28,7 +28,6 @@ import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
@@ -105,6 +104,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         this.transmissionDispatcher = transmissionDispatcher;
     }
 
+    /**
+     * Stops all threads from sending data.
+     * @param timeout The timeout to wait, which is not relevant here.
+     * @param timeUnit The time unit, which is not relevant in this method.
+     */
     @Override
     public synchronized void stop(long timeout, TimeUnit timeUnit) {
         if (stopped) {
@@ -119,6 +123,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         stopped = true;
     }
 
+    /**
+     * Tries to send a {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
+     * The thread that calls that method might be suspended if there is a throttling issues, in any case
+     * the thread that enters this method is responsive for 'stop' request that might be issued by the application.
+     * @param transmission The data to send
+     * @return True when done.
+     */
     @Override
     public boolean send(Transmission transmission) {
         while (!stopped) {
@@ -283,7 +294,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             return;
         }
 
-        s_senderThreadsManager = new SenderThreadsBackOffManager(new BackOffTimesContainerFactory().create(backOffContainerName));
+        s_senderThreadsManager = new SenderThreadsBackOffManager(new BackOffTimesPolicyFactory().create(backOffContainerName));
     }
 
 }

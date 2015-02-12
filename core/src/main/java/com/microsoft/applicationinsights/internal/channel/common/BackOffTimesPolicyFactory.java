@@ -21,31 +21,32 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
+import com.google.common.base.Strings;
 
 /**
  * The class knows how to create the {@link com.microsoft.applicationinsights.internal.channel.common.BackOffTimesContainer}
  * Based on its name.
  * The name must currently be one of the type names as defined in the ContainerType enum.
  *
- * By default the {@link com.microsoft.applicationinsights.internal.channel.common.ExponentialBackOffTimesContainer} is created.
+ * By default the {@link ExponentialBackOffTimesPolicy} is created.
  *
  * Created by gupele on 2/10/2015.
  */
-final class BackOffTimesContainerFactory {
-    private enum ContainerType {
+final class BackOffTimesPolicyFactory {
+    private enum BackOffPolicyType {
         EXPONENTIAL,
         STATIC
     }
 
     public BackOffTimesContainer create(String typeAsString) {
-        ContainerType type = ContainerType.EXPONENTIAL;
+        BackOffPolicyType type = BackOffPolicyType.EXPONENTIAL;
         if (Strings.isNullOrEmpty(typeAsString)) {
             InternalLogger.INSTANCE.trace("No back-off container defined, using the default '%s'", type);
         } else {
             try {
-                type = ContainerType.valueOf(typeAsString.toUpperCase());
+                type = BackOffPolicyType.valueOf(typeAsString.toUpperCase());
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to parse '%s', using the default back-off container '%s'", typeAsString, type);
             }
@@ -53,10 +54,10 @@ final class BackOffTimesContainerFactory {
 
         switch (type) {
             case STATIC:
-                return new StaticBackOffTimesContainer();
+                return new StaticBackOffTimesPolicy();
 
             default:
-                return new ExponentialBackOffTimesContainer();
+                return new ExponentialBackOffTimesPolicy();
         }
     }
 }

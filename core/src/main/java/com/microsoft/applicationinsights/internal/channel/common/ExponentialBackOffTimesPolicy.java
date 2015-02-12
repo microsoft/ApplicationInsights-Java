@@ -22,22 +22,41 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 /**
+ * This class creates the back-off timeouts by starting with five seconds
+ * and expanding the interval up to six minutes, every interval is followed
+ * by a five seconds timeout to make sure not all threads are block for long timeouts.
+ *
  * Created by gupele on 2/10/2015.
  */
-final class StaticBackOffTimesContainer implements BackOffTimesContainer {
-    public static final int NUMBER_OF_BACK_OFFS = 20;
-
+final class ExponentialBackOffTimesPolicy implements BackOffTimesContainer {
+    private static final long FIVE_SECONDS = 5;
     private static final long TEN_SECONDS = 10;
+    private static final long FIFTEEN_SECONDS = 15;
+    private static final long THIRTY_SECONDS = 30;
+    private static final long ONE_MINUTES_IN_SECONDS = 60;
+    private static final long TWO_MINUTES_IN_SECONDS = 120;
+    private static final long FOUR_MINUTES_IN_SECONDS = 240;
+    private static final long SIX_MINUTES_IN_SECONDS = 360;
+    private static long[] s_exponentialBackOffInSeconds = new long[] {
+            FIVE_SECONDS,
+            TEN_SECONDS,
+            FIVE_SECONDS,
+            FIFTEEN_SECONDS,
+            FIVE_SECONDS,
+            THIRTY_SECONDS,
+            FIVE_SECONDS,
+            ONE_MINUTES_IN_SECONDS,
+            FIVE_SECONDS,
+            TWO_MINUTES_IN_SECONDS,
+            FIVE_SECONDS,
+            FOUR_MINUTES_IN_SECONDS,
+            FIVE_SECONDS,
+            SIX_MINUTES_IN_SECONDS,
+            FIVE_SECONDS
+    };
+
     @Override
     public long[] getBackOffTimeoutsInSeconds() {
-        long[] backOffInSeconds = new long[NUMBER_OF_BACK_OFFS];
-        int couples = NUMBER_OF_BACK_OFFS / 2;
-        for (int i = 0; i < couples; ++i) {
-            int position = i * 2;
-            backOffInSeconds[position] = BackOffTimesContainer.MIN_TIME_TO_BACK_OFF_IN_MILLS;
-            backOffInSeconds[position + 1] = TEN_SECONDS;
-        }
-
-        return backOffInSeconds;
+        return s_exponentialBackOffInSeconds;
     }
 }
