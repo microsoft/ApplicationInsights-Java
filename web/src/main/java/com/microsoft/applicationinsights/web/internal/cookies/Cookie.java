@@ -21,63 +21,57 @@
 
 package com.microsoft.applicationinsights.web.internal.cookies;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
- * Created by yonisha on 2/4/2015.
+ * Created by yonisha on 2/9/2015.
+ *
+ * Used as a base class for AI cookies.
  */
-public class CookieUtils {
-
-    // region Public
+public class Cookie {
+    protected static final String RAW_COOKIE_DELIMITER = "|";
+    protected static final String RAW_COOKIE_SPLIT_DELIMITER = "\\" + RAW_COOKIE_DELIMITER;
 
     /**
-     * Gets the session cookie from the given http request.
-     * @param request The request containing the cookie.
-     * @return The session cookie, or null if not exists.
+     * Formats the given values to a session cookie value.
+     * @param values The values to format.
+     * @return Formatted session cookie.
      */
-    public static SessionCookie getSessionCookie(HttpServletRequest request) {
-        Cookie cookie = getCookie(request, SessionCookie.SESSION_COOKIE_NAME);
-
-        SessionCookie sessionCookie = null;
-        if (cookie != null) {
-            try {
-                sessionCookie = new SessionCookie(cookie);
-            } catch (Exception e) {
-            }
-        }
-
-        return sessionCookie;
-    }
-
-    // endregion Public
-
-    // region Private
-
-    private CookieUtils(){
+    public static String formatCookie(String[] values) {
+        return StringUtils.join(values, RAW_COOKIE_DELIMITER);
     }
 
     /**
-     * Gets the cookie given the http request and cookie name.
-     * @param request The http request.
+     * Gets the cookie from the given http request.
+     * @param eClass The required cookie type.
+     * @param request THe http request to get the cookies from.
      * @param cookieName The cookie name.
-     * @return The cookie, or null if not exists.
+     * @param <E> The required cookie type.
+     * @return Cookie from the required type.
      */
-    private static Cookie getCookie(HttpServletRequest request, String cookieName) {
-        Cookie[] cookies = request.getCookies();
+    public static <E> E getCookie(Class<E> eClass, HttpServletRequest request, String cookieName) {
+        javax.servlet.http.Cookie[] cookies = request.getCookies();
 
         if (cookies == null) {
             return null;
         }
 
-        for (Cookie cookie : cookies) {
+        javax.servlet.http.Cookie httpCookie = null;
+        for (javax.servlet.http.Cookie cookie : cookies) {
             if (cookie.getName().equals(cookieName)) {
-                return cookie;
+                httpCookie = cookie;
             }
         }
 
-        return null;
-    }
+        E instance = null;
+        try {
+            instance = eClass.getConstructor(javax.servlet.http.Cookie.class).newInstance(httpCookie);
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Failed to create cookie with error: " + e.getMessage());
+        }
 
-    // endregion Private
+        return instance;
+    }
 }

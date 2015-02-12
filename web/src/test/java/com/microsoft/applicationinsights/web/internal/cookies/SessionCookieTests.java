@@ -23,13 +23,12 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 
 import java.util.Date;
 import java.util.UUID;
-
-import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import com.microsoft.applicationinsights.web.utils.HttpHelper;
 
 import javax.servlet.http.Cookie;
 
@@ -59,7 +58,7 @@ public class SessionCookieTests {
                 String.valueOf(sessionRenewalTime.getTime())
         });
 
-        defaultCookie = new Cookie(SessionCookie.SESSION_COOKIE_NAME, formattedCookie);
+        defaultCookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
     }
 
     // region Tests
@@ -78,23 +77,10 @@ public class SessionCookieTests {
     @Test
     public void testCookieExpiration() throws Exception {
         String expiredFormattedCookie = HttpHelper.getFormattedSessionCookie(true);
-        Cookie expiredCookie = new Cookie(SessionCookie.SESSION_COOKIE_NAME, expiredFormattedCookie);
+        Cookie expiredCookie = new Cookie(SessionCookie.COOKIE_NAME, expiredFormattedCookie);
         SessionCookie sessionCookie = new SessionCookie(expiredCookie);
 
         Assert.assertTrue("Expired session expected.", sessionCookie.isSessionExpired());
-    }
-
-    @Test
-    public void testCorruptedSessionIdValueThrowsExceptionOnCookieParsing() throws Exception {
-        thrown.expect(Exception.class);
-
-        String formattedCookie = SessionCookie.formatCookie(new String[] {
-                "non-UUID-string",
-                String.valueOf(sessionAcquisitionTime.getTime()),
-                String.valueOf(sessionRenewalTime.getTime())
-        });
-
-        createSessionCookie(formattedCookie);
     }
 
     @Test
@@ -123,12 +109,23 @@ public class SessionCookieTests {
         createSessionCookie(formattedCookie);
     }
 
+    @Test
+    public void testUnexpectedCookieValuesCountThrowsException() throws Exception {
+        thrown.expect(Exception.class);
+
+        String formattedCookie = SessionCookie.formatCookie(new String[] {
+                "singleValueCookie"
+        });
+
+        createSessionCookie(formattedCookie);
+    }
+
     // endregion Tests
 
     // region Private
 
     private void createSessionCookie(String cookieValue) throws Exception {
-        Cookie corruptedCookie = new Cookie(SessionCookie.SESSION_COOKIE_NAME, cookieValue);
+        Cookie corruptedCookie = new Cookie(SessionCookie.COOKIE_NAME, cookieValue);
         new SessionCookie(corruptedCookie);
     }
 

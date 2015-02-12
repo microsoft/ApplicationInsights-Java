@@ -23,48 +23,58 @@ package com.microsoft.applicationinsights.web.utils;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
+import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
+
+import javax.servlet.http.Cookie;
 
 /**
  * Created by yonisha on 2/2/2015.
  */
 public class HttpHelper {
 
+    private static final String FORMATTED_USER_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s";
     private static final String FORMATTED_SESSION_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s|%s";
 
-    public static String sendRequestAndGetResponseCookie(String requestFormattedCookie) throws Exception {
+    public static CookiesContainer sendRequestAndGetResponseCookie(String... requestFormattedCookies) throws Exception {
         HttpURLConnection con = (HttpURLConnection) (new URL("http://localhost:1234")).openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.4; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko");
 
-        if (requestFormattedCookie != null) {
+        for (String requestFormattedCookie : requestFormattedCookies) {
             con.setRequestProperty("Cookie", requestFormattedCookie);
         }
 
-        int responseCode = con.getResponseCode();
+        con.getResponseCode();
 
-        String formattedCookieWithExpiration = con.getHeaderField("Set-Cookie");
+        List<String> responseCookies = con.getHeaderFields().get("Set-Cookie");
 
-        if (formattedCookieWithExpiration == null) {
-            return null;
-        }
+        CookiesContainer cookiesContainer = getCookiesContainer(responseCookies);
 
-        String formattedCookie = formattedCookieWithExpiration.split("=")[1].split(";")[0];
-
-        return formattedCookie;
+        return cookiesContainer;
     }
 
-    public static String sendRequestAndGetResponseCookie() throws Exception {
-        return sendRequestAndGetResponseCookie(null);
+    public static CookiesContainer sendRequestAndGetResponseCookie() throws Exception {
+        return sendRequestAndGetResponseCookie(new String[] {});
+    }
+
+    public static String getFormattedUserCookieHeader() {
+        String formattedUserCookie = String.format(
+                FORMATTED_USER_COOKIE_TEMPLATE, DateTimeUtils.getDateTimeNow().getTime());
+
+        return String.format("%s=%s", UserCookie.COOKIE_NAME, formattedUserCookie);
     }
 
     public static String getFormattedSessionCookieHeader(boolean expired) {
         String formattedSessionCookie = getFormattedSessionCookie(expired);
 
-        return String.format("%s=%s", SessionCookie.SESSION_COOKIE_NAME, formattedSessionCookie);
+        return String.format("%s=%s", SessionCookie.COOKIE_NAME, formattedSessionCookie);
     }
 
     public static String getFormattedSessionCookie(boolean expired) {
@@ -79,5 +89,26 @@ public class HttpHelper {
                 FORMATTED_SESSION_COOKIE_TEMPLATE,
                 String.valueOf(sessionAcquisitionTimeLong),
                 String.valueOf(sessionAcquisitionTimeLong + 1));
+    }
+
+    private static CookiesContainer getCookiesContainer(List<String> responseCookies) throws Exception {
+        CookiesContainer cookiesContainer = new CookiesContainer();
+        for (String formattedCookieWithExpiration : responseCookies) {
+            if (formattedCookieWithExpiration.startsWith("ai_user")) {
+                String formattedCookie = formattedCookieWithExpiration.split("=")[1].split(";")[0];
+                Cookie cookie = new Cookie(UserCookie.COOKIE_NAME, formattedCookie);
+
+                UserCookie userCookie = new UserCookie(cookie);
+                cookiesContainer.setUserCookie(userCookie);
+            } else {
+                String formattedCookie = formattedCookieWithExpiration.split("=")[1].split(";")[0];
+                Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
+
+                SessionCookie sessionCookie = new SessionCookie(cookie);
+                cookiesContainer.setSessionCookie(sessionCookie);
+            }
+        }
+
+        return cookiesContainer;
     }
 }

@@ -24,27 +24,16 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 import java.util.Calendar;
 import java.util.Date;
 import javax.servlet.http.Cookie;
-
-import com.microsoft.applicationinsights.internal.schemav2.Session;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.apache.commons.lang3.StringUtils;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
 /**
  * Created by yonisha on 2/4/2015.
  */
-public class SessionCookie {
+public class SessionCookie extends com.microsoft.applicationinsights.web.internal.cookies.Cookie {
 
     // region Consts
 
-    private static final int RAW_COOKIE_SESSION_ID_INDEX = 0;
-    private static final int RAW_COOKIE_SESSION_ACQUISITION_DATE_INDEX = 1;
-    private static final int RAW_COOKIE_SESSION_LAST_UPDATE_DATE_INDEX = 2;
-    private static final int RAW_COOKIE_EXPECTED_VALUES_COUNT = 3;
-    private static final String RAW_COOKIE_DELIMITER = "|";
-    private static final String RAW_COOKIE_SPLIT_DELIMITER = "\\" + RAW_COOKIE_DELIMITER;
-
-    public static final String SESSION_COOKIE_NAME = "ai_session";
+    public static final String COOKIE_NAME = "ai_session";
     public static final int SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES = 30;
 
     // endregion Consts
@@ -54,6 +43,20 @@ public class SessionCookie {
     private String sessionId;
     private Date acquisitionDate;
     private Date renewalDate;
+
+    private enum CookieFields {
+        SESSION_ID(0),
+        SESSION_ACQUISITION_DATE(1),
+        SESSION_LAST_UPDATE_DATE(2);
+
+        private final int value;
+
+        CookieFields(int value) {
+            this.value = value;
+        }
+
+        public int getValue() { return value; }
+    }
 
     // endregion Members
 
@@ -78,7 +81,7 @@ public class SessionCookie {
         String[] cookieRawValues = new String[] { sessionId, String.valueOf(nowTicks), String.valueOf(nowTicks) };
         String formattedCookie = SessionCookie.formatCookie(cookieRawValues);
 
-        Cookie cookie = new Cookie(SESSION_COOKIE_NAME, formattedCookie);
+        Cookie cookie = new Cookie(COOKIE_NAME, formattedCookie);
 
         parseCookie(cookie);
     }
@@ -86,10 +89,6 @@ public class SessionCookie {
     // endregion Ctor
 
     // region Public
-
-    public static String formatCookie(String[] values) {
-        return StringUtils.join(values, RAW_COOKIE_DELIMITER);
-    }
 
     /**
      * Gets the session id.
@@ -141,7 +140,7 @@ public class SessionCookie {
     private void parseCookie(Cookie cookie) throws Exception {
         String[] split = cookie.getValue().split(RAW_COOKIE_SPLIT_DELIMITER);
 
-        if (split.length < RAW_COOKIE_EXPECTED_VALUES_COUNT) {
+        if (split.length < CookieFields.values().length) {
 
             // TODO: dedicated exception
             String errorMessage = String.format("Session cookie is not in the correct format: %s", cookie.getValue());
@@ -150,33 +149,15 @@ public class SessionCookie {
         }
 
         try {
-            sessionId = getAndValidateSessionId(split);
-            acquisitionDate = new Date(Long.parseLong(split[RAW_COOKIE_SESSION_ACQUISITION_DATE_INDEX]));
-            renewalDate = new Date(Long.parseLong(split[RAW_COOKIE_SESSION_LAST_UPDATE_DATE_INDEX]));
+            sessionId = split[CookieFields.SESSION_ID.getValue()];
+            acquisitionDate = new Date(Long.parseLong(split[CookieFields.SESSION_ACQUISITION_DATE.getValue()]));
+            renewalDate = new Date(Long.parseLong(split[CookieFields.SESSION_LAST_UPDATE_DATE.getValue()]));
         } catch (Exception e) {
             String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.getMessage());
 
             // TODO: dedicated exception
             throw new Exception(errorMessage);
         }
-    }
-
-    /**
-     * Gets and validates the session ID from the raw cookie values.
-     * @param rawCookieValues A collection contains the raw cookie values.
-     * @return The session ID.
-     * @throws Exception Thrown if the session ID string is not a UUID.
-     */
-    private String getAndValidateSessionId(String[] rawCookieValues) throws Exception {
-        String sessionId = rawCookieValues[RAW_COOKIE_SESSION_ID_INDEX];
-
-        if (!Sanitizer.isUUID(sessionId)) {
-            String errorMessage  = String.format("Session ID '%s' is not of type UUID.", sessionId);
-
-            throw new Exception(errorMessage);
-        }
-
-        return sessionId;
     }
 
     // endregion Private
