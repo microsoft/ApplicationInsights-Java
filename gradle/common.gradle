@@ -50,3 +50,18 @@ subprojects {
 }
 
 // endregion Shared sub-projects configuration
+
+// region Public methods
+
+ext {
+    verifyProjectPropertyExists = this.&verifyProjectPropertyExists
+}
+
+def verifyProjectPropertyExists(propertyName, taskName)
+{
+    if (!this.hasProperty(propertyName)) {
+        throw new GroovyRuntimeException("Property $propertyName must be defined for task $taskName")
+    }
+}
+
+// endregion Public methods

@@ -19,49 +19,48 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-// Azure SDK Pom as a reference: https://repo1.maven.org/maven2/com/microsoft/azure/azure-core/0.7.0/azure-core-0.7.0.pom
-subprojects {
-    apply plugin: 'maven'
+apply plugin: 'maven'
 
-    task checkUploadProperties << {
-        if (!this.hasProperty("mavenUserPassword")) {
-            throw new GroovyRuntimeException("Property mavenUserPassword should be defined for uploadArchives task")
-        } else if (!this.hasProperty("mavenUsername")) {
-            throw new GroovyRuntimeException("Property mavenUsername should be defined for uploadArchives task")
-        } else if (!this.hasProperty("mavenRepositoryUrl")) {
-            throw new GroovyRuntimeException("Property mavenRepositoryUrl should be defined for uploadArchives task")
-        }
-    }
-
-    task checkIfReleaseAndUpdateVersion {
-        def releaseVersion = System.getenv("releaseVersion")
-        if (releaseVersion?.trim()) {
-            version = releaseVersion
-            subprojects.findAll { p -> p.version = releaseVersion }
-        }
-    }
-    tasks.uploadArchives.dependsOn checkUploadProperties, checkIfReleaseAndUpdateVersion
-
-    repositories {
-        mavenCentral()
-    }
-
-    configurations {
-        deployerJars
-    }
-
-    dependencies {
-        deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
+// region Publishing configuration
+task checkIfReleaseAndUpdateVersion {
+    def releaseVersion = System.getenv("releaseVersion")
+    if (releaseVersion?.trim()) {
+        version = releaseVersion
+        subprojects.findAll { p -> p.version = releaseVersion }
     }
 }
 
+uploadArchives {
+    doFirst {
+        verifyProjectPropertyExists("mavenRepositoryUrl", name)
+        verifyProjectPropertyExists("mavenUsername", name)
+        verifyProjectPropertyExists("mavenUserPassword", name)
+    }
+
+    dependsOn tasks.checkIfReleaseAndUpdateVersion
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
+}
+
+// endregion Publishing configuration
+
+// region Public methods
 ext {
     updatePomWithGeneralProjectInformation = this.&updatePomWithGeneralProjectInformation
     writePomToArtifactsDirectory = this.&writePomToArtifactsDirectory
     getArtifactsDirectory = this.&getArtifactsDirectory
 }
 
-// Azure SDK Pom as a reference: https://repo1.maven.org/maven2/com/microsoft/azure/azure-core/0.7.0/azure-core-0.7.0.pom
 def updatePomWithGeneralProjectInformation(pomObject) {
     pomObject.project {
         url = "https://github.com/Microsoft/AppInsights-Java"
@@ -122,4 +121,4 @@ def getArtifactsDirectory(artifactId) {
     return dir
 }
 
-// endregion Shared sub-projects configuration
+// endregion Public methods

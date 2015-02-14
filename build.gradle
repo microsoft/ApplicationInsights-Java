@@ -19,17 +19,24 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply from: 'gradle/common.gradle'
-apply from: 'gradle/publishing.gradle'
+// region Global properties
 
-// region global variables
+ext {
+    msftAppInsights = "Microsoft Application Insights"
+    msftAppInsightsJavaSdk = "$msftAppInsights Java SDK"
+    buildScriptsDir = getProjectDir().toString() + "/gradle"
+}
 
-project.ext.set("msftAppInsights", "Microsoft Application Insights")
-project.ext.set("msftAppInsightsJavaSdk", msftAppInsights + " Java SDK")
+// endregion Global properties
+
+apply from: "$buildScriptsDir/common.gradle"
+
+// region Root project script
+
 def rootProjectBuildFolder = getProjectDir().toString() + "/build"
-
-// endregion global variables
 
 task clean {
     delete(rootProjectBuildFolder)
 }
+
+// endregion Root project script
