@@ -31,11 +31,7 @@ task checkIfReleaseAndUpdateVersion {
 }
 
 uploadArchives {
-    doFirst {
-        verifyProjectPropertyExists("mavenRepositoryUrl", name)
-        verifyProjectPropertyExists("mavenUsername", name)
-        verifyProjectPropertyExists("mavenUserPassword", name)
-    }
+    ext.requriedProperties = ["mavenRepositoryUrl", "mavenUsername", "mavenUserPassword"]
 
     dependsOn tasks.checkIfReleaseAndUpdateVersion
 }

@@ -40,7 +40,7 @@ dependencies {
 }
 
 uploadArchives {
-    if (this.hasProperty("mavenUserPassword")) {
+    if (requiredPropertiesExist(requriedProperties)) {
         repositories {
             mavenDeployer {
                 configuration = configurations.deployerJars
