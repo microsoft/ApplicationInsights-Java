@@ -54,14 +54,32 @@ subprojects {
 // region Public methods
 
 ext {
-    verifyProjectPropertyExists = this.&verifyProjectPropertyExists
+    requiredPropertiesExist = this.&requiredPropertiesExist
+}
+
+gradle.taskGraph.whenReady { graph ->
+    graph.getAllTasks().each { task ->
+        if (task.hasProperty("requriedProperties")) {
+            task.property("requriedProperties").each { prop ->
+                verifyProjectPropertyExists(prop, task.name)
+            }
+        }
+    }
 }
 
 def verifyProjectPropertyExists(propertyName, taskName)
 {
     if (!this.hasProperty(propertyName)) {
-        throw new GroovyRuntimeException("Property $propertyName must be defined for task $taskName")
+        throw new GroovyRuntimeException("Property '$propertyName' must be defined for task '$taskName'")
     }
 }
 
+def requiredPropertiesExist(requiredPropertiesNames)
+{
+    return !(requiredPropertiesNames.any { prop ->
+        println "checking $prop"
+        return (!this.hasProperty(prop))
+    })
+    return true;
+}
 // endregion Public methods

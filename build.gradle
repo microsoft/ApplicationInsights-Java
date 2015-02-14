@@ -24,7 +24,7 @@
 ext {
     msftAppInsights = "Microsoft Application Insights"
     msftAppInsightsJavaSdk = "$msftAppInsights Java SDK"
-    buildScriptsDir = getProjectDir().toString() + "/gradle"
+    buildScriptsDir = "$rootDir/gradle"
 }
 
 // endregion Global properties
@@ -33,7 +33,7 @@ apply from: "$buildScriptsDir/common.gradle"
 
 // region Root project script
 
-def rootProjectBuildFolder = getProjectDir().toString() + "/build"
+def rootProjectBuildFolder = "$rootDir/build"
 
 task clean {
     delete(rootProjectBuildFolder)
