@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -57,5 +58,9 @@ public class MockTelemetryChannel implements TelemetryChannel {
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
 
+    }
+
+    public void reset() {
+        telemetryItems.clear();
     }
 }
