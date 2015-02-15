@@ -94,9 +94,7 @@ def verifyProjectPropertyExists(propertyName, taskName)
 def requiredPropertiesExist(requiredPropertiesNames)
 {
     return !(requiredPropertiesNames.any { prop ->
-        println "checking $prop"
-        return (!this.hasProperty(prop))
+        !this.hasProperty(prop)
     })
-    return true;
 }
 // endregion Public methods

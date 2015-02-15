@@ -38,7 +38,7 @@ public class DeviceInfoTest {
         Locale.setDefault(new Locale("en", "us"));
         String tag = DeviceInfo.getLocale();
 
-        assertEquals(tag, "en-US");
+        assertEquals("en-US", tag);
     }
 
     @Test
@@ -46,7 +46,7 @@ public class DeviceInfoTest {
         Locale.setDefault(new Locale("iw", "il"));
         String tag = DeviceInfo.getLocale();
 
-        assertEquals(tag, "he-IL");
+        assertEquals("he-IL", tag);
     }
 
     @Test
@@ -54,6 +54,16 @@ public class DeviceInfoTest {
         Locale.setDefault(new Locale("BadLocale"));
         String tag = DeviceInfo.getLocale();
 
-        assertEquals(tag, "und");
+        assertEquals(isJava6() ? "badlocale" : "und", tag);
+    }
+
+    private boolean isJava6()
+    {
+        try {
+            Locale.class.getMethod("toLanguageTag");
+        } catch (NoSuchMethodException e) {
+            return true;
+        }
+        return false;
     }
 }
