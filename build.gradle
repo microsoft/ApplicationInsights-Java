@@ -30,6 +30,7 @@ ext {
 // endregion Global properties
 
 apply from: "$buildScriptsDir/common.gradle"
+apply from: "$buildScriptsDir/test.gradle"
 
 // region Root project script
 
