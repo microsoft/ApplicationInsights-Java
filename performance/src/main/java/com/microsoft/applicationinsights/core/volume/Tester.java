@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.core.volume;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 
 /**
  * Created by gupele on 2/5/2015.
@@ -35,6 +36,8 @@ final class Tester {
     private final static String MOCK_METRIC_NAME  = "MOCK_METRIC_NAME";
     private final static double MOCK_METRIC_VALUE  = 120.9;
     private final static String TEST_IKEY = "00000000-0000-0000-0000-000000000000";
+    private final static String MOCK_CONTEXT_PROPERTY_BASE_NAME  = "MOCK_BASE_NAME";
+    private final static String MOCK_CONTEXT_PROPERTY_BASE_VALUE  = "MOCK_BASE_VALUE";
 
     private int numberOfTelemetries;
 
@@ -50,13 +53,20 @@ final class Tester {
 
     private int acceptedUntilEndOfSending;
 
-    public Tester() {
+    public Tester(int numberOfContextProperties) {
         TelemetryConfiguration configuration = new TelemetryConfiguration();
         configuration.setInstrumentationKey(TEST_IKEY);
         configuration.setChannel(new InProcessTelemetryChannel());
+
         fakeTransmissionOutput = TestThreadLocalData.getTransmissionOutput();
         testResultsVerifier = fakeTransmissionOutput.getTestResultsVerifier();
         telemetryClient = new TelemetryClient(configuration);
+
+        TelemetryContext context = telemetryClient.getContext();
+        for (int i = 0; i < numberOfContextProperties; ++i) {
+            String asStr = String.valueOf(i);
+            context.getProperties().put(MOCK_CONTEXT_PROPERTY_BASE_NAME + asStr, MOCK_CONTEXT_PROPERTY_BASE_VALUE + asStr);
+        }
     }
 
     public void reset(int numberOfTelemetries, long maxTimeToWaitInSeconds) {

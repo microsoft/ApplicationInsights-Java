@@ -41,7 +41,10 @@ public final class ThroughputTest {
     private final static int MIN_REQUESTS_TO_LOAD = 1000;
     private final static int MAX_REQUESTS_TO_LOAD = 1000000;
     private final static int MAX_TIME_TO_WAIT_IN_SECONDS = 100;
+    private final static int DEFAULT_NUMBER_OF_TIMES = 3;
+    private final static int DEFAULT_NUMBER_OF_PROPERTIES = 1;
     private final static String NUMBER_OF_TINES_TO_TEST_PROPERTY = "number.of.times.to.test";
+    private final static String NUMBER_OF_CONTEXT_PROPERTIES = "number.of.context.properties";
     private final static String FIELD_TO_REPLACE = "s_transmitterFactory";
 
     private static Properties properties = new Properties();
@@ -61,12 +64,18 @@ public final class ThroughputTest {
     }
 
     private static void test(ArrayList<ArrayList<TestStats>> allStats) {
-        Tester tester = new Tester();
-        int numberOfTimesToTest = 3;
+        int numberOfTimesToTest = DEFAULT_NUMBER_OF_TIMES;
         try {
             numberOfTimesToTest = Integer.valueOf(properties.getProperty(NUMBER_OF_TINES_TO_TEST_PROPERTY));
         } catch (NumberFormatException e) {
         }
+        int numberOfContextProperties = DEFAULT_NUMBER_OF_PROPERTIES;
+        try {
+            numberOfContextProperties = Integer.valueOf(properties.getProperty(NUMBER_OF_CONTEXT_PROPERTIES));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+        Tester tester = new Tester(numberOfContextProperties);
         for (int i = 0; i < numberOfTimesToTest; ++i) {
             System.err.println("   Running iteration " + (i + 1));
             ArrayList<TestStats> stats = new ArrayList<TestStats>();
