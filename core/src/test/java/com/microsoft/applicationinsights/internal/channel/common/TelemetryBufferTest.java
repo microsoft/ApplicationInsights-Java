@@ -45,7 +45,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 
-public class TelemetryBufferTest {
+public final class TelemetryBufferTest {
     private static class MockSender implements TelemetriesTransmitter {
         private static class ScheduledSendResult {
             public final boolean result;
@@ -99,8 +99,6 @@ public class TelemetryBufferTest {
 
             int called = scheduleSendCallCounter.incrementAndGet();
             assertEquals(called, 1);
-
-            assertEquals(value, 10);
 
             assertEquals(timeUnit, TimeUnit.SECONDS);
 
@@ -193,9 +191,8 @@ public class TelemetryBufferTest {
     public void testAddOneTelemetry() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 128, 10);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 128, 2);
 
-        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
         testedBuffer.add("mockTelemetry");
 
         Mockito.verify(mockSender, Mockito.times(1)).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher) any(), anyLong(), (TimeUnit) anyObject());
@@ -307,14 +304,13 @@ public class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(1);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 10);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
 
         for (int i = 0; i < 1; ++i) {
-            Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
             testedBuffer.add("mockTelemetry");
         }
 
-        mockSender.waitForFinish(20L);
+        mockSender.waitForFinish(6L);
     }
 
     @Test
@@ -326,13 +322,13 @@ public class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(10);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 10);
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
 
         for (int i = 0; i < 10; ++i) {
             Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
             testedBuffer.add("mockTelemetry");
         }
 
-        mockSender.waitForFinish(20L);
+        mockSender.waitForFinish(6L);
     }
 }

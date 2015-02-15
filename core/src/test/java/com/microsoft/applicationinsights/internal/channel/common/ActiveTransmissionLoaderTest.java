@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 
 import org.apache.commons.io.FileUtils;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyObject;
 
@@ -112,8 +113,19 @@ public class ActiveTransmissionLoaderTest {
                 assertTrue("Failed to load", ok);
             }
 
-            Thread.sleep(3000);
-            Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
+            int i = 0;
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                    Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
+                    break;
+                } catch (Error e) {
+                    ++i;
+                    if (i == 6) {
+                        assertFalse(true);
+                    }
+                }
+            }
 
         } finally {
             if (tested != null) {

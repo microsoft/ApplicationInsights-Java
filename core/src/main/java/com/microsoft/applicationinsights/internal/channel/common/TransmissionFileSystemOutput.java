@@ -35,13 +35,14 @@ import java.io.BufferedOutputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.Comparator;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -89,6 +90,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
 
     /// Cache old files here to re-send to have better performance
     private final ArrayList<File> cacheOfOldestFiles = new ArrayList<File>();
+    private final HashSet<String> filesThatAreBeingLoaded = new HashSet<String>();
 
     public TransmissionFileSystemOutput() {
         this(new File(System.getProperty("java.io.tmpdir"), TRANSMISSION_DEFAULT_FOLDER).getPath());
@@ -144,29 +146,36 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
                 return null;
             }
 
-            Optional<File> oldestFileAsTemp = renameToTemporaryName(oldestFile.get());
-            if (!oldestFileAsTemp.isPresent()) {
-                return null;
-            }
-
-            File tempFile = oldestFileAsTemp.get();
-            Optional<Transmission> transmission = loadTransmission(tempFile);
-
-            // On the vast majority of times this should work
-            // but there might be some timing issues, that's why we try twice
-            for (int deleteCounter = 0; deleteCounter < MAX_RETRY_FOR_DELETE; ++deleteCounter) {
-                if (tempFile.delete()) {
-                    break;
+            String fileName = oldestFile.get().getName();
+            try {
+                Optional<File> oldestFileAsTemp = renameToTemporaryName(oldestFile.get());
+                if (!oldestFileAsTemp.isPresent()) {
+                    return null;
                 }
 
-                try {
-                    Thread.sleep(DELETE_TIMEOUT_ON_FAILURE_IN_MILLS);
-                } catch (InterruptedException e) {
-                    break;
+                File tempFile = oldestFileAsTemp.get();
+                Optional<Transmission> transmission = loadTransmission(tempFile);
+
+                // On the vast majority of times this should work
+                // but there might be some timing issues, that's why we try twice
+                for (int deleteCounter = 0; deleteCounter < MAX_RETRY_FOR_DELETE; ++deleteCounter) {
+                    if (tempFile.delete()) {
+                        break;
+                    }
+
+                    try {
+                        Thread.sleep(DELETE_TIMEOUT_ON_FAILURE_IN_MILLS);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+
+                return transmission.get();
+            } finally {
+                synchronized (this) {
+                    filesThatAreBeingLoaded.remove(fileName);
                 }
             }
-
-            return transmission.get();
         } catch (Exception e) {
         }
 
@@ -244,8 +253,9 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private boolean renameToPermanentName(File tempTransmissionFile) {
         File transmissionFile = new File(folder, FilenameUtils.getBaseName(tempTransmissionFile.getName()) + TRANSMISSION_FILE_EXTENSION);
         try {
+            long fileLength = tempTransmissionFile.length();
             FileUtils.moveFile(tempTransmissionFile, transmissionFile);
-            size.addAndGet(transmissionFile.length());
+            size.addAndGet(fileLength);
             return true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Rename To Permanent Name failed, exception: %s", e.getMessage());
@@ -336,8 +346,16 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
                 cacheOfOldestFiles.addAll(filesToLoad);
             }
 
+            File fileToLoad = cacheOfOldestFiles.remove(cacheOfOldestFiles.size() - 1);
+
+            String fileName = fileToLoad.getName();
+            if (filesThatAreBeingLoaded.contains(fileName)) {
+                return Optional.absent();
+            }
+
+            filesThatAreBeingLoaded.add(fileName);
             // Remove oldest which is the last one, this is optimized for not doing a copy
-            return Optional.fromNullable(cacheOfOldestFiles.remove(cacheOfOldestFiles.size() - 1));
+            return Optional.fromNullable(fileToLoad);
         }
     }
 }
