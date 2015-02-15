@@ -65,6 +65,12 @@ public class Cookie {
             }
         }
 
+        if (httpCookie == null) {
+
+            // Http cookie hasn't been found.
+            return null;
+        }
+
         E instance = null;
         try {
             instance = eClass.getConstructor(javax.servlet.http.Cookie.class).newInstance(httpCookie);

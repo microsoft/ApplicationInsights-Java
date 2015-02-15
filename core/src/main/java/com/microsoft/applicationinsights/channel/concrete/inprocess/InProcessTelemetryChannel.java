@@ -193,9 +193,11 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     private synchronized void initialize(String endpointAddress, boolean developerMode) {
         useOld = Boolean.valueOf(System.getenv("JAVA_SDK_USE_OLD_T_POLICY"));
+
         if (!useOld) {
-            System.err.println("Using new");
+            InternalLogger.INSTANCE.trace("Using new transmission policy");
         }
+
         makeSureEndpointAddressIsValid(endpointAddress);
 
         if (s_transmitterFactory == null) {

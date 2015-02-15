@@ -48,15 +48,22 @@ import java.util.List;
 public class WebRequestTrackingTelemetryModuleTests {
     private static JettyTestServer server = new JettyTestServer();
     private static WebRequestTrackingTelemetryModule defaultModule;
+    private static MockTelemetryChannel channel;
 
     @BeforeClass
     public static void classInitialize() throws Exception {
         server.start();
+
+        // Set mock channel
+        channel = new MockTelemetryChannel();
+        TelemetryConfiguration.getActive().setChannel(channel);
+        TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
     }
 
     @Before
     public void testInitialize() {
         defaultModule = new WebRequestTrackingTelemetryModule();
+        channel.reset();
     }
 
     @AfterClass
@@ -66,11 +73,6 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     @Test
     public void testHttpRequestTrackedSuccessfully() throws Exception {
-        //Set channel
-        MockTelemetryChannel channel = new MockTelemetryChannel();
-        TelemetryConfiguration.getActive().setChannel(channel);
-        TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
-
         sendRequestAndGetResponseCookie();
 
         List<Telemetry> items = channel.getTelemetryItems();
