@@ -29,9 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
-import com.microsoft.applicationinsights.internal.channel.OldTelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
-import com.microsoft.applicationinsights.internal.channel.common.OldTelemetryBuffer;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
@@ -75,12 +73,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     private boolean stopped = false;
 
     private TelemetriesTransmitter telemetriesTransmitter;
-    private OldTelemetriesTransmitter oldTelemetriesTransmitter;
 
     private TelemetryBuffer telemetryBuffer;
-    private OldTelemetryBuffer oldTelemetryBuffer;
-
-    private boolean useOld;
 
     public InProcessTelemetryChannel() {
         this(null, false);
@@ -130,11 +124,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             this.developerMode = developerMode;
             int maxTelemetriesInBatch = this.developerMode ? 1 : DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER;
 
-            if (useOld) {
-                oldTelemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
-            } else {
-                telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
-            }
+            telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
         }
     }
 
@@ -149,21 +139,17 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             telemetry.getContext().getProperties().put("DeveloperMode", "true");
         }
 
-        if (useOld) {
-            oldTelemetryBuffer.add(telemetry);
-        } else {
-            StringWriter writer = new StringWriter();
-            JsonTelemetryDataSerializer jsonWriter = null;
-            try {
-                jsonWriter = new JsonTelemetryDataSerializer(writer);
-                telemetry.serialize(jsonWriter);
-                jsonWriter.close();
-                String asJson = writer.toString();
-                telemetryBuffer.add(asJson);
-            } catch (IOException e) {
-                InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
-                return;
-            }
+        StringWriter writer = new StringWriter();
+        JsonTelemetryDataSerializer jsonWriter = null;
+        try {
+            jsonWriter = new JsonTelemetryDataSerializer(writer);
+            telemetry.serialize(jsonWriter);
+            jsonWriter.close();
+            String asJson = writer.toString();
+            telemetryBuffer.add(asJson);
+        } catch (IOException e) {
+            InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
+            return;
         }
 
         if (isDeveloperMode()) {
@@ -192,25 +178,14 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     }
 
     private synchronized void initialize(String endpointAddress, boolean developerMode) {
-        useOld = Boolean.valueOf(System.getenv("JAVA_SDK_USE_OLD_T_POLICY"));
-
-        if (!useOld) {
-            InternalLogger.INSTANCE.trace("Using new transmission policy");
-        }
-
         makeSureEndpointAddressIsValid(endpointAddress);
 
         if (s_transmitterFactory == null) {
             s_transmitterFactory = new InProcessTelemetryChannelFactory();
         }
 
-        if (useOld) {
-            oldTelemetriesTransmitter = s_transmitterFactory.createOld(endpointAddress);
-            oldTelemetryBuffer = new OldTelemetryBuffer(oldTelemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
-        } else {
-            telemetriesTransmitter = s_transmitterFactory.create(endpointAddress);
-            telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
-        }
+        telemetriesTransmitter = s_transmitterFactory.create(endpointAddress);
+        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
         setDeveloperMode(developerMode);
     }
 
