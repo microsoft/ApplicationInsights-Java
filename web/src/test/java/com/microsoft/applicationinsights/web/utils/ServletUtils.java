@@ -24,9 +24,6 @@ package com.microsoft.applicationinsights.web.utils;
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
 import java.lang.reflect.Field;
-import org.eclipse.jetty.server.HttpChannel;
-import org.eclipse.jetty.server.HttpConnection;
-import org.eclipse.jetty.server.HttpInputOverHTTP;
 import org.eclipse.jetty.server.Request;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 
@@ -68,9 +65,7 @@ public class ServletUtils {
     }
 
     public static ServletRequest generateDummyServletRequest() {
-        return new Request(
-                HttpChannel.getCurrentHttpChannel(),
-                new HttpInputOverHTTP(HttpConnection.getCurrentConnection()));
+        return new Request();
     }
 
     // region Private
