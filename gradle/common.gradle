@@ -20,6 +20,7 @@
  */
 
 project.ext.set("artifactsDirectoryRoot", new File(rootProject.getProjectDir(), 'build/artifacts'))
+project.ext.set("globalTestResultsDirectoryRoot", new File(rootProject.getProjectDir(), 'global-test-results'))
 
 // region Shared sub-projects configuration
 
@@ -46,6 +47,22 @@ subprojects {
 
     task copyLibsToGlobalArtifactsFolder(type: Copy) {
         into artifactsDirectoryRoot
+    }
+    
+    task testAndCollect << {
+        try
+        {
+            test{}.execute()
+        }
+        finally
+        {
+            def localTestResultsDirectory = new File(project.getProjectDir(), "build/test-results")
+            def globalTestResultsDirectory = new File(globalTestResultsDirectoryRoot.getAbsolutePath(), outputFolderName)
+            copy {
+                from localTestResultsDirectory
+                into globalTestResultsDirectory
+            }
+        }
     }
 }
 
