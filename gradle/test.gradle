@@ -2,45 +2,44 @@ task remoteTest {
     ext.requriedProperties = ["machineName", "userName", "pass", "remoteDirectoryName", "localTestOutputFolderName"]
     
     doLast {
-        println "Parameters -"
-        println "MachineName: $machineName"
-        println "User: $userName"
-        println "Test output folder: $localTestOutputFolderName"
+        logger.info("MachineName: $machineName")
+        logger.info("User: $userName")
+        logger.info("Test output folder: $localTestOutputFolderName")
         def localDirectory = rootProject.getProjectDir()
         def destinationDirectory = "/home/$userName/Desktop/$remoteDirectoryName"
         
         def archiveName = "binaries.jar"
         def archiveLocalLocation = "$localDirectory/$archiveName"
         
-        println "Delete local archive if it exists"
+        logger.info("Delete local archive if it exists")
         delete archiveLocalLocation
         
-        println "Compress directory $localDirectory into $archiveLocalLocation"
+        logger.info("Compress directory $localDirectory into $archiveLocalLocation")
         exec {
             executable "jar"
             args "cf",archiveName,relativePath(localDirectory)
         }
         
-        println "Creating clean remote directory: $destinationDirectory"
+        logger.info("Creating clean remote directory: $destinationDirectory")
         exec {
             executable "plink.exe"
             args "-pw",pass,"$userName@$machineName","rm -f -r $destinationDirectory && mkdir -p $destinationDirectory"
         }
         
         def archiveRemoteLocation = "$destinationDirectory/$archiveName"
-        println "Copying zipped binaries from $archiveLocalLocation to $archiveRemoteLocation on machine $machineName"
+        logger.info("Copying zipped binaries from $archiveLocalLocation to $archiveRemoteLocation on machine $machineName")
         exec {
             executable "pscp.exe"
             args "-r","-pw",pass,archiveLocalLocation,"$userName@$machineName:$archiveRemoteLocation"
         }
         
-        println "Extract zipped binaries from $archiveRemoteLocation on machine $machineName"
+        logger.info("Extract zipped binaries from $archiveRemoteLocation on machine $machineName")
         exec {
             executable "plink.exe"
             args "-pw",pass,"$userName@$machineName","cd $destinationDirectory && jar xf $archiveRemoteLocation"
         }
         
-        println "Allow execution of gradlew"
+        logger.info("Allow execution of gradlew")
         exec {
             executable "plink.exe"
             args "-pw",pass,"$userName@$machineName","chmod +x $destinationDirectory/gradlew"
@@ -48,7 +47,7 @@ task remoteTest {
         
         try
         {
-            println "Executing tests remotely"
+            logger.info("Executing tests remotely")
             exec {
                 executable "plink.exe"
                 args "-pw",pass,"$userName@$machineName","cd $destinationDirectory && ./gradlew testAndCollect  -x compileJava -x compileTestJava -PoutputFolderName=$localTestOutputFolderName"
@@ -57,26 +56,26 @@ task remoteTest {
         finally
         {
             def globalTestResultsDirectoryName = globalTestResultsDirectoryRoot.name
-            println "Create local results directory: $globalTestResultsDirectoryRoot"
+            logger.info("Create local results directory: $globalTestResultsDirectoryRoot")
             def localTestOutputFolder = new File(globalTestResultsDirectoryRoot, localTestOutputFolderName)
             localTestOutputFolder.mkdirs()
             
             def remoteTestResultsDirectory = "$destinationDirectory/$globalTestResultsDirectoryName/$localTestOutputFolderName"
             def testResultsArchiveName = "testResults.jar"
             def remoteTestResultsArchiveLocation = "$remoteTestResultsDirectory/$testResultsArchiveName"
-            println "Compress test results"
+            logger.info("Compress test results")
             exec {
                 executable "plink.exe"
                 args "-pw",pass,"$userName@$machineName","cd $remoteTestResultsDirectory && jar cf $testResultsArchiveName ."
             }
             
-            println "Copying test results back"
+            logger.info("Copying test results back")
             exec {
                 executable "pscp.exe"
                 args "-r","-pw",pass,"$userName@$machineName:$remoteTestResultsArchiveLocation","$localTestOutputFolder"
             }
             
-            println "Unzip test results archive"
+            logger.info("Unzip test results archive")
             exec {
                 executable "cmd"
                 args "/c cd $localTestOutputFolder && jar xf $testResultsArchiveName"
