@@ -21,8 +21,6 @@
 
 apply from: "$buildScriptsDir/publishing.gradle"
 
-version = (version == "unspecified") ? "0.9.0-SNAPSHOT" : version
-group = "com.microsoft.azure"
 archivesBaseName = 'applicationinsights-logging'
 
 // region Publishing tasks
@@ -277,8 +275,6 @@ task generateLoggingSources << {
 assemble.doLast {
     generateLoggingJavadocs.execute()
     generateLoggingSources.execute()
-    copyLibsToGlobalArtifactsFolder {
-        from 'build/libs'
-    }.execute()
+    copyLibsToGlobalArtifactsFolder.execute()
 }
 // endregion Creating sources jars

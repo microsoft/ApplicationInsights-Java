@@ -21,6 +21,9 @@
 
 apply plugin: 'maven'
 
+version = (version == "unspecified") ? "0.9.0-SNAPSHOT" : version
+group = "com.microsoft.azure"
+
 // region Publishing configuration
 task checkIfReleaseAndUpdateVersion {
     def releaseVersion = System.getenv("releaseVersion")
@@ -47,6 +50,36 @@ configurations {
 dependencies {
     deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
 }
+
+task prepareSources(type: Jar) {
+    afterEvaluate {
+        archiveName = "$archivesBaseName-$version-sources.jar"
+        from sourceSets.main.allJava
+        destinationDir = new File("$buildDir/libs/$project.name")
+    }
+}
+
+task prepareJavadoc(type: Jar){
+    afterEvaluate  {
+        archiveName = "$archivesBaseName-$version-javadoc.jar"
+        from "$docsDir/javadoc"
+        destinationDir = new File("$buildDir/libs/$project.name")
+    }
+    dependsOn javadoc
+}
+
+task copyLibsToGlobalArtifactsFolder(type: Copy) {
+    from libsDir
+    into artifactsDirectoryRoot
+
+    dependsOn assemble, prepareSources, prepareJavadoc
+}
+
+task prepare {
+    dependsOn copyLibsToGlobalArtifactsFolder
+}
+
+
 
 // endregion Publishing configuration
 
