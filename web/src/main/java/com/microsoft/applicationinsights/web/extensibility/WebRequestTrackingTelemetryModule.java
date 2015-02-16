@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.apache.http.HttpStatus;
 
 /**
@@ -57,7 +58,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
         }
 
         try {
-            RequestTelemetryContext context = getTelemetryContextFromServletRequest(req);
+            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
             HttpRequestTelemetry telemetry = context.getHttpRequestTelemetry();
 
             HttpServletRequest request = (HttpServletRequest) req;
@@ -97,7 +98,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
         }
 
         try {
-            RequestTelemetryContext context = getTelemetryContextFromServletRequest(req);
+            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
             HttpRequestTelemetry telemetry = context.getHttpRequestTelemetry();
 
             long endTime = new Date().getTime();
@@ -128,12 +129,4 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
                     "Failed to initialize telemetry module " + this.getClass().getSimpleName() + ". Exception: %s.", e.getMessage());
         }
     }
-
-    // region Private methods
-
-    private RequestTelemetryContext getTelemetryContextFromServletRequest(ServletRequest request) {
-        return (RequestTelemetryContext)request.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
-    }
-
-    // endregion Private methods
 }

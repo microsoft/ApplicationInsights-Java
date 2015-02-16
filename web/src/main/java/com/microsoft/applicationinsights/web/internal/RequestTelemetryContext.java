@@ -34,8 +34,6 @@ public class RequestTelemetryContext {
     private SessionCookie sessionCookie;
     private UserCookie userCookie;
 
-    public static final String CONTEXT_ATTR_KEY = "CONTEXT_ATTR";
-
     /**
      * Constructs new RequestTelemetryContext object.
      * @param ticks The time in ticks
