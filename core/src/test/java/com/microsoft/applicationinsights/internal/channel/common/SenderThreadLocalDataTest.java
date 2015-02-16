@@ -38,38 +38,38 @@ public final class SenderThreadLocalDataTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testWithEmptyNegativeAddSeconds() {
-        new SenderThreadLocalBackOffData(new long[]{1}, -1);
+        new SenderThreadLocalBackOffData(new long[]{1000}, -1);
     }
 
     @Test
     public void testStateAfterCtor() {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000});
 
         assertFalse(sender.isTryingToSend());
     }
 
     @Test
     public void testMultipleOnFailedSending() {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1,2,1});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000,2000,1000});
         verifyBackOff(sender, 3, 4);
     }
 
     @Test
     public void testOnDoneSending() {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000});
         verifyOnDoneSending(sender);
     }
 
     @Test
     public void testDoneSendingAfterFailedSending() {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[]{1});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[]{1000});
         verifyBackOff(sender, 1, 1);
         verifyOnDoneSending(sender);
     }
 
     @Test
     public void testStopWhileWaiting() throws InterruptedException {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[]{10});
+        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[]{10000});
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {

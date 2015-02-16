@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import org.mockito.Mockito;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyObject;
 
@@ -123,9 +124,17 @@ public class ActiveTransmissionNetworkOutputTest {
             tested.send(new Transmission(new byte[2], MOCK_CONTENT_TYPE, MOCK_ENCODING_TYPE));
         }
 
+        int waitCounter = 0;
         if (mockOutput != null) {
-            Thread.sleep(2000);
-            Mockito.verify(mockOutput, Mockito.times(expectedSends)).send((Transmission) anyObject());
+            try {
+                Mockito.verify(mockOutput, Mockito.times(expectedSends)).send((Transmission) anyObject());
+                Thread.sleep(1000);
+            } catch (Error e) {
+                ++waitCounter;
+                if (waitCounter == 2) {
+                    assertFalse(true);
+                }
+            }
         }
 
         tested.stop(60L, TimeUnit.SECONDS);

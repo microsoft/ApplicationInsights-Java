@@ -25,8 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
 import com.google.common.base.Preconditions;
 
 /**
@@ -46,25 +44,25 @@ final class SenderThreadLocalBackOffData {
     private final Condition backOffCondition;
     private int currentBackOffIndex;
     private boolean instanceIsActive;
-    private final int addSeconds;
-    private final long[] backOffTimeoutsInSeconds;
+    private final long addMilliseconds;
+    private final long[] backOffTimeoutsInMillis;
 
     /**
-     * The constructor must get the {@link BackOffTimesContainer} that will supply the needed back-off timeouts.
-     * @param backOffTimeoutsInSeconds The array of timeouts that will be used when the thread needs to back off.
-     * @param addSeconds The amount of seconds that will be added to the 'large' intervals to distinct between sender threads.
+     * The constructor must get the {@link BackOffTimesPolicy} that will supply the needed back-off timeouts.
+     * @param backOffTimeoutsInMillis The array of timeouts that will be used when the thread needs to back off.
+     * @param addMilliseconds The amount of seconds that will be added to the 'large' intervals to distinct between sender threads.
      */
-    public SenderThreadLocalBackOffData(long[] backOffTimeoutsInSeconds, int addSeconds) {
-        Preconditions.checkNotNull(backOffTimeoutsInSeconds, "backOffTimeoutsInSeconds must be not null");
-        Preconditions.checkArgument(backOffTimeoutsInSeconds.length > 0, "backOffTimeoutsInSeconds must not be empty");
-        Preconditions.checkArgument(addSeconds >= 0, "addSeconds must not be >= 0");
+    public SenderThreadLocalBackOffData(long[] backOffTimeoutsInMillis, long addMilliseconds) {
+        Preconditions.checkNotNull(backOffTimeoutsInMillis, "backOffTimeoutsInSeconds must be not null");
+        Preconditions.checkArgument(backOffTimeoutsInMillis.length > 0, "backOffTimeoutsInSeconds must not be empty");
+        Preconditions.checkArgument(addMilliseconds >= 0, "addSeconds must not be >= 0");
 
         currentBackOffIndex = -1;
         instanceIsActive = true;
         lock = new ReentrantLock();
         backOffCondition = lock.newCondition();
-        this.backOffTimeoutsInSeconds = backOffTimeoutsInSeconds;
-        this.addSeconds = addSeconds;
+        this.backOffTimeoutsInMillis = backOffTimeoutsInMillis;
+        this.addMilliseconds = addMilliseconds;
     }
 
     public boolean isTryingToSend() {
@@ -97,8 +95,7 @@ final class SenderThreadLocalBackOffData {
          try {
              lock.lock();
              ++currentBackOffIndex;
-             if (currentBackOffIndex == backOffTimeoutsInSeconds.length) {
-                 InternalLogger.INSTANCE.trace("loosing");
+             if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
                  currentBackOffIndex = -1;
 
                  // Exhausted the back-offs
@@ -110,12 +107,11 @@ final class SenderThreadLocalBackOffData {
             }
 
              try {
-                 long secondsToWait = backOffTimeoutsInSeconds[currentBackOffIndex];
-                 if (secondsToWait > BackOffTimesContainer.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
-                     secondsToWait += addSeconds;
+                 long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
+                 if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
+                     millisecondsToWait += addMilliseconds;
                  }
-                 InternalLogger.INSTANCE.trace("waiting %d", secondsToWait);
-                 backOffCondition.await(secondsToWait, TimeUnit.SECONDS);
+                 backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
                  return instanceIsActive;
             } catch (InterruptedException e) {
                 return false;
