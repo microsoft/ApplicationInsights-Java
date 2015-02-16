@@ -21,8 +21,6 @@
 
 apply from: "$buildScriptsDir/publishing.gradle"
 
-version = (version == "unspecified") ? "0.9.0-SNAPSHOT" : version
-group = "com.microsoft.azure"
 archivesBaseName = 'applicationinsights-core'
 jar {
     destinationDir = new File("$buildDir/libs/core")
@@ -66,30 +64,3 @@ uploadArchives {
 
 // endregion Publishing tasks
 
-// region Creating Sources & Javadocs jars
-
-task generateCoreSourcesJar(type: Jar) {
-    archiveName = archivesBaseName + '-' + version + '-sources.jar'
-    from sourceSets.main.allJava
-    destinationDir = new File("$buildDir/libs/core")
-}
-
-task generateCoreJavadocJar(type: Jar) {
-    doFirst {
-        javadoc.execute()
-    }
-
-    archiveName = archivesBaseName + '-' + version + '-javadoc.jar'
-    from javadoc
-    destinationDir = new File("$buildDir/libs/core")
-}
-
-assemble.doLast {
-    generateCoreSourcesJar.execute()
-    generateCoreJavadocJar.execute()
-    copyLibsToGlobalArtifactsFolder {
-        from 'build/libs'
-    }.execute()
-}
-
-// endregion Creating Sources & Javadocs jars
