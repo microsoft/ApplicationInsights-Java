@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,15 +38,17 @@ interface ConfigFileParser {
         public final boolean found;
 
         public StructuredDataResult() {
-            this.sectionTag = null;
-            this.items = Collections.emptyMap();
-            this.found = false;
+            this(null, new HashMap<String, String>(), false);
         }
 
         public StructuredDataResult(String sectionTag, Map<String, String> items) {
+            this(sectionTag, items, true);
+        }
+
+        public StructuredDataResult(String sectionTag, Map<String, String> items, boolean found) {
             this.sectionTag = sectionTag;
             this.items = items;
-            this.found = true;
+            this.found = found;
         }
     }
 

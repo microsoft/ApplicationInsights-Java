@@ -152,7 +152,7 @@ final class XmlConfigParser implements ConfigFileParser {
         String sectionTagValue = null;
         Element sectionElement = getFirstElementInDoc(sectionName);
         if (sectionElement == null) {
-            return new StructuredDataResult(sectionTagValue, items);
+            return new StructuredDataResult(sectionTagValue, items, false);
         }
 
         if (!Strings.isNullOrEmpty(sectionTag)) {
