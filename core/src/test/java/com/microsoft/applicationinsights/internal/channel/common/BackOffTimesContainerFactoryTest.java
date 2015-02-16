@@ -28,55 +28,55 @@ import static org.junit.Assert.*;
 public final class BackOffTimesContainerFactoryTest {
     @Test
     public void testEmptyString() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create("");
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("");
         assertTrue(container instanceof ExponentialBackOffTimesPolicy);
     }
 
     @Test
     public void testNullString() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create(null);
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create(null);
         assertTrue(container instanceof ExponentialBackOffTimesPolicy);
     }
 
     @Test
     public void testWrongString() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create("exponentiall");
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("exponentiall");
         assertTrue(container instanceof ExponentialBackOffTimesPolicy);
     }
 
     @Test
     public void testExponentialLowerCase() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create("exponential");
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("exponential");
         assertTrue(container instanceof ExponentialBackOffTimesPolicy);
     }
 
     @Test
     public void testExponentialUpperCase() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create("EXPONENTIAL");
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("EXPONENTIAL");
         assertTrue(container instanceof ExponentialBackOffTimesPolicy);
     }
 
     @Test
     public void testExponentialDifferentCase() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create("EXpoNENTIAL");
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("EXpoNENTIAL");
         assertTrue(container instanceof ExponentialBackOffTimesPolicy);
     }
 
     @Test
     public void testStaticLowerCase() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create("static");
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("static");
         assertTrue(container instanceof StaticBackOffTimesPolicy);
     }
 
     @Test
     public void testStaticUpperCase() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create("STATIC");
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("STATIC");
         assertTrue(container instanceof StaticBackOffTimesPolicy);
     }
 
     @Test
     public void testStaticDifferentCase() {
-        BackOffTimesContainer container = new BackOffTimesPolicyFactory().create("stAtic");
+        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("stAtic");
         assertTrue(container instanceof StaticBackOffTimesPolicy);
     }
 }

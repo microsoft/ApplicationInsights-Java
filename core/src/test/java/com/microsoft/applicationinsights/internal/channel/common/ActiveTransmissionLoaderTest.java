@@ -116,14 +116,14 @@ public class ActiveTransmissionLoaderTest {
             int i = 0;
             while (true) {
                 try {
-                    Thread.sleep(1000);
                     Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
                     break;
                 } catch (Error e) {
                     ++i;
-                    if (i == 6) {
+                    if (i == 7) {
                         assertFalse(true);
                     }
+                    Thread.sleep(1000);
                 }
             }
 

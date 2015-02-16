@@ -45,98 +45,98 @@ public final class SenderThreadsBackOffManagerTest {
         }
 
         public int stop() {
-            elapsed = (int)((double)(System.nanoTime() - start) / 1000000000.0);
+            elapsed = (int)((double)(System.nanoTime() - start) / 1000000.0);
             return elapsed;
         }
     }
 
     @Test
     public void testOneBackOff() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1});
-        verifyBackOff(manager, 1, 1, true);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100});
+        verifyBackOff(manager, 1, 100, true);
     }
 
     @Test
     public void testTwoBackOffs() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1, 2});
-        verifyBackOff(manager, 2, 3, true, true);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100, 100});
+        verifyBackOff(manager, 2, 200, true, true);
     }
 
     @Test
     public void testExhaustedBackOffsWithOne() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1});
-        verifyBackOff(manager, 2, 1, true, false);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100});
+        verifyBackOff(manager, 2, 100, true, false);
     }
 
     @Test
     public void testExhaustedBackOffsWithTwo() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1, 1});
-        verifyBackOff(manager, 3, 2, true, true, false);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100, 100});
+        verifyBackOff(manager, 3, 200, true, true, false);
     }
 
     @Test
     public void testExhaustedBackOffsWithOneAndRestarted() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1});
-        verifyBackOff(manager, 3, 2, true, false, true);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100});
+        verifyBackOff(manager, 3, 200, true, false, true);
     }
 
     @Test
     public void testExhaustedBackOffsWithTwoAndRestarted() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1, 1});
-        verifyBackOff(manager, 4, 3, true, true, false, true);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100, 100});
+        verifyBackOff(manager, 4, 300, true, true, false, true);
     }
 
     @Test
     public void testOneThreadStoppedBeforeBackOff() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {5});
-        verifyMultipleThreadsStoppedBeforeBackOff(manager, 1, 2);
+        SenderThreadsBackOffManager manager = createManager(new long[] {500});
+        verifyMultipleThreadsStoppedBeforeBackOff(manager, 1, 200);
     }
 
     @Test
     public void testTwoThreadsStoppedBeforeBackOff() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {5});
-        verifyMultipleThreadsStoppedBeforeBackOff(manager, 2, 2);
+        SenderThreadsBackOffManager manager = createManager(new long[] {500});
+        verifyMultipleThreadsStoppedBeforeBackOff(manager, 2, 200);
     }
 
     @Test
     public void testSevenThreadsStoppedBeforeBackOff() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[]{5});
-        verifyMultipleThreadsStoppedBeforeBackOff(manager, 7, 2);
+        SenderThreadsBackOffManager manager = createManager(new long[]{500});
+        verifyMultipleThreadsStoppedBeforeBackOff(manager, 7, 200);
     }
 
     @Test
     public void testTwoBackOffsAndDoneSendingInTheMiddle() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1, 5});
-        verifyBackOffWithDoneSending(manager, 2, 2, 1, true, true);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100, 500});
+        verifyBackOffWithDoneSending(manager, 2, 200, 1, true, true);
     }
 
     @Test
     public void testTwoBackOffsAndDoneSendingBefore() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1, 1});
-        verifyBackOffWithDoneSending(manager, 2, 2, 0, true, true);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100, 100});
+        verifyBackOffWithDoneSending(manager, 2, 200, 0, true, true);
     }
 
     @Test
     public void testTwoBackOffsAndDoneSendingAfterLast() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1, 1});
-        verifyBackOffWithDoneSending(manager, 2, 2, 0, true, true);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100, 100});
+        verifyBackOffWithDoneSending(manager, 2, 200, 0, true, true);
     }
 
     @Test
     public void testTwoBackOffsAndDoneSendingAfterFirstOfNewRound() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {1, 2});
-        verifyBackOffWithDoneSending(manager, 5, 6, 3, true, true, false, true, true);
+        SenderThreadsBackOffManager manager = createManager(new long[] {100, 100});
+        verifyBackOffWithDoneSending(manager, 5, 400, 3, true, true, false, true, true);
     }
 
     @Test
     public void testStopWhileWaiting() throws InterruptedException {
-        SenderThreadsBackOffManager manager = createManager(new long[] {5, 2});
+        SenderThreadsBackOffManager manager = createManager(new long[] {500, 200});
         verifyMultipleThreadsStoppedWhileBackOff(manager, 1, 0);
     }
 
     private static SenderThreadsBackOffManager createManager(long[] backOffTimeouts) {
-        BackOffTimesContainer container = Mockito.mock(BackOffTimesContainer.class);
-        Mockito.doReturn(backOffTimeouts).when(container).getBackOffTimeoutsInSeconds();
+        BackOffTimesPolicy container = Mockito.mock(BackOffTimesPolicy.class);
+        Mockito.doReturn(backOffTimeouts).when(container).getBackOffTimeoutsInMillis();
         SenderThreadsBackOffManager manager = new SenderThreadsBackOffManager(container);
 
         return manager;
@@ -144,14 +144,14 @@ public final class SenderThreadsBackOffManagerTest {
 
     private static void verifyBackOff(SenderThreadsBackOffManager manager,
                                       int backOffTimes,
-                                      int expectedSeconds,
+                                      long expectedMilliseconds,
                                       boolean... expectedBackOffResult) throws InterruptedException {
-        verifyBackOffWithDoneSending(manager, backOffTimes, expectedSeconds, null, expectedBackOffResult);
+        verifyBackOffWithDoneSending(manager, backOffTimes, expectedMilliseconds, null, expectedBackOffResult);
     }
 
     private static void verifyBackOffWithDoneSending(SenderThreadsBackOffManager manager,
                                                      int backOffTimes,
-                                                     int expectedSeconds,
+                                                     long expectedMilliseconds,
                                                      Integer doneSendingAfter,
                                                      boolean... expectedBackOffResult) throws InterruptedException {
         int limit = backOffTimes + (doneSendingAfter == null ? 0 : 1);
@@ -167,9 +167,9 @@ public final class SenderThreadsBackOffManagerTest {
             assertEquals(done, expectedBackOffResult[i - reduce]);
         }
 
-        int elapsed = (int)((double)(System.nanoTime() - start) / 1000000000.0);
-        assertTrue(String.format("BackOff lasted %d which is less than expected %d", elapsed, expectedSeconds), elapsed >= expectedSeconds);
-        assertTrue(String.format("BackOff lasted %d which is more than expected %d", elapsed, expectedSeconds), elapsed <= expectedSeconds + 2);
+        int elapsed = (int)((double)(System.nanoTime() - start) / 1000000.0);
+        assertTrue(String.format("BackOff lasted %d which is less than expected %d", elapsed, expectedMilliseconds), elapsed >= expectedMilliseconds);
+        assertTrue(String.format("BackOff lasted %d which is more than expected %d", elapsed, expectedMilliseconds), elapsed <= expectedMilliseconds + 2000);
     }
 
     private static void verifyMultipleThreadsStoppedBeforeBackOff(SenderThreadsBackOffManager manager,
@@ -180,13 +180,13 @@ public final class SenderThreadsBackOffManagerTest {
 
     private static void verifyMultipleThreadsStoppedWhileBackOff(SenderThreadsBackOffManager manager,
                                                                  int numberOfThreads,
-                                                                 int expectedMaxSeconds) throws InterruptedException {
-        verifyMultipleThreadsWithStopBackOff(manager, numberOfThreads, expectedMaxSeconds, false);
+                                                                 long expectedMaxMilliseconds) throws InterruptedException {
+        verifyMultipleThreadsWithStopBackOff(manager, numberOfThreads, expectedMaxMilliseconds, false);
     }
 
     private static void verifyMultipleThreadsWithStopBackOff(final SenderThreadsBackOffManager manager,
                                                              int numberOfThreads,
-                                                             int expectedMaxSeconds,
+                                                             long expectedMaxMilliseconds,
                                                              boolean stopBefore) throws InterruptedException {
         final Thread[] threads = new Thread[numberOfThreads];
         final CyclicBarrier barrier = new CyclicBarrier(numberOfThreads);
@@ -218,7 +218,7 @@ public final class SenderThreadsBackOffManagerTest {
         }
         if (!stopBefore) {
             Thread.sleep(1000);
-            ++expectedMaxSeconds;
+            expectedMaxMilliseconds += 1000;
             manager.stopAllSendersBackOffActivities();
         }
         for (Thread thread : threads) {
@@ -226,6 +226,6 @@ public final class SenderThreadsBackOffManagerTest {
         }
         int elapsed = measure.stop();
 
-        assertTrue(String.format("BackOff lasted %d which is more than expected %d", elapsed, expectedMaxSeconds), elapsed <= expectedMaxSeconds + 2);
+        assertTrue(String.format("BackOff lasted %d which is more than expected %d", elapsed, expectedMaxMilliseconds), elapsed <= expectedMaxMilliseconds + 2000);
     }
 }

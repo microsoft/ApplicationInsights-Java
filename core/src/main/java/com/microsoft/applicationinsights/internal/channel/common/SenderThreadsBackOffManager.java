@@ -43,7 +43,7 @@ import com.google.common.primitives.Longs;
  */
 final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBackOffData> {
     // The back-off timeouts that will be used by sender threads when need to back-off.
-    private long[] backOffTimeoutsInSeconds = null;
+    private long[] backOffTimeoutsInMilliseconds = null;
 
     // All the thread local data
     private final ArrayList<SenderThreadLocalBackOffData> allSendersData;
@@ -54,7 +54,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     private SenderThreadLocalBackOffData senderThreadLocalData;
     private boolean stopped;
 
-    public SenderThreadsBackOffManager(BackOffTimesContainer backOffTimesContainer) {
+    public SenderThreadsBackOffManager(BackOffTimesPolicy backOffTimesContainer) {
         allSendersData = new ArrayList<SenderThreadLocalBackOffData>();
         initializeBackOffTimeouts(backOffTimesContainer);
     }
@@ -79,7 +79,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     @Override
     protected SenderThreadLocalBackOffData initialValue() {
         int addSeconds = threadsSecondsDifference.incrementAndGet();
-        senderThreadLocalData = new SenderThreadLocalBackOffData(backOffTimeoutsInSeconds, addSeconds);
+        senderThreadLocalData = new SenderThreadLocalBackOffData(backOffTimeoutsInMilliseconds, addSeconds * 1000);
         registerSenderData(senderThreadLocalData);
         return senderThreadLocalData;
     }
@@ -97,18 +97,18 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
      * @param container The container that supplies the back-off timeouts in seconds.
      *                  Note that if the container returns null, an exception (NullPointerException) will be thrown.
      */
-    private synchronized void initializeBackOffTimeouts(BackOffTimesContainer container) {
-        if (backOffTimeoutsInSeconds != null) {
+    private synchronized void initializeBackOffTimeouts(BackOffTimesPolicy container) {
+        if (backOffTimeoutsInMilliseconds != null) {
             return;
         }
 
         if (container == null) {
-            backOffTimeoutsInSeconds = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInSeconds();
+            backOffTimeoutsInMilliseconds = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInMillis();
             InternalLogger.INSTANCE.trace("No BackOffTimesContainer, using default values.");
             return;
         }
 
-        long[] injectedBackOffTimeoutsInSeconds = container.getBackOffTimeoutsInSeconds();
+        long[] injectedBackOffTimeoutsInSeconds = container.getBackOffTimeoutsInMillis();
         ArrayList<Long> validBackOffTimeoutsInSeconds = new ArrayList<Long>();
         if (injectedBackOffTimeoutsInSeconds != null) {
             for (long backOffValue : injectedBackOffTimeoutsInSeconds) {
@@ -121,11 +121,11 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
         }
 
         if (validBackOffTimeoutsInSeconds.isEmpty()) {
-            backOffTimeoutsInSeconds = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInSeconds();
+            backOffTimeoutsInMilliseconds = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInMillis();
             InternalLogger.INSTANCE.trace("BackOff timeouts are not supplied or not valid, using default values.");
             return;
         }
 
-        backOffTimeoutsInSeconds = Longs.toArray(validBackOffTimeoutsInSeconds);
+        backOffTimeoutsInMilliseconds = Longs.toArray(validBackOffTimeoutsInSeconds);
     }
 }

@@ -172,7 +172,7 @@ public final class TransmitterImplTest {
             transmitter = new TransmitterImpl(mockDispatcher, mockSerializer, mockLoader);
 
             transmitter.sendNow(asJsons);
-            Thread.sleep(1000);
+            Thread.sleep(100);
 
             if (numberOfTransmissions == 0) {
                 Mockito.verify(mockSerializer, Mockito.never()).serialize(asJsons);
@@ -249,7 +249,7 @@ public final class TransmitterImplTest {
             transmitter = new TransmitterImpl(mockDispatcher, mockSerializer, mockLoader);
 
             transmitter.scheduleSend(mockFetcher, 100L, TimeUnit.MICROSECONDS);
-            Thread.sleep(1000);
+            Thread.sleep(100);
 
             Mockito.verify(mockFetcher, Mockito.times(1)).fetch();
             if (numberOfTransmissions == 0) {
