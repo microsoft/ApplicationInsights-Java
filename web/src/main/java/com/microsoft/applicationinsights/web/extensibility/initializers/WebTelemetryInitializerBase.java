@@ -19,49 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.utils;
+package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
 /**
- * Created by yonisha on 2/2/2015.
+ * Created by yonisha on 2/16/2015.
  */
-public enum MockTelemetryChannel implements TelemetryChannel {
-    INSTANCE;
+public abstract class WebTelemetryInitializerBase implements TelemetryInitializer {
 
-    List<Telemetry> telemetryItems = new ArrayList<Telemetry>();
-
-    public List<Telemetry> getTelemetryItems() {
-        return telemetryItems;
-    }
-
+    /**
+     * Initializes properties of the given telemetry.
+     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
+     */
     @Override
-    public boolean isDeveloperMode() {
-        return true;
+    public void initialize(Telemetry telemetry) {
+        if (ThreadContext.getRequestTelemetryContext() == null) {
+            InternalLogger.INSTANCE.error(
+                "Request telemetry context hasn't been set. Skipping telemetry initializer %s.",
+                this.getClass().getSimpleName());
+
+            return;
+        }
+
+        onInitializeTelemetry(telemetry);
     }
 
-    @Override
-    public void setDeveloperMode(boolean value) {
-
-    }
-
-    @Override
-    public void send(Telemetry item) {
-        telemetryItems.add(item);
-    }
-
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-
-    }
-
-    public void reset() {
-        telemetryItems.clear();
-    }
+    /**
+     * Initializes the properties of the given telemetry.
+     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
+     */
+    protected abstract void onInitializeTelemetry(Telemetry telemetry);
 }

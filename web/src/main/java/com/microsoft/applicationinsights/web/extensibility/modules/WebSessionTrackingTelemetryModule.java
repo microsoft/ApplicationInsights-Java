@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.extensibility;
+package com.microsoft.applicationinsights.web.extensibility.modules;
 
 import java.util.Calendar;
 import java.util.Date;

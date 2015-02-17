@@ -19,26 +19,26 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.extensibility;
+package com.microsoft.applicationinsights.web.extensibility.modules;
 
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import javax.servlet.ServletRequest;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.assertEquals;
-import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         server.start();
 
         // Set mock channel
-        channel = new MockTelemetryChannel();
+        channel = MockTelemetryChannel.INSTANCE;
         TelemetryConfiguration.getActive().setChannel(channel);
         TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
     }

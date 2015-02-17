@@ -22,28 +22,47 @@
 package com.microsoft.applicationinsights.extensibility.context;
 
 import java.util.Map;
-
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 public final class OperationContext {
     private final Map<String, String> tags;
 
+    /**
+     * Constructs new OperationContext object with the given tags.
+     * @param tags The OperationContext tags.
+     */
     public OperationContext(Map<String, String> tags) {
         this.tags = tags;
     }
 
-    String getId() {
+    /**
+     * Gets the operation id.
+     * @return Operation id.
+     */
+    public String getId() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationId());
     }
 
+    /**
+     * Sets the operation id.
+     * @param id The operation id.
+     */
     public void setId(String id) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationId(), id);
     }
 
+    /**
+     * Gets the operation name.
+     * @return Operation name.
+     */
     String getName() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationName());
     }
 
+    /**
+     * Sets the operation name.
+     * @param name Operation name.
+     */
     public void setName(String name) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationName(), name);
     }

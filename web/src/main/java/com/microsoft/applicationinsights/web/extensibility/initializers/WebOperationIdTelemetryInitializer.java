@@ -19,26 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.extensibility;
+package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
 /**
- * Created by yonisha on 2/2/2015.
+ * Created by yonisha on 2/16/2015.
  */
-public interface WebTelemetryModule {
-    /**
-     * Begin request processing.
-     * @param req The request to process
-     * @param res The response to modify
-     */
-    void onBeginRequest(ServletRequest req, ServletResponse res);
+public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerBase {
 
     /**
-     * End request processing.
-     * @param req The request to process
-     * @param res The response to modify
+     * Initializes the properties of the given telemetry.
      */
-    void onEndRequest(ServletRequest req, ServletResponse res);
+    @Override
+    protected void onInitializeTelemetry(Telemetry telemetry) {
+        RequestTelemetryContext telemetryContext = ThreadContext.getRequestTelemetryContext();
+
+        if (Strings.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
+            telemetry.getContext().getOperation().setId(telemetryContext.getHttpRequestTelemetry().getId());
+        }
+    }
 }

@@ -29,7 +29,7 @@ import java.util.List;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.web.extensibility.WebTelemetryModule;
+import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
 
 /**
  * Created by yonisha on 2/3/2015.

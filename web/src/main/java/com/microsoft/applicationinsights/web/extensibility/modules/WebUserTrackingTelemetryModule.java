@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.extensibility;
+package com.microsoft.applicationinsights.web.extensibility.modules;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
