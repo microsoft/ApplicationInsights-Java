@@ -104,7 +104,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
         try {
             RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime());
-            req.setAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY, context);
+            ThreadContext.setRequestTelemetryContext(context);
 
             webModulesContainer.invokeOnBeginRequest(req, res);
         } catch (Exception e) {

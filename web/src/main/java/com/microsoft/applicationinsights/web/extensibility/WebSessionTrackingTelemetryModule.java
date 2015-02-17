@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 
 /**
@@ -63,7 +64,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     @Override
     public void onBeginRequest(ServletRequest req, ServletResponse res) {
         HttpServletRequest request = (HttpServletRequest)req;
-        RequestTelemetryContext context = (RequestTelemetryContext)request.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
+        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
         SessionCookie sessionCookie =
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
@@ -97,7 +98,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     // region Private
 
     private void setSessionCookie(HttpServletRequest req, HttpServletResponse res) {
-        RequestTelemetryContext context = (RequestTelemetryContext)req.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
+        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
         if (isSessionCookieUpToDate(context)) {
             return;
         }

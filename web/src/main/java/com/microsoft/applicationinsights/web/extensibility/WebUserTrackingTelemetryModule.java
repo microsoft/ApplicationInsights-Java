@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 
 /**
@@ -57,7 +58,7 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
     @Override
     public void onBeginRequest(ServletRequest req, ServletResponse res) {
         HttpServletRequest request = (HttpServletRequest)req;
-        RequestTelemetryContext context = (RequestTelemetryContext)request.getAttribute(RequestTelemetryContext.CONTEXT_ATTR_KEY);
+        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
         UserCookie userCookie =
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
