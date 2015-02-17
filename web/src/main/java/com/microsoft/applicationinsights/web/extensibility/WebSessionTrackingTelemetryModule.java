@@ -118,9 +118,9 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
                 renewalDate,
                 Calendar.MINUTE,
                 SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES);
-        long timeDiffInMinutes = DateTimeUtils.getDateDiff(expirationDate, DateTimeUtils.getDateTimeNow(), TimeUnit.MINUTES);
+        long timeDiffInSeconds = DateTimeUtils.getDateDiff(expirationDate, DateTimeUtils.getDateTimeNow(), TimeUnit.SECONDS);
 
-        cookie.setMaxAge((int)timeDiffInMinutes);
+        cookie.setMaxAge((int)timeDiffInSeconds);
         res.addCookie(cookie);
     }
 
