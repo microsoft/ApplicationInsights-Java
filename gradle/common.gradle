@@ -60,22 +60,6 @@ subprojects {
             }
         }
     }
-    
-    task testAndCollect << {
-        try
-        {
-            test{}.execute()
-        }
-        finally
-        {
-            def localTestResultsDirectory = new File(project.getProjectDir(), "build/test-results")
-            def globalTestResultsDirectory = new File(globalTestResultsDirectoryRoot.getAbsolutePath(), outputFolderName)
-            copy {
-                from localTestResultsDirectory
-                into globalTestResultsDirectory
-            }
-        }
-    }
 }
 
 // endregion Shared sub-projects configuration
