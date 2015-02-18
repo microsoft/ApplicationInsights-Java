@@ -55,7 +55,7 @@ public final class OperationContext {
      * Gets the operation name.
      * @return Operation name.
      */
-    String getName() {
+    public String getName() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationName());
     }
 

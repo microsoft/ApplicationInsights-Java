@@ -40,11 +40,11 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by yonisha on 2/17/2015.
  */
-public class WebOperationIdTelemetryInitializerTests {
+public class WebOperationNameTelemetryInitializerTests {
 
     private static JettyTestServer server = new JettyTestServer();
     private static MockTelemetryChannel channel;
-    private static WebOperationIdTelemetryInitializer defaultInitializer = new WebOperationIdTelemetryInitializer();
+    private static WebOperationNameTelemetryInitializer defaultInitializer = new WebOperationNameTelemetryInitializer();
 
     // region Initialization
 
@@ -74,44 +74,44 @@ public class WebOperationIdTelemetryInitializerTests {
     // region Tests
 
     @Test
-    public void testRequestTelemetryInitializedWithOperationId() throws Exception {
+    public void testRequestTelemetryInitializedWithOperationName() throws Exception {
         sendRequestAndGetResponseCookie();
 
         List<Telemetry> items = channel.getTelemetryItems();
         assertEquals(1, items.size());
         HttpRequestTelemetry requestTelemetry = (HttpRequestTelemetry)items.get(0);
 
-        Assert.assertEquals("Operation id not match", requestTelemetry.getId(), requestTelemetry.getContext().getOperation().getId());
+        Assert.assertEquals("Operation name not match", requestTelemetry.getName(), requestTelemetry.getContext().getOperation().getName());
     }
 
     @Test
-    public void testTelemetryInitializedWithOperationId() {
+    public void testTelemetryInitializedWithOperationName() {
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
 
         OperationContext operationContext = createAndInitializeTelemetry();
 
-        Assert.assertEquals("Operation ID hasn't been set.", context.getHttpRequestTelemetry().getId(), operationContext.getId());
+        Assert.assertEquals("Operation name hasn't been set.", context.getHttpRequestTelemetry().getName(), operationContext.getName());
     }
 
     @Test
     public void testInitializerDoesNotOverrideCustomerOperationId() {
-        String customerId = "CustomerID";
+        String customerRequestName = "CustomerRequestName";
 
         HttpRequestTelemetry requestTelemetry = new HttpRequestTelemetry();
         OperationContext operationContext = requestTelemetry.getContext().getOperation();
-        operationContext.setId(customerId);
+        operationContext.setName(customerRequestName);
 
         defaultInitializer.initialize(requestTelemetry);
 
-        Assert.assertEquals("Customer operation ID should not be changed.", customerId, operationContext.getId());
+        Assert.assertEquals("Customer operation name should not be changed.", customerRequestName, operationContext.getName());
     }
 
     @Test
-    public void testOperationIdNotSetWhenRequestTelemetryContextNotInitialized() {
+    public void testOperationNameNotSetWhenRequestTelemetryContextNotInitialized() {
         OperationContext operationContext = createAndInitializeTelemetry();
 
-        Assert.assertNull("Operation ID should not be set.", operationContext.getId());
+        Assert.assertNull("Operation name should not be set.", operationContext.getName());
     }
 
     // endregion Tests

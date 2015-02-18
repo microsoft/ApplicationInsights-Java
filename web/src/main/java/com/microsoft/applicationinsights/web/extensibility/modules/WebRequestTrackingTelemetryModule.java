@@ -27,6 +27,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.google.common.base.Strings;
+import org.apache.http.HttpStatus;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -35,7 +36,6 @@ import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import org.apache.http.HttpStatus;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -76,6 +76,8 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
                 telemetry.setUrl(String.format("%s://%s%s", scheme, host, rURI));
             }
 
+            // TODO: this is a very naive implementation, which doesn't take into account various MVC f/ws implementation.
+            // Next step is to implement the smart request name calculation which will support the leading MVC f/ws.
             telemetry.setName(String.format("%s %s", method, rURI));
             telemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
         } catch (Exception e) {
