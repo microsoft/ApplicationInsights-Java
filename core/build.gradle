@@ -22,9 +22,6 @@
 apply from: "$buildScriptsDir/publishing.gradle"
 
 archivesBaseName = 'applicationinsights-core'
-jar {
-    destinationDir = new File("$buildDir/libs/core")
-}
 
 dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.4'

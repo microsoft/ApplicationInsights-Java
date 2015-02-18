@@ -19,16 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply plugin: 'java'
+apply from: "logging.gradle"
 
-jar {
-    version = '1.0'
-    baseName = 'samples'
-}
+loggingFrameworkArtifactAlias = "logback"
+loggingFrameworkName = "Logback"
+loggingFrameworkPath = "logback"
 
 dependencies {
-    compile project(':core')
-    compile project(':log4j1_2')
-    compile project(':log4j2')
-    compile project(':logback')
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.2'
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
 }

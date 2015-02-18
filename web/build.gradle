@@ -22,9 +22,6 @@
 apply from: "$buildScriptsDir/publishing.gradle"
 
 archivesBaseName = 'applicationinsights-web'
-jar {
-    destinationDir = new File("$buildDir/libs/web")
-}
 
 dependencies {
     compile project(':core')

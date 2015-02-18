@@ -19,16 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply plugin: 'java'
+apply from: "logging.gradle"
 
-jar {
-    version = '1.0'
-    baseName = 'samples'
-}
+loggingFrameworkArtifactAlias = "log4j1_2"
+loggingFrameworkName = "Log4j 1.2"
+loggingFrameworkPath = "log4j/v1_2"
 
 dependencies {
-    compile project(':core')
-    compile project(':log4j1_2')
-    compile project(':log4j2')
-    compile project(':logback')
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
 }
