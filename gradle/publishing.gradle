@@ -24,6 +24,8 @@ apply plugin: 'maven'
 version = (version == "unspecified") ? "0.9.0-SNAPSHOT" : version
 group = "com.microsoft.azure"
 
+project.buildDir = "$project.buildDir/$project.name"
+
 // region Publishing configuration
 task checkIfReleaseAndUpdateVersion {
     def releaseVersion = System.getenv("releaseVersion")
@@ -52,26 +54,25 @@ dependencies {
 }
 
 task prepareSources(type: Jar) {
-    afterEvaluate {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+    doFirst {
         archiveName = "$archivesBaseName-$version-sources.jar"
-        from sourceSets.main.allJava
-        destinationDir = new File("$buildDir/libs/$project.name")
     }
 }
 
 task prepareJavadoc(type: Jar){
-    afterEvaluate  {
+    classifier = 'javadoc'
+    from "$docsDir/javadoc"
+    doFirst {
         archiveName = "$archivesBaseName-$version-javadoc.jar"
-        from "$docsDir/javadoc"
-        destinationDir = new File("$buildDir/libs/$project.name")
     }
     dependsOn javadoc
 }
 
 task copyLibsToGlobalArtifactsFolder(type: Copy) {
     from libsDir
-    into artifactsDirectoryRoot
-
+    into new File(artifactsDirectoryRoot, project.name)
     dependsOn assemble, prepareSources, prepareJavadoc
 }
 
