@@ -50,10 +50,11 @@ public class WebOperationNameTelemetryInitializer extends WebTelemetryInitialize
     // region Private
 
     private void updateRequestNameIfRequestTelemetry(Telemetry telemetry, String operationName) {
-        HttpRequestTelemetry requestTelemetry = null;
-        if (telemetry instanceof HttpRequestTelemetry) {
-            requestTelemetry = (HttpRequestTelemetry)telemetry;
+        if (!(telemetry instanceof HttpRequestTelemetry)) {
+            return;
         }
+
+        HttpRequestTelemetry requestTelemetry = (HttpRequestTelemetry)telemetry;
 
         // We only update the request telemetry name if not already provided by the user.
         if (requestTelemetry != null && Strings.isNullOrEmpty(requestTelemetry.getName())) {
