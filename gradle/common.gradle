@@ -52,10 +52,9 @@ subprojects {
         }
         finally
         {
-            def localTestResultsDirectory = new File(project.getProjectDir(), "build/test-results")
             def globalTestResultsDirectory = new File(globalTestResultsDirectoryRoot.getAbsolutePath(), outputFolderName)
             copy {
-                from localTestResultsDirectory
+                from testResultsDir
                 into globalTestResultsDirectory
             }
         }
