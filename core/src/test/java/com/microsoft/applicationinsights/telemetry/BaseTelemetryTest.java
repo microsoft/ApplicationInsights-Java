@@ -78,6 +78,7 @@ public final class BaseTelemetryTest {
 
         assertNull(telemetry.getContext());
         assertNull(telemetry.getTimestamp());
+        assertNull(telemetry.getSequence());
     }
 
     @Test
@@ -89,6 +90,17 @@ public final class BaseTelemetryTest {
         assertTrue(telemetry.getContext().getTags().isEmpty());
         assertTrue(telemetry.getProperties().isEmpty());
         assertNull(telemetry.getTimestamp());
+        assertNull(telemetry.getSequence());
+    }
+
+    @Test
+    public void testSetSequence() {
+        StubTelemetry telemetry = new StubTelemetry();
+
+        String mockSequence = "MockSequence";
+        telemetry.setSequence(mockSequence);
+
+        assertEquals(mockSequence, telemetry.getSequence());
     }
 
     @Test

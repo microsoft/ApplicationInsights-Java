@@ -29,18 +29,8 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
 import com.microsoft.applicationinsights.internal.util.SDKShutdownActivity;
-import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.*;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import com.microsoft.applicationinsights.telemetry.ExceptionHandledAt;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Strings;
@@ -104,6 +94,22 @@ public class TelemetryClient {
     public boolean isDisabled() {
         return
                 Strings.isNullOrEmpty(getContext().getInstrumentationKey()) || configuration.isTrackingDisabled();
+    }
+
+    /// <summary>
+    /// Sends the specified state of a user session to Application Insights.
+    /// </summary>
+    /// <param name="sessionState">
+    /// A <see cref="SessionState"/> value indicating the state of a user session.
+    /// </param>
+
+    /**
+     * Sends the specified state of a user session to Application Insights.
+     * @param sessionState {@link com.microsoft.applicationinsights.telemetry.SessionState}
+     *                     value indicating the state of a user session.
+     */
+    public void trackSessionState(SessionState sessionState) {
+        this.track(new SessionStateTelemetry(sessionState));
     }
 
     /**

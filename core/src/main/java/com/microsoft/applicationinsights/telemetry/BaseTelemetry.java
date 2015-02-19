@@ -40,6 +40,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 {
     private TelemetryContext context;
     private Date             timestamp;
+    private String           sequence;
 
     protected BaseTelemetry() {
     }
@@ -50,6 +51,14 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
      */
     protected void initialize(ConcurrentMap<String, String> properties) {
         this.context = new TelemetryContext(properties, new ConcurrentHashMap<String, String>());
+    }
+
+    public String getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(String sequence) {
+        this.sequence = sequence;
     }
 
     /**
@@ -108,6 +117,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
         Envelope envelope = new Envelope();
 
         envelope.setIKey(context.getInstrumentationKey());
+        envelope.setSeq(sequence);
         envelope.setData(new Data<T>(getData()));
         envelope.setTime(LocalStringsUtils.getDateFormatter().format(getTimestamp()));
         envelope.setTags(context.getTags());
