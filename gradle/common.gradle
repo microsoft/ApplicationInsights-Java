@@ -19,8 +19,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-project.ext.set("artifactsDirectoryRoot", new File(rootProject.getProjectDir(), 'build/artifacts'))
-project.ext.set("globalTestResultsDirectoryRoot", new File(rootProject.getProjectDir(), 'global-test-results'))
+project.ext.set("rootProjectBuildDir", new File(rootProject.getProjectDir(), 'build'))
+project.ext.set("artifactsDirectoryRoot", new File(rootProjectBuildDir, 'artifacts'))
+project.ext.set("remoteTestResultsDirName", 'remote-tests-results')
+project.ext.set("remoteTestReportDirName", 'remote-tests-reports')
 
 // region Shared sub-projects configuration
 
@@ -52,10 +54,13 @@ subprojects {
         }
         finally
         {
-            def globalTestResultsDirectory = new File(globalTestResultsDirectoryRoot.getAbsolutePath(), outputFolderName)
             copy {
                 from testResultsDir
-                into globalTestResultsDirectory
+                into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
+            }
+            copy {
+                from testReportDir
+                into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
             }
         }
     }

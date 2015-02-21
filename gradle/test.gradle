@@ -5,87 +5,64 @@ task remoteTest {
         logger.info("MachineName: $machineName")
         logger.info("User: $userName")
         logger.info("Test output folder: $localTestOutputFolderName")
+
         def localDirectory = rootProject.getProjectDir()
         def destinationDirectory = "/home/$userName/Desktop/$remoteDirectoryName"
-
         def archiveName = "binaries.jar"
-        def archiveLocalLocation = "$localDirectory/$archiveName"
-
-        logger.info("Delete local archive if it exists")
-        delete archiveLocalLocation
-
-        logger.info("Compress directory $localDirectory into $archiveLocalLocation")
-        exec {
-            executable "jar"
-            args "cf",archiveName,relativePath(localDirectory)
-        }
-
-        logger.info("Creating clean remote directory: $destinationDirectory")
-        exec {
-            executable "plink.exe"
-            args "-pw",pass,"$userName@$machineName","rm -f -r $destinationDirectory && mkdir -p $destinationDirectory"
-        }
-
+        def archiveLocalLocation = "$localDirectory\\$archiveName"
         def archiveRemoteLocation = "$destinationDirectory/$archiveName"
-        logger.info("Copying zipped binaries from $archiveLocalLocation to $archiveRemoteLocation on machine $machineName")
-        exec {
-            executable "pscp.exe"
-            args "-r","-pw",pass,archiveLocalLocation,"$userName@$machineName:$archiveRemoteLocation"
-        }
 
-        logger.info("Extract zipped binaries from $archiveRemoteLocation on machine $machineName")
-        exec {
-            executable "plink.exe"
-            args "-pw",pass,"$userName@$machineName","cd $destinationDirectory && jar xf $archiveRemoteLocation"
-        }
-
-        logger.info("Allow execution of gradlew")
-        exec {
-            executable "plink.exe"
-            args "-pw",pass,"$userName@$machineName","chmod +x $destinationDirectory/gradlew"
-        }
-
-        logger.info("Changing gradlew linebreaks to unix style")
-        exec {
-            executable "plink.exe"
-            args "-pw",pass,"$userName@$machineName","dos2unix $destinationDirectory/gradlew"
-        }
+        runLocalCommand("Delete local archive if it exists", "if exist \"$archiveLocalLocation\" del \"$archiveLocalLocation\"")
+        runLocalCommand("Compress directory $localDirectory into $archiveLocalLocation", "jar cf \"$archiveName\" .")
+        runRemoteCommand("Creating clean remote directory: $destinationDirectory", "rm -f -r $destinationDirectory && mkdir -p $destinationDirectory")
+        runRemoteCopy(
+            "Copying zipped binaries from $archiveLocalLocation to $archiveRemoteLocation on machine $machineName",
+            archiveLocalLocation,
+            "$userName@$machineName:$archiveRemoteLocation")
+        runRemoteCommand("Extract zipped binaries from $archiveRemoteLocation on machine $machineName", "cd $destinationDirectory && jar xf $archiveRemoteLocation")
+        runRemoteCommand("Allow execution of gradlew", "chmod +x $destinationDirectory/gradlew")
+        runRemoteCommand("Changing gradlew linebreaks to unix style", "dos2unix $destinationDirectory/gradlew")
 
         try
         {
-            logger.info("Executing tests remotely")
-            exec {
-                executable "plink.exe"
-                args "-pw",pass,"$userName@$machineName","cd $destinationDirectory && ./gradlew testAndCollect  -x compileJava -x compileTestJava -PoutputFolderName=$localTestOutputFolderName"
-            }
+            runRemoteCommand("Executing tests remotely", "cd $destinationDirectory && ./gradlew cleanTest testAndCollect -x compileJava -x compileTestJava -PoutputFolderName=$localTestOutputFolderName")
         }
         finally
         {
-            def globalTestResultsDirectoryName = globalTestResultsDirectoryRoot.name
-            logger.info("Create local results directory: $globalTestResultsDirectoryRoot")
-            def localTestOutputFolder = new File(globalTestResultsDirectoryRoot, localTestOutputFolderName)
-            localTestOutputFolder.mkdirs()
-
-            def remoteTestResultsDirectory = "$destinationDirectory/$globalTestResultsDirectoryName/$localTestOutputFolderName"
             def testResultsArchiveName = "testResults.jar"
-            def remoteTestResultsArchiveLocation = "$remoteTestResultsDirectory/$testResultsArchiveName"
-            logger.info("Compress test results")
-            exec {
-                executable "plink.exe"
-                args "-pw",pass,"$userName@$machineName","cd $remoteTestResultsDirectory && jar cf $testResultsArchiveName ."
-            }
+            def remoteTestResultsArchiveLocation = "$destinationDirectory/build/$testResultsArchiveName"
 
-            logger.info("Copying test results back")
-            exec {
-                executable "pscp.exe"
-                args "-r","-pw",pass,"$userName@$machineName:$remoteTestResultsArchiveLocation","$localTestOutputFolder"
-            }
-
-            logger.info("Unzip test results archive")
-            exec {
-                executable "cmd"
-                args "/c cd \"$localTestOutputFolder\" && jar xf $testResultsArchiveName"
-            }
+            runLocalCommand("Create local results directory: $rootProjectBuildDir", "if not exist \"$rootProjectBuildDir\" mkdir \"$rootProjectBuildDir\"")
+            runRemoteCommand("Compress test results", "cd $destinationDirectory/build && jar cf $testResultsArchiveName $remoteTestResultsDirName $remoteTestReportDirName")
+            runRemoteCopy("Copying test results back", "$userName@$machineName:$remoteTestResultsArchiveLocation","\"$rootProjectBuildDir\"")
+            runLocalCommand("Unzip test results archive", "cd \"$rootProjectBuildDir\" && jar xf $testResultsArchiveName")
         }
+    }
+}
+
+def runLocalCommand(description, command)
+{
+    logger.info("[runLocalCommand] $description")
+    exec {
+        executable "cmd"
+        args "/c $command"
+    }
+}
+
+def runRemoteCopy(description, from, into)
+{
+    logger.info("[runRemoteCopy] $description")
+    exec {
+        executable "pscp.exe"
+        args "-r", "-pw", pass, from, into
+    }
+}
+
+def runRemoteCommand(description, command)
+{
+    logger.info("[runRemoteCommand] $description")
+    exec {
+        executable "plink.exe"
+        args "-pw", pass, "$userName@$machineName", command
     }
 }
