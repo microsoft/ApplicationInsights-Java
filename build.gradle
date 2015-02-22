@@ -36,7 +36,7 @@ apply from: "$buildScriptsDir/test.gradle"
 
 def rootProjectBuildFolder = "$rootDir/build"
 
-task clean {
+task clean << {
     delete(rootProjectBuildFolder)
 }
 
