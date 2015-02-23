@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.web.utils;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -65,30 +65,41 @@ public class HttpHelper {
     }
 
     public static String getFormattedUserCookieHeader() {
-        String formattedUserCookie = String.format(
-                FORMATTED_USER_COOKIE_TEMPLATE, DateTimeUtils.getDateTimeNow().getTime());
+        String formattedUserCookie = null;
+
+        try {
+            formattedUserCookie = String.format(
+                    FORMATTED_USER_COOKIE_TEMPLATE,
+                    DateTimeUtils.formatAsRoundTripDate(DateTimeUtils.getDateTimeNow()));
+        } catch (Exception e) {
+        }
 
         return String.format("%s=%s", UserCookie.COOKIE_NAME, formattedUserCookie);
     }
 
     public static String getFormattedSessionCookieHeader(boolean expired) {
-        String formattedSessionCookie = getFormattedSessionCookie(expired);
+        String formattedSessionCookie = null;
+
+        try {
+            formattedSessionCookie = getFormattedSessionCookie(expired);
+        } catch (Exception e) {
+        }
 
         return String.format("%s=%s", SessionCookie.COOKIE_NAME, formattedSessionCookie);
     }
 
-    public static String getFormattedSessionCookie(boolean expired) {
+    public static String getFormattedSessionCookie(boolean expired) throws ParseException {
         Date sessionAcquisitionTime = new Date();
         if (expired) {
             sessionAcquisitionTime = DateTimeUtils.addToDate(sessionAcquisitionTime, Calendar.MONTH, -1);
         }
 
-        long sessionAcquisitionTimeLong = sessionAcquisitionTime.getTime();
+        Date sessionRenewalTime = DateTimeUtils.addToDate(sessionAcquisitionTime, Calendar.SECOND, 1);
 
         return String.format(
                 FORMATTED_SESSION_COOKIE_TEMPLATE,
-                String.valueOf(sessionAcquisitionTimeLong),
-                String.valueOf(sessionAcquisitionTimeLong + 1));
+                DateTimeUtils.formatAsRoundTripDate(sessionAcquisitionTime),
+                DateTimeUtils.formatAsRoundTripDate(sessionRenewalTime));
     }
 
     private static CookiesContainer getCookiesContainer(List<String> responseCookies) throws Exception {

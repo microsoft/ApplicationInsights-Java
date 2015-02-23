@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 
 import javax.servlet.http.Cookie;
@@ -54,8 +55,8 @@ public class SessionCookieTests {
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 sessionId,
-                String.valueOf(sessionAcquisitionTime.getTime()),
-                String.valueOf(sessionRenewalTime.getTime())
+                DateTimeUtils.formatAsRoundTripDate(sessionAcquisitionTime),
+                DateTimeUtils.formatAsRoundTripDate(sessionRenewalTime)
         });
 
         defaultCookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);

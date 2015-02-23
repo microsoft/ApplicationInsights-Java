@@ -77,8 +77,8 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
      * @throws Exception Thrown when the cookie information cannot be parsed.
      */
     public SessionCookie(String sessionId) throws Exception {
-        long nowTicks = DateTimeUtils.getDateTimeNow().getTime();
-        String[] cookieRawValues = new String[] { sessionId, String.valueOf(nowTicks), String.valueOf(nowTicks) };
+        String now = DateTimeUtils.formatAsRoundTripDate(DateTimeUtils.getDateTimeNow());
+        String[] cookieRawValues = new String[] { sessionId, now, now };
         String formattedCookie = SessionCookie.formatCookie(cookieRawValues);
 
         Cookie cookie = new Cookie(COOKIE_NAME, formattedCookie);
@@ -150,8 +150,8 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
 
         try {
             sessionId = split[CookieFields.SESSION_ID.getValue()];
-            acquisitionDate = new Date(Long.parseLong(split[CookieFields.SESSION_ACQUISITION_DATE.getValue()]));
-            renewalDate = new Date(Long.parseLong(split[CookieFields.SESSION_LAST_UPDATE_DATE.getValue()]));
+            acquisitionDate = DateTimeUtils.parseRoundTripDateString(split[CookieFields.SESSION_ACQUISITION_DATE.getValue()]);
+            renewalDate = DateTimeUtils.parseRoundTripDateString(split[CookieFields.SESSION_LAST_UPDATE_DATE.getValue()]);
         } catch (Exception e) {
             String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.getMessage());
 

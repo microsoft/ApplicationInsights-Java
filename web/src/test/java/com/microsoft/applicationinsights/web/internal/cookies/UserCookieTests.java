@@ -29,6 +29,7 @@ import org.junit.rules.ExpectedException;
 import javax.servlet.http.Cookie;
 import java.util.Date;
 import java.util.UUID;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
 /**
  * Created by yonisha on 2/9/2015.
@@ -49,7 +50,7 @@ public class UserCookieTests {
 
         String formattedCookie = UserCookie.formatCookie(new String[] {
                 userId,
-                String.valueOf(acquisitionTime.getTime()),
+                DateTimeUtils.formatAsRoundTripDate(acquisitionTime),
         });
 
         defaultCookie = new Cookie(UserCookie.COOKIE_NAME, formattedCookie);
