@@ -41,8 +41,15 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
  * Created by yonisha on 2/2/2015.
  */
 public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
+
+    // region Members
+
     private TelemetryClient telemetryClient;
     private boolean isInitialized = false;
+
+    // endregion Members
+
+    // region Public
 
     /**
      * Begin request processing.
@@ -78,7 +85,9 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
             // TODO: this is a very naive implementation, which doesn't take into account various MVC f/ws implementation.
             // Next step is to implement the smart request name calculation which will support the leading MVC f/ws.
-            telemetry.setName(String.format("%s %s", method, rURI));
+            String rUriWithoutSessionId = removeSessionIdFromUri(rURI);
+            telemetry.setName(String.format("%s %s", method, rUriWithoutSessionId));
+
             telemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
@@ -131,4 +140,27 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
                     "Failed to initialize telemetry module " + this.getClass().getSimpleName() + ". Exception: %s.", e.getMessage());
         }
     }
+
+    // endregion Public
+
+    // region Private
+
+    /*
+     * Servlets sometimes rewrite the request url to include a session id represented by ';jsessionid=<some_string>',
+     * in order to cope with client which have cookies disabled.
+     * We want to strip the url from any unique identifiers.
+     */
+    private String removeSessionIdFromUri(String uri) {
+        int separatorIndex = uri.indexOf(';');
+
+        if (separatorIndex == -1) {
+            return uri;
+        }
+
+        String urlWithoutSessionId = uri.substring(0, separatorIndex);
+
+        return urlWithoutSessionId;
+    }
+
+    // endregion Private
 }

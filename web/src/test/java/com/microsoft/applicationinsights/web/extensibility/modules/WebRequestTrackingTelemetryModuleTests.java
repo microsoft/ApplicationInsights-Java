@@ -109,31 +109,41 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     @Test
     public void testRequestNameCalculationWithoutQueryString() {
-        testRequestNameCalculationWithGivenQueryString(null);
+        testRequestNameCalculationWithGivenQueryString(null, null);
     }
 
     @Test
     public void testRequestNameCalculationWithQueryString() {
-        testRequestNameCalculationWithGivenQueryString("?param1=value1;param2=value2");
+        testRequestNameCalculationWithGivenQueryString("?param1=value1;param2=value2", null);
+    }
+
+    @Test
+    public void testRequestNameCalculationWithJSessionId() {
+        testRequestNameCalculationWithGivenQueryString("", ";jsessionid=D59C79DF9A2C81E931CD67659AC01D17");
     }
 
     // region Private methods
 
-    private void testRequestNameCalculationWithGivenQueryString(String queryString) {
+    private void testRequestNameCalculationWithGivenQueryString(String queryString, String pathVariable) {
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
 
-        ServletRequest servletRequest = createServletRequest(queryString);
+        ServletRequest servletRequest = createServletRequest(queryString, pathVariable);
         defaultModule.onBeginRequest(servletRequest, null);
 
         HttpRequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals("Request name not valid.", DEFAULT_REQUEST_NAME, requestTelemetry.getName());
     }
 
-    private ServletRequest createServletRequest(String queryString) {
+    private ServletRequest createServletRequest(String queryString, String pathVariable) {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
-        when(request.getRequestURI()).thenReturn(DEFAULT_REQUEST_URI);
+        String uri = DEFAULT_REQUEST_URI;
+        if (pathVariable != null) {
+            uri = uri.concat(pathVariable);
+        }
+
+        when(request.getRequestURI()).thenReturn(uri);
         when(request.getMethod()).thenReturn(HttpMethods.GET);
         when(request.getScheme()).thenReturn("http");
         when(request.getHeader("Host")).thenReturn("localhost:1234");
