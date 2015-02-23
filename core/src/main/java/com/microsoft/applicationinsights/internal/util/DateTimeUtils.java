@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +31,8 @@ import java.util.concurrent.TimeUnit;
  * Created by yonisha on 2/5/2015.
  */
 public class DateTimeUtils {
+
+    private static final SimpleDateFormat roundTripDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'");
 
     private DateTimeUtils() {
     }
@@ -49,5 +53,27 @@ public class DateTimeUtils {
         long diffInMs = laterDate.getTime() - date.getTime();
 
         return timeUnit.convert(diffInMs, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Parses the given round-trip date string into Date object.
+     * @param roundTripString The string to parse.
+     * @return Date represents the string.
+     * @throws java.text.ParseException Thrown when failed to parse the given string.
+     */
+    public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
+
+        Date date = roundTripDateFormat.parse(roundTripString);
+
+        return date;
+    }
+
+    /**
+     * Formats the given date as round-trip date string
+     * @param date Round-trip date string
+     * @return Round-trip date string
+     */
+    public static String formatAsRoundTripDate(Date date) {
+        return roundTripDateFormat.format(date);
     }
 }

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
@@ -100,7 +101,7 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
     private void setUserCookie(ServletResponse res, RequestTelemetryContext context) {
         String formattedCookie = UserCookie.formatCookie(new String[] {
                 context.getUserCookie().getUserId(),
-                String.valueOf(context.getUserCookie().getAcquisitionDate().getTime())
+                DateTimeUtils.formatAsRoundTripDate(context.getUserCookie().getAcquisitionDate())
         });
 
         Cookie cookie = new Cookie(UserCookie.COOKIE_NAME, formattedCookie);

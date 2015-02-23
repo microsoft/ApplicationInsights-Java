@@ -107,9 +107,8 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 getTelemetrySessionContext(context).getId(),
-                String.valueOf(context.getSessionCookie().getSessionAcquisitionDate().getTime()),
-                String.valueOf(renewalDate.getTime())
-
+                DateTimeUtils.formatAsRoundTripDate(context.getSessionCookie().getSessionAcquisitionDate()),
+                DateTimeUtils.formatAsRoundTripDate(renewalDate)
         });
 
         Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
