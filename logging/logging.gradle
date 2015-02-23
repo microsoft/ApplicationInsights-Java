@@ -21,23 +21,19 @@
 
 apply from: "$buildScriptsDir/publishing.gradle"
 
-def srcInternalPath = "com/microsoft/applicationinsights/internal"
-
 ext {
     loggingFrameworkArtifactAlias = ""
     loggingFrameworkName = ""
 }
 
-def buildSrcPath = new File(buildDir, "src")
+def buildSrcDir = new File(project.buildDir, "src")
+def commonSrcDir = new File(project.parent.projectDir, "common/src")
 def appenderSourceDirName = "appenderSrc"
-println "buildSrcPath = $buildSrcPath"
 
-task prepareSources << {
-    copy {
-        from appenderSourceDirName
-        from "../common/src"
-        into buildSrcPath
-    }
+task prepareSources(type: Copy) {
+    from appenderSourceDirName
+    from commonSrcDir
+    into buildSrcDir
 }
 
 compileJava.dependsOn prepareSources
@@ -47,22 +43,18 @@ processResources.dependsOn prepareSources
 sourceSets {
     main {
         java {
-            srcDir "$buildSrcPath/main/java"
-            exclude appenderSourceDirName
+            srcDir "$buildSrcDir/main/java"
         }
         resources {
-            srcDir "$buildSrcPath/main/resources"
-            exclude appenderSourceDirName
+            srcDir "$buildSrcDir/main/resources"
         }
     }
     test {
         java {
-            srcDir "$buildSrcPath/test/java"
-            exclude appenderSourceDirName
+            srcDir "$buildSrcDir/test/java"
         }
         resources {
-            srcDir "$buildSrcPath/test/resources"
-            exclude appenderSourceDirName
+            srcDir "$buildSrcDir/test/resources"
         }
     }
 }
