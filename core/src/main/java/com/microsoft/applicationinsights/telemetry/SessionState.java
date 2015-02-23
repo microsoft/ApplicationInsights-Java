@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.telemetry;
 
 /**
- * Created by gupele on 2/19/2015.
+ * Session states.
  */
 public enum SessionState {
     /// Indicates that a user session started.

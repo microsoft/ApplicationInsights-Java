@@ -40,7 +40,7 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
     }
 
     /**
-     * Initializes a new instance of the class with the specified {@param sessionState}
+     * Initializes a new instance of the class with the specified <code>sessionState</code>
      * @param sessionState value indicating state of the user session.
      */
     public SessionStateTelemetry(SessionState sessionState) {
@@ -64,46 +64,6 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
     public void setSessionState(SessionState sessionState) {
         data.setState(sessionState);;
     }
-
-//
-//    /// <summary>
-//    /// Serializes this object in JSON format.
-//    /// </summary>
-//    void IJsonSerializable.Serialize(IJsonWriter writer)
-//    {
-//        writer.WriteStartObject();
-//
-//        this.WriteEnvelopeProperties(writer);
-//        writer.WriteProperty("name", TelemetryFullName);
-//        writer.WritePropertyName("data");
-//        {
-//            writer.WriteStartObject();
-//
-//            writer.WriteProperty("baseType", typeof(SessionStateData).Name);
-//            writer.WritePropertyName("baseData");
-//            {
-//                writer.WriteStartObject();
-//
-//                writer.WriteProperty("ver", 2);
-//                writer.WriteProperty("state", this.State.ToString());
-//
-//                writer.WriteEndObject();
-//            }
-//
-//            writer.WriteEndObject();
-//        }
-//
-//        writer.WriteEndObject();
-//    }
-//
-//    #if !Wp80 && !NET35
-//    /// <summary>
-//    /// Sends data from this telemetry instance to the given <see cref="EventSourceWriter"/>.
-//    /// </summary>
-//    void ISupportEventSource.SendEvent(EventSourceWriter writer)
-//    {
-//        writer.WriteEvent(TelemetryName, this.Context, this.data);
-//    }
 
     @Override
     protected void additionalSanitize() {
