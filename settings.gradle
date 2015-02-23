@@ -20,13 +20,4 @@
  */
 
 
-include 'core', 'log4j1_2', 'log4j2', 'logback', 'web', 'samples', 'performance'
-
-project(':log4j1_2').projectDir = new File(settingsDir, '/logging')
-project(':log4j1_2').buildFileName = 'log4j1_2.gradle'
-
-project(':log4j2').projectDir = new File(settingsDir, '/logging')
-project(':log4j2').buildFileName = 'log4j2.gradle'
-
-project(':logback').projectDir = new File(settingsDir, '/logging')
-project(':logback').buildFileName = 'logback.gradle'
+include 'core', 'logging:log4j1_2', 'logging:log4j2', 'logging:logback', 'web', 'samples', 'performance'

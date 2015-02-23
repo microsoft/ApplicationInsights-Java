@@ -25,28 +25,51 @@ def srcInternalPath = "com/microsoft/applicationinsights/internal"
 
 ext {
     loggingFrameworkArtifactAlias = ""
-    loggingFrameworkPath = ""
     loggingFrameworkName = ""
 }
 
-afterEvaluate {
-    assert (!loggingFrameworkPath.isEmpty() && !loggingFrameworkName.isEmpty() && !loggingFrameworkArtifactAlias.isEmpty())
-    archivesBaseName = "applicationinsights-logging-$loggingFrameworkArtifactAlias"
-    sourceSets {
-        main {
-            java {
-                include "$srcInternalPath/common/**"
-                include "$srcInternalPath/$loggingFrameworkPath/**"
-            }
+def buildSrcPath = new File(buildDir, "src")
+def appenderSourceDirName = "appenderSrc"
+println "buildSrcPath = $buildSrcPath"
+
+task prepareSources << {
+    copy {
+        from appenderSourceDirName
+        from "../common/src"
+        into buildSrcPath
+    }
+}
+
+compileJava.dependsOn prepareSources
+processResources.dependsOn prepareSources
+
+// Update source sets
+sourceSets {
+    main {
+        java {
+            srcDir "$buildSrcPath/main/java"
+            exclude appenderSourceDirName
         }
-        test {
-            java {
-                include "$srcInternalPath/common/**"
-                include "$srcInternalPath/shared/**"
-                include "$srcInternalPath/$loggingFrameworkPath/**"
-            }
+        resources {
+            srcDir "$buildSrcPath/main/resources"
+            exclude appenderSourceDirName
         }
     }
+    test {
+        java {
+            srcDir "$buildSrcPath/test/java"
+            exclude appenderSourceDirName
+        }
+        resources {
+            srcDir "$buildSrcPath/test/resources"
+            exclude appenderSourceDirName
+        }
+    }
+}
+
+afterEvaluate {
+    assert (!loggingFrameworkName.isEmpty() && !loggingFrameworkArtifactAlias.isEmpty())
+    archivesBaseName = "applicationinsights-logging-$loggingFrameworkArtifactAlias"
 
     uploadArchives {
         if (requiredPropertiesExist(requriedProperties)) {
@@ -67,7 +90,6 @@ afterEvaluate {
                     }
 
                     pom.whenConfigured {
-//                        p.dependencies = p.dependencies.findAll { dep -> dep.group == "compile" || dep.group == "runtime" }
                         p ->
                             p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != "junit" && dep.artifactId != "mockito-all" }
                             writePomToArtifactsDirectory(p, project.name)
