@@ -40,6 +40,6 @@ public final class DeviceInfoContextInitializer implements ContextInitializer
         device.setOperatingSystem(DeviceInfo.getOperatingSystem());
         device.setOperatingSystemVersion(DeviceInfo.getOperatingSystemVersion());
         device.setId(DeviceInfo.getHostName());
-        device.setLanguage(DeviceInfo.getLocale());
+        device.setLocale(DeviceInfo.getLocale());
     }
 }

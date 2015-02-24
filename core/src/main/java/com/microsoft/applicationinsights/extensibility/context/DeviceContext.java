@@ -93,6 +93,14 @@ public final class DeviceContext {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceScreenResolution(), screenResolution);
     }
 
+    String getLocale() {
+        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceLocale());
+    }
+
+    public void setLocale(String locale) {
+        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceLocale(), locale);
+    }
+
     String getLanguage() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceLanguage());
     }
