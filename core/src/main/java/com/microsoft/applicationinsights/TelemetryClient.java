@@ -96,13 +96,6 @@ public class TelemetryClient {
                 Strings.isNullOrEmpty(getContext().getInstrumentationKey()) || configuration.isTrackingDisabled();
     }
 
-    /// <summary>
-    /// Sends the specified state of a user session to Application Insights.
-    /// </summary>
-    /// <param name="sessionState">
-    /// A <see cref="SessionState"/> value indicating the state of a user session.
-    /// </param>
-
     /**
      * Sends the specified state of a user session to Application Insights.
      * @param sessionState {@link com.microsoft.applicationinsights.telemetry.SessionState}
