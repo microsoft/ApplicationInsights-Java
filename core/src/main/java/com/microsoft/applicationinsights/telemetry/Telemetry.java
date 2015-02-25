@@ -45,6 +45,7 @@ public interface Telemetry extends JsonSerializable
      * enables identification of data lost during upload and de-duplication of events on the ingress server.
      *
      * Gets the current sequence.
+     * @return The current sequence.
      */
     String getSequence();
 
