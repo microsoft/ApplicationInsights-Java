@@ -37,6 +37,24 @@ public interface Telemetry extends JsonSerializable
     Date getTimestamp();
 
     /**
+     * Sequence field used to track absolute order of uploaded events.
+     * It is a two-part value that includes a stable identifier for the current boot
+     * session and an incrementing identifier for each event added to the upload queue
+     *
+     * The Sequence helps track how many events were fired and how many events were uploaded and
+     * enables identification of data lost during upload and de-duplication of events on the ingress server.
+     *
+     * Gets the current sequence.
+     */
+    String getSequence();
+
+    /**
+     * Sets the sequence.
+     * @param sequence The sequence.
+     */
+    void setSequence(String sequence);
+
+    /**
      * Sets the time when telemetry was recorded
      * @param date Recorded time.
      */

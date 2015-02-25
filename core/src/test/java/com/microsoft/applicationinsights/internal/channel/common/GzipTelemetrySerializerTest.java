@@ -68,6 +68,15 @@ public final class GzipTelemetrySerializerTest {
         }
 
         @Override
+        public String getSequence() {
+            return null;
+        }
+
+        @Override
+        public void setSequence(String sequence) {
+        }
+
+        @Override
         public void setTimestamp(Date date) {
         }
 
