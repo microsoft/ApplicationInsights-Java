@@ -32,7 +32,7 @@ public final class SdkVersionContextInitializer implements ContextInitializer {
 
     @Override
     public void initialize(TelemetryContext context) {
-        context.getInternal().setSdkVersion("0.9.0");
+        context.getInternal().setSdkVersion("Java 0.9.1");
 //        context.getInternal().setAgentVersion("0.9");
     }
 }
