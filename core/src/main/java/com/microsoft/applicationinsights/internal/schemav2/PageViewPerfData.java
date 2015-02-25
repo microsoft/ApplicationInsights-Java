@@ -32,12 +32,12 @@ public class PageViewPerfData extends PageViewData {
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String EnvelopeName = "Microsoft.ApplicationInsights.PageViewPerf";
+    public static final String PAGE_VIEW_ENVELOPE_NAME = "Microsoft.ApplicationInsights.PageViewPerf";
 
     /**
      * Base Type for this telemetry.
      */
-    public static final String BaseType = "Microsoft.ApplicationInsights.PageViewPerfData";
+    public static final String PAGE_VIEW_BASE_TYPE = "Microsoft.ApplicationInsights.PageViewPerfData";
 
     /**
      * Backing field for property PerfTotal.
@@ -125,6 +125,16 @@ public class PageViewPerfData extends PageViewData {
         writer.write("sentRequest", sentRequest);
         writer.write("receivedResponse", receivedResponse);
         writer.write("domProcessing", domProcessing);
+    }
+
+    @Override
+    public String getEnvelopName() {
+        return PAGE_VIEW_ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return PAGE_VIEW_BASE_TYPE;
     }
 
     protected void InitializeFields() {
