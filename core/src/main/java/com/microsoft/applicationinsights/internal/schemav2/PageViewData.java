@@ -32,12 +32,12 @@ public class PageViewData extends EventData {
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String EnvelopeName = "Microsoft.ApplicationInsights.PageView";
+    public static final String PAGE_VIEW_ENVELOPE_NAME = "Microsoft.ApplicationInsights.PageView";
 
     /**
      * Base Type for this telemetry.
      */
-    public static final String BaseType = "Microsoft.ApplicationInsights.PageViewData";
+    public static final String PAGE_VIEW_BASE_TYPE = "Microsoft.ApplicationInsights.PageViewData";
 
     /**
      * Backing field for property Url.
@@ -78,6 +78,16 @@ public class PageViewData extends EventData {
 
         writer.write("url", url);
         writer.write("duration", duration);
+    }
+
+    @Override
+    public String getEnvelopName() {
+        return PAGE_VIEW_ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return PAGE_VIEW_BASE_TYPE;
     }
 
     protected void InitializeFields() {
