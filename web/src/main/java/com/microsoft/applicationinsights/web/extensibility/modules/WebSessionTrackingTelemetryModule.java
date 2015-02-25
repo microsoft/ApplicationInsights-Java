@@ -120,6 +120,8 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         long timeDiffInSeconds = DateTimeUtils.getDateDiff(expirationDate, DateTimeUtils.getDateTimeNow(), TimeUnit.SECONDS);
 
         cookie.setMaxAge((int)timeDiffInSeconds);
+        cookie.setPath("/");
+
         res.addCookie(cookie);
     }
 

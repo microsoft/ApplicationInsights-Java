@@ -106,6 +106,7 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
 
         Cookie cookie = new Cookie(UserCookie.COOKIE_NAME, formattedCookie);
         cookie.setMaxAge(Integer.MAX_VALUE);
+        cookie.setPath("/");
 
         HttpServletResponse response = (HttpServletResponse)res;
         response.addCookie(cookie);
