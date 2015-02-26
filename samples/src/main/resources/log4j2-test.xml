@@ -20,7 +20,7 @@
   ~ DEALINGS IN THE SOFTWARE.
   -->
 
-<Configuration packages="com.microsoft.applicationinsights.internal.log4j">
+<Configuration packages="com.microsoft.applicationinsights.log4j">
     <Appenders>
         <ApplicationInsightsAppender name="aiAppender" />
     </Appenders>

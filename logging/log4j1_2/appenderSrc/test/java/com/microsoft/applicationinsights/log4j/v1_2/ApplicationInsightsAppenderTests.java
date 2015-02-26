@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.log4j.v1_2;
+package com.microsoft.applicationinsights.log4j.v1_2;
 
 import java.util.List;
 import org.junit.*;

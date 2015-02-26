@@ -19,37 +19,36 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.log4j.v1_2;
+package com.microsoft.applicationinsights.log4j.v2.internal;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import com.microsoft.applicationinsights.internal.common.ApplicationInsightsEvent;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
-import org.apache.log4j.Level;
-import org.apache.log4j.Priority;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.spi.StandardLevel;
 
 public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
 
-    private LoggingEvent loggingEvent;
+    private LogEvent logEvent;
 
-    public ApplicationInsightsLogEvent(LoggingEvent event) {
-        this.loggingEvent = event;
+    public ApplicationInsightsLogEvent(LogEvent logEvent) {
+        this.logEvent = logEvent;
     }
 
     @Override
     public String getMessage() {
-        String message = this.loggingEvent.getRenderedMessage();
+        String message = this.logEvent.getMessage() != null ?
+                this.logEvent.getMessage().getFormattedMessage() :
+                "Log4j Trace";
 
-        return message != null ? message : "Log4j Trace";
+        return message;
     }
 
     @Override
     public boolean isException() {
-        return this.loggingEvent.getThrowableInformation() != null;
+        return this.logEvent.getThrown() != null;
     }
 
     @Override
@@ -57,7 +56,7 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
         Exception exception = null;
 
         if (isException()) {
-            Throwable throwable = this.loggingEvent.getThrowableInformation().getThrowable();
+            Throwable throwable = this.logEvent.getThrown();
             exception = throwable instanceof Exception ? (Exception) throwable : new Exception(throwable);
         }
 
@@ -66,22 +65,23 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
 
     @Override
     public Map<String, String> getCustomParameters() {
+
         Map<String, String> metaData = new HashMap<String, String>();
 
         metaData.put("SourceType", "Log4j");
 
-        addLogEventProperty("LoggerName", loggingEvent.getLoggerName(), metaData);
-        addLogEventProperty("LoggingLevel", loggingEvent.getLevel() != null ? loggingEvent.getLevel().toString() : null, metaData);
-        addLogEventProperty("ThreadName", loggingEvent.getThreadName(), metaData);
-        addLogEventProperty("TimeStamp", getFormattedDate(loggingEvent.getTimeStamp()), metaData);
+        addLogEventProperty("LoggerName", logEvent.getLoggerName(), metaData);
+        addLogEventProperty("LoggingLevel", logEvent.getLevel() != null ? logEvent.getLevel().name() : null, metaData);
+        addLogEventProperty("ThreadName", logEvent.getThreadName(), metaData);
+        addLogEventProperty("TimeStamp", getFormattedDate(logEvent.getTimeMillis()), metaData);
 
-        if (loggingEvent.locationInformationExists()) {
-            LocationInfo locationInfo = loggingEvent.getLocationInformation();
+        if (logEvent.isIncludeLocation()) {
+            StackTraceElement stackTraceElement = logEvent.getSource();
 
-            addLogEventProperty("ClassName", locationInfo.getClassName(), metaData);
-            addLogEventProperty("FileName", locationInfo.getFileName(), metaData);
-            addLogEventProperty("MethodName", locationInfo.getMethodName(), metaData);
-            addLogEventProperty("LineNumber", String.valueOf(locationInfo.getLineNumber()), metaData);
+            addLogEventProperty("ClassName", stackTraceElement.getClassName(), metaData);
+            addLogEventProperty("FileName", stackTraceElement.getFileName(), metaData);
+            addLogEventProperty("MethodName", stackTraceElement.getMethodName(), metaData);
+            addLogEventProperty("LineNumber", String.valueOf(stackTraceElement.getLineNumber()), metaData);
         }
 
         // TODO: Username, domain and identity should be included as in .NET version.
@@ -92,27 +92,28 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
 
     @Override
     public SeverityLevel getNormalizedSeverityLevel() {
-        int log4jLevelAsInt = loggingEvent.getLevel().toInt();
-        switch (log4jLevelAsInt) {
-            case Priority.FATAL_INT: // FATAL
+        int log4jLevelAsInt = logEvent.getLevel().intLevel();
+
+        switch (StandardLevel.getStandardLevel(log4jLevelAsInt)) {
+            case FATAL:
                 return SeverityLevel.Critical;
 
-            case Priority.ERROR_INT: // ERROR
+            case ERROR:
                 return SeverityLevel.Error;
 
-            case Priority.WARN_INT: // WARN
+            case WARN:
                 return SeverityLevel.Warning;
 
-            case Priority.INFO_INT: // INFO
+            case INFO:
                 return SeverityLevel.Information;
 
-            case Level.TRACE_INT:    // TRACE
-            case Priority.DEBUG_INT: // DEBUG
-            case Priority.ALL_INT:   // ALL
+            case TRACE:
+            case DEBUG:
+            case ALL:
                 return SeverityLevel.Verbose;
 
             default:
-                InternalLogger.INSTANCE.error("Unknown Log4j v1.2 option, %d, using TRACE level as default", log4jLevelAsInt);
+                InternalLogger.INSTANCE.error("Unknown Log4j v2 option, %d, using TRACE level as default", log4jLevelAsInt);
                 return SeverityLevel.Verbose;
         }
     }
