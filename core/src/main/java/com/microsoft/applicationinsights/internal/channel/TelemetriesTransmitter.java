@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.channel;
 
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
