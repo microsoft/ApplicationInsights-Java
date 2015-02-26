@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.logback;
+package com.microsoft.applicationinsights.logback.internal;
 
 import java.util.HashMap;
 import java.util.Map;

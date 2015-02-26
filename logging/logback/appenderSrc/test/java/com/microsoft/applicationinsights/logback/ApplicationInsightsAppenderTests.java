@@ -19,18 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.log4j.v2;
+package com.microsoft.applicationinsights.logback;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.List;
-import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.shared.LogChannelMockVerifier;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Appender;
-import org.junit.*;
+import ch.qos.logback.classic.Logger;
+
+import org.slf4j.LoggerFactory;
 
 public class ApplicationInsightsAppenderTests {
 
@@ -67,8 +69,8 @@ public class ApplicationInsightsAppenderTests {
 
     @Test
     public void testAppenderSendsGivenEvent() {
-        Logger logger = LogManager.getRootLogger();
-        logger.trace("New event!");
+        Logger logger = (Logger) LoggerFactory.getLogger("root");
+        logger.trace("Hello");
 
         Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
     }
@@ -78,11 +80,8 @@ public class ApplicationInsightsAppenderTests {
     // region Private methods
 
     private ApplicationInsightsAppender getApplicationInsightsAppender() {
-        Logger logger = LogManager.getRootLogger();
-        org.apache.logging.log4j.core.Logger coreLogger = (org.apache.logging.log4j.core.Logger)logger;
-
-        Map<String, Appender> appenderMap = coreLogger.getAppenders();
-        ApplicationInsightsAppender appender = (ApplicationInsightsAppender) appenderMap.get("test");
+        Logger logger = (Logger) LoggerFactory.getLogger("root");
+        ApplicationInsightsAppender appender = (ApplicationInsightsAppender) logger.getAppender("test");
 
         return appender;
     }
