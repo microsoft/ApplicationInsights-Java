@@ -26,8 +26,6 @@ import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 
-import java.util.Locale;
-
 /**
  * Initializer class for device context information.
  */
