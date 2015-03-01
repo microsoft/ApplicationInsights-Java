@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.servlet.http.Cookie;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -30,8 +32,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
+import com.microsoft.applicationinsights.extensibility.context.SessionContext;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 
-import javax.servlet.http.Cookie;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by yonisha on 2/5/2015.
@@ -44,11 +49,13 @@ public class SessionCookieTests {
     private static String sessionId;
     private static Date sessionAcquisitionTime;
     private static Date sessionRenewalTime;
+    private static SessionContext sessionContext;
+    private static RequestTelemetryContext requestTelemetryContextMock;
 
     // endregion Members
 
     @BeforeClass
-    public static void initialize() {
+    public static void initialize() throws Exception {
         sessionId = UUID.randomUUID().toString();
         sessionAcquisitionTime = new Date();
         sessionRenewalTime = new Date(sessionAcquisitionTime.getTime() + 1000);
@@ -60,6 +67,13 @@ public class SessionCookieTests {
         });
 
         defaultCookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
+
+        sessionContext = new SessionContext(new ConcurrentHashMap<String, String>());
+        sessionContext.setId(sessionId);
+
+        SessionCookie sessionCookie = new SessionCookie(defaultCookie);
+        requestTelemetryContextMock = mock(RequestTelemetryContext.class);
+        when(requestTelemetryContextMock.getSessionCookie()).thenReturn(sessionCookie);
     }
 
     // region Tests
@@ -114,11 +128,18 @@ public class SessionCookieTests {
     public void testUnexpectedCookieValuesCountThrowsException() throws Exception {
         thrown.expect(Exception.class);
 
-        String formattedCookie = SessionCookie.formatCookie(new String[] {
+        String formattedCookie = SessionCookie.formatCookie(new String[]{
                 "singleValueCookie"
         });
 
         createSessionCookie(formattedCookie);
+    }
+
+    @Test
+    public void testSessionHttpCookiePathSetForAllPages() {
+        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(requestTelemetryContextMock, sessionContext);
+
+        Assert.assertEquals("Path should catch all urls", HttpCookieFactory.COOKIE_PATH_ALL_URL, cookie.getPath());
     }
 
     // endregion Tests

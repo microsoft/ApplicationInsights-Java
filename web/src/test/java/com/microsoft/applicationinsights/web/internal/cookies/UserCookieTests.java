@@ -30,6 +30,10 @@ import javax.servlet.http.Cookie;
 import java.util.Date;
 import java.util.UUID;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by yonisha on 2/9/2015.
@@ -40,11 +44,12 @@ public class UserCookieTests {
     private static Cookie defaultCookie;
     private static String userId;
     private static Date acquisitionTime;
+    private static RequestTelemetryContext requestTelemetryContextMock;
 
     // endregion Members
 
     @BeforeClass
-    public static void initialize() {
+    public static void initialize() throws Exception {
         userId = UUID.randomUUID().toString();
         acquisitionTime = new Date();
 
@@ -54,6 +59,11 @@ public class UserCookieTests {
         });
 
         defaultCookie = new Cookie(UserCookie.COOKIE_NAME, formattedCookie);
+
+
+        UserCookie userCookie = new UserCookie(defaultCookie);
+        requestTelemetryContextMock = mock(RequestTelemetryContext.class);
+        when(requestTelemetryContextMock.getUserCookie()).thenReturn(userCookie);
     }
 
     // region Tests
@@ -89,6 +99,20 @@ public class UserCookieTests {
         });
 
         createUserCookie(formattedCookie);
+    }
+
+    @Test
+    public void testUserHttpCookiePathSetForAllPages() {
+        Cookie cookie = HttpCookieFactory.generateUserHttpCookie(requestTelemetryContextMock);
+
+        Assert.assertEquals("Path should catch all urls", HttpCookieFactory.COOKIE_PATH_ALL_URL, cookie.getPath());
+    }
+
+    @Test
+    public void testUserHttpCookieSetMaxAge() {
+        Cookie cookie = HttpCookieFactory.generateUserHttpCookie(requestTelemetryContextMock);
+
+        Assert.assertEquals("Cookie age should be set to max value.", Integer.MAX_VALUE, cookie.getMaxAge());
     }
 
     // endregion Tests

@@ -69,9 +69,7 @@ public class WebSessionTrackingTelemetryModuleTests {
     public void testNewSessionIsCreatedWhenCookieNotExist() throws Exception {
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
 
-        SessionCookie cookie = cookiesContainer.getSessionCookie();
-
-        Assert.assertTrue(Sanitizer.isUUID(cookie.getSessionId()));
+        Assert.assertNotNull("Session cookie shouldn't be null.", cookiesContainer.getSessionCookie());
     }
 
     @Test
@@ -90,6 +88,13 @@ public class WebSessionTrackingTelemetryModuleTests {
 
         Assert.assertNotNull(sessionCookie);
         Assert.assertFalse(sessionCookieFormatted.contains(sessionCookie.getSessionId()));
+    }
+
+    @Test
+    public void testNewSessionIsCreatedWhenCookieCorrupted() throws Exception {
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie("corrupted;session;cookie");
+
+        Assert.assertNotNull("Session cookie shouldn't be null.", cookiesContainer.getSessionCookie());
     }
 
     // endregion Tests

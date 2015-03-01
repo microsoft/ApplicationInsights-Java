@@ -21,10 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
@@ -34,9 +31,9 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.cookies.HttpCookieFactory;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 
 /**
@@ -103,24 +100,8 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
             return;
         }
 
-        Date renewalDate = DateTimeUtils.getDateTimeNow();
-
-        String formattedCookie = SessionCookie.formatCookie(new String[] {
-                getTelemetrySessionContext(context).getId(),
-                DateTimeUtils.formatAsRoundTripDate(context.getSessionCookie().getSessionAcquisitionDate()),
-                DateTimeUtils.formatAsRoundTripDate(renewalDate)
-        });
-
-        Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
-
-        Date expirationDate = DateTimeUtils.addToDate(
-                renewalDate,
-                Calendar.MINUTE,
-                SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES);
-        long timeDiffInSeconds = DateTimeUtils.getDateDiff(expirationDate, DateTimeUtils.getDateTimeNow(), TimeUnit.SECONDS);
-
-        cookie.setMaxAge((int)timeDiffInSeconds);
-        cookie.setPath("/");
+        SessionContext sessionContext = getTelemetrySessionContext(context);
+        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(context, sessionContext);
 
         res.addCookie(cookie);
     }

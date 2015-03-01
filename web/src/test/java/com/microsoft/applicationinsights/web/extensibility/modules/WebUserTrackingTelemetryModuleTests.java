@@ -76,5 +76,12 @@ public class WebUserTrackingTelemetryModuleTests {
         Assert.assertNull(cookiesContainer.getUserCookie());
     }
 
+    @Test
+    public void testNewUserCookieIsCreatedWhenCookieCorrupted() throws Exception {
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie("corrupted;user;cookie");
+
+        Assert.assertNotNull("User cookie shouldn't be null.", cookiesContainer.getUserCookie());
+    }
+
     // endregion Tests
 }
