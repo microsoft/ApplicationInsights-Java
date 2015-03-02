@@ -46,7 +46,7 @@ public final class PerformanceCounterTelemetry extends BaseTelemetry<Performance
      */
     public PerformanceCounterTelemetry(String categoryName, String counterName, String instanceName, double value) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(categoryName), "categoryName must be non null, non empty value");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(instanceName), "instanceName must be non null, non empty value");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(counterName), "counterName must be non null, non empty value");
 
         data = new PerformanceCounterData();
         initialize(data.getProperties());

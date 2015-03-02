@@ -35,6 +35,26 @@ public final class PerformanceCounterTelemetryTest {
     private final static String MOCK_INSTANCE = "Mock_Instance";
     private final static double MOCK_VALUE = 222.1;
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testNullCategoryName() throws IOException {
+        new PerformanceCounterTelemetry(null, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEmptyCategoryName() throws IOException {
+        new PerformanceCounterTelemetry("", MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNullCounterName() throws IOException {
+        new PerformanceCounterTelemetry(MOCK_CATEGORY, null, MOCK_INSTANCE, MOCK_VALUE);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEmptyCounterName() throws IOException {
+        new PerformanceCounterTelemetry(MOCK_CATEGORY, "", MOCK_INSTANCE, MOCK_VALUE);
+    }
+
     @Test
     public void testStateAfterCtor() throws IOException {
         PerformanceCounterTelemetry telemetry = new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
