@@ -27,10 +27,14 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.telemetry.SessionState;
+import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.HttpCookieFactory;
@@ -41,6 +45,13 @@ import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
  */
 public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
 
+    // region Members
+
+    private TelemetryClient telemetryClient;
+    private boolean isInitialized = false;
+
+    // endregion Members
+
     // region Public
 
     /**
@@ -50,6 +61,13 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      */
     @Override
     public void initialize(TelemetryConfiguration configuration) {
+        try {
+            telemetryClient = new TelemetryClient(configuration);
+            isInitialized = true;
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error(
+                    "Failed to initialize telemetry module " + this.getClass().getSimpleName() + ". Exception: %s.", e.getMessage());
+        }
     }
 
     /**
@@ -60,6 +78,12 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      */
     @Override
     public void onBeginRequest(ServletRequest req, ServletResponse res) {
+        if (!isInitialized) {
+            // Avoid logging to not spam the log. It is sufficient that the module initialization failure
+            // has been logged.
+            return;
+        }
+
         HttpServletRequest request = (HttpServletRequest)req;
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
@@ -67,11 +91,21 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         SessionCookie.class, request, SessionCookie.COOKIE_NAME);
 
-        if (sessionCookie != null && !sessionCookie.isSessionExpired()) {
-            // Update ai context with session details.
-            getTelemetrySessionContext(context).setId(sessionCookie.getSessionId());
-            context.setSessionCookie(sessionCookie);
+        boolean startNewSession = false;
+        if (sessionCookie == null) {
+            startNewSession = true;
         } else {
+            if (sessionCookie.isSessionExpired()) {
+                startNewSession = true;
+                trackSessionStateWithRequestSessionId(SessionState.End, sessionCookie.getSessionId());
+            } else {
+                // Update ai context with session details.
+                getTelemetrySessionContext(context).setId(sessionCookie.getSessionId());
+                context.setSessionCookie(sessionCookie);
+            }
+        }
+
+        if (startNewSession) {
             startNewSession(context);
         }
 
@@ -119,6 +153,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
         try {
             aiContext.setSessionCookie(new SessionCookie(sessionId));
+            trackSessionStateWithRequestSessionId(SessionState.Start, sessionId);
         } catch (Exception e) {
             // TODO: change when creating dedicated parse exception.
             // This exception is not expected in any case.
@@ -133,6 +168,13 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         boolean isExpiredSession = sessionCookie == null || sessionCookie.isSessionExpired();
 
         return !isNewSession && !isExpiredSession;
+    }
+
+    private void trackSessionStateWithRequestSessionId(SessionState requiredState, String sessionId) {
+        SessionStateTelemetry sessionStateTelemetry = new SessionStateTelemetry(requiredState);
+        sessionStateTelemetry.getContext().getSession().setId(sessionId);
+
+        telemetryClient.track(sessionStateTelemetry);
     }
 
     // endregion Private

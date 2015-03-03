@@ -36,8 +36,16 @@ public enum MockTelemetryChannel implements TelemetryChannel {
 
     List<Telemetry> telemetryItems = new ArrayList<Telemetry>();
 
-    public List<Telemetry> getTelemetryItems() {
-        return telemetryItems;
+    public <E> List<E> getTelemetryItems(Class<E> eClass) {
+        List<E> filtered = new ArrayList<E>();
+
+        for (Telemetry telemetry : telemetryItems) {
+            if (eClass.isInstance(telemetry)) {
+                filtered.add(eClass.cast(telemetry));
+            }
+        }
+
+        return filtered;
     }
 
     @Override

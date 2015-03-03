@@ -77,9 +77,9 @@ public class WebOperationNameTelemetryInitializerTests {
     public void testRequestTelemetryInitializedWithOperationName() throws Exception {
         sendRequestAndGetResponseCookie();
 
-        List<Telemetry> items = channel.getTelemetryItems();
+        List<HttpRequestTelemetry> items = channel.getTelemetryItems(HttpRequestTelemetry.class);
         assertEquals(1, items.size());
-        HttpRequestTelemetry requestTelemetry = (HttpRequestTelemetry)items.get(0);
+        HttpRequestTelemetry requestTelemetry = items.get(0);
 
         Assert.assertEquals("Operation name not match", requestTelemetry.getName(), requestTelemetry.getContext().getOperation().getName());
     }
