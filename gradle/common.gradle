@@ -47,23 +47,22 @@ subprojects {
         mavenCentral()
     }
 
-    task testAndCollect << {
-        try
-        {
-            test{}.execute()
+    task collectTestResults << {
+        copy {
+            from testResultsDir
+            into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
         }
-        finally
-        {
-            copy {
-                from testResultsDir
-                into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
-            }
-            copy {
-                from testReportDir
-                into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
-            }
+        copy {
+            from testReportDir
+            into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
         }
     }
+
+    task testAndCollect {
+        dependsOn test
+        finalizedBy collectTestResults
+    }
+
 }
 
 // endregion Shared sub-projects configuration
