@@ -83,9 +83,9 @@ public class WebRequestTrackingTelemetryModuleTests {
     public void testHttpRequestTrackedSuccessfully() throws Exception {
         sendRequestAndGetResponseCookie();
 
-        List<Telemetry> items = channel.getTelemetryItems();
+        List<HttpRequestTelemetry> items = channel.getTelemetryItems(HttpRequestTelemetry.class);
         assertEquals(1, items.size());
-        HttpRequestTelemetry requestTelemetry = (HttpRequestTelemetry)items.get(0);
+        HttpRequestTelemetry requestTelemetry = items.get(0);
 
         assertEquals(String.valueOf(HttpStatus.SC_OK), requestTelemetry.getResponseCode());
         assertEquals(HttpMethods.GET + " /", requestTelemetry.getName());

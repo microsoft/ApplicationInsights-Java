@@ -77,9 +77,9 @@ public class WebOperationIdTelemetryInitializerTests {
     public void testRequestTelemetryInitializedWithOperationId() throws Exception {
         sendRequestAndGetResponseCookie();
 
-        List<Telemetry> items = channel.getTelemetryItems();
+        List<HttpRequestTelemetry> items = channel.getTelemetryItems(HttpRequestTelemetry.class);
         assertEquals(1, items.size());
-        HttpRequestTelemetry requestTelemetry = (HttpRequestTelemetry)items.get(0);
+        HttpRequestTelemetry requestTelemetry = items.get(0);
 
         Assert.assertEquals("Operation id not match", requestTelemetry.getId(), requestTelemetry.getContext().getOperation().getId());
     }

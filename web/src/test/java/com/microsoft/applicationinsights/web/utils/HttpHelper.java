@@ -27,6 +27,8 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
@@ -100,6 +102,18 @@ public class HttpHelper {
                 FORMATTED_SESSION_COOKIE_TEMPLATE,
                 DateTimeUtils.formatAsRoundTripDate(sessionAcquisitionTime),
                 DateTimeUtils.formatAsRoundTripDate(sessionRenewalTime));
+    }
+
+    public static String getSessionIdFromCookie(String cookie) {
+        Pattern pattern = Pattern.compile("(.*)=(.*)\\|(.*)\\|(.*)");
+
+        String sessionId = null;
+        Matcher matcher = pattern.matcher(cookie);
+        if (matcher.matches()) {
+            sessionId = matcher.group(2);
+        }
+
+        return sessionId;
     }
 
     private static CookiesContainer getCookiesContainer(List<String> responseCookies) throws Exception {
