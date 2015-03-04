@@ -321,6 +321,21 @@ public final class TelemetryClientTests {
         verifyAndGetLastEventSent();
     }
 
+    @Test
+    public void testContextThrowsInInitialize() {
+        ContextInitializer mockContextInitializer = new ContextInitializer() {
+            @Override
+            public void initialize(TelemetryContext context) {
+                throw new RuntimeException();
+            }
+        };
+
+        configuration.getContextInitializers().add(mockContextInitializer);
+
+        TraceTelemetry telemetry = new TraceTelemetry("test");
+        client.track(telemetry);
+    }
+
     // endregion Track tests
 
     // region Private methods

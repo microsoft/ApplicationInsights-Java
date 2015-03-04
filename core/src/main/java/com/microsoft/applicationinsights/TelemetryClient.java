@@ -366,12 +366,16 @@ public class TelemetryClient {
             ctx.setInstrumentationKey(configuration.getInstrumentationKey());
         }
 
-        telemetry.getContext().initialize(ctx);
+        try {
+            telemetry.getContext().initialize(ctx);
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.getMessage());
+        }
 
         for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
             try {
                 initializer.initialize(telemetry);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 InternalLogger.INSTANCE.error("Failed during telemetry initialization, exception: %s", e.getMessage());
             }
         }
@@ -380,7 +384,11 @@ public class TelemetryClient {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
         }
 
-        telemetry.sanitize();
+        try {
+            telemetry.sanitize();
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.error("Exception while sanitizing telemetry: '%s'",t.getMessage());
+        }
 
         getChannel().send(telemetry);
     }
@@ -400,7 +408,11 @@ public class TelemetryClient {
         TelemetryContext ctx = new TelemetryContext();
         ctx.setInstrumentationKey(configuration.getInstrumentationKey());
         for (ContextInitializer init : configuration.getContextInitializers()) {
-            init.initialize(ctx);
+            try {
+                init.initialize(ctx);
+            } catch (Throwable t) {
+                InternalLogger.INSTANCE.error("Exception in context initializer: '%s'", t.getMessage());
+            }
         }
 
         return ctx;
