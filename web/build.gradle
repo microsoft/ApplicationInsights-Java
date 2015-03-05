@@ -25,6 +25,7 @@ archivesBaseName = 'applicationinsights-web'
 
 dependencies {
     compile project(':core')
+    compile 'org.springframework:spring-webmvc:3.1.0.RELEASE'
     compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
@@ -52,7 +53,17 @@ uploadArchives {
                     description = "This is the web module of " + project.msftAppInsightsJavaSdk
                 }
 
-                pom.whenConfigured { p -> writePomToArtifactsDirectory(p, 'web') }
+                pom.whenConfigured {
+                    p ->
+                        p.dependencies.each {
+                            d ->
+                                if (d.groupId != "com.microsoft.azure" && d.scope == "compile") {
+                                    d.scope = "provided"
+                                }
+                        }
+
+                        writePomToArtifactsDirectory(p, 'web')
+                }
             }
         }
     }
