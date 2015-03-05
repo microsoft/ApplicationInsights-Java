@@ -56,7 +56,7 @@ public final class SessionContext {
      * Gets a value indicating whether it is the first session.
      * @return True if first session, false otherwise.
      */
-    Boolean getIsFirst() {
+    public Boolean getIsFirst() {
         return MapUtil.getBoolValueOrNull(tags, ContextTagKeys.getKeys().getSessionIsFirst());
     }
 

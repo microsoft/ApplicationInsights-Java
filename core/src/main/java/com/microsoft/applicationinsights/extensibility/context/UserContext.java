@@ -34,7 +34,7 @@ public final class UserContext {
         this.tags = tags;
     }
 
-    String getId() {
+    public String getId() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserId());
     }
 
@@ -58,7 +58,7 @@ public final class UserContext {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserAgent(), version);
     }
 
-    Date getAcquisitionDate() {
+    public Date getAcquisitionDate() {
         return MapUtil.getDateValueOrNull(tags, ContextTagKeys.getKeys().getUserAccountAcquisitionDate());
     }
 
