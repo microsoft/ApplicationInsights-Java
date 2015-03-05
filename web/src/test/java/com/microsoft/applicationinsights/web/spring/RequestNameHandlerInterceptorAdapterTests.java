@@ -19,9 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal.spring;
+package com.microsoft.applicationinsights.web.spring;
 
 import javax.servlet.http.HttpServletRequest;
+
+import com.microsoft.applicationinsights.web.spring.internal.RequestNameHandlerInterceptorAdapter;
 import org.eclipse.jetty.http.HttpMethods;
 import org.junit.Assert;
 import org.junit.Before;

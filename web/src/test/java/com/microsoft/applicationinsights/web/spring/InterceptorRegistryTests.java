@@ -19,11 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal.spring;
+package com.microsoft.applicationinsights.web.spring;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+
+import com.microsoft.applicationinsights.web.spring.internal.InterceptorRegistry;
+import com.microsoft.applicationinsights.web.spring.internal.RequestNameHandlerInterceptorAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.Configuration;

@@ -23,16 +23,6 @@ apply from: "$buildScriptsDir/publishing.gradle"
 
 archivesBaseName = 'applicationinsights-web'
 
-configurations {
-    provided
-}
-
-sourceSets {
-    main.compileClasspath += configurations.provided
-    test.compileClasspath += configurations.provided
-    test.runtimeClasspath += configurations.provided
-}
-
 dependencies {
     compile project(':core')
     compile 'org.springframework:spring-webmvc:3.1.0.RELEASE'
@@ -63,7 +53,17 @@ uploadArchives {
                     description = "This is the web module of " + project.msftAppInsightsJavaSdk
                 }
 
-                pom.whenConfigured { p -> writePomToArtifactsDirectory(p, 'web') }
+                pom.whenConfigured {
+                    p ->
+                        p.dependencies.each {
+                            d ->
+                                if (d.groupId != "com.microsoft.azure" && d.scope == "compile") {
+                                    d.scope = "provided"
+                                }
+                        }
+
+                        writePomToArtifactsDirectory(p, 'web')
+                }
             }
         }
     }
