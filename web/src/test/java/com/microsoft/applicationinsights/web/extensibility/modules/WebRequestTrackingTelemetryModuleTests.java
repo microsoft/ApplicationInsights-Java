@@ -29,9 +29,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
@@ -56,6 +56,8 @@ public class WebRequestTrackingTelemetryModuleTests {
     private static WebRequestTrackingTelemetryModule defaultModule;
     private static MockTelemetryChannel channel;
 
+    // region Initialization
+
     @BeforeClass
     public static void classInitialize() throws Exception {
         server.start();
@@ -78,6 +80,10 @@ public class WebRequestTrackingTelemetryModuleTests {
     public static void classCleanup() throws Exception {
         server.shutdown();
     }
+
+    // endregion Initialization
+
+    // region Tests
 
     @Test
     public void testHttpRequestTrackedSuccessfully() throws Exception {
@@ -121,6 +127,20 @@ public class WebRequestTrackingTelemetryModuleTests {
     public void testRequestNameCalculationWithJSessionId() {
         testRequestNameCalculationWithGivenQueryString("", ";jsessionid=D59C79DF9A2C81E931CD67659AC01D17");
     }
+
+
+    @Test
+    public void testUserAgentIsBeingSet() throws Exception {
+        sendRequestAndGetResponseCookie();
+
+        List<HttpRequestTelemetry> items = channel.getTelemetryItems(HttpRequestTelemetry.class);
+        assertEquals(1, items.size());
+        HttpRequestTelemetry requestTelemetry = items.get(0);
+
+        Assert.assertEquals(HttpHelper.TEST_USER_AGENT, requestTelemetry.getContext().getUser().getUserAgent());
+    }
+
+    // endregion Tests
 
     // region Private methods
 

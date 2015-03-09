@@ -43,11 +43,12 @@ public class HttpHelper {
 
     private static final String FORMATTED_USER_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s";
     private static final String FORMATTED_SESSION_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s|%s";
+    public static final String TEST_USER_AGENT = "Mozilla/5.0 (Windows NT 6.4; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko";
 
     public static CookiesContainer sendRequestAndGetResponseCookie(String... requestFormattedCookies) throws Exception {
         HttpURLConnection con = (HttpURLConnection) (new URL("http://localhost:1234")).openConnection();
         con.setRequestMethod("GET");
-        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.4; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko");
+        con.setRequestProperty("User-Agent", TEST_USER_AGENT);
 
         for (String requestFormattedCookie : requestFormattedCookies) {
             con.setRequestProperty("Cookie", requestFormattedCookie);

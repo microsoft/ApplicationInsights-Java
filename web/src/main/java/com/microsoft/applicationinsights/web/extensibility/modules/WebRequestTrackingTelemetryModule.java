@@ -74,6 +74,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             String scheme = request.getScheme();
             String host = request.getHeader("Host");
             String query = request.getQueryString();
+            String userAgent = request.getHeader("User-Agent");
 
             telemetry.setHttpMethod(method);
             if (!Strings.isNullOrEmpty(query)) {
@@ -87,7 +88,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             // Next step is to implement the smart request name calculation which will support the leading MVC f/ws.
             String rUriWithoutSessionId = removeSessionIdFromUri(rURI);
             telemetry.setName(String.format("%s %s", method, rUriWithoutSessionId));
-
+            telemetry.getContext().getUser().setUserAgent(userAgent);
             telemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
