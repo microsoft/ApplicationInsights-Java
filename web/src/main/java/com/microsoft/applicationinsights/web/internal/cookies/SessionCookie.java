@@ -24,6 +24,8 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 import java.util.Calendar;
 import java.util.Date;
 import javax.servlet.http.Cookie;
+
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
 /**
@@ -72,18 +74,21 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
     }
 
     /**
-     * Consrtucts new SessionCookie with the given session ID.
+     * Constructs new SessionCookie with the given session ID.
      * @param sessionId The session ID.
-     * @throws Exception Thrown when the cookie information cannot be parsed.
      */
-    public SessionCookie(String sessionId) throws Exception {
+    public SessionCookie(String sessionId) {
         String now = DateTimeUtils.formatAsRoundTripDate(DateTimeUtils.getDateTimeNow());
         String[] cookieRawValues = new String[] { sessionId, now, now };
         String formattedCookie = SessionCookie.formatCookie(cookieRawValues);
 
         Cookie cookie = new Cookie(COOKIE_NAME, formattedCookie);
 
-        parseCookie(cookie);
+        try {
+            parseCookie(cookie);
+        } catch (Exception e) {
+            // This exception is not expected in any case.
+        }
     }
 
     // endregion Ctor

@@ -22,6 +22,8 @@
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
 import java.util.List;
+
+import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -81,6 +83,15 @@ public class WebSessionTrackingTelemetryModuleTests {
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
 
         Assert.assertNotNull("Session cookie shouldn't be null.", cookiesContainer.getSessionCookie());
+    }
+
+    @Test
+    public void testIsFirstSessionIsPopulatedOnFirstSession() throws Exception {
+        HttpHelper.sendRequestAndGetResponseCookie();
+
+        HttpRequestTelemetry requestTelemetry = channel.getTelemetryItems(HttpRequestTelemetry.class).get(0);
+
+        Assert.assertTrue(requestTelemetry.getContext().getSession().getIsFirst());
     }
 
     @Test

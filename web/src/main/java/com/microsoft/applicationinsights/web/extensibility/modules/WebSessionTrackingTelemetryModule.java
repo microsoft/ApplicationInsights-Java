@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.HttpCookieFactory;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
+import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 
 /**
  * Created by yonisha on 2/4/2015.
@@ -49,6 +50,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
     private TelemetryClient telemetryClient;
     private boolean isInitialized = false;
+    private boolean isUserModuleEnabled = false;
 
     // endregion Members
 
@@ -87,6 +89,12 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         HttpServletRequest request = (HttpServletRequest)req;
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
+        boolean isNewUser = isNewUser(request);
+
+        if (isNewUser && isUserModuleEnabled) {
+            context.getHttpRequestTelemetry().getContext().getSession().setIsFirst(true);
+        }
+
         SessionCookie sessionCookie =
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         SessionCookie.class, request, SessionCookie.COOKIE_NAME);
@@ -124,6 +132,22 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     public void onEndRequest(ServletRequest req, ServletResponse res) {
     }
 
+    /**
+     * Sets a value indicating whether the user tracking module enabled.
+     * @param isUserModuleEnabled True if the user module enabled, false otherwise.
+     */
+    public void setIsUserModuleEnabled(boolean isUserModuleEnabled){
+        this.isUserModuleEnabled = isUserModuleEnabled;
+    }
+
+    /**
+     * Gets a value indicating whether the user tracking module enabled.
+     * @return True if the user module enabled, false otherwise.
+     */
+    public boolean getIsUserModuleEnabled(){
+        return isUserModuleEnabled;
+    }
+
     // endregion Public
 
     // region Private
@@ -149,20 +173,14 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
         SessionContext session = getTelemetrySessionContext(aiContext);
         session.setId(sessionId);
-        session.setIsNewSession(true);
 
-        try {
-            aiContext.setSessionCookie(new SessionCookie(sessionId));
-            trackSessionStateWithRequestSessionId(SessionState.Start, sessionId);
-        } catch (Exception e) {
-            // TODO: change when creating dedicated parse exception.
-            // This exception is not expected in any case.
-            InternalLogger.INSTANCE.error("Failed to create session cookie with error: %s", e.getMessage());
-        }
+        aiContext.setSessionCookie(new SessionCookie(sessionId));
+        trackSessionStateWithRequestSessionId(SessionState.Start, sessionId);
+        aiContext.setIsNewSession(true);
     }
 
     private boolean isSessionCookieUpToDate(RequestTelemetryContext context) {
-        boolean isNewSession = getTelemetrySessionContext(context).getIsNewSession();
+        boolean isNewSession = context.getIsNewSession();
 
         SessionCookie sessionCookie = context.getSessionCookie();
         boolean isExpiredSession = sessionCookie == null || sessionCookie.isSessionExpired();
@@ -175,6 +193,13 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         sessionStateTelemetry.getContext().getSession().setId(sessionId);
 
         telemetryClient.track(sessionStateTelemetry);
+    }
+
+    private boolean isNewUser(HttpServletRequest request) {
+        UserCookie userCookie = com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+                UserCookie.class, request, UserCookie.COOKIE_NAME);
+
+        return userCookie == null;
     }
 
     // endregion Private
