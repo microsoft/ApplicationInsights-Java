@@ -50,7 +50,7 @@ public final class UserContext {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserAccountId(), version);
     }
 
-    String getUserAgent() {
+    public String getUserAgent() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserAgent());
     }
 
