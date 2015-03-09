@@ -29,7 +29,9 @@ import java.util.List;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
+import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 
 /**
  * Created by yonisha on 2/3/2015.
@@ -94,10 +96,24 @@ public class WebModulesContainer {
      * @param configuration The configuration
      */
     private void buildWebModules(TelemetryConfiguration configuration) {
+
+        WebSessionTrackingTelemetryModule sessionModule = null;
+        WebUserTrackingTelemetryModule userModule = null;
+
         for (TelemetryModule module : configuration.getTelemetryModules()) {
+            if (module instanceof WebSessionTrackingTelemetryModule) {
+                sessionModule = (WebSessionTrackingTelemetryModule) module;
+            } else if (module instanceof WebUserTrackingTelemetryModule) {
+                userModule = (WebUserTrackingTelemetryModule) module;
+            }
+
             if (module instanceof WebTelemetryModule) {
                 modules.add((WebTelemetryModule)module);
             }
+        }
+
+        if (sessionModule != null) {
+            sessionModule.setIsUserModuleEnabled(userModule != null);
         }
     }
 

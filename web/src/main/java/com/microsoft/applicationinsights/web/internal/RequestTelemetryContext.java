@@ -33,6 +33,7 @@ public class RequestTelemetryContext {
     private long requestStartTimeTicks;
     private SessionCookie sessionCookie;
     private UserCookie userCookie;
+    private boolean isNewSession = false;
 
     /**
      * Constructs new RequestTelemetryContext object.
@@ -89,5 +90,21 @@ public class RequestTelemetryContext {
      */
     public UserCookie getUserCookie() {
         return userCookie;
+    }
+
+    /**
+     * Sets if the session is new or not.
+     * @param isNewSession Indicates whether the session is new or not.
+     */
+    public void setIsNewSession(boolean isNewSession) {
+        this.isNewSession = isNewSession;
+    }
+
+    /**
+     * Gets a value indicating whether the session is new or not.
+     * @return True if the session is new, false otherwise.
+     */
+    public boolean getIsNewSession() {
+        return isNewSession;
     }
 }
