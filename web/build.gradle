@@ -25,6 +25,7 @@ archivesBaseName = 'applicationinsights-web'
 
 dependencies {
     compile project(':core')
+    compile 'com.opensymphony:xwork:2.0.4' // Struts 2
     compile 'org.springframework:spring-webmvc:3.1.0.RELEASE'
     compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
     testCompile group: 'junit', name: 'junit', version: '4.11'
