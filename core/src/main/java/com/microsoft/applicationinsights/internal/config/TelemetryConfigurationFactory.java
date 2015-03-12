@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -37,6 +37,10 @@ import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionCon
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
+import eu.infomas.annotation.AnnotationDetector;
+
+import static eu.infomas.annotation.AnnotationDetector.*;
 
 /**
  * Initializer class for configuration instances.
@@ -56,6 +60,7 @@ public enum TelemetryConfigurationFactory {
     private final static String DISABLE_TELEMETRY_SECTION = "DisableTelemetry";
     private final static String INSTRUMENTATION_KEY_SECTION = "InstrumentationKey";
     private final static String LOGGER_SECTION = "SDKLogger";
+    private final static String PERFORMANCE_COUNTERS_SECTION = "PerformanceCounters";
 
     private ConfigFileParser parser;
     private String fileToParse;
@@ -126,6 +131,51 @@ public enum TelemetryConfigurationFactory {
         String loggerOutput = loggerData.sectionTag;
 
         InternalLogger.INSTANCE.initialize(loggerOutput, loggerData.items);
+    }
+
+    private List<TelemetryModule> setPerformanceCounters(ConfigFileParser parser) {
+        ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
+
+        ConfigFileParser.StructuredDataResult pcData = parser.getStructuredData(PERFORMANCE_COUNTERS_SECTION, null);
+        if (!pcData.found) {
+            return modules;
+        }
+
+        final ArrayList<String> performanceModuleNames = new ArrayList<String>();
+        TypeReporter reporter = new TypeReporter() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public Class<? extends Annotation>[] annotations() {
+                return new Class[]{PerformanceModule.class};
+            }
+
+            @Override
+            public void reportTypeAnnotation(Class<? extends Annotation> annotation, String className) {
+                performanceModuleNames.add(className);
+            }
+        };
+        final AnnotationDetector cf = new AnnotationDetector(reporter);
+        try {
+            cf.detect("com.microsoft.applicationinsights");
+            for (String performanceModuleName : performanceModuleNames) {
+                TelemetryModule module = null;
+                try {
+                    module = createInstance(performanceModuleName, TelemetryModule.class);
+                    if (module != null) {
+                        modules.add(module);
+                    } else {
+                        InternalLogger.INSTANCE.error("Failed to create performance module: '%s'", performanceModuleName);
+                    }
+                } catch (Exception e) {
+                    InternalLogger.INSTANCE.error("Exception while trying to create performance module: '%s'", performanceModuleName);
+                    continue;
+                }
+            }
+        } catch (IOException e) {
+            InternalLogger.INSTANCE.error("Failed during performance counters detection: '%s'", e.getMessage());
+        }
+
+        return modules;
     }
 
     /**
@@ -214,6 +264,9 @@ public enum TelemetryConfigurationFactory {
     private void setTelemetryModules(ConfigFileParser parser, TelemetryConfiguration configuration) {
         List<TelemetryModule> modules = configuration.getTelemetryModules();
         loadComponents(TelemetryModule.class, parser, TELEMETRY_MODULES_SECTION, INITIALIZERS_ADD, modules);
+
+        List<TelemetryModule> pcModules = setPerformanceCounters(parser);
+        modules.addAll(pcModules);
     }
 
     /**
