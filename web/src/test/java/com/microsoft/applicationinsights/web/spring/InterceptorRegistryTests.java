@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.microsoft.applicationinsights.web.spring.internal.InterceptorRegistry;
-import com.microsoft.applicationinsights.web.spring.internal.RequestNameHandlerInterceptorAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.Configuration;
