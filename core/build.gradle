@@ -24,6 +24,7 @@ apply from: "$buildScriptsDir/publishing.gradle"
 archivesBaseName = 'applicationinsights-core'
 
 dependencies {
+    compile group: 'eu.infomas', name: 'annotation-detector', version: '3.0.4'
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.1'
