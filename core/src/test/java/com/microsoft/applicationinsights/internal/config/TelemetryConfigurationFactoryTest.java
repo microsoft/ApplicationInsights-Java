@@ -34,18 +34,13 @@ import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
 
 public final class TelemetryConfigurationFactoryTest {
 
-    private final static String MOCK_CONF_FILE = "mockFileName";
     private final static String MOCK_IKEY = "c9341531-05ac-4d8c-972e-36e97601d5ff";
     private final static String MOCK_ENDPOINT = "MockEndpoint";
-    private final static String FACTORY_INSTRUMENTATION_KEY = "InstrumentationKey";
-    private final static String LOGGER_SECTION = "SDKLogger";
-    private final static String CHANNEL_SECTION = "Channel";
-    private final static String CLASS_TYPE_AS_ATTRIBUTE = "type";
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
-    private final static String PERFORMANCE_COUNTERS_SECTION = "PerformanceCounters";
 
     @PerformanceModule
     public static final class MockPerformanceModule implements TelemetryModule {
@@ -67,12 +62,40 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     @Test
+    public void testWithEmptySections() {
+        AppInsightsConfigurationReader mockParser = Mockito.mock(AppInsightsConfigurationReader.class);
+
+        ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
+        appConf.setInstrumentationKey(MOCK_IKEY);
+        appConf.setTelemetryInitializers(null);
+        appConf.setContextInitializers(null);
+        appConf.setModules(null);
+        appConf.setSdkLogger(null);
+        Mockito.doReturn(appConf).when(mockParser).build(anyString());
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+
+        assertEquals(mockConfiguration.isTrackingDisabled(), false);
+        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
+        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+    }
+
+    @Test
     public void testTelemetryContextInitializers() {
-        ConfigFileParser mockParser = createMockParser(true, true, null, false);
-        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
-        List<String> contexts = new ArrayList<String>();
-        contexts.add("com.microsoft.applicationinsights.extensibility.initializer.TimestampPropertyInitializer");
-        Mockito.doReturn(contexts).when(mockParser).getList("TelemetryInitializers", "Add", "type");
+        AppInsightsConfigurationReader mockParser = createMockParser(true, true, false);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey(MOCK_IKEY);
+
+        TelemetryInitializersXmlElement telemetryInitializersXmlElement = new TelemetryInitializersXmlElement();
+        ArrayList<AddTypeXmlElement> contexts = new ArrayList<AddTypeXmlElement>();
+        AddTypeXmlElement addXmlElement = new AddTypeXmlElement();
+        addXmlElement.setType("com.microsoft.applicationinsights.extensibility.initializer.TimestampPropertyInitializer");
+        contexts.add(addXmlElement);
+        telemetryInitializersXmlElement.setAdds(contexts);
+        appConf.setTelemetryInitializers(telemetryInitializersXmlElement);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -87,11 +110,17 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testContextInitializers() {
-        ConfigFileParser mockParser = createMockParser(true, true, null, false);
-        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
-        List<String> contexts = new ArrayList<String>();
-        contexts.add("com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer");
-        Mockito.doReturn(contexts).when(mockParser).getList("ContextInitializers", "Add", "type");
+        AppInsightsConfigurationReader mockParser = createMockParser(true, true, false);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey(MOCK_IKEY);
+
+        ContextInitializersXmlElement contextInitializersXmlElement = new ContextInitializersXmlElement();
+        ArrayList<AddTypeXmlElement> contexts = new ArrayList<AddTypeXmlElement>();
+        AddTypeXmlElement addXmlElement = new AddTypeXmlElement();
+        addXmlElement.setType("com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer");
+        contexts.add(addXmlElement);
+        contextInitializersXmlElement.setAdds(contexts);
+        appConf.setContextInitializers(contextInitializersXmlElement);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -106,7 +135,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeWithFailingParse() throws Exception {
-        ConfigFileParser mockParser = createMockParserThatFailsToParse();
+        AppInsightsConfigurationReader mockParser = createMockParserThatFailsToParse();
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -118,10 +147,9 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeWithNullGetInstrumentationKey() throws Exception {
-        ConfigFileParser mockParser = createMockParser(false, true, null, false);
-        Mockito.doReturn(null).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
-        ConfigFileParser.StructuredDataResult channelResult = new ConfigFileParser.StructuredDataResult();
-        Mockito.doReturn(channelResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+        AppInsightsConfigurationReader mockParser = createMockParser(false, true, false);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey(MOCK_IKEY);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -133,14 +161,9 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeWithEmptyGetInstrumentationKey() throws Exception {
-        ConfigFileParser mockParser = createMockParser(false, true, null, false);
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("Level", "");
-        ConfigFileParser.StructuredDataResult loggerResult = new ConfigFileParser.StructuredDataResult("", map);
-        ConfigFileParser.StructuredDataResult channelResult = new ConfigFileParser.StructuredDataResult();
-        Mockito.doReturn("").when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
-        Mockito.doReturn(channelResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
-        Mockito.doReturn(loggerResult).when(mockParser).getStructuredData(LOGGER_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+        AppInsightsConfigurationReader mockParser = createMockParser(false, true, false);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey("");
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -152,8 +175,9 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeAllDefaults() throws Exception {
-        ConfigFileParser mockParser = createMockParser(true, true, null, false);
-        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
+        AppInsightsConfigurationReader mockParser = createMockParser(true, true, false);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey(MOCK_IKEY);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -168,10 +192,10 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testDefaultChannelWithData() {
-        HashMap<String, String> channelItems = new HashMap<String, String>();
-        channelItems.put("DeveloperMode", "true");
-        ConfigFileParser mockParser = createMockParserWithDefaultChannel(true, channelItems);
-        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
+        AppInsightsConfigurationReader mockParser = createMockParserWithDefaultChannel(true);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey(MOCK_IKEY);
+        appConf.getChannel().setDeveloperMode(true);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -182,11 +206,12 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testDefaultChannelWithBadData() {
-        HashMap<String, String> channelItems = new HashMap<String, String>();
-        channelItems.put("DeveloperMode", "true");
-        channelItems.put("EndpointAddress", NON_VALID_URL);
-        ConfigFileParser mockParser = createMockParserWithDefaultChannel(true, channelItems);
-        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
+        AppInsightsConfigurationReader mockParser = createMockParserWithDefaultChannel(true);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey(MOCK_IKEY);
+        ChannelXmlElement channelXmlElement = appConf.getChannel();
+        channelXmlElement.setEndpointAddress(NON_VALID_URL);
+        channelXmlElement.setDeveloperMode(true);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -195,51 +220,52 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getChannel().isDeveloperMode(), false);
     }
 
-    private ConfigFileParser createMockParserThatFailsToParse() {
-        ConfigFileParser mockParser = Mockito.mock(ConfigFileParser.class);
-        Mockito.doReturn(false).when(mockParser).parse(MOCK_CONF_FILE);
+    private AppInsightsConfigurationReader createMockParserThatFailsToParse() {
+        AppInsightsConfigurationReader mockParser = Mockito.mock(AppInsightsConfigurationReader.class);
+        Mockito.doReturn(null).when(mockParser).build(anyString());
         return mockParser;
     }
 
-    private ConfigFileParser createMockParserWithDefaultChannel(boolean withChannel, Map<String, String> data) {
-        return createMockParser(withChannel, false, data, false);
+    private AppInsightsConfigurationReader createMockParserWithDefaultChannel(boolean withChannel) {
+        return createMockParser(withChannel, false, false);
     }
 
         // Suppress non relevant warning due to mockito internal stuff
     @SuppressWarnings("unchecked")
-    private ConfigFileParser createMockParser(boolean withChannel, boolean setChannel, Map<String, String> data, boolean withPerformanceModules) {
-        ConfigFileParser mockParser = Mockito.mock(ConfigFileParser.class);
-        Mockito.doReturn(true).when(mockParser).parse(MOCK_CONF_FILE);
+    private AppInsightsConfigurationReader createMockParser(boolean withChannel, boolean setChannel, boolean withPerformanceModules) {
+        AppInsightsConfigurationReader mockParser = Mockito.mock(AppInsightsConfigurationReader.class);
 
-        ConfigFileParser.StructuredDataResult loggerResult = new ConfigFileParser.StructuredDataResult();
-        Mockito.doReturn(loggerResult).when(mockParser).getStructuredData(LOGGER_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+        ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
+
+        appConf.setSdkLogger(new SDKLoggerXmlElement());
+
         if (withChannel) {
-            Map<String, String> mockChannel = new HashMap<String, String>();
-            mockChannel.put("EndpointAddress", MOCK_ENDPOINT);
-
-            Map<String, String> channelItems = data != null ? data : new HashMap<String, String>();
+            ChannelXmlElement channelXmlElement = new ChannelXmlElement();
+            channelXmlElement.setEndpointAddress(MOCK_ENDPOINT);
 
             String channelType = null;
             if (setChannel) {
                 channelType = "com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel";
+                channelXmlElement.setType(channelType);
             }
-            ConfigFileParser.StructuredDataResult channelResult = new ConfigFileParser.StructuredDataResult(channelType, channelItems);
-            Mockito.doReturn(channelResult).when(mockParser).getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
+
+            appConf.setChannel(channelXmlElement);
         }
         if (withPerformanceModules) {
-            ConfigFileParser.StructuredDataResult pcResult = new ConfigFileParser.StructuredDataResult(null, new HashMap<String, String>());
-            Mockito.doReturn(pcResult).when(mockParser).getStructuredData(PERFORMANCE_COUNTERS_SECTION, null);
+            PerformanceCountersXmlElement performanceCountersXmlElement = new PerformanceCountersXmlElement();
+            appConf.setPerformance(performanceCountersXmlElement);
         }
+        Mockito.doReturn(appConf).when(mockParser).build(anyString());
 
         return mockParser;
     }
 
     @Test
     public void testPerformanceModules() {
-        HashMap<String, String> channelItems = new HashMap<String, String>();
-        channelItems.put("DeveloperMode", "true");
-        ConfigFileParser mockParser = createMockParser(true, true, null, true);
-        Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
+        AppInsightsConfigurationReader mockParser = createMockParser(true, true, true);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey(MOCK_IKEY);
+        appConf.getChannel().setDeveloperMode(true);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -251,8 +277,8 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
 
-    private void initializeWithFactory(ConfigFileParser mockParser, TelemetryConfiguration mockConfiguration) {
-        TelemetryConfigurationFactory.INSTANCE.setParserData(mockParser, MOCK_CONF_FILE);
+    private void initializeWithFactory(AppInsightsConfigurationReader mockParser, TelemetryConfiguration mockConfiguration) {
+        TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
         TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
     }
 }
