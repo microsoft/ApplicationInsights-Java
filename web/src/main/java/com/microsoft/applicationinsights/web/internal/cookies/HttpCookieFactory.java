@@ -42,14 +42,16 @@ public class HttpCookieFactory {
      * Generates session http cookie.
      * @param context The context.
      * @param sessionContext The request session context.
+     * @param sessionTimeoutInMinutes The session timeout in minutes.
      * @return Session http cookie.
      */
-    public static Cookie generateSessionHttpCookie(RequestTelemetryContext context, SessionContext sessionContext) {
+    public static Cookie generateSessionHttpCookie(
+            RequestTelemetryContext context, SessionContext sessionContext, int sessionTimeoutInMinutes) {
         Date renewalDate = DateTimeUtils.getDateTimeNow();
         Date expirationDate = DateTimeUtils.addToDate(
                 renewalDate,
                 Calendar.MINUTE,
-                SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES);
+                sessionTimeoutInMinutes);
         long timeDiffInSeconds = DateTimeUtils.getDateDiff(expirationDate, DateTimeUtils.getDateTimeNow(), TimeUnit.SECONDS);
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
