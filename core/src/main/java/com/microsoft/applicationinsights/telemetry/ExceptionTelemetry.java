@@ -137,7 +137,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         }
 
         ExceptionDetails exceptionDetails = new ExceptionDetails();
-        exceptionDetails.setId(LocalStringsUtils.generateRandomIntegerId());
+        exceptionDetails.setId(exception.hashCode());
         exceptionDetails.setTypeName(exception.getClass().getName());
 
         String exceptionMessage = exception.getMessage();
