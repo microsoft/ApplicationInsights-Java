@@ -19,22 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.annotation;
+package com.microsoft.applicationinsights.internal.shutdown;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
- *
- * Created by gupele on 3/11/2015.
+ * Created by gupele on 3/3/2015.
  */
-
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PerformanceModule {
-    String value() default "BuiltIn";
+public interface Stoppable {
+    void stop(long timeout, TimeUnit timeUnit);
 }

@@ -48,7 +48,7 @@ public final class TelemetryConfigurationFactoryTest {
     private final static String PERFORMANCE_COUNTERS_SECTION = "PerformanceCounters";
 
     @PerformanceModule
-    public static final class MockPerformanceModule implements TelemetryModule {
+    static final class MockPerformanceModule implements TelemetryModule {
         public boolean initializeWasCalled = false;
 
         @Override
@@ -58,7 +58,7 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     @PerformanceModule
-    public static final class MockPerformanceBadModule {
+    static final class MockPerformanceBadModule {
         public boolean initializeWasCalled = false;
 
         public void initialize(TelemetryConfiguration configuration) {
@@ -241,6 +241,7 @@ public final class TelemetryConfigurationFactoryTest {
         ConfigFileParser mockParser = createMockParser(true, true, null, true);
         Mockito.doReturn(MOCK_IKEY).when(mockParser).getTrimmedValue(FACTORY_INSTRUMENTATION_KEY);
 
+        TelemetryConfigurationFactory.INSTANCE.setPerformanceCountersSection("com.microsoft.applicationinsights.internal.config");
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
         initializeWithFactory(mockParser, mockConfiguration);

@@ -19,22 +19,25 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.annotation;
+package com.microsoft.applicationinsights.internal.perfcounter;
+
+import com.microsoft.applicationinsights.TelemetryClient;
 
 /**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
+ * PerformanceCounter interface.
  *
- * Created by gupele on 3/11/2015.
+ * Every concrete class should have a unique id and
+ * it should be able to collect data send that data using a {@link com.microsoft.applicationinsights.TelemetryClient}
+ *
+ * Created by gupele on 3/3/2015.
  */
+public interface PerformanceCounter {
 
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+    String getId();
 
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PerformanceModule {
-    String value() default "BuiltIn";
+    void report(TelemetryClient telemetryClient);
+
+//    String getCategoryName();
+//
+//    String getCounterName();
 }

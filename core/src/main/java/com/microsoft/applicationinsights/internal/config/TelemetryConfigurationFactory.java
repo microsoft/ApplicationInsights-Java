@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.config;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.*;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -34,6 +35,7 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import com.google.common.base.Strings;
@@ -61,9 +63,13 @@ public enum TelemetryConfigurationFactory {
     private final static String INSTRUMENTATION_KEY_SECTION = "InstrumentationKey";
     private final static String LOGGER_SECTION = "SDKLogger";
     private final static String PERFORMANCE_COUNTERS_SECTION = "PerformanceCounters";
+    private final static String PERFORMANCE_BUILT_IN_COUNTERS = "BuiltIn";
+
+    private final static String PERFORMANCE_MODULE_INTERNAL_FOLDERS = "com.microsoft.applicationinsights";
 
     private ConfigFileParser parser;
     private String fileToParse;
+    private String performanceCountersSection = PERFORMANCE_MODULE_INTERNAL_FOLDERS;
 
     TelemetryConfigurationFactory() {
         fileToParse = CONFIG_FILE_NAME;
@@ -117,6 +123,10 @@ public enum TelemetryConfigurationFactory {
         this.parser = parser;
     }
 
+    void setPerformanceCountersSection(String value) {
+        performanceCountersSection = value;
+    }
+
     private void setTrackingDisabledMode(ConfigFileParser parser, TelemetryConfiguration configuration) {
         configuration.setTrackingIsDisabled(fetchBooleanValue(parser, DISABLE_TELEMETRY_SECTION, false));
     }
@@ -133,7 +143,7 @@ public enum TelemetryConfigurationFactory {
         InternalLogger.INSTANCE.initialize(loggerOutput, loggerData.items);
     }
 
-    private List<TelemetryModule> setPerformanceCounters(ConfigFileParser parser) {
+    private List<TelemetryModule> getPerformanceModules(ConfigFileParser parser) {
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 
         ConfigFileParser.StructuredDataResult pcData = parser.getStructuredData(PERFORMANCE_COUNTERS_SECTION, null);
@@ -141,38 +151,22 @@ public enum TelemetryConfigurationFactory {
             return modules;
         }
 
-        final ArrayList<String> performanceModuleNames = new ArrayList<String>();
-        TypeReporter reporter = new TypeReporter() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public Class<? extends Annotation>[] annotations() {
-                return new Class[]{PerformanceModule.class};
-            }
+        if (!pcData.items.containsKey(PERFORMANCE_BUILT_IN_COUNTERS)) {
+            pcData.items.put(PERFORMANCE_BUILT_IN_COUNTERS, "");
+        }
 
-            @Override
-            public void reportTypeAnnotation(Class<? extends Annotation> annotation, String className) {
-                performanceModuleNames.add(className);
+        final List<String> performanceModuleNames = new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
+        for (String performanceModuleName : performanceModuleNames) {
+            TelemetryModule module = createInstance(performanceModuleName, TelemetryModule.class);
+            PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
+            if (!pcData.items.containsKey(pmAnnotation.value())) {
+                continue;
             }
-        };
-        final AnnotationDetector cf = new AnnotationDetector(reporter);
-        try {
-            cf.detect("com.microsoft.applicationinsights");
-            for (String performanceModuleName : performanceModuleNames) {
-                TelemetryModule module = null;
-                try {
-                    module = createInstance(performanceModuleName, TelemetryModule.class);
-                    if (module != null) {
-                        modules.add(module);
-                    } else {
-                        InternalLogger.INSTANCE.error("Failed to create performance module: '%s'", performanceModuleName);
-                    }
-                } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Exception while trying to create performance module: '%s'", performanceModuleName);
-                    continue;
-                }
+            if (module != null) {
+                modules.add(module);
+            } else {
+                InternalLogger.INSTANCE.error("Failed to create performance module: '%s'", performanceModuleName);
             }
-        } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed during performance counters detection: '%s'", e.getMessage());
         }
 
         return modules;
@@ -265,7 +259,7 @@ public enum TelemetryConfigurationFactory {
         List<TelemetryModule> modules = configuration.getTelemetryModules();
         loadComponents(TelemetryModule.class, parser, TELEMETRY_MODULES_SECTION, INITIALIZERS_ADD, modules);
 
-        List<TelemetryModule> pcModules = setPerformanceCounters(parser);
+        List<TelemetryModule> pcModules = getPerformanceModules(parser);
         modules.addAll(pcModules);
     }
 

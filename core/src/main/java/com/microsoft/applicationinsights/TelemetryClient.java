@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
-import com.microsoft.applicationinsights.internal.util.SDKShutdownActivity;
+import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;

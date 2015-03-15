@@ -19,22 +19,21 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.annotation;
+package com.microsoft.applicationinsights.internal.perfcounter;
+
+import java.util.Collection;
 
 /**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
- *
- * Created by gupele on 3/11/2015.
+ * Created by gupele on 3/3/2015.
  */
-
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PerformanceModule {
-    String value() default "BuiltIn";
+public interface PerformanceCountersFactory {
+    /**
+     * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter} that are
+     * the 'built-in' performance counters of the process.
+     *
+     * Note: The method should not throw
+     *
+     * @return A collection of {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
+     */
+    Collection<PerformanceCounter> getPerformanceCounters();
 }
