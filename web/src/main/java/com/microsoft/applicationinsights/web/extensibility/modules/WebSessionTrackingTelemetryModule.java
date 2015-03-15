@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
@@ -180,7 +181,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     }
 
     private void startNewSession(RequestTelemetryContext aiContext) {
-        String sessionId = UUID.randomUUID().toString();
+        String sessionId = LocalStringsUtils.generateRandomId(true);
 
         SessionContext session = getTelemetrySessionContext(aiContext);
         session.setId(sessionId);
