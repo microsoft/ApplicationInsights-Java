@@ -48,11 +48,6 @@ public class HttpCookieFactory {
     public static Cookie generateSessionHttpCookie(
             RequestTelemetryContext context, SessionContext sessionContext, int sessionTimeoutInMinutes) {
         Date renewalDate = DateTimeUtils.getDateTimeNow();
-        Date expirationDate = DateTimeUtils.addToDate(
-                renewalDate,
-                Calendar.MINUTE,
-                sessionTimeoutInMinutes);
-        long timeDiffInSeconds = DateTimeUtils.getDateDiff(expirationDate, DateTimeUtils.getDateTimeNow(), TimeUnit.SECONDS);
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 sessionContext.getId(),
@@ -62,7 +57,7 @@ public class HttpCookieFactory {
 
         Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
 
-        cookie.setMaxAge((int)timeDiffInSeconds);
+        cookie.setMaxAge(sessionTimeoutInMinutes * 60);
 
         setCommonProperties(cookie);
 
