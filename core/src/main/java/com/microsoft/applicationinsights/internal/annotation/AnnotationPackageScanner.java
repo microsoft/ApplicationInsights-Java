@@ -32,13 +32,19 @@ import java.util.List;
  * Created by gupele on 3/15/2015.
  */
 public final class AnnotationPackageScanner {
-    public List<String> scanForClassAnnotations(final Class<? extends Annotation>[] annotations, String packages) {
+    /**
+     * The method will scan packages searching for classes that have the needed annotations.
+     * @param annotationsToSearch The annotations we need.
+     * @param packageToScan The packages to scan from, note that all sub packages will be scanned too.
+     * @return A list of class names that are under the package we asked and that carry the needed annotations
+     */
+    public List<String> scanForClassAnnotations(final Class<? extends Annotation>[] annotationsToSearch, String packageToScan) {
         final ArrayList<String> performanceModuleNames = new ArrayList<String>();
         AnnotationDetector.TypeReporter reporter = new AnnotationDetector.TypeReporter() {
             @Override
             @SuppressWarnings("unchecked")
             public Class<? extends Annotation>[] annotations() {
-                return annotations;// new Class[]{PerformanceModule.class};
+                return annotationsToSearch;
             }
 
             @Override
@@ -46,11 +52,11 @@ public final class AnnotationPackageScanner {
                 performanceModuleNames.add(className);
             }
         };
-        final AnnotationDetector cf = new AnnotationDetector(reporter);
+        final AnnotationDetector annotationDetector = new AnnotationDetector(reporter);
         try {
-            cf.detect(packages);
+            annotationDetector.detect(packageToScan);
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to scan packages '%'s': exception: '%s'", packages, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to scan packages '%s': exception: '%s'", packageToScan, e.getMessage());
         }
 
         return performanceModuleNames;

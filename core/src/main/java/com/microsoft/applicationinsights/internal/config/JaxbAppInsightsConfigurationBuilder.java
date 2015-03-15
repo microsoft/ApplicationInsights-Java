@@ -26,10 +26,12 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
 /**
  * Created by gupele on 3/15/2015.
  */
-class JaxbAppInsightsConfigurationReader implements AppInsightsConfigurationReader {
+class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationReader {
     @Override
     public ApplicationInsightsXmlConfiguration build(String filename) {
         try {
@@ -40,7 +42,7 @@ class JaxbAppInsightsConfigurationReader implements AppInsightsConfigurationRead
 
             return applicationInsights;
         } catch (JAXBException e) {
-            e.printStackTrace();
+            InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'", e.getMessage());
         }
 
         return null;
