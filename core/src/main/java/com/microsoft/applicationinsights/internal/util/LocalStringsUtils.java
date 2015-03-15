@@ -72,12 +72,12 @@ public class LocalStringsUtils
         return uuid;
     }
 
-    public static int generateRandomIntegerId()
+    public static String generateRandomIntegerId()
     {
         Random random = new Random();
         long abs = Math.abs(random.nextLong());
 
-        return (int)abs;
+        return String.valueOf(abs);
     }
 
     public static DateFormat getDateFormatter()
