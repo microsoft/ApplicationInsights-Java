@@ -21,10 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
+import java.io.File;
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.List;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -34,13 +38,11 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
+import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
-import eu.infomas.annotation.AnnotationDetector;
-
-import static eu.infomas.annotation.AnnotationDetector.*;
 
 /**
  * Initializer class for configuration instances.
@@ -50,20 +52,12 @@ public enum TelemetryConfigurationFactory {
 
     // Default file name
     private final static String CONFIG_FILE_NAME = "ApplicationInsights.xml";
+    private final static String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
 
-    private final static String CONTEXT_INITIALIZERS_SECTION = "ContextInitializers";
-    private final static String TELEMETRY_INITIALIZERS_SECTION = "TelemetryInitializers";
-    private final static String TELEMETRY_MODULES_SECTION = "TelemetryModules";
-    private final static String INITIALIZERS_ADD = "Add";
-    private final static String CLASS_TYPE_AS_ATTRIBUTE = "type";
-    private final static String CHANNEL_SECTION = "Channel";
-    private final static String DISABLE_TELEMETRY_SECTION = "DisableTelemetry";
-    private final static String INSTRUMENTATION_KEY_SECTION = "InstrumentationKey";
-    private final static String LOGGER_SECTION = "SDKLogger";
-    private final static String PERFORMANCE_COUNTERS_SECTION = "PerformanceCounters";
-
-    private ConfigFileParser parser;
     private String fileToParse;
+    private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
+
+    private AppInsightsConfigurationReader builder = new JaxbAppInsightsConfigurationBuilder();
 
     TelemetryConfigurationFactory() {
         fileToParse = CONFIG_FILE_NAME;
@@ -82,29 +76,22 @@ public enum TelemetryConfigurationFactory {
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
-            if (parser == null) {
-                parser = new XmlConfigParser();
-            }
-
-            if (!parser.parse(fileToParse)) {
+            ApplicationInsightsXmlConfiguration applicationInsights = builder.build(getConfigurationAsInputStream());
+            if (applicationInsights == null) {
                 configuration.setChannel(new InProcessTelemetryChannel());
-                return;
             }
 
-            // Set the logger first so we might have possible errors written
-            setInternalLogger(parser, configuration);
+            setInternalLogger(applicationInsights.getSdkLogger(), configuration);
 
-            setInstrumentationKey(parser, configuration);
+            setInstrumentationKey(applicationInsights.getInstrumentationKey(), configuration);
 
-            if (!setChannel(parser, configuration)) {
-                return;
-            }
+            setChannel(applicationInsights.getChannel(), configuration);
 
-            setTrackingDisabledMode(parser, configuration);
+            configuration.setTrackingIsDisabled(applicationInsights.isDisableTelemetry());
 
-            setContextInitializers(parser, configuration);
-            setTelemetryInitializers(parser, configuration);
-            setTelemetryModules(parser, configuration);
+            setContextInitializers(applicationInsights.getContextInitializers(), configuration);
+            setTelemetryInitializers(applicationInsights.getTelemetryInitializers(), configuration);
+            setTelemetryModules(applicationInsights, configuration);
 
             initializeComponents(configuration);
         } catch (Exception e) {
@@ -112,99 +99,122 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    public void setParserData(ConfigFileParser parser, String fileToParse) {
-        this.fileToParse = fileToParse;
-        this.parser = parser;
-    }
-
-    private void setTrackingDisabledMode(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        configuration.setTrackingIsDisabled(fetchBooleanValue(parser, DISABLE_TELEMETRY_SECTION, false));
-    }
-
-    private void setInternalLogger(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        ConfigFileParser.StructuredDataResult loggerData = parser.getStructuredData(LOGGER_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
-        if (!loggerData.found) {
+    private void setInternalLogger(SDKLoggerXmlElement sdkLogger, TelemetryConfiguration configuration) {
+        if (sdkLogger == null) {
             return;
         }
 
-        // The logger output type
-        String loggerOutput = loggerData.sectionTag;
-
-        InternalLogger.INSTANCE.initialize(loggerOutput, loggerData.items);
+        InternalLogger.INSTANCE.initialize(sdkLogger.getType(), sdkLogger.getData());
     }
 
-    private List<TelemetryModule> setPerformanceCounters(ConfigFileParser parser) {
+    /**
+     * Sets the configuration data of Telemetry Initializers in configuration class.
+     * @param telemetryInitializers The configuration data.
+     * @param configuration The configuration class.
+     */
+    private void setTelemetryInitializers(TelemetryInitializersXmlElement telemetryInitializers, TelemetryConfiguration configuration) {
+        if (telemetryInitializers == null) {
+            return;
+        }
+
+        List<TelemetryInitializer> initializerList = configuration.getTelemetryInitializers();
+        loadComponents(TelemetryInitializer.class, initializerList, telemetryInitializers.getAdds());
+    }
+
+    /**
+     * Sets the configuration data of Context Initializers in configuration class.
+     * @param contextInitializers The configuration data.
+     * @param configuration The configuration class.
+     */
+    private void setContextInitializers(ContextInitializersXmlElement contextInitializers, TelemetryConfiguration configuration) {
+        List<ContextInitializer> initializerList = configuration.getContextInitializers();
+
+        // To keep with prev version. A few will probably be moved to the configuration
+        initializerList.add(new SdkVersionContextInitializer());
+        initializerList.add(new DeviceInfoContextInitializer());
+
+        if (contextInitializers != null) {
+            loadComponents(ContextInitializer.class, initializerList, contextInitializers.getAdds());
+        }
+    }
+
+    /**
+     * Sets the configuration data of Modules Initializers in configuration class.
+     * @param appConfiguration The configuration data.
+     * @param configuration The configuration class.
+     */
+    private void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
+        TelemetryModulesXmlElement configurationModules = appConfiguration.getModules();
+        List<TelemetryModule> modules = configuration.getTelemetryModules();
+
+        if (configurationModules != null) {
+            loadComponents(TelemetryModule.class, modules, configurationModules.getAdds());
+        }
+
+        List<TelemetryModule> pcModules = getPerformanceModules(appConfiguration.getPerformance());
+        modules.addAll(pcModules);
+    }
+
+    /**
+     * Setting an instrumentation key
+     * @param instrumentationKey The instrumentation key found in the configuration.
+     * @param configuration The configuration class.
+     * @return True if succeeded.
+     */
+    private boolean setInstrumentationKey(String instrumentationKey, TelemetryConfiguration configuration) {
+        try {
+            configuration.setInstrumentationKey(instrumentationKey);
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 
-        ConfigFileParser.StructuredDataResult pcData = parser.getStructuredData(PERFORMANCE_COUNTERS_SECTION, null);
-        if (!pcData.found) {
+        if (performanceConfigurationData == null) {
             return modules;
         }
 
-        final ArrayList<String> performanceModuleNames = new ArrayList<String>();
-        TypeReporter reporter = new TypeReporter() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public Class<? extends Annotation>[] annotations() {
-                return new Class[]{PerformanceModule.class};
+        final List<String> performanceModuleNames =
+                new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
+        for (String performanceModuleName : performanceModuleNames) {
+            TelemetryModule module = createInstance(performanceModuleName, TelemetryModule.class);
+//            PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
+            if (module != null) {
+                modules.add(module);
+            } else {
+                InternalLogger.INSTANCE.error("Failed to create performance module: '%s'", performanceModuleName);
             }
-
-            @Override
-            public void reportTypeAnnotation(Class<? extends Annotation> annotation, String className) {
-                performanceModuleNames.add(className);
-            }
-        };
-        final AnnotationDetector cf = new AnnotationDetector(reporter);
-        try {
-            cf.detect("com.microsoft.applicationinsights");
-            for (String performanceModuleName : performanceModuleNames) {
-                TelemetryModule module = null;
-                try {
-                    module = createInstance(performanceModuleName, TelemetryModule.class);
-                    if (module != null) {
-                        modules.add(module);
-                    } else {
-                        InternalLogger.INSTANCE.error("Failed to create performance module: '%s'", performanceModuleName);
-                    }
-                } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Exception while trying to create performance module: '%s'", performanceModuleName);
-                    continue;
-                }
-            }
-        } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed during performance counters detection: '%s'", e.getMessage());
         }
 
         return modules;
     }
 
     /**
-     * Currently we only search for the name of the instance to create
-     *
-     * If not found or corrupted, we use {@link InProcessTelemetryChannel}
-     *
-     * @param parser The parser we work with
-     * @param configuration Where we store the {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
-     * @return True on success
+     * Setting the channel.
+     * @param channelXmlElement The configuration element holding the channel data.
+     * @param configuration The configuration class.
+     * @return True on success.
      */
-    private boolean setChannel(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        ConfigFileParser.StructuredDataResult channelData = parser.getStructuredData(CHANNEL_SECTION, CLASS_TYPE_AS_ATTRIBUTE);
-
-        if (channelData.found) {
-            String channelName = channelData.sectionTag;
-
-            if (channelName != null) {
-                TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, Map.class, channelData.items);
-                if (channel != null) {
-                    configuration.setChannel(channel);
-                    return true;
-                }
+    private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetryConfiguration configuration) {
+        String channelName = channelXmlElement.getType();
+        if (channelName != null) {
+            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
+            if (channel != null) {
+                configuration.setChannel(channel);
+                return true;
+            } else {
+                InternalLogger.INSTANCE.error("Failed to create '%s', will create the default one with default arguments", channelName);
             }
         }
 
         try {
             // We will create the default channel and we assume that the data is relevant.
-            configuration.setChannel(new InProcessTelemetryChannel(channelData.items));
+            configuration.setChannel(new InProcessTelemetryChannel(channelXmlElement.getData()));
             return true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.getMessage());
@@ -213,79 +223,31 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    /**
-     * Setting an instrumentation key
-     * @param parser The parser we work with
-     * @param configuration Where we store our findings
-     * @return True if success, false otherwise
-     */
-    private boolean setInstrumentationKey(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        try {
-            String iKey = parser.getTrimmedValue(INSTRUMENTATION_KEY_SECTION);
+    private String getConfigurationAsInputStream() {
 
-            configuration.setInstrumentationKey(iKey);
+        // Trying to load configuration as a resource.
+        ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
+        URL resource = classLoader.getResource(fileToParse);
 
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+        // If not found as a resource, trying to load from the executing jar directory
+        if (resource == null) {
+            try {
+                String jarFullPath = TelemetryConfigurationFactory.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+                File jarFile = new File(jarFullPath);
 
-    /**
-     * Searches for the CONTEXT_INITIALIZERS_SECTION amd will fetch and create all instances
-     * that are mentioned there. Those instances will be later be stored in the {@link com.microsoft.applicationinsights.TelemetryConfiguration}
-     *
-     * Currently, we 'hard code' putting three Initializers
-     *
-     * @param parser The parser we work to fetch the data
-     * @param configuration Where we need to store our new instances
-     */
-    private void setContextInitializers(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        List<ContextInitializer> initializerList = configuration.getContextInitializers();
+                if (jarFile.exists()) {
+                    String jarDirectory = jarFile.getParent();
+                    String configurationPath = jarDirectory + File.separator + fileToParse;
 
-        // To keep with prev version. A few will probably be moved to the configuration
-        initializerList.add(new SdkVersionContextInitializer());
-        initializerList.add(new DeviceInfoContextInitializer());
-
-        loadComponents(ContextInitializer.class, parser, CONTEXT_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
-    }
-
-    /**
-     * Searches for the TELEMETRY_INITIALIZERS_SECTION amd will fetch and create all instances
-     * that are mentioned there. Those instances will be later be stored in the {@link com.microsoft.applicationinsights.TelemetryConfiguration}
-     * @param parser The parser we work to fetch the data
-     * @param configuration Where we need to store our new instances
-     */
-    private void setTelemetryInitializers(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        List<TelemetryInitializer> initializerList = configuration.getTelemetryInitializers();
-        loadComponents(TelemetryInitializer.class, parser, TELEMETRY_INITIALIZERS_SECTION, INITIALIZERS_ADD, initializerList);
-    }
-
-    private void setTelemetryModules(ConfigFileParser parser, TelemetryConfiguration configuration) {
-        List<TelemetryModule> modules = configuration.getTelemetryModules();
-        loadComponents(TelemetryModule.class, parser, TELEMETRY_MODULES_SECTION, INITIALIZERS_ADD, modules);
-
-        List<TelemetryModule> pcModules = setPerformanceCounters(parser);
-        modules.addAll(pcModules);
-    }
-
-    /**
-     * An helper method that fetches a boolean value of configuration file.
-     * If not found, or corrupted, a default value will be returned
-     * @param parser The parser we work with to fetch the value
-     * @param tagName The name of the tag where the parser should look for the value
-     * @param defaultValue A value to be returned in case the parser fails to find or the value is corrupted
-     * @return The value or default
-     */
-    private boolean fetchBooleanValue(ConfigFileParser parser, String tagName, boolean defaultValue) {
-        boolean result = defaultValue;
-
-        String value = parser.getTrimmedValue(tagName);
-        if (!Strings.isNullOrEmpty(value)) {
-            result = Boolean.valueOf(value);
+                    return configurationPath;
+                }
+            } catch (URISyntaxException e) {
+            }
+        } else {
+            return resource.getFile();
         }
 
-        return result;
+        return null;
     }
 
     /**
@@ -295,21 +257,20 @@ public enum TelemetryConfigurationFactory {
      * if an instance (or more) was failed to create. This is naturally, a policy we can easily replace
      *
      * @param clazz The class all instances should have
-     * @param parser The parser gives us the names of the classes to create
-     * @param sectionName The section name where we tell the parser to search
-     * @param itemName The internal name inside the section name, to point the parser
      * @param list The container of instances, this is where we store our instances that we create
+     * @param classNames Classes to create.
      * @param <T>
      */
     private <T> void loadComponents(
             Class<T> clazz,
-            ConfigFileParser parser,
-            String sectionName,
-            String itemName,
-            List<T> list) {
-        Collection<String> classNames = parser.getList(sectionName, itemName, CLASS_TYPE_AS_ATTRIBUTE);
-        for (String className : classNames) {
-            T initializer = createInstance(className, clazz);
+            List<T> list,
+            Collection<AddTypeXmlElement> classNames) {
+        if (classNames == null) {
+            return;
+        }
+
+        for (AddTypeXmlElement className : classNames) {
+            T initializer = createInstance(className.getType(), clazz);
             if (initializer != null) {
                 list.add(initializer);
             }
@@ -404,5 +365,13 @@ public enum TelemetryConfigurationFactory {
                         "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Excepption");
             }
         }
+    }
+
+    void setPerformanceCountersSection(String performanceCountersSection) {
+        this.performanceCountersSection = performanceCountersSection;
+    }
+
+    void setBuilder(AppInsightsConfigurationReader builder) {
+        this.builder = builder;
     }
 }
