@@ -61,15 +61,23 @@ public class LocalStringsUtils
         }
     }
 
-    public static String generateRandomId()
+    public static String generateRandomId(boolean removeDashes)
     {
-        return UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString();
+
+        if (removeDashes) {
+            uuid = uuid.replace("-", "");
+        }
+
+        return uuid;
     }
 
     public static int generateRandomIntegerId()
     {
-        long lsb = UUID.randomUUID().getLeastSignificantBits();
-        return (int)(lsb & 0x7FFFFFFF);
+        Random random = new Random();
+        long abs = Math.abs(random.nextLong());
+
+        return (int)abs;
     }
 
     public static DateFormat getDateFormatter()

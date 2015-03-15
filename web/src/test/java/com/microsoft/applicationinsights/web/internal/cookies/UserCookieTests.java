@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import javax.servlet.http.Cookie;
 import java.util.Date;
-import java.util.UUID;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 
@@ -50,7 +50,7 @@ public class UserCookieTests {
 
     @BeforeClass
     public static void initialize() throws Exception {
-        userId = UUID.randomUUID().toString();
+        userId = LocalStringsUtils.generateRandomId(true);
         acquisitionTime = new Date();
 
         String formattedCookie = UserCookie.formatCookie(new String[] {

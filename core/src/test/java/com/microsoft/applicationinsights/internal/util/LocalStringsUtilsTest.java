@@ -23,8 +23,11 @@ package com.microsoft.applicationinsights.internal.util;
 
 import static org.junit.Assert.*;
 
+import org.junit.Assert;
 import org.junit.Test;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+
+import java.util.UUID;
 
 public class LocalStringsUtilsTest {
 
@@ -33,4 +36,12 @@ public class LocalStringsUtilsTest {
 		assertNotNull(LocalStringsUtils.getDateFormatter());
 	}
 
+    @Test
+    public void testGenerateRandomIdWithNoDashes() {
+        String idWithoutDashes = LocalStringsUtils.generateRandomId(true);
+
+        int dashIndex = idWithoutDashes.indexOf("-");
+
+        Assert.assertEquals(-1, dashIndex);
+    }
 }
