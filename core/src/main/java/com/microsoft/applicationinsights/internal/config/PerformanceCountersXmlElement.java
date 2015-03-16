@@ -19,23 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring.internal;
+package com.microsoft.applicationinsights.internal.config;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 
 /**
- * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry.
- * The registration enables the interceptor to extract the http request's controller and action names.
+ * Created by gupele on 3/15/2015.
  */
-@EnableWebMvc
-@Configuration
-public class InterceptorRegistry extends WebMvcConfigurerAdapter {
+@XmlRootElement(name="PerformanceCounters")
+public class PerformanceCountersXmlElement {
+    private boolean useBuiltIn = true;
 
-    @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
-        registry.addInterceptor(new RequestNameHandlerInterceptorAdapter());
+    private ArrayList<JmxXmlElement> jmxXmlElements;
+
+    public ArrayList<JmxXmlElement> getJmxXmlElements() {
+        return jmxXmlElements;
+    }
+
+    @XmlElementWrapper(name="Jmx")
+    @XmlElement(name="Add")
+    public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
+        this.jmxXmlElements = jmxXmlElements;
+    }
+
+    public boolean isUseBuiltIn() {
+        return useBuiltIn;
+    }
+
+    @XmlElement(name="UseBuiltIn")
+    public void setUseBuiltIn(boolean useBuiltIn) {
+        this.useBuiltIn = useBuiltIn;
     }
 }

@@ -19,23 +19,54 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring.internal;
+package com.microsoft.applicationinsights.internal.config;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry.
- * The registration enables the interceptor to extract the http request's controller and action names.
+ * Created by gupele on 3/15/2015.
  */
-@EnableWebMvc
-@Configuration
-public class InterceptorRegistry extends WebMvcConfigurerAdapter {
+@XmlRootElement(name="Add")
+public class JmxXmlElement {
+    private String displayName;
+    private String objectName;
+    private String attribute;
+    private String type;
 
-    @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
-        registry.addInterceptor(new RequestNameHandlerInterceptorAdapter());
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @XmlAttribute
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    @XmlAttribute
+    public void setObjectName(String objectName) {
+        this.objectName = objectName;
+    }
+
+    public String getAttribute() {
+        return attribute;
+    }
+
+    @XmlAttribute
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    @XmlAttribute
+    public void setType(String type) {
+        this.type = type;
     }
 }

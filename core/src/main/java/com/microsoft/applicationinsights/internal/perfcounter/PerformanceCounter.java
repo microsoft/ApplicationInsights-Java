@@ -36,8 +36,4 @@ public interface PerformanceCounter {
     String getId();
 
     void report(TelemetryClient telemetryClient);
-
-//    String getCategoryName();
-//
-//    String getCounterName();
 }

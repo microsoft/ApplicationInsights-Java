@@ -19,23 +19,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring.internal;
+package com.microsoft.applicationinsights.internal.config;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
+
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
- * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry.
- * The registration enables the interceptor to extract the http request's controller and action names.
+ * Created by gupele on 3/15/2015.
  */
-@EnableWebMvc
-@Configuration
-public class InterceptorRegistry extends WebMvcConfigurerAdapter {
-
+class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationReader {
     @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
-        registry.addInterceptor(new RequestNameHandlerInterceptorAdapter());
+    public ApplicationInsightsXmlConfiguration build(String filename) {
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            File configurationFile = new File(filename);
+            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(configurationFile);
+
+            return applicationInsights;
+        } catch (JAXBException e) {
+            InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'", e.getMessage());
+        }
+
+        return null;
     }
 }

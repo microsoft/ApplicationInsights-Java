@@ -89,6 +89,8 @@ public class AiCore {
             appInsights.trackException(exc);
             System.out.println("[6] Exception             -- message=\"This is only a test!\"");
         }
+
+        System.in.read();
     }
 
     // endregion Core

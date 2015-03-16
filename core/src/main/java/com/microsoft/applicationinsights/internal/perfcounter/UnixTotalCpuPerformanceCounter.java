@@ -35,12 +35,13 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  * Created by gupele on 3/8/2015.
  */
 final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounterBase {
+    private final static String STAT_FILE = "/proc/stat";
 
     private long[] prevCpuCounters;
     private long prevTotalCpuValue;
 
     public UnixTotalCpuPerformanceCounter() {
-        super("/proc/stat");
+        super(STAT_FILE);
         prevCpuCounters = null;
     }
 

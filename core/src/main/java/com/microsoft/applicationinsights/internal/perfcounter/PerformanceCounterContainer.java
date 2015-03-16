@@ -58,7 +58,7 @@ public enum PerformanceCounterContainer implements Stoppable {
     INSTANCE;
 
     // By default the container will wait 2 minutes before the collection of performance data.
-    private final static long START_COLLECTING_INTERVAL_IN_MILLIS = 30000;// 120000;
+    private final static long START_COLLECTING_INTERVAL_IN_MILLIS = 10000;// 120000;
 
     // By default the container will collect performance data every 1 minute.
     private final static long COLLECTING_INTERVAL_IN_MILLIS = 60000;
@@ -75,16 +75,25 @@ public enum PerformanceCounterContainer implements Stoppable {
     private ScheduledThreadPoolExecutor threads;
 
     /**
+     /**
      * Registers a {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter} that can collect data.
      * @param performanceCounter The Performance Counter.
+     * @return True on success.
      */
-    public void register(PerformanceCounter performanceCounter) {
+    public boolean register(PerformanceCounter performanceCounter) {
+        Preconditions.checkNotNull(performanceCounter, "performanceCounter should be non null, non empty value");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(performanceCounter.getId()), "performanceCounter's id should be non null, non empty value");
 
         initialize();
 
         InternalLogger.INSTANCE.trace("Registering PC '%s'", performanceCounter.getId());
-        performanceCounters.put(performanceCounter.getId(), performanceCounter);
+        PerformanceCounter prev = performanceCounters.putIfAbsent(performanceCounter.getId(), performanceCounter);
+        if (prev != null) {
+            InternalLogger.INSTANCE.error("Failed to store performance counter '%s', since there is already one", performanceCounter.getId());
+            return false;
+        }
+
+        return true;
     }
 
     /**

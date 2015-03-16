@@ -33,9 +33,11 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ServletUtils;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.HttpCookieFactory;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
@@ -158,10 +160,20 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
             return;
         }
 
+        int sessionTimeout = getSessionTimeout(req);
         SessionContext sessionContext = getTelemetrySessionContext(context);
-        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(context, sessionContext);
+        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(context, sessionContext, sessionTimeout);
 
         res.addCookie(cookie);
+    }
+
+    private int getSessionTimeout(ServletRequest servletRequest) {
+        Integer sessionTimeout = ServletUtils.getRequestSessionTimeout(servletRequest);
+        if (sessionTimeout == null) {
+            sessionTimeout = SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES;
+        }
+
+        return sessionTimeout;
     }
 
     private SessionContext getTelemetrySessionContext(RequestTelemetryContext aiContext) {
@@ -169,7 +181,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     }
 
     private void startNewSession(RequestTelemetryContext aiContext) {
-        String sessionId = UUID.randomUUID().toString();
+        String sessionId = LocalStringsUtils.generateRandomId(true);
 
         SessionContext session = getTelemetrySessionContext(aiContext);
         session.setId(sessionId);

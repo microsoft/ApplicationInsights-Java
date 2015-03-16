@@ -27,10 +27,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public final class PerformanceCounterContainerTest {
@@ -146,6 +146,17 @@ public final class PerformanceCounterContainerTest {
 
         assertTrue(mockPerformanceCounter1.counter > 2);
         assertTrue(mockPerformanceCounter2.counter > 2);
+    }
+
+    @Test
+    public void testMoreThanOneWithId() {
+        PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
+        PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock1");
+
+        boolean result = PerformanceCounterContainer.INSTANCE.register(mockPerformanceCounter1);
+        assertTrue(result);
+        result = PerformanceCounterContainer.INSTANCE.register(mockPerformanceCounter2);
+        assertFalse(result);
     }
 
     @Test

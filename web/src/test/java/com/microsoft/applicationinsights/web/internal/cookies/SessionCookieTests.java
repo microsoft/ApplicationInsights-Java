@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.web.internal.cookies;
 
 import java.util.Date;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.Cookie;
 import org.junit.Assert;
@@ -30,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
@@ -56,7 +56,7 @@ public class SessionCookieTests {
 
     @BeforeClass
     public static void initialize() throws Exception {
-        sessionId = UUID.randomUUID().toString();
+        sessionId = LocalStringsUtils.generateRandomId(true);
         sessionAcquisitionTime = new Date();
         sessionRenewalTime = new Date(sessionAcquisitionTime.getTime() + 1000);
 
@@ -137,9 +137,18 @@ public class SessionCookieTests {
 
     @Test
     public void testSessionHttpCookiePathSetForAllPages() {
-        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(requestTelemetryContextMock, sessionContext);
+        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(requestTelemetryContextMock, sessionContext, 10);
 
         Assert.assertEquals("Path should catch all urls", HttpCookieFactory.COOKIE_PATH_ALL_URL, cookie.getPath());
+    }
+
+    @Test
+    public void testSessionHttpCookieSetMaxAge() {
+        final int sessionTimeoutInMinutes = 10;
+
+        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(requestTelemetryContextMock, sessionContext, sessionTimeoutInMinutes);
+
+        Assert.assertEquals(sessionTimeoutInMinutes * 60, cookie.getMaxAge());
     }
 
     // endregion Tests

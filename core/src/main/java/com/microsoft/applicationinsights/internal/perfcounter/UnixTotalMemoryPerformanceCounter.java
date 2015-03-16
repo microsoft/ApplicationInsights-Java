@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  * Created by gupele on 3/9/2015.
  */
 final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCounterBase {
+    private final static String MEM_FILE = "/proc/meminfo";
     private final static String MEM_FREE_PREFIX = "MemFree:";
     private final static String BUFFERS_PREFIX = "buffers";
     private final static String CACHED_PREFIX = "cached";
@@ -49,7 +50,7 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
     }
 
     public UnixTotalMemoryPerformanceCounter() {
-        super("/proc/meminfo");
+        super(MEM_FILE);
     }
 
     @Override

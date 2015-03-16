@@ -23,8 +23,8 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 
 import javax.servlet.http.Cookie;
 import java.util.Date;
-import java.util.UUID;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
  * Created by yonisha on 2/7/2015.
@@ -66,7 +66,7 @@ public class UserCookie extends com.microsoft.applicationinsights.web.internal.c
     }
 
     public UserCookie() {
-        userId = UUID.randomUUID().toString();
+        userId = LocalStringsUtils.generateRandomId(true);
         acquisitionDate = DateTimeUtils.getDateTimeNow();
         isNewUser = true;
     }

@@ -1,5 +1,7 @@
 package com.microsoft.applicationinsights.internal.jmx;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,13 +17,21 @@ import java.lang.management.ManagementFactory;
  */
 public class JmxDataFetcher {
     public static Map<String, Collection<Object>> fetch(String objectName, Collection<JmxAttributeData> attributes) throws Exception {
+        Map<String, Collection<Object>> result = new HashMap<String, Collection<Object>>();
+
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
+        if (objects.isEmpty()) {
+            throw new IllegalArgumentException(String.format("Cannot find object name '%s'", objectName));
+        }
 
-        Map<String, Collection<Object>> result = new HashMap<String, Collection<Object>>();
         for (JmxAttributeData attribute : attributes) {
-            Collection<Object> resultForAttribute = fetch(server, objects, attribute.name);
-            result.put(attribute.displayName, resultForAttribute);
+            try {
+                Collection<Object> resultForAttribute = fetch(server, objects, attribute.name);
+                result.put(attribute.displayName, resultForAttribute);
+            } catch (Exception e) {
+                InternalLogger.INSTANCE.error("Failed to fetch JMX attribute %s, %s: '%s'", objectName, attribute.name, e.getMessage());
+            }
         }
 
         return result;

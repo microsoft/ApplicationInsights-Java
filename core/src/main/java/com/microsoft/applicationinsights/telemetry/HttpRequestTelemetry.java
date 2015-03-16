@@ -48,7 +48,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
     public HttpRequestTelemetry() {
         this.data = new RequestData();
         initialize(this.data.getProperties());
-        setId(LocalStringsUtils.generateRandomId());
+        setId(LocalStringsUtils.generateRandomIntegerId());
 
         // Setting mandatory fields.
         setTimestamp(new Date());
@@ -82,7 +82,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
         this.data = new RequestData();
         initialize(this.data.getProperties());
 
-        setId(LocalStringsUtils.generateRandomId());
+        setId(LocalStringsUtils.generateRandomIntegerId());
 
         setTimestamp(timestamp);
 

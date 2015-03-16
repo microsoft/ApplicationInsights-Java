@@ -6,6 +6,7 @@ import java.util.Map;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.jmx.JmxDataFetcher;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
  * Created by gupele on 3/15/2015.
@@ -50,7 +51,10 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
             }
         } catch (Exception e) {
             if (firstTime) {
+                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s', The PC will be ignored", e.getMessage());
                 relevant = false;
+            } else {
+                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s'", e.getMessage());
             }
         } finally {
             firstTime = false;
