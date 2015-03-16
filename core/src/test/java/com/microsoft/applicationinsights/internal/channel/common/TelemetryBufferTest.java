@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -208,7 +207,6 @@ public final class TelemetryBufferTest {
         TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 2, 1200);
 
         for (int i = 0; i < 2; ++i) {
-            Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
             testedBuffer.add("mockTelemetry");
         }
 
@@ -252,7 +250,6 @@ public final class TelemetryBufferTest {
         List<String> all = new ArrayList<String>();
         List<String> expected = new ArrayList<String>();
         for (int i = 0; i < 4; ++i) {
-            Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
             String mockSerializedTelemetry = "mockTelemtry" + String.valueOf(i);
             all.add(mockSerializedTelemetry);
 
@@ -285,7 +282,6 @@ public final class TelemetryBufferTest {
         TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 1, 1200);
 
         for (int i = 0; i < 2; ++i) {
-            Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
             testedBuffer.add("mockTelemetry");
         }
 
@@ -324,9 +320,48 @@ public final class TelemetryBufferTest {
         TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
 
         for (int i = 0; i < 10; ++i) {
-            Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
             testedBuffer.add("mockTelemetry");
         }
+
+        mockSender.waitForFinish(6L);
+    }
+
+    @Test
+    public void testFlushWithZero() throws Exception {
+        TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+
+        // Create a buffer with max buffer size of 10 and timeout of 10 seconds
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
+        testedBuffer.flush();
+
+        Mockito.verify(mockSender, Mockito.never()).sendNow(anyCollectionOf(String.class));
+    }
+
+    @Test
+    public void testFlushWithOneInTheBuffer() throws Exception {
+        testFlushWithData(1);
+    }
+
+    @Test
+    public void testFlushWithSevenInTheBuffer() throws Exception {
+        testFlushWithData(7);
+    }
+
+    private void testFlushWithData(int expectedTelemetriesNumberInSendNow) {
+        MockSender mockSender = new MockSender()
+                .setExpectedNumberOfScheduleSendCalls(1)
+                .setExpectedNumberOfSendNowCalls(1)
+                .setExpectedTelemetriesNumberInScheduleSend(0)
+                .setExpectedTelemetriesNumberInSendNow(expectedTelemetriesNumberInSendNow);
+
+        // Create a buffer with max buffer size of 10 and timeout of 10 seconds
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
+
+        for (int i = 0; i < expectedTelemetriesNumberInSendNow; ++i) {
+            testedBuffer.add("mockTelemetry");
+        }
+
+        testedBuffer.flush();
 
         mockSender.waitForFinish(6L);
     }

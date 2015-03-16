@@ -394,6 +394,13 @@ public class TelemetryClient {
     }
 
     /**
+     * Flushes possible pending Telemetries in the channel.
+     */
+    public void flush() {
+        getChannel().flush();
+    }
+
+    /**
      * Gets the channel used by the client.
      */
     TelemetryChannel getChannel() {
