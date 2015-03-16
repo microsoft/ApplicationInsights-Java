@@ -21,6 +21,10 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -29,9 +33,18 @@ import org.junit.Assert;
 import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by yonisha on 2/9/2015.
@@ -98,5 +111,42 @@ public class WebUserTrackingTelemetryModuleTests {
         Assert.assertEquals(Boolean.parseBoolean(value), module.getGenerateNewUsers());
     }
 
+
+    @Test
+    public void testWhenGenerateNewUsersIsFalseUsersAreNotGenerated() {
+        WebUserTrackingTelemetryModule module =
+                createModuleWithParam(WebUserTrackingTelemetryModule.GENERATE_NEW_USERS_PARAM_KEY, "false");
+
+        ThreadContext.setRequestTelemetryContext(new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime()));
+        module.initialize(TelemetryConfiguration.getActive());
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        final Cookie[] cookie = new Cookie[1];
+        Mockito.doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                cookie[0] = ((Cookie) invocation.getArguments()[0]);
+
+                return null;
+            }
+        }).when(response).addCookie(any(Cookie.class));
+
+        module.onBeginRequest(request, response);
+
+        Assert.assertNull("No cookie should be generated." ,cookie[0]);
+    }
+
     // endregion Tests
+
+    // region Private
+
+    private WebUserTrackingTelemetryModule createModuleWithParam(String paramName, String paramValue) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(paramName, paramValue);
+
+        return new WebUserTrackingTelemetryModule(map);
+    }
+
+    // endregion Private
 }
