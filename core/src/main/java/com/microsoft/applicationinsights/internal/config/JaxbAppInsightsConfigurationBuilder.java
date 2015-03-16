@@ -29,9 +29,11 @@ import java.io.File;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
+ * The JAXB implementation of the {@link com.microsoft.applicationinsights.internal.config.AppInsightsConfigurationBuilder}
+ *
  * Created by gupele on 3/15/2015.
  */
-class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationReader {
+class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBuilder {
     @Override
     public ApplicationInsightsXmlConfiguration build(String filename) {
         try {

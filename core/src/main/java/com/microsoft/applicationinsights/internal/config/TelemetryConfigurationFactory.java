@@ -57,7 +57,7 @@ public enum TelemetryConfigurationFactory {
     private String fileToParse;
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
-    private AppInsightsConfigurationReader builder = new JaxbAppInsightsConfigurationBuilder();
+    private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
     TelemetryConfigurationFactory() {
         fileToParse = CONFIG_FILE_NAME;
@@ -410,7 +410,7 @@ public enum TelemetryConfigurationFactory {
         this.performanceCountersSection = performanceCountersSection;
     }
 
-    void setBuilder(AppInsightsConfigurationReader builder) {
+    void setBuilder(AppInsightsConfigurationBuilder builder) {
         this.builder = builder;
     }
 }

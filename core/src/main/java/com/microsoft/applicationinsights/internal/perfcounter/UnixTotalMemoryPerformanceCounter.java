@@ -36,8 +36,8 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCounterBase {
     private final static String MEM_FILE = "/proc/meminfo";
     private final static String MEM_FREE_PREFIX = "MemFree:";
-    private final static String BUFFERS_PREFIX = "buffers";
-    private final static String CACHED_PREFIX = "cached";
+    private final static String BUFFERS_PREFIX = "Buffers";
+    private final static String CACHED_PREFIX = "Cached";
 
     // An helper class for the parsing stage.
     private static final class ParsingData {
@@ -83,13 +83,22 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
             String line;
             while (parsingData.doneCounter != 0 && (line = bufferedReader.readLine()) != null) {
                 if (!memFreeDone) {
-                    memFreeDone = parseValue(parsingData, line, MEM_FREE_PREFIX);
+                    if (parseValue(parsingData, line, MEM_FREE_PREFIX)) {
+                        memFreeDone = true;
+                        continue;
+                    }
                 }
                 if (!buffersDone) {
-                    buffersDone = parseValue(parsingData, line, BUFFERS_PREFIX);
+                    if (parseValue(parsingData, line, BUFFERS_PREFIX)) {
+                        buffersDone = true;
+                        continue;
+                    }
                 }
                 if (!cachedDone) {
-                    cachedDone = parseValue(parsingData, line, CACHED_PREFIX);
+                    if (parseValue(parsingData, line, CACHED_PREFIX)) {
+                        cachedDone = true;
+                        continue;
+                    }
                 }
             }
 
@@ -115,7 +124,7 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
         if (index != -1) {
             line.trim();
             String[] strings = line.split(" ");
-            parsingData.returnValue += Double.valueOf(strings[1]);
+            parsingData.returnValue += Double.valueOf(strings[strings.length - 2]);
             --(parsingData.doneCounter);
             return true;
         }

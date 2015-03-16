@@ -22,8 +22,11 @@
 package com.microsoft.applicationinsights.internal.config;
 
 /**
+ * The class defines the interface of builders that know
+ * to get the configuration file and create the data represented in {@link com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration}
+ *
  * Created by gupele on 3/15/2015.
  */
-interface AppInsightsConfigurationReader {
+interface AppInsightsConfigurationBuilder {
     ApplicationInsightsXmlConfiguration build(String filename);
 }

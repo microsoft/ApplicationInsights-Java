@@ -48,15 +48,6 @@ public class JmxDataFetcher {
         return result;
     }
 
-    public static Collection<Object> fetch(String objectName, String attribute) throws Exception {
-        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
-
-        Collection<Object> result = fetch(server, objects, attribute);
-
-        return result;
-    }
-
     private static Collection<Object> fetch(MBeanServer server, Set<ObjectName> objects, String attribute) throws Exception {
         ArrayList<Object> result = new ArrayList<Object>();
         for (ObjectName object : objects) {

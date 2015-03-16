@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -55,13 +56,26 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
         String line = getLineOfData();
 
         if (!Strings.isNullOrEmpty(line)) {
-            String[] stringValues = line.split(" ");
+            String[] rawStringValues = line.split(" ");
+
+            ArrayList<String> stringValues = new ArrayList<String>(rawStringValues.length - 1);
+            for (int i = 1; i < rawStringValues.length; ++i) {
+                String stringValue = rawStringValues[i];
+                if (Strings.isNullOrEmpty(stringValue)) {
+                    continue;
+                }
+
+                stringValues.add(stringValue);
+            }
+
+            String[] array = stringValues.toArray(new String[stringValues.size()]);
+
             if (prevCpuCounters == null) {
-                firstCounters(stringValues);
+                firstCounters(array);
                 return;
             }
 
-            double totalCpuUsage = calculateTotalCpuUsage(stringValues);
+            double totalCpuUsage = calculateTotalCpuUsage(array);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     Constants.TOTAL_CPU_PC_CATEGORY_NAME,
                     Constants.CPU_PC_COUNTER_NAME,
@@ -95,27 +109,29 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
     }
 
     private void firstCounters(String[] stringValues) {
-        prevCpuCounters = new long[stringValues.length - 1];
+        prevCpuCounters = new long[stringValues.length];
         prevTotalCpuValue = 0;
         for (int i = 0; i < stringValues.length; ++i) {
-            long value = Long.parseLong(stringValues[i]);
+            String stringValue = stringValues[i];
+            long value = Long.parseLong(stringValue);
             prevCpuCounters[i] = value;
             prevTotalCpuValue += value;
         }
     }
 
     private double calculateTotalCpuUsage(String[] stringValues) {
-        long[] cpuCounters = new long[stringValues.length - 1];
+        long[] cpuCounters = new long[stringValues.length];
         long totalCpuValue = 0;
         double diffIdle = 0.0;
-        for (int j = 0, i = 1; i < stringValues.length; ++i, ++j) {
-            long value = Long.parseLong(stringValues[i]);
-            cpuCounters[j] = value - prevCpuCounters[j];
+        for (int i = 0; i < stringValues.length; ++i) {
+            String stringValue = stringValues[i];
+            long value = Long.parseLong(stringValue);
+            cpuCounters[i] = value - prevCpuCounters[i];
             prevCpuCounters[i] = value;
 
             totalCpuValue += value;
             if (i == 3) {
-                diffIdle = cpuCounters[j];
+                diffIdle = cpuCounters[i];
             }
         }
 

@@ -21,8 +21,22 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
- * Created by gupele on 3/15/2015.
+ * Created by gupele on 3/16/2015.
  */
-interface XmlElementyWithType {
+@XmlRootElement(name="Remove")
+public class RemoveTypeXmlElement {
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    @XmlAttribute
+    public void setType(String type) {
+        this.type = type;
+    }
 }
