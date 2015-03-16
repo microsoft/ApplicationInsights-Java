@@ -35,19 +35,6 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  */
 final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static String MEM_FILE = "/proc/meminfo";
-    private final static String MEM_FREE_PREFIX = "MemFree:";
-    private final static String BUFFERS_PREFIX = "Buffers";
-    private final static String CACHED_PREFIX = "Cached";
-
-    // An helper class for the parsing stage.
-    private static final class ParsingData {
-        public int doneCounter;
-        public double returnValue = Constants.DEFAULT_DOUBLE_VALUE;
-
-        public ParsingData(int doneCounter) {
-            this.doneCounter = doneCounter;
-        }
-    }
 
     public UnixTotalMemoryPerformanceCounter() {
         super(MEM_FILE);
@@ -73,36 +60,16 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
     private double getTotalMemoryUsage() {
         BufferedReader bufferedReader = null;
 
-        boolean memFreeDone = false;
-        boolean buffersDone = false;
-        boolean cachedDone = false;
-        ParsingData parsingData = new ParsingData(3);
         double result = Constants.DEFAULT_DOUBLE_VALUE;
+        UnixTotalMemInfoParser reader = new UnixTotalMemInfoParser();
         try {
             bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
             String line;
-            while (parsingData.doneCounter != 0 && (line = bufferedReader.readLine()) != null) {
-                if (!memFreeDone) {
-                    if (parseValue(parsingData, line, MEM_FREE_PREFIX)) {
-                        memFreeDone = true;
-                        continue;
-                    }
-                }
-                if (!buffersDone) {
-                    if (parseValue(parsingData, line, BUFFERS_PREFIX)) {
-                        buffersDone = true;
-                        continue;
-                    }
-                }
-                if (!cachedDone) {
-                    if (parseValue(parsingData, line, CACHED_PREFIX)) {
-                        cachedDone = true;
-                        continue;
-                    }
-                }
+            while (!reader.done() && (line = bufferedReader.readLine()) != null) {
+                reader.process(line);
             }
 
-            result = parsingData.returnValue;
+            result = reader.getValue();
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;
             logError("Error while parsing file: '%s'", e.getMessage());
@@ -117,18 +84,5 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
         }
 
         return result;
-    }
-
-    private boolean parseValue(ParsingData parsingData, String line, String part) {
-        int index = line.indexOf(part);
-        if (index != -1) {
-            line.trim();
-            String[] strings = line.split(" ");
-            parsingData.returnValue += Double.valueOf(strings[strings.length - 2]);
-            --(parsingData.doneCounter);
-            return true;
-        }
-
-        return false;
     }
 }

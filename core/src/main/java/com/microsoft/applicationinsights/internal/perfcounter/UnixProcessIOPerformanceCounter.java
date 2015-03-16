@@ -40,16 +40,8 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  */
 final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static double NANOS_IN_SECOND = 1000000000.0;
-    private final static String READ_BYTES_PART = "read_bytes:";
-    private final static String WRITE_BYTES_PART = "write_bytes:";
 
     private final String categoryName;
-
-    // An helper class for the parsing stage.
-    private static final class ParsingData {
-        public int doneCounter = 2;
-        public double returnValue = Constants.DEFAULT_DOUBLE_VALUE;
-    }
 
     private long lastCollectionInNanos = -1;
 
@@ -88,23 +80,16 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
     public double getCurrentIOForCurrentProcess() {
         BufferedReader bufferedReader = null;
 
-        boolean readBytesDone = false;
-        boolean writeBytesDone = false;
-        ParsingData parsingData = new ParsingData();
         double result = Constants.DEFAULT_DOUBLE_VALUE;
+        UnixProcessIOtParser parser = new UnixProcessIOtParser();
         try {
             bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
             String line;
-            while (parsingData.doneCounter != 0 && (line = bufferedReader.readLine()) != null) {
-                if (!readBytesDone) {
-                    readBytesDone = parseValue(parsingData, line, READ_BYTES_PART);
-                }
-                if (!writeBytesDone) {
-                    writeBytesDone = parseValue(parsingData, line, WRITE_BYTES_PART);
-                }
+            while (!parser.done() && (line = bufferedReader.readLine()) != null) {
+                parser.process(line);
             }
 
-            result = parsingData.returnValue;
+            result = parser.getValue();
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;
             logError("Error while parsing file: '%s'", getId(), e.getMessage());
@@ -119,17 +104,5 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
         }
 
         return result;
-    }
-
-    private boolean parseValue(ParsingData parsingData, String line, String part) {
-        int index = line.indexOf(part);
-        if (index != -1) {
-            String doubleValueAsString = line.substring(index + part.length());
-            parsingData.returnValue += Double.valueOf(doubleValueAsString.trim());
-            --(parsingData.doneCounter);
-            return true;
-        }
-
-        return false;
     }
 }
