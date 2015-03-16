@@ -27,16 +27,16 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 public final class Constants {
     public final static String PERFORMANCE_COUNTER_PREFIX = "JSDK_";
 
-    public final static String TOTAL_CPU_PC_ID = "JSDK_TotalCpuPerformanceCounter";
+    public final static String TOTAL_CPU_PC_ID = PERFORMANCE_COUNTER_PREFIX + "TotalCpuPerformanceCounter";
 
-    public final static String PROCESS_CPU_PC_ID = "JSDK_ProcessCpuPerformanceCounter";
+    public final static String PROCESS_CPU_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessCpuPerformanceCounter";
 
     public final static String TOTAL_CPU_PC_CATEGORY_NAME = "Processor(_Total)";
     public final static String CPU_PC_COUNTER_NAME = "% Processor Time";
 
 
-    public final static String TOTAL_MEMORY_PC_ID = "JSDK_TotalMemoryPerformanceCounter";
-    public final static String PROCESS_MEM_PC_ID = "JSDK_ProcessMemoryPerformanceCounter";
+    public final static String TOTAL_MEMORY_PC_ID = PERFORMANCE_COUNTER_PREFIX + "TotalMemoryPerformanceCounter";
+    public final static String PROCESS_MEM_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessMemoryPerformanceCounter";
 
     public final static String PROCESS_MEM_PC_COUNTER_NAME = "Private Bytes";
 
@@ -44,12 +44,11 @@ public final class Constants {
     public final static String TOTAL_MEMORY_PC_COUNTER_NAME = "Available Bytes";
 
 
-    public final static String PROCESS_IO_PC_ID = "JSDK_ProcessIOPerformanceCounter";
+    public final static String PROCESS_IO_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessIOPerformanceCounter";
     public final static String PROCESS_IO_PC_COUNTER_NAME = "IO Data Bytes/sec";
 
-    public static final double  MEGA_BYTE = 1024L * 1024L;
-
-    public static final double DEFAULT_DOUBLE_VALUE = 0.0;
+    public final static double  MEGA_BYTE = 1024L * 1024L;
+    public final static double DEFAULT_DOUBLE_VALUE = -1.0;
 
     private Constants() {
     }

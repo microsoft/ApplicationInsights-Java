@@ -58,16 +58,18 @@ public enum PerformanceCounterContainer implements Stoppable {
     INSTANCE;
 
     // By default the container will wait 2 minutes before the collection of performance data.
-    private final static long START_COLLECTING_INTERVAL_IN_MILLIS = 10000;// 120000;
+    private final static long START_COLLECTING_DELAY_IN_MILLIS = 60000;
+    private final static long START_DEFAULT_MIN_DELAY_IN_MILLIS = 20000;
 
     // By default the container will collect performance data every 1 minute.
     private final static long COLLECTING_INTERVAL_IN_MILLIS = 60000;
+    private final static long COLLECTING_DEFAULT_MIN_INTERVAL_IN_MILLIS = 20000;
 
     private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<String, PerformanceCounter>();
 
     private volatile boolean initialized = false;
 
-    private long startCollectingIntervalInMillis = START_COLLECTING_INTERVAL_IN_MILLIS;
+    private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
     private long collectingIntervalInMillis = COLLECTING_INTERVAL_IN_MILLIS;
 
     private TelemetryClient telemetryClient;
@@ -119,8 +121,8 @@ public enum PerformanceCounterContainer implements Stoppable {
      * Gets the timeout in milliseconds that the container will wait before the first collection of Performance Counters.
      * @return The first timeout in milliseconds.
      */
-    public long getStartCollectingIntervalInMillis() {
-        return startCollectingIntervalInMillis;
+    public long getStartCollectingDelayInMillis() {
+        return startCollectingDelayInMillis;
     }
 
     /**
@@ -151,15 +153,16 @@ public enum PerformanceCounterContainer implements Stoppable {
      * The number must be a positive number
      *
      * Note that the method will be effective if called before the first call to the 'register' method.
-     * @param startCollectingIntervalInMillis Timeout to wait before the first collection of performance counters in milliseconds.
+     * @param startCollectingDelayInMillis Timeout to wait before the first collection of performance counters in milliseconds.
      */
-    void setStartCollectingIntervalInMillis(long startCollectingIntervalInMillis) {
-        if (startCollectingIntervalInMillis <= 0) {
-            InternalLogger.INSTANCE.error("'%d' is an illegal value is ignored. Must be a positive number", startCollectingIntervalInMillis);
-            return;
+    void setStartCollectingDelayInMillis(long startCollectingDelayInMillis) {
+        if (startCollectingDelayInMillis < START_DEFAULT_MIN_DELAY_IN_MILLIS) {
+            InternalLogger.INSTANCE.error("Start Collecting Delay: illegal value '%d'. The minimum value, '%'d, is used instead.", startCollectingDelayInMillis, START_DEFAULT_MIN_DELAY_IN_MILLIS);
+
+            startCollectingDelayInMillis = START_DEFAULT_MIN_DELAY_IN_MILLIS;
         }
 
-        this.startCollectingIntervalInMillis = startCollectingIntervalInMillis;
+        this.startCollectingDelayInMillis = startCollectingDelayInMillis;
     }
 
     /**
@@ -171,9 +174,10 @@ public enum PerformanceCounterContainer implements Stoppable {
      * @param collectingIntervalInMillis The timeout to wait between collection of Performance Counters.
      */
     void setCollectingIntervalInMillis(long collectingIntervalInMillis) {
-        if (collectingIntervalInMillis <= 0) {
-            InternalLogger.INSTANCE.error("'%d' is an illegal value is ignored. Must be a positive number", collectingIntervalInMillis);
-            return;
+        if (collectingIntervalInMillis <= COLLECTING_DEFAULT_MIN_INTERVAL_IN_MILLIS) {
+            InternalLogger.INSTANCE.error("Collecting Interval: illegal value '%d'. The minimum value, '%'d, is used instead.", collectingIntervalInMillis, COLLECTING_DEFAULT_MIN_INTERVAL_IN_MILLIS);
+
+            collectingIntervalInMillis = COLLECTING_DEFAULT_MIN_INTERVAL_IN_MILLIS;
         }
 
         this.collectingIntervalInMillis = collectingIntervalInMillis;
@@ -221,7 +225,7 @@ public enum PerformanceCounterContainer implements Stoppable {
                         }
                     }
                 },
-                startCollectingIntervalInMillis,
+                startCollectingDelayInMillis,
                 collectingIntervalInMillis,
                 TimeUnit.MILLISECONDS);
 

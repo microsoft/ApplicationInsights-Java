@@ -21,40 +21,37 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.io.File;
+import java.util.Collection;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 /**
- * A base class for Unix performance counters who uses the '/proc/' filesystem for their work.
+ * A base class for performance modules.
  *
- * Created by gupele on 3/8/2015.
+ * Created by gupele on 3/12/2015.
  */
-abstract class AbstractUnixPerformanceCounterBase extends AbstractPerformanceCounterBase {
-    private final File processFile;
-    private final String path;
+public abstract class AbstractPerformanceCounterModule implements TelemetryModule {
+    private final PerformanceCountersFactory factory;
 
-    protected AbstractUnixPerformanceCounterBase(String path) {
-        Preconditions.checkState(!SystemInformation.INSTANCE.isUnix(), "This performance counter must be activated in Unix environment.");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(path), "path should be non null, non empty value.");
+    protected AbstractPerformanceCounterModule(PerformanceCountersFactory factory) {
+        this.factory = factory;
+    }
 
-        this.path = path;
-        processFile = new File(path);
-        if (!processFile.canRead()) {
-            logError("Can not read");
+    /**
+     * The main method will use the factory to fetch the performance counters and register them for work.
+     * @param configuration The configuration to used to initialize the module.
+     */
+    @Override
+    public void initialize(TelemetryConfiguration configuration) {
+        Collection<PerformanceCounter> performanceCounters = factory.getPerformanceCounters();
+        for (PerformanceCounter performanceCounter : performanceCounters) {
+            try {
+                PerformanceCounterContainer.INSTANCE.register(performanceCounter);
+            } catch (Throwable e) {
+                InternalLogger.INSTANCE.error("Failed to register performance counter '%s': '%s'", performanceCounter.getId(), e.getMessage());
+            }
         }
-    }
-
-    protected void logError(String format, Object... args) {
-        format = "Error in file '" + path + "': " + format;
-        InternalLogger.INSTANCE.error(format, args);
-    }
-
-    protected File getProcessFile() {
-        return processFile;
     }
 }

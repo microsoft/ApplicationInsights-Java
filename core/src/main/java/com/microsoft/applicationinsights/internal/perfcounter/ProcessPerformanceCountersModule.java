@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
  * Created by gupele on 3/3/2015.
  */
 @PerformanceModule("BuiltIn")
-public final class ProcessPerformanceCountersModule extends AbstractPerformanceCounterModuleBase {
+public final class ProcessPerformanceCountersModule extends AbstractPerformanceCounterModule {
     public ProcessPerformanceCountersModule() {
         this(new ProcessBuiltInPerformanceCountersFactory());
     }

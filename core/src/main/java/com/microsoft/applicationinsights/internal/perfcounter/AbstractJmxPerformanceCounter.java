@@ -75,7 +75,11 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                 }
 
                 if (ok) {
-                    send(telemetryClient, displayAndValues.getKey(), value);
+                    try {
+                        send(telemetryClient, displayAndValues.getKey(), value);
+                    } catch (Exception e) {
+                        InternalLogger.INSTANCE.error("Error while sending JMX data: '%s'", e.getMessage());
+                    }
                 }
             }
         } catch (Exception e) {

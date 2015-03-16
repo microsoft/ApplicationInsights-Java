@@ -1,11 +1,11 @@
 package com.microsoft.applicationinsights.web.internal.perfcounter;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Created by gupele on 3/12/2015.

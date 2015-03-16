@@ -34,7 +34,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  *
  * Created by gupele on 3/3/2015.
  */
-final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounterBase {
+final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
     private final String categoryName;
 
     public ProcessMemoryPerformanceCounter() {
@@ -49,19 +49,18 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounterBa
     @Override
     public void report(TelemetryClient telemetryClient) {
         MemoryMXBean memoryData = ManagementFactory.getMemoryMXBean();
-        if (memoryData != null) {
-            MemoryUsage heapMemoryUsage = memoryData.getHeapMemoryUsage();
-            MemoryUsage nonHeapMemoryUsage = memoryData.getNonHeapMemoryUsage();
 
-            double memoryMB = (double)heapMemoryUsage.getUsed() / Constants.MEGA_BYTE;
-            memoryMB += (double)nonHeapMemoryUsage.getUsed() / Constants.MEGA_BYTE;
-            Telemetry telemetry = new PerformanceCounterTelemetry(
-                    categoryName,
-                    Constants.PROCESS_MEM_PC_COUNTER_NAME,
-                    "",
-                    memoryMB);
+        MemoryUsage heapMemoryUsage = memoryData.getHeapMemoryUsage();
+        MemoryUsage nonHeapMemoryUsage = memoryData.getNonHeapMemoryUsage();
 
-            telemetryClient.track(telemetry);
-        }
+        double memoryMB = (double)heapMemoryUsage.getUsed() / Constants.MEGA_BYTE;
+        memoryMB += (double)nonHeapMemoryUsage.getUsed() / Constants.MEGA_BYTE;
+        Telemetry telemetry = new PerformanceCounterTelemetry(
+                categoryName,
+                Constants.PROCESS_MEM_PC_COUNTER_NAME,
+                "",
+                memoryMB);
+
+        telemetryClient.track(telemetry);
     }
 }

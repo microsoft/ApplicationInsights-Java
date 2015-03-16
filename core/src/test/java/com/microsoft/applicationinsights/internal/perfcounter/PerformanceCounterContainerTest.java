@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
+import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -96,14 +97,14 @@ public final class PerformanceCounterContainerTest {
 
     @Test
     public void testSetStartCollectingIntervalInMillisNegativeNumber() {
-        PerformanceCounterContainer.INSTANCE.setStartCollectingIntervalInMillis(-100);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingIntervalInMillis() > 0);
+        PerformanceCounterContainer.INSTANCE.setStartCollectingDelayInMillis(-100);
+        assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0);
     }
 
     @Test
     public void testSetStartCollectingIntervalInMillisZero() {
-        PerformanceCounterContainer.INSTANCE.setStartCollectingIntervalInMillis(0);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingIntervalInMillis() > 0);
+        PerformanceCounterContainer.INSTANCE.setStartCollectingDelayInMillis(0);
+        assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0);
     }
 
     @Test
@@ -119,17 +120,17 @@ public final class PerformanceCounterContainerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testRegisterWithNullId() {
+    public void testRegisterWithNullId() throws NoSuchFieldException, IllegalAccessException {
         testBadPerformanceCounterId(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testRegisterWithEmptyId() {
+    public void testRegisterWithEmptyId() throws NoSuchFieldException, IllegalAccessException {
         testBadPerformanceCounterId("");
     }
 
     @Test
-    public void testOnePerformanceCounterCalls() throws InterruptedException {
+    public void testOnePerformanceCounterCalls() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         initialize();
         PerformanceCounterStub mockPerformanceCounter = new PerformanceCounterStub("mock1");
 
@@ -137,11 +138,11 @@ public final class PerformanceCounterContainerTest {
 
         waitForFirstAndStop(mockPerformanceCounter, null);
 
-        assertTrue(mockPerformanceCounter.counter > 2);
+        assertTrue(String.format("Counter is %d while was expected to be 2", mockPerformanceCounter.counter), mockPerformanceCounter.counter > 2);
     }
 
     @Test
-    public void testTwoPerformanceCountersCalls() throws InterruptedException {
+    public void testTwoPerformanceCountersCalls() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         initialize();
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock2");
@@ -155,7 +156,7 @@ public final class PerformanceCounterContainerTest {
     }
 
     @Test
-    public void testMoreThanOneWithId() {
+    public void testMoreThanOneWithId() throws NoSuchFieldException, IllegalAccessException {
         initialize();
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock1");
@@ -167,7 +168,7 @@ public final class PerformanceCounterContainerTest {
     }
 
     @Test
-    public void testTwoPerformanceCountersWhereTheSecondIsNotRegistered() throws InterruptedException {
+    public void testTwoPerformanceCountersWhereTheSecondIsNotRegistered() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         initialize(500);
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock1");
@@ -181,7 +182,7 @@ public final class PerformanceCounterContainerTest {
     }
 
     @Test
-    public void testTwoPerformanceCountersWhereTheSecondIsUnregistered() throws InterruptedException {
+    public void testTwoPerformanceCountersWhereTheSecondIsUnregistered() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         initialize(500);
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1", 200);
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock2");
@@ -208,7 +209,7 @@ public final class PerformanceCounterContainerTest {
         PerformanceCounterContainer.INSTANCE.stop(1L, TimeUnit.SECONDS);
     }
 
-    private static void testBadPerformanceCounterId(String badId) {
+    private static void testBadPerformanceCounterId(String badId) throws NoSuchFieldException, IllegalAccessException {
         initialize();
         PerformanceCounterContainer.INSTANCE.register(createMockPerformanceCounter(badId));
     }
@@ -233,13 +234,17 @@ public final class PerformanceCounterContainerTest {
         return mockPerformanceCounter;
     }
 
-    private static void initialize() {
+    private static void initialize() throws NoSuchFieldException, IllegalAccessException {
         initialize(200);
     }
 
-    private static void initialize(long initialInterval) {
-//        PerformanceCounterContainer.INSTANCE.clear();
-        PerformanceCounterContainer.INSTANCE.setStartCollectingIntervalInMillis(initialInterval);
-        PerformanceCounterContainer.INSTANCE.setCollectingIntervalInMillis(200);
+    private static void initialize(long initialInterval) throws NoSuchFieldException, IllegalAccessException {
+        Field field = PerformanceCounterContainer.class.getDeclaredField("startCollectingDelayInMillis");
+        field.setAccessible(true);
+        field.set(PerformanceCounterContainer.INSTANCE, new Long(initialInterval));
+
+        field = PerformanceCounterContainer.class.getDeclaredField("collectingIntervalInMillis");
+        field.setAccessible(true);
+        field.set(PerformanceCounterContainer.INSTANCE, new Long(200));
     }
 }

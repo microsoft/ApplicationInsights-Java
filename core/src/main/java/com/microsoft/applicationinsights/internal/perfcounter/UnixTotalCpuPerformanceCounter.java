@@ -35,7 +35,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  *
  * Created by gupele on 3/8/2015.
  */
-final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounterBase {
+final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static String STAT_FILE = "/proc/stat";
 
     private long[] prevCpuCounters;
@@ -71,7 +71,7 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
             String[] array = stringValues.toArray(new String[stringValues.size()]);
 
             if (prevCpuCounters == null) {
-                firstCounters(array);
+                getCountersForTheFirstTime(array);
                 return;
             }
 
@@ -108,7 +108,7 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
         return line;
     }
 
-    private void firstCounters(String[] stringValues) {
+    private void getCountersForTheFirstTime(String[] stringValues) {
         prevCpuCounters = new long[stringValues.length];
         prevTotalCpuValue = 0;
         for (int i = 0; i < stringValues.length; ++i) {

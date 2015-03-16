@@ -38,7 +38,8 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  *
  * Created by gupele on 3/8/2015.
  */
-final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCounterBase {
+final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCounter {
+    private final static double NANOS_IN_SECOND = 1000000000.0;
     private final static String READ_BYTES_PART = "read_bytes:";
     private final static String WRITE_BYTES_PART = "write_bytes:";
 
@@ -70,7 +71,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             // Not the first time
 
             double processIO = getCurrentIOForCurrentProcess();
-            double timeElapsedInSeconds = ((double)(currentCollectionInNanos - lastCollectionInNanos)) / 1000000000.0;
+            double timeElapsedInSeconds = ((double)(currentCollectionInNanos - lastCollectionInNanos)) / NANOS_IN_SECOND;
 
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     categoryName,
@@ -106,7 +107,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             result = parsingData.returnValue;
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;
-            logError("Error while parsing file: '%s'", e.getMessage());
+            logError("Error while parsing file: '%s'", getId(), e.getMessage());
         } finally {
             if (bufferedReader != null ) {
                 try {

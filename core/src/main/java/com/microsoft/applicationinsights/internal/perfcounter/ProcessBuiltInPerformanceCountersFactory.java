@@ -72,7 +72,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
     }
 
     /**
-     * Returns the performance counters that are useful for Windows OS.
+     * Returns the performance counters that are useful for Unix OS.
      * @return Collection of Windows performance counters.
      */
     private Collection<PerformanceCounter> getUnixPerformanceCounters() {
@@ -85,7 +85,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
     }
 
     /**
-     * Returns the performance counters that are useful for Unix OSs.
+     * Returns the performance counters that are useful for Windows OSs.
      * @return Collection of Unix performance counters.
      */
     private Collection<PerformanceCounter> getWindowsPerformanceCounters() {

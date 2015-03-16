@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  *
  * Created by gupele on 3/3/2015.
  */
-final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounterBase {
+final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
 
     private final int numberOfCpus;
 
