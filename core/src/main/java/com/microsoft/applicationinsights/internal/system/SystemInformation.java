@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.system;
 
 import java.lang.management.ManagementFactory;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.SystemUtils;
 
 import com.google.common.base.Strings;
@@ -65,23 +66,10 @@ public enum SystemInformation {
                     processId = processIdAsString;
                     return;
                 } catch (Exception e) {
+                    InternalLogger.INSTANCE.error("Failed to fetch process id: '%s'", e.getMessage());
                 }
             }
         }
-
-//        try {
-//            RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-//            Field jvmField = runtimeMXBean.getClass().getDeclaredField("jvm");
-//            jvmField.setAccessible(true);
-//            VMManagement vmManagement = (VMManagement) jvmField.get(runtimeMXBean);
-//            Method getProcessIdMethod = vmManagement.getClass().getDeclaredMethod("getProcessId");
-//            getProcessIdMethod.setAccessible(true);
-//            Integer pId = (Integer) getProcessIdMethod.invoke(vmManagement);
-//            processId = String.valueOf(pId);
-//
-//            return;
-//        } catch (Exception e) {
-//        }
 
         // Default
         processId = DEFAULT_PROCESS_NAME;

@@ -111,7 +111,7 @@ public enum SDKShutdownActivity {
                 try {
                     stoppable.stop(1L, TimeUnit.SECONDS);
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop stoppable: '%s'", t.getMessage());
+                    InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.getMessage());
                 }
             }
         }
