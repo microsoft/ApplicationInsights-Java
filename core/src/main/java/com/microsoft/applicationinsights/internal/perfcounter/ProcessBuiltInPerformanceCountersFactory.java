@@ -29,6 +29,8 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 /**
+ * The class will create the 'built-in'/default performance counters.
+ *
  * Created by gupele on 3/3/2015.
  */
 final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory {

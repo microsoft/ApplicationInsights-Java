@@ -179,6 +179,10 @@ public enum PerformanceCounterContainer implements Stoppable {
         this.collectingIntervalInMillis = collectingIntervalInMillis;
     }
 
+    void clear() {
+        performanceCounters.clear();
+    }
+
     /**
      * A private method that is called only when the container needs to start
      * collecting performance counters data. The method will schedule a callback

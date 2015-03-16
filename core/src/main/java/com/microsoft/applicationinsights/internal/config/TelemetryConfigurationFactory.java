@@ -183,11 +183,11 @@ public enum TelemetryConfigurationFactory {
                 new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
         for (String performanceModuleName : performanceModuleNames) {
             TelemetryModule module = createInstance(performanceModuleName, TelemetryModule.class);
-            PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
-            if (!performanceConfigurationData.isUseBuiltIn() && "BuiltIn".equals(pmAnnotation.value())) {
-                continue;
-            }
             if (module != null) {
+                PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
+                if (!performanceConfigurationData.isUseBuiltIn() && "BuiltIn".equals(pmAnnotation.value())) {
+                    continue;
+                }
                 modules.add(module);
             } else {
                 InternalLogger.INSTANCE.error("Failed to create performance module: '%s'", performanceModuleName);

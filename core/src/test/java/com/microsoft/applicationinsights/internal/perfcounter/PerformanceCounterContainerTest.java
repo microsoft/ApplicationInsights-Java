@@ -27,6 +27,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -86,6 +87,11 @@ public final class PerformanceCounterContainerTest {
                 lock.unlock();
             }
         }
+    }
+
+    @Before
+    public void clear() {
+        PerformanceCounterContainer.INSTANCE.clear();
     }
 
     @Test
@@ -150,6 +156,7 @@ public final class PerformanceCounterContainerTest {
 
     @Test
     public void testMoreThanOneWithId() {
+        initialize();
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock1");
 
@@ -160,7 +167,7 @@ public final class PerformanceCounterContainerTest {
     }
 
     @Test
-    public void testTwoPerformanceCountersWhereTheSecondReplacesTheFirst() throws InterruptedException {
+    public void testTwoPerformanceCountersWhereTheSecondIsNotRegistered() throws InterruptedException {
         initialize(500);
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock1");
@@ -169,8 +176,8 @@ public final class PerformanceCounterContainerTest {
 
         waitForFirstAndStop(mockPerformanceCounter1, null);
 
-        assertTrue(mockPerformanceCounter1.counter == 0);
-        assertTrue(mockPerformanceCounter2.counter > 4);
+        assertTrue(mockPerformanceCounter2.counter == 0);
+        assertTrue(mockPerformanceCounter1.counter > 2);
     }
 
     @Test
@@ -227,11 +234,12 @@ public final class PerformanceCounterContainerTest {
     }
 
     private static void initialize() {
-        initialize(100);
+        initialize(200);
     }
 
     private static void initialize(long initialInterval) {
-        PerformanceCounterContainer.INSTANCE.setStartCollectingIntervalInMillis(100);
+//        PerformanceCounterContainer.INSTANCE.clear();
+        PerformanceCounterContainer.INSTANCE.setStartCollectingIntervalInMillis(initialInterval);
         PerformanceCounterContainer.INSTANCE.setCollectingIntervalInMillis(200);
     }
 }

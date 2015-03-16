@@ -30,6 +30,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 /**
+ * A base class for Unix performance counters who uses the '/proc/' filesystem for their work.
+ *
  * Created by gupele on 3/8/2015.
  */
 abstract class AbstractUnixPerformanceCounterBase extends AbstractPerformanceCounterBase {

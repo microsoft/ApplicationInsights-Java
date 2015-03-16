@@ -24,6 +24,8 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 
 /**
+ * The class will be used when the SDK needs to add the 'built-in' performance counters.
+ *
  * Created by gupele on 3/3/2015.
  */
 @PerformanceModule("BuiltIn")

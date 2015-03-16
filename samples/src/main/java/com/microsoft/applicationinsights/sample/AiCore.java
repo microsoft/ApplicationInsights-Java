@@ -90,6 +90,8 @@ public class AiCore {
             System.out.println("[6] Exception             -- message=\"This is only a test!\"");
         }
 
+        System.out.println();
+        System.out.println("Press any key to exit");
         System.in.read();
     }
 
