@@ -21,46 +21,34 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+
 import java.util.Map;
 
 /**
- * Created by gupele on 3/15/2015.
+ * Created by yonisha on 3/16/2015.
  */
-@XmlRootElement(name="Add")
-public class AddTypeXmlElement {
-    private String type;
-    private ArrayList<ParamXmlElement> paramElements = new ArrayList<ParamXmlElement>();
+public class MockTelemetryModule implements TelemetryModule {
 
-    public String getType() {
-        return type;
+    private String param1;
+
+    public MockTelemetryModule() {}
+
+    public MockTelemetryModule(Map<String, String> argumentsMap) {
+        param1 = argumentsMap.get("param1");
     }
 
-    public ArrayList<ParamXmlElement> getParameters() {
-        return paramElements;
+    public String getParam1() {
+        return param1;
     }
 
-    @XmlAttribute
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    @XmlElement(name="Param")
-    public void setParameters(ArrayList<ParamXmlElement> paramElements) {
-        this.paramElements = paramElements;
-    }
-
-    public Map<String, String> getData() {
-        Map<String, String> map = new HashMap<String, String>();
-
-        for (ParamXmlElement element : getParameters()) {
-            map.put(element.getName(), element.getValue());
-        }
-
-        return map;
+    /**
+     * Initializes the telemetry module.
+     *
+     * @param configuration The configuration to used to initialize the module.
+     */
+    @Override
+    public void initialize(TelemetryConfiguration configuration) {
     }
 }

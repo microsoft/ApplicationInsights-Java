@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.UUID;
+import java.util.Map;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
@@ -48,13 +48,36 @@ import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
  */
 public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
 
+    // region Consts
+
+    protected final static String GENERATE_NEW_SESSIONS_PARAM_KEY = "GenerateNewSessions";
+    protected final static String SESSION_TIMEOUT_PARAM_KEY = "SessionTimeoutInMinutes";
+
+    // endregion Consts
+
     // region Members
 
+    private Integer sessionTimeoutInMinutes;
+    private boolean generateNewSessions = true;
     private TelemetryClient telemetryClient;
     private boolean isInitialized = false;
     private boolean isUserModuleEnabled = false;
 
     // endregion Members
+
+    // region Constructors
+
+    public WebSessionTrackingTelemetryModule() {}
+
+    public WebSessionTrackingTelemetryModule(Map<String, String> argumentsMap) {
+        if (argumentsMap == null) {
+            return;
+        }
+
+        parseArguments(argumentsMap);
+    }
+
+    // endregion Constructors
 
     // region Public
 
@@ -115,11 +138,10 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
             }
         }
 
-        if (startNewSession) {
+        if (startNewSession && generateNewSessions) {
             startNewSession(context);
+            setSessionCookie(request, (HttpServletResponse)res);
         }
-
-        setSessionCookie(request, (HttpServletResponse)res);
     }
 
     /**
@@ -146,19 +168,44 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      * Gets a value indicating whether the user tracking module enabled.
      * @return True if the user module enabled, false otherwise.
      */
-    public boolean getIsUserModuleEnabled(){
+    public boolean getIsUserModuleEnabled() {
         return isUserModuleEnabled;
+    }
+
+    /**
+     * Gets a value indicating whether new sessions should be generated.
+     * @return True if new sessions should be generated, false otherwise.
+     */
+    public boolean getGenerateNewSessions() {
+        return generateNewSessions;
+    }
+
+    /**
+     * Gets the session timeout in minutes, or null if not set yet.
+     * @return Session timeout in minutes
+     */
+    public Integer getSessionTimeoutInMinutes() {
+        return sessionTimeoutInMinutes;
     }
 
     // endregion Public
 
     // region Private
 
+    private void parseArguments(Map<String, String> argumentsMap) {
+        if (argumentsMap.containsKey(GENERATE_NEW_SESSIONS_PARAM_KEY)) {
+            boolean generateNewSessions = Boolean.parseBoolean(argumentsMap.get(GENERATE_NEW_SESSIONS_PARAM_KEY));
+            this.generateNewSessions = generateNewSessions;
+        }
+
+        if (argumentsMap.containsKey(SESSION_TIMEOUT_PARAM_KEY)) {
+            int sessionTimeoutInMinutes = Integer.parseInt(argumentsMap.get(SESSION_TIMEOUT_PARAM_KEY));
+            this.sessionTimeoutInMinutes = sessionTimeoutInMinutes;
+        }
+    }
+
     private void setSessionCookie(HttpServletRequest req, HttpServletResponse res) {
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-        if (isSessionCookieUpToDate(context)) {
-            return;
-        }
 
         int sessionTimeout = getSessionTimeout(req);
         SessionContext sessionContext = getTelemetrySessionContext(context);
@@ -167,12 +214,23 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         res.addCookie(cookie);
     }
 
+    /**
+     * If the session timeout has been set by the user via AI config file, then this timeout will be returned.
+     * Otherwise, the method will check if a session timeout has been set dynamically be the user (previous filters etc.).
+     * Otherwise, it will look for a session timeout configured in the application descriptor (web.xml).
+     * Otherwise, default timeout will be returned.
+     */
     private int getSessionTimeout(ServletRequest servletRequest) {
+        if (sessionTimeoutInMinutes != null) {
+            return sessionTimeoutInMinutes;
+        }
+
         Integer sessionTimeout = ServletUtils.getRequestSessionTimeout(servletRequest);
         if (sessionTimeout == null) {
             sessionTimeout = SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES;
         }
 
+        sessionTimeoutInMinutes = sessionTimeout;
         return sessionTimeout;
     }
 
@@ -189,15 +247,6 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         aiContext.setSessionCookie(new SessionCookie(sessionId));
         trackSessionStateWithRequestSessionId(SessionState.Start, sessionId);
         aiContext.setIsNewSession(true);
-    }
-
-    private boolean isSessionCookieUpToDate(RequestTelemetryContext context) {
-        boolean isNewSession = context.getIsNewSession();
-
-        SessionCookie sessionCookie = context.getSessionCookie();
-        boolean isExpiredSession = sessionCookie == null || sessionCookie.isSessionExpired();
-
-        return !isNewSession && !isExpiredSession;
     }
 
     private void trackSessionStateWithRequestSessionId(SessionState requiredState, String sessionId) {

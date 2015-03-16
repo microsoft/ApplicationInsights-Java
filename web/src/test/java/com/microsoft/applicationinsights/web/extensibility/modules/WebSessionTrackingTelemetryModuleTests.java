@@ -21,9 +21,14 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,6 +42,16 @@ import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
 import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by yonisha on 2/5/2015.
@@ -178,9 +193,78 @@ public class WebSessionTrackingTelemetryModuleTests {
                 telemetry.getContext().getSession().getId());
     }
 
+    @Test
+    public void testModulesInitializedCorrectlyWithGenerateNewSessionParam() {
+        final String value = "false";
+
+        WebSessionTrackingTelemetryModule module = createModuleWithParam(
+                WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, value);
+
+        Assert.assertEquals(Boolean.parseBoolean(value), module.getGenerateNewSessions());
+    }
+
+    @Test
+    public void testModulesInitializedCorrectlyWithSessionTimeoutParam() {
+        final String value = "13";
+
+        WebSessionTrackingTelemetryModule module = createModuleWithParam(
+                WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, value);
+
+        Assert.assertEquals(Integer.parseInt(value),(int)module.getSessionTimeoutInMinutes());
+    }
+
+    @Test
+    public void testWhenGenerateNewSessionIsFalseSessionsAreNotGenerated() {
+        WebSessionTrackingTelemetryModule module = createModuleWithParam(
+                WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, "false");
+
+        Cookie cookie = callOnBeginRequestAndGetCookieResult(module);
+
+        Assert.assertNull("No cookie should be generated." , cookie);
+    }
+
+    @Test
+    public void testWhenSessionTimeoutParameterUsedThenCookieCreatedWithCorrectAge() {
+        int sessionTimeoutInMinutes = 12;
+        WebSessionTrackingTelemetryModule module = createModuleWithParam(
+                WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, String.valueOf(sessionTimeoutInMinutes));
+
+        Cookie cookie = callOnBeginRequestAndGetCookieResult(module);
+
+        Assert.assertEquals(sessionTimeoutInMinutes * 60, cookie.getMaxAge());
+    }
+
     // endregion Tests
 
     // region Private
+
+    private Cookie callOnBeginRequestAndGetCookieResult(WebSessionTrackingTelemetryModule module) {
+        ThreadContext.setRequestTelemetryContext(new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime()));
+        module.initialize(TelemetryConfiguration.getActive());
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        final Cookie[] cookies = new Cookie[1];
+        Mockito.doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                cookies[0] = ((Cookie) invocation.getArguments()[0]);
+
+                return null;
+            }
+        }).when(response).addCookie(any(Cookie.class));
+
+        module.onBeginRequest(request, response);
+
+        return cookies[0];
+    }
+
+    private WebSessionTrackingTelemetryModule createModuleWithParam(String paramName, String paramValue) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(paramName, paramValue);
+
+        return new WebSessionTrackingTelemetryModule(map);
+    }
 
     private void verifySessionState(SessionState expectedSessionState) {
         SessionStateTelemetry telemetry = getSessionStateTelemetryWithState(expectedSessionState);
