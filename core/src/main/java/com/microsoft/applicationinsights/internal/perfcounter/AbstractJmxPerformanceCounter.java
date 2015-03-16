@@ -50,7 +50,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
     /**
      * The main method. The method will fetch the data and send it.
      * The method will not do anything if there was a major problem accessing the needed counter.
-     * @param telemetryClient
+     * @param telemetryClient The telemetry client to send events.
      */
     @Override
     public synchronized void report(TelemetryClient telemetryClient) {

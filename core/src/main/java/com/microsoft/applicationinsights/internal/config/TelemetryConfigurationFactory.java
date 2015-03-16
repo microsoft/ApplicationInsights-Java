@@ -330,7 +330,18 @@ public enum TelemetryConfigurationFactory {
         }
 
         for (AddTypeXmlElement className : classNames) {
-            T initializer = createInstance(className.getType(), clazz);
+            T initializer = null;
+
+            // If parameters have been provided, we try to load the component with provided parameters map. Otherwise,
+            // we fallback to initialize the component with the default ctor.
+            if (className.getParameters().size() != 0) {
+                initializer = createInstance(className.getType(), clazz, Map.class, className.getData());
+            }
+
+            if (initializer == null) {
+                initializer = createInstance(className.getType(), clazz);
+            }
+
             if (initializer != null) {
                 list.add(initializer);
             }

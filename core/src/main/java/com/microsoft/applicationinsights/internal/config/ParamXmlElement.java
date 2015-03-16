@@ -22,45 +22,31 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * Created by gupele on 3/15/2015.
+ * Created by yonisha on 3/16/2015.
  */
-@XmlRootElement(name="Add")
-public class AddTypeXmlElement {
-    private String type;
-    private ArrayList<ParamXmlElement> paramElements = new ArrayList<ParamXmlElement>();
+@XmlRootElement(name="Param")
+public class ParamXmlElement {
+    private String name;
+    private String value;
 
-    public String getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public ArrayList<ParamXmlElement> getParameters() {
-        return paramElements;
+    public String getValue() {
+        return value;
     }
 
-    @XmlAttribute
-    public void setType(String type) {
-        this.type = type;
+    @XmlAttribute(name="name")
+    public void setName(String name) {
+        this.name = name;
     }
 
-    @XmlElement(name="Param")
-    public void setParameters(ArrayList<ParamXmlElement> paramElements) {
-        this.paramElements = paramElements;
-    }
-
-    public Map<String, String> getData() {
-        Map<String, String> map = new HashMap<String, String>();
-
-        for (ParamXmlElement element : getParameters()) {
-            map.put(element.getName(), element.getValue());
-        }
-
-        return map;
+    @XmlAttribute(name="value")
+    public void setValue(String value) {
+        this.value = value;
     }
 }

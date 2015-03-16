@@ -30,6 +30,9 @@ import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by yonisha on 2/9/2015.
  */
@@ -81,6 +84,18 @@ public class WebUserTrackingTelemetryModuleTests {
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie("corrupted;user;cookie");
 
         Assert.assertNotNull("User cookie shouldn't be null.", cookiesContainer.getUserCookie());
+    }
+
+    @Test
+    public void testModulesInitializedCorrectlyWithGenerateNewUserParam() {
+        final String value = "false";
+
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(WebUserTrackingTelemetryModule.GENERATE_NEW_USERS_PARAM_KEY, value);
+
+        WebUserTrackingTelemetryModule module = new WebUserTrackingTelemetryModule(map);
+
+        Assert.assertEquals(Boolean.parseBoolean(value), module.getGenerateNewUsers());
     }
 
     // endregion Tests

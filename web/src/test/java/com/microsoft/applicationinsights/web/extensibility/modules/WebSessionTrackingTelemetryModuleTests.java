@@ -21,7 +21,9 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
 import org.junit.AfterClass;
@@ -178,9 +180,36 @@ public class WebSessionTrackingTelemetryModuleTests {
                 telemetry.getContext().getSession().getId());
     }
 
+    @Test
+    public void testModulesInitializedCorrectlyWithGenerateNewSessionParam() {
+        final String value = "false";
+
+        WebSessionTrackingTelemetryModule module = createModuleWithParam(
+                WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, value);
+
+        Assert.assertEquals(Boolean.parseBoolean(value), module.getGenerateNewSessions());
+    }
+
+    @Test
+    public void testModulesInitializedCorrectlyWithSessionTimeoutParam() {
+        final String value = "13";
+
+        WebSessionTrackingTelemetryModule module = createModuleWithParam(
+                WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, value);
+
+        Assert.assertEquals(Integer.parseInt(value),(int)module.getSessionTimeoutInMinutes());
+    }
+
     // endregion Tests
 
     // region Private
+
+    private WebSessionTrackingTelemetryModule createModuleWithParam(String paramName, String paramValue) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(paramName, paramValue);
+
+        return new WebSessionTrackingTelemetryModule(map);
+    }
 
     private void verifySessionState(SessionState expectedSessionState) {
         SessionStateTelemetry telemetry = getSessionStateTelemetryWithState(expectedSessionState);

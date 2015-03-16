@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import java.util.Map;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
@@ -38,6 +39,30 @@ import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
  * Created by yonisha on 2/7/2015.
  */
 public class WebUserTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
+
+    // region Consts
+
+    protected final static String GENERATE_NEW_USERS_PARAM_KEY = "GenerateNewUsers";
+
+    // endregion Consts
+
+    // region Members
+
+    private boolean generateNewUsers = true;
+
+    // endregion Members
+
+    // region Constructors
+
+    public WebUserTrackingTelemetryModule() {}
+
+    public WebUserTrackingTelemetryModule(Map<String, String> argumentsMap) {
+        if (argumentsMap == null) {
+            return;
+        }
+
+        parseArguments(argumentsMap);
+    }
 
     // region Public
 
@@ -65,7 +90,9 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         UserCookie.class, request, UserCookie.COOKIE_NAME);
 
-        if (userCookie == null) {
+        if (userCookie == null && !generateNewUsers) {
+            return;
+        } else if (userCookie == null) {
             userCookie = new UserCookie();
         }
 
@@ -89,9 +116,24 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
     public void onEndRequest(ServletRequest req, ServletResponse res) {
     }
 
+    /**
+     * Gets a value indicating whether new users should be generated.
+     * @return True if new users should be generated, false otherwise.
+     */
+    public boolean getGenerateNewUsers() {
+        return generateNewUsers;
+    }
+
     // endregion Public
 
     // region Private
+
+    private void parseArguments(Map<String, String> argumentsMap) {
+        if (argumentsMap.containsKey(GENERATE_NEW_USERS_PARAM_KEY)) {
+            boolean generateNewUsers = Boolean.parseBoolean(argumentsMap.get(GENERATE_NEW_USERS_PARAM_KEY));
+            this.generateNewUsers = generateNewUsers;
+        }
+    }
 
     /**
      * Sets the user cookie.

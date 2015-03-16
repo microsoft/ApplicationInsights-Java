@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -106,6 +107,22 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getContextInitializers().size(), 2);
         assertEquals(mockConfiguration.getTelemetryInitializers().size(), 1);
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+    }
+
+    @Test
+    public void testTelemetryModulesWithoutParameters() {
+        MockTelemetryModule module = generateTelemetryModules(false);
+
+        Assert.assertNotNull(module);
+        Assert.assertNull(module.getParam1());
+    }
+
+    @Test
+    public void testTelemetryModulesWithParameters() {
+        MockTelemetryModule module = generateTelemetryModules(true);
+
+        Assert.assertNotNull(module);
+        Assert.assertEquals("value1", module.getParam1());
     }
 
     @Test
@@ -218,6 +235,40 @@ public final class TelemetryConfigurationFactoryTest {
         initializeWithFactory(mockParser, mockConfiguration);
 
         assertEquals(mockConfiguration.getChannel().isDeveloperMode(), false);
+    }
+
+    private MockTelemetryModule generateTelemetryModules(boolean addParameter) {
+        AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, false);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
+        appConf.setInstrumentationKey(MOCK_IKEY);
+
+        TelemetryModulesXmlElement modulesXmlElement = new TelemetryModulesXmlElement();
+        ArrayList<AddTypeXmlElement> modules = new ArrayList<AddTypeXmlElement>();
+        AddTypeXmlElement addXmlElement = new AddTypeXmlElement();
+        addXmlElement.setType("com.microsoft.applicationinsights.internal.config.MockTelemetryModule");
+
+        if (addParameter) {
+            final ParamXmlElement param1 = new ParamXmlElement();
+            param1.setName("param1");
+            param1.setValue("value1");
+
+            ArrayList<ParamXmlElement> list = new ArrayList<ParamXmlElement>();
+            list.add(param1);
+
+            addXmlElement.setParameters(list);
+        }
+
+        modules.add(addXmlElement);
+        modulesXmlElement.setAdds(modules);
+        appConf.setModules(modulesXmlElement);
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+
+        MockTelemetryModule module = (MockTelemetryModule)mockConfiguration.getTelemetryModules().get(0);
+
+        return module;
     }
 
     private AppInsightsConfigurationBuilder createMockParserThatFailsToParse() {
