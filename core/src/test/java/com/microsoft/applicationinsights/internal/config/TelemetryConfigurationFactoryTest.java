@@ -43,7 +43,7 @@ public final class TelemetryConfigurationFactoryTest {
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
 
     @PerformanceModule
-    public static final class MockPerformanceModule implements TelemetryModule {
+    static final class MockPerformanceModule implements TelemetryModule {
         public boolean initializeWasCalled = false;
 
         @Override
@@ -53,7 +53,7 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     @PerformanceModule
-    public static final class MockPerformanceBadModule {
+    static final class MockPerformanceBadModule {
         public boolean initializeWasCalled = false;
 
         public void initialize(TelemetryConfiguration configuration) {
@@ -63,7 +63,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testWithEmptySections() {
-        AppInsightsConfigurationReader mockParser = Mockito.mock(AppInsightsConfigurationReader.class);
+        AppInsightsConfigurationBuilder mockParser = Mockito.mock(AppInsightsConfigurationBuilder.class);
 
         ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
         appConf.setInstrumentationKey(MOCK_IKEY);
@@ -85,7 +85,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testTelemetryContextInitializers() {
-        AppInsightsConfigurationReader mockParser = createMockParser(true, true, false);
+        AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, false);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
         appConf.setInstrumentationKey(MOCK_IKEY);
 
@@ -110,7 +110,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testContextInitializers() {
-        AppInsightsConfigurationReader mockParser = createMockParser(true, true, false);
+        AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, false);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
         appConf.setInstrumentationKey(MOCK_IKEY);
 
@@ -135,7 +135,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeWithFailingParse() throws Exception {
-        AppInsightsConfigurationReader mockParser = createMockParserThatFailsToParse();
+        AppInsightsConfigurationBuilder mockParser = createMockParserThatFailsToParse();
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -147,7 +147,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeWithNullGetInstrumentationKey() throws Exception {
-        AppInsightsConfigurationReader mockParser = createMockParser(false, true, false);
+        AppInsightsConfigurationBuilder mockParser = createMockParser(false, true, false);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
         appConf.setInstrumentationKey(MOCK_IKEY);
 
@@ -161,7 +161,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeWithEmptyGetInstrumentationKey() throws Exception {
-        AppInsightsConfigurationReader mockParser = createMockParser(false, true, false);
+        AppInsightsConfigurationBuilder mockParser = createMockParser(false, true, false);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
         appConf.setInstrumentationKey("");
 
@@ -175,7 +175,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testInitializeAllDefaults() throws Exception {
-        AppInsightsConfigurationReader mockParser = createMockParser(true, true, false);
+        AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, false);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
         appConf.setInstrumentationKey(MOCK_IKEY);
 
@@ -192,7 +192,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testDefaultChannelWithData() {
-        AppInsightsConfigurationReader mockParser = createMockParserWithDefaultChannel(true);
+        AppInsightsConfigurationBuilder mockParser = createMockParserWithDefaultChannel(true);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
         appConf.setInstrumentationKey(MOCK_IKEY);
         appConf.getChannel().setDeveloperMode(true);
@@ -206,7 +206,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testDefaultChannelWithBadData() {
-        AppInsightsConfigurationReader mockParser = createMockParserWithDefaultChannel(true);
+        AppInsightsConfigurationBuilder mockParser = createMockParserWithDefaultChannel(true);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
         appConf.setInstrumentationKey(MOCK_IKEY);
         ChannelXmlElement channelXmlElement = appConf.getChannel();
@@ -220,20 +220,20 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getChannel().isDeveloperMode(), false);
     }
 
-    private AppInsightsConfigurationReader createMockParserThatFailsToParse() {
-        AppInsightsConfigurationReader mockParser = Mockito.mock(AppInsightsConfigurationReader.class);
+    private AppInsightsConfigurationBuilder createMockParserThatFailsToParse() {
+        AppInsightsConfigurationBuilder mockParser = Mockito.mock(AppInsightsConfigurationBuilder.class);
         Mockito.doReturn(null).when(mockParser).build(anyString());
         return mockParser;
     }
 
-    private AppInsightsConfigurationReader createMockParserWithDefaultChannel(boolean withChannel) {
+    private AppInsightsConfigurationBuilder createMockParserWithDefaultChannel(boolean withChannel) {
         return createMockParser(withChannel, false, false);
     }
 
         // Suppress non relevant warning due to mockito internal stuff
     @SuppressWarnings("unchecked")
-    private AppInsightsConfigurationReader createMockParser(boolean withChannel, boolean setChannel, boolean withPerformanceModules) {
-        AppInsightsConfigurationReader mockParser = Mockito.mock(AppInsightsConfigurationReader.class);
+    private AppInsightsConfigurationBuilder createMockParser(boolean withChannel, boolean setChannel, boolean withPerformanceModules) {
+        AppInsightsConfigurationBuilder mockParser = Mockito.mock(AppInsightsConfigurationBuilder.class);
 
         ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
 
@@ -262,11 +262,12 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testPerformanceModules() {
-        AppInsightsConfigurationReader mockParser = createMockParser(true, true, true);
+        AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, true);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build("");
         appConf.setInstrumentationKey(MOCK_IKEY);
         appConf.getChannel().setDeveloperMode(true);
 
+        TelemetryConfigurationFactory.INSTANCE.setPerformanceCountersSection("com.microsoft.applicationinsights.internal.config");
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
         initializeWithFactory(mockParser, mockConfiguration);
@@ -277,7 +278,7 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
 
-    private void initializeWithFactory(AppInsightsConfigurationReader mockParser, TelemetryConfiguration mockConfiguration) {
+    private void initializeWithFactory(AppInsightsConfigurationBuilder mockParser, TelemetryConfiguration mockConfiguration) {
         TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
         TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
     }

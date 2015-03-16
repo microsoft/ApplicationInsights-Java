@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class JmxXmlElement {
     private String displayName;
     private String objectName;
-    private String attributeName;
+    private String attribute;
     private String type;
 
     public String getDisplayName() {
@@ -52,13 +52,13 @@ public class JmxXmlElement {
         this.objectName = objectName;
     }
 
-    public String getAttributeName() {
-        return attributeName;
+    public String getAttribute() {
+        return attribute;
     }
 
     @XmlAttribute
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
     }
 
     public String getType() {

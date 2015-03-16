@@ -19,22 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.annotation;
+package com.microsoft.applicationinsights.internal.perfcounter;
+
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
+import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+
+import java.util.Collection;
 
 /**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
+ * A performance counter that sends {@link com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry}
  *
- * Created by gupele on 3/11/2015.
+ * Created by gupele on 3/15/2015.
  */
+public final class JmxPerformanceCounter extends AbstractJmxPerformanceCounter {
+    private final String categoryName;
 
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+    public JmxPerformanceCounter(String categoryName, String id, String objectName, Collection<JmxAttributeData> attributes) {
+        super(id, objectName, attributes);
+        this.categoryName = categoryName;
+    }
 
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PerformanceModule {
-    String value() default "BuiltIn";
+    @Override
+    protected void send(TelemetryClient telemetryClient, String displayName, double value) {
+        Telemetry telemetry = new PerformanceCounterTelemetry(categoryName, displayName, "", value);
+        telemetryClient.track(telemetry);
+    }
 }

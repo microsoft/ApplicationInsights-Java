@@ -19,22 +19,24 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.annotation;
+package com.microsoft.applicationinsights.internal.config;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
- *
- * Created by gupele on 3/11/2015.
+ * Created by gupele on 3/16/2015.
  */
+@XmlRootElement(name="Remove")
+public class RemoveTypeXmlElement {
+    private String type;
 
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+    public String getType() {
+        return type;
+    }
 
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PerformanceModule {
-    String value() default "BuiltIn";
+    @XmlAttribute
+    public void setType(String type) {
+        this.type = type;
+    }
 }

@@ -19,22 +19,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.annotation;
+package com.microsoft.applicationinsights.internal.perfcounter;
 
-/**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
- *
- * Created by gupele on 3/11/2015.
- */
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.junit.Test;
 
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PerformanceModule {
-    String value() default "BuiltIn";
+public final class ProcessMemoryPerformanceCounterTest {
+    private static final class TelemetryClassStub extends TelemetryClient {
+        public void track(Telemetry telemetry) {
+            if (!(telemetry instanceof PerformanceCounterTelemetry)) {
+                assertFalse(true);
+            }
+
+            PerformanceCounterTelemetry pct = (PerformanceCounterTelemetry)telemetry;
+            assertEquals(pct.getCounterName(), Constants.PROCESS_MEM_PC_COUNTER_NAME);
+        }
+    }
+
+    @Test
+    public void testGetId() {
+        ProcessMemoryPerformanceCounter pc = new ProcessMemoryPerformanceCounter();
+        assertEquals(pc.getId(), Constants.PROCESS_MEM_PC_ID);
+    }
 }

@@ -19,22 +19,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.annotation;
+package com.microsoft.applicationinsights.internal.perfcounter;
+
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 /**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
+ * A base class for classes that report performance counters of Process level.
  *
- * Created by gupele on 3/11/2015.
+ * Created by gupele on 3/12/2015.
  */
+abstract class AbstractPerformanceCounter implements PerformanceCounter {
+    private final static String PROCESS_CATEGORY_FORMAT = "Process(%s)";
 
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+    protected static String getProcessCategoryName() {
+        return String.format(PROCESS_CATEGORY_FORMAT, SystemInformation.INSTANCE.getProcessId());
+    }
 
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PerformanceModule {
-    String value() default "BuiltIn";
+    protected AbstractPerformanceCounter() {
+    }
 }
+

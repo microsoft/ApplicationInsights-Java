@@ -19,13 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.util;
+package com.microsoft.applicationinsights.internal.shutdown;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
 
 /**
  * The class is responsible for all shutdown activities done in the SDK.
@@ -46,9 +47,14 @@ public enum SDKShutdownActivity {
         private boolean stopped = false;
 
         private final ArrayList<ChannelFetcher> fetchers = new ArrayList<ChannelFetcher>();
+        private final ArrayList<Stoppable> stoppables = new ArrayList<Stoppable>();
 
         public synchronized void register(ChannelFetcher fetcher) {
             fetchers.add(fetcher);
+        }
+
+        public synchronized void register(Stoppable stoppable) {
+            stoppables.add(stoppable);
         }
 
         public SDKShutdownThread() {
@@ -63,6 +69,7 @@ public enum SDKShutdownActivity {
 
             try {
                 stopChannels();
+                stopStoppables();
             } finally {
                 // As the last step, the SDK gracefully closes the Internal Logger
                 stopInternalLogger();
@@ -92,6 +99,19 @@ public enum SDKShutdownActivity {
                         channelToStop.stop(1L, TimeUnit.SECONDS);
                     }
                 } catch (Throwable t) {
+                    InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.getMessage());
+                }
+            }
+        }
+        /**
+         * Make sure no exception is thrown!
+         */
+        private void stopStoppables() {
+            for (Stoppable stoppable : stoppables) {
+                try {
+                    stoppable.stop(1L, TimeUnit.SECONDS);
+                } catch (Throwable t) {
+                    InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.getMessage());
                 }
             }
         }
@@ -101,6 +121,10 @@ public enum SDKShutdownActivity {
 
     public void register(ChannelFetcher fetcher) {
         getShutdownThread().register(fetcher);
+    }
+
+    public void register(Stoppable stoppable) {
+        getShutdownThread().register(stoppable);
     }
 
     private SDKShutdownThread getShutdownThread() {

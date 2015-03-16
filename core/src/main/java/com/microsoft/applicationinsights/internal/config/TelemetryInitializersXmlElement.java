@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
 
 /**
  * Created by gupele on 3/15/2015.
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 public class TelemetryInitializersXmlElement {
 
     private ArrayList<AddTypeXmlElement> adds;
+    private ArrayList<AddTypeXmlElement> removes;
 
     public ArrayList<AddTypeXmlElement> getAdds() {
         return adds;
@@ -40,5 +41,14 @@ public class TelemetryInitializersXmlElement {
     @XmlElement(name="Add")
     public void setAdds(ArrayList<AddTypeXmlElement> adds) {
         this.adds = adds;
+    }
+
+    public ArrayList<AddTypeXmlElement> getRemoves() {
+        return removes;
+    }
+
+    @XmlElement(name="Remove")
+    public void setRemoves(ArrayList<AddTypeXmlElement> removes) {
+        this.removes = removes;
     }
 }

@@ -19,34 +19,42 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.config;
+package com.microsoft.applicationinsights.internal.perfcounter;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
- * The JAXB implementation of the {@link com.microsoft.applicationinsights.internal.config.AppInsightsConfigurationBuilder}
+ * A base class for Unix performance counters who uses the '/proc/' filesystem for their work.
  *
- * Created by gupele on 3/15/2015.
+ * Created by gupele on 3/8/2015.
  */
-class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBuilder {
-    @Override
-    public ApplicationInsightsXmlConfiguration build(String filename) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            File configurationFile = new File(filename);
-            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(configurationFile);
+abstract class AbstractUnixPerformanceCounter extends AbstractPerformanceCounter {
+    private final File processFile;
+    private final String path;
 
-            return applicationInsights;
-        } catch (JAXBException e) {
-            InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'", e.getMessage());
+    protected AbstractUnixPerformanceCounter(String path) {
+        Preconditions.checkState(!SystemInformation.INSTANCE.isUnix(), "This performance counter must be activated in Unix environment.");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(path), "path should be non null, non empty value.");
+
+        this.path = path;
+        processFile = new File(path);
+        if (!processFile.canRead()) {
+            logError("Can not read");
         }
+    }
 
-        return null;
+    protected void logError(String format, Object... args) {
+        format = "Performance Counter " + getId() + ": Error in file '" + path + "': " + format;
+        InternalLogger.INSTANCE.error(format, args);
+    }
+
+    protected File getProcessFile() {
+        return processFile;
     }
 }

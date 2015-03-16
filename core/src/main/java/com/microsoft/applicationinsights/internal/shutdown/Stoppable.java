@@ -19,10 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.config;
+package com.microsoft.applicationinsights.internal.shutdown;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * Created by gupele on 3/15/2015.
+ * Created by gupele on 3/3/2015.
  */
-interface XmlElementyWithType {
+public interface Stoppable {
+    void stop(long timeout, TimeUnit timeUnit);
 }

@@ -19,22 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.annotation;
+package com.microsoft.applicationinsights.internal.config;
 
 /**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
+ * The class defines the interface of builders that know
+ * to get the configuration file and create the data represented in {@link com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration}
  *
- * Created by gupele on 3/11/2015.
+ * Created by gupele on 3/15/2015.
  */
-
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PerformanceModule {
-    String value() default "BuiltIn";
+interface AppInsightsConfigurationBuilder {
+    ApplicationInsightsXmlConfiguration build(String filename);
 }

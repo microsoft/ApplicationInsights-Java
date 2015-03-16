@@ -25,10 +25,7 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -40,10 +37,12 @@ import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoCon
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
+import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 
 import com.google.common.base.Strings;
-
 /**
  * Initializer class for configuration instances.
  */
@@ -53,11 +52,12 @@ public enum TelemetryConfigurationFactory {
     // Default file name
     private final static String CONFIG_FILE_NAME = "ApplicationInsights.xml";
     private final static String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
+    private final static String BUILT_IN_NAME = "BuiltIn";
 
     private String fileToParse;
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
-    private AppInsightsConfigurationReader builder = new JaxbAppInsightsConfigurationBuilder();
+    private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
     TelemetryConfigurationFactory() {
         fileToParse = CONFIG_FILE_NAME;
@@ -76,7 +76,7 @@ public enum TelemetryConfigurationFactory {
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
-            ApplicationInsightsXmlConfiguration applicationInsights = builder.build(getConfigurationAsInputStream());
+            ApplicationInsightsXmlConfiguration applicationInsights = builder.build(getConfigurationFileName());
             if (applicationInsights == null) {
                 configuration.setChannel(new InProcessTelemetryChannel());
             }
@@ -167,6 +167,7 @@ public enum TelemetryConfigurationFactory {
 
             return true;
         } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.getMessage());
             return false;
         }
     }
@@ -183,15 +184,70 @@ public enum TelemetryConfigurationFactory {
                 new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
         for (String performanceModuleName : performanceModuleNames) {
             TelemetryModule module = createInstance(performanceModuleName, TelemetryModule.class);
-//            PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
             if (module != null) {
+                PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
+                if (!performanceConfigurationData.isUseBuiltIn() && BUILT_IN_NAME.equals(pmAnnotation.value())) {
+                    continue;
+                }
                 modules.add(module);
             } else {
                 InternalLogger.INSTANCE.error("Failed to create performance module: '%s'", performanceModuleName);
             }
         }
 
+        loadCustomJmxPCs(performanceConfigurationData.getJmxXmlElements());
+
         return modules;
+    }
+
+    /**
+     * The method will load the Jmx performance counters requested by the user to the system:
+     * 1. Build a map where the key is the Jmx object name and the value is a list of requested attributes.
+     * 2. Go through all the requested Jmx counters:
+     *      a. If the object name is not in the map, add it with an empty list
+     *         Else get the list
+     *      b. Add the attribute to the list.
+     *  3. Go through the map
+     *      For every entry (object name and attributes)
+     *          Build a {@link JmxMetricPerformanceCounter}
+     *          Register the Performance Counter in the {@link PerformanceCounterContainer}
+     *
+     * @param jmxXmlElements
+     */
+    private void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
+        try {
+            if (jmxXmlElements == null) {
+                return;
+            }
+
+            HashMap<String, Collection<JmxAttributeData>> data = new HashMap<String, Collection<JmxAttributeData>>();
+
+            // Build a map of object name to its requested attributes
+            for (JmxXmlElement jmxElement : jmxXmlElements) {
+                Collection<JmxAttributeData> collection = data.get(jmxElement.getObjectName());
+                if (collection == null) {
+                    collection = new ArrayList<JmxAttributeData>();
+                    data.put(jmxElement.getObjectName(), collection);
+                }
+
+                collection.add(new JmxAttributeData(jmxElement.getDisplayName(), jmxElement.getAttribute(), jmxElement.getType()));
+            }
+
+            // Register each entry in the performance container
+            for (Map.Entry<String, Collection<JmxAttributeData>> entry : data.entrySet()) {
+                try {
+                    if (PerformanceCounterContainer.INSTANCE.register(new JmxMetricPerformanceCounter(entry.getKey(), entry.getKey(), entry.getValue()))) {
+                        InternalLogger.INSTANCE.trace("Registered JMX performance counter '%s'", entry.getKey());
+                    } else {
+                        InternalLogger.INSTANCE.trace("Failed to register JMX performance counter '%s'", entry.getKey());
+                    }
+                } catch (Exception e) {
+                    InternalLogger.INSTANCE.error("Failed to register JMX performance counter '%s': '%s'", entry.getKey(), e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Failed to register JMX performance counters: '%s'", e.getMessage());
+        }
     }
 
     /**
@@ -223,7 +279,7 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    private String getConfigurationAsInputStream() {
+    private String getConfigurationFileName() {
 
         // Trying to load configuration as a resource.
         ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
@@ -239,12 +295,16 @@ public enum TelemetryConfigurationFactory {
                     String jarDirectory = jarFile.getParent();
                     String configurationPath = jarDirectory + File.separator + fileToParse;
 
+                    InternalLogger.INSTANCE.trace("Found configuration file: '%s'", configurationPath);
                     return configurationPath;
                 }
             } catch (URISyntaxException e) {
+                InternalLogger.INSTANCE.error("Failed to find configuration file: '%s'", e.getMessage());
             }
         } else {
-            return resource.getFile();
+            String configurationFile = resource.getFile();
+            InternalLogger.INSTANCE.trace("Found configuration file: '%s'", configurationFile);
+            return configurationFile;
         }
 
         return null;
@@ -371,7 +431,7 @@ public enum TelemetryConfigurationFactory {
         this.performanceCountersSection = performanceCountersSection;
     }
 
-    void setBuilder(AppInsightsConfigurationReader builder) {
+    void setBuilder(AppInsightsConfigurationBuilder builder) {
         this.builder = builder;
     }
 }

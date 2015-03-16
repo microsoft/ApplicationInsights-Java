@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 
@@ -30,14 +31,26 @@ import java.util.ArrayList;
  */
 @XmlRootElement(name="PerformanceCounters")
 public class PerformanceCountersXmlElement {
+    private boolean useBuiltIn = true;
+
     private ArrayList<JmxXmlElement> jmxXmlElements;
 
     public ArrayList<JmxXmlElement> getJmxXmlElements() {
         return jmxXmlElements;
     }
 
+    @XmlElementWrapper(name="Jmx")
     @XmlElement(name="Add")
     public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
         this.jmxXmlElements = jmxXmlElements;
+    }
+
+    public boolean isUseBuiltIn() {
+        return useBuiltIn;
+    }
+
+    @XmlElement(name="UseBuiltIn")
+    public void setUseBuiltIn(boolean useBuiltIn) {
+        this.useBuiltIn = useBuiltIn;
     }
 }
