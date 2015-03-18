@@ -205,6 +205,12 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     }
 
     private void setSessionCookie(HttpServletRequest req, HttpServletResponse res) {
+        if (res.isCommitted()) {
+            InternalLogger.INSTANCE.error("Response already committed by a different component. Failed to set session cookie.");
+
+            return;
+        }
+
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
         int sessionTimeout = getSessionTimeout(req);

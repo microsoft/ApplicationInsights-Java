@@ -58,6 +58,11 @@ public class RequestNameHandlerInterceptorAdapter extends HandlerInterceptorAdap
             }
 
             String requestName = generateRequestName(request, handler);
+
+            if (requestName == null) {
+                return true;
+            }
+
             context.getHttpRequestTelemetry().setName(requestName);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
@@ -74,11 +79,17 @@ public class RequestNameHandlerInterceptorAdapter extends HandlerInterceptorAdap
     // region Private
 
     private String generateRequestName(HttpServletRequest request, Object handler) {
-        String method = request.getMethod();
+
+        // Some handlers, such as built-in ResourceHttpRequestHandler are not of type HandlerMethod.
+        if (!(handler instanceof HandlerMethod)) {
+            return null;
+        }
 
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         String controller = handlerMethod.getBeanType().getSimpleName();
         String action = handlerMethod.getMethod().getName();
+
+        String method = request.getMethod();
 
         return String.format("%s %s/%s", method, controller, action);
     }
