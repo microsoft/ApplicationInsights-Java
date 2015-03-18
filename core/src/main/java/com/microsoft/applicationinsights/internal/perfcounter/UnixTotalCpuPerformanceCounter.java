@@ -76,7 +76,7 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
             }
 
             double totalCpuUsage = calculateTotalCpuUsage(array);
-            System.out.println(Constants.TOTAL_CPU_PC_CATEGORY_NAME + " " + Constants.PROCESS_IO_PC_COUNTER_NAME + " " + totalCpuUsage);
+            System.out.println(Constants.TOTAL_CPU_PC_CATEGORY_NAME + " " + Constants.CPU_PC_COUNTER_NAME + " " + totalCpuUsage);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     Constants.TOTAL_CPU_PC_CATEGORY_NAME,
                     Constants.CPU_PC_COUNTER_NAME,
