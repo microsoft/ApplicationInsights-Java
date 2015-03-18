@@ -31,7 +31,7 @@ public final class HttpRequestTelemetryTest {
 
     @Test
     public void testDefaultCtor() {
-        HttpRequestTelemetry requestTelemetry = new HttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         assertNotNull(requestTelemetry.getTimestamp());
         assertEquals(requestTelemetry.getResponseCode(), Integer.toString(HttpStatus.SC_OK));
@@ -41,7 +41,7 @@ public final class HttpRequestTelemetryTest {
     @Test
     public void testParameterizedCtor() {
         Date date = new Date();
-        HttpRequestTelemetry requestTelemetry = new HttpRequestTelemetry("mockName", date, 1010, "200", true);
+        RequestTelemetry requestTelemetry = new RequestTelemetry("mockName", date, 1010, "200", true);
 
         assertEquals(requestTelemetry.getName(), "mockName");
         assertEquals(requestTelemetry.getTimestamp(), date);
@@ -53,7 +53,7 @@ public final class HttpRequestTelemetryTest {
     @Test
     public void testSetCode() {
         Date date = new Date();
-        HttpRequestTelemetry requestTelemetry = new HttpRequestTelemetry("mockName", date, 1010, "200", true);
+        RequestTelemetry requestTelemetry = new RequestTelemetry("mockName", date, 1010, "200", true);
         requestTelemetry.setResponseCode("400");
 
         assertEquals(requestTelemetry.getResponseCode(), "400");

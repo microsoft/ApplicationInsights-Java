@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
@@ -45,7 +45,7 @@ public class WebSessionTelemetryInitializer extends WebTelemetryInitializerBase 
             return;
         }
 
-        HttpRequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         SessionContext requestSessionContext = requestTelemetry.getContext().getSession();
 
         session.setId(requestSessionContext.getId());

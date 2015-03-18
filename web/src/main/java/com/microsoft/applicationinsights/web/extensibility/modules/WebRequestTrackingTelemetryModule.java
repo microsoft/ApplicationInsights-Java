@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
@@ -66,7 +66,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
         try {
             RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-            HttpRequestTelemetry telemetry = context.getHttpRequestTelemetry();
+            RequestTelemetry telemetry = context.getHttpRequestTelemetry();
 
             HttpServletRequest request = (HttpServletRequest) req;
             String method = request.getMethod();
@@ -111,7 +111,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
         try {
             RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-            HttpRequestTelemetry telemetry = context.getHttpRequestTelemetry();
+            RequestTelemetry telemetry = context.getHttpRequestTelemetry();
 
             long endTime = new Date().getTime();
 

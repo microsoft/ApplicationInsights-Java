@@ -28,7 +28,7 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 @SuppressWarnings("ALL")
@@ -76,7 +76,7 @@ public class AiCore {
         System.out.println("[4] Metric                -- metric:\"Test time\", value=17.0, Max=20.0, Min=10.0, Count=100 and STDV=2.43");
 
         // Http Request Telemetry
-        HttpRequestTelemetry rt = new HttpRequestTelemetry("ping", new Date(), 4711, "200", true);
+        RequestTelemetry rt = new RequestTelemetry("ping", new Date(), 4711, "200", true);
         rt.setHttpMethod("GET");
         rt.setUrl("http://tempuri.org/ping");
         appInsights.track(rt);

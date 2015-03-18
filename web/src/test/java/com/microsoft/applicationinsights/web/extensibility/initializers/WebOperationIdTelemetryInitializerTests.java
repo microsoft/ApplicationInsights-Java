@@ -26,8 +26,7 @@ import java.util.List;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -77,9 +76,9 @@ public class WebOperationIdTelemetryInitializerTests {
     public void testRequestTelemetryInitializedWithOperationId() throws Exception {
         sendRequestAndGetResponseCookie();
 
-        List<HttpRequestTelemetry> items = channel.getTelemetryItems(HttpRequestTelemetry.class);
+        List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
         assertEquals(1, items.size());
-        HttpRequestTelemetry requestTelemetry = items.get(0);
+        RequestTelemetry requestTelemetry = items.get(0);
 
         Assert.assertEquals("Operation id not match", requestTelemetry.getId(), requestTelemetry.getContext().getOperation().getId());
     }
@@ -98,7 +97,7 @@ public class WebOperationIdTelemetryInitializerTests {
     public void testInitializerDoesNotOverrideCustomerOperationId() {
         String customerId = "CustomerID";
 
-        HttpRequestTelemetry requestTelemetry = new HttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
         OperationContext operationContext = requestTelemetry.getContext().getOperation();
         operationContext.setId(customerId);
 

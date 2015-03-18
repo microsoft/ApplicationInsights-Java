@@ -31,7 +31,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
@@ -89,9 +89,9 @@ public class WebRequestTrackingTelemetryModuleTests {
     public void testHttpRequestTrackedSuccessfully() throws Exception {
         sendRequestAndGetResponseCookie();
 
-        List<HttpRequestTelemetry> items = channel.getTelemetryItems(HttpRequestTelemetry.class);
+        List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
         assertEquals(1, items.size());
-        HttpRequestTelemetry requestTelemetry = items.get(0);
+        RequestTelemetry requestTelemetry = items.get(0);
 
         assertEquals(String.valueOf(HttpStatus.SC_OK), requestTelemetry.getResponseCode());
         assertEquals(HttpMethods.GET + " /", requestTelemetry.getName());
@@ -133,9 +133,9 @@ public class WebRequestTrackingTelemetryModuleTests {
     public void testUserAgentIsBeingSet() throws Exception {
         sendRequestAndGetResponseCookie();
 
-        List<HttpRequestTelemetry> items = channel.getTelemetryItems(HttpRequestTelemetry.class);
+        List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
         assertEquals(1, items.size());
-        HttpRequestTelemetry requestTelemetry = items.get(0);
+        RequestTelemetry requestTelemetry = items.get(0);
 
         Assert.assertEquals(HttpHelper.TEST_USER_AGENT, requestTelemetry.getContext().getUser().getUserAgent());
     }
@@ -151,7 +151,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ServletRequest servletRequest = createServletRequest(queryString, pathVariable);
         defaultModule.onBeginRequest(servletRequest, null);
 
-        HttpRequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals("Request name not valid.", DEFAULT_REQUEST_NAME, requestTelemetry.getName());
     }
 

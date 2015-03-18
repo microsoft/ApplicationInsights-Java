@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -50,11 +50,11 @@ public class WebOperationNameTelemetryInitializer extends WebTelemetryInitialize
     // region Private
 
     private void updateRequestNameIfRequestTelemetry(Telemetry telemetry, String operationName) {
-        if (!(telemetry instanceof HttpRequestTelemetry)) {
+        if (!(telemetry instanceof RequestTelemetry)) {
             return;
         }
 
-        HttpRequestTelemetry requestTelemetry = (HttpRequestTelemetry)telemetry;
+        RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
 
         // We only update the request telemetry name if not already provided by the user.
         if (requestTelemetry != null && Strings.isNullOrEmpty(requestTelemetry.getName())) {

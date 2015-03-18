@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.web.extensibility.initializers;
 import java.util.Date;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
@@ -46,7 +46,7 @@ public class WebUserTelemetryInitializer extends WebTelemetryInitializerBase {
             return;
         }
 
-        HttpRequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         UserContext requestUserContext = requestTelemetry.getContext().getUser();
 
         userContext.setId(requestUserContext.getId());

@@ -37,15 +37,15 @@ import org.apache.http.HttpStatus;
  * Encapsulates information about a web request handled by the application.
  *
  * You can send information about requests processed by your web application to Application Insights by
- * passing an instance of this class to the 'trackHttpRequest' method of the {@link com.microsoft.applicationinsights.TelemetryClient}
+ * passing an instance of this class to the 'trackRequest' method of the {@link com.microsoft.applicationinsights.TelemetryClient}
  */
-public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
+public final class RequestTelemetry extends BaseTelemetry<RequestData> {
     private final RequestData data;
 
     /**
      * Initializes a new instance of the HttpRequestTelemetry class.
      */
-    public HttpRequestTelemetry() {
+    public RequestTelemetry() {
         this.data = new RequestData();
         initialize(this.data.getProperties());
         setId(LocalStringsUtils.generateRandomIntegerId());
@@ -65,7 +65,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
      * @param responseCode The HTTP response code.
      * @param success 'true' if the request was a success, 'false' otherwise.
      */
-    public HttpRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
+    public RequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
         this(name, timestamp, new Duration(duration), responseCode, success);
     }
 
@@ -78,7 +78,7 @@ public final class HttpRequestTelemetry extends BaseTelemetry<RequestData> {
      * @param responseCode The HTTP response code.
      * @param success 'true' if the request was a success, 'false' otherwise.
      */
-    public HttpRequestTelemetry(String name, Date timestamp, Duration duration, String responseCode, boolean success) {
+    public RequestTelemetry(String name, Date timestamp, Duration duration, String responseCode, boolean success) {
         this.data = new RequestData();
         initialize(this.data.getProperties());
 

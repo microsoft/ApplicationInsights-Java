@@ -288,8 +288,8 @@ public final class TelemetryClientTests {
 
     @Test
     public void testTrackHttpRequestWithHttpRequestTelemetry() {
-        HttpRequestTelemetry telemetry = new HttpRequestTelemetry("Name", new Date(), 1, "200", true);
-        client.trackHttpRequest(telemetry);
+        RequestTelemetry telemetry = new RequestTelemetry("Name", new Date(), 1, "200", true);
+        client.trackRequest(telemetry);
 
         verifyAndGetLastEventSent();
     }
