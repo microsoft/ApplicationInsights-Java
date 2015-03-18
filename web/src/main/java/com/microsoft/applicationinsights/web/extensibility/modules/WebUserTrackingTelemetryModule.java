@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.HttpCookieFactory;
@@ -141,6 +142,12 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
      * @param context The context.
      */
     private void setUserCookie(ServletResponse res, RequestTelemetryContext context) {
+        if (res.isCommitted()) {
+            InternalLogger.INSTANCE.error("Response already committed by a different component. Failed to set user cookie.");
+
+            return;
+        }
+
         Cookie cookie = HttpCookieFactory.generateUserHttpCookie(context);
 
         HttpServletResponse response = (HttpServletResponse)res;

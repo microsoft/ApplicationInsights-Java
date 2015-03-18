@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
@@ -37,11 +36,9 @@ public abstract class WebTelemetryInitializerBase implements TelemetryInitialize
      */
     @Override
     public void initialize(Telemetry telemetry) {
-        if (ThreadContext.getRequestTelemetryContext() == null) {
-            InternalLogger.INSTANCE.error(
-                "Request telemetry context hasn't been set. Skipping telemetry initializer %s.",
-                this.getClass().getSimpleName());
 
+        // Some threads may not have TLS initialized, such as performance counters mechanism threads.
+        if (ThreadContext.getRequestTelemetryContext() == null) {
             return;
         }
 
