@@ -47,7 +47,6 @@ public final class Constants {
     public final static String PROCESS_IO_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessIOPerformanceCounter";
     public final static String PROCESS_IO_PC_COUNTER_NAME = "IO Data Bytes/sec";
 
-    public final static double  MEGA_BYTE = 1024L * 1024L;
     public final static double DEFAULT_DOUBLE_VALUE = -1.0;
 
     private Constants() {

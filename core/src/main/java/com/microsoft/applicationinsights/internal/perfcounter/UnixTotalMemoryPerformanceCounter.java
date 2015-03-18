@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  */
 final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static String MEM_FILE = "/proc/meminfo";
+    private final static double KB = 1024.0;
 
     public UnixTotalMemoryPerformanceCounter() {
         super(MEM_FILE);
@@ -70,7 +71,7 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
                 reader.process(line);
             }
 
-            result = reader.getValue();
+            result = reader.getValue() * KB;
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;
             logError("Error while parsing file: '%s'", e.getMessage());

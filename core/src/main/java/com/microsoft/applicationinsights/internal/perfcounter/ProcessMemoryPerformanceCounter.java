@@ -53,14 +53,14 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
         MemoryUsage heapMemoryUsage = memoryData.getHeapMemoryUsage();
         MemoryUsage nonHeapMemoryUsage = memoryData.getNonHeapMemoryUsage();
 
-        double memoryMB = (double)heapMemoryUsage.getUsed() / Constants.MEGA_BYTE;
-        memoryMB += (double)nonHeapMemoryUsage.getUsed() / Constants.MEGA_BYTE;
-        System.out.println(categoryName + " " + Constants.PROCESS_MEM_PC_COUNTER_NAME + " " + memoryMB);
+        double memoryBytes = (double)heapMemoryUsage.getUsed();
+        memoryBytes += (double)nonHeapMemoryUsage.getUsed();
+        System.out.println(categoryName + " " + Constants.PROCESS_MEM_PC_COUNTER_NAME + " " + memoryBytes);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 categoryName,
                 Constants.PROCESS_MEM_PC_COUNTER_NAME,
                 "",
-                memoryMB);
+                memoryBytes);
 
         telemetryClient.track(telemetry);
     }
