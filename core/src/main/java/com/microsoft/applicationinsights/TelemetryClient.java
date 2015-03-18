@@ -39,7 +39,7 @@ import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionHandledAt;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
@@ -308,10 +308,10 @@ public class TelemetryClient {
             return;
         }
 
-        track(new HttpRequestTelemetry(name, timestamp, duration, responseCode, success));
+        track(new RequestTelemetry(name, timestamp, duration, responseCode, success));
     }
 
-    public void trackHttpRequest(HttpRequestTelemetry request) {
+    public void trackRequest(RequestTelemetry request) {
         track(request);
     }
 

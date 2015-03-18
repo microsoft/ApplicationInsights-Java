@@ -30,7 +30,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
@@ -60,7 +60,7 @@ public class RequestNameInterceptorTests {
     public void testInitialize() {
         RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
-        HttpRequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         requestTelemetry.setHttpMethod(HTTP_METHOD);
 
         // Setting mock for action context
@@ -73,7 +73,7 @@ public class RequestNameInterceptorTests {
     public void testInterceptorSetRequestNameCorrectly() throws Exception {
         interceptor.intercept(actionInvocation);
 
-        HttpRequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals(REQUEST_NAME, requestTelemetry.getName());
     }
 

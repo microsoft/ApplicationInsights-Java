@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.junit.AfterClass;
@@ -104,7 +104,7 @@ public class WebSessionTrackingTelemetryModuleTests {
     public void testIsFirstSessionIsPopulatedOnFirstSession() throws Exception {
         HttpHelper.sendRequestAndGetResponseCookie();
 
-        HttpRequestTelemetry requestTelemetry = channel.getTelemetryItems(HttpRequestTelemetry.class).get(0);
+        RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
 
         Assert.assertTrue(requestTelemetry.getContext().getSession().getIsFirst());
     }

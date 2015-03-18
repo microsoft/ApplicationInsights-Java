@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
@@ -37,7 +37,7 @@ public class WebUserAgentTelemetryInitializer extends WebTelemetryInitializerBas
      */
     @Override
     protected void onInitializeTelemetry(Telemetry telemetry) {
-        HttpRequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
 
         String userAgent = requestTelemetry.getContext().getUser().getUserAgent();
         telemetry.getContext().getUser().setUserAgent(userAgent);

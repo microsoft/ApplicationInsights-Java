@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 
@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
  * Created by yonisha on 2/2/2015.
  */
 public class RequestTelemetryContext {
-    private HttpRequestTelemetry requestTelemetry;
+    private RequestTelemetry requestTelemetry;
     private long requestStartTimeTicks;
     private SessionCookie sessionCookie;
     private UserCookie userCookie;
@@ -40,7 +40,7 @@ public class RequestTelemetryContext {
      * @param ticks The time in ticks
      */
     public RequestTelemetryContext(long ticks) {
-        requestTelemetry = new HttpRequestTelemetry();
+        requestTelemetry = new RequestTelemetry();
         requestStartTimeTicks = ticks;
     }
 
@@ -48,7 +48,7 @@ public class RequestTelemetryContext {
      * Gets the http request telemetry associated with the context.
      * @return The http request telemetry.
      */
-    public HttpRequestTelemetry getHttpRequestTelemetry() {
+    public RequestTelemetry getHttpRequestTelemetry() {
         return requestTelemetry;
     }
 

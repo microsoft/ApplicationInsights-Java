@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.telemetry.HttpRequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -24,7 +24,7 @@ public class WebSessionTelemetryInitializerTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         // Set session ID for the http request.
-        HttpRequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
+        RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         requestTelemetry.getContext().getSession().setId(REQUEST_SESSION_ID);
         requestTelemetry.getContext().getSession().setIsFirst(true);
     }
