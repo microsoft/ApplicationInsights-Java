@@ -42,6 +42,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
     private final static double NANOS_IN_SECOND = 1000000000.0;
 
     private final String categoryName;
+    private double prevProcessIO;
 
     private long lastCollectionInNanos = -1;
 
@@ -59,21 +60,25 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
     public void report(TelemetryClient telemetryClient) {
         long currentCollectionInNanos = System.nanoTime();
 
+        double processIO = getCurrentIOForCurrentProcess();
         if (lastCollectionInNanos != -1) {
             // Not the first time
 
-            double processIO = getCurrentIOForCurrentProcess();
             double timeElapsedInSeconds = ((double)(currentCollectionInNanos - lastCollectionInNanos)) / NANOS_IN_SECOND;
 
+            double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
+            prevProcessIO = processIO;
+            System.out.println(categoryName + " " + Constants.PROCESS_IO_PC_COUNTER_NAME + " " + value);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     categoryName,
                     Constants.PROCESS_IO_PC_COUNTER_NAME,
                     "",
-                    processIO / timeElapsedInSeconds);
+                    value);
 
             telemetryClient.track(telemetry);
         }
 
+        prevProcessIO = processIO;
         lastCollectionInNanos = currentCollectionInNanos;
     }
 

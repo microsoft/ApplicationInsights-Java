@@ -39,7 +39,7 @@ abstract class AbstractUnixPerformanceCounter extends AbstractPerformanceCounter
     private final String path;
 
     protected AbstractUnixPerformanceCounter(String path) {
-        Preconditions.checkState(SystemInformation.INSTANCE.isUnix(), "This performance counter must be activated in Unix environment.");
+        Preconditions.checkArgument(SystemInformation.INSTANCE.isUnix(), "This performance counter must be activated in Unix environment.");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(path), "path should be non null, non empty value.");
 
         this.path = path;
