@@ -48,7 +48,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
 
     public UnixProcessIOPerformanceCounter() {
         super("/proc/" + SystemInformation.INSTANCE.getProcessId() + "/io");
-        categoryName = getProcessCategoryName();
+        categoryName = "Process"; // getProcessCategoryName();
     }
 
     @Override
@@ -72,7 +72,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     categoryName,
                     Constants.PROCESS_IO_PC_COUNTER_NAME,
-                    "",
+                    SystemInformation.INSTANCE.getProcessId(),
                     value);
 
             telemetryClient.track(telemetry);

@@ -26,6 +26,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
@@ -38,7 +39,7 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
     private final String categoryName;
 
     public ProcessMemoryPerformanceCounter() {
-        categoryName = getProcessCategoryName();
+        categoryName = "Process";// getProcessCategoryName();
     }
 
     @Override
@@ -59,7 +60,7 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 categoryName,
                 Constants.PROCESS_MEM_PC_COUNTER_NAME,
-                "",
+                SystemInformation.INSTANCE.getProcessId(),
                 memoryBytes);
 
         telemetryClient.track(telemetry);

@@ -80,7 +80,7 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     Constants.TOTAL_CPU_PC_CATEGORY_NAME,
                     Constants.CPU_PC_COUNTER_NAME,
-                    "",
+                    "_Total",
                     totalCpuUsage);
 
             telemetryClient.track(telemetry);
