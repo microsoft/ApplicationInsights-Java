@@ -48,6 +48,7 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
     @Override
     public void report(TelemetryClient telemetryClient) {
         double totalMemoryUsage = getTotalMemoryUsage();
+        System.out.println(Constants.TOTAL_MEMORY_PC_CATEGORY_NAME + " " + Constants.TOTAL_MEMORY_PC_COUNTER_NAME + " " + totalMemoryUsage);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
                 Constants.TOTAL_MEMORY_PC_COUNTER_NAME,

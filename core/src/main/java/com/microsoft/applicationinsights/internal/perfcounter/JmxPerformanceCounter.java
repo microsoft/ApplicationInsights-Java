@@ -43,6 +43,7 @@ public final class JmxPerformanceCounter extends AbstractJmxPerformanceCounter {
 
     @Override
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
+        System.out.println(categoryName + " " + displayName + " " + value);
         Telemetry telemetry = new PerformanceCounterTelemetry(categoryName, displayName, "", value);
         telemetryClient.track(telemetry);
     }
