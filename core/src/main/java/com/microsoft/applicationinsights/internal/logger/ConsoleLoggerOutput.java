@@ -25,12 +25,14 @@ package com.microsoft.applicationinsights.internal.logger;
  * Created by gupele on 1/14/2015.
  */
 public final class ConsoleLoggerOutput implements LoggerOutput {
+    private final static String PREFIX = "AI: ";
+
     ConsoleLoggerOutput() {
     }
 
     @Override
     public void log(String message) {
-        System.err.println(message);
+        System.err.println(PREFIX + message);
     }
 
     @Override
