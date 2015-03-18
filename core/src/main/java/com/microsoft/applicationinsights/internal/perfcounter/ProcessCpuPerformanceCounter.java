@@ -39,12 +39,10 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
     private final int numberOfCpus;
 
     private long prevUpTime, prevProcessCpuTime;
-    private final String categoryName;
 
     public ProcessCpuPerformanceCounter() {
         com.sun.management.OperatingSystemMXBean operatingSystemMXBean = (com.sun.management.OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
         numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
-        categoryName = "Process";// getProcessCategoryName();
     }
 
     @Override
@@ -56,9 +54,9 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
     public void report(TelemetryClient telemetryClient) {
         double processCpuUsage = getProcessCpuUsage();
 
-        System.out.println(categoryName + " " + Constants.CPU_PC_COUNTER_NAME + " " + processCpuUsage);
+        System.out.println(getProcessCategoryName() + " " + Constants.CPU_PC_COUNTER_NAME + " " + processCpuUsage);
         Telemetry telemetry = new PerformanceCounterTelemetry(
-                categoryName,
+                getProcessCategoryName(),
                 Constants.CPU_PC_COUNTER_NAME,
                 SystemInformation.INSTANCE.getProcessId(),
                 processCpuUsage);

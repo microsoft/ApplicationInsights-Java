@@ -36,10 +36,8 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  * Created by gupele on 3/3/2015.
  */
 final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
-    private final String categoryName;
 
     public ProcessMemoryPerformanceCounter() {
-        categoryName = "Process";// getProcessCategoryName();
     }
 
     @Override
@@ -56,9 +54,9 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
 
         double memoryBytes = (double)heapMemoryUsage.getUsed();
         memoryBytes += (double)nonHeapMemoryUsage.getUsed();
-        System.out.println(categoryName + " " + Constants.PROCESS_MEM_PC_COUNTER_NAME + " " + memoryBytes);
+        System.out.println(getProcessCategoryName() + " " + Constants.PROCESS_MEM_PC_COUNTER_NAME + " " + memoryBytes / (1024 * 1024) + " MB");
         Telemetry telemetry = new PerformanceCounterTelemetry(
-                categoryName,
+                getProcessCategoryName(),
                 Constants.PROCESS_MEM_PC_COUNTER_NAME,
                 SystemInformation.INSTANCE.getProcessId(),
                 memoryBytes);

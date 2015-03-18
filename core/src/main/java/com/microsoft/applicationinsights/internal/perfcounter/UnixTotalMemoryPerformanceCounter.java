@@ -48,18 +48,18 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        double totalMemoryUsage = getTotalMemoryUsage();
-        System.out.println(Constants.TOTAL_MEMORY_PC_CATEGORY_NAME + " " + Constants.TOTAL_MEMORY_PC_COUNTER_NAME + " " + totalMemoryUsage);
+        double totalAvailableMemory = getTotalAvailableMemory();
+        System.out.println(Constants.TOTAL_MEMORY_PC_CATEGORY_NAME + " " + Constants.TOTAL_MEMORY_PC_COUNTER_NAME + " " + totalAvailableMemory / (1024.0 * 1024.0) + " MB");
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
                 Constants.TOTAL_MEMORY_PC_COUNTER_NAME,
                 "",
-                totalMemoryUsage);
+                totalAvailableMemory);
 
         telemetryClient.track(telemetry);
     }
 
-    private double getTotalMemoryUsage() {
+    private double getTotalAvailableMemory() {
         BufferedReader bufferedReader = null;
 
         double result = Constants.DEFAULT_DOUBLE_VALUE;
@@ -71,6 +71,7 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
                 reader.process(line);
             }
 
+            // The value we get is in KB so we need to translate that to bytes.
             result = reader.getValue() * KB;
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;

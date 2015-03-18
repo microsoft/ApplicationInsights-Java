@@ -41,14 +41,12 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static double NANOS_IN_SECOND = 1000000000.0;
 
-    private final String categoryName;
     private double prevProcessIO;
 
     private long lastCollectionInNanos = -1;
 
     public UnixProcessIOPerformanceCounter() {
         super("/proc/" + SystemInformation.INSTANCE.getProcessId() + "/io");
-        categoryName = "Process"; // getProcessCategoryName();
     }
 
     @Override
@@ -68,9 +66,9 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
 
             double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
             prevProcessIO = processIO;
-            System.out.println(categoryName + " " + Constants.PROCESS_IO_PC_COUNTER_NAME + " " + value);
+            System.out.println(getProcessCategoryName() + " " + Constants.PROCESS_IO_PC_COUNTER_NAME + " " + value);
             Telemetry telemetry = new PerformanceCounterTelemetry(
-                    categoryName,
+                    getProcessCategoryName(),
                     Constants.PROCESS_IO_PC_COUNTER_NAME,
                     SystemInformation.INSTANCE.getProcessId(),
                     value);

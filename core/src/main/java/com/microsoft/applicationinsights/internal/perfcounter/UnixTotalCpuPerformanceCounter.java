@@ -25,10 +25,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+
+import com.google.common.base.Strings;
 
 /**
  * The class supplies the overall cpu usage of the machine.
@@ -37,6 +38,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  */
 final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static String STAT_FILE = "/proc/stat";
+    private final static String INSTANCE_NAME_TOTAL = "_Total";
 
     private long[] prevCpuCounters;
     private long prevTotalCpuValue;
@@ -76,11 +78,11 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
             }
 
             double totalCpuUsage = calculateTotalCpuUsage(array);
-            System.out.println(Constants.TOTAL_CPU_PC_CATEGORY_NAME + " " + Constants.CPU_PC_COUNTER_NAME + " " + totalCpuUsage);
+            System.out.println(Constants.TOTAL_CPU_PC_CATEGORY_NAME + " " + Constants.CPU_PC_COUNTER_NAME + " " + INSTANCE_NAME_TOTAL + " " + totalCpuUsage);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     Constants.TOTAL_CPU_PC_CATEGORY_NAME,
                     Constants.CPU_PC_COUNTER_NAME,
-                    "_Total",
+                    INSTANCE_NAME_TOTAL,
                     totalCpuUsage);
 
             telemetryClient.track(telemetry);

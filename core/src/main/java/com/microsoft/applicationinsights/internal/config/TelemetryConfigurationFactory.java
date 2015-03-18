@@ -230,6 +230,21 @@ public enum TelemetryConfigurationFactory {
                     data.put(jmxElement.getObjectName(), collection);
                 }
 
+                if (Strings.isNullOrEmpty(jmxElement.getObjectName())) {
+                    InternalLogger.INSTANCE.error("JMX object name is empty, will be ignored");
+                    continue;
+                }
+
+                if (Strings.isNullOrEmpty(jmxElement.getAttribute())) {
+                    InternalLogger.INSTANCE.error("JMX attribute is empty for '%s', will be ignored", jmxElement.getObjectName());
+                    continue;
+                }
+
+                if (Strings.isNullOrEmpty(jmxElement.getDisplayName())) {
+                    InternalLogger.INSTANCE.error("JMX display name is empty for '%s', will be ignored", jmxElement.getObjectName());
+                    continue;
+                }
+
                 collection.add(new JmxAttributeData(jmxElement.getDisplayName(), jmxElement.getAttribute(), jmxElement.getType()));
             }
 
