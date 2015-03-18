@@ -54,4 +54,9 @@ public interface TelemetryChannel {
      * @param timeUnit The units of the 'timeout' parameter
      */
     void stop(long timeout, TimeUnit timeUnit);
+
+    /**
+     * Flushes the data that the channel might have internally.
+     */
+    void flush();
 }

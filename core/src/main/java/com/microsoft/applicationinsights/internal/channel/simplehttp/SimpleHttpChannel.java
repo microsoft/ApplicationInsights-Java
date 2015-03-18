@@ -120,5 +120,9 @@ final class SimpleHttpChannel implements TelemetryChannel
     public void stop(long timeout, TimeUnit timeUnit) {
     }
 
+    @Override
+    public void flush() {
+    }
+
     private boolean developerMode = false;
 }

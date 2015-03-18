@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
@@ -169,15 +170,28 @@ public final class TelemetryBuffer {
                 if (!sender.sendNow(prepareTelemetriesForSend())) {
                     // 'prepareTelemetriesForSend' already created a new container
                     // so basically we have nothing to do, the old container is lost
-                    // TODO: internal log
+                    InternalLogger.INSTANCE.error("Failed to send buffer data to network");
                 }
             } else if (currentSize == 1) {
                 if (!sender.scheduleSend(new TelemetryBufferTelemetriesFetcher(generation), transmitBufferTimeoutInSeconds, TimeUnit.SECONDS)) {
                     // We cannot schedule send so we give up the Telemetry
                     // The reason for this is that in case the maximum buffer size is greater than 2
                     // than in case a new Telemetry arrives it won't trigger the schedule and might be lost too
-                    // TODO: internal log
+                    InternalLogger.INSTANCE.error("Failed to schedule send of the buffer to network");
                     telemetries.clear();
+                }
+            }
+        }
+    }
+
+    /**
+     * The method will flush the telemetries currently in the buffer to the {@link com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter}
+     */
+    public void flush() {
+        synchronized (lock) {
+            if (telemetries.size() != 0) {
+                if (!sender.sendNow(prepareTelemetriesForSend())) {
+                    InternalLogger.INSTANCE.error("Failed to flush buffer data to network");
                 }
             }
         }

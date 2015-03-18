@@ -66,4 +66,8 @@ public class StdOutChannel implements TelemetryChannel
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
     }
+
+    @Override
+    public void flush() {
+    }
 }

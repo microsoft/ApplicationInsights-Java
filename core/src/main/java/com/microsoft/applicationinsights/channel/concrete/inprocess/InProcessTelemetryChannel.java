@@ -173,6 +173,14 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
     }
 
+    /**
+     * Flushes the data that the channel might have internally.
+     */
+    @Override
+    public void flush() {
+        telemetryBuffer.flush();
+    }
+
     private void writeTelemetryToDebugOutput(Telemetry telemetry) {
         InternalLogger.INSTANCE.trace("InProcessTelemetryChannel sending telemetry");
     }

@@ -68,6 +68,10 @@ public enum MockTelemetryChannel implements TelemetryChannel {
 
     }
 
+    @Override
+    public void flush() {
+    }
+
     public void reset() {
         telemetryItems.clear();
     }

@@ -336,6 +336,13 @@ public final class TelemetryClientTests {
         client.track(telemetry);
     }
 
+    @Test
+    public void testFlush() {
+        client.flush();
+
+        Mockito.verify(channel, Mockito.times(1)).flush();
+    }
+
     // endregion Track tests
 
     // region Private methods

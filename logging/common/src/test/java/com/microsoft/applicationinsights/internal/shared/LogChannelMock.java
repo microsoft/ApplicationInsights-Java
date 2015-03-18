@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.shared;
 
+import java.lang.Override;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -51,5 +52,9 @@ public final class LogChannelMock implements TelemetryChannel {
 
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
+    }
+
+    @Override
+    public void flush() {
     }
 }
