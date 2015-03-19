@@ -130,7 +130,9 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         } else {
             if (sessionCookie.isSessionExpired()) {
                 startNewSession = true;
-                trackSessionStateWithRequestSessionId(SessionState.End, sessionCookie.getSessionId());
+
+                // Disabling for now. Will be back in future releases.
+                // trackSessionStateWithRequestSessionId(SessionState.End, sessionCookie.getSessionId());
             } else {
                 // Update ai context with session details.
                 getTelemetrySessionContext(context).setId(sessionCookie.getSessionId());
