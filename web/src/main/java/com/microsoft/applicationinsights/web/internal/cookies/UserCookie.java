@@ -106,7 +106,7 @@ public class UserCookie extends com.microsoft.applicationinsights.web.internal.c
             userId = split[CookieFields.USER_ID.getValue()];
             acquisitionDate = DateTimeUtils.parseRoundTripDateString(split[CookieFields.ACQUISITION_DATE.getValue()]);
         } catch (Exception e) {
-            String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.getMessage());
+            String errorMessage = String.format("Failed to parse user cookie with exception: %s", e.getMessage());
 
             // TODO: dedicated exception
             throw new Exception(errorMessage);
