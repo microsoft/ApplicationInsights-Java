@@ -75,7 +75,7 @@ public class Cookie {
         try {
             instance = eClass.getConstructor(javax.servlet.http.Cookie.class).newInstance(httpCookie);
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create cookie with error: " + e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s cookie with error: %s", cookieName, e.getMessage());
         }
 
         return instance;
