@@ -55,7 +55,7 @@ public class LogTelemetryClientProxyTests {
     // region Initialization
 
     @Before
-    public void Before() {
+    public void before() {
         this.telemetryClientMock = Mockito.mock(TelemetryClient.class);
         this.telemetriesSent = new LinkedList<Telemetry>();
         setupTelemetryClientMock(this.telemetriesSent);

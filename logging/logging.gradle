@@ -20,6 +20,7 @@
  */
 
 apply from: "$buildScriptsDir/publishing.gradle"
+apply plugin: "findbugs"
 
 ext {
     loggingFrameworkArtifactAlias = ""
