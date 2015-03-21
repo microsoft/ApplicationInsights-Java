@@ -37,7 +37,8 @@ public class ApplicationInsightsAppender extends AbstractAppender {
     //region Members
 
     private boolean isInitialized = false;
-    private TelemetryClientProxy telemetryClientProxy;
+    private transient TelemetryClientProxy telemetryClientProxy;
+    private static final long serialVersionUID = 1L;
 
     //endregion Members
 
