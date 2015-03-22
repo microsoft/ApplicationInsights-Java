@@ -24,8 +24,6 @@ package com.microsoft.applicationinsights.web.internal.cookies;
 import java.util.Calendar;
 import java.util.Date;
 import javax.servlet.http.Cookie;
-
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
 /**
@@ -35,6 +33,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
 
     // region Consts
 
+    private static final int UPDATE_TIMEOUT_IN_MINUTES = 5;
     public static final String COOKIE_NAME = "ai_session";
     public static final int SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES = 30;
 
@@ -121,16 +120,33 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
 
     /**
      * Determines if the session has expired.
+     * @param sessionTimeoutInMinutes The session timeout in minutes.
      * @return True if the session has expired, false otherwise.
      */
-    public boolean isSessionExpired() {
+    public boolean isSessionExpired(int sessionTimeoutInMinutes) {
         Date expirationDate = DateTimeUtils.addToDate(
-                this.getSessionAcquisitionDate(),
+                this.getSessionRenewalDate(),
                 Calendar.MINUTE,
-                SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES);
+                sessionTimeoutInMinutes);
         Date now = new Date();
 
         return  now.after(expirationDate);
+    }
+
+    /**
+     * Returns a value indicating whether the session cookie is up-to-date.
+     * Session cookie is considered up-to-date when the last renewal time is less than
+     * {@literal UPDATE_TIMEOUT_IN_MINUTES} minutes.
+     * @return True if the session cookie up-to-date.
+     */
+    public boolean isSessionCookieUpToDate() {
+        Date expectedRenewalTime = DateTimeUtils.addToDate(
+                this.getSessionRenewalDate(),
+                Calendar.MINUTE,
+                UPDATE_TIMEOUT_IN_MINUTES);
+        Date now = new Date();
+
+        return now.before(expectedRenewalTime);
     }
 
     // endregion Public

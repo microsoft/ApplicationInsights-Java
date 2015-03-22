@@ -164,6 +164,16 @@ public class WebSessionTrackingTelemetryModuleTests {
         Assert.assertNotNull("Session ID shouldn't be null", telemetry.getContext().getSession().getId());
     }
 
+    @Test
+    public void testWhenCookieNotUpToDateUpdatedCookieReturned() throws Exception {
+        sessionCookieFormatted = HttpHelper.getFormattedSessionCookieWithOldTime(6);
+        String originalSessionId = HttpHelper.getSessionIdFromCookie(sessionCookieFormatted);
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
+
+        String returnedSessionId = cookiesContainer.getSessionCookie().getSessionId();
+        Assert.assertEquals("Session ID shouldn't be generated.", originalSessionId, returnedSessionId);
+    }
+
     @Ignore
     @Test
     public void testSessionStateTelemetryContainsSessionIdOnEndState() throws Exception {

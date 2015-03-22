@@ -88,21 +88,25 @@ public class HttpHelper {
         } catch (Exception e) {
         }
 
-        return String.format("%s=%s", SessionCookie.COOKIE_NAME, formattedSessionCookie);
+        return formattedSessionCookie;
     }
 
     public static String getFormattedSessionCookie(boolean expired) throws ParseException {
+        return getFormattedSessionCookieWithOldTime(expired ? 500 : 0);
+    }
+
+    public static String getFormattedSessionCookieWithOldTime(int timeInMinutes) {
         Date sessionAcquisitionTime = new Date();
-        if (expired) {
-            sessionAcquisitionTime = DateTimeUtils.addToDate(sessionAcquisitionTime, Calendar.MONTH, -1);
-        }
+        sessionAcquisitionTime = DateTimeUtils.addToDate(sessionAcquisitionTime, Calendar.MINUTE, -timeInMinutes);
 
         Date sessionRenewalTime = DateTimeUtils.addToDate(sessionAcquisitionTime, Calendar.SECOND, 1);
 
-        return String.format(
+        String formattedSessionCookie = String.format(
                 FORMATTED_SESSION_COOKIE_TEMPLATE,
                 DateTimeUtils.formatAsRoundTripDate(sessionAcquisitionTime),
                 DateTimeUtils.formatAsRoundTripDate(sessionRenewalTime));
+
+        return String.format("%s=%s", SessionCookie.COOKIE_NAME, formattedSessionCookie);
     }
 
     public static String getSessionIdFromCookie(String cookie) {

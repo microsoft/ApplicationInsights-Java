@@ -95,7 +95,7 @@ public class SessionCookieTests {
         Cookie expiredCookie = new Cookie(SessionCookie.COOKIE_NAME, expiredFormattedCookie);
         SessionCookie sessionCookie = new SessionCookie(expiredCookie);
 
-        Assert.assertTrue("Expired session expected.", sessionCookie.isSessionExpired());
+        Assert.assertTrue("Expired session expected.", sessionCookie.isSessionExpired(SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES));
     }
 
     @Test
