@@ -128,7 +128,8 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         if (sessionCookie == null) {
             startNewSession = true;
         } else {
-            if (sessionCookie.isSessionExpired()) {
+            int sessionTimeout = getSessionTimeout(request);
+            if (sessionCookie.isSessionExpired(sessionTimeout)) {
                 startNewSession = true;
 
                 // Disabling for now. Will be back in future releases.
@@ -140,8 +141,16 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
             }
         }
 
-        if (startNewSession && generateNewSessions) {
+        if (!generateNewSessions) {
+
+            // The user configured not to generate new sessions.
+            return;
+        }
+
+        if (startNewSession) {
             startNewSession(context);
+            setSessionCookie(request, (HttpServletResponse)res);
+        } else if (sessionCookie != null && !sessionCookie.isSessionCookieUpToDate()) {
             setSessionCookie(request, (HttpServletResponse)res);
         }
     }
@@ -224,7 +233,6 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
     /**
      * If the session timeout has been set by the user via AI config file, then this timeout will be returned.
-     * Otherwise, the method will check if a session timeout has been set dynamically be the user (previous filters etc.).
      * Otherwise, it will look for a session timeout configured in the application descriptor (web.xml).
      * Otherwise, default timeout will be returned.
      */
@@ -238,7 +246,10 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
             sessionTimeout = SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES;
         }
 
-        sessionTimeoutInMinutes = sessionTimeout;
+        synchronized (this) {
+            sessionTimeoutInMinutes = sessionTimeout;
+        }
+
         return sessionTimeout;
     }
 

@@ -45,26 +45,6 @@ public class ServletUtilsTests {
     }
 
     @Test
-    public void testCheckServletSessionWithoutCreatingNewSession() {
-        ServletUtils.getRequestSessionTimeout(servletRequest);
-
-        verify(servletRequest).getSession(false);
-    }
-
-    @Test
-    public void testIfHttpSessionExistsMaxInactiveIntervalReturned() {
-        final int maxInactiveInterval = 10;
-
-        HttpSession httpSession = mock(HttpSession.class);
-        when(httpSession.getMaxInactiveInterval()).thenReturn(maxInactiveInterval);
-        when(servletRequest.getSession(false)).thenReturn(httpSession);
-
-        int requestSessionTimeout = ServletUtils.getRequestSessionTimeout(servletRequest);
-
-        Assert.assertEquals(maxInactiveInterval, requestSessionTimeout);
-    }
-
-    @Test
     public void testWhenHttpSessionNotExistsApplicationDescriptorIsChecked() {
         when(servletRequest.getSession(false)).thenReturn(null);
 

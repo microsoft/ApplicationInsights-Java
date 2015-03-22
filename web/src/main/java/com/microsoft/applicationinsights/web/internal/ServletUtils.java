@@ -38,9 +38,7 @@ public class ServletUtils {
     // region Public
 
     /**
-     * Gets the request session timeout.
-     * First, checks for dynamic session timeout by checking if a servlet session has been created for the request.
-     * If not exists, checks for static session timeout configured in the application descriptor (web.xml).
+     * Gets the request session timeout as configured in the application descriptor (web.xml).
      *
      * @param servletRequest The servlet request.
      * @return The session timeout in seconds or null if no session timeout has been configured.
@@ -49,11 +47,7 @@ public class ServletUtils {
         Integer sessionTimeout = null;
 
         try {
-            sessionTimeout = tryGetSessionTimeoutFromCurrentServletSession(servletRequest);
-
-            if (sessionTimeout == null) {
-                sessionTimeout = tryGetSessionTimeoutFromApplicationDescriptor(servletRequest);
-            }
+            sessionTimeout = tryGetSessionTimeoutFromApplicationDescriptor(servletRequest);
         } catch (Exception e) {
         }
 
@@ -63,22 +57,6 @@ public class ServletUtils {
     // endregion Public
 
     // region Private
-
-    /**
-     * Session timeout extracted from the request can varied from one request to another, in the case where a developer
-     * dynamically sets the session timeout during request processing.
-     * The session can be null if no user session initialized or a session was initialized in a subsequent filter.
-     */
-    private static Integer tryGetSessionTimeoutFromCurrentServletSession(ServletRequest servletRequest) {
-        HttpSession session = ((HttpServletRequest) servletRequest).getSession(false);
-
-        Integer timeout = null;
-        if (session != null) {
-            timeout = session.getMaxInactiveInterval();
-        }
-
-        return timeout;
-    }
 
     /**
      * Session timeout extracted from the application descriptor (web.xml) is static and not changed during application
