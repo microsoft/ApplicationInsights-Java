@@ -55,6 +55,7 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
     public void report(TelemetryClient telemetryClient) {
         double processCpuUsage = getProcessCpuUsage();
 
+        System.out.println("Metric: " + getProcessCategoryName() + " " + Constants.CPU_PC_COUNTER_NAME + " " + processCpuUsage);
         InternalLogger.INSTANCE.trace("Metric: %s %s: %s", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 getProcessCategoryName(),
