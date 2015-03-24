@@ -26,6 +26,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
@@ -78,7 +79,8 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
             }
 
             double totalCpuUsage = calculateTotalCpuUsage(array);
-            System.out.println(Constants.TOTAL_CPU_PC_CATEGORY_NAME + " " + Constants.CPU_PC_COUNTER_NAME + " " + INSTANCE_NAME_TOTAL + " " + totalCpuUsage);
+
+            InternalLogger.INSTANCE.trace("Metric: %s %s %s: %s", Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, INSTANCE_NAME_TOTAL, totalCpuUsage);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     Constants.TOTAL_CPU_PC_CATEGORY_NAME,
                     Constants.CPU_PC_COUNTER_NAME,

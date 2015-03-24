@@ -176,10 +176,6 @@ public enum TelemetryConfigurationFactory {
     private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 
-        if (performanceConfigurationData == null) {
-            return modules;
-        }
-
         final List<String> performanceModuleNames =
                 new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
         for (String performanceModuleName : performanceModuleNames) {

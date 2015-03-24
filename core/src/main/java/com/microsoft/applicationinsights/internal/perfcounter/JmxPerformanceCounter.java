@@ -120,8 +120,8 @@ public final class JmxPerformanceCounter implements PerformanceCounter {
 
             if (ok) {
                 try {
-                    System.out.println(telemetry.getCategoryName() + " " + telemetry.getCounterName() + " " + value);
                     telemetry.setValue(value);
+                    InternalLogger.INSTANCE.trace("Metric: %s:%s: %s", telemetry.getCategoryName(), telemetry.getCounterName(), value);
                     telemetryClient.track(telemetry);
                 } catch (Exception e) {
                     InternalLogger.INSTANCE.error("Error while sending JMX data for '%s': '%s'", getId(), e.getMessage());
@@ -129,11 +129,4 @@ public final class JmxPerformanceCounter implements PerformanceCounter {
             }
         }
     }
-
-//    @Override
-//    protected void send(TelemetryClient telemetryClient, double value) {
-//        System.out.println(telemetry.getCategoryName() + " " + telemetry.getCounterName() + " " + value);
-//        telemetry.setValue(value);
-//        telemetryClient.track(telemetry);
-//    }
 }

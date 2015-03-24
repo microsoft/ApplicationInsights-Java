@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
@@ -49,7 +50,8 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
     @Override
     public void report(TelemetryClient telemetryClient) {
         double totalAvailableMemory = getTotalAvailableMemory();
-        System.out.println(Constants.TOTAL_MEMORY_PC_CATEGORY_NAME + " " + Constants.TOTAL_MEMORY_PC_COUNTER_NAME + " " + totalAvailableMemory / (1024.0 * 1024.0) + " MB");
+
+        InternalLogger.INSTANCE.trace("Metric: %s %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, totalAvailableMemory);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
                 Constants.TOTAL_MEMORY_PC_COUNTER_NAME,

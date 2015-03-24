@@ -38,7 +38,7 @@ public class ApplicationInsightsXmlConfiguration {
     private ContextInitializersXmlElement contextInitializers;
     private ChannelXmlElement channel = new ChannelXmlElement();
     private TelemetryModulesXmlElement modules;
-    private PerformanceCountersXmlElement performance;
+    private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
     private SDKLoggerXmlElement sdkLogger;
 
     private String schemaVersion;

@@ -26,6 +26,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -54,7 +55,8 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
 
         double memoryBytes = (double)heapMemoryUsage.getUsed();
         memoryBytes += (double)nonHeapMemoryUsage.getUsed();
-        System.out.println(getProcessCategoryName() + " " + Constants.PROCESS_MEM_PC_COUNTER_NAME + " " + memoryBytes / (1024 * 1024) + " MB");
+
+        InternalLogger.INSTANCE.trace("Metric: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_MEM_PC_COUNTER_NAME, memoryBytes);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 getProcessCategoryName(),
                 Constants.PROCESS_MEM_PC_COUNTER_NAME,

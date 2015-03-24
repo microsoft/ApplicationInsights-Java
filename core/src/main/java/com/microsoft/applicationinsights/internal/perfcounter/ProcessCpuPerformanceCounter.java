@@ -25,6 +25,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -54,7 +55,7 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
     public void report(TelemetryClient telemetryClient) {
         double processCpuUsage = getProcessCpuUsage();
 
-        System.out.println(getProcessCategoryName() + " " + Constants.CPU_PC_COUNTER_NAME + " " + processCpuUsage);
+        InternalLogger.INSTANCE.trace("Metric: %s %s: %s", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 getProcessCategoryName(),
                 Constants.CPU_PC_COUNTER_NAME,
