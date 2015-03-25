@@ -68,5 +68,8 @@ public class JmxXmlElement {
     @XmlAttribute
     public void setType(String type) {
         this.type = type;
+        if (this.type != null) {
+            this.type = this.type.toUpperCase();
+        }
     }
 }

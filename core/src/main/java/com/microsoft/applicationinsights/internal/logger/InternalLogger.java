@@ -41,6 +41,7 @@ public enum InternalLogger {
     INSTANCE;
 
     private final static String LOGGER_LEVEL = "Level";
+    private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy h:MM");
 
     public enum LoggingLevel {
         ALL(Integer.MIN_VALUE),
@@ -167,7 +168,10 @@ public enum InternalLogger {
      * @return The formatted message with all the needed data.
      */
     private static String createMessage(String prefix, String message, Object... args) {
-        String currentDateAsString = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+        String currentDateAsString;
+        synchronized (INSTANCE) {
+            currentDateAsString = dateFormatter.format(new Date());
+        }
         String formattedMessage = String.format(message, args);
         String theMessage = String.format("%s %s, %d: %s", prefix, currentDateAsString, Thread.currentThread().getId(), formattedMessage);
         return theMessage;

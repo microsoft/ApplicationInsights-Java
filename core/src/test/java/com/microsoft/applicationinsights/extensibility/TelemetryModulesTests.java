@@ -38,6 +38,6 @@ public class TelemetryModulesTests {
         List<TelemetryModule> modules = configuration.getTelemetryModules();
 
         Assert.assertNotNull("Telemetry modules list shouldn't be null", modules);
-        Assert.assertTrue("Modules list should be emppty", modules.isEmpty());
+        Assert.assertFalse("Modules list should be empty", modules.isEmpty());
     }
 }

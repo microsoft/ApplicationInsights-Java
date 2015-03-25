@@ -25,6 +25,7 @@ import java.util.Collection;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 /**
@@ -41,6 +42,7 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
 
     @Override
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
+        InternalLogger.INSTANCE.trace("Metric JMX: %s, %s", displayName, value);
         telemetry.setName(displayName);
         telemetry.setValue(value);
         telemetryClient.track(telemetry);

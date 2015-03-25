@@ -29,10 +29,10 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
  * Created by gupele on 3/12/2015.
  */
 abstract class AbstractPerformanceCounter implements PerformanceCounter {
-    private final static String PROCESS_CATEGORY_FORMAT = "Process(%s)";
+    private final static String PROCESS_CATEGORY = "Process";
 
     protected static String getProcessCategoryName() {
-        return String.format(PROCESS_CATEGORY_FORMAT, SystemInformation.INSTANCE.getProcessId());
+        return PROCESS_CATEGORY;
     }
 
     protected AbstractPerformanceCounter() {

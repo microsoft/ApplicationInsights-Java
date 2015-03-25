@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
@@ -35,6 +36,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  */
 final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static String MEM_FILE = "/proc/meminfo";
+    private final static double KB = 1024.0;
 
     public UnixTotalMemoryPerformanceCounter() {
         super(MEM_FILE);
@@ -47,17 +49,19 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        double totalMemoryUsage = getTotalMemoryUsage();
+        double totalAvailableMemory = getTotalAvailableMemory();
+
+        InternalLogger.INSTANCE.trace("Metric: %s %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, totalAvailableMemory);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
                 Constants.TOTAL_MEMORY_PC_COUNTER_NAME,
                 "",
-                totalMemoryUsage);
+                totalAvailableMemory);
 
         telemetryClient.track(telemetry);
     }
 
-    private double getTotalMemoryUsage() {
+    private double getTotalAvailableMemory() {
         BufferedReader bufferedReader = null;
 
         double result = Constants.DEFAULT_DOUBLE_VALUE;
@@ -69,7 +73,8 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
                 reader.process(line);
             }
 
-            result = reader.getValue();
+            // The value we get is in KB so we need to translate that to bytes.
+            result = reader.getValue() * KB;
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;
             logError("Error while parsing file: '%s'", e.getMessage());

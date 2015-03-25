@@ -44,7 +44,7 @@ public class JmxDataFetcherTest {
         }
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void testBadAttributeName() throws Exception {
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         ObjectName mxbeanName = new ObjectName("JSDKTests:type=TestStub3");
@@ -54,9 +54,7 @@ public class JmxDataFetcherTest {
         attributes.add(new JmxAttributeData("Int", "WrongNameIntSample"));
         attributes.add(new JmxAttributeData("Double", "WrongNameDoubleSample"));
         attributes.add(new JmxAttributeData("Long", "WrongNameLongSample"));
-        Map<String, Collection<Object>> result = JmxDataFetcher.fetch("JSDKTests:type=TestStub3", attributes);
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        JmxDataFetcher.fetch("JSDKTests:type=TestStub3", attributes);
     }
 
     @Test(expected = IllegalArgumentException.class)

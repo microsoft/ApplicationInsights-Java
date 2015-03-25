@@ -25,6 +25,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
@@ -38,12 +40,10 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
     private final int numberOfCpus;
 
     private long prevUpTime, prevProcessCpuTime;
-    private final String categoryName;
 
     public ProcessCpuPerformanceCounter() {
         com.sun.management.OperatingSystemMXBean operatingSystemMXBean = (com.sun.management.OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
         numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
-        categoryName = getProcessCategoryName();
     }
 
     @Override
@@ -55,10 +55,11 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
     public void report(TelemetryClient telemetryClient) {
         double processCpuUsage = getProcessCpuUsage();
 
+        InternalLogger.INSTANCE.trace("Metric: %s %s: %s", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
         Telemetry telemetry = new PerformanceCounterTelemetry(
-                categoryName,
+                getProcessCategoryName(),
                 Constants.CPU_PC_COUNTER_NAME,
-                "",
+                SystemInformation.INSTANCE.getProcessId(),
                 processCpuUsage);
         telemetryClient.track(telemetry);
     }

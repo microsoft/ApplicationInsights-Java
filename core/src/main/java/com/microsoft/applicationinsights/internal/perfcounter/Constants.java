@@ -31,7 +31,7 @@ public final class Constants {
 
     public final static String PROCESS_CPU_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessCpuPerformanceCounter";
 
-    public final static String TOTAL_CPU_PC_CATEGORY_NAME = "Processor(_Total)";
+    public final static String TOTAL_CPU_PC_CATEGORY_NAME = "Processor";
     public final static String CPU_PC_COUNTER_NAME = "% Processor Time";
 
 
@@ -47,7 +47,6 @@ public final class Constants {
     public final static String PROCESS_IO_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessIOPerformanceCounter";
     public final static String PROCESS_IO_PC_COUNTER_NAME = "IO Data Bytes/sec";
 
-    public final static double  MEGA_BYTE = 1024L * 1024L;
     public final static double DEFAULT_DOUBLE_VALUE = -1.0;
 
     private Constants() {

@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -41,14 +42,12 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static double NANOS_IN_SECOND = 1000000000.0;
 
-    private final String categoryName;
     private double prevProcessIO;
 
     private long lastCollectionInNanos = -1;
 
     public UnixProcessIOPerformanceCounter() {
         super("/proc/" + SystemInformation.INSTANCE.getProcessId() + "/io");
-        categoryName = getProcessCategoryName();
     }
 
     @Override
@@ -68,11 +67,12 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
 
             double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
             prevProcessIO = processIO;
-            System.out.println(categoryName + " " + Constants.PROCESS_IO_PC_COUNTER_NAME + " " + value);
+
+            InternalLogger.INSTANCE.trace("Metric: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_IO_PC_COUNTER_NAME, value);
             Telemetry telemetry = new PerformanceCounterTelemetry(
-                    categoryName,
+                    getProcessCategoryName(),
                     Constants.PROCESS_IO_PC_COUNTER_NAME,
-                    "",
+                    SystemInformation.INSTANCE.getProcessId(),
                     value);
 
             telemetryClient.track(telemetry);
