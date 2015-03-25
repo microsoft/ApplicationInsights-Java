@@ -91,7 +91,7 @@ public enum PerformanceCounterContainer implements Stoppable {
         InternalLogger.INSTANCE.trace("Registering PC '%s'", performanceCounter.getId());
         PerformanceCounter prev = performanceCounters.putIfAbsent(performanceCounter.getId(), performanceCounter);
         if (prev != null) {
-            InternalLogger.INSTANCE.error("Failed to store performance counter '%s', since there is already one", performanceCounter.getId());
+            InternalLogger.INSTANCE.trace("Failed to store performance counter '%s', since there is already one", performanceCounter.getId());
             return false;
         }
 
