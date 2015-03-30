@@ -178,6 +178,14 @@ public enum TelemetryConfigurationFactory {
 
         final List<String> performanceModuleNames =
                 new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
+
+        if (performanceModuleNames.size() == 0) {
+
+            // Only a workaround for JBoss web servers.
+            // Will be removed once the issue will be investigated and fixed.
+            performanceModuleNames.addAll(getDefaultPerformanceModulesNames());
+        }
+
         for (String performanceModuleName : performanceModuleNames) {
             TelemetryModule module = createInstance(performanceModuleName, TelemetryModule.class);
             if (module != null) {
@@ -192,6 +200,19 @@ public enum TelemetryConfigurationFactory {
         }
 
         loadCustomJmxPCs(performanceConfigurationData.getJmxXmlElements());
+
+        return modules;
+    }
+
+    /**
+     * This method is only a workaround until the failure to load PCs in JBoss web servers will be solved.
+     */
+    private List<String> getDefaultPerformanceModulesNames() {
+        InternalLogger.INSTANCE.trace("Default performance counters will be automatically loaded.");
+
+        ArrayList<String> modules = new ArrayList<String>();
+        modules.add("com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule");
+        modules.add("com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule");
 
         return modules;
     }
