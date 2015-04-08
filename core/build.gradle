@@ -20,6 +20,7 @@
  */
 
 apply from: "$buildScriptsDir/publishing.gradle"
+import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 archivesBaseName = 'applicationinsights-core'
 
@@ -32,6 +33,21 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
     testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
+}
+
+task generateVersionProperties(type: PropsFileGen) {
+    targetFile = new File(project.buildDir, "src/generated/main/resources/sdk-version.properties")
+    property "version", project.version
+}
+
+processResources.dependsOn generateVersionProperties
+
+sourceSets {
+    main {
+        resources {
+            srcDir "$project.buildDir/src/generated/main/resources"
+        }
+    }
 }
 
 // region Publishing tasks
