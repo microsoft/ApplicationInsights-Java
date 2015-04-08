@@ -21,22 +21,8 @@
 
 apply plugin: 'maven'
 
-version = (version == "unspecified") ? "0.9.1-SNAPSHOT" : version
-group = "com.microsoft.azure"
-
-// region Publishing configuration
-task checkIfReleaseAndUpdateVersion {
-    def releaseVersion = System.getenv("releaseVersion")
-    if (releaseVersion?.trim()) {
-        version = releaseVersion
-        subprojects.findAll { p -> p.version = releaseVersion }
-    }
-}
-
 uploadArchives {
     ext.requriedProperties = ["mavenRepositoryUrl", "mavenUsername", "mavenUserPassword"]
-
-    dependsOn tasks.checkIfReleaseAndUpdateVersion
 }
 
 repositories {

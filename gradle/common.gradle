@@ -35,6 +35,8 @@ subprojects {
         options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar"
     }
 
+    version = project.rootProject.version
+
     if (this.hasProperty("testEnvName")) {
         testResultsDirName = testResultsDirName + "/" + testEnvName
         logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
@@ -62,7 +64,6 @@ subprojects {
         dependsOn test
         finalizedBy collectTestResults
     }
-
 }
 
 // endregion Shared sub-projects configuration
@@ -71,6 +72,13 @@ subprojects {
 
 ext {
     requiredPropertiesExist = this.&requiredPropertiesExist
+}
+
+def requiredPropertiesExist(requiredPropertiesNames)
+{
+    return !(requiredPropertiesNames.any { prop ->
+        !this.hasProperty(prop)
+    })
 }
 
 gradle.taskGraph.whenReady { graph ->
@@ -83,6 +91,10 @@ gradle.taskGraph.whenReady { graph ->
     }
 }
 
+// endregion Public methods
+
+// region Private methods
+
 def verifyProjectPropertyExists(propertyName, taskName)
 {
     if (!this.hasProperty(propertyName)) {
@@ -90,10 +102,4 @@ def verifyProjectPropertyExists(propertyName, taskName)
     }
 }
 
-def requiredPropertiesExist(requiredPropertiesNames)
-{
-    return !(requiredPropertiesNames.any { prop ->
-        !this.hasProperty(prop)
-    })
-}
-// endregion Public methods
+// endregion Private methods

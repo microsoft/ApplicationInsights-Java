@@ -18,7 +18,6 @@ gradle-app.setting
 
 ## Directory-based project format: 
 .idea
-Core/build
 # if you remove the above rule, at least ignore the following: 
 
  

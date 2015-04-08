@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-// region Global properties
+// region Root project properties
 
 ext {
     msftAppInsights = "Microsoft Application Insights"
@@ -27,10 +27,16 @@ ext {
     buildScriptsDir = "$rootDir/gradle"
 }
 
-// endregion Global properties
+version = calcProjectVersion()
+
+// endregion Root project properties
+
+// region Common configurations
 
 apply from: "$buildScriptsDir/common.gradle"
 apply from: "$buildScriptsDir/test.gradle"
+
+// endregion Common configurations
 
 // region Root project script
 
@@ -41,3 +47,24 @@ task clean << {
 }
 
 // endregion Root project script
+
+// region private methods
+
+// calculate sdk version based on system properties
+def calcProjectVersion() {
+    def projectVersion = version;
+    if (System.properties["version"] != null) {
+        projectVersion = System.properties["version"].trim()
+        logger.info "User provided a version; version updated to $projectVersion"
+    }
+
+    String isRelease = System.properties["isRelease"]
+    if (isRelease == null || isRelease.trim().toLowerCase() != "true") {
+        projectVersion = projectVersion + "-SNAPSHOT"
+        logger.info "This is NOT a release version; version updated to $projectVersion"
+    }
+    projectVersion
+}
+
+// endregion private methods
+

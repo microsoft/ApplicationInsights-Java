@@ -21,17 +21,31 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+
+import java.util.Properties;
 
 /**
  * Initializer for SDK version.
  */
 public final class SdkVersionContextInitializer implements ContextInitializer {
-
+    final String sdkVersionFileName = "sdk-version.properties";
+    final String sdkPrefix = "Java";
 
     @Override
     public void initialize(TelemetryContext context) {
-        context.getInternal().setSdkVersion("Java 0.9.2");
+        String sdkVersion = sdkPrefix;
+        try {
+            Properties sdkVersionProps = PropertyHelper.getProperties(sdkVersionFileName);
+            String version = sdkVersionProps.getProperty("version");
+            sdkVersion = sdkPrefix + " " + version;
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Could not find sdk version file '%s'", sdkVersionFileName);
+        }
+
+        context.getInternal().setSdkVersion(sdkVersion);
     }
 }
