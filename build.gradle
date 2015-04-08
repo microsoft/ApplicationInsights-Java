@@ -53,8 +53,9 @@ task clean << {
 // calculate sdk version based on system properties
 def calcProjectVersion() {
     def projectVersion = version;
-    if (System.properties["version"] != null) {
-        projectVersion = System.properties["version"].trim()
+    def userProvidedVersion = System.properties["version"]
+    if (userProvidedVersion != null && userProvidedVersion.trim() != "") {
+        projectVersion = userProvidedVersion.trim()
         logger.info "User provided a version; version updated to $projectVersion"
     }
 
