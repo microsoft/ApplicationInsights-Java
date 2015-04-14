@@ -1,5 +1,5 @@
 /*
- * AppInsights-Java
+ * ApplicationInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -77,7 +77,7 @@ ext {
 
 def updatePomWithGeneralProjectInformation(pomObject) {
     pomObject.project {
-        url = "https://github.com/Microsoft/AppInsights-Java"
+        url = "https://github.com/Microsoft/ApplicationInsights-Java"
 
         licenses {
             license {
@@ -87,8 +87,8 @@ def updatePomWithGeneralProjectInformation(pomObject) {
         }
 
         scm {
-            url = "scm:git:https://github.com/Microsoft/AppInsights-Java"
-            connection = "scm:git:git://github.com/Microsoft/AppInsights-Java.git"
+            url = "scm:git:https://github.com/Microsoft/ApplicationInsights-Java"
+            connection = "scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git"
         }
 
         developers {
