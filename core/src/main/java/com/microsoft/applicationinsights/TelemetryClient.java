@@ -27,21 +27,10 @@ import java.util.Map;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.telemetry.SeverityLevel;
-import com.microsoft.applicationinsights.telemetry.SessionState;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import com.microsoft.applicationinsights.telemetry.ExceptionHandledAt;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.*;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
@@ -315,7 +304,17 @@ public class TelemetryClient {
         track(request);
     }
 
+    public void trackRemoteDependency(String dependencyName, String commandName, Duration duration, boolean success, DependencyKind dependencyKind) {
+        RemoteDependencyTelemetry remoteDependencyTelemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, success, dependencyKind);
+
+        trackRemoteDependency(remoteDependencyTelemetry);
+    }
+
     public void trackRemoteDependency(RemoteDependencyTelemetry telemetry) {
+        if (isDisabled()) {
+            return;
+        }
+
         if (telemetry == null) {
             telemetry = new RemoteDependencyTelemetry("");
         }
