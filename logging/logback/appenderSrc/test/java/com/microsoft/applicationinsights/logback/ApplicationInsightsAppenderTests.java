@@ -1,5 +1,5 @@
 /*
- * AppInsights-Java
+ * ApplicationInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *

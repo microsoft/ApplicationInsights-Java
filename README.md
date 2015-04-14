@@ -1,4 +1,4 @@
-﻿AppInsights-Java
+﻿ApplicationInsights-Java
 ================
 Introduction
 ------------
