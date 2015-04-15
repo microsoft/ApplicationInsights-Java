@@ -52,6 +52,14 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
         setName(name);
     }
 
+    /**
+     * Initializes an instnace with the given parameters.
+     * @param dependencyName The dependency name.
+     * @param commandName The command name.
+     * @param duration The duration
+     * @param success Whether the remote call successful or not.
+     * @param dependencyKind The dependency kind.
+     */
     public RemoteDependencyTelemetry(String dependencyName, String commandName, Duration duration, boolean success, DependencyKind dependencyKind) {
         this(dependencyName);
 
