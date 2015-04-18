@@ -1,0 +1,113 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+apply plugin: 'cpp'
+import org.gradle.nativeplatform.NativeLibrarySpec
+import org.gradle.nativeplatform.toolchain.VisualCpp
+
+def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
+def programFilesX86 = System.env.'ProgramFiles(x86)'
+def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
+
+defaultTasks ':windows-perf-counters:x64ReleaseAi-win-perf-countersSharedLibrary'
+
+model {
+    buildTypes {
+        debug
+        release
+    }
+    platforms {
+        x86 { architecture "x86" }
+        x64 { architecture "amd64" }
+    }
+
+    components {
+        "ai-win-perf-counters"(NativeLibrarySpec) {
+            targetPlatform "x86"
+            targetPlatform "x64"
+
+            sources {
+                cpp {
+                    source {
+                        include "**/*.cpp"
+                        include "**/*.h"
+                    }
+                }
+            }
+        }
+    }
+}
+
+binaries.all {
+    if (toolChain in VisualCpp) {
+        // Visual Studio Compiler Options: https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx
+        // Visual Studio Linker Options:   https://msdn.microsoft.com/en-us/library/y0zzbyt4.aspx
+
+        // Searches a directory for include files.
+        cppCompiler.args "/I$javaIncludeDir"
+        cppCompiler.args "/I$javaIncludeDir\\win32"
+
+        // Produces an output file to run on the common language runtime.
+        cppCompiler.args "/clr"
+
+        // Forces the use of a file name as if it had been passed to the #using directive.
+        cppCompiler.args "/FU$referenceAssembliesDir\\mscorlib.dll"
+        cppCompiler.args "/FU$referenceAssembliesDir\\System.Data.dll"
+        cppCompiler.args "/FU$referenceAssembliesDir\\System.dll"
+        cppCompiler.args "/FU$referenceAssembliesDir\\System.Xml.dll"
+
+        // Sets warning level.
+        cppCompiler.args "/W3"
+
+        // Catch both asynchronous (structured) and synchronous (C++) exceptions.
+        cppCompiler.args "/EHa"
+
+        // Compiler macros definition
+        cppCompiler.define "WIN32"
+        cppCompiler.define "UNICODE"
+        cppCompiler.define "_UNICODE"
+        cppCompiler.define "_WINDLL"
+
+        if (buildType == buildTypes.release) {
+            cppCompiler.define 'NDEBUG'
+
+            // Use the multithread-specific and DLL-specific version of the run-time library.
+            cppCompiler.args '/MD'
+
+            // Creates the fastest code in the majority of cases.
+            cppCompiler.args '/O2'
+        } else {
+            cppCompiler.define '_DEBUG'
+
+            // Generates complete debugging information.
+            cppCompiler.args '/Zi'
+
+            // Creates debugging information.
+            linker.args '/DEBUG'
+
+            //Disables optimization.
+            cppCompiler.args "/Od"
+
+            // Use the debug multithread-specific and DLL-specific version of the run-time library.
+            cppCompiler.args '/MDd'
+        }
+    }
+}
