@@ -3,6 +3,13 @@
 *.d
 *.so
 *.class
+*.sdf
+*.opensdf
+*.suo
+*.user
+Debug/
+Release/
+ipch/
 
 # Eclipse
 .classpath
