@@ -19,6 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 apply plugin: "findbugs"
 

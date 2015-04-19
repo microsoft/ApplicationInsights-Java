@@ -24,51 +24,6 @@ project.ext.set("artifactsDirectoryRoot", new File(rootProjectBuildDir, 'artifac
 project.ext.set("remoteTestResultsDirName", 'remote-tests-results')
 project.ext.set("remoteTestReportDirName", 'remote-tests-reports')
 
-// region Shared sub-projects configuration
-
-subprojects {
-    apply plugin: 'java'
-
-    compileJava {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
-        options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar;"
-        options.bootClasspath += "${System.getenv('JAVA_JRE_6')}/lib/jsse.jar"
-    }
-
-    version = project.rootProject.version
-
-    if (this.hasProperty("testEnvName")) {
-        testResultsDirName = testResultsDirName + "/" + testEnvName
-        logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
-
-        testReportDirName = testReportDirName + "/" + testEnvName
-        logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    task collectTestResults << {
-        copy {
-            from testResultsDir
-            into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
-        }
-        copy {
-            from testReportDir
-            into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
-        }
-    }
-
-    task testAndCollect {
-        dependsOn test
-        finalizedBy collectTestResults
-    }
-}
-
-// endregion Shared sub-projects configuration
-
 // region Public methods
 
 ext {

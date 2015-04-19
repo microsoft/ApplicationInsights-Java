@@ -19,16 +19,46 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply from: "$buildScriptsDir/common-java.gradle"
+// region Shared java configuration
 
-jar {
-    version = '1.0'
-    baseName = 'samples'
+apply plugin: 'java'
+
+compileJava {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+    options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar;"
+    options.bootClasspath += "${System.getenv('JAVA_JRE_6')}/lib/jsse.jar"
 }
 
-dependencies {
-    compile project(':core')
-    compile project(':logging:log4j1_2')
-    compile project(':logging:log4j2')
-    compile project(':logging:logback')
+version = project.rootProject.version
+
+if (this.hasProperty("testEnvName")) {
+    testResultsDirName = testResultsDirName + "/" + testEnvName
+    logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
+
+    testReportDirName = testReportDirName + "/" + testEnvName
+    logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
 }
+
+repositories {
+    mavenCentral()
+}
+
+task collectTestResults << {
+    copy {
+        from testResultsDir
+        into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
+    }
+    copy {
+        from testReportDir
+        into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
+    }
+}
+
+task testAndCollect {
+    dependsOn test
+    finalizedBy collectTestResults
+}
+
+// endregion Shared java configuration
+
