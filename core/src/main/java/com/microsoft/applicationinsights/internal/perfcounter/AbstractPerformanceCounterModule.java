@@ -26,6 +26,7 @@ import java.util.Collection;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 /**
  * A base class for performance modules.
@@ -33,7 +34,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * Created by gupele on 3/12/2015.
  */
 public abstract class AbstractPerformanceCounterModule implements TelemetryModule {
-    private final PerformanceCountersFactory factory;
+    protected final PerformanceCountersFactory factory;
 
     protected AbstractPerformanceCounterModule(PerformanceCountersFactory factory) {
         this.factory = factory;

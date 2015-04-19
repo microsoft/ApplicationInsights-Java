@@ -32,8 +32,10 @@ import java.util.ArrayList;
 @XmlRootElement(name="PerformanceCounters")
 public class PerformanceCountersXmlElement {
     private boolean useBuiltIn = true;
+//    private WindowsPerformanceCountersXmlElement windowsPCs;
 
     private ArrayList<JmxXmlElement> jmxXmlElements;
+    private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
 
     public ArrayList<JmxXmlElement> getJmxXmlElements() {
         return jmxXmlElements;
@@ -52,5 +54,15 @@ public class PerformanceCountersXmlElement {
     @XmlElement(name="UseBuiltIn")
     public void setUseBuiltIn(boolean useBuiltIn) {
         this.useBuiltIn = useBuiltIn;
+    }
+
+    public ArrayList<WindowsPerformanceCounterXmlElement> getWindowsPCs() {
+        return windowsPCs;
+    }
+
+    @XmlElementWrapper(name="Windows")
+    @XmlElement(name="Add")
+    public void setWindowsPCs(ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs) {
+        this.windowsPCs = windowsPCs;
     }
 }

@@ -33,7 +33,9 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
  *
  * Created by gupele on 3/3/2015.
  */
-final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory {
+final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory, WindowsPerformanceCountersFactory {
+    private Iterable<WindowsPerformanceCounterData> windowsPCsData;
+
     /**
      * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter} that are
      * the 'built-in' performance counters of the process.
@@ -90,6 +92,29 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
      */
     private Collection<PerformanceCounter> getWindowsPerformanceCounters() {
         ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
+
+        try {
+            if (windowsPCsData != null) {
+                WindowsPerformanceCounterAsMetric pcWindowsMetric = new WindowsPerformanceCounterAsMetric(windowsPCsData);
+                performanceCounters.add(pcWindowsMetric);
+                windowsPCsData = null;
+            }
+        } catch (Throwable e) {
+            InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.getMessage());
+        }
+
+        try {
+            WindowsPerformanceCounterAsPC pcWindowsPCs = new WindowsPerformanceCounterAsPC();
+            performanceCounters.add(pcWindowsPCs);
+        } catch (Throwable e) {
+            InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.getMessage());
+        }
+
         return performanceCounters;
+    }
+
+    @Override
+    public void setWindowsPCs(Iterable<WindowsPerformanceCounterData> windowsPCsData) {
+        this.windowsPCsData = windowsPCsData;
     }
 }

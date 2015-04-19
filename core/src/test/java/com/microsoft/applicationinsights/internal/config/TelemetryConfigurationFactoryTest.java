@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -44,12 +45,18 @@ public final class TelemetryConfigurationFactoryTest {
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
 
     @PerformanceModule
-    static final class MockPerformanceModule implements TelemetryModule {
+    static final class MockPerformanceModule implements TelemetryModule, PerformanceCounterConfigurationAware {
         public boolean initializeWasCalled = false;
+        public boolean addConfigurationDataWasCalled = false;
 
         @Override
         public void initialize(TelemetryConfiguration configuration) {
             initializeWasCalled = true;
+        }
+
+        @Override
+        public void addConfigurationData(PerformanceCountersXmlElement configuration) {
+            addConfigurationDataWasCalled = true;
         }
     }
 
@@ -326,6 +333,7 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getTelemetryModules().size(), 1);
         assertTrue(mockConfiguration.getTelemetryModules().get(0) instanceof MockPerformanceModule);
         assertTrue(((MockPerformanceModule)mockConfiguration.getTelemetryModules().get(0)).initializeWasCalled);
+        assertTrue(((MockPerformanceModule)mockConfiguration.getTelemetryModules().get(0)).addConfigurationDataWasCalled);
     }
 
 

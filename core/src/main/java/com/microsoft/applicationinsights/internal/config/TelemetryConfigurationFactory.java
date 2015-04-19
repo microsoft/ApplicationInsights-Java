@@ -43,6 +43,8 @@ import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerforman
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
+
 /**
  * Initializer class for configuration instances.
  */
@@ -192,6 +194,14 @@ public enum TelemetryConfigurationFactory {
                 PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
                 if (!performanceConfigurationData.isUseBuiltIn() && BUILT_IN_NAME.equals(pmAnnotation.value())) {
                     continue;
+                }
+                if (module instanceof PerformanceCounterConfigurationAware) {
+                    PerformanceCounterConfigurationAware awareModule = (PerformanceCounterConfigurationAware)module;
+                    try {
+                        awareModule.addConfigurationData(performanceConfigurationData);
+                    } catch (Exception e) {
+                        InternalLogger.INSTANCE.error("Failed to add configuration data to performance module: '%s'", e.getMessage());
+                    }
                 }
                 modules.add(module);
             } else {
