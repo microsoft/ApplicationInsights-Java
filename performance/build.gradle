@@ -19,6 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+apply from: "$buildScriptsDir/common-java.gradle"
 apply plugin: 'application'
 
 mainClassName = "com.microsoft.applicationinsights.core.volume.ThroughputTest"
