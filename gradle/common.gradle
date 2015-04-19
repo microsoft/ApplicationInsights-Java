@@ -32,7 +32,8 @@ subprojects {
     compileJava {
         sourceCompatibility = 1.6
         targetCompatibility = 1.6
-        options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar"
+        options.bootClasspath = "${System.getenv('JAVA_JRE_6')}/lib/rt.jar;"
+        options.bootClasspath += "${System.getenv('JAVA_JRE_6')}/lib/jsse.jar"
     }
 
     version = project.rootProject.version
