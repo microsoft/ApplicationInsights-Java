@@ -21,9 +21,7 @@
 
 // This is the main DLL file.
 
-//#include "stdafx.h"
-
-#include "com_microsoft_azure_applicationinsights_win_perf_jniconnector.h"
+#include "CppPerfCounters.h"
 
 #include <string>
 
@@ -36,6 +34,11 @@ using namespace System::Diagnostics;
 
 using System::Runtime::InteropServices::Marshal;
 using namespace Microsoft;
+
+static const double EXCEPTION_IN_GET_PERF_COuNTER_WRAPPER_FUNCTION_EXCEPTION = -1;
+static const double EXCEPTION_WHILE_FETCHING_PERF_COUNTER_VALUE = -7;
+static const double EXCEPTION_IN_GET_PERF_COuNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION = -4;
+static const double PERF_COUNTER_WAS_NOT_FOUND = -2;
 
 ref class PerfCountersUtils
 {
@@ -76,7 +79,7 @@ public:
 		bool found = pcDictionary->TryGetValue(performanceCounterName, pc);
 		if (!found)
 		{
-			return -2;
+			return PERF_COUNTER_WAS_NOT_FOUND;
 		}
 
 		try
@@ -86,7 +89,7 @@ public:
 		}
 		catch (...)
 		{
-			return -7;
+			return EXCEPTION_WHILE_FETCHING_PERF_COUNTER_VALUE;
 		}
 	}
 
@@ -156,7 +159,7 @@ double getPerfCounterValue(const char *name) {
 	}
 	catch (...)
 	{
-		return -4;
+		return EXCEPTION_IN_GET_PERF_COuNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION;
 	}
 }
 
@@ -169,7 +172,7 @@ void MarshalString(String ^s, std::string& ostr) {
 JNIEXPORT jstring JNICALL Java_com_microsoft_applicationinsights_internal_perfcounter_JniPCConnector_getInstanceName(
 	JNIEnv * env, 
 	jclass clz, 
-	jlong processId)
+	jint processId)
 {
 	try
 	{
@@ -237,6 +240,6 @@ JNIEXPORT jdouble JNICALL Java_com_microsoft_applicationinsights_internal_perfco
 	}
 	catch (...)
 	{
-		return -1;
+		return EXCEPTION_IN_GET_PERF_COuNTER_WRAPPER_FUNCTION_EXCEPTION;
 	}
 }

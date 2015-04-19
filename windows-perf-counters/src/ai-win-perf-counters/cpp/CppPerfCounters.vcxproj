@@ -161,7 +161,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="com_microsoft_azure_applicationinsights_win_perf_jniconnector.h" />
+    <ClInclude Include="CppPerfCounters.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CppPerfCounters.cpp" />
