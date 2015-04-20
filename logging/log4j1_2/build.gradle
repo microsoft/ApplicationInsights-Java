@@ -21,8 +21,16 @@
 
 apply from: "../logging.gradle"
 
-loggingFrameworkArtifactAlias = "log4j1_2"
-loggingFrameworkName = "Log4j 1.2"
+// region Publishing properties
+
+def loggingFrameworkArtifactAlias = "log4j1_2"
+def loggingFrameworkName = "Log4j 1.2"
+
+archivesBaseName = "applicationinsights-logging-$loggingFrameworkArtifactAlias"
+projectPomName = "$project.msftAppInsights $loggingFrameworkName Appender"
+projectPomDescription = "This module provides a $project.msftAppInsights appender implementation for $loggingFrameworkName framework"
+
+// endregion Publishing properties
 
 dependencies {
     compile group: 'log4j', name: 'log4j', version: '1.2.17'

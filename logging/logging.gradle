@@ -23,11 +23,6 @@ apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 apply plugin: "findbugs"
 
-ext {
-    loggingFrameworkArtifactAlias = ""
-    loggingFrameworkName = ""
-}
-
 def buildSrcDir = new File(project.buildDir, "src")
 def commonSrcDir = new File(project.parent.projectDir, "common/src")
 def appenderSourceDirName = "appenderSrc"
@@ -61,43 +56,19 @@ sourceSets {
     }
 }
 
-afterEvaluate {
-    assert (!loggingFrameworkName.isEmpty() && !loggingFrameworkArtifactAlias.isEmpty())
-    archivesBaseName = "applicationinsights-logging-$loggingFrameworkArtifactAlias"
 
-    uploadArchives {
-        if (requiredPropertiesExist(requriedProperties)) {
-            repositories {
-                mavenDeployer {
-                    configuration = configurations.deployerJars
+// region Publishing properties
 
-                    repository(url: mavenRepositoryUrl) {
-                        authentication(userName: mavenUsername, password: mavenUserPassword)
-                    }
-
-                    updatePomWithGeneralProjectInformation(pom)
-
-                    // Updating Core pom specific values.
-                    pom.project {
-                        name = "$project.msftAppInsights $loggingFrameworkName Appender"
-                        description = "This module provides a $project.msftAppInsights appender implementation for $loggingFrameworkName framework"
-                    }
-
-                    pom.whenConfigured {
-                        p ->
-                            p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != "junit" && dep.artifactId != "mockito-all" }
-                            writePomToArtifactsDirectory(p, project.name)
-                    }
-                }
-            }
-        }
-    }
+whenPomConfigured = { p ->
+    p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != "junit" && dep.artifactId != "mockito-all" }
+    writePomToArtifactsDirectory(p, project.name)
 }
+
+// endregion Publishing properties
 
 dependencies {
     compile project(':core')
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
 }
-
 

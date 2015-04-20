@@ -21,8 +21,30 @@
 
 apply plugin: 'maven'
 
-uploadArchives {
-    ext.requriedProperties = ["mavenRepositoryUrl", "mavenUsername", "mavenUserPassword"]
+ext {
+    projectPomName = ""
+    projectPomDescription = ""
+    whenPomConfigured = { p -> writePomToArtifactsDirectory(p, project.name) }
+}
+
+afterEvaluate {
+    assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
+    uploadArchives {
+        ext.requriedProperties = ["mavenRepositoryUrl", "mavenUsername", "mavenUserPassword"]
+        if (requiredPropertiesExist(requriedProperties)) {
+            repositories {
+                mavenDeployer {
+                    configuration = configurations.deployerJars
+
+                    repository(url: mavenRepositoryUrl) {
+                        authentication(userName: mavenUsername, password: mavenUserPassword)
+                    }
+
+                    updatePomWithGeneralProjectInformation(pom)
+                }
+            }
+        }
+    }
 }
 
 repositories {
@@ -65,7 +87,6 @@ task prepare {
 }
 
 
-
 // endregion Publishing configuration
 
 // region Public methods
@@ -77,6 +98,9 @@ ext {
 
 def updatePomWithGeneralProjectInformation(pomObject) {
     pomObject.project {
+
+        name = projectPomName
+        description = projectPomDescription
         url = "https://github.com/Microsoft/ApplicationInsights-Java"
 
         licenses {
@@ -98,6 +122,8 @@ def updatePomWithGeneralProjectInformation(pomObject) {
             }
         }
     }
+
+    pomObject.whenConfigured whenPomConfigured
 }
 
 def writePomToArtifactsDirectory(pomObject, directoryName) {
