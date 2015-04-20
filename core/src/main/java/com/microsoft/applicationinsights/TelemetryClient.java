@@ -27,7 +27,6 @@ import java.util.Map;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.telemetry.*;
@@ -304,14 +303,14 @@ public class TelemetryClient {
         track(request);
     }
 
-    public void trackRemoteDependency(String dependencyName, String commandName, Duration duration, boolean success, DependencyKind dependencyKind) {
-        RemoteDependencyTelemetry remoteDependencyTelemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, success, dependencyKind);
+    public void trackDependency(String dependencyName, String commandName, Duration duration, boolean success) {
+        RemoteDependencyTelemetry remoteDependencyTelemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, success);
 
-        trackRemoteDependency(remoteDependencyTelemetry);
+        trackDependency(remoteDependencyTelemetry);
     }
 
-    public void trackRemoteDependency(RemoteDependencyTelemetry telemetry) {
-        if (isDisabled()) {
+    public void trackDependency(RemoteDependencyTelemetry telemetry) {
+            if (isDisabled()) {
             return;
         }
 

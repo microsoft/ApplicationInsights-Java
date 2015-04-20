@@ -251,11 +251,7 @@ public class RemoteDependencyData extends Domain {
         writer.write("ver", ver);
         writer.write("name", name);
         writer.write("commandName", commandName);
-
-        if (!DataPointType.Measurement.equals(kind)) {
-            writer.write("kind", kind.getValue());
-        }
-
+        writer.write("kind", kind.getValue());
         writer.write("value", value);
         writer.write("count", count);
         writer.write("min", min);
@@ -264,11 +260,7 @@ public class RemoteDependencyData extends Domain {
         writer.write("dependencyKind", dependencyKind.getValue());
         writer.write("success", success);
         writer.write("async", async);
-
-        if (!DependencySourceType.Undefined.equals(dependencyKind)) {
-            writer.write("dependencySource", dependencySource.getValue());
-        }
-
+        writer.write("dependencySource", dependencySource.getValue());
         writer.write("properties", properties);
         writer.write("duration", duration.toString());
     }

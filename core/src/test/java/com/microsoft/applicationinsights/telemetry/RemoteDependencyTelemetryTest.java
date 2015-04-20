@@ -67,15 +67,13 @@ public final class RemoteDependencyTelemetryTest {
         String commandName = "Query1";
         Duration duration = new Duration(12345);
         boolean success = false;
-        DependencyKind dependencyKind = DependencyKind.SQL;
 
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, success, dependencyKind);
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, success);
 
         assertEquals(dependencyName, telemetry.getName());
         assertEquals(commandName, telemetry.getCommandName());
         assertEquals(duration, telemetry.getDuration());
         assertEquals(success, telemetry.getSuccess());
-        assertEquals(dependencyKind, telemetry.getDependencyKind());
 
         assertEquals(telemetry.getValue(), 0.0, 0);
         assertNull(telemetry.getCount());
