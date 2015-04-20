@@ -37,39 +37,18 @@ dependencies {
     testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
 }
 
-uploadArchives {
-    if (requiredPropertiesExist(requriedProperties)) {
-        repositories {
-            mavenDeployer {
-                configuration = configurations.deployerJars
+// region Publishing properties
 
-                repository(url: mavenRepositoryUrl) {
-                    authentication(userName: mavenUsername, password: mavenUserPassword)
-                }
+projectPomName = project.msftAppInsights + " Java SDK Web Module"
+projectPomDescription = "This is the web module of " + project.msftAppInsightsJavaSdk
 
-                updatePomWithGeneralProjectInformation(pom)
-
-                // Updating web pom specific values.
-                pom.project {
-                    name = project.msftAppInsights + " Java SDK Web Module"
-                    description = "This is the web module of " + project.msftAppInsightsJavaSdk
-                }
-
-                pom.whenConfigured {
-                    p ->
-                        p.dependencies.each {
-                            d ->
-                                if (d.groupId != "com.microsoft.azure" && d.scope == "compile") {
-                                    d.scope = "provided"
-                                }
-                        }
-
-                        writePomToArtifactsDirectory(p, 'web')
-                }
-            }
+whenPomConfigured = { p ->
+    p.dependencies.each { d ->
+        if (d.groupId != "com.microsoft.azure" && d.scope == "compile") {
+            d.scope = "provided"
         }
     }
+    writePomToArtifactsDirectory(p, project.name)
 }
 
-// endregion Publishing tasks
-
+// endregion Publishing properties

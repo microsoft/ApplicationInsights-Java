@@ -19,10 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-project.ext.set("rootProjectBuildDir", new File(rootProject.getProjectDir(), 'build'))
-project.ext.set("artifactsDirectoryRoot", new File(rootProjectBuildDir, 'artifacts'))
-project.ext.set("remoteTestResultsDirName", 'remote-tests-results')
-project.ext.set("remoteTestReportDirName", 'remote-tests-reports')
+project.ext {
+    rootProjectBuildDir = new File(rootDir, 'build')
+    artifactsDirectoryRoot = new File(rootProjectBuildDir, 'artifacts')
+    remoteTestResultsDirName = 'remote-tests-results'
+    remoteTestReportDirName = 'remote-tests-reports'
+}
 
 // region Public methods
 
