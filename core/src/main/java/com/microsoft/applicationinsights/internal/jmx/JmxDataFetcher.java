@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;

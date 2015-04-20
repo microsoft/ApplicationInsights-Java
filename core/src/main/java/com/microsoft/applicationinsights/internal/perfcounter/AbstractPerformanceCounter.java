@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-
 /**
  * A base class for classes that report performance counters of Process level.
  *

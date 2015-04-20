@@ -29,7 +29,6 @@ import com.microsoft.applicationinsights.internal.jmx.JmxDataFetcher;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import java.util.Collection;
 import java.util.HashMap;

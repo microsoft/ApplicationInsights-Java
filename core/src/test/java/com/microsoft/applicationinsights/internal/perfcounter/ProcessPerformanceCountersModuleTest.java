@@ -25,8 +25,6 @@ import org.junit.Test;
 
 import java.util.Collection;
 
-import static org.junit.Assert.*;
-
 public final class ProcessPerformanceCountersModuleTest {
     @Test(expected = Exception.class)
     public void testFactoryIsConfigurationAware() throws Exception {

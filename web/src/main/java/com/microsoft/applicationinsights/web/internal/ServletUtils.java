@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.web.internal;
 
 import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPathFactory;
 import java.io.InputStream;

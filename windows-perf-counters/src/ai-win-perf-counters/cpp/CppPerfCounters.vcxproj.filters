@@ -35,7 +35,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="com_microsoft_azure_applicationinsights_win_perf_jniconnector.h">
+    <ClInclude Include="CppPerfCounters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
