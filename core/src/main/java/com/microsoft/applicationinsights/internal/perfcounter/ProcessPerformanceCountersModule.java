@@ -53,7 +53,7 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
      * The method will work only if the process is activated under Windows OS. The method will initialize
      * the connection to the native code using {@link com.microsoft.applicationinsights.internal.perfcounter.JniPCConnector}
      * and then will go through the requested performance counters, normalize them, and will hand them to the factory.
-     * @param configuration
+     * @param configuration The configuration of that section
      */
     @Override
     public void addConfigurationData(PerformanceCountersXmlElement configuration) {
