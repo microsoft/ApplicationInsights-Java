@@ -2,13 +2,10 @@ package com.microsoft.applicationinsights.web.internal.perfcounter;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
-import com.microsoft.applicationinsights.internal.perfcounter.JmxPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
-import com.microsoft.applicationinsights.internal.perfcounter.WindowsPerformanceCounterData;
 
 /**
  * Created by gupele on 3/12/2015.

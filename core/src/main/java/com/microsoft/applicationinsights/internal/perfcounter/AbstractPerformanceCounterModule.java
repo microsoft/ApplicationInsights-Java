@@ -26,7 +26,6 @@ import java.util.Collection;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 /**
  * A base class for performance modules.

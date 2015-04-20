@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;

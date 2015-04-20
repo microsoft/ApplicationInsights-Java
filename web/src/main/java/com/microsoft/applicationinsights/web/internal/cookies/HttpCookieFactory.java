@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal.cookies;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.http.Cookie;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;

@@ -27,8 +27,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
-import java.util.UUID;
-
 public class LocalStringsUtilsTest {
 
 	@Test

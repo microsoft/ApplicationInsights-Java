@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.google.common.base.Strings;
-
 /**
  * Created by gupele on 3/16/2015.
  */

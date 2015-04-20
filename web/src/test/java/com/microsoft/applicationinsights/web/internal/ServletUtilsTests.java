@@ -21,12 +21,10 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
