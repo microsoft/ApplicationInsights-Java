@@ -20,14 +20,14 @@
  */
 
 apply plugin: 'cpp'
+
 import org.gradle.nativeplatform.NativeLibrarySpec
+import org.gradle.nativeplatform.StaticLibraryBinarySpec
 import org.gradle.nativeplatform.toolchain.VisualCpp
 
 def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)'
 def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
-
-defaultTasks ':windows-perf-counters:x64ReleaseAi-win-perf-countersSharedLibrary'
 
 model {
     buildTypes {
@@ -111,3 +111,26 @@ binaries.all {
         }
     }
 }
+
+if (!project.hasProperty("buildStaticLibraries")) {
+    logger.info 'Project property "buildStaticLibraries" is undefined - disabling the build of static libraries'
+    DisableStaticLibraryTasks()
+} else {
+    logger.info 'Project property "buildStaticLibraries" is defined - static libraries build will not be disabled'
+}
+
+// region Private Methods
+
+def DisableStaticLibraryTasks()
+{
+    binaries.matching { b ->
+        b instanceof StaticLibraryBinarySpec
+    }.all { b ->
+        b.tasks.all { t ->
+            logger.info "Disabling static library task \"$t.name\""
+            t.enabled = false
+        }
+    }
+}
+
+// endregion Private Methods
