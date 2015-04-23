@@ -19,19 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-// region Root project properties
-
-ext {
-    msftAppInsights = "Microsoft Application Insights"
-    msftAppInsightsJavaSdk = "$msftAppInsights Java SDK"
-    buildScriptsDir = "$rootDir/gradle"
-}
-
-version = calcProjectVersion()
-
-// endregion Root project properties
-
 // region Common configurations
+
+ext.buildScriptsDir = "$rootDir/gradle"
 
 apply from: "$buildScriptsDir/common.gradle"
 apply from: "$buildScriptsDir/test.gradle"
