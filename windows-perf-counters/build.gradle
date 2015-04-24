@@ -20,6 +20,7 @@
  */
 
 apply plugin: 'cpp'
+apply from: "$buildScriptsDir/publishing.gradle"
 
 buildscript {
     repositories {
@@ -125,18 +126,41 @@ binaries.all {
     }
 }
 
+// region Publishing configuration
+
+archivesBaseName = project.name
+projectPomName = "$project.name JNI connector"
+projectPomDescription = "This module provides blah blah blah"
+def platformToPublish = "x64"
+def builtTypeToPublish = "release"
+
+// endregion Publishing configuration
+
+// region Applying late configurations
+
 afterEvaluate {
     // Rename native binaries
     RenameNativeBinaries()
 
-    // disable static libraries build (unless property "buildStaticLibraries" exists)
+    // Disable static libraries build (unless property "buildStaticLibraries" exists)
     if (!project.hasProperty("buildStaticLibraries")) {
         logger.info 'Project property "buildStaticLibraries" is undefined - disabling the build of static libraries'
         DisableStaticLibraryTasks()
     } else {
         logger.info 'Project property "buildStaticLibraries" is defined - static libraries build will not be disabled'
     }
+
+    // Add artifact to publish to the archives configuration
+    artifacts {
+        binaries.matching { b ->
+            b instanceof SharedLibraryBinarySpec && b.targetPlatform.name == platformToPublish && b.buildType.name == builtTypeToPublish
+        }.all { SharedLibraryBinarySpec b ->
+            logger.info "Artifact to publish: $b.sharedLibraryFile"
+            archives b.sharedLibraryFile //{ group "com.microsoft.azure" }
+        }
+    }
 }
+ // endregion Applying late configurations
 
 // region Private Methods
 
