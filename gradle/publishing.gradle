@@ -27,6 +27,18 @@ ext {
     whenPomConfigured = { p -> writePomToArtifactsDirectory(p, project.name) }
 }
 
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    mavenDeployer
+}
+
+dependencies {
+    mavenDeployer "org.apache.maven.wagon:wagon-ftp:2.8"
+}
+
 afterEvaluate {
     assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
     uploadArchives {
@@ -34,7 +46,7 @@ afterEvaluate {
         if (requiredPropertiesExist(requriedProperties)) {
             repositories {
                 mavenDeployer {
-                    configuration = configurations.deployerJars
+                    configuration = configurations.mavenDeployer
 
                     repository(url: mavenRepositoryUrl) {
                         authentication(userName: mavenUsername, password: mavenUserPassword)
@@ -46,46 +58,6 @@ afterEvaluate {
         }
     }
 }
-
-repositories {
-    mavenCentral()
-}
-
-configurations {
-    deployerJars
-}
-
-dependencies {
-    deployerJars "org.apache.maven.wagon:wagon-ftp:2.8"
-}
-
-task prepareSourcesArchive(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allJava
-    doFirst {
-        archiveName = "$archivesBaseName-$version-sources.jar"
-    }
-}
-
-task prepareJavadocArchive(type: Jar){
-    classifier = 'javadoc'
-    from "$docsDir/javadoc"
-    doFirst {
-        archiveName = "$archivesBaseName-$version-javadoc.jar"
-    }
-    dependsOn javadoc
-}
-
-task copyLibsToGlobalArtifactsFolder(type: Copy) {
-    from libsDir
-    into new File(artifactsDirectoryRoot, project.name)
-    dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive
-}
-
-task prepare {
-    dependsOn copyLibsToGlobalArtifactsFolder
-}
-
 
 // endregion Publishing configuration
 

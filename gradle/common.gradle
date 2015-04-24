@@ -19,12 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-project.ext {
+// region Root project properties (affective for all sub-projects)
+
+ext {
+    msftAppInsights = "Microsoft Application Insights"
+    msftAppInsightsJavaSdk = "$msftAppInsights Java SDK"
+
     rootProjectBuildDir = new File(rootDir, 'build')
     artifactsDirectoryRoot = new File(rootProjectBuildDir, 'artifacts')
     remoteTestResultsDirName = 'remote-tests-results'
     remoteTestReportDirName = 'remote-tests-reports'
 }
+
+// endregion Root project properties
+
+// region Common configurations
+
+version = calcProjectVersion()
+subprojects {
+    version = rootProject.version
+}
+
+gradle.taskGraph.whenReady { graph ->
+    graph.getAllTasks().each { task ->
+        if (task.hasProperty("requriedProperties")) {
+            task.property("requriedProperties").each { prop ->
+                verifyProjectPropertyExists(prop, task.name)
+            }
+        }
+    }
+}
+
+// endregion Common configurations
 
 // region Public methods
 
@@ -39,16 +65,6 @@ def requiredPropertiesExist(requiredPropertiesNames)
     })
 }
 
-gradle.taskGraph.whenReady { graph ->
-    graph.getAllTasks().each { task ->
-        if (task.hasProperty("requriedProperties")) {
-            task.property("requriedProperties").each { prop ->
-                verifyProjectPropertyExists(prop, task.name)
-            }
-        }
-    }
-}
-
 // endregion Public methods
 
 // region Private methods
@@ -58,6 +74,24 @@ def verifyProjectPropertyExists(propertyName, taskName)
     if (!this.hasProperty(propertyName)) {
         throw new GroovyRuntimeException("Property '$propertyName' must be defined for task '$taskName'")
     }
+}
+
+// calculate sdk version based on system properties
+
+def calcProjectVersion() {
+    def projectVersion = version;
+    def userProvidedVersion = System.properties["version"]
+    if (userProvidedVersion != null && userProvidedVersion.trim() != "") {
+        projectVersion = userProvidedVersion.trim()
+        logger.info "User provided a version; version updated to $projectVersion"
+    }
+
+    String isRelease = System.properties["isRelease"]
+    if (isRelease == null || isRelease.trim().toLowerCase() != "true") {
+        projectVersion = projectVersion + "-SNAPSHOT"
+        logger.info "This is NOT a release version; version updated to $projectVersion"
+    }
+    projectVersion
 }
 
 // endregion Private methods

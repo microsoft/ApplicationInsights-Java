@@ -20,14 +20,28 @@
  */
 
 apply plugin: 'cpp'
+apply from: "$buildScriptsDir/publishing.gradle"
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'commons-io', name: 'commons-io', version: '2.4'
+    }
+}
+
+import org.apache.commons.io.FilenameUtils
+import org.gradle.nativeplatform.BuildType
 import org.gradle.nativeplatform.NativeLibrarySpec
+import org.gradle.nativeplatform.SharedLibraryBinarySpec
+import org.gradle.nativeplatform.StaticLibraryBinarySpec
+import org.gradle.nativeplatform.platform.NativePlatform
 import org.gradle.nativeplatform.toolchain.VisualCpp
 
 def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)'
 def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
-
-defaultTasks ':windows-perf-counters:x64ReleaseAi-win-perf-countersSharedLibrary'
 
 model {
     buildTypes {
@@ -111,3 +125,94 @@ binaries.all {
         }
     }
 }
+
+// region Publishing configuration
+
+archivesBaseName = project.name
+projectPomName = "$project.name JNI connector"
+projectPomDescription = "This module provides blah blah blah"
+def platformToPublish = "x64"
+def builtTypeToPublish = "release"
+
+// endregion Publishing configuration
+
+// region Applying late configurations
+
+afterEvaluate {
+    // Rename native binaries
+    RenameNativeBinaries()
+
+    // Disable static libraries build (unless property "buildStaticLibraries" exists)
+    if (!project.hasProperty("buildStaticLibraries")) {
+        logger.info 'Project property "buildStaticLibraries" is undefined - disabling the build of static libraries'
+        DisableStaticLibraryTasks()
+    } else {
+        logger.info 'Project property "buildStaticLibraries" is defined - static libraries build will not be disabled'
+    }
+
+    // Add artifact to publish to the archives configuration
+    artifacts {
+        binaries.matching { b ->
+            b instanceof SharedLibraryBinarySpec && b.targetPlatform.name == platformToPublish && b.buildType.name == builtTypeToPublish
+        }.all { SharedLibraryBinarySpec b ->
+            logger.info "Artifact to publish: $b.sharedLibraryFile"
+            archives b.sharedLibraryFile //{ group "com.microsoft.azure" }
+        }
+    }
+}
+ // endregion Applying late configurations
+
+// region Private Methods
+
+def DisableStaticLibraryTasks()
+{
+    binaries.matching { b ->
+        b instanceof StaticLibraryBinarySpec
+    }.all { b ->
+        b.tasks.all { t ->
+            logger.info "Disabling static library task \"$t.name\""
+            t.enabled = false
+        }
+    }
+}
+
+def RenameNativeBinaries() {
+    binaries.all { b ->
+        if (b instanceof SharedLibraryBinarySpec) {
+            b.sharedLibraryFile = ReconstructFileName(b.sharedLibraryFile, b.buildType, b.targetPlatform)
+        } else if (project.hasProperty("buildStaticLibraries") && b instanceof StaticLibraryBinarySpec) {
+            b.staticLibraryFile = ReconstructFileName(b.staticLibraryFile, b.buildType, b.targetPlatform)
+        } else if (!b instanceof StaticLibraryBinarySpec) {
+            logger.warn "Unsupported BinarySpec type found ${b.class}"
+        }
+    }
+}
+
+// This function will reconstruct the file name based on the buildType and targetPlatform
+// New file name structure: <baseName><32|64>[dbg].<ext>
+def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform targetPlatform) {
+    def originalFileName = originalFile.absolutePath
+    def filePath = FilenameUtils.getFullPath(originalFileName)
+    def baseName = FilenameUtils.getBaseName(originalFileName)
+    def extension = FilenameUtils.getExtension(originalFileName)
+
+    def bitnessPart = ""
+    switch (targetPlatform.name) {
+        case "x86" :
+            bitnessPart = "32"
+            break;
+        case "x64" :
+            bitnessPart = "64"
+            break;
+        default:
+            logger.warn "Unexpected targetPlatform encountered - skipping setting the file name bitness part"
+    }
+
+    def debugPart = buildType.name == "debug" ? "dbg" : ""
+    def newName = "$baseName$bitnessPart$debugPart.$extension"
+    def newFile = new File(filePath, newName)
+    logger.info "Reconstructed file name: $originalFile => $newFile"
+    newFile
+}
+
+// endregion Private Methods
