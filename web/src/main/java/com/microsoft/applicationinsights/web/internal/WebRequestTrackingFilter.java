@@ -25,6 +25,7 @@ import javax.servlet.*;
 import java.io.IOException;
 import java.util.Date;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
@@ -36,6 +37,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
     private WebModulesContainer webModulesContainer;
     private boolean isInitialized = false;
+    private TelemetryClient telemetryClient;
 
     // endregion Members
 
@@ -56,10 +58,31 @@ public final class WebRequestTrackingFilter implements Filter {
             isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, res);
         }
 
-        chain.doFilter(req, res);
+        try {
+            chain.doFilter(req, res);
+        } catch (ServletException se) {
+            onException(se);
+            throw se;
+        } catch (IOException ioe) {
+            onException(ioe);
+            throw ioe;
+        } catch (RuntimeException re) {
+            onException(re);
+            throw re;
+        }
 
         if (isInitialized && isRequestProcessedSuccessfully) {
             invokeSafeOnEndRequest(req, res);
+        }
+    }
+
+    private void onException(Exception e) {
+        try {
+            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", e.getMessage());
+            if (telemetryClient != null) {
+                telemetryClient.trackException(e);
+            }
+        } catch (Throwable t) {
         }
     }
 
@@ -78,6 +101,7 @@ public final class WebRequestTrackingFilter implements Filter {
                 return;
             }
 
+            telemetryClient = new TelemetryClient(configuration);
             webModulesContainer = new WebModulesContainer(configuration);
             isInitialized = true;
         } catch (Exception e) {
