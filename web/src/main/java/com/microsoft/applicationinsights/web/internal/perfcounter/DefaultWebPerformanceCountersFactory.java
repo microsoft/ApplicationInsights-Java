@@ -20,12 +20,7 @@ final class DefaultWebPerformanceCountersFactory implements WebPerformanceCounte
 
     @Override
     public Collection<PerformanceCounter> getPerformanceCounters() {
-//        HashMap<String, Collection<JmxAttributeData>> requestCountData = new HashMap<String, Collection<JmxAttributeData>>();
-
-//        addTomcatData(requestCountData);
-
         ArrayList<PerformanceCounter> pcs = new ArrayList<PerformanceCounter>();
-//        pcs.add(new JmxPerformanceCounter(REQUEST_COUNT_PC_CATEGORY_NAME, REQUEST_COUNT_PC_COUNTER_NAME, requestCountData));
 
         return pcs;
     }

@@ -34,11 +34,10 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 @SuppressWarnings("ALL")
 public class AiCore {
     public static void main(String[] args) throws IOException {
-        System.out.println(System.getProperty("user.dir"));
         System.out.println("This program sends various application insights telemetry events.");
 
         TelemetryClient appInsights = new TelemetryClient();
-        /*
+
         if (args.length > 0) {
             appInsights.getContext().setInstrumentationKey(args[0]);
         }
@@ -92,7 +91,6 @@ public class AiCore {
             System.out.println("[6] Exception             -- message=\"This is only a test!\"");
         }
 
-*/
         System.out.println();
         System.out.println("Press any key to exit");
         System.in.read();
