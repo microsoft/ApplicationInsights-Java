@@ -36,7 +36,7 @@ public final class JniPCConnector {
     public static final String PROCESS_SELF_INSTANCE_NAME = "__SELF__";
 
     private static final String BITS_MODEL_64 = "64";
-    private static final String NATIVE_LIBRARY_64 = "AIWinNativePC64";
+    private static final String NATIVE_LIBRARY_64 = "applicationinsights-core-native-win64";
 
     private static String currentInstanceName;
 
