@@ -53,6 +53,21 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     }
 
     /**
+     * Initializes an instnace with the given parameters.
+     * @param dependencyName The dependency name.
+     * @param commandName The command name.
+     * @param duration The duration
+     * @param success Whether the remote call successful or not.
+     */
+    public RemoteDependencyTelemetry(String dependencyName, String commandName, Duration duration, boolean success) {
+        this(dependencyName);
+
+        this.data.setCommandName(commandName);
+        this.data.setDuration(duration);
+        this.data.setSuccess(success);
+    }
+
+    /**
      * Gets tne name resource name.
      * @return The resource name.
      */
@@ -71,6 +86,18 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
 
         data.setName(name);
     }
+
+    /**
+     * Gets the command name.
+     * @return The command name.
+     */
+    public String getCommandName() { return this.data.getCommandName(); }
+
+    /**
+     * Sets the command name.
+     * @param commandName The command name.
+     */
+    public void setCommandName(String commandName) { this.data.setCommandName(commandName); }
 
     /**
      * Gets the Value property.
@@ -214,6 +241,22 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
      */
     public void setDependencySource(DependencySourceType value) {
         data.setDependencySource(value);
+    }
+
+    /**
+     * Gets the duration.
+     * @return The duration.
+     */
+    public Duration getDuration() {
+        return this.data.getDuration();
+    }
+
+    /**
+     * Sets the durations.
+     * @param duration The duration.
+     */
+    public void setDuration(Duration duration) {
+        this.data.setDuration(duration);
     }
 
     @Override

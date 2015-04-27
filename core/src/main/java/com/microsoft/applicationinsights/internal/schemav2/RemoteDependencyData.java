@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 /**
@@ -50,6 +51,11 @@ public class RemoteDependencyData extends Domain {
      * Backing field for property Name.
      */
     private String name;
+
+    /**
+     * Backing field for property commandName.
+     */
+    private String commandName;
 
     /**
      * Backing field for property Kind.
@@ -107,6 +113,11 @@ public class RemoteDependencyData extends Domain {
     private ConcurrentMap<String, String> properties;
 
     /**
+     * Backing field for property Duration.
+     */
+    private Duration duration;
+
+    /**
      * Initializes a new instance of the class.
      */
     public RemoteDependencyData()
@@ -125,6 +136,10 @@ public class RemoteDependencyData extends Domain {
     public void setName(String value) {
         this.name = value;
     }
+
+    public String getCommandName() { return this.commandName; }
+
+    public void setCommandName(String commandName) { this.commandName = commandName; }
 
     public DataPointType getKind() {
         return this.kind;
@@ -217,6 +232,14 @@ public class RemoteDependencyData extends Domain {
         this.properties = value;
     }
 
+    public Duration getDuration() {
+        return this.duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
@@ -227,11 +250,8 @@ public class RemoteDependencyData extends Domain {
 
         writer.write("ver", ver);
         writer.write("name", name);
-
-        if (!DataPointType.Measurement.equals(kind)) {
-            writer.write("kind", kind.getValue());
-        }
-
+        writer.write("commandName", commandName);
+        writer.write("kind", kind.getValue());
         writer.write("value", value);
         writer.write("count", count);
         writer.write("min", min);
@@ -240,12 +260,9 @@ public class RemoteDependencyData extends Domain {
         writer.write("dependencyKind", dependencyKind.getValue());
         writer.write("success", success);
         writer.write("async", async);
-
-        if (!DependencySourceType.Undefined.equals(dependencyKind)) {
-            writer.write("dependencySource", dependencySource.getValue());
-        }
-
+        writer.write("dependencySource", dependencySource.getValue());
         writer.write("properties", properties);
+        writer.write("duration", duration.toString());
     }
 
     public String getEnvelopName() {
