@@ -158,7 +158,6 @@ afterEvaluate {
         }.all { SharedLibraryBinarySpec b ->
             logger.info "Artifact to publish: $b.sharedLibraryFile"
             archives b.sharedLibraryFile //{ group "com.microsoft.azure" }
-            archivesBaseName = FilenameUtils.getBaseName(b.sharedLibraryFile.name)
         }
     }
 }

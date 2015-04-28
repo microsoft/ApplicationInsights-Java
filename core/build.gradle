@@ -34,9 +34,6 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
     testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
-    if (System.env."windir" != null) {
-        runtime project(':core-native')
-    }
 }
 
 task generateVersionProperties(type: PropsFileGen) {
