@@ -20,7 +20,6 @@
  */
 
 apply plugin: 'cpp'
-apply from: "$buildScriptsDir/publishing.gradle"
 
 buildscript {
     repositories {
@@ -33,6 +32,7 @@ buildscript {
 
 import org.apache.commons.io.FilenameUtils
 import org.gradle.nativeplatform.BuildType
+import org.gradle.nativeplatform.NativeBinarySpec
 import org.gradle.nativeplatform.NativeLibrarySpec
 import org.gradle.nativeplatform.SharedLibraryBinarySpec
 import org.gradle.nativeplatform.StaticLibraryBinarySpec
@@ -42,6 +42,10 @@ import org.gradle.nativeplatform.toolchain.VisualCpp
 def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)'
 def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
+
+def builtTypeToBuild = "release"
+
+// region Native binary definition and configuration
 
 model {
     buildTypes {
@@ -127,54 +131,64 @@ binaries.all {
     }
 }
 
-// region Publishing configuration
+sourceSets {
+    main {
+        resources {
+            exclude "**/*.exp"
+            exclude "**/*.lib"
+        }
+    }
+}
 
-archivesBaseName = project.name
-projectPomName = "$project.name JNI connector"
-projectPomDescription = "This is the native component of $project.msftAppInsights core for Windows systems"
-def platformToPublish = "x64"
-def builtTypeToPublish = "release"
-
-// endregion Publishing configuration
+// region Native binary definition and configuration
 
 // region Applying late configurations
 
 afterEvaluate {
-    // Rename native binaries
     RenameNativeBinaries()
 
-    // Disable static libraries build (unless property "buildStaticLibraries" exists)
-    if (!project.hasProperty("buildStaticLibraries")) {
-        logger.info 'Project property "buildStaticLibraries" is undefined - disabling the build of static libraries'
-        DisableStaticLibraryTasks()
-    } else {
-        logger.info 'Project property "buildStaticLibraries" is defined - static libraries build will not be disabled'
-    }
+    FilterOutComponentsToBuild(builtTypeToBuild)
 
-    // Add artifact to publish to the archives configuration
-    artifacts {
-        binaries.matching { b ->
-            b instanceof SharedLibraryBinarySpec && b.targetPlatform.name == platformToPublish && b.buildType.name == builtTypeToPublish
-        }.all { SharedLibraryBinarySpec b ->
-            logger.info "Artifact to publish: $b.sharedLibraryFile"
-            archives b.sharedLibraryFile //{ group "com.microsoft.azure" }
-            archivesBaseName = FilenameUtils.getBaseName(b.sharedLibraryFile.name)
-        }
-    }
+    DefineSharedLibrariesAsArtifactResources()
 }
+
  // endregion Applying late configurations
 
 // region Private Methods
 
-def DisableStaticLibraryTasks()
+// Filter out binaries that their build should be skipped by setting their isBuildable property to false
+// 1. Static libraries
+// 2. Components with buildType other than builtTypeToBuild
+def FilterOutComponentsToBuild(buildTypeToBuild) {
+    artifacts {
+        binaries.matching { b ->
+            b instanceof NativeBinarySpec
+        }.all { NativeBinarySpec b ->
+            if (b instanceof StaticLibraryBinarySpec) {
+                logger.info "Disabling build of static library file $b.staticLibraryFile.name"
+                b.buildable = false
+            }
+            else if (b.buildType.name != buildTypeToBuild) {
+                logger.info "Disabling build of shared libary file $b.sharedLibraryFile.name"
+                logger.info "Reason: b.buildType.name (==\"$b.buildType.name\") != \"$buildTypeToBuild\""
+                b.buildable = false
+            }
+        }
+    }
+}
+
+def DefineSharedLibrariesAsArtifactResources()
 {
     binaries.matching { b ->
-        b instanceof StaticLibraryBinarySpec
+        b instanceof NativeBinarySpec && b.isBuildable()
     }.all { b ->
         b.tasks.all { t ->
-            logger.info "Disabling static library task \"$t.name\""
-            t.enabled = false
+            logger.info "Adding task \"processResources\" a dependency on task \"$t.name\""
+            processResources.dependsOn t
         }
+
+        logger.info "Adding \"$b.sharedLibraryFile.parentFile\" to sourceSets.main.resources"
+        sourceSets.main.resources.srcDir sharedLibraryFile.parentFile
     }
 }
 
