@@ -26,6 +26,16 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.Properties;
 
 /**
  * This class serves as the connection to the native code that does the work with Windows.
@@ -33,10 +43,12 @@ import com.google.common.base.Strings;
  * Created by gupele on 3/30/2015.
  */
 public final class JniPCConnector {
+    public static final String AI_BASE_FOLDER = "AISDK";
+    public static final String AI_NATIVE_FOLDER = "native";
     public static final String PROCESS_SELF_INSTANCE_NAME = "__SELF__";
 
     private static final String BITS_MODEL_64 = "64";
-    private static final String NATIVE_LIBRARY_64 = "applicationinsights-core-native-win64";
+    private static final String NATIVE_LIBRARY_64 = "applicationinsights-core-native-win64.dll";
 
     private static String currentInstanceName;
 
@@ -63,6 +75,8 @@ public final class JniPCConnector {
 
             if (loadLibrary()) {
                 return initNativeCode();
+            } else {
+                InternalLogger.INSTANCE.error("Failed to load native dll, Windows performance counters will not be used.");
             }
         } catch (Throwable e) {
             InternalLogger.INSTANCE.error("Failed to load native dll, Windows performance counters will not be used: '%s'.", e.getMessage());
@@ -126,15 +140,94 @@ public final class JniPCConnector {
         return true;
     }
 
-    private static boolean loadLibrary() {
+    /**
+     * The method will try to extract the dll for the Windows performance counters to a local
+     * folder and then will try to load it. The method will do all that by doing the following things:
+     * 1. Find the OS type (64/32) currently supports only 64 bit.
+     * 2. Will find the path to extract to, which is %temp%/sdk_version_number
+     * 3. Find out whether or not the file is already exists in that directory
+     * 4. If the dll is not there, the method will extract it from the jar to that directory
+     * 5. The method will call System.load to load the dll and by doing so we are ready to use it
+     * @return true on success, otherwise false
+     * @throws IOException If there are errors in opening/writing/reading/closing etc.
+     *         Note that the method might throw RuntimeExceptions due to critical issues
+     */
+    private static boolean loadLibrary() throws IOException {
         String model = System.getProperty("sun.arch.data.model");
         String libraryToLoad = NATIVE_LIBRARY_64;
         if (!BITS_MODEL_64.equals(model)) {
             return false;
         }
 
-        System.loadLibrary(libraryToLoad);
+        File dllPath = buildDllLocalPath();
+
+        File dllOnDisk = new File(dllPath + File.separator + libraryToLoad);
+
+        if (!dllOnDisk.exists()) {
+            extractToLocalFolder(dllOnDisk, libraryToLoad);
+        }
+
+        System.load(dllOnDisk.toString());
+
         InternalLogger.INSTANCE.trace("Successfully loaded library '%s'", libraryToLoad);
+
         return true;
+    }
+
+    private static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
+        InputStream in = JniPCConnector.class.getClassLoader().getResourceAsStream(libraryToLoad);
+        if (in == null) {
+            throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
+        }
+
+        OutputStream out = null;
+        try {
+            out = FileUtils.openOutputStream(dllOnDisk);
+            IOUtils.copy(in, out);
+
+            InternalLogger.INSTANCE.trace("Successfully extracted '%s' to local folder", libraryToLoad);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    InternalLogger.INSTANCE.error("Failed to close input stream for dll extraction: %s", e.getMessage());
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    InternalLogger.INSTANCE.error("Failed to close output stream for dll extraction: %s", e.getMessage());
+                }
+            }
+        }
+    }
+
+    private static File buildDllLocalPath() {
+        Properties properties = PropertyHelper.getSdkVersionProperties();
+        if (properties == null) {
+            throw new RuntimeException("Failed to find SDK Version Properties file.");
+        }
+
+        String version = properties.getProperty("version");
+        if (version == null) {
+            throw new RuntimeException("Failed to find SDK version.");
+        }
+
+        String dllPathName = System.getProperty("java.io.tmpdir") + File.separator + AI_BASE_FOLDER + File.separator + AI_NATIVE_FOLDER + File.separator + version;
+        File dllPath = new File(dllPathName);
+
+        if (!dllPath.exists()) {
+            dllPath.mkdirs();
+        }
+
+        if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
+            throw new RuntimeException("Failed to create a read/write folder for the native dll.");
+        }
+
+        InternalLogger.INSTANCE.trace("%s folder exists", dllPathName);
+
+        return dllPath;
     }
 }
