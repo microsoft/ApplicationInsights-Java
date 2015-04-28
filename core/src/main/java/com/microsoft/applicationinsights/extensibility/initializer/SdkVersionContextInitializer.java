@@ -32,18 +32,16 @@ import java.util.Properties;
  * Initializer for SDK version.
  */
 public final class SdkVersionContextInitializer implements ContextInitializer {
-    final String sdkVersionFileName = "sdk-version.properties";
     final String sdkPrefix = "Java";
 
     @Override
     public void initialize(TelemetryContext context) {
         String sdkVersion = sdkPrefix;
-        try {
-            Properties sdkVersionProps = PropertyHelper.getProperties(sdkVersionFileName);
+
+        Properties sdkVersionProps = PropertyHelper.getSdkVersionProperties();
+        if (sdkVersionProps != null) {
             String version = sdkVersionProps.getProperty("version");
             sdkVersion = sdkPrefix + " " + version;
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Could not find sdk version file '%s'", sdkVersionFileName);
         }
 
         context.getInternal().setSdkVersion(sdkVersion);
