@@ -49,6 +49,7 @@ public final class JniPCConnector {
 
     private static final String BITS_MODEL_64 = "64";
     private static final String NATIVE_LIBRARY_64 = "applicationinsights-core-native-win64.dll";
+    private static final String NATIVE_LIBRARY_32 = "applicationinsights-core-native-win32.dll";
 
     private static String currentInstanceName;
 
@@ -144,8 +145,8 @@ public final class JniPCConnector {
      * The method will try to extract the dll for the Windows performance counters to a local
      * folder and then will try to load it. The method will do all that by doing the following things:
      * 1. Find the OS type (64/32) currently supports only 64 bit.
-     * 2. Will find the path to extract to, which is %temp%/sdk_version_number
-     * 3. Find out whether or not the file is already exists in that directory
+     * 2. Will find the path to extract to, which is %temp%/AI_BASE_FOLDER/AI_NATIVE_FOLDER/sdk_version_number
+     * 3. Find out whether or not the file already exists in that directory
      * 4. If the dll is not there, the method will extract it from the jar to that directory
      * 5. The method will call System.load to load the dll and by doing so we are ready to use it
      * @return true on success, otherwise false
@@ -156,12 +157,13 @@ public final class JniPCConnector {
         String model = System.getProperty("sun.arch.data.model");
         String libraryToLoad = NATIVE_LIBRARY_64;
         if (!BITS_MODEL_64.equals(model)) {
+            InternalLogger.INSTANCE.error("Currently Performance Counters on Windows 32bit is not supported.");
             return false;
         }
 
         File dllPath = buildDllLocalPath();
 
-        File dllOnDisk = new File(dllPath + File.separator + libraryToLoad);
+        File dllOnDisk = new File(dllPath, libraryToLoad);
 
         if (!dllOnDisk.exists()) {
             extractToLocalFolder(dllOnDisk, libraryToLoad);
@@ -215,8 +217,10 @@ public final class JniPCConnector {
             throw new RuntimeException("Failed to find SDK version.");
         }
 
-        String dllPathName = System.getProperty("java.io.tmpdir") + File.separator + AI_BASE_FOLDER + File.separator + AI_NATIVE_FOLDER + File.separator + version;
-        File dllPath = new File(dllPathName);
+        File dllPath = new File(System.getProperty("java.io.tmpdir"));
+        dllPath = new File(dllPath.toString(), AI_BASE_FOLDER);
+        dllPath = new File(dllPath.toString(), AI_NATIVE_FOLDER);
+        dllPath = new File(dllPath.toString(), version);
 
         if (!dllPath.exists()) {
             dllPath.mkdirs();
@@ -226,7 +230,7 @@ public final class JniPCConnector {
             throw new RuntimeException("Failed to create a read/write folder for the native dll.");
         }
 
-        InternalLogger.INSTANCE.trace("%s folder exists", dllPathName);
+        InternalLogger.INSTANCE.trace("%s folder exists", dllPath.toString());
 
         return dllPath;
     }
