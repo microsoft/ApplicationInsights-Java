@@ -79,20 +79,7 @@ public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
             try {
                 double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
                 if (value < 0) {
-                    if (value == -1) {
-                        InternalLogger.INSTANCE.error("Native code exception in wrapper while fetching counter value '%s'", entry.getValue().displayName);
-                    }
-                    else if (value == -4) {
-                        InternalLogger.INSTANCE.error("Native code exception in internal wrapper while fetching counter value '%s'", entry.getValue().displayName);
-                    }
-                    else if (value == -2) {
-                        InternalLogger.INSTANCE.error("Native code exception performance counter '%s' not found", entry.getValue().displayName);
-                    }
-                    else if (value == -7) {
-                        InternalLogger.INSTANCE.error("Native code exception while fetching counter value '%s'", entry.getValue().displayName);
-                    } else {
-                        InternalLogger.INSTANCE.error("Native code unknown exception while fetching counter value '%s'", entry.getValue().displayName);
-                    }
+                    reportError(value, entry.getValue().displayName);
                 } else {
                     send(telemetryClient, value, entry.getValue());
                     InternalLogger.INSTANCE.trace("Sent performance counter for '%s': '%s'", entry.getValue().displayName, value);
@@ -133,4 +120,22 @@ public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
             }
         }
     }
+
+    private void reportError(double value, String displayName) {
+        if (value == -1) {
+            InternalLogger.INSTANCE.error("Native code exception in wrapper while fetching counter value '%s'", displayName);
+        }
+        else if (value == -4) {
+            InternalLogger.INSTANCE.error("Native code exception in internal wrapper while fetching counter value '%s'", displayName);
+        }
+        else if (value == -2) {
+            InternalLogger.INSTANCE.error("Native code exception performance counter '%s' not found", displayName);
+        }
+        else if (value == -7) {
+            InternalLogger.INSTANCE.error("Native code exception while fetching counter value '%s'", displayName);
+        } else {
+            InternalLogger.INSTANCE.error("Native code unknown exception while fetching counter value '%s'", displayName);
+        }
+    }
+
 }
