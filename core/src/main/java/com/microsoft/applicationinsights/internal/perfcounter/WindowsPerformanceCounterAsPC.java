@@ -39,11 +39,11 @@ import com.google.common.base.Strings;
  */
 public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerformanceCounter {
     private static final String TOTAL_CPU_CATEGORY_NAME = "Processor";
-    private static final String TOTAL_CPU_COUNTER_NAME = "% Processor time";
+    private static final String TOTAL_CPU_COUNTER_NAME = "% Processor Time";
     private static final String TOTAL_CPU_INSTANCE_NAME = "_Total";
 
     private static final String TOTAL_MEMORY_CATEGORY_NAME = "Memory";
-    private static final String TOTAL_MEMORY_COUNTER_NAME = "Available bytes";
+    private static final String TOTAL_MEMORY_COUNTER_NAME = "Available Bytes";
 
 
     private static final String PROCESS_IO_DATA_BYTES_CATEGORY_NAME = "Process";
