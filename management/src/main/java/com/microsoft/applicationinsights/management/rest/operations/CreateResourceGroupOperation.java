@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.management.rest.operations;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
 
@@ -45,7 +46,7 @@ public class CreateResourceGroupOperation implements RestOperation<ResourceGroup
     }
 
     @Override
-    public ResourceGroup execute(Client restClient) throws IOException, AzureCmdException {
+    public ResourceGroup execute(Client restClient) throws IOException, RestOperationException {
 
         String resourceJson = restClient.executePut(operationPath, payload, OPERATION_API_VERSION);
         ResourceGroup resourceGroup = parseResult(resourceJson);
@@ -68,6 +69,6 @@ public class CreateResourceGroupOperation implements RestOperation<ResourceGroup
         JsonObject payload = new JsonObject();
         payload.addProperty("location", location);
 
-        return payload.getAsString();
+        return payload.toString();
     }
 }

@@ -21,12 +21,19 @@
 
 package com.microsoft.applicationinsights.management.rest.client;
 
-import java.io.IOException;
-
 /**
  * Created by yonisha on 4/19/2015.
  */
-public interface Client {
-    String executeGet(String path, String apiVersion) throws IOException, RestOperationException;
-    String executePut(String path, String payload, String apiVersion) throws IOException, RestOperationException;
+public class RestOperationException extends Exception {
+    private OperationExceptionDetails operationExceptionDetails;
+
+    public RestOperationException(String message, OperationExceptionDetails operationExceptionDetails) {
+        super(message);
+
+        this.operationExceptionDetails = operationExceptionDetails;
+    }
+
+    public OperationExceptionDetails getOperationExceptionDetails() {
+        return operationExceptionDetails;
+    }
 }

@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.management.rest.operations;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class GetAvailableGeoLocations implements RestOperation<List<String>> {
     }
 
     @Override
-    public List<String> execute(Client restClient) throws IOException, AzureCmdException {
+    public List<String> execute(Client restClient) throws IOException, RestOperationException {
         String resourceJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
 
         List<String> locations = parseResult(resourceJson);

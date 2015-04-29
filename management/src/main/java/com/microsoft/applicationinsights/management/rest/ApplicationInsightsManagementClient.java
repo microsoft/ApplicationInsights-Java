@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.microsoft.applicationinsights.management.authentication.Settings;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.RestClient;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
@@ -60,7 +61,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * Gets a list of available subscriptions.
      * @return The list of subscriptions available.
      */
-    public List<Subscription> getSubscriptions() throws IOException, AzureCmdException {
+    public List<Subscription> getSubscriptions() throws IOException, RestOperationException {
         renewAccessTokenIfExpired();
 
         GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation();
@@ -74,7 +75,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @param subscriptionId The subscription ID.
      * @return The resources list.
      */
-    public List<Resource> getResources(String subscriptionId) throws IOException, AzureCmdException {
+    public List<Resource> getResources(String subscriptionId) throws IOException, RestOperationException {
         renewAccessTokenIfExpired();
 
         GetResourcesOperation getResourcesOperation = new GetResourcesOperation(subscriptionId);
@@ -90,7 +91,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @param resourceName The resource name.
      * @return The resource created.
      */
-    public Resource createResource(String subscriptionId, String resourceGroupName, String resourceName) throws IOException, AzureCmdException {
+    public Resource createResource(String subscriptionId, String resourceGroupName, String resourceName) throws IOException, RestOperationException {
         renewAccessTokenIfExpired();
 
         CreateResourceOperation createResourceOperation = new CreateResourceOperation(subscriptionId, resourceGroupName, resourceName);
@@ -107,7 +108,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @return The new resource group created.
      */
     @Override
-    public ResourceGroup createResourceGroup(String subscriptionId, String resourceGroupName, String location) throws IOException, AzureCmdException {
+    public ResourceGroup createResourceGroup(String subscriptionId, String resourceGroupName, String location) throws IOException, RestOperationException {
         renewAccessTokenIfExpired();
 
         CreateResourceGroupOperation createResourceGroupOperation = new CreateResourceGroupOperation(subscriptionId, resourceGroupName, location);
@@ -123,7 +124,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @return Collection of resource groups.
      */
     @Override
-    public List<ResourceGroup> getResourceGroups(String subscriptionId) throws IOException, AzureCmdException {
+    public List<ResourceGroup> getResourceGroups(String subscriptionId) throws IOException, RestOperationException {
         GetResourceGroupsOperation getResourceGroupsOperation = new GetResourceGroupsOperation(subscriptionId);
         List<ResourceGroup> resourceGroups = getResourceGroupsOperation.execute(this.restClient);
 
@@ -136,7 +137,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @return Collection of available geo-locations.
      */
     @Override
-    public List<String> getAvailableGeoLocations() throws IOException, AzureCmdException {
+    public List<String> getAvailableGeoLocations() throws IOException, RestOperationException {
         renewAccessTokenIfExpired();
 
         GetAvailableGeoLocations getAvailableGeoLocations = new GetAvailableGeoLocations();

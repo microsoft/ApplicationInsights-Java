@@ -28,6 +28,7 @@ import java.util.List;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
 
@@ -40,7 +41,7 @@ public class GetSubscriptionsOperation implements RestOperation<List<Subscriptio
     private final String OPERATION_API_VERSION = "2014-06-01";
     private final String OPERATION_PATH_TEMPLATE = "subscriptions?api-version=%s";
 
-    public List<Subscription> execute(Client restClient) throws IOException, AzureCmdException {
+    public List<Subscription> execute(Client restClient) throws IOException, RestOperationException {
         String operationPath = String.format(OPERATION_PATH_TEMPLATE, OPERATION_API_VERSION);
         String subscriptionsJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
 

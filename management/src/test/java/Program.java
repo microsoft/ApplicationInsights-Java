@@ -3,7 +3,7 @@ import com.microsoft.applicationinsights.management.rest.ApplicationInsightsMana
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
-import com.microsoft.applicationinsights.management.rest.operations.AzureCmdException;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 
 import java.io.IOException;
@@ -34,23 +34,33 @@ public class Program {
             System.exit(1);
         }
 
-        String requiredSubscriptionID = "a866e082-246e-4d8b-89df-a9191c5f1aca";
-        String resourceGroup = "GroupNE";
-        String appName = "yonisha-new-app3";
-        String location = "Central US";
-
-//        getSubscriptions();
-//        getResources(requiredSubscriptionID);
-        getAvailableGeoLocations();
-//        getResourceGroups(requiredSubscriptionID);
-
-//        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
-//        createResource(requiredSubscriptionID, resourceGroup, appName);
+        try {
+            invoke();
+        } catch (RestOperationException e) {
+            System.out.println("Azure cmd exception.");
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Error details: " + e.getOperationExceptionDetails().getErrorMessage());
+        }
 
         System.exit(0);
     }
 
-    private static List<ResourceGroup> getResourceGroups(String subId) throws IOException, AzureCmdException {
+    private static void invoke() throws IOException, RestOperationException {
+        String requiredSubscriptionID = "a866e082-246e-4d8b-89df-a9191c5f1aca";
+        String resourceGroup = "GroupNE3";
+        String appName = "yonisha-new-app3";
+        String location = "Central US";
+
+        getSubscriptions();
+        getResources(requiredSubscriptionID);
+        getAvailableGeoLocations();
+        getResourceGroups(requiredSubscriptionID);
+
+        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
+        createResource(requiredSubscriptionID, resourceGroup, appName);
+    }
+
+    private static List<ResourceGroup> getResourceGroups(String subId) throws IOException, RestOperationException {
         List<ResourceGroup> resourceGroups = client.getResourceGroups(subId);
 
         for (ResourceGroup rg : resourceGroups) {
@@ -62,7 +72,7 @@ public class Program {
         return resourceGroups;
     }
 
-    private static ResourceGroup createResourceGroup(String subId, String resourceGroupName, String location) throws IOException, AzureCmdException {
+    private static ResourceGroup createResourceGroup(String subId, String resourceGroupName, String location) throws IOException, RestOperationException {
         System.out.println("Creating resource group: " + resourceGroupName);
         ResourceGroup resourceGroup = client.createResourceGroup(subId, resourceGroupName, location);
 
@@ -73,7 +83,7 @@ public class Program {
         return resourceGroup;
     }
 
-    private static void getResources(String requiredSubscriptionID) throws IOException, AzureCmdException {
+    private static void getResources(String requiredSubscriptionID) throws IOException, RestOperationException {
         System.out.println("Getting resources");
         List<Resource> resources = client.getResources(requiredSubscriptionID);
 
@@ -82,6 +92,7 @@ public class Program {
             System.out.println("\t" + component.getLocation());
             System.out.println("\t" + component.getId());
             System.out.println("\t" + component.getType());
+            System.out.println("\t" + component.getInstrumentationKey());
 
             if (component.getTags() != null) {
                 System.out.println("\tTags");
@@ -92,7 +103,7 @@ public class Program {
         }
     }
 
-    private static void getSubscriptions() throws IOException, AzureCmdException {
+    private static void getSubscriptions() throws IOException, RestOperationException {
         System.out.println("Getting subscription");
         List<Subscription> subscriptions = client.getSubscriptions();
         for (Subscription sub : subscriptions) {
@@ -101,7 +112,7 @@ public class Program {
         }
 
     }
-    private static void getAvailableGeoLocations() throws IOException, AzureCmdException {
+    private static void getAvailableGeoLocations() throws IOException, RestOperationException {
         List<String> availableGeoLocations = client.getAvailableGeoLocations();
 
         for (String location : availableGeoLocations) {
@@ -109,7 +120,7 @@ public class Program {
         }
     }
 
-    private static void createResource(String requiredSubscriptionID, String appName, String resourceGroup) throws IOException, AzureCmdException {
+    private static void createResource(String requiredSubscriptionID, String appName, String resourceGroup) throws IOException, RestOperationException {
         Resource resource = client.createResource(requiredSubscriptionID, appName, resourceGroup);
 
         if (resource == null) {
@@ -118,8 +129,10 @@ public class Program {
         }
 
         System.out.println(resource.getId());
+        System.out.println(resource.getId());
         System.out.println(resource.getName());
         System.out.println(resource.getLocation());
         System.out.println(resource.getType());
+        System.out.println(resource.getInstrumentationKey());
     }
 }

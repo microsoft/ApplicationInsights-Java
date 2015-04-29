@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.management.rest.operations;
 
-import com.microsoft.applicationinsights.management.rest.client.HttpMethod;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 import org.junit.Assert;
@@ -31,13 +31,13 @@ public class GetResourcesOperationTests {
             String.format("{\"value\":[{\"id\":\"%s\",\"name\":\"%s\",\"type\":\"microsoft.insights/components\",\"location\":\"centralus\",\"tags\":{},\"properties\":{\"TenantId\":\"11111111-e6a6-47be-a6d5-dc87b947286a\",\"Application_Type\":\"web\",\"Flow_Type\":\"Redfield\",\"Request_Source\":\"IbizaAIExtension\",\"InstrumentationKey\":\"11111111-5d7d-4bb0-bf14-33d9c556be96\",\"Name\":\"yonishatest\",\"CreationDate\":\"2015-01-25T10:55:06.3886179+00:00\",\"PackageId\":null,\"ApplicationId\":\"yonishatest\"}}],\"nextLink\":null}", resourceId, RESOURCE_NAME);
 
     @Before
-    public void testInitialize() throws IOException, AzureCmdException {
+    public void testInitialize() throws IOException, RestOperationException {
         restClient = mock(Client.class);
         Mockito.doReturn(resourcesJson).when(restClient).executeGet(Matchers.anyString(), Matchers.anyString());
     }
 
     @Test
-    public void testRestClientCalledWhenExecuting() throws IOException, AzureCmdException {
+    public void testRestClientCalledWhenExecuting() throws IOException, RestOperationException {
         GetResourcesOperation getResourcesOperation = new GetResourcesOperation(SUBSCRIPTION_ID);
         getResourcesOperation.execute(restClient);
 
@@ -45,7 +45,7 @@ public class GetResourcesOperationTests {
     }
 
     @Test
-    public void testResourcesJsonParsedCorrectly() throws IOException, AzureCmdException {
+    public void testResourcesJsonParsedCorrectly() throws IOException, RestOperationException {
         GetResourcesOperation getResourcesOperation = new GetResourcesOperation(SUBSCRIPTION_ID);
         List<Resource> resources = getResourcesOperation.execute(restClient);
 

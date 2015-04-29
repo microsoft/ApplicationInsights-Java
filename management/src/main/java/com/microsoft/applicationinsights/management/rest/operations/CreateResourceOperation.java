@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 
@@ -45,7 +46,7 @@ public class CreateResourceOperation implements RestOperation<Resource> {
         payload = generatePayload();
     }
 
-    public Resource execute(Client restClient) throws IOException, AzureCmdException {
+    public Resource execute(Client restClient) throws IOException, RestOperationException {
         String resourceJson = restClient.executePut(operationPath, payload, OPERATION_API_VERSION);
         Resource resource = parseResult(resourceJson);
 
@@ -74,6 +75,6 @@ public class CreateResourceOperation implements RestOperation<Resource> {
         payload.addProperty("location", "centralus");
         payload.add("properties", properties);
 
-        return payload.getAsString();
+        return payload.toString();
     }
 }

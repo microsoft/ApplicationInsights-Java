@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.management.rest.operations;
 
-import com.microsoft.applicationinsights.management.rest.client.HttpMethod;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
 import org.junit.Assert;
@@ -29,13 +29,13 @@ public class GetSubscriptionsOperationTests {
             String.format("{\"value\":[{\"id\":\"/subscriptions/11111111-6163-4ae6-9b38-9f10c1429f24\",\"subscriptionId\":\"%s\",\"displayName\":\"%s\",\"state\":\"Enabled\",\"subscriptionPolicies\":{\"locationPlacementId\":\"Internal_2014-09-01\",\"quotaId\":\"Internal_2014-09-01\"}}]}", SUBSCRIPTION_ID, SUBSCRIPTION_DISPLAY_NAME);
 
     @Before
-    public void testInitialize() throws IOException, AzureCmdException {
+    public void testInitialize() throws IOException, RestOperationException {
         restClient = mock(Client.class);
         Mockito.doReturn(subscriptionJson).when(restClient).executeGet(Matchers.anyString(), Matchers.anyString());
     }
 
     @Test
-    public void testRestClientCalledWhenExecuting() throws IOException, AzureCmdException {
+    public void testRestClientCalledWhenExecuting() throws IOException, RestOperationException {
         GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation();
         getSubscriptionsOperation.execute(restClient);
 
@@ -43,7 +43,7 @@ public class GetSubscriptionsOperationTests {
     }
 
     @Test
-    public void testSubscriptionsJsonParsedCorrectly() throws IOException, AzureCmdException {
+    public void testSubscriptionsJsonParsedCorrectly() throws IOException, RestOperationException {
         GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation();
         List<Subscription> subscriptions = getSubscriptionsOperation.execute(restClient);
 

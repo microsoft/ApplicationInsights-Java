@@ -73,6 +73,10 @@ public class Resource {
         this.name = name;
     }
 
+    public String getInstrumentationKey() {
+        return this.properties.get("InstrumentationKey");
+    }
+
     /**
      * Gets the resource type.
      * @return The resource type.
@@ -154,7 +158,7 @@ public class Resource {
         Map<String, String> properties = new HashMap<String, String>();
         JsonObject jsonProperties = (JsonObject) resourceJson.get("properties");
         for (Map.Entry<String, JsonElement> key : jsonProperties.entrySet()) {
-            if (!key.getValue().isJsonPrimitive()) {
+            if (!key.getValue().isJsonObject()) {
                 properties.put(key.getKey(), key.getValue().toString());
             }
         }

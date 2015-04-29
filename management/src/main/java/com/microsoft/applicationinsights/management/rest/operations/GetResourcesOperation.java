@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.management.rest.operations;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 
@@ -45,7 +46,7 @@ public class GetResourcesOperation implements RestOperation<List<Resource>> {
         this.subscriptionId = subscriptionId;
     }
 
-    public List<Resource> execute(Client restClient) throws IOException, AzureCmdException {
+    public List<Resource> execute(Client restClient) throws IOException, RestOperationException {
         String operationPath = String.format(OPERATION_PATH_TEMPLATE, subscriptionId, OPERATION_API_VERSION);
         String resourcesJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
 

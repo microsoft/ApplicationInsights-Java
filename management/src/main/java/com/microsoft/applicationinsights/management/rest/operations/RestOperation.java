@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.management.rest.operations;
 
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 
 import java.io.IOException;
@@ -31,5 +32,5 @@ import java.io.IOException;
  * Interface that all REST operations need to implement.
  */
 public interface RestOperation<T> {
-    T execute(Client restClient) throws IOException, AzureCmdException;
+    T execute(Client restClient) throws IOException, RestOperationException;
 }

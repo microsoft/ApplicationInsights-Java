@@ -19,40 +19,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.management.rest.operations;
+package com.microsoft.applicationinsights.management.rest.client;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
- * Created by yonisha on 4/19/2015.
+ * Created by yonisha on 4/29/2015.
  */
-import java.io.PrintWriter;
-import java.io.StringWriter;
+public class OperationExceptionDetails {
 
-public class AzureCmdException extends Exception {
-    private String mErrorLog;
+    private String errorCode;
+    private String errorMessage;
 
-    public AzureCmdException(String message, String errorLog) {
-        super(message);
-
-        mErrorLog = errorLog;
+    public OperationExceptionDetails(String exceptionDetails) {
+        parseExceptionDetails(exceptionDetails);
     }
 
-    public AzureCmdException(String message, Throwable throwable) {
-        super(message, throwable);
-
-        if (throwable instanceof AzureCmdException) {
-            mErrorLog = ((AzureCmdException) throwable).getErrorLog();
-        } else {
-            StringWriter sw = new StringWriter();
-            PrintWriter writer = new PrintWriter(sw);
-
-            throwable.printStackTrace(writer);
-            writer.flush();
-
-            mErrorLog = sw.toString();
-        }
+    public String getErrorMessage() {
+        return this.errorMessage;
     }
 
-    public String getErrorLog() {
-        return mErrorLog;
+    private void parseExceptionDetails(String exceptionDetails) {
+        JsonObject jsonObject = new JsonParser().parse(exceptionDetails).getAsJsonObject();
+        JsonObject details = (JsonObject) jsonObject.get("error");
+
+        this.errorCode = details.get("code").toString();
+        this.errorMessage = details.get("message").toString();
     }
 }

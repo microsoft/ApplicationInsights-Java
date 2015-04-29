@@ -24,8 +24,7 @@ package com.microsoft.applicationinsights.management.rest.client;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.URL;
-import java.util.Scanner;
-import com.microsoft.applicationinsights.management.rest.operations.AzureCmdException;
+
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 
 /**
@@ -72,122 +71,52 @@ public class RestClient implements Client {
 
     // TODO: add expected code, method??
 
-    public String executeGet(String path, String apiVersion) throws IOException, AzureCmdException {
+    public String executeGet(String path, String apiVersion) throws IOException, RestOperationException {
         return execute(path, HttpMethod.GET, null, apiVersion);
     }
 
-    public String executePut(String path, String payload, String apiVersion) throws IOException, AzureCmdException {
+    public String executePut(String path, String payload, String apiVersion) throws IOException, RestOperationException {
         return execute(path, HttpMethod.PUT, payload, apiVersion);
     }
 
-    private String execute(String path, HttpMethod httpMethod, final String payload, String apiVersion) throws IOException, AzureCmdException {
+    private String execute(String path, HttpMethod httpMethod, final String payload, String apiVersion) throws IOException, RestOperationException {
+        HttpsURLConnection sslConnection = createSSLConnection(path, apiVersion, httpMethod, payload);
 
-        final HttpMethod method = httpMethod;
-        AzureRestCallbackAdapter<String> callback = new AzureRestCallbackAdapter<String>() {
-            @Override
-            public int apply(HttpsURLConnection sslConnection) throws IOException {
-                if (method.compareTo(HttpMethod.PUT) == 0) {
-                    sslConnection.setDoOutput(true);
-                    sslConnection.setRequestProperty("Accept", "");
+        int responseCode = sslConnection.getResponseCode();
+        String responseMessage = sslConnection.getResponseMessage();
 
-                    if (payload != null) {
-                        DataOutputStream wr = new DataOutputStream(sslConnection.getOutputStream());
-                        wr.writeBytes(payload);
-                        wr.flush();
-                        wr.close();
-                    }
-                }
+        String result = null;
+        if (responseCode >= 200 && responseCode <= 299) {
+            result = readStream(sslConnection.getInputStream(), true);
+        } else {
+            String errorMessage = readStream(sslConnection.getErrorStream());
 
-                // TODO: wrap it up to contain all (code, message, error stream etc.)
-                int responseCode = sslConnection.getResponseCode();
-                String errorMessage = sslConnection.getResponseMessage();
-
-                InputStream errorInputStream = sslConnection.getErrorStream();
-
-                // TODO: remove
-                if (errorInputStream != null) {
-                    String errorStream = new Scanner(errorInputStream, "UTF-8").useDelimiter("\\A").next();
-                    System.out.println(errorStream);
-                }
-
-                if (sslConnection.getResponseCode() < 400) {
-                    setResult(readStream(sslConnection.getInputStream(), true));
-                }
-
-                // TODO: else?
-
-                return responseCode;
-            }
-        };
-
-        executeWithSSLConnectionInternal(path, apiVersion, httpMethod, callback);
-
-        if (!callback.isOk()) {
-            throw callback.getError();
+            throw new RestOperationException(responseMessage, new OperationExceptionDetails(errorMessage));
         }
 
-        return callback.getResult();
+        return result;
     }
 
-    /**
-     * Execute the operation with SSL connection.
-     * @param path The operation path.
-     * @param apiVersion The operation API version.
-     * @param httpMethod The HTTP method to use.
-     * @param callback The callback to use for getting the result.
-     */
-    public <T> void executeWithSSLConnection(
-        String path,
-        String apiVersion,
-        HttpMethod httpMethod,
-        AzureRestCallback<T> callback) throws IOException, AzureCmdException {
-
-        executeWithSSLConnectionInternal(path, apiVersion, httpMethod, callback);
-    }
     // endregion Public methods
 
     // region Private Methods
-
-    /**
-     * Execute the operation with SSL connection.
-     * @param path The operation path.
-     * @param apiVersion The operation API version.
-     * @param httpMethod The HTTP method to use.
-     * @param callback The callback to use for getting the result.
-     */
-    private <T> void executeWithSSLConnectionInternal(
-            String path,
-            String apiVersion,
-            HttpMethod httpMethod,
-            AzureRestCallback<T> callback) throws IOException, AzureCmdException {
-
-        HttpsURLConnection sslConnection = createSSLConnection(path, apiVersion, httpMethod);
-        int response = callback.apply(sslConnection);
-
-        if (response < 200 || response > 299) {
-            throw new AzureCmdException("Error connecting to service", readStream(sslConnection.getErrorStream()));
-        }
-    }
 
     /**
      * Creates SSL connection.
      * @param path The url.
      * @param apiVersion The API version.
      * @param httpMethod The HTTP method to use.
+     * @param payload
      * @return Https connection.
      */
     private HttpsURLConnection createSSLConnection(
             String path,
             String apiVersion,
-            HttpMethod httpMethod) throws IOException {
+            HttpMethod httpMethod, String payload) throws IOException {
 
         URL myUrl = new URL(new URL(AZURE_SERVICE_URI), path);
         HttpsURLConnection conn = (HttpsURLConnection) myUrl.openConnection();
         conn.setRequestMethod(httpMethod.toString());
-
-        if (httpMethod.compareTo(HttpMethod.PUT) == 0) {
-            conn.setDoOutput(true);
-        }
 
         conn.addRequestProperty(USER_AGENT_HEADER, this.userAgent);
         conn.addRequestProperty(TELEMETRY_HEADER, this.userAgent);
@@ -195,6 +124,18 @@ public class RestClient implements Client {
         conn.addRequestProperty(ACCEPT_HEADER, JSON_CONTENT_TYPE);
         conn.addRequestProperty(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
         conn.addRequestProperty(AUTHORIZATION_HEADER, AUTHORIZATION_VALUE_PREFIX + this.authenticationResult.getAccessToken());
+
+        if (httpMethod.compareTo(HttpMethod.PUT) == 0) {
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Accept", "");
+
+            if (payload != null) {
+                DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+                wr.writeBytes(payload);
+                wr.flush();
+                wr.close();
+            }
+        }
 
         return conn;
     }
@@ -229,57 +170,4 @@ public class RestClient implements Client {
     }
 
     // endregion Private Methods
-
-    // region Private Classes
-
-    interface AzureRestCallback<T> {
-        //@Nullable
-        int apply(HttpsURLConnection sslConnection) throws IOException;
-
-        T getResult();
-
-        void setResult(T result);
-
-        AzureCmdException getError();
-
-        void setError(AzureCmdException throwable);
-
-        boolean isOk();
-
-        @Override
-        boolean equals(java.lang.Object o);
-        //boolean equals(@Nullable java.lang.Object o);
-    }
-
-    abstract static class AzureRestCallbackAdapter<T> implements AzureRestCallback<T> {
-        private T result;
-        private AzureCmdException azureError = null;
-
-        @Override
-        public T getResult() {
-            return result;
-        }
-
-        @Override
-        public void setResult(T result) {
-            this.result = result;
-        }
-
-        @Override
-        public AzureCmdException getError() {
-            return azureError;
-        }
-
-        @Override
-        public void setError(AzureCmdException throwable) {
-            this.azureError = throwable;
-        }
-
-        @Override
-        public boolean isOk() {
-            return azureError == null;
-        }
-    }
-
-    // endregion Private Classes
 }

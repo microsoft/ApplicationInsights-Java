@@ -1,7 +1,7 @@
 package com.microsoft.applicationinsights.management.rest;
 
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
-import com.microsoft.applicationinsights.management.rest.client.HttpMethod;
 import com.microsoft.applicationinsights.management.rest.operations.*;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class ApplicationInsightsManagementClientTests {
     private Client restClient = mock(Client.class);
 
     @Test
-    public void testGetSubscriptionsOperation() throws IOException, AzureCmdException {
+    public void testGetSubscriptionsOperation() throws IOException, RestOperationException {
         GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation();
         getSubscriptionsOperation.execute(restClient);
 
@@ -32,7 +32,7 @@ public class ApplicationInsightsManagementClientTests {
     }
 
     @Test
-    public void testGetResourcesOperation() throws IOException, AzureCmdException {
+    public void testGetResourcesOperation() throws IOException, RestOperationException {
 
         GetResourcesOperation getResourcesOperation = new GetResourcesOperation(DEFAULT_SUBSCRIPTION_ID);
         getResourcesOperation.execute(restClient);
@@ -41,7 +41,7 @@ public class ApplicationInsightsManagementClientTests {
     }
 
     @Test
-    public void testCreateResource() throws IOException, AzureCmdException {
+    public void testCreateResource() throws IOException, RestOperationException {
         CreateResourceOperation createResourceOperation =
                 new CreateResourceOperation(DEFAULT_SUBSCRIPTION_ID, DEFAULT_RESOURCE_GROUP, DEFAULT_RESOURCE_NAME);
         createResourceOperation.execute(this.restClient);
