@@ -1,11 +1,32 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.management.rest.operations;
 
 import java.io.IOException;
-import com.microsoft.applicationinsights.management.rest.client.HttpMethod;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
-import net.minidev.json.JSONObject;
-import net.minidev.json.JSONValue;
 
 /**
  * Created by yonisha on 4/20/2015.
@@ -36,23 +57,23 @@ public class CreateResourceOperation implements RestOperation<Resource> {
             return null;
         }
 
-        JSONObject jsonObj = (JSONObject) JSONValue.parse(resultJson);
+        JsonObject jsonObj = new JsonParser().parse(resultJson).getAsJsonObject();
         Resource resource = Resource.fromJSONObject(jsonObj);
 
         return resource;
     }
 
     private String generatePayload() {
-        JSONObject properties = new JSONObject();
-        properties.put("Application_Type", "java");
-        properties.put("Flow_Type", "Greenfield");
-        properties.put("Request_Source", "AIEclipsePlugin");
-        JSONObject payload = new JSONObject();
+        JsonObject properties = new JsonObject();
+        properties.addProperty("Application_Type", "java");
+        properties.addProperty("Flow_Type", "Greenfield");
+        properties.addProperty("Request_Source", "AIEclipsePlugin");
+        JsonObject payload = new JsonObject();
 
         // TODO: location as a parameter.
-        payload.put("location", "centralus");
-        payload.put("properties", properties);
+        payload.addProperty("location", "centralus");
+        payload.add("properties", properties);
 
-        return payload.toJSONString();
+        return payload.getAsString();
     }
 }

@@ -1,3 +1,24 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.management.rest.client;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -6,7 +27,6 @@ import java.net.URL;
 import java.util.Scanner;
 import com.microsoft.applicationinsights.management.rest.operations.AzureCmdException;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
-import net.minidev.json.JSONObject;
 
 /**
  * Created by yonisha on 4/19/2015.
@@ -81,8 +101,6 @@ public class RestClient implements Client {
                 // TODO: wrap it up to contain all (code, message, error stream etc.)
                 int responseCode = sslConnection.getResponseCode();
                 String errorMessage = sslConnection.getResponseMessage();
-
-                System.out.println(errorMessage);
 
                 InputStream errorInputStream = sslConnection.getErrorStream();
 

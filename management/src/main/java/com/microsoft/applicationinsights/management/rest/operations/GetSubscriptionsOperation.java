@@ -1,15 +1,35 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.management.rest.operations;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.microsoft.applicationinsights.management.rest.client.HttpMethod;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import net.minidev.json.JSONValue;
 
 /**
  * Created by yonisha on 4/19/2015.
@@ -36,11 +56,11 @@ public class GetSubscriptionsOperation implements RestOperation<List<Subscriptio
             return subscriptions;
         }
 
-        JSONObject json = (JSONObject) JSONValue.parse(resultJson);
+        JsonObject json = new JsonParser().parse(resultJson).getAsJsonObject();
 
-        JSONArray subscriptionProtos = (JSONArray) json.get("value");
+        JsonArray subscriptionProtos = json.getAsJsonArray("value");
         for (int i = 0; i < subscriptionProtos.size(); i++) {
-            JSONObject subscriptionJson = (JSONObject) subscriptionProtos.get(i);
+            JsonObject subscriptionJson = subscriptionProtos.get(i).getAsJsonObject();
             Subscription subscription = Subscription.fromJSONObject(subscriptionJson);
 
             // TODO: why needed??

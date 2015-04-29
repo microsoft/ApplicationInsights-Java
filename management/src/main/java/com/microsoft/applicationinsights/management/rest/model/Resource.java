@@ -1,6 +1,28 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.management.rest.model;
 
-import net.minidev.json.JSONObject;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -120,21 +142,20 @@ public class Resource {
      * @param resourceJson Converts the given resource JSON object to Resource object.
      * @return Resource object.
      */
-    public static Resource fromJSONObject(JSONObject resourceJson) {
+    public static Resource fromJSONObject(JsonObject resourceJson) {
         Resource c = new Resource();
-        c.setId((String) resourceJson.get("id"));
-        c.setName((String) resourceJson.get("name"));
-        c.setType((String) resourceJson.get("type"));
-        c.setLocation((String) resourceJson.get("location"));
+        c.setId(resourceJson.get("id").toString());
+        c.setName(resourceJson.get("name").toString());
+        c.setType(resourceJson.get("type").toString());
+        c.setLocation(resourceJson.get("location").toString());
 
         // TODO: add tags here
 
         Map<String, String> properties = new HashMap<String, String>();
-        JSONObject jsonProperties = (JSONObject) resourceJson.get("properties");
-        for (String key : jsonProperties.keySet()) {
-            Object value = jsonProperties.get(key);
-            if (value instanceof String) {
-                properties.put(key, (String) value);
+        JsonObject jsonProperties = (JsonObject) resourceJson.get("properties");
+        for (Map.Entry<String, JsonElement> key : jsonProperties.entrySet()) {
+            if (!key.getValue().isJsonPrimitive()) {
+                properties.put(key.getKey(), key.getValue().toString());
             }
         }
         c.setProperties(properties);

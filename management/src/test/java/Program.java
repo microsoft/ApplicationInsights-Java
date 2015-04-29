@@ -1,5 +1,3 @@
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.microsoft.applicationinsights.management.authentication.Authenticator;
 import com.microsoft.applicationinsights.management.rest.ApplicationInsightsManagementClient;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
@@ -36,17 +34,14 @@ public class Program {
             System.exit(1);
         }
 
-//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//        System.out.println(gson.toJson(result));
-
         String requiredSubscriptionID = "a866e082-246e-4d8b-89df-a9191c5f1aca";
         String resourceGroup = "GroupNE";
         String appName = "yonisha-new-app3";
         String location = "Central US";
 
 //        getSubscriptions();
-        getResources(requiredSubscriptionID);
-//        getAvailableGeoLocations();
+//        getResources(requiredSubscriptionID);
+        getAvailableGeoLocations();
 //        getResourceGroups(requiredSubscriptionID);
 
 //        createResourceGroup(requiredSubscriptionID, resourceGroup, location);

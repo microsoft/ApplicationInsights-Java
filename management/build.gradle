@@ -31,7 +31,6 @@ dependencies {
     // TODO: fix this! required?
     compile files('C:/AppInsights/adal4j.jar')
 
-    compile group: 'net.minidev', name:'json-smart', version:'1.1.1'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
 
