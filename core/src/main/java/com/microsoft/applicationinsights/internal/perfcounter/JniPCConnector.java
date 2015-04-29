@@ -137,6 +137,8 @@ public final class JniPCConnector {
         currentInstanceName = getInstanceName(processId);
         if (Strings.isNullOrEmpty(currentInstanceName)) {
             InternalLogger.INSTANCE.error("Failed to fetch current process instance name, process counters for for the process level will not be activated.");
+        } else {
+            InternalLogger.INSTANCE.trace("Java process name is set to '%s'", currentInstanceName);
         }
         return true;
     }

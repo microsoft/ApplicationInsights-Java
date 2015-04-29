@@ -37,7 +37,7 @@ import com.google.common.base.Strings;
  *
  * Created by gupele on 3/30/2015.
  */
-public final class WindowsPerformanceCounterAsMetric implements PerformanceCounter {
+public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerformanceCounter {
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "WindowsPerformanceCounterAsMetric";
 
     private final HashMap<String, String> keyToDisplayName = new HashMap<String, String>();
@@ -75,7 +75,11 @@ public final class WindowsPerformanceCounterAsMetric implements PerformanceCount
         for (Map.Entry<String, String> entry : keyToDisplayName.entrySet()) {
             try {
                 double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
-                send(telemetryClient, value, entry.getValue());
+                if (value < 0) {
+                    reportError(value, entry.getValue());
+                } else {
+                    send(telemetryClient, value, entry.getValue());
+                }
                 InternalLogger.INSTANCE.trace("Sent performance counter for '%s': '%s'", entry.getValue(), value);
             } catch (Throwable e) {
                 InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue(), e.getMessage());

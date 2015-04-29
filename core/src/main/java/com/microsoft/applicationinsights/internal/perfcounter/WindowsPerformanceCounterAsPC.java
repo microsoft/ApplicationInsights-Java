@@ -37,7 +37,7 @@ import com.google.common.base.Strings;
  *
  * Created by gupele on 3/30/2015.
  */
-public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
+public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerformanceCounter {
     private static final String TOTAL_CPU_CATEGORY_NAME = "Processor";
     private static final String TOTAL_CPU_COUNTER_NAME = "% Processor time";
     private static final String TOTAL_CPU_INSTANCE_NAME = "_Total";
@@ -78,10 +78,14 @@ public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
         for (Map.Entry<String, WindowsPerformanceCounterData> entry : pcs.entrySet()) {
             try {
                 double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
-                send(telemetryClient, value, entry.getValue());
-                InternalLogger.INSTANCE.trace("Sent performance counter for '%s': '%s'", entry.getValue(), value);
+                if (value < 0) {
+                    reportError(value, entry.getValue().displayName);
+                } else {
+                    send(telemetryClient, value, entry.getValue());
+                    InternalLogger.INSTANCE.trace("Sent performance counter for '%s': '%s'", entry.getValue().displayName, value);
+                }
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue(), e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.getMessage());
             }
         }
     }
