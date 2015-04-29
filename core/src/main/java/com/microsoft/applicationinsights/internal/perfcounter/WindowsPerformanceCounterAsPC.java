@@ -65,7 +65,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
 
         register(TOTAL_CPU_CATEGORY_NAME, TOTAL_CPU_COUNTER_NAME, TOTAL_CPU_INSTANCE_NAME);
         register(TOTAL_MEMORY_CATEGORY_NAME, TOTAL_MEMORY_COUNTER_NAME, "");
-        register(PROCESS_IO_DATA_BYTES_CATEGORY_NAME, PROCESS_IO_DATA_BYTES_COUNTER_NAME, JniPCConnector.PROCESS_SELF_INSTANCE_NAME);
+        register(PROCESS_IO_DATA_BYTES_CATEGORY_NAME, PROCESS_IO_DATA_BYTES_COUNTER_NAME, JniPCConnector.translateInstanceName(JniPCConnector.PROCESS_SELF_INSTANCE_NAME));
 
         if (pcs.isEmpty()) {
             // Failed to register, the performance counter is not needed.
@@ -82,7 +82,9 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                     reportError(value, entry.getValue().displayName);
                 } else {
                     send(telemetryClient, value, entry.getValue());
-                    InternalLogger.INSTANCE.trace("Sent performance counter for '%s': '%s'", entry.getValue().displayName, value);
+                    WindowsPerformanceCounterData pcData = entry.getValue();
+                    InternalLogger.INSTANCE.trace("Sent performance counter for '%s'(%s, %s, %s): '%s'",
+                            pcData.displayName, pcData.categoryName, pcData.counterName, pcData.instanceName, value);
                 }
             } catch (Throwable e) {
                 InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.getMessage());
@@ -114,7 +116,8 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                 WindowsPerformanceCounterData data = new WindowsPerformanceCounterData().
                         setCategoryName(category).
                         setCounterName(counter).
-                        setInstanceName(instance);
+                        setInstanceName(instance).
+                        setDisplayName(category + " " + counter);
                 pcs.put(key, data);
             } catch (Throwable e) {
             }

@@ -80,7 +80,7 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
 
             double totalCpuUsage = calculateTotalCpuUsage(array);
 
-            InternalLogger.INSTANCE.trace("Metric: %s %s %s: %s", Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, INSTANCE_NAME_TOTAL, totalCpuUsage);
+            InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s %s: %s", Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, INSTANCE_NAME_TOTAL, totalCpuUsage);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     Constants.TOTAL_CPU_PC_CATEGORY_NAME,
                     Constants.CPU_PC_COUNTER_NAME,
