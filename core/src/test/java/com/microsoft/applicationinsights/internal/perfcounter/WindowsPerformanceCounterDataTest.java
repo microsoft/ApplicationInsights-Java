@@ -45,15 +45,6 @@ public final class WindowsPerformanceCounterDataTest {
         assertEquals(data.displayName, MOCK_DISPLAY);
     }
 
-    @Test(expected = Exception.class)
-    public void testInstanceNameIsSelfProcess() throws Throwable {
-        WindowsPerformanceCounterData data = new WindowsPerformanceCounterData().
-                setCategoryName(MOCK_CATEGORY).
-                setCounterName(MOCK_COUNTER).
-                setInstanceName(JniPCConnector.PROCESS_SELF_INSTANCE_NAME).
-                setDisplayName(MOCK_DISPLAY);
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void testNullCategoryName() throws Throwable {
         WindowsPerformanceCounterData data = new WindowsPerformanceCounterData().
