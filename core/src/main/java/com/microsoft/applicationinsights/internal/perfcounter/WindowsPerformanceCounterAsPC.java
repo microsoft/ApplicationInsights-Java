@@ -37,7 +37,7 @@ import com.google.common.base.Strings;
  *
  * Created by gupele on 3/30/2015.
  */
-public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
+public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerformanceCounter {
     private static final String TOTAL_CPU_CATEGORY_NAME = "Processor";
     private static final String TOTAL_CPU_COUNTER_NAME = "% Processor time";
     private static final String TOTAL_CPU_INSTANCE_NAME = "_Total";
@@ -120,22 +120,4 @@ public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
             }
         }
     }
-
-    private void reportError(double value, String displayName) {
-        if (value == -1) {
-            InternalLogger.INSTANCE.error("Native code exception in wrapper while fetching counter value '%s'", displayName);
-        }
-        else if (value == -4) {
-            InternalLogger.INSTANCE.error("Native code exception in internal wrapper while fetching counter value '%s'", displayName);
-        }
-        else if (value == -2) {
-            InternalLogger.INSTANCE.error("Native code exception performance counter '%s' not found", displayName);
-        }
-        else if (value == -7) {
-            InternalLogger.INSTANCE.error("Native code exception while fetching counter value '%s'", displayName);
-        } else {
-            InternalLogger.INSTANCE.error("Native code unknown exception while fetching counter value '%s'", displayName);
-        }
-    }
-
 }
