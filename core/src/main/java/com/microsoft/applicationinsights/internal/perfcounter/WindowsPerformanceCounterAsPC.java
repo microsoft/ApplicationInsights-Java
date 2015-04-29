@@ -78,10 +78,27 @@ public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
         for (Map.Entry<String, WindowsPerformanceCounterData> entry : pcs.entrySet()) {
             try {
                 double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
-                send(telemetryClient, value, entry.getValue());
-                InternalLogger.INSTANCE.trace("Sent performance counter for '%s': '%s'", entry.getValue(), value);
+                if (value < 0) {
+                    if (value == -1) {
+                        InternalLogger.INSTANCE.error("Native code exception in wrapper while fetching counter value '%s'", entry.getValue().displayName);
+                    }
+                    else if (value == -4) {
+                        InternalLogger.INSTANCE.error("Native code exception in internal wrapper while fetching counter value '%s'", entry.getValue().displayName);
+                    }
+                    else if (value == -2) {
+                        InternalLogger.INSTANCE.error("Native code exception performance counter '%s' not found", entry.getValue().displayName);
+                    }
+                    else if (value == -7) {
+                        InternalLogger.INSTANCE.error("Native code exception while fetching counter value '%s'", entry.getValue().displayName);
+                    } else {
+                        InternalLogger.INSTANCE.error("Native code unknown exception while fetching counter value '%s'", entry.getValue().displayName);
+                    }
+                } else {
+                    send(telemetryClient, value, entry.getValue());
+                    InternalLogger.INSTANCE.trace("Sent performance counter for '%s': '%s'", entry.getValue().displayName, value);
+                }
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue(), e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.getMessage());
             }
         }
     }
