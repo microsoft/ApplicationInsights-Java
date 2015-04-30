@@ -8,6 +8,10 @@ import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by yonisha on 4/19/2015.
@@ -17,7 +21,6 @@ public class Program {
     private static ApplicationInsightsManagementClient client;
 
     public static void main(String[] args) throws Exception {
-
         String userAgent = String.format(
                 "%s/%s (lang=%s; os=%s; version=%s)",
                 "SomeID",
@@ -47,8 +50,8 @@ public class Program {
 
     private static void invoke() throws IOException, RestOperationException {
         String requiredSubscriptionID = "a866e082-246e-4d8b-89df-a9191c5f1aca";
-        String resourceGroup = "GroupNE3";
-        String appName = "yonisha-new-app3";
+        String resourceGroup = "GroupNE9";
+        String appName = "yonisha-new-app9";
         String location = "Central US";
 
         getSubscriptions();
@@ -57,7 +60,7 @@ public class Program {
         getResourceGroups(requiredSubscriptionID);
 
         createResourceGroup(requiredSubscriptionID, resourceGroup, location);
-        createResource(requiredSubscriptionID, resourceGroup, appName);
+        createResource(requiredSubscriptionID, resourceGroup, appName, location);
     }
 
     private static List<ResourceGroup> getResourceGroups(String subId) throws IOException, RestOperationException {
@@ -93,6 +96,7 @@ public class Program {
             System.out.println("\t" + component.getId());
             System.out.println("\t" + component.getType());
             System.out.println("\t" + component.getInstrumentationKey());
+            System.out.println("\t" + component.getResourceGroup());
 
             if (component.getTags() != null) {
                 System.out.println("\tTags");
@@ -120,8 +124,8 @@ public class Program {
         }
     }
 
-    private static void createResource(String requiredSubscriptionID, String appName, String resourceGroup) throws IOException, RestOperationException {
-        Resource resource = client.createResource(requiredSubscriptionID, appName, resourceGroup);
+    private static void createResource(String requiredSubscriptionID, String resourceGroup, String appName, String location) throws IOException, RestOperationException {
+        Resource resource = client.createResource(requiredSubscriptionID, resourceGroup, appName, location);
 
         if (resource == null) {
             System.out.println("NULL RESOURCE");

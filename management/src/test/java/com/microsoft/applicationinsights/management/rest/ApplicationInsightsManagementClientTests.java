@@ -9,7 +9,6 @@ import org.mockito.Matchers;
 
 import java.io.IOException;
 
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -20,6 +19,7 @@ public class ApplicationInsightsManagementClientTests {
 
     private final String DEFAULT_RESOURCE_GROUP = "resource_group";
     private final String DEFAULT_RESOURCE_NAME = "resource_name";
+    private final String DEFAULT_LOCATION = "central us";
     private final String DEFAULT_SUBSCRIPTION_ID = "subscription_id";
     private Client restClient = mock(Client.class);
 
@@ -43,20 +43,11 @@ public class ApplicationInsightsManagementClientTests {
     @Test
     public void testCreateResource() throws IOException, RestOperationException {
         CreateResourceOperation createResourceOperation =
-                new CreateResourceOperation(DEFAULT_SUBSCRIPTION_ID, DEFAULT_RESOURCE_GROUP, DEFAULT_RESOURCE_NAME);
+                new CreateResourceOperation(DEFAULT_SUBSCRIPTION_ID, DEFAULT_RESOURCE_GROUP, DEFAULT_RESOURCE_NAME, DEFAULT_LOCATION);
         createResourceOperation.execute(this.restClient);
 
         verify(restClient).executePut(Matchers.anyString(), Matchers.anyString(), Matchers.anyString());
     }
-
-//    @Test
-//    public void testDeleteResource() throws IOException, AzureCmdException {
-//        DeleteResourceOperation deleteResourceOperation =
-//                new DeleteResourceOperation(DEFAULT_SUBSCRIPTION_ID, DEFAULT_RESOURCE_GROUP, DEFAULT_RESOURCE_NAME);
-//        deleteResourceOperation.execute(this.restClient);
-//
-//        verify(restClient).execute(Matchers.anyString(), eq(HttpMethod.DELETE), Matchers.anyString());
-//    }
 
     @Test
     @Ignore

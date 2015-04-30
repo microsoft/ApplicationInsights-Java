@@ -19,35 +19,29 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.management.rest.client;
+package com.microsoft.applicationinsights.management.common;
 
-import com.microsoft.applicationinsights.management.common.Logger;
+import java.util.logging.Level;
 
 /**
- * Created by yonisha on 4/19/2015.
+ * Created by yonisha on 4/30/2015.
  */
-public class RestOperationException extends Exception {
+public class Logger {
+    private java.util.logging.Logger logger;
 
-    private static final Logger LOG = Logger.getLogger(RestOperationException.class.toString());
-    private OperationExceptionDetails operationExceptionDetails;
-
-    public RestOperationException(String message, OperationExceptionDetails operationExceptionDetails) {
-        super(message);
-
-        this.operationExceptionDetails = operationExceptionDetails;
-
-        String exceptionDetails = null;
-        if (this.operationExceptionDetails != null) {
-            exceptionDetails = this.operationExceptionDetails.getErrorMessage();
-        }
-
-        LOG.severe(
-                "RestOperationException has been thrown.\nMessage: {0}\nException Details: {1}.",
-                this.getMessage(),
-                exceptionDetails);
+    private Logger(String loggerName) {
+        this.logger = java.util.logging.Logger.getLogger(loggerName);
     }
 
-    public OperationExceptionDetails getOperationExceptionDetails() {
-        return operationExceptionDetails;
+    public static Logger getLogger(String loggerName) {
+        return new Logger(loggerName);
+    }
+
+    public void info(String message, String... params) {
+        this.logger.log(Level.INFO, message, params);
+    }
+
+    public void severe(String message, String... params) {
+        this.logger.log(Level.SEVERE, message, params);
     }
 }

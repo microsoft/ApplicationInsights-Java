@@ -27,6 +27,8 @@ import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by yonisha on 4/19/2015.
@@ -39,6 +41,7 @@ public class Resource {
     private String type;
     private String location;
     private List<String> tags;
+    private String resourceGroup;
     private Map<String, String> properties;
 
     /**
@@ -55,6 +58,22 @@ public class Resource {
      */
     public void setId(String id) {
         this.id = id;
+    }
+
+    /**
+     * Gets the resource group.
+     * @return The resource group.
+     */
+    public String getResourceGroup() {
+        return this.resourceGroup;
+    }
+
+    /**
+     * Sets the resource group.
+     * @param resourceGroup The resource group.
+     */
+    public void setResourceGroup(String resourceGroup) {
+        this.resourceGroup = resourceGroup;
     }
 
     /**
@@ -153,7 +172,7 @@ public class Resource {
         c.setType(resourceJson.get("type").toString());
         c.setLocation(resourceJson.get("location").toString());
 
-        // TODO: add tags here
+        c.setResourceGroup(extractResourceGroup(c.getId()));
 
         Map<String, String> properties = new HashMap<String, String>();
         JsonObject jsonProperties = (JsonObject) resourceJson.get("properties");
@@ -165,6 +184,18 @@ public class Resource {
         c.setProperties(properties);
 
         return c;
+    }
+
+    private static String extractResourceGroup(String resourceId) {
+        Pattern pattern = Pattern.compile(".*/resourceGroups/(.*)/providers.*");
+        Matcher matcher = pattern.matcher(resourceId);
+
+        String resourceGroup = null;
+        if (matcher.matches()) {
+            resourceGroup = matcher.group(1);
+        }
+
+        return resourceGroup;
     }
 
     @Override

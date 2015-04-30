@@ -58,9 +58,10 @@ public interface ManagementClient {
      * @param subscriptionId The subscription which the resource will be created in.
      * @param resourceGroupName The resource group name.
      * @param resourceName The resource name.
+     * @param location The location is to create the resource in.
      * @return The resource created.
      */
-    Resource createResource(String subscriptionId, String resourceGroupName, String resourceName) throws IOException, RestOperationException;
+    Resource createResource(String subscriptionId, String resourceGroupName, String resourceName, String location) throws IOException, RestOperationException;
 
     // endregion Resources
 

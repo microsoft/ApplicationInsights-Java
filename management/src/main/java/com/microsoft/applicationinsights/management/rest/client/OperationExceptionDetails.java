@@ -44,7 +44,9 @@ public class OperationExceptionDetails {
         JsonObject jsonObject = new JsonParser().parse(exceptionDetails).getAsJsonObject();
         JsonObject details = (JsonObject) jsonObject.get("error");
 
-        this.errorCode = details.get("code").toString();
-        this.errorMessage = details.get("message").toString();
+        if (details != null) {
+            this.errorCode = details.get("code").toString();
+            this.errorMessage = details.get("message").toString();
+        }
     }
 }

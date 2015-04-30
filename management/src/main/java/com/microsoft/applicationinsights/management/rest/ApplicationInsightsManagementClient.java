@@ -91,10 +91,10 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @param resourceName The resource name.
      * @return The resource created.
      */
-    public Resource createResource(String subscriptionId, String resourceGroupName, String resourceName) throws IOException, RestOperationException {
+    public Resource createResource(String subscriptionId, String resourceGroupName, String resourceName, String location) throws IOException, RestOperationException {
         renewAccessTokenIfExpired();
 
-        CreateResourceOperation createResourceOperation = new CreateResourceOperation(subscriptionId, resourceGroupName, resourceName);
+        CreateResourceOperation createResourceOperation = new CreateResourceOperation(subscriptionId, resourceGroupName, resourceName, location);
         Resource resource = createResourceOperation.execute(this.restClient);
 
         return resource;

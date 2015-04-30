@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.management.rest.operations;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 
@@ -40,6 +41,7 @@ import java.util.List;
  */
 public class GetAvailableGeoLocations implements RestOperation<List<String>> {
 
+    private static final Logger LOG = Logger.getLogger(GetAvailableGeoLocations.class.toString());
     private final String OPERATION_API_VERSION = "2015-01-01";
     private final String OPERATION_PATH_TEMPLATE = "providers/microsoft.insights?api-version=%s";
 
@@ -51,8 +53,9 @@ public class GetAvailableGeoLocations implements RestOperation<List<String>> {
 
     @Override
     public List<String> execute(Client restClient) throws IOException, RestOperationException {
-        String resourceJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
+        LOG.info("Getting available geo-locations.\nURL Path: {0}.", this.operationPath);
 
+        String resourceJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
         List<String> locations = parseResult(resourceJson);
 
         return locations;

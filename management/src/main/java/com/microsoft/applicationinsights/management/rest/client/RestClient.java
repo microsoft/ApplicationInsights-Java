@@ -25,6 +25,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.URL;
 
+import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 
 /**
@@ -48,6 +49,7 @@ public class RestClient implements Client {
 
     // region Members
 
+    private static final Logger LOG = Logger.getLogger(RestClient.class.toString());
     private String userAgent;
     private AuthenticationResult authenticationResult;
 
@@ -72,24 +74,33 @@ public class RestClient implements Client {
     // TODO: add expected code, method??
 
     public String executeGet(String path, String apiVersion) throws IOException, RestOperationException {
+        LOG.info("Executing 'GET' operation for path {0}.\nAPI version: {1}.", path, apiVersion);
+
         return execute(path, HttpMethod.GET, null, apiVersion);
     }
 
     public String executePut(String path, String payload, String apiVersion) throws IOException, RestOperationException {
+        LOG.info("Executing 'PUT' operation for path {0}.\nPayload: {1}.\nAPI version: {2}.", path, payload, apiVersion);
+
         return execute(path, HttpMethod.PUT, payload, apiVersion);
     }
 
     private String execute(String path, HttpMethod httpMethod, final String payload, String apiVersion) throws IOException, RestOperationException {
         HttpsURLConnection sslConnection = createSSLConnection(path, apiVersion, httpMethod, payload);
 
+        LOG.info("Getting response.");
         int responseCode = sslConnection.getResponseCode();
         String responseMessage = sslConnection.getResponseMessage();
 
         String result = null;
         if (responseCode >= 200 && responseCode <= 299) {
+            LOG.info("REST operation finished successfully. Response code: {0}, Status: {1}.", String.valueOf(responseCode), responseMessage);
+
             result = readStream(sslConnection.getInputStream(), true);
         } else {
             String errorMessage = readStream(sslConnection.getErrorStream());
+            LOG.severe(
+                    "REST operation failed with response code {0}, status {1}, error message: {2}", String.valueOf(responseCode), responseMessage, errorMessage);
 
             throw new RestOperationException(responseMessage, new OperationExceptionDetails(errorMessage));
         }
@@ -113,6 +124,7 @@ public class RestClient implements Client {
             String path,
             String apiVersion,
             HttpMethod httpMethod, String payload) throws IOException {
+        LOG.info("Generating SSL connection.");
 
         URL myUrl = new URL(new URL(AZURE_SERVICE_URI), path);
         HttpsURLConnection conn = (HttpsURLConnection) myUrl.openConnection();
@@ -127,7 +139,7 @@ public class RestClient implements Client {
 
         if (httpMethod.compareTo(HttpMethod.PUT) == 0) {
             conn.setDoOutput(true);
-            conn.setRequestProperty("Accept", "");
+//            conn.setRequestProperty("Accept", "");
 
             if (payload != null) {
                 DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
@@ -147,12 +159,11 @@ public class RestClient implements Client {
     private String readStream(InputStream is, boolean keepLines) throws IOException {
         BufferedReader in = null;
         try {
-            in = new BufferedReader(
-                    new InputStreamReader(is));
-            String inputLine;
+            in = new BufferedReader(new InputStreamReader(is));
             String separator = System.getProperty("line.separator");
             StringBuilder response = new StringBuilder();
 
+            String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
                 if (keepLines) {
@@ -161,6 +172,7 @@ public class RestClient implements Client {
             }
             in.close();
             in = null;
+
             return response.toString();
         } finally {
             if (in != null) {

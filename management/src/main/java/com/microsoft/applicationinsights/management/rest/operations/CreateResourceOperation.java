@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
@@ -34,6 +35,7 @@ import com.microsoft.applicationinsights.management.rest.model.Resource;
  */
 public class CreateResourceOperation implements RestOperation<Resource> {
 
+    private static final Logger LOG = Logger.getLogger(CreateResourceOperation.class.toString());
     private final String OPERATION_API_VERSION = "2014-08-01";
     private final String OPERATION_PATH_TEMPLATE =
             "subscriptions/%s/resourceGroups/%s/providers/microsoft.insights/components/%s?api-version=%s";
@@ -41,12 +43,14 @@ public class CreateResourceOperation implements RestOperation<Resource> {
     private String operationPath;
     private String payload;
 
-    public CreateResourceOperation(String subscriptionId, String resourceGroupName, String resourceName) {
+    public CreateResourceOperation(String subscriptionId, String resourceGroupName, String resourceName, String location) {
         operationPath = String.format(OPERATION_PATH_TEMPLATE, subscriptionId, resourceGroupName, resourceName, OPERATION_API_VERSION);
-        payload = generatePayload();
+        payload = generatePayload(location);
     }
 
     public Resource execute(Client restClient) throws IOException, RestOperationException {
+        LOG.info("Creating new resource.\nURL path: {0}\nPayload:{1}", this.operationPath, this.payload);
+
         String resourceJson = restClient.executePut(operationPath, payload, OPERATION_API_VERSION);
         Resource resource = parseResult(resourceJson);
 
@@ -64,7 +68,7 @@ public class CreateResourceOperation implements RestOperation<Resource> {
         return resource;
     }
 
-    private String generatePayload() {
+    private String generatePayload(String location) {
         JsonObject properties = new JsonObject();
         properties.addProperty("Application_Type", "java");
         properties.addProperty("Flow_Type", "Greenfield");
@@ -72,7 +76,7 @@ public class CreateResourceOperation implements RestOperation<Resource> {
         JsonObject payload = new JsonObject();
 
         // TODO: location as a parameter.
-        payload.addProperty("location", "centralus");
+        payload.addProperty("location", location);
         payload.add("properties", properties);
 
         return payload.toString();

@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.management.rest.operations;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
@@ -34,6 +35,7 @@ import java.io.IOException;
  */
 public class CreateResourceGroupOperation implements RestOperation<ResourceGroup> {
 
+    private static final Logger LOG = Logger.getLogger(CreateResourceGroupOperation.class.toString());
     private final String OPERATION_API_VERSION = "2015-01-01";
     private String OPERATION_PATH_TEMPLATE = "subscriptions/%s/resourcegroups/%s?api-version=%s";
 
@@ -47,6 +49,7 @@ public class CreateResourceGroupOperation implements RestOperation<ResourceGroup
 
     @Override
     public ResourceGroup execute(Client restClient) throws IOException, RestOperationException {
+        LOG.info("Creating new resource group.\nURL path: {0}\nPayload:{1}", this.operationPath, this.payload);
 
         String resourceJson = restClient.executePut(operationPath, payload, OPERATION_API_VERSION);
         ResourceGroup resourceGroup = parseResult(resourceJson);
