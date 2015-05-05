@@ -1,4 +1,25 @@
-package com.microsoft.applicationinsights.azuretest;
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+package com.microsoft.applicationinsights.springwebapptest;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -8,19 +29,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 
 /**
- * Created by moralt on 30/4/2015.
+ * Created by moralt on 4/30/2015.
  */
 @XmlRootElement(name = "IntegrationTestConfiguration")
 public class IntegrationTestConfiguration {
 
     private String storageConnectionString;
     private String queueName;
-    private String userAgent;
     private String testServerAddress;
     private String applicationFolder;
-    private int tomcat7Port;
-    private int jetty8Port;
-    private int secondsToPoll;
+    private int port;
+    private int pollingInterval;
     private int secondsToSleep;
     private int numberOfMessagesToRetrieve;
 
@@ -57,15 +76,6 @@ public class IntegrationTestConfiguration {
         this.queueName = queueName;
     }
 
-    public String getUserAgent() {
-        return userAgent;
-    }
-
-    @XmlElement(name = "userAgent")
-    public void setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
-    }
-
     public String getTestServerAddress() {
         return testServerAddress;
     }
@@ -84,31 +94,22 @@ public class IntegrationTestConfiguration {
         this.applicationFolder = applicationFolder;
     }
 
-    public int getTomcat7Port() {
-        return tomcat7Port;
+    public int getPort() {
+        return port;
     }
 
-    @XmlElement(name = "tomcat7Port")
-    public void setTomcat7Port(int tomcat7Port) {
-        this.tomcat7Port = tomcat7Port;
+    @XmlElement(name = "port")
+    public void setPort(int port) {
+        this.port = port;
     }
 
-    public int getJetty8Port() {
-        return jetty8Port;
+    public int getPollingInterval() {
+        return pollingInterval;
     }
 
-    @XmlElement(name = "jetty8Port")
-    public void setJetty8Port(int jetty8Port) {
-        this.jetty8Port = jetty8Port;
-    }
-
-    public int getSecondsToPoll() {
-        return secondsToPoll;
-    }
-
-    @XmlElement(name = "secondsToPoll")
-    public void setSecondsToPoll(int secondsToPoll) {
-        this.secondsToPoll = secondsToPoll;
+    @XmlElement(name = "pollingInterval")
+    public void setPollingInterval(int pollingInterval) {
+        this.pollingInterval = pollingInterval;
     }
 
     public int getSecondsToSleep() {
