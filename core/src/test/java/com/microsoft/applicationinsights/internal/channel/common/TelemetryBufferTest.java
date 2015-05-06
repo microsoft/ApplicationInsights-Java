@@ -37,6 +37,7 @@ import org.mockito.Mockito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.any;
@@ -66,6 +67,7 @@ public final class TelemetryBufferTest {
         private int expectedTelemetriesNumberInScheduleSend;
         private int expectedNumberOfSendNowCalls;
         private int expectedNumberOfScheduleSendCalls;
+        private int expectedNumberOfScheduleSendRequests = 1;
 
         private ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 
@@ -86,6 +88,11 @@ public final class TelemetryBufferTest {
             return this;
         }
 
+        public MockSender setExpectedNumberOfScheduleSendRequests(int expectedNumberOfScheduleSendRequests) {
+            this.expectedNumberOfScheduleSendRequests = expectedNumberOfScheduleSendRequests;
+            return this;
+        }
+
         public MockSender setExpectedNumberOfScheduleSendCalls(int expectedNumberOfScheduleSendCalls) {
             this.expectedNumberOfScheduleSendCalls = expectedNumberOfScheduleSendCalls;
             return this;
@@ -95,8 +102,7 @@ public final class TelemetryBufferTest {
         public boolean scheduleSend(final TelemetriesTransmitter.TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit) {
             assertNotNull(telemetriesFetcher);
 
-            int called = scheduleSendCallCounter.incrementAndGet();
-            assertEquals(called, 1);
+            scheduleSendCallCounter.incrementAndGet();
 
             assertEquals(timeUnit, TimeUnit.SECONDS);
 
@@ -129,7 +135,7 @@ public final class TelemetryBufferTest {
             assertEquals("Wrong number of scheduled sends by the TransmissionBuffer", called, expectedNumberOfSendNowCalls);
 
             assertNotNull("Unexpected null value for telemetries container", telemetries);
-            assertEquals("Wrong size of telemetries container", telemetries.size(), expectedTelemetriesNumberInSendNow);
+            assertEquals("Wrong size of telemetries container", expectedTelemetriesNumberInSendNow, telemetries.size());
 
             return true;
         }
@@ -143,12 +149,16 @@ public final class TelemetryBufferTest {
             try {
                 ScheduledSendResult result = queue.poll(timeToWaitInSeconds, TimeUnit.SECONDS);
                 scheduler.shutdownNow();
-                assertTrue(result.message, result.result);
 
                 assertEquals("Wrong number of calls by timer", scheduleSendActualCallCounter.get(), expectedNumberOfScheduleSendCalls);
+                if (expectedNumberOfScheduleSendCalls == 0) {
+                    assertNull("Result should be null", result);
+                } else {
+                    assertTrue(result.message, result.result);
+                }
                 assertEquals("Wrong number of calls of send now", sendNowCallCounter.get(), expectedNumberOfSendNowCalls);
 
-                assertEquals("Wrong number of scheduled sends by the TransmissionBuffer", scheduleSendCallCounter.get(), 1);
+                assertEquals("Wrong number of scheduled sends by the TransmissionBuffer", scheduleSendCallCounter.get(), expectedNumberOfScheduleSendRequests);
                 assertEquals("Wrong number of sending full buffers by the TransmissionBuffer", sendNowCallCounter.get(), expectedNumberOfSendNowCalls);
             } catch (InterruptedException e) {
                 assertTrue(false);
@@ -345,6 +355,89 @@ public final class TelemetryBufferTest {
     @Test
     public void testFlushWithSevenInTheBuffer() throws Exception {
         testFlushWithData(7);
+    }
+
+    @Test
+    public void testSetTransmitBufferTimeoutInSecondsShorterTime() {
+        MockSender mockSender = new MockSender()
+                .setExpectedNumberOfScheduleSendCalls(0)
+                .setExpectedNumberOfSendNowCalls(1)
+                .setExpectedTelemetriesNumberInScheduleSend(0)
+                .setExpectedTelemetriesNumberInSendNow(2);
+
+        // Create a buffer with max buffer size of 10 and timeout of 10 seconds
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 30);
+
+        for (int i = 0; i < 2; ++i) {
+            testedBuffer.add("mockTelemetry");
+        }
+        testedBuffer.setTransmitBufferTimeoutInSeconds(1);
+
+        mockSender.waitForFinish(1L);
+    }
+
+    @Test
+    public void testSetMaxTelemetriesInBatchWithSmallerSize() {
+        MockSender mockSender = new MockSender()
+                .setExpectedNumberOfScheduleSendCalls(0)
+                .setExpectedNumberOfSendNowCalls(1)
+                .setExpectedTelemetriesNumberInScheduleSend(0)
+                .setExpectedTelemetriesNumberInSendNow(2);
+
+        // Create a buffer with max buffer size of 10 and timeout of 10 seconds
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 30);
+
+        for (int i = 0; i < 2; ++i) {
+            testedBuffer.add("mockTelemetry");
+        }
+        testedBuffer.setMaxTelemetriesInBatch(1);
+
+        mockSender.waitForFinish(1L);
+    }
+
+    @Test
+    public void testSetMaxTelemetriesInBatchWithSmallerSizeButLargerThanWhatInBuffer() {
+        MockSender mockSender = new MockSender()
+                .setExpectedNumberOfScheduleSendCalls(0)
+                .setExpectedNumberOfSendNowCalls(1)
+                .setExpectedTelemetriesNumberInScheduleSend(0)
+                .setExpectedTelemetriesNumberInSendNow(3)
+                .setExpectedNumberOfScheduleSendRequests(2);
+
+        // Create a buffer with max buffer size of 10 and timeout of 10 seconds
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 200);
+
+        for (int i = 0; i < 2; ++i) {
+            testedBuffer.add("mockTelemetry");
+        }
+        testedBuffer.setMaxTelemetriesInBatch(3);
+        for (int i = 0; i < 2; ++i) {
+            testedBuffer.add("mockTelemetry");
+        }
+
+        mockSender.waitForFinish(1L);
+    }
+
+    @Test
+    public void testSetMaxTelemetriesInBatchWithBiggerSize() {
+        MockSender mockSender = new MockSender()
+                .setExpectedNumberOfScheduleSendCalls(0)
+                .setExpectedNumberOfSendNowCalls(1)
+                .setExpectedTelemetriesNumberInScheduleSend(0)
+                .setExpectedTelemetriesNumberInSendNow(11);
+
+        // Create a buffer with max buffer size of 10 and timeout of 10 seconds
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 20);
+
+        for (int i = 0; i < 1; ++i) {
+            testedBuffer.add("mockTelemetry");
+        }
+        testedBuffer.setMaxTelemetriesInBatch(11);
+        for (int i = 0; i < 10; ++i) {
+            testedBuffer.add("mockTelemetry");
+        }
+
+        mockSender.waitForFinish(1L);
     }
 
     private void testFlushWithData(int expectedTelemetriesNumberInSendNow) {

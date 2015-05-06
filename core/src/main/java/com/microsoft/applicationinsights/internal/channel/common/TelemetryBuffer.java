@@ -116,17 +116,21 @@ public final class TelemetryBuffer {
      * Sets the maximum number of telemetries in a batch
      * @param maxTelemetriesInBatch The max amount of Telemetries that are allowed in a batch.
      */
-    public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch)
-    {
-        this.maxTelemetriesInBatch = maxTelemetriesInBatch;
+    public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch) {
+        synchronized (lock) {
+            if (telemetries != null && maxTelemetriesInBatch < telemetries.size()) {
+                // Request for smaller buffers, we flush if our buffer contains more elements
+                flush();
+            }
+            this.maxTelemetriesInBatch = maxTelemetriesInBatch;
+        }
     }
 
     /**
      * Gets the maximum number of telemetries in a batch
      * @return The maximum number of telemetries in a batch
      */
-    public int getMaxTelemetriesInBatch()
-    {
+    public int getMaxTelemetriesInBatch() {
         return this.maxTelemetriesInBatch;
     }
 
@@ -134,17 +138,21 @@ public final class TelemetryBuffer {
      * Sets the transmit buffer timeout in seconds
      * @param transmitBufferTimeoutInSeconds The amount of time to wait before sending the buffer.
      */
-    public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds)
-    {
-        this.transmitBufferTimeoutInSeconds = transmitBufferTimeoutInSeconds;
+    public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds) {
+        synchronized (lock) {
+            // Request for quicker flushes, we flush if the previous timeout is bigger
+            if (transmitBufferTimeoutInSeconds < this.transmitBufferTimeoutInSeconds) {
+                flush();
+            }
+            this.transmitBufferTimeoutInSeconds = transmitBufferTimeoutInSeconds;
+        }
     }
 
     /**
      * Gets the transmit buffer timeout in seconds
      * @return The transmit buffer timeout in seconds
      */
-    public int getTransmitBufferTimeoutInSeconds()
-    {
+    public int getTransmitBufferTimeoutInSeconds() {
         return this.transmitBufferTimeoutInSeconds;
     }
 

@@ -61,11 +61,17 @@ import com.google.common.base.Preconditions;
  */
 public final class InProcessTelemetryChannel implements TelemetryChannel {
     private final static int DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 500;
+    private final static int MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 1;
+    private final static int MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 500;
 
     private final static int TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS = 10;
+    private final static int MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS = 1;
+    private final static int MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS = 30;
 
     private final static String DEVELOPER_MODE = "DeveloperMode";
-    private final static String EndpointAddress = "EndpointAddress";
+    private final static String ENDPOINT_ADDRESS = "EndpointAddress";
+    private final static String MAX_TELEMETRY_ITEMS_IN_QUEUE = "MaxTelemetryItemsInQueue";
+    private final static String SEND_INTERVAL_IN_SECONDS = "SendIntervalInSeconds";
 
     private boolean developerMode = false;
     private static TransmitterFactory s_transmitterFactory;
@@ -86,7 +92,20 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
      * @param developerMode True will behave in a 'non-production' mode to ease the debugging
      */
     public InProcessTelemetryChannel(String endpointAddress, boolean developerMode) {
-        initialize(endpointAddress, developerMode);
+        initialize(endpointAddress, developerMode, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
+    }
+
+    /**
+     * Ctor
+     * @param endpointAddress Must be empty string or a valid uri, else an exception will be thrown
+     * @param developerMode True will behave in a 'non-production' mode to ease the debugging
+     * @param maxQueueItemCount Max number of Telemetries we keep in the buffer, when reached we will send the buffer
+     *                          Note, value should be between TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS and TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS inclusive
+     * @param sendIntervalInMillis The maximum number of milliseconds to wait before we send the buffer
+     *                          Note, value should be between MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER and MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER inclusive
+     */
+    public InProcessTelemetryChannel(String endpointAddress, boolean developerMode, int maxQueueItemCount, int sendIntervalInMillis) {
+        initialize(endpointAddress, developerMode, maxQueueItemCount, sendIntervalInMillis);
     }
 
     /**
@@ -97,13 +116,23 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     public InProcessTelemetryChannel(Map<String, String> nameAndValues) {
         boolean developerMode = false;
         String endpointAddress = null;
+        int maxQueueItemCount = DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER;
+        int sendIntervalInMillis = TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS;
 
         if (nameAndValues != null) {
             developerMode = Boolean.valueOf(nameAndValues.get(DEVELOPER_MODE));
-            endpointAddress = nameAndValues.get(EndpointAddress);
+            endpointAddress = nameAndValues.get(ENDPOINT_ADDRESS);
+            maxQueueItemCount = translateNumber(nameAndValues.get(MAX_TELEMETRY_ITEMS_IN_QUEUE),
+                    MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER,
+                    MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER,
+                    DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER);
+            sendIntervalInMillis = translateNumber(nameAndValues.get(SEND_INTERVAL_IN_SECONDS),
+                    MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS,
+                    MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS,
+                    TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
         }
 
-        initialize(endpointAddress, developerMode);
+        initialize(endpointAddress, developerMode, maxQueueItemCount, sendIntervalInMillis);
     }
 
     /**
@@ -124,7 +153,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             this.developerMode = developerMode;
             int maxTelemetriesInBatch = this.developerMode ? 1 : DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER;
 
-            telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
+            setMaxTelemetriesInBatch(maxTelemetriesInBatch);
         }
     }
 
@@ -181,11 +210,42 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         telemetryBuffer.flush();
     }
 
+    /**
+     * Sets the buffer size
+     * @param maxTelemetriesInBatch should be between MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER
+     *                              and MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER inclusive
+     */
+    public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch) {
+        if (maxTelemetriesInBatch >= MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER &&
+                maxTelemetriesInBatch <= MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER) {
+            telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
+        } else {
+            InternalLogger.INSTANCE.trace("Value %s is ignored, value should be between %s and %s, inclusive",
+                    maxTelemetriesInBatch, MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER, MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER);
+        }
+
+    }
+
+    /**
+     * Sets the time tow wait before flushing the internal buffer
+     * @param transmitBufferTimeoutInSeconds should be between MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS
+     *                              and MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS inclusive
+     */
+    public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds) {
+        if (transmitBufferTimeoutInSeconds >= MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS &&
+                transmitBufferTimeoutInSeconds <= MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS) {
+            telemetryBuffer.setTransmitBufferTimeoutInSeconds(transmitBufferTimeoutInSeconds);
+        } else {
+            InternalLogger.INSTANCE.trace("Value %s is ignored, value should be between %s and %s seconds, inclusive",
+                    transmitBufferTimeoutInSeconds, MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS, MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS);
+        }
+    }
+
     private void writeTelemetryToDebugOutput(Telemetry telemetry) {
         InternalLogger.INSTANCE.trace("InProcessTelemetryChannel sending telemetry");
     }
 
-    private synchronized void initialize(String endpointAddress, boolean developerMode) {
+    private synchronized void initialize(String endpointAddress, boolean developerMode, int maxQueueItemCount, int sendIntervalInSeconds) {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         if (s_transmitterFactory == null) {
@@ -193,7 +253,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
 
         telemetriesTransmitter = s_transmitterFactory.create(endpointAddress);
-        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
+        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, maxQueueItemCount, sendIntervalInSeconds);
         setDeveloperMode(developerMode);
     }
 
@@ -215,4 +275,16 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
     }
 
+    private int translateNumber(String valueString, int minimum, int maximum, int defaultValue) {
+        try {
+            int value = Integer.parseInt(valueString);
+            if (value < minimum || value > maximum) {
+                return defaultValue;
+            }
+
+            return value;
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
 }

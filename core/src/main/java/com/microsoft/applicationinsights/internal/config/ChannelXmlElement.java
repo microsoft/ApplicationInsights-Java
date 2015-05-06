@@ -36,6 +36,8 @@ import java.util.Map;
 public class ChannelXmlElement {
 
     private String endpointAddress;
+    private String maxTelemetryItemsInQueue;
+    private String sendIntervalInSeconds;
     private boolean developerMode;
     private String type = "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
 
@@ -66,6 +68,24 @@ public class ChannelXmlElement {
         this.developerMode = developerMode;
     }
 
+    public String getMaxTelemetryItemsInQueue() {
+        return maxTelemetryItemsInQueue;
+    }
+
+    @XmlElement(name="MaxTelemetryItemsInQueue")
+    public void setMaxTelemetryItemsInQueue(String maxTelemetryItemsInQueue) {
+        this.maxTelemetryItemsInQueue = maxTelemetryItemsInQueue;
+    }
+
+    public String getSendIntervalInSeconds() {
+        return sendIntervalInSeconds;
+    }
+
+    @XmlElement(name="SendIntervalInSeconds")
+    public void setSendIntervalInSeconds(String sendIntervalInSeconds) {
+        this.sendIntervalInSeconds = sendIntervalInSeconds;
+    }
+
     public Map<String, String> getData() {
         HashMap<String, String> data = new HashMap<String, String>();
         if (developerMode) {
@@ -74,6 +94,14 @@ public class ChannelXmlElement {
 
         if (!Strings.isNullOrEmpty(endpointAddress)) {
             data.put("EndpointAddress", endpointAddress);
+        }
+
+        if (!Strings.isNullOrEmpty(maxTelemetryItemsInQueue)) {
+            data.put("MaxTelemetryItemsInQueue", maxTelemetryItemsInQueue);
+        }
+
+        if (!Strings.isNullOrEmpty(sendIntervalInSeconds)) {
+            data.put("SendIntervalInSeconds", sendIntervalInSeconds);
         }
 
         return data;
