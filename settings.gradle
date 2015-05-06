@@ -28,6 +28,6 @@ include 'web'
 include 'samples'
 include 'performance'
 
-if (System.env.'COLLECTD') {
+if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }

@@ -25,8 +25,6 @@ import org.collectd.api.Collectd;
 
 /**
  * Created by yonisha on 5/4/2015.
- *
- * This is class is mainly for testability of the writer.
  */
 public class ApplicationInsightsWriterLogger {
 

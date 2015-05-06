@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.collectd;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.collectd.internal.ApplicationInsightsWriterLogger;
+import com.microsoft.applicationinsights.collectd.internal.WriterConfiguration;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.collectd.api.*;
 import org.junit.*;
@@ -35,7 +36,9 @@ import org.mockito.stubbing.Answer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by yonisha on 5/3/2015.
@@ -47,7 +50,8 @@ public class ApplicationInsightsWriterTests {
     private static final String HOST = "Host";
     private static final String PLUGIN = "Plugin";
     private static final String PLUGIN_INSTANCE = "PInstance";
-    private static final String INSTRUMENTATION_KEY_CONFIGURATION_KEY = "InstrumentationKey";
+    private static final String DEFAULT_DATA_SOURCE = "Default_Source";
+    private static final String SECOND_DATA_SOURCE = "Second_Source";
 
     private static List<DataSource> dataSources = null;
 
@@ -55,9 +59,11 @@ public class ApplicationInsightsWriterTests {
     private TelemetryClient telemetryClient;
     private List<MetricTelemetry> telemetriesSent;
     private ApplicationInsightsWriter writerUnderTest;
+    private OConfigItem defaultConfiguration;
 
     @BeforeClass
     public static void classInitialize() {
+        WriterConfiguration.setLogger(new ApplicationInsightsWriterLogger(false));
         defaultValueList = new ValueList();
         defaultValueList.setHost(HOST);
         defaultValueList.setType(DATA_SET_TYPE);
@@ -86,7 +92,9 @@ public class ApplicationInsightsWriterTests {
             }
         }).when(this.telemetryClient).trackMetric(Matchers.any(MetricTelemetry.class));
 
-        initializeWriter();
+        defaultConfiguration = initializeConfiguration();
+        this.writerUnderTest = new ApplicationInsightsWriter(this.telemetryClient, new ApplicationInsightsWriterLogger(false));
+        this.writerUnderTest.config(defaultConfiguration);
         this.telemetriesSent = new ArrayList<MetricTelemetry>();
     }
 
@@ -99,11 +107,44 @@ public class ApplicationInsightsWriterTests {
     }
 
     @Test
-    public void testInstrumentationKeyParsedFromConfigurationCorrectly() {
-        writerUnderTest.init();
-        TelemetryConfiguration active = TelemetryConfiguration.getActive();
+    public void testTelemetriesAreFlushedOnShutdown() {
+        this.writerUnderTest.shutdown();
 
-        Assert.assertEquals(DEFAULT_INSTRUMENTATION_KEY, active.getInstrumentationKey());
+        verify(this.telemetryClient).flush();
+    }
+
+    @Test
+    public void testInstrumentationKeyIsSetWhenCallingConfig() {
+        this.writerUnderTest.config(defaultConfiguration);
+
+        Assert.assertEquals(DEFAULT_INSTRUMENTATION_KEY, TelemetryConfiguration.getActive().getInstrumentationKey());
+    }
+
+    @Test
+    public void testExcludedDataSourceNotSendingEvent() {
+        OConfigItem exclusionConfiguration = new OConfigItem(WriterConfiguration.EXCLUDE_CONFIGURATION_KEY);
+        exclusionConfiguration.addValue(PLUGIN + ":" + DEFAULT_DATA_SOURCE);
+        defaultConfiguration.addChild(exclusionConfiguration);
+
+        this.writerUnderTest.config(defaultConfiguration);
+        this.writerUnderTest.write(defaultValueList);
+
+        Assert.assertEquals(1, this.telemetriesSent.size());
+
+        MetricTelemetry telemetry = this.telemetriesSent.get(0);
+        Assert.assertTrue(telemetry.getName().contains(SECOND_DATA_SOURCE));
+    }
+
+    @Test
+    public void testExcludedPluginNotSendingEvent() {
+        OConfigItem exclusionConfiguration = new OConfigItem(WriterConfiguration.EXCLUDE_CONFIGURATION_KEY);
+        exclusionConfiguration.addValue(PLUGIN);
+        defaultConfiguration.addChild(exclusionConfiguration);
+
+        this.writerUnderTest.config(defaultConfiguration);
+        this.writerUnderTest.write(defaultValueList);
+
+        Assert.assertEquals(0, this.telemetriesSent.size());
     }
 
     private void verifySentTelemetries() {
@@ -119,20 +160,19 @@ public class ApplicationInsightsWriterTests {
         }
     }
 
-    private void initializeWriter() {
-        OConfigItem instrumentationKeyConfigItem = new OConfigItem(INSTRUMENTATION_KEY_CONFIGURATION_KEY);
+    private static OConfigItem initializeConfiguration() {
+        OConfigItem instrumentationKeyConfigItem = new OConfigItem(WriterConfiguration.INSTRUMENTATION_KEY_CONFIGURATION_KEY);
         instrumentationKeyConfigItem.addValue(DEFAULT_INSTRUMENTATION_KEY);
 
         OConfigItem config = new OConfigItem("");
         config.addChild(instrumentationKeyConfigItem);
 
-        this.writerUnderTest = new ApplicationInsightsWriter(this.telemetryClient, new ApplicationInsightsWriterLogger(false));
-        this.writerUnderTest.config(config);
+        return config;
     }
 
     private static List<DataSource> initializeDataSources() {
-        DataSource firstDataSource = new DataSource("FirstSource", 1, 5, 15);
-        DataSource secondDataSource= new DataSource("SecondSource", 1, 25, 35);
+        DataSource firstDataSource = new DataSource(DEFAULT_DATA_SOURCE, 1, 5, 15);
+        DataSource secondDataSource= new DataSource(SECOND_DATA_SOURCE, 1, 25, 35);
 
         dataSources = new ArrayList<DataSource>();
         dataSources.add(firstDataSource);

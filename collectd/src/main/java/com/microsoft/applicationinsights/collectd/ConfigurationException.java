@@ -19,28 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/publishing.gradle"
+package com.microsoft.applicationinsights.collectd;
 
-def collectdLibDir = System.env.'COLLECTD_HOME'
-def collectDLibPath = new File(collectdLibDir, "lib/collectd-api.jar")
-
-if (!collectDLibPath.exists()) {
-    throw new ProjectConfigurationException("Archive $collectDLibPath required for building CollectD plugin could not be found.", null)
+/**
+ * Created by yonisha on 5/6/2015.
+ */
+public class ConfigurationException extends Exception {
+    public ConfigurationException(String message, Object... args) {
+        super(String.format(message, args));
+    }
 }
-
-archivesBaseName = 'applicationinsights-collectd'
-
-dependencies {
-    compile project(':core')
-    compile files(collectDLibPath)
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-}
-
-// region Publishing properties
-
-projectPomName = project.msftAppInsights + " Java SDK CollectD Writer Plugin"
-projectPomDescription = "This is the CollectD writer plugin for " + project.msftAppInsightsJavaSdk
-
-// endregion Publishing properties
