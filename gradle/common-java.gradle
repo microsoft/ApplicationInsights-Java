@@ -44,6 +44,24 @@ compileJava {
     }
 }
 
+updateTestDirectories()
+
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/integTest/java')
+        resources.srcDir file('src/integTest/resources')
+        compileClasspath = sourceSets.main.output + configurations.testRuntime
+        runtimeClasspath = output + compileClasspath
+    }
+}
+
+task integrationTest(type: Test, dependsOn: jar) {
+    group 'Verification'
+    description 'Runs the integration tests.'
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
 task prepareSourcesArchive(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allJava
@@ -71,14 +89,6 @@ task prepare {
     dependsOn copyLibsToGlobalArtifactsFolder
 }
 
-if (this.hasProperty("testEnvName")) {
-    testResultsDirName = testResultsDirName + "/" + testEnvName
-    logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
-
-    testReportDirName = testReportDirName + "/" + testEnvName
-    logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
-}
-
 repositories {
     mavenCentral()
 }
@@ -101,3 +111,16 @@ task testAndCollect {
 
 // endregion Shared java configuration
 
+// region Helper Methods
+
+def updateTestDirectories() {
+    if (this.hasProperty("testEnvName")) {
+        testResultsDirName = testResultsDirName + "/" + testEnvName
+        logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
+
+        testReportDirName = testReportDirName + "/" + testEnvName
+        logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
+    }
+}
+
+// endregion Helper Methods
