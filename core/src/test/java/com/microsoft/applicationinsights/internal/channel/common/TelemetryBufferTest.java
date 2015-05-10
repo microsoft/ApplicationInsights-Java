@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
+import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -45,6 +46,8 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 
 public final class TelemetryBufferTest {
+    private final static String MOCK_PROPERTY_NAME = "MockProperty";
+
     private static class MockSender implements TelemetriesTransmitter {
         private static class ScheduledSendResult {
             public final boolean result;
@@ -166,40 +169,82 @@ public final class TelemetryBufferTest {
         }
     };
 
+    @Test(expected = NullPointerException.class)
+    public void testNullMaxTelemetriesEnforcer() throws Exception {
+        TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+
+        LimitsEnforcer sendEnforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 1, 200, 20, null);
+
+        new TelemetryBuffer(mockSender, null, sendEnforcer);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testNullSenderTimeoutEnforcer() throws Exception {
+        TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
+
+        LimitsEnforcer maxEnforcer = createDefaultBatchSizeEnforcer();
+
+        new TelemetryBuffer(mockSender, maxEnforcer, null);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testNegativeBufferSizeSenderIsSet() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, -1, 20);
+
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(-1);
+        LimitsEnforcer sendEnforcer = createDefaultSenderTimeoutEnforcer();
+
+        new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testZeroBufferSizeSenderIsSet() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 0, 20);
+
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(0);
+        LimitsEnforcer sendEnforcer = createDefaultSenderTimeoutEnforcer();
+
+        new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNegativeBufferTimeoutSenderIsSet() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 1, -20);
+
+        LimitsEnforcer maxEnforcer = createDefaultBatchSizeEnforcer();
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(-1);
+
+        new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testZeroBufferTimeoutSenderIsSet() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 20, 0);
+
+        LimitsEnforcer maxEnforcer = createDefaultBatchSizeEnforcer();
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(0);
+
+        new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
     }
 
     @Test(expected = NullPointerException.class)
     public void testNoSenderIsSet() throws Exception {
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(null, 20, 0);
+
+        LimitsEnforcer maxEnforcer = createDefaultBatchSizeEnforcer();
+        LimitsEnforcer sendEnforcer = createDefaultSenderTimeoutEnforcer();
+
+        new TelemetryBuffer(null, maxEnforcer, sendEnforcer);
     }
 
     @Test
     public void testAddOneTelemetry() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 128, 2);
+
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(128);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(2);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         testedBuffer.add("mockTelemetry");
 
@@ -214,7 +259,10 @@ public final class TelemetryBufferTest {
         Mockito.doReturn(true).when(mockSender).sendNow(anyCollection());
         Mockito.doReturn(true).when(mockSender).scheduleSend(any(TelemetriesTransmitter.TelemetriesFetcher.class), anyLong(), any(TimeUnit.class));
 
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 2, 1200);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(2);
+        LimitsEnforcer sendEnforcer = createDefaultSenderTimeoutEnforcer();
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < 2; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -269,7 +317,10 @@ public final class TelemetryBufferTest {
         }
 
         StubTelemetriesTransmitter mockSender = new StubTelemetriesTransmitter();
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 3, 1200);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(3);
+        LimitsEnforcer sendEnforcer = createDefaultSenderTimeoutEnforcer();
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (String telemetry : all) {
             testedBuffer.add(telemetry);
@@ -289,7 +340,10 @@ public final class TelemetryBufferTest {
     public void testSendWhenBufferIsFullInDeveloperMode() throws Exception {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 1, 1200);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(1);
+        LimitsEnforcer sendEnforcer = createDefaultSenderTimeoutEnforcer();
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < 2; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -309,7 +363,10 @@ public final class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(1);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(10);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(3);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < 1; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -327,7 +384,10 @@ public final class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(10);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(10);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(3);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < 10; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -341,7 +401,10 @@ public final class TelemetryBufferTest {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(10);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(3);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
         testedBuffer.flush();
 
         Mockito.verify(mockSender, Mockito.never()).sendNow(anyCollectionOf(String.class));
@@ -366,7 +429,10 @@ public final class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(2);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 30);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(10);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(1, 30);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < 2; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -385,7 +451,10 @@ public final class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(2);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 30);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(1, 10);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(30);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < 2; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -405,7 +474,10 @@ public final class TelemetryBufferTest {
                 .setExpectedNumberOfScheduleSendRequests(2);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 200);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(1, 10);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(30);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < 2; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -427,7 +499,10 @@ public final class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(11);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 20);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(1, 10);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(30);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < 1; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -448,7 +523,10 @@ public final class TelemetryBufferTest {
                 .setExpectedTelemetriesNumberInSendNow(expectedTelemetriesNumberInSendNow);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
-        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, 10, 3);
+        LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(1, 10);
+        LimitsEnforcer sendEnforcer = createEnforcerWithCurrentValue(1, 3);
+
+        TelemetryBuffer testedBuffer = new TelemetryBuffer(mockSender, maxEnforcer, sendEnforcer);
 
         for (int i = 0; i < expectedTelemetriesNumberInSendNow; ++i) {
             testedBuffer.add("mockTelemetry");
@@ -457,5 +535,21 @@ public final class TelemetryBufferTest {
         testedBuffer.flush();
 
         mockSender.waitForFinish(6L);
+    }
+
+    private LimitsEnforcer createDefaultBatchSizeEnforcer() {
+        return LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 1, 10000, 100, null);
+    }
+
+    private LimitsEnforcer createDefaultSenderTimeoutEnforcer() {
+        return LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 1, 12000, 1200, 1200);
+    }
+
+    private LimitsEnforcer createEnforcerWithCurrentValue(int minimum) {
+        return createEnforcerWithCurrentValue(minimum, minimum);
+    }
+
+    private LimitsEnforcer createEnforcerWithCurrentValue(int minimum, int defaultValue) {
+        return LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, minimum, 10000, defaultValue, null);
     }
 }

@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -60,18 +61,18 @@ import com.google.common.base.Preconditions;
  * Created by gupele on 12/17/2014.
  */
 public final class InProcessTelemetryChannel implements TelemetryChannel {
-    private final static int DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 500;
-    private final static int MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 1;
-    private final static int MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER = 500;
+    private final static int DEFAULT_NUMBER_OF_TELEMETRIES_IN_BATCH = 500;
+    private final static int MIN_NUMBER_OF_TELEMETRIES_IN_BATCH = 1;
+    private final static int MAX_NUMBER_OF_TELEMETRIES_IN_BATCH = 1000;
+    private final static String MAX_NUMBER_OF_TELEMETRIES_IN_BATCH_NAME = "MaxTelemetryItemsInQueue";
 
-    private final static int TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS = 10;
+    private final static int DEFAULT_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS = 10;
     private final static int MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS = 1;
-    private final static int MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS = 30;
+    private final static int MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS = 300;
+    private final static String TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS_NAME = "SendIntervalInSeconds";
 
-    private final static String DEVELOPER_MODE = "DeveloperMode";
-    private final static String ENDPOINT_ADDRESS = "EndpointAddress";
-    private final static String MAX_TELEMETRY_ITEMS_IN_QUEUE = "MaxTelemetryItemsInQueue";
-    private final static String SEND_INTERVAL_IN_SECONDS = "SendIntervalInSeconds";
+    private final static String DEVELOPER_MODE_NAME = "DeveloperMode";
+    private final static String ENDPOINT_ADDRESS_NAME = "EndpointAddress";
 
     private boolean developerMode = false;
     private static TransmitterFactory s_transmitterFactory;
@@ -92,7 +93,10 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
      * @param developerMode True will behave in a 'non-production' mode to ease the debugging
      */
     public InProcessTelemetryChannel(String endpointAddress, boolean developerMode) {
-        initialize(endpointAddress, developerMode, DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER, TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
+        initialize(endpointAddress,
+                   developerMode,
+                   createDefaultMaxItemsInBatchEnforcer(null),
+                   createDefaultSendIntervalInSecondsEnforcer(null));
     }
 
     /**
@@ -102,10 +106,13 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
      * @param maxQueueItemCount Max number of Telemetries we keep in the buffer, when reached we will send the buffer
      *                          Note, value should be between TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS and TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS inclusive
      * @param sendIntervalInMillis The maximum number of milliseconds to wait before we send the buffer
-     *                          Note, value should be between MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER and MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER inclusive
+     *                          Note, value should be between MIN_NUMBER_OF_TELEMETRIES_IN_BATCH and MAX_NUMBER_OF_TELEMETRIES_IN_BATCH inclusive
      */
     public InProcessTelemetryChannel(String endpointAddress, boolean developerMode, int maxQueueItemCount, int sendIntervalInMillis) {
-        initialize(endpointAddress, developerMode, maxQueueItemCount, sendIntervalInMillis);
+        initialize(endpointAddress,
+                   developerMode,
+                   createDefaultMaxItemsInBatchEnforcer(maxQueueItemCount),
+                   createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis));
     }
 
     /**
@@ -116,23 +123,20 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     public InProcessTelemetryChannel(Map<String, String> nameAndValues) {
         boolean developerMode = false;
         String endpointAddress = null;
-        int maxQueueItemCount = DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER;
-        int sendIntervalInMillis = TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS;
+
+        LimitsEnforcer maxItemsInBatchEnforcer = createDefaultMaxItemsInBatchEnforcer(null);
+
+        LimitsEnforcer sendIntervalInSecondsEnforcer = createDefaultSendIntervalInSecondsEnforcer(null);
 
         if (nameAndValues != null) {
-            developerMode = Boolean.valueOf(nameAndValues.get(DEVELOPER_MODE));
-            endpointAddress = nameAndValues.get(ENDPOINT_ADDRESS);
-            maxQueueItemCount = translateNumber(nameAndValues.get(MAX_TELEMETRY_ITEMS_IN_QUEUE),
-                    MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER,
-                    MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER,
-                    DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER);
-            sendIntervalInMillis = translateNumber(nameAndValues.get(SEND_INTERVAL_IN_SECONDS),
-                    MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS,
-                    MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS,
-                    TRANSMIT_BUFFER_DEFAULT_TIMEOUT_IN_SECONDS);
+            developerMode = Boolean.valueOf(nameAndValues.get(DEVELOPER_MODE_NAME));
+            endpointAddress = nameAndValues.get(ENDPOINT_ADDRESS_NAME);
+
+            maxItemsInBatchEnforcer.normalizeStringValue(nameAndValues.get(MAX_NUMBER_OF_TELEMETRIES_IN_BATCH_NAME));
+            sendIntervalInSecondsEnforcer.normalizeStringValue(nameAndValues.get(TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS_NAME));
         }
 
-        initialize(endpointAddress, developerMode, maxQueueItemCount, sendIntervalInMillis);
+        initialize(endpointAddress, developerMode, maxItemsInBatchEnforcer, sendIntervalInSecondsEnforcer);
     }
 
     /**
@@ -151,7 +155,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     public void setDeveloperMode(boolean developerMode) {
         if (developerMode != this.developerMode) {
             this.developerMode = developerMode;
-            int maxTelemetriesInBatch = this.developerMode ? 1 : DEFAULT_NUMBER_OF_TELEMETRIES_PER_CONTAINER;
+            int maxTelemetriesInBatch = this.developerMode ? 1 : DEFAULT_NUMBER_OF_TELEMETRIES_IN_BATCH;
 
             setMaxTelemetriesInBatch(maxTelemetriesInBatch);
         }
@@ -212,40 +216,31 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     /**
      * Sets the buffer size
-     * @param maxTelemetriesInBatch should be between MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER
-     *                              and MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER inclusive
+     * @param maxTelemetriesInBatch should be between MIN_NUMBER_OF_TELEMETRIES_IN_BATCH
+     *                              and MAX_NUMBER_OF_TELEMETRIES_IN_BATCH inclusive
+     *                              if the number is lower than the minimum then the minimum will be used
+     *                              if the number is higher than the maximum then the maximum will be used
      */
     public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch) {
-        if (maxTelemetriesInBatch >= MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER &&
-                maxTelemetriesInBatch <= MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER) {
-            telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
-        } else {
-            InternalLogger.INSTANCE.trace("Value %s is ignored, value should be between %s and %s, inclusive",
-                    maxTelemetriesInBatch, MIN_NUMBER_OF_TELEMETRIES_PER_CONTAINER, MAX_NUMBER_OF_TELEMETRIES_PER_CONTAINER);
-        }
-
+        telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
     }
 
     /**
      * Sets the time tow wait before flushing the internal buffer
      * @param transmitBufferTimeoutInSeconds should be between MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS
-     *                              and MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS inclusive
+     *                                       and MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS inclusive
+     *                                       if the number is lower than the minimum then the minimum will be used
+     *                                       if the number is higher than the maximum then the maximum will be used
      */
     public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds) {
-        if (transmitBufferTimeoutInSeconds >= MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS &&
-                transmitBufferTimeoutInSeconds <= MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS) {
-            telemetryBuffer.setTransmitBufferTimeoutInSeconds(transmitBufferTimeoutInSeconds);
-        } else {
-            InternalLogger.INSTANCE.trace("Value %s is ignored, value should be between %s and %s seconds, inclusive",
-                    transmitBufferTimeoutInSeconds, MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS, MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS);
-        }
+        telemetryBuffer.setTransmitBufferTimeoutInSeconds(transmitBufferTimeoutInSeconds);
     }
 
     private void writeTelemetryToDebugOutput(Telemetry telemetry) {
         InternalLogger.INSTANCE.trace("InProcessTelemetryChannel sending telemetry");
     }
 
-    private synchronized void initialize(String endpointAddress, boolean developerMode, int maxQueueItemCount, int sendIntervalInSeconds) {
+    private synchronized void initialize(String endpointAddress, boolean developerMode, LimitsEnforcer maxItemsInBatch, LimitsEnforcer sendIntervalInSeconds) {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         if (s_transmitterFactory == null) {
@@ -253,7 +248,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
 
         telemetriesTransmitter = s_transmitterFactory.create(endpointAddress);
-        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, maxQueueItemCount, sendIntervalInSeconds);
+        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, maxItemsInBatch, sendIntervalInSeconds);
+
         setDeveloperMode(developerMode);
     }
 
@@ -275,16 +271,75 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
     }
 
-    private int translateNumber(String valueString, int minimum, int maximum, int defaultValue) {
+    /**
+     * The method will translate the numbers and will make sure it is within the limits
+     * If the value is not an int the default value will be returned
+     * Else, will return the outcome of 'makeSureNumberIsWithinLimits'
+     * @param propertyName The value to translate
+     * @param minimum The minimum value allowed, the value must be >= to that value
+     * @param maximum The maximum value allowed, the value must be <= to that value
+     * @param defaultValue Return this value in case the valueString is not an int
+     * @param propertyName The name of the property to display if needed in log messages
+     * @return The value within limits as stated in the param declarations above
+     */
+    private int translateNumber(Map<String, String> values, int minimum, int maximum, int defaultValue, String propertyName) {
+        String valueString = null;
         try {
-            int value = Integer.parseInt(valueString);
-            if (value < minimum || value > maximum) {
+            valueString = values.get(propertyName);
+            if (Strings.isNullOrEmpty(valueString)) {
                 return defaultValue;
             }
 
-            return value;
+            int value = Integer.parseInt(valueString);
+            return makeSureNumberIsWithinLimits(value, minimum, maximum, propertyName);
         } catch (NumberFormatException e) {
+            InternalLogger.INSTANCE.trace("'%s': bad format for value '%s', therefore using '%d'", propertyName, valueString, defaultValue);
+
             return defaultValue;
         }
+    }
+
+    /**
+     * Will return the value if (value >= minimum and value <= maximum) otherwise the limit that is closer
+     * @param value The value to check
+     * @param minimum The value should be >= from that value
+     * @param maximum The Value should be <= from that value
+     * @param propertyName The property name to display in log messages
+     * @return Will return the value if (value >= minimum and value <= maximum) otherwise the limit that is closer
+     */
+    private int makeSureNumberIsWithinLimits(int value, int minimum, int maximum, String propertyName) {
+        if (value < minimum) {
+            InternalLogger.INSTANCE.trace("'%s': value '%d' is lower than the limit '%d', therefore the limit will be used", propertyName, value, minimum);
+
+            return minimum;
+        } else if (value > maximum) {
+            InternalLogger.INSTANCE.trace("'%s': value '%d' is higher than the limit '%d', therefore the limit will be used", propertyName, value, maximum);
+
+            return maximum;
+        }
+
+        return value;
+    }
+
+    private LimitsEnforcer createDefaultMaxItemsInBatchEnforcer(Integer currentValue) {
+        LimitsEnforcer maxItemsInBatchEnforcer =
+                LimitsEnforcer.createWithClosestLimitOnError(MAX_NUMBER_OF_TELEMETRIES_IN_BATCH_NAME,
+                                                             MIN_NUMBER_OF_TELEMETRIES_IN_BATCH,
+                                                             MAX_NUMBER_OF_TELEMETRIES_IN_BATCH,
+                                                             DEFAULT_NUMBER_OF_TELEMETRIES_IN_BATCH,
+                                                             currentValue == null ? DEFAULT_NUMBER_OF_TELEMETRIES_IN_BATCH : currentValue);
+
+        return maxItemsInBatchEnforcer;
+    }
+
+    private LimitsEnforcer createDefaultSendIntervalInSecondsEnforcer(Integer currentValue) {
+        LimitsEnforcer sendIntervalInSecondsEnforcer =
+                LimitsEnforcer.createWithClosestLimitOnError(TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS_NAME,
+                                                             MIN_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS,
+                                                             MAX_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS,
+                                                             DEFAULT_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS,
+                                                             currentValue == null ? DEFAULT_TRANSMIT_BUFFER_TIMEOUT_IN_SECONDS : currentValue);
+
+        return sendIntervalInSecondsEnforcer;
     }
 }

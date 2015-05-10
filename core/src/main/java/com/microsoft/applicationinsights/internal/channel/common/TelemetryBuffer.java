@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
@@ -82,8 +83,10 @@ public final class TelemetryBuffer {
     /// The maximum amount of Telemetries in a batch. If the buffer is
     /// full before the timeout expired, we will need to send it anyway and not wait for the timeout to expire
     private int maxTelemetriesInBatch;
+    private LimitsEnforcer maxTelemetriesInBatchEnforcer;
 
     private int transmitBufferTimeoutInSeconds;
+    private LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer;
 
     /// The Telemetry instances are kept here
     private List<String> telemetries;
@@ -97,32 +100,36 @@ public final class TelemetryBuffer {
     /**
      * The constructor needs to get the 'sender' we work with
      * @param sender The sender object for transmitting the telemetries
-     * @param maxTelemetriesInBatch The maximum number of telemetries in a batch
-     * @param transmitBufferTimeoutInSeconds The transmit buffer timeout in seconds
+     * @param maxTelemetriesInBatchEnforcer For getting the number of maximum number of telemetries in a batch within limits
+     * @param transmitBufferTimeoutInSecondsEnforcer For getting the number of transmit buffer timeout in seconds within limits
      */
-    public TelemetryBuffer(TelemetriesTransmitter sender, int maxTelemetriesInBatch, int transmitBufferTimeoutInSeconds) {
+    public TelemetryBuffer(TelemetriesTransmitter sender, LimitsEnforcer maxTelemetriesInBatchEnforcer, LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer) {
         Preconditions.checkNotNull(sender, "sender must be non-null value");
-        Preconditions.checkArgument(maxTelemetriesInBatch > 0, "maxTelemetriesInBatch must be a positive number");
-        Preconditions.checkArgument(transmitBufferTimeoutInSeconds > 0, "transmitBufferTimeoutInSeconds must be a positive number");
+        Preconditions.checkNotNull(maxTelemetriesInBatchEnforcer, "maxTelemetriesInBatchEnforcer must be non-null value");
+        Preconditions.checkNotNull(transmitBufferTimeoutInSecondsEnforcer, "transmitBufferTimeoutInSecondsEnforcer must be non-null value");
+        Preconditions.checkArgument(maxTelemetriesInBatchEnforcer.getCurrentValue() > 0, "maxTelemetriesInBatch must be a positive number");
+        Preconditions.checkArgument(transmitBufferTimeoutInSecondsEnforcer.getCurrentValue() > 0, "transmitBufferTimeoutInSeconds must be a positive number");
 
-        setMaxTelemetriesInBatch(maxTelemetriesInBatch);
+        this.maxTelemetriesInBatchEnforcer = maxTelemetriesInBatchEnforcer;
+        this.maxTelemetriesInBatch = maxTelemetriesInBatchEnforcer.getCurrentValue();
+        telemetries = new ArrayList<String>(this.maxTelemetriesInBatch);
 
         this.sender = sender;
-        telemetries = new ArrayList<String>(this.maxTelemetriesInBatch);
-        this.transmitBufferTimeoutInSeconds = transmitBufferTimeoutInSeconds;
+        this.transmitBufferTimeoutInSecondsEnforcer = transmitBufferTimeoutInSecondsEnforcer;
+        this.transmitBufferTimeoutInSeconds = transmitBufferTimeoutInSecondsEnforcer.getCurrentValue();
     }
 
     /**
      * Sets the maximum number of telemetries in a batch
-     * @param maxTelemetriesInBatch The max amount of Telemetries that are allowed in a batch.
+     * @param value The max amount of Telemetries that are allowed in a batch.
      */
-    public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch) {
+    public void setMaxTelemetriesInBatch(int value) {
         synchronized (lock) {
+            maxTelemetriesInBatch = maxTelemetriesInBatchEnforcer.normalizeValue(value);
             if (telemetries != null && maxTelemetriesInBatch < telemetries.size()) {
                 // Request for smaller buffers, we flush if our buffer contains more elements
                 flush();
             }
-            this.maxTelemetriesInBatch = maxTelemetriesInBatch;
         }
     }
 
@@ -136,15 +143,16 @@ public final class TelemetryBuffer {
 
     /**
      * Sets the transmit buffer timeout in seconds
-     * @param transmitBufferTimeoutInSeconds The amount of time to wait before sending the buffer.
+     * @param value The amount of time to wait before sending the buffer.
      */
-    public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds) {
+    public void setTransmitBufferTimeoutInSeconds(int value) {
         synchronized (lock) {
+            int oldValue = transmitBufferTimeoutInSeconds;
+            transmitBufferTimeoutInSeconds = this.transmitBufferTimeoutInSecondsEnforcer.normalizeValue(value);
             // Request for quicker flushes, we flush if the previous timeout is bigger
-            if (transmitBufferTimeoutInSeconds < this.transmitBufferTimeoutInSeconds) {
+            if (transmitBufferTimeoutInSeconds < oldValue) {
                 flush();
             }
-            this.transmitBufferTimeoutInSeconds = transmitBufferTimeoutInSeconds;
         }
     }
 
