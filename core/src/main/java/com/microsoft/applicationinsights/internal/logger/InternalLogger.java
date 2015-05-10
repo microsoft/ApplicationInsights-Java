@@ -46,8 +46,10 @@ public enum InternalLogger {
     public enum LoggingLevel {
         ALL(Integer.MIN_VALUE),
         TRACE(10000),
-        ERROR(20000),
-        OFF(30000);
+        INFO(20000),
+        WARN(30000),
+        ERROR(40000),
+        OFF(50000);
 
         private int value;
 
@@ -130,6 +132,14 @@ public enum InternalLogger {
         return loggingLevel.getValue() <= LoggingLevel.TRACE.getValue();
     }
 
+    public boolean isInfoEnabled() {
+        return loggingLevel.getValue() <= LoggingLevel.INFO.getValue();
+    }
+
+    public boolean isWarnEnabled() {
+        return loggingLevel.getValue() <= LoggingLevel.WARN.getValue();
+    }
+
     public boolean isErrorEnabled() {
         return loggingLevel.getValue() <= LoggingLevel.ERROR.getValue();
     }
@@ -143,6 +153,32 @@ public enum InternalLogger {
     public void error(String message, Object... args) {
         try {
             log(LoggingLevel.ERROR, message, args);
+        } catch (Throwable t) {
+        }
+    }
+
+    /**
+     * The main method, will delegate the call to the output
+     * only if the logger is enabled for warnings, will not allow any exception thrown
+     * @param message The message to log with possible placeholders.
+     * @param args The arguments that should be formatted into the placeholders.
+     */
+    public void warn(String message, Object... args) {
+        try {
+            log(LoggingLevel.WARN, message, args);
+        } catch (Throwable t) {
+        }
+    }
+
+    /**
+     * The main method, will delegate the call to the output
+     * only if the logger is enabled for info messages, will not allow any exception thrown
+     * @param message The message to log with possible placeholders.
+     * @param args The arguments that should be formatted into the placeholders.
+     */
+    public void info(String message, Object... args) {
+        try {
+            log(LoggingLevel.INFO, message, args);
         } catch (Throwable t) {
         }
     }
