@@ -67,6 +67,8 @@ public enum InternalLogger {
         FILE
     }
 
+    private boolean configMode = false;
+
     private boolean initialized = false;
 
     private LoggingLevel loggingLevel = LoggingLevel.OFF;
@@ -74,6 +76,14 @@ public enum InternalLogger {
     private LoggerOutput loggerOutput = null;
 
     private InternalLogger() {
+    }
+
+    /**
+     * This method lets configuration publish messages before the logger is initialized
+     * @param configMode
+     */
+    public synchronized void configMode(boolean configMode) {
+        this.configMode = configMode;
     }
 
     /**
@@ -197,6 +207,21 @@ public enum InternalLogger {
     }
 
     /**
+     * The method will log messages using the Console Logger. Note only messages that are at least INFO will be printed
+     * The method is needed for publishing messages when the logger initialization data is unknown
+     * Either, before reading the file, or when there was error reading that configuration file
+     * @param requestLevel - The level of the message
+     * @param message - The message to print
+     * @param args - The arguments that are part of the message
+     */
+    public void logConfig(LoggingLevel requestLevel, String message, Object... args) {
+        if (configMode) {
+            if (requestLevel.getValue() >= LoggingLevel.INFO.getValue()) {
+                new ConsoleLoggerOutput().log(createMessage(requestLevel.toString(), message, args));
+            }
+        }
+    }
+    /**
      * Creates the message that contains the prefix, thread id and the message.
      * @param prefix The prefix to attach to the message.
      * @param message The message to write with possible place holders.
@@ -266,8 +291,14 @@ public enum InternalLogger {
     }
 
     private void log(LoggingLevel requestLevel, String message, Object... args) {
-        if (requestLevel.getValue() >= loggingLevel.getValue()) {
-            loggerOutput.log(createMessage(requestLevel.toString(), message, args));
+        if (initialized) {
+            if (requestLevel.getValue() >= loggingLevel.getValue()) {
+                loggerOutput.log(createMessage(requestLevel.toString(), message, args));
+            }
+        } else {
+            if (requestLevel.getValue() >= LoggingLevel.WARN.getValue()) {
+                new ConsoleLoggerOutput().log(createMessage(requestLevel.toString(), message, args));
+            }
         }
     }
 }
