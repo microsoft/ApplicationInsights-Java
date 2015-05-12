@@ -146,6 +146,6 @@ public final class LimitsEnforcerTest {
     public void testCreateClosestOnErrorNewStringCurrentValueWithinLimits() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeStringValue("700");
-        assertEquals(100, enforcer.getCurrentValue());
+        assertEquals(700, enforcer.getCurrentValue());
     }
 }

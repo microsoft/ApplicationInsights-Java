@@ -114,7 +114,7 @@ public final class LimitsEnforcer {
 
     private static Integer translate(String propertyName, String valueAsString) {
         Integer value = null;
-        if (value != null) {
+        if (valueAsString != null) {
             try {
                 value = Integer.parseInt(valueAsString);
             } catch (NumberFormatException e) {

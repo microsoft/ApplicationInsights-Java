@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
+import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -76,14 +77,19 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private final static int MAX_RETRY_FOR_DELETE = 2;
     private final static int DELETE_TIMEOUT_ON_FAILURE_IN_MILLS = 100;
 
-    private final static int DEFAULT_CAPACITY_KILOBYTES = 10 * 1024;
+    private final static int DEFAULT_CAPACITY_MEGABYTES = 10;
+    private final static int MAX_CAPACITY_MEGABYTES = 100;
+    private final static int MIN_CAPACITY_MEGABYTES = 1;
+    private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacity";
 
 
     /// The folder in which we save transmission files
     private File folder;
 
     /// Capacity is the size of disk that we are can use
-    private long capacity = DEFAULT_CAPACITY_KILOBYTES * 1024;
+    private long capacityInKB = DEFAULT_CAPACITY_MEGABYTES * 1024;
+
+    LimitsEnforcer capacityEnforcer;
 
     /// The size of the current files we have on the disk
     private final AtomicLong size;
@@ -92,12 +98,17 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private final ArrayList<File> cacheOfOldestFiles = new ArrayList<File>();
     private final HashSet<String> filesThatAreBeingLoaded = new HashSet<String>();
 
-    public TransmissionFileSystemOutput() {
-        this(new File(System.getProperty("java.io.tmpdir"), TRANSMISSION_DEFAULT_FOLDER).getPath());
-    }
+    public TransmissionFileSystemOutput(String folderPath, String maxTransmissionStorageCapacity) {
+        if (folderPath == null) {
+            folderPath = new File(System.getProperty("java.io.tmpdir"), TRANSMISSION_DEFAULT_FOLDER).getPath();
+        }
 
-    public TransmissionFileSystemOutput(String folderPath) {
-        Preconditions.checkNotNull(folderPath, "folderPath must be a non-null value");
+        capacityEnforcer = LimitsEnforcer.createWithClosestLimitOnError(MIN_CAPACITY_MEGABYTES,
+                                                                        MAX_CAPACITY_MEGABYTES,
+                                                                        DEFAULT_CAPACITY_MEGABYTES,
+                                                                        MAX_TRANSMISSION_STORAGE_CAPACITY_NAME,
+                                                                        maxTransmissionStorageCapacity);
+        capacityInKB = capacityEnforcer.getCurrentValue() * 1024;
 
         folder = new File(folderPath);
 
@@ -113,9 +124,17 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         size = new AtomicLong(currentSize);
     }
 
+    public TransmissionFileSystemOutput() {
+        this(null, null);
+    }
+
+    public TransmissionFileSystemOutput(String folderPath) {
+        this(folderPath, null);
+    }
+
     @Override
     public boolean send(Transmission transmission) {
-        if (size.get() >= capacity) {
+        if (size.get() >= capacityInKB) {
             return false;
         }
 
@@ -182,10 +201,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         return null;
     }
 
-    public void setCapacity(long capacity) {
-        Preconditions.checkArgument(capacity > 0, "capacity should be a positive number");
-
-        this.capacity = capacity;
+    public void setCapacity(int suggestedCapacity) {
+        this.capacityInKB = capacityEnforcer.normalizeValue(suggestedCapacity) * 1024;
     }
 
     private List<File> sortOldestLastAndTrim(Collection<File> transmissions, int limit) {

@@ -36,9 +36,10 @@ import java.util.Map;
 public class ChannelXmlElement {
 
     private String endpointAddress;
-    private String maxTelemetryItemsInQueue;
-    private String sendIntervalInSeconds;
+    private String maxTelemetryBufferCapacity;
+    private String flushIntervalInSeconds;
     private boolean developerMode;
+    private String maxTransmissionStorageFilesCapacityInMB;
     private String type = "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
 
     public String getType() {
@@ -68,22 +69,31 @@ public class ChannelXmlElement {
         this.developerMode = developerMode;
     }
 
-    public String getMaxTelemetryItemsInQueue() {
-        return maxTelemetryItemsInQueue;
+    public String getMaxTelemetryBufferCapacity() {
+        return maxTelemetryBufferCapacity;
     }
 
-    @XmlElement(name="MaxTelemetryItemsInQueue")
-    public void setMaxTelemetryItemsInQueue(String maxTelemetryItemsInQueue) {
-        this.maxTelemetryItemsInQueue = maxTelemetryItemsInQueue;
+    @XmlElement(name="MaxTelemetryBufferCapacity")
+    public void setMaxTelemetryBufferCapacity(String maxTelemetryBufferCapacity) {
+        this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
     }
 
-    public String getSendIntervalInSeconds() {
-        return sendIntervalInSeconds;
+    public String getFlushIntervalInSeconds() {
+        return flushIntervalInSeconds;
     }
 
-    @XmlElement(name="SendIntervalInSeconds")
-    public void setSendIntervalInSeconds(String sendIntervalInSeconds) {
-        this.sendIntervalInSeconds = sendIntervalInSeconds;
+    @XmlElement(name="FlushIntervalInSeconds")
+    public void setFlushIntervalInSeconds(String flushIntervalInSeconds) {
+        this.flushIntervalInSeconds = flushIntervalInSeconds;
+    }
+
+    public String isMaxTransmissionStorageFilesCapacityInMB() {
+        return maxTransmissionStorageFilesCapacityInMB;
+    }
+
+    @XmlElement(name="MaxTransmissionStorageFilesCapacityInMB")
+    public void setMaxTransmissionStorageFilesCapacityInMB(String maxTransmissionStorageFilesCapacityInMB) {
+        this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
     }
 
     public Map<String, String> getData() {
@@ -96,12 +106,16 @@ public class ChannelXmlElement {
             data.put("EndpointAddress", endpointAddress);
         }
 
-        if (!Strings.isNullOrEmpty(maxTelemetryItemsInQueue)) {
-            data.put("MaxTelemetryItemsInQueue", maxTelemetryItemsInQueue);
+        if (!Strings.isNullOrEmpty(maxTelemetryBufferCapacity)) {
+            data.put("MaxTelemetryBufferCapacity", maxTelemetryBufferCapacity);
         }
 
-        if (!Strings.isNullOrEmpty(sendIntervalInSeconds)) {
-            data.put("SendIntervalInSeconds", sendIntervalInSeconds);
+        if (!Strings.isNullOrEmpty(flushIntervalInSeconds)) {
+            data.put("FlushIntervalInSeconds", flushIntervalInSeconds);
+        }
+
+        if (!Strings.isNullOrEmpty(maxTransmissionStorageFilesCapacityInMB)) {
+            data.put("MaxTransmissionStorageFilesCapacityInMB", maxTransmissionStorageFilesCapacityInMB);
         }
 
         return data;
