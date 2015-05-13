@@ -19,6 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+apply from: "$buildScriptsDir/common-java.gradle"
 apply plugin: "war"
  
 repositories {
@@ -35,5 +36,3 @@ dependencies {
     compile "org.springframework:spring-webmvc:$springVersion"
     runtime "jstl:jstl:1.2"
 }
-
-
