@@ -52,6 +52,7 @@ public class ApplicationInsightsWriterTests {
     private static final String PLUGIN_INSTANCE = "PInstance";
     private static final String DEFAULT_DATA_SOURCE = "Default_Source";
     private static final String SECOND_DATA_SOURCE = "Second_Source";
+    private static final String TELEMETRY_HOST_PROPERTY_NAME = "CollectD-Host";
 
     private static List<DataSource> dataSources = null;
 
@@ -104,6 +105,20 @@ public class ApplicationInsightsWriterTests {
 
         Assert.assertEquals(2, this.telemetriesSent.size());
         verifySentTelemetries();
+    }
+
+    @Test
+    public void testTelemetryHostNamePropertySetCorrectly() {
+        this.writerUnderTest.write(defaultValueList);
+
+        Assert.assertEquals(HOST, this.telemetriesSent.get(0).getProperties().get(ApplicationInsightsWriter.TELEMETRY_HOST_PROPERTY_NAME));
+    }
+
+    @Test
+    public void testUserAgentDefinedCorrectly() {
+        this.writerUnderTest.write(defaultValueList);
+
+        Assert.assertEquals(ApplicationInsightsWriter.COLLECTD_USER_AGENT, this.telemetriesSent.get(0).getContext().getUser().getUserAgent());
     }
 
     @Test

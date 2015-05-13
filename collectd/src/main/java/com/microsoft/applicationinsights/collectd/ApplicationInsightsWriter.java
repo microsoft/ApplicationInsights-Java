@@ -31,7 +31,7 @@ import com.microsoft.applicationinsights.collectd.internal.ApplicationInsightsWr
 import com.microsoft.applicationinsights.collectd.internal.PluginExclusion;
 import com.microsoft.applicationinsights.collectd.internal.WriterConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.collectd.api.CollectdConfigInterface;
 import org.collectd.api.CollectdInitInterface;
@@ -54,6 +54,8 @@ public class ApplicationInsightsWriter implements
 
     // region Consts
 
+    protected static final String COLLECTD_USER_AGENT = "CollectD-User-Agent";
+    protected static final String TELEMETRY_HOST_PROPERTY_NAME = "CollectD-Host";
     private static final int SUCCESS_CODE = 0;
     private static final int CONFIGURATION_PHASE_ERROR_CODE = 1;
     private static final int INITIALIZATION_PHASE_ERROR_CODE = 2;
@@ -105,7 +107,7 @@ public class ApplicationInsightsWriter implements
     /**
      * Reads the configuration provided for the writer plugin.
      * @param configuration The configuration.
-     * @return Zero on success, false otherwise.
+     * @return Zero on success, non-zero otherwise. Non-zero values will disable the plugin entirely.
      */
     public int config(OConfigItem configuration) {
         logger.logInfo("Loading configuration.");
@@ -114,7 +116,7 @@ public class ApplicationInsightsWriter implements
         try {
             writerConfiguration = WriterConfiguration.buildConfiguration(configuration);
         } catch (ConfigurationException e) {
-            logger.logError(e.getMessage());
+            logger.logError("Configuration failed, plugin will be disabled:\n" + e.toString());
 
             return CONFIGURATION_PHASE_ERROR_CODE;
         }
@@ -132,7 +134,7 @@ public class ApplicationInsightsWriter implements
 
     /**
      * Initializes the writer plugin.
-     * @return Zero on success, non-zero otherwise.
+     * @return Zero on success, non-zero otherwise. Non-zero values will disable the plugin entirely.
      */
     public int init() {
         logger.logInfo("Initializing...");
@@ -194,6 +196,8 @@ public class ApplicationInsightsWriter implements
         DataSource dataSource = getDataSource(valueList.getDataSet(), index);
         String telemetryName = generateMetricName(valueList, dataSource);
         telemetry.setName(telemetryName);
+        telemetry.getContext().getUser().setUserAgent(COLLECTD_USER_AGENT);
+        setHostMachineProperty(telemetry, valueList.getHost());
 
         Number value = valueList.getValues().get(index);
         if (value != null) {
@@ -208,14 +212,12 @@ public class ApplicationInsightsWriter implements
         return telemetry;
     }
 
-    protected static String generateMetricName(ValueList valueList, DataSource dataSource) {
-        String metricName = valueList.getSource();
-
-        if (dataSource != null) {
-            metricName = metricName.concat("/" + dataSource.getName());
+    private static void setHostMachineProperty(MetricTelemetry telemetry, String host) {
+        if (LocalStringsUtils.isNullOrEmpty(host)) {
+            host = "N/A";
         }
 
-        return metricName;
+        telemetry.getProperties().put(TELEMETRY_HOST_PROPERTY_NAME, host);
     }
 
     private static DataSource getDataSource(DataSet dataSet, int index) {
@@ -225,6 +227,42 @@ public class ApplicationInsightsWriter implements
         }
 
         return dataSource;
+    }
+
+    private static String generateSourceName(ValueList valueList) {
+        StringBuffer source = new StringBuffer();
+
+        String plugin = valueList.getPlugin();
+        if(!LocalStringsUtils.isNullOrEmpty(plugin)) {
+            source.append('/').append(plugin);
+        }
+
+        String pluginInstance = valueList.getPluginInstance();
+        if(!LocalStringsUtils.isNullOrEmpty(pluginInstance)) {
+            source.append('/').append(pluginInstance);
+        }
+
+        String type = valueList.getType();
+        if(!LocalStringsUtils.isNullOrEmpty(type)) {
+            source.append('/').append(type);
+        }
+
+        String typeInstance = valueList.getTypeInstance();
+        if(!LocalStringsUtils.isNullOrEmpty(typeInstance)) {
+            source.append('/').append(typeInstance);
+        }
+
+        return source.toString();
+    }
+
+    protected static String generateMetricName(ValueList valueList, DataSource dataSource) {
+        String metricName = generateSourceName(valueList);
+
+        if (dataSource != null) {
+            metricName = metricName.concat("/" + dataSource.getName());
+        }
+
+        return metricName;
     }
 
     private boolean isDataSourceExcluded(String pluginName, DataSet dataSet, int index) {

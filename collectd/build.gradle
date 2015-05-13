@@ -19,6 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '1.2.1'
+}
+
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
@@ -36,6 +41,12 @@ dependencies {
     compile files(collectDLibPath)
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
     testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+shadowJar {
+    // We need to exclude CollectD API library since it is already provided by CollectD.
+    // Nevertheless exclude doesn't work, probably due to its dependency type (file), so we simply relocating it.
+    relocate('org.collectd.api', 'deprecated.org.collectd.api')
 }
 
 // region Publishing properties
