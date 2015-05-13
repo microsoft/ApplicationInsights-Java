@@ -358,7 +358,7 @@ public enum TelemetryConfigurationFactory {
     }
 
     private String getConfFromClassPath(ClassLoader classLoader) {
-        if ((classLoader instanceof URLClassLoader)) {
+        if (!(classLoader instanceof URLClassLoader)) {
             return null;
         }
 
@@ -366,22 +366,29 @@ public enum TelemetryConfigurationFactory {
 
         URL[] urls = ((URLClassLoader)classLoader).getURLs();
         for (URL url : urls) {
-            String path = url.getPath();
-            if (path.endsWith(".jar")) {
-                int index = path.lastIndexOf('/');
+            String configurationPath = url.getPath();
+            if (configurationPath.endsWith(".jar")) {
+                int index = configurationPath.lastIndexOf('/');
                 if (index != -1) {
-                    String configurationPath = path.substring(0, index + 1);
-                    if (checkedUrls.contains(configurationPath)) {
-                        continue;
-                    }
-
-                    String configurationFile = configurationFileExists(configurationPath);
-                    if (configurationFile != null) {
-                        return configurationFile;
-                    } else {
-                        checkedUrls.add(configurationPath);
-                    }
+                    configurationPath = configurationPath.substring(0, index + 1);
+                } else {
+                    continue;
                 }
+            } else {
+                if (!configurationPath.endsWith("/")) {
+                    configurationPath += '/';
+                }
+            }
+
+            if (checkedUrls.contains(configurationPath)) {
+                continue;
+            }
+
+            String configurationFile = configurationFileExists(configurationPath);
+            if (configurationFile != null) {
+                return configurationFile;
+            } else {
+                checkedUrls.add(configurationPath);
             }
         }
 
@@ -416,7 +423,7 @@ public enum TelemetryConfigurationFactory {
 
         if (configFile.exists()) {
             InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.INFO, "Found configuration file in: '%s'", path);
-            return configFile.getName();
+            return configFile.getAbsolutePath();
         } else {
             InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.INFO, "Did not find configuration file in '%s'", path);
         }

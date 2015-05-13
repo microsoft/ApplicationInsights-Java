@@ -291,14 +291,8 @@ public enum InternalLogger {
     }
 
     private void log(LoggingLevel requestLevel, String message, Object... args) {
-        if (initialized) {
-            if (requestLevel.getValue() >= loggingLevel.getValue()) {
-                loggerOutput.log(createMessage(requestLevel.toString(), message, args));
-            }
-        } else {
-            if (requestLevel.getValue() >= LoggingLevel.WARN.getValue()) {
-                new ConsoleLoggerOutput().log(createMessage(requestLevel.toString(), message, args));
-            }
+        if (requestLevel.getValue() >= loggingLevel.getValue()) {
+            loggerOutput.log(createMessage(requestLevel.toString(), message, args));
         }
     }
 }
