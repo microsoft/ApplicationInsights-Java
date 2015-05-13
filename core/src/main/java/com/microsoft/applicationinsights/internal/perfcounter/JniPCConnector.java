@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.Properties;
 
 /**
@@ -68,22 +67,23 @@ public final class JniPCConnector {
      * @return True on success.
      */
     public static boolean initialize() {
+        boolean initializationResult = false;
+
         try {
             if (!SystemInformation.INSTANCE.isWindows()) {
                 InternalLogger.INSTANCE.error("Jni connector is only used on Windows OS.");
                 return false;
             }
 
-            if (loadLibrary()) {
-                return initNativeCode();
-            } else {
-                InternalLogger.INSTANCE.error("Failed to load native dll, Windows performance counters will not be used.");
-            }
+            loadLibrary();
+            initializationResult = initNativeCode();
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Failed to load native dll, Windows performance counters will not be used: '%s'.", e.getMessage());
+            InternalLogger.INSTANCE.error(
+                    "Failed to load native dll, Windows performance counters will not be used. " +
+                            "Please make sure that Visual C++ Redistributable is properly installed: %s.", e.getMessage());
         }
 
-        return false;
+        return initializationResult;
     }
 
     /**
@@ -157,11 +157,7 @@ public final class JniPCConnector {
      */
     private static boolean loadLibrary() throws IOException {
         String model = System.getProperty("sun.arch.data.model");
-        String libraryToLoad = NATIVE_LIBRARY_64;
-        if (!BITS_MODEL_64.equals(model)) {
-            InternalLogger.INSTANCE.error("Currently Performance Counters on Windows 32bit is not supported.");
-            return false;
-        }
+        String libraryToLoad = BITS_MODEL_64.equals(model) ? NATIVE_LIBRARY_64 : NATIVE_LIBRARY_32;
 
         File dllPath = buildDllLocalPath();
 
