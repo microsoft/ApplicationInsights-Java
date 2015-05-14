@@ -67,23 +67,22 @@ public final class JniPCConnector {
      * @return True on success.
      */
     public static boolean initialize() {
-        boolean initializationResult = false;
-
         try {
             if (!SystemInformation.INSTANCE.isWindows()) {
                 InternalLogger.INSTANCE.error("Jni connector is only used on Windows OS.");
                 return false;
             }
 
-            loadLibrary();
-            initializationResult = initNativeCode();
+            loadNativeLibrary();
         } catch (Throwable e) {
             InternalLogger.INSTANCE.error(
-                    "Failed to load native dll, Windows performance counters will not be used. " +
-                            "Please make sure that Visual C++ Redistributable is properly installed: %s.", e.getMessage());
+                "Failed to load native dll, Windows performance counters will not be used. " +
+                "Please make sure that Visual C++ Redistributable is properly installed: %s.", e.getMessage());
+
+            return false;
         }
 
-        return initializationResult;
+        return true;
     }
 
     /**
@@ -131,7 +130,7 @@ public final class JniPCConnector {
         return getPerformanceCounterValue(name);
     }
 
-    private static boolean initNativeCode() {
+    private static void initNativeCode() {
         int processId = Integer.parseInt(SystemInformation.INSTANCE.getProcessId());
 
         currentInstanceName = getInstanceName(processId);
@@ -140,7 +139,6 @@ public final class JniPCConnector {
         } else {
             InternalLogger.INSTANCE.trace("Java process name is set to '%s'", currentInstanceName);
         }
-        return true;
     }
 
     /**
@@ -155,7 +153,7 @@ public final class JniPCConnector {
      * @throws IOException If there are errors in opening/writing/reading/closing etc.
      *         Note that the method might throw RuntimeExceptions due to critical issues
      */
-    private static boolean loadLibrary() throws IOException {
+    private static void loadNativeLibrary() throws IOException {
         String model = System.getProperty("sun.arch.data.model");
         String libraryToLoad = BITS_MODEL_64.equals(model) ? NATIVE_LIBRARY_64 : NATIVE_LIBRARY_32;
 
@@ -169,9 +167,9 @@ public final class JniPCConnector {
 
         System.load(dllOnDisk.toString());
 
-        InternalLogger.INSTANCE.trace("Successfully loaded library '%s'", libraryToLoad);
+        initNativeCode();
 
-        return true;
+        InternalLogger.INSTANCE.trace("Successfully loaded library '%s'", libraryToLoad);
     }
 
     private static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
