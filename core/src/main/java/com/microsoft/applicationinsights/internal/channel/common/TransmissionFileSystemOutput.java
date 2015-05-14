@@ -80,7 +80,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private final static int DEFAULT_CAPACITY_MEGABYTES = 10;
     private final static int MAX_CAPACITY_MEGABYTES = 100;
     private final static int MIN_CAPACITY_MEGABYTES = 1;
-    private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacity";
+    private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacityInMB";
 
 
     /// The folder in which we save transmission files
