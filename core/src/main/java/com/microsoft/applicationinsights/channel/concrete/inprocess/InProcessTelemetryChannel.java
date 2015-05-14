@@ -279,74 +279,26 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
     }
 
-    /**
-     * The method will translate the numbers and will make sure it is within the limits
-     * If the value is not an int the default value will be returned
-     * Else, will return the outcome of 'makeSureNumberIsWithinLimits'
-     * @param propertyName The value to translate
-     * @param minimum The minimum value allowed, the value must be >= to that value
-     * @param maximum The maximum value allowed, the value must be <= to that value
-     * @param defaultValue Return this value in case the valueString is not an int
-     * @param propertyName The name of the property to display if needed in log messages
-     * @return The value within limits as stated in the param declarations above
-     */
-    private int translateNumber(Map<String, String> values, int minimum, int maximum, int defaultValue, String propertyName) {
-        String valueString = null;
-        try {
-            valueString = values.get(propertyName);
-            if (Strings.isNullOrEmpty(valueString)) {
-                return defaultValue;
-            }
-
-            int value = Integer.parseInt(valueString);
-            return makeSureNumberIsWithinLimits(value, minimum, maximum, propertyName);
-        } catch (NumberFormatException e) {
-            InternalLogger.INSTANCE.trace("'%s': bad format for value '%s', therefore using '%d'", propertyName, valueString, defaultValue);
-
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Will return the value if (value >= minimum and value <= maximum) otherwise the limit that is closer
-     * @param value The value to check
-     * @param minimum The value should be >= from that value
-     * @param maximum The Value should be <= from that value
-     * @param propertyName The property name to display in log messages
-     * @return Will return the value if (value >= minimum and value <= maximum) otherwise the limit that is closer
-     */
-    private int makeSureNumberIsWithinLimits(int value, int minimum, int maximum, String propertyName) {
-        if (value < minimum) {
-            InternalLogger.INSTANCE.trace("'%s': value '%d' is lower than the limit '%d', therefore the limit will be used", propertyName, value, minimum);
-
-            return minimum;
-        } else if (value > maximum) {
-            InternalLogger.INSTANCE.trace("'%s': value '%d' is higher than the limit '%d', therefore the limit will be used", propertyName, value, maximum);
-
-            return maximum;
-        }
-
-        return value;
-    }
-
     private LimitsEnforcer createDefaultMaxTelemetryBufferCapacityEnforcer(Integer currentValue) {
         LimitsEnforcer maxItemsInBatchEnforcer =
-                LimitsEnforcer.createWithClosestLimitOnError(MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME,
+                LimitsEnforcer.createWithClosestLimitOnError(
+                        MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME,
                         MIN_MAX_TELEMETRY_BUFFER_CAPACITY,
                         MAX_MAX_TELEMETRY_BUFFER_CAPACITY,
                         DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY,
-                                                             currentValue == null ? DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY : currentValue);
+                        currentValue == null ? DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY : currentValue);
 
         return maxItemsInBatchEnforcer;
     }
 
     private LimitsEnforcer createDefaultSendIntervalInSecondsEnforcer(Integer currentValue) {
         LimitsEnforcer sendIntervalInSecondsEnforcer =
-                LimitsEnforcer.createWithClosestLimitOnError(FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME,
+                LimitsEnforcer.createWithClosestLimitOnError(
+                        FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME,
                         MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
                         MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
                         DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
-                                                             currentValue == null ? DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS : currentValue);
+                        currentValue == null ? DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS : currentValue);
 
         return sendIntervalInSecondsEnforcer;
     }
