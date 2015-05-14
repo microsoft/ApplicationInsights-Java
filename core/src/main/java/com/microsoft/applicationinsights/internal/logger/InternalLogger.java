@@ -67,8 +67,6 @@ public enum InternalLogger {
         FILE
     }
 
-    private boolean configMode = false;
-
     private boolean initialized = false;
 
     private LoggingLevel loggingLevel = LoggingLevel.OFF;
@@ -76,14 +74,6 @@ public enum InternalLogger {
     private LoggerOutput loggerOutput = null;
 
     private InternalLogger() {
-    }
-
-    /**
-     * This method lets configuration publish messages before the logger is initialized
-     * @param configMode
-     */
-    public synchronized void configMode(boolean configMode) {
-        this.configMode = configMode;
     }
 
     /**
@@ -207,18 +197,20 @@ public enum InternalLogger {
     }
 
     /**
-     * The method will log messages using the Console Logger. Note only messages that are at least INFO will be printed
+     * The method will log the message in any case. It the logger is not initialized it will print to the console
+     * Otherwise the method will use the current logger but will print the message regardless of the logging level.
      * The method is needed for publishing messages when the logger initialization data is unknown
-     * Either, before reading the file, or when there was error reading that configuration file
+     * Either, before reading the file, or when there was error reading that configuration file, use with care!
      * @param requestLevel - The level of the message
      * @param message - The message to print
      * @param args - The arguments that are part of the message
      */
-    public void logConfig(LoggingLevel requestLevel, String message, Object... args) {
-        if (configMode) {
-            if (requestLevel.getValue() >= LoggingLevel.INFO.getValue()) {
-                new ConsoleLoggerOutput().log(createMessage(requestLevel.toString(), message, args));
-            }
+    public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
+        String logMessage = createMessage(requestLevel.toString(), message, args);
+        if (!initialized) {
+            new ConsoleLoggerOutput().log(logMessage);
+        } else {
+            loggerOutput.log(logMessage);
         }
     }
     /**

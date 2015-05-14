@@ -79,8 +79,6 @@ public enum TelemetryConfigurationFactory {
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
-            InternalLogger.INSTANCE.configMode(true);
-
             String configurationFile = getConfigurationFile();
             if (Strings.isNullOrEmpty(configurationFile)) {
                 return;
@@ -88,7 +86,7 @@ public enum TelemetryConfigurationFactory {
 
             ApplicationInsightsXmlConfiguration  applicationInsightsConfig = builder.build(configurationFile);
             if (applicationInsightsConfig == null) {
-                InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.ERROR, "Failed to read configuration file");
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to read configuration file");
                 configuration.setChannel(new InProcessTelemetryChannel());
                 return;
             }
@@ -107,9 +105,7 @@ public enum TelemetryConfigurationFactory {
 
             initializeComponents(configuration);
         } catch (Exception e) {
-            InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.ERROR, "Failed to initialize configuration, exception: %s", e.getMessage());
-        } finally {
-            InternalLogger.INSTANCE.configMode(false);
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to initialize configuration, exception: %s", e.getMessage());
         }
     }
 
@@ -340,11 +336,11 @@ public enum TelemetryConfigurationFactory {
         URL resource = classLoader.getResource(fileToParse);
         if (resource != null) {
             String configurationFile = resource.getFile();
-            InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.INFO, "Found configuration file: '%s'", configurationFile);
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Found configuration file: '%s'", configurationFile);
             return configurationFile;
         }
 
-        InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.INFO, "Could not find resource named '%s'", fileToParse);
+        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Could not find resource named '%s'", fileToParse);
         // If not found as a resource, trying to load from the executing jar directory
         String configurationFile =  getConfigurationFromLibraryLocation();
         if (configurationFile != null) {
@@ -407,10 +403,10 @@ public enum TelemetryConfigurationFactory {
                     return jarDirectory;
                 }
             } else {
-                InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.ERROR, "Can not access folder '%s'", jarFullPath);
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Can not access folder '%s'", jarFullPath);
             }
         } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.ERROR, "Failed to find configuration file, exception: '%s'", e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to find configuration file, exception: '%s'", e.getMessage());
         }
 
         return null;
@@ -420,11 +416,11 @@ public enum TelemetryConfigurationFactory {
         File configFile = new File(path, fileToParse);
 
         if (configFile.exists()) {
-            InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.INFO, "Found configuration file in: '%s'", path);
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Found configuration file in: '%s'", path);
             return configFile.getAbsolutePath();
         }
 
-        InternalLogger.INSTANCE.logConfig(InternalLogger.LoggingLevel.INFO, "Did not find configuration file in '%s'", path);
+        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Did not find configuration file in '%s'", path);
 
         return null;
     }
