@@ -162,6 +162,8 @@ public class ContextTagKeys
     // 71: Optional string SampleRate
     private String SampleRate;
 
+    private String SyntheticSource;
+
     // 1000: Optional string InternalSdkVersion
     private String InternalSdkVersion;
 
@@ -533,6 +535,20 @@ public class ContextTagKeys
     }
 
     /**
+     * @return current value of SyntheticSource property
+     */
+    public final String getSyntheticSource() {
+        return this.SyntheticSource;
+    }
+
+    /**
+     * @param syntheticSource new value of SyntheticSource property
+     */
+    public final void setSyntheticSource(String syntheticSource) {
+        this.SyntheticSource = syntheticSource;
+    }
+
+    /**
      * @return current value of OperationParentId property
      */
     public final String getOperationParentId() {
@@ -825,5 +841,7 @@ public class ContextTagKeys
         SampleRate = "ai.sample.sampleRate";
         InternalSdkVersion = "ai.internal.sdkVersion";
         InternalAgentVersion = "ai.internal.agentVersion";
+        SyntheticSource = "ai.operation.syntheticSource";
     }
+
 } // class ContextTagKeys
