@@ -66,4 +66,20 @@ public final class OperationContext {
     public void setName(String name) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationName(), name);
     }
+
+    /**
+     * Gets the synthetic source.
+     * @return The synthetic source.
+     */
+    public String getSyntheticSource() {
+        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getSyntheticSource());
+    }
+
+    /**
+     * Sets the synthetic source.
+     * @param syntheticSource The synthetic source.
+     */
+    public void setSyntheticSource(String syntheticSource) {
+        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getSyntheticSource(), syntheticSource);
+    }
 }
