@@ -27,6 +27,24 @@ ext {
     whenPomConfigured = { p -> writePomToArtifactsDirectory(p, project.name) }
 }
 
+def releaseNotesFileDir = "$project.buildDir/src/common/main/resources"
+task copyReleaseNotesToCommonResourcesDir(type: Copy) {
+    from(rootDir) {
+        include "release_notes.txt"
+    }
+    into releaseNotesFileDir
+}
+
+processResources.dependsOn copyReleaseNotesToCommonResourcesDir
+
+sourceSets {
+    main {
+        resources {
+            srcDir releaseNotesFileDir
+        }
+    }
+}
+
 repositories {
     mavenCentral()
 }
