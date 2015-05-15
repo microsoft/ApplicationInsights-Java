@@ -1,0 +1,1 @@
+To view the release notes for the Application Insights SDK for Java, follow this link: http://go.microsoft.com/fwlink/?LinkId=535037

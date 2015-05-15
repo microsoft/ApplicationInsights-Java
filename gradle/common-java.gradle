@@ -62,33 +62,6 @@ task integrationTest(type: Test, dependsOn: jar) {
     classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
-task prepareSourcesArchive(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allJava
-    doFirst {
-        archiveName = "$archivesBaseName-$version-sources.jar"
-    }
-}
-
-task prepareJavadocArchive(type: Jar){
-    classifier = 'javadoc'
-    from "$docsDir/javadoc"
-    doFirst {
-        archiveName = "$archivesBaseName-$version-javadoc.jar"
-    }
-    dependsOn javadoc
-}
-
-task copyLibsToGlobalArtifactsFolder(type: Copy) {
-    from libsDir
-    into new File(artifactsDirectoryRoot, project.name)
-    dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive
-}
-
-task prepare {
-    dependsOn copyLibsToGlobalArtifactsFolder
-}
-
 repositories {
     mavenCentral()
 }
