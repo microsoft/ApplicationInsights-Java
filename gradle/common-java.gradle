@@ -44,39 +44,22 @@ compileJava {
     }
 }
 
-task prepareSourcesArchive(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allJava
-    doFirst {
-        archiveName = "$archivesBaseName-$version-sources.jar"
+updateTestDirectories()
+
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/integTest/java')
+        resources.srcDir file('src/integTest/resources')
+        compileClasspath = sourceSets.main.output + configurations.testRuntime
+        runtimeClasspath = output + compileClasspath
     }
 }
 
-task prepareJavadocArchive(type: Jar){
-    classifier = 'javadoc'
-    from "$docsDir/javadoc"
-    doFirst {
-        archiveName = "$archivesBaseName-$version-javadoc.jar"
-    }
-    dependsOn javadoc
-}
-
-task copyLibsToGlobalArtifactsFolder(type: Copy) {
-    from libsDir
-    into new File(artifactsDirectoryRoot, project.name)
-    dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive
-}
-
-task prepare {
-    dependsOn copyLibsToGlobalArtifactsFolder
-}
-
-if (this.hasProperty("testEnvName")) {
-    testResultsDirName = testResultsDirName + "/" + testEnvName
-    logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
-
-    testReportDirName = testReportDirName + "/" + testEnvName
-    logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
+task integrationTest(type: Test, dependsOn: jar) {
+    group 'Verification'
+    description 'Runs the integration tests.'
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
 repositories {
@@ -101,3 +84,16 @@ task testAndCollect {
 
 // endregion Shared java configuration
 
+// region Helper Methods
+
+def updateTestDirectories() {
+    if (this.hasProperty("testEnvName")) {
+        testResultsDirName = testResultsDirName + "/" + testEnvName
+        logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
+
+        testReportDirName = testReportDirName + "/" + testEnvName
+        logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
+    }
+}
+
+// endregion Helper Methods

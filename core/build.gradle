@@ -42,8 +42,9 @@ dependencies {
     testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
 }
 
+def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
 task generateVersionProperties(type: PropsFileGen) {
-    targetFile = new File(project.buildDir, "src/generated/main/resources/sdk-version.properties")
+    targetFile = new File(sdkVersionFileDir, "sdk-version.properties")
     property "version", project.version
 }
 
@@ -52,7 +53,7 @@ processResources.dependsOn generateVersionProperties
 sourceSets {
     main {
         resources {
-            srcDir "$project.buildDir/src/generated/main/resources"
+            srcDir sdkVersionFileDir
         }
     }
 }

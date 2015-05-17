@@ -27,6 +27,24 @@ ext {
     whenPomConfigured = { p -> writePomToArtifactsDirectory(p, project.name) }
 }
 
+def releaseNotesFileDir = "$project.buildDir/src/common/main/resources"
+task copyReleaseNotesToCommonResourcesDir(type: Copy) {
+    from(rootDir) {
+        include "release_notes.txt"
+    }
+    into releaseNotesFileDir
+}
+
+processResources.dependsOn copyReleaseNotesToCommonResourcesDir
+
+sourceSets {
+    main {
+        resources {
+            srcDir releaseNotesFileDir
+        }
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -57,6 +75,33 @@ afterEvaluate {
             }
         }
     }
+}
+
+task prepareSourcesArchive(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+    doFirst {
+        archiveName = "$archivesBaseName-$version-sources.jar"
+    }
+}
+
+task prepareJavadocArchive(type: Jar){
+    classifier = 'javadoc'
+    from "$docsDir/javadoc"
+    doFirst {
+        archiveName = "$archivesBaseName-$version-javadoc.jar"
+    }
+    dependsOn javadoc
+}
+
+task copyLibsToGlobalArtifactsFolder(type: Copy) {
+    from libsDir
+    into new File(artifactsDirectoryRoot, project.name)
+    dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive
+}
+
+task prepare {
+    dependsOn copyLibsToGlobalArtifactsFolder
 }
 
 // endregion Publishing configuration

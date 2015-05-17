@@ -46,8 +46,10 @@ public enum InternalLogger {
     public enum LoggingLevel {
         ALL(Integer.MIN_VALUE),
         TRACE(10000),
-        ERROR(20000),
-        OFF(30000);
+        INFO(20000),
+        WARN(30000),
+        ERROR(40000),
+        OFF(50000);
 
         private int value;
 
@@ -130,6 +132,14 @@ public enum InternalLogger {
         return loggingLevel.getValue() <= LoggingLevel.TRACE.getValue();
     }
 
+    public boolean isInfoEnabled() {
+        return loggingLevel.getValue() <= LoggingLevel.INFO.getValue();
+    }
+
+    public boolean isWarnEnabled() {
+        return loggingLevel.getValue() <= LoggingLevel.WARN.getValue();
+    }
+
     public boolean isErrorEnabled() {
         return loggingLevel.getValue() <= LoggingLevel.ERROR.getValue();
     }
@@ -149,6 +159,32 @@ public enum InternalLogger {
 
     /**
      * The main method, will delegate the call to the output
+     * only if the logger is enabled for warnings, will not allow any exception thrown
+     * @param message The message to log with possible placeholders.
+     * @param args The arguments that should be formatted into the placeholders.
+     */
+    public void warn(String message, Object... args) {
+        try {
+            log(LoggingLevel.WARN, message, args);
+        } catch (Throwable t) {
+        }
+    }
+
+    /**
+     * The main method, will delegate the call to the output
+     * only if the logger is enabled for info messages, will not allow any exception thrown
+     * @param message The message to log with possible placeholders.
+     * @param args The arguments that should be formatted into the placeholders.
+     */
+    public void info(String message, Object... args) {
+        try {
+            log(LoggingLevel.INFO, message, args);
+        } catch (Throwable t) {
+        }
+    }
+
+    /**
+     * The main method, will delegate the call to the output
      * only if the logger is enabled for at least trace level, will not allow any exception thrown
      * @param message The message to log with possible placeholders.
      * @param args The arguments that should be formatted into the placeholders.
@@ -160,6 +196,23 @@ public enum InternalLogger {
         }
     }
 
+    /**
+     * The method will log the message in any case. It the logger is not initialized it will print to the console
+     * Otherwise the method will use the current logger but will print the message regardless of the logging level.
+     * The method is needed for publishing messages when the logger initialization data is unknown
+     * Either, before reading the file, or when there was error reading that configuration file, use with care!
+     * @param requestLevel - The level of the message
+     * @param message - The message to print
+     * @param args - The arguments that are part of the message
+     */
+    public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
+        String logMessage = createMessage(requestLevel.toString(), message, args);
+        if (!initialized) {
+            new ConsoleLoggerOutput().log(logMessage);
+        } else {
+            loggerOutput.log(logMessage);
+        }
+    }
     /**
      * Creates the message that contains the prefix, thread id and the message.
      * @param prefix The prefix to attach to the message.

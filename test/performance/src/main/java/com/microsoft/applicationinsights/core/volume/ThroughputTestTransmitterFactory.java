@@ -39,7 +39,7 @@ import com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySe
  */
 final class ThroughputTestTransmitterFactory implements TransmitterFactory {
     @Override
-    public TelemetriesTransmitter create(String endpoint) {
+    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity) {
         // An active object with the network sender
         TransmissionOutput actualNetworkSender = TestThreadLocalData.getTransmissionOutput();
         TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender);

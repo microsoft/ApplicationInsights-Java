@@ -41,13 +41,13 @@ import com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySe
  */
 final class InProcessTelemetryChannelFactory implements TransmitterFactory {
     @Override
-    public TelemetriesTransmitter create(String endpoint) {
+    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity) {
         // An active object with the network sender
         TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint);
         TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender);
 
         // An active object with the file system sender
-        TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput();
+        TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput(null, maxTransmissionStorageCapacity);
         TransmissionOutput activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender);
 
         // The dispatcher works with the two active senders
