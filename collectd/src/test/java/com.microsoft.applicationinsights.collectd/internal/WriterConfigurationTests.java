@@ -21,14 +21,14 @@
 
 package com.microsoft.applicationinsights.collectd.internal;
 
-import com.microsoft.applicationinsights.collectd.ConfigurationException;
-import org.collectd.api.OConfigItem;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
+import javax.naming.ConfigurationException;
 import java.util.Arrays;
+
+import org.collectd.api.OConfigItem;
 
 /**
  * Created by yonisha on 5/6/2015.

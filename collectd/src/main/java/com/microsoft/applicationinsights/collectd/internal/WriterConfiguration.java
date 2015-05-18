@@ -21,10 +21,11 @@
 
 package com.microsoft.applicationinsights.collectd.internal;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
-import com.microsoft.applicationinsights.collectd.ConfigurationException;
+import java.util.Map;
+import javax.naming.ConfigurationException;
+
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.collectd.api.OConfigItem;
 import org.collectd.api.OConfigValue;
@@ -47,7 +48,7 @@ public class WriterConfiguration {
     // region Members
 
     private static ApplicationInsightsWriterLogger logger = new ApplicationInsightsWriterLogger();
-    private Dictionary<String, PluginExclusion> pluginExclusions = new Hashtable<String, PluginExclusion>();
+    private Map<String, PluginExclusion> pluginExclusions = new HashMap<String, PluginExclusion>();
     private String instrumentationKey;
     private boolean isLoggerEnabled;
 
@@ -73,7 +74,7 @@ public class WriterConfiguration {
      * Gets a dictionary of excluded plugins and data sources.
      * @return Dictionary of excluded plugins and data sources.
      */
-    public Dictionary<String, PluginExclusion> getPluginExclusions() {
+    public Map<String, PluginExclusion> getPluginExclusions() {
         return this.pluginExclusions;
     }
 
@@ -151,7 +152,7 @@ public class WriterConfiguration {
 
     private static void verifyMandatoryConfigurations(WriterConfiguration writerConfiguration) throws ConfigurationException {
         if (LocalStringsUtils.isNullOrEmpty(writerConfiguration.getInstrumentationKey())) {
-            throw new ConfigurationException("Mandatory configuration %s wasn't found.", INSTRUMENTATION_KEY_CONFIGURATION_KEY);
+            throw new ConfigurationException("Mandatory configuration " + INSTRUMENTATION_KEY_CONFIGURATION_KEY + " wasn't found");
         }
     }
 }

@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.collectd;
 
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Hashtable;
+import java.util.Map;
+import javax.naming.ConfigurationException;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -54,7 +54,9 @@ public class ApplicationInsightsWriter implements
 
     // region Consts
 
-    protected static final String COLLECTD_USER_AGENT = "CollectD-User-Agent";
+    protected static final String UNDEFINED_HOST = "N/A";
+    protected static final String METRIC_SOURCE_TAG_KEY = "MetricSource";
+    protected static final String METRIC_SOURCE_TAG_VALUE = "CollectD-Plugin";
     protected static final String TELEMETRY_HOST_PROPERTY_NAME = "CollectD-Host";
     private static final int SUCCESS_CODE = 0;
     private static final int CONFIGURATION_PHASE_ERROR_CODE = 1;
@@ -68,7 +70,7 @@ public class ApplicationInsightsWriter implements
 
     private TelemetryConfiguration telemetryConfiguration;
     private TelemetryClient telemetryClient;
-    private Dictionary<String, PluginExclusion> excludedPluginsDictionary;
+    private Map<String, PluginExclusion> excludedPluginsDictionary;
     private ApplicationInsightsWriterLogger logger = null;
 
     // endregion Members
@@ -86,7 +88,7 @@ public class ApplicationInsightsWriter implements
 
         this.logger = new ApplicationInsightsWriterLogger();
         this.telemetryConfiguration = TelemetryConfiguration.getActive();
-        this.excludedPluginsDictionary = new Hashtable<String, PluginExclusion>();
+        this.excludedPluginsDictionary = new HashMap<String, PluginExclusion>();
     }
 
     /**
@@ -196,7 +198,7 @@ public class ApplicationInsightsWriter implements
         DataSource dataSource = getDataSource(valueList.getDataSet(), index);
         String telemetryName = generateMetricName(valueList, dataSource);
         telemetry.setName(telemetryName);
-        telemetry.getContext().getUser().setUserAgent(COLLECTD_USER_AGENT);
+        telemetry.getContext().getTags().put(METRIC_SOURCE_TAG_KEY, METRIC_SOURCE_TAG_VALUE);
         setHostMachineProperty(telemetry, valueList.getHost());
 
         Number value = valueList.getValues().get(index);
@@ -214,7 +216,7 @@ public class ApplicationInsightsWriter implements
 
     private static void setHostMachineProperty(MetricTelemetry telemetry, String host) {
         if (LocalStringsUtils.isNullOrEmpty(host)) {
-            host = "N/A";
+            host = UNDEFINED_HOST;
         }
 
         telemetry.getProperties().put(TELEMETRY_HOST_PROPERTY_NAME, host);

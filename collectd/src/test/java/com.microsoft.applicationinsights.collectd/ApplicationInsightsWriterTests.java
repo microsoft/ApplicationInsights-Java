@@ -36,7 +36,6 @@ import org.mockito.stubbing.Answer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -66,7 +65,6 @@ public class ApplicationInsightsWriterTests {
     public static void classInitialize() {
         WriterConfiguration.setLogger(new ApplicationInsightsWriterLogger(false));
         defaultValueList = new ValueList();
-        defaultValueList.setHost(HOST);
         defaultValueList.setType(DATA_SET_TYPE);
         defaultValueList.setPlugin(PLUGIN);
         defaultValueList.setPluginInstance(PLUGIN_INSTANCE);
@@ -82,6 +80,7 @@ public class ApplicationInsightsWriterTests {
 
     @Before
     public void testInitialize() {
+        defaultValueList.setHost(HOST);
         this.telemetryClient = mock(TelemetryClient.class);
         Mockito.doAnswer(new Answer() {
             @Override
@@ -115,10 +114,12 @@ public class ApplicationInsightsWriterTests {
     }
 
     @Test
-    public void testUserAgentDefinedCorrectly() {
+    public void testUserAgentTagDefinedCorrectly() {
         this.writerUnderTest.write(defaultValueList);
 
-        Assert.assertEquals(ApplicationInsightsWriter.COLLECTD_USER_AGENT, this.telemetriesSent.get(0).getContext().getUser().getUserAgent());
+        Assert.assertEquals(
+                ApplicationInsightsWriter.METRIC_SOURCE_TAG_VALUE,
+                this.telemetriesSent.get(0).getContext().getTags().get(ApplicationInsightsWriter.METRIC_SOURCE_TAG_KEY));
     }
 
     @Test
@@ -160,6 +161,15 @@ public class ApplicationInsightsWriterTests {
         this.writerUnderTest.write(defaultValueList);
 
         Assert.assertEquals(0, this.telemetriesSent.size());
+    }
+
+    @Test
+    public void testHostDefaultValueWhenUndefined() {
+        defaultValueList.setHost(null);
+        this.writerUnderTest.write(defaultValueList);
+
+        Assert.assertEquals(ApplicationInsightsWriter.UNDEFINED_HOST,
+                this.telemetriesSent.get(0).getProperties().get(TELEMETRY_HOST_PROPERTY_NAME));
     }
 
     private void verifySentTelemetries() {
