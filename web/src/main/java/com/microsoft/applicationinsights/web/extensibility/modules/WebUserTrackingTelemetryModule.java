@@ -49,7 +49,7 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
 
     // region Members
 
-    private boolean generateNewUsers = true;
+    private boolean generateNewUsers = false;
 
     // endregion Members
 

@@ -123,6 +123,11 @@ public class HttpHelper {
 
     private static CookiesContainer getCookiesContainer(List<String> responseCookies) throws Exception {
         CookiesContainer cookiesContainer = new CookiesContainer();
+
+        if (responseCookies == null) {
+            return cookiesContainer;
+        }
+
         for (String formattedCookieWithExpiration : responseCookies) {
             if (formattedCookieWithExpiration.startsWith("ai_user")) {
                 String formattedCookie = formattedCookieWithExpiration.split("=")[1].split(";")[0];
