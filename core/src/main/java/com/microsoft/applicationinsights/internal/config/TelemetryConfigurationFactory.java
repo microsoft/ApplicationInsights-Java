@@ -81,6 +81,7 @@ public enum TelemetryConfigurationFactory {
         try {
             String configurationFile = getConfigurationFile();
             if (Strings.isNullOrEmpty(configurationFile)) {
+                configuration.setChannel(new InProcessTelemetryChannel());
                 return;
             }
 
