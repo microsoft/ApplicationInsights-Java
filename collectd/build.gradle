@@ -19,16 +19,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
-
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.1'
 }
+
+apply from: "$buildScriptsDir/common-java.gradle"
+apply from: "$buildScriptsDir/publishing.gradle"
+
+def collectdLibDir = System.env.'COLLECTD_HOME'
+def collectDLibPath = new File(collectdLibDir, "lib/collectd-api.jar")
+
+if (!collectDLibPath.exists()) {
+    throw new ProjectConfigurationException("Archive $collectDLibPath required for building CollectD plugin could not be found.", null)
+}
+
+archivesBaseName = 'applicationinsights-collectd'
+
+dependencies {
+    compile project(':core')
+    compile files(collectDLibPath)
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+// region Publishing properties
+
+projectPomName = project.msftAppInsights + " Java SDK CollectD Writer Plugin"
+projectPomDescription = "This is the CollectD writer plugin for " + project.msftAppInsightsJavaSdk
+
+// endregion Publishing properties
