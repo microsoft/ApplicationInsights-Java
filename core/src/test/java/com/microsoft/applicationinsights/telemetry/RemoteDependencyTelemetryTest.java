@@ -36,7 +36,6 @@ public final class RemoteDependencyTelemetryTest {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
 
         assertNull(telemetry.getName());
-        assertEquals(telemetry.getValue(), 0.0, 0);
         assertNull(telemetry.getCount());
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
@@ -51,7 +50,6 @@ public final class RemoteDependencyTelemetryTest {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         assertEquals(telemetry.getName(), "MockName");
-        assertEquals(telemetry.getValue(), 0.0, 0);
         assertNull(telemetry.getCount());
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
@@ -75,7 +73,6 @@ public final class RemoteDependencyTelemetryTest {
         assertEquals(duration, telemetry.getDuration());
         assertEquals(success, telemetry.getSuccess());
 
-        assertEquals(telemetry.getValue(), 0.0, 0);
         assertNull(telemetry.getCount());
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
@@ -94,7 +91,7 @@ public final class RemoteDependencyTelemetryTest {
     }
 
     @Test
-    public void testDurationName() {
+    public void testDuration() {
         Duration duration = new Duration(1234);
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
         telemetry.setDuration(duration);
@@ -117,14 +114,6 @@ public final class RemoteDependencyTelemetryTest {
 
         telemetry.setName("MockName1");
         assertEquals(telemetry.getName(), "MockName1");
-    }
-
-    @Test
-    public void testSetValue() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setValue(120.1);
-        assertEquals(telemetry.getValue(), 120.1, 0);
     }
 
     @Test
