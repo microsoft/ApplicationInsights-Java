@@ -94,6 +94,26 @@ task remoteTest {
     }
 }
 
+task deployTestWebApps {
+    ext.requriedProperties = ["machineName", "userName", "pass"]
+    dependsOn setRequiredRemoteProperties, prepareBuildOnRemote
+    doLast {
+        // Note: do not use the File class here as the this will translate the path separator to
+        // DOS style while on the remote machine we need it to be linux style
+        def webAppName = "bookstore-spring"
+        def webAppRelativePath = convertDosToUnixPath(getWebAppPath(webAppName))
+        def webAppFullPath = "$remoteDirectory/$webAppRelativePath"
+        logger.info("Web app full path: $webAppFullPath")
+
+        def appServer = "TOMCAT"
+        def appServerVersion = "7"
+        def appServerEnvVariableName = "JAVA_APPSERVER_${appServer}_${appServerVersion}_HOME"
+        logger.info("Application server path environment variable name: $appServerEnvVariableName")
+
+        runRemoteCommand("Installing test app $webAppName on machine $machineName", "source /etc/profile && cp $webAppFullPath \$$appServerEnvVariableName/webapps")
+    }
+}
+
 def runLocalCommand(description, command) {
     logger.info("[runLocalCommand] $description")
     exec {
