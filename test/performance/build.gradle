@@ -27,3 +27,16 @@ mainClassName = "com.microsoft.applicationinsights.core.volume.ThroughputTest"
 dependencies {
     compile project(':core')
 }
+
+if (!project.hasProperty("distributionType")) {
+    logger.info "Project property 'distributionType' was not defined - defaulting to zip"
+    ext.distributionType = "zip"
+}
+
+distTar {
+    onlyIf { distributionType == "tar" }
+}
+
+distZip {
+    onlyIf { distributionType == "zip" }
+}
