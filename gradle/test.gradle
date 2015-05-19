@@ -19,50 +19,82 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+def buildArchiveName = "build.jar"
+def buildArchiveDir = buildDir
+def buildArchiveLocalLocation = new File(buildArchiveDir, buildArchiveName)
+
+task setRequiredRemoteProperties {
+    ext.requriedProperties = ["remoteDirectoryName"]
+    doLast {
+        project.ext {
+            baseRemoteDirectory = "/home/$userName/aiJavaSDK/$remoteDirectoryName"
+            remoteDirectory = "$baseRemoteDirectory/workspace"
+        }
+    }
+}
+
+task jarBuild(type: Jar) {
+    from rootDir
+    destinationDir = buildArchiveDir
+    archiveName = buildArchiveName
+
+    // Exclude list
+    // The cache.properties.lock is locked thus cannot (and need not) be zipped
+    exclude ".gradle/*/taskArtifacts/cache.properties.lock"
+    // No need for the complete git history as well
+    exclude ".git"
+    // Finally, to prevent recursive zipping we must exclude the output itself
+    exclude "${convertAbsoluteToRelativePath(buildArchiveDir, projectDir)}/$buildArchiveName"
+}
+
+task prepareBuildOnRemote {
+    dependsOn setRequiredRemoteProperties, jarBuild
+    doLast {
+        // Note: do not use the File class here as the this will translate the path
+        // separator to DOS style while on the remote machine we need it to be linux style
+        def archiveRemoteLocation = "$baseRemoteDirectory/$buildArchiveName"
+
+        logger.info("MachineName: $machineName")
+        logger.info("User: $userName")
+
+        runRemoteCommand("Creating clean remote directory: $baseRemoteDirectory", "rm -f -r $baseRemoteDirectory && mkdir -p $remoteDirectory")
+        runRemoteCopy(
+                "Copying zipped binaries from $buildArchiveLocalLocation to $archiveRemoteLocation on machine $machineName",
+                buildArchiveLocalLocation,
+                "$userName@$machineName:$archiveRemoteLocation")
+        runRemoteCommand("Extract zipped binaries from $archiveRemoteLocation on machine $machineName", "cd $remoteDirectory && jar xf $archiveRemoteLocation")
+        runRemoteCommand("Allow execution of gradlew", "chmod +x $remoteDirectory/gradlew")
+        runRemoteCommand("Changing gradlew linebreaks to unix style", "dos2unix $remoteDirectory/gradlew")
+    }
+}
+
 task remoteTest {
-    ext.requriedProperties = ["machineName", "userName", "pass", "remoteDirectoryName", "localTestOutputFolderName"]
+    ext.requriedProperties = ["machineName", "userName", "pass", "localTestOutputFolderName"]
+    dependsOn setRequiredRemoteProperties, prepareBuildOnRemote
 
     doLast {
         logger.info("MachineName: $machineName")
         logger.info("User: $userName")
         logger.info("Test output folder: $localTestOutputFolderName")
 
-        def localDirectory = rootProject.getProjectDir()
-        def destinationDirectory = "/home/$userName/Desktop/$remoteDirectoryName"
-        def archiveName = "binaries.jar"
-        def archiveLocalLocation = "$localDirectory\\$archiveName"
-        def archiveRemoteLocation = "$destinationDirectory/$archiveName"
-
-        runLocalCommand("Delete local archive if it exists", "if exist \"$archiveLocalLocation\" del \"$archiveLocalLocation\"")
-        runLocalCommand("Compress directory $localDirectory into $archiveLocalLocation", "jar cf \"$archiveName\" .")
-        runRemoteCommand("Creating clean remote directory: $destinationDirectory", "rm -f -r $destinationDirectory && mkdir -p $destinationDirectory")
-        runRemoteCopy(
-            "Copying zipped binaries from $archiveLocalLocation to $archiveRemoteLocation on machine $machineName",
-            archiveLocalLocation,
-            "$userName@$machineName:$archiveRemoteLocation")
-        runRemoteCommand("Extract zipped binaries from $archiveRemoteLocation on machine $machineName", "cd $destinationDirectory && jar xf $archiveRemoteLocation")
-        runRemoteCommand("Allow execution of gradlew", "chmod +x $destinationDirectory/gradlew")
-        runRemoteCommand("Changing gradlew linebreaks to unix style", "dos2unix $destinationDirectory/gradlew")
-
         try
         {
-            runRemoteCommand("Executing tests remotely", "cd $destinationDirectory && ./gradlew cleanTest testAndCollect -x compileJava -x compileTestJava -PoutputFolderName=$localTestOutputFolderName")
+            runRemoteCommand("Executing tests remotely", "cd $remoteDirectory && ./gradlew cleanTest testAndCollect -x compileJava -x compileTestJava -PoutputFolderName=$localTestOutputFolderName")
         }
         finally
         {
             def testResultsArchiveName = "testResults.jar"
-            def remoteTestResultsArchiveLocation = "$destinationDirectory/build/$testResultsArchiveName"
+            def remoteTestResultsArchiveLocation = "$remoteDirectory/build/$testResultsArchiveName"
 
             runLocalCommand("Create local results directory: $rootProjectBuildDir", "if not exist \"$rootProjectBuildDir\" mkdir \"$rootProjectBuildDir\"")
-            runRemoteCommand("Compress test results", "cd $destinationDirectory/build && jar cf $testResultsArchiveName $remoteTestResultsDirName $remoteTestReportDirName")
-            runRemoteCopy("Copying test results back", "$userName@$machineName:$remoteTestResultsArchiveLocation","\"$rootProjectBuildDir\"")
+            runRemoteCommand("Compress test results", "cd $remoteDirectory/build && jar cf $testResultsArchiveName $remoteTestResultsDirName $remoteTestReportDirName")
+            runRemoteCopy("Copying test results back", "$userName@$machineName:$remoteTestResultsArchiveLocation", rootProjectBuildDir)
             runLocalCommand("Unzip test results archive", "cd \"$rootProjectBuildDir\" && jar xf $testResultsArchiveName")
         }
     }
 }
 
-def runLocalCommand(description, command)
-{
+def runLocalCommand(description, command) {
     logger.info("[runLocalCommand] $description")
     exec {
         executable "cmd"
@@ -70,20 +102,35 @@ def runLocalCommand(description, command)
     }
 }
 
-def runRemoteCopy(description, from, into)
-{
+def runRemoteCopy(description, from, into) {
     logger.info("[runRemoteCopy] $description")
     exec {
         executable "pscp.exe"
-        args "-r", "-pw", pass, from, into
+        args "-r", "-pw", pass, "\"$from\"", "\"$into\""
     }
 }
 
-def runRemoteCommand(description, command)
-{
+def runRemoteCommand(description, command) {
     logger.info("[runRemoteCommand] $description")
     exec {
         executable "plink.exe"
         args "-pw", pass, "$userName@$machineName", command
     }
+}
+
+def getWebAppPath(webAppName) {
+    def webAppProjectsPath=":test:webapps"
+    def projectLibsDir = project("$webAppProjectsPath:$webAppName").libsDir
+    def projectWarPath = "$projectLibsDir/${webAppName}.war"
+
+    convertAbsoluteToRelativePath(projectWarPath, projectDir)
+}
+
+def convertAbsoluteToRelativePath(absolutePath, currentPath) {
+    def relative = "$absolutePath" - "$currentPath"
+    (relative[0] == '/' || relative[0] == "\\") ? relative.substring(1) : relative;
+}
+
+def convertDosToUnixPath(path) {
+    path.replace('\\', '/')
 }
