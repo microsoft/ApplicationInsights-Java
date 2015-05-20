@@ -106,6 +106,15 @@ public class WebSessionTrackingTelemetryModuleTests {
     }
 
     @Test
+    public void testWhenCookieExistCorrectSessionIdAttachedToSentTelemetry() throws Exception {
+        HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
+
+        RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
+
+        Assert.assertTrue(sessionCookieFormatted.contains(requestTelemetry.getContext().getSession().getId()));
+    }
+
+    @Test
     public void testNoSessionCreatedWhenValidSessionExists() throws Exception {
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
 
@@ -174,8 +183,8 @@ public class WebSessionTrackingTelemetryModuleTests {
         Assert.assertEquals("Session ID shouldn't be generated.", originalSessionId, returnedSessionId);
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void testSessionStateTelemetryContainsSessionIdOnEndState() throws Exception {
         sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
 
@@ -186,8 +195,8 @@ public class WebSessionTrackingTelemetryModuleTests {
         Assert.assertNotNull("Session ID shouldn't be null", telemetry.getContext().getSession().getId());
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void testSessionStateTelemetryEndStateContainsExpiredSessionId() throws Exception {
         sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
 
@@ -235,8 +244,11 @@ public class WebSessionTrackingTelemetryModuleTests {
     @Test
     public void testWhenSessionTimeoutParameterUsedThenCookieCreatedWithCorrectAge() {
         int sessionTimeoutInMinutes = 12;
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(
-                WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, String.valueOf(sessionTimeoutInMinutes));
+        Map<String, String> moduleParameters = new HashMap<String, String>();
+        moduleParameters.put(WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, String.valueOf(true));
+        moduleParameters.put(WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, String.valueOf(sessionTimeoutInMinutes));
+
+        WebSessionTrackingTelemetryModule module = createModuleWithParam(moduleParameters);
 
         Cookie cookie = callOnBeginRequestAndGetCookieResult(module);
 
@@ -272,6 +284,10 @@ public class WebSessionTrackingTelemetryModuleTests {
         Map<String, String> map = new HashMap<String, String>();
         map.put(paramName, paramValue);
 
+        return createModuleWithParam(map);
+    }
+
+    private WebSessionTrackingTelemetryModule createModuleWithParam(Map<String, String> map) {
         return new WebSessionTrackingTelemetryModule(map);
     }
 

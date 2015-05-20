@@ -58,7 +58,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     // region Members
 
     private Integer sessionTimeoutInMinutes;
-    private boolean generateNewSessions = true;
+    private boolean generateNewSessions = false;
     private TelemetryClient telemetryClient;
     private boolean isInitialized = false;
     private boolean isUserModuleEnabled = false;
