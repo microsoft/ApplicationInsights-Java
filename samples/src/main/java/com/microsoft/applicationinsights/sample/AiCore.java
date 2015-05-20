@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.JarFile;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
