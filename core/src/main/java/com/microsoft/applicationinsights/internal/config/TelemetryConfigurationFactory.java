@@ -337,7 +337,7 @@ public enum TelemetryConfigurationFactory {
         URL resource = classLoader.getResource(fileToParse);
         if (resource != null) {
             String configurationFile = resource.getFile();
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Found configuration file: '%s'", configurationFile);
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file has been successfully found in: '%s'", configurationFile);
             return configurationFile;
         }
 
