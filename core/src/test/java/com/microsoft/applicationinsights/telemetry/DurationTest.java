@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -213,6 +214,14 @@ public final class DurationTest {
         Duration duration = new Duration(0, 3, 0, 0, 0);
 
         verify(duration, 0, 3, 0, 0, 0, "03:00:00");
+    }
+
+    @Test
+    public void testTotalMilliseconds() {
+        Duration duration = new Duration(1, 1, 1, 1, 1);
+
+        // 90061001 ms is 1 day, 1 hour, 1 minute, 1 sec and 1 milliseconds.
+        Assert.assertEquals(duration.getTotalMilliseconds(), 90061001);
     }
 
     @Test

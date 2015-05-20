@@ -28,6 +28,8 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -41,12 +43,13 @@ public class AiCore {
         if (args.length > 0) {
             appInsights.getContext().setInstrumentationKey(args[0]);
         }
+
         String iKey = appInsights.getContext().getInstrumentationKey();
-        if (iKey == null)
-        {
+        if (iKey == null) {
             System.out.println("Error: no iKey set in ApplicationInsights.xml or as a parameter for this program.");
             return;
         }
+
         System.out.println("Application iKey set to " + appInsights.getContext().getInstrumentationKey());
         TelemetryConfiguration.getActive().getChannel().setDeveloperMode(true);
 
@@ -90,6 +93,12 @@ public class AiCore {
             appInsights.trackException(exc);
             System.out.println("[6] Exception             -- message=\"This is only a test!\"");
         }
+
+        // Track Remote Dependency
+        RemoteDependencyTelemetry remoteDependencyTelemetry = new RemoteDependencyTelemetry(
+                "DependencyName", "commandName", new Duration(0, 0, 1, 1, 1), true);
+        appInsights.trackDependency(remoteDependencyTelemetry);
+        System.out.println("[7] Remote Dependency       -- DependencyName, commandName, 61001 ms, success = true.");
 
         System.out.println();
         System.out.println("Press any key to exit");
