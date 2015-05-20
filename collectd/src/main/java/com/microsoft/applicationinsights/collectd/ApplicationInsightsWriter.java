@@ -61,6 +61,7 @@ public class ApplicationInsightsWriter implements
     private static final int SUCCESS_CODE = 0;
     private static final int CONFIGURATION_PHASE_ERROR_CODE = 1;
     private static final int INITIALIZATION_PHASE_ERROR_CODE = 2;
+    private static final int WRITE_PHASE_ERROR_CODE = 3;
     private static final String PLUGIN_NAME = "ApplicationInsightsWriter";
     private static final String DEFAULT_AI_LOGGER_OUTPUT = "CONSOLE";
 
@@ -72,6 +73,7 @@ public class ApplicationInsightsWriter implements
     private TelemetryClient telemetryClient;
     private Map<String, PluginExclusion> excludedPluginsDictionary;
     private ApplicationInsightsWriterLogger logger = null;
+    private boolean logWriteError = true;
 
     // endregion Members
 
@@ -174,15 +176,29 @@ public class ApplicationInsightsWriter implements
         // We're avoiding writing traces in this method to not spam the logs, as this method is being called very frequently.
         logger.logDebug("Writing values (" + valueList.getValues().size() + "):\n" + valueList.toString());
 
-        String pluginName = valueList.getPlugin();
-        for (int i = 0; i < valueList.getValues().size(); i++) {
-            boolean dataSourceExcluded = isDataSourceExcluded(pluginName, valueList.getDataSet(), i);
-            if (dataSourceExcluded) {
-                continue;
+        try {
+            String pluginName = valueList.getPlugin();
+            for (int i = 0; i < valueList.getValues().size(); i++) {
+                boolean dataSourceExcluded = isDataSourceExcluded(pluginName, valueList.getDataSet(), i);
+                if (dataSourceExcluded) {
+                    continue;
+                }
+
+                MetricTelemetry metricTelemetry = createMetricTelemetry(valueList, i);
+                this.telemetryClient.trackMetric(metricTelemetry);
+            }
+        } catch (Throwable t) {
+            String errorMessage =
+                    "Failed to send events with the following error: '" + t + "'. This message will appear only once.";
+            logger.logDebug(errorMessage);
+
+            // We'll log errors only once in order to avoid spamming CollectD log, in case of a permanent error.
+            if (logWriteError) {
+                logger.logError(errorMessage);
+                logWriteError = false;
             }
 
-            MetricTelemetry metricTelemetry = createMetricTelemetry(valueList, i);
-            this.telemetryClient.trackMetric(metricTelemetry);
+            return WRITE_PHASE_ERROR_CODE;
         }
 
         return SUCCESS_CODE;
