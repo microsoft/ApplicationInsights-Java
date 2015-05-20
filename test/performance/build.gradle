@@ -40,3 +40,6 @@ distTar {
 distZip {
     onlyIf { distributionType == "zip" }
 }
+
+
+uploadArchives.enabled = false
