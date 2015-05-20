@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
-import org.junit.Ignore;
 import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
@@ -98,7 +97,6 @@ public class WebUserTrackingTelemetryModuleTests {
     }
 
     @Test
-    @Ignore
     public void testNewUserCookieIsCreatedWhenCookieNotExist() throws Exception {
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
 
@@ -113,7 +111,6 @@ public class WebUserTrackingTelemetryModuleTests {
     }
 
     @Test
-    @Ignore
     public void testNewUserCookieIsCreatedWhenCookieCorrupted() throws Exception {
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie("corrupted;user;cookie");
 
