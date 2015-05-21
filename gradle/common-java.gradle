@@ -23,25 +23,25 @@
 
 apply plugin: 'java'
 
-compileJava {
-    def java6JreDir = System.env.'JAVA_JRE_6'
-    if (java6JreDir) {
+def java6JreDir = System.env.'JAVA_JRE_6'
+if (java6JreDir) {
+    def requiredJava6Archives = ["rt.jar", "jsse.jar"]
+    def bootClasspath = ""
+    requiredJava6Archives.each { a ->
+        def archivePath = new File(java6JreDir, "lib/$a")
+        if (!archivePath.exists()) {
+            throw new ProjectConfigurationException("Archive $archivePath required for building in Java 6 could not be found.", null)
+        }
+        logger.info "Archive '$archivePath' added to boot class path"
+        bootClasspath += "$archivePath;"
+    }
+    tasks.withType(JavaCompile) {
         sourceCompatibility = 1.6
         targetCompatibility = 1.6
-        options.bootClasspath = ""
-
-        def requiredJava6Archives = ["rt.jar", "jsse.jar"]
-        requiredJava6Archives.each { a ->
-            def archivePath = new File(java6JreDir, "lib/$a")
-            if (!archivePath.exists()) {
-                throw new ProjectConfigurationException("Archive $archivePath required for building in Java 6 could not be found.", null)
-            }
-            logger.info "Archive '$archivePath' added to boot class path"
-            options.bootClasspath += "$archivePath;"
-        }
-    } else {
-        logger.warn "Environment variable 'JAVA_JRE_6' is not defined - falling back to use machine default Java SDK"
+        options.bootClasspath = bootClasspath
     }
+} else {
+    logger.warn "Environment variable 'JAVA_JRE_6' is not defined - falling back to use machine default Java SDK"
 }
 
 updateTestDirectories()
