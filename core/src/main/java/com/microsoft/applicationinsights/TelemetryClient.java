@@ -388,7 +388,11 @@ public class TelemetryClient {
             InternalLogger.INSTANCE.error("Exception while sanitizing telemetry: '%s'",t.getMessage());
         }
 
-        getChannel().send(telemetry);
+        try {
+            getChannel().send(telemetry);
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.getMessage());
+        }
     }
 
     /**

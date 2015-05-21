@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
+
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
@@ -92,6 +94,39 @@ public final class TelemetryClientTests {
     // endregion Initialization
 
     // region Track tests
+
+    @Test
+    public void testChannelSendException() {
+        TelemetryChannel mockChannel = new TelemetryChannel() {
+            @Override
+            public boolean isDeveloperMode() {
+                return false;
+            }
+
+            @Override
+            public void setDeveloperMode(boolean value) {
+
+            }
+
+            @Override
+            public void send(Telemetry item) {
+                throw new RuntimeException();
+            }
+
+            @Override
+            public void stop(long timeout, TimeUnit timeUnit) {
+
+            }
+
+            @Override
+            public void flush() {
+
+            }
+        };
+
+        configuration.setChannel(mockChannel);
+        client.trackEvent("Mock");
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullTrackTelemetry() {
