@@ -79,8 +79,8 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
                     reportError(value, entry.getValue());
                 } else {
                     send(telemetryClient, value, entry.getValue());
+                    InternalLogger.INSTANCE.trace("Sent metric performance counter for '%s': '%s'", entry.getValue(), value);
                 }
-                InternalLogger.INSTANCE.trace("Sent metric performance counter for '%s': '%s'", entry.getValue(), value);
             } catch (Throwable e) {
                 InternalLogger.INSTANCE.error("Failed to send metric performance counter for '%s': '%s'", entry.getValue(), e.getMessage());
             }
