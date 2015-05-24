@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -57,14 +58,11 @@ public enum TelemetryConfigurationFactory {
     private final static String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
     private final static String BUILT_IN_NAME = "BuiltIn";
 
-    private String fileToParse;
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
     private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
-    TelemetryConfigurationFactory() {
-        fileToParse = CONFIG_FILE_NAME;
-    }
+    TelemetryConfigurationFactory() { }
 
     /**
      * Currently we do the following:
@@ -85,7 +83,7 @@ public enum TelemetryConfigurationFactory {
                 return;
             }
 
-            ApplicationInsightsXmlConfiguration  applicationInsightsConfig = builder.build(configurationFile);
+            ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
             if (applicationInsightsConfig == null) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to read configuration file");
                 configuration.setChannel(new InProcessTelemetryChannel());
@@ -333,26 +331,70 @@ public enum TelemetryConfigurationFactory {
     private String getConfigurationFile() {
 
         // Trying to load configuration as a resource.
-        ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
-        URL resource = classLoader.getResource(fileToParse);
-        if (resource != null) {
-            String configurationFile = resource.getFile();
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file has been successfully found in: '%s'", configurationFile);
-            return configurationFile;
-        }
+        String configurationFile = getConfigurationFromDefaultClassLoader();
 
-        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Could not find resource named '%s'", fileToParse);
         // If not found as a resource, trying to load from the executing jar directory
-        String configurationFile =  getConfigurationFromLibraryLocation();
-        if (configurationFile != null) {
-            return configurationFile;
+        if (configurationFile == null) {
+            configurationFile =  getConfigurationFromLibraryLocation();
         }
 
-        // If not found as a resource, trying to load from the class path
-        return getConfFromClassPath(classLoader);
+        // If still not found try to get it from the class path
+        if (configurationFile == null) {
+            configurationFile =  getConfFromClassPath();
+        }
+
+        if (configurationFile != null) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file found in: '%s'", configurationFile);
+        } else {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Configuration file '%s' could not be found", CONFIG_FILE_NAME);
+        }
+
+        return configurationFile;
     }
 
-    private String getConfFromClassPath(ClassLoader classLoader) {
+    private String getConfigurationFromDefaultClassLoader() {
+        ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
+        String configurationFile = null;
+        URL resourceUrl = classLoader.getResource(CONFIG_FILE_NAME);
+        if (resourceUrl != null) {
+            File filePath = normalizeUrlToFile(resourceUrl);
+            if (filePath != null) {
+                configurationFile = filePath.toString();
+            }
+        }
+
+        InternalLogger.INSTANCE.logAlways(
+                InternalLogger.LoggingLevel.INFO,
+                "Configuration file '%s' was %sfound by default class loader",
+                CONFIG_FILE_NAME,
+                configurationFile == null ? "NOT " : "");
+
+        return configurationFile;
+    }
+
+    private String getConfigurationFromLibraryLocation() {
+        try {
+            String jarFullPath = TelemetryConfigurationFactory.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            File jarFile = new File(jarFullPath);
+
+            if (jarFile.exists()) {
+                String jarDirectory = jarFile.getParent();
+                String configurationPath = getConfigurationAbsolutePath(jarDirectory);
+                if (configurationPath != null) {
+                    return configurationPath;
+                }
+            } else {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Can not access folder '%s'", jarFullPath);
+            }
+        } catch (URISyntaxException e) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to find configuration file, exception: '%s'", e.getMessage());
+        }
+
+        return null;
+    }
+
+    private String getConfFromClassPath() {
+        ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
         if (!(classLoader instanceof URLClassLoader)) {
             return null;
         }
@@ -361,19 +403,14 @@ public enum TelemetryConfigurationFactory {
 
         URL[] urls = ((URLClassLoader)classLoader).getURLs();
         for (URL url : urls) {
-            String configurationPath = url.getPath();
-            if (configurationPath.endsWith(".jar")) {
-                int index = configurationPath.lastIndexOf('/');
-                if (index != -1) {
-                    configurationPath = configurationPath.substring(0, index + 1);
-                } else {
-                    continue;
-                }
-            } else {
-                if (!configurationPath.endsWith("/")) {
-                    configurationPath += '/';
-                }
+            File filePath = normalizeUrlToFile(url);
+            if (filePath == null) {
+                continue;
             }
+            if (filePath.isFile()) {
+                filePath = filePath.getParentFile();
+            }
+            String configurationPath = filePath.toString();
 
             if (checkedUrls.contains(configurationPath)) {
                 continue;
@@ -390,40 +427,29 @@ public enum TelemetryConfigurationFactory {
         return null;
     }
 
-    private String  getConfigurationFromLibraryLocation() {
-        try {
-            String jarFullPath = TelemetryConfigurationFactory.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            File jarFile = new File(jarFullPath);
-
-            if (jarFile.exists()) {
-                String jarDirectory = jarFile.getParent();
-
-                String configurationPath = getConfigurationAbsolutePath(jarDirectory);
-
-                if (configurationPath != null) {
-                    return jarDirectory;
-                }
-            } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Can not access folder '%s'", jarFullPath);
-            }
-        } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to find configuration file, exception: '%s'", e.getMessage());
-        }
-
-        return null;
-    }
-
     private String getConfigurationAbsolutePath(String path) {
-        File configFile = new File(path, fileToParse);
+        File configFile = new File(path, CONFIG_FILE_NAME);
 
         if (configFile.exists()) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Found configuration file in: '%s'", path);
             return configFile.getAbsolutePath();
         }
 
-        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Did not find configuration file in '%s'", path);
+        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Did not find configuration file '%s' in '%s'", CONFIG_FILE_NAME, path);
 
         return null;
+    }
+
+    private File normalizeUrlToFile(URL url) {
+        URI uri = null;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException e) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Failed to convert URL '%s' to URI ", url);
+            return null;
+        }
+
+        return new File(uri.getSchemeSpecificPart());
     }
 
     /**
