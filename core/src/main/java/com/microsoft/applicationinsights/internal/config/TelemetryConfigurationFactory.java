@@ -57,13 +57,11 @@ public enum TelemetryConfigurationFactory {
     private final static String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
     private final static String BUILT_IN_NAME = "BuiltIn";
 
-    private String fileToParse;
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
     private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
     TelemetryConfigurationFactory() {
-        fileToParse = CONFIG_FILE_NAME;
     }
 
     /**
@@ -79,13 +77,13 @@ public enum TelemetryConfigurationFactory {
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
-            String configurationFile = getConfigurationFile();
+            String configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
             if (Strings.isNullOrEmpty(configurationFile)) {
                 configuration.setChannel(new InProcessTelemetryChannel());
                 return;
             }
 
-            ApplicationInsightsXmlConfiguration  applicationInsightsConfig = builder.build(configurationFile);
+            ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
             if (applicationInsightsConfig == null) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to read configuration file");
                 configuration.setChannel(new InProcessTelemetryChannel());
@@ -328,102 +326,6 @@ public enum TelemetryConfigurationFactory {
             configuration.setChannel(new InProcessTelemetryChannel());
             return true;
         }
-    }
-
-    private String getConfigurationFile() {
-
-        // Trying to load configuration as a resource.
-        ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
-        URL resource = classLoader.getResource(fileToParse);
-        if (resource != null) {
-            String configurationFile = resource.getFile();
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file has been successfully found in: '%s'", configurationFile);
-            return configurationFile;
-        }
-
-        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Could not find resource named '%s'", fileToParse);
-        // If not found as a resource, trying to load from the executing jar directory
-        String configurationFile =  getConfigurationFromLibraryLocation();
-        if (configurationFile != null) {
-            return configurationFile;
-        }
-
-        // If not found as a resource, trying to load from the class path
-        return getConfFromClassPath(classLoader);
-    }
-
-    private String getConfFromClassPath(ClassLoader classLoader) {
-        if (!(classLoader instanceof URLClassLoader)) {
-            return null;
-        }
-
-        HashSet<String> checkedUrls = new HashSet<String>();
-
-        URL[] urls = ((URLClassLoader)classLoader).getURLs();
-        for (URL url : urls) {
-            String configurationPath = url.getPath();
-            if (configurationPath.endsWith(".jar")) {
-                int index = configurationPath.lastIndexOf('/');
-                if (index != -1) {
-                    configurationPath = configurationPath.substring(0, index + 1);
-                } else {
-                    continue;
-                }
-            } else {
-                if (!configurationPath.endsWith("/")) {
-                    configurationPath += '/';
-                }
-            }
-
-            if (checkedUrls.contains(configurationPath)) {
-                continue;
-            }
-
-            String configurationFile = getConfigurationAbsolutePath(configurationPath);
-            if (configurationFile != null) {
-                return configurationFile;
-            } else {
-                checkedUrls.add(configurationPath);
-            }
-        }
-
-        return null;
-    }
-
-    private String  getConfigurationFromLibraryLocation() {
-        try {
-            String jarFullPath = TelemetryConfigurationFactory.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            File jarFile = new File(jarFullPath);
-
-            if (jarFile.exists()) {
-                String jarDirectory = jarFile.getParent();
-
-                String configurationPath = getConfigurationAbsolutePath(jarDirectory);
-
-                if (configurationPath != null) {
-                    return jarDirectory;
-                }
-            } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Can not access folder '%s'", jarFullPath);
-            }
-        } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to find configuration file, exception: '%s'", e.getMessage());
-        }
-
-        return null;
-    }
-
-    private String getConfigurationAbsolutePath(String path) {
-        File configFile = new File(path, fileToParse);
-
-        if (configFile.exists()) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Found configuration file in: '%s'", path);
-            return configFile.getAbsolutePath();
-        }
-
-        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Did not find configuration file in '%s'", path);
-
-        return null;
     }
 
     /**
