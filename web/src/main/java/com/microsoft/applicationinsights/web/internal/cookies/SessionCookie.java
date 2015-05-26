@@ -184,7 +184,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
 
     /**
      * JavaScript SDK was changed to store dates as long, rather than a readable date string.
-     * For backward compatility, we first try to parse with the new format (time represented by long) and then backward
+     * For backward compatibility, we first try to parse with the new format (time represented by long) and then backward
      * compatibility for time represented by a string.
      * @param dateStr The date to parse.
      * @return The parsed date.
