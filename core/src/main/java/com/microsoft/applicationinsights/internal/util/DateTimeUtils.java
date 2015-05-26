@@ -60,7 +60,7 @@ public class DateTimeUtils {
      * @throws java.text.ParseException Thrown when failed to parse the given string.
      */
     public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
-        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'");
+        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH");
         Date date = roundTripDateFormat.parse(roundTripString);
 
         return date;
@@ -72,7 +72,7 @@ public class DateTimeUtils {
      * @return Round-trip date string
      */
     public static String formatAsRoundTripDate(Date date) {
-        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'");
+        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH");
         return roundTripDateFormat.format(date);
     }
 }

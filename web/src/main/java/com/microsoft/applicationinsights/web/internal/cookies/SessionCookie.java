@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal.cookies;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import javax.servlet.http.Cookie;
@@ -77,7 +78,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
      * @param sessionId The session ID.
      */
     public SessionCookie(String sessionId) {
-        String now = DateTimeUtils.formatAsRoundTripDate(DateTimeUtils.getDateTimeNow());
+        String now = String.valueOf(System.currentTimeMillis());
         String[] cookieRawValues = new String[] { sessionId, now, now };
         String formattedCookie = SessionCookie.formatCookie(cookieRawValues);
 
@@ -171,13 +172,28 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
 
         try {
             sessionId = split[CookieFields.SESSION_ID.getValue()];
-            acquisitionDate = DateTimeUtils.parseRoundTripDateString(split[CookieFields.SESSION_ACQUISITION_DATE.getValue()]);
-            renewalDate = DateTimeUtils.parseRoundTripDateString(split[CookieFields.SESSION_LAST_UPDATE_DATE.getValue()]);
+            acquisitionDate = parseDateWithBackwardCompatibility(split[CookieFields.SESSION_ACQUISITION_DATE.getValue()]);
+            renewalDate = parseDateWithBackwardCompatibility(split[CookieFields.SESSION_LAST_UPDATE_DATE.getValue()]);
         } catch (Exception e) {
             String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.getMessage());
 
             // TODO: dedicated exception
             throw new Exception(errorMessage);
+        }
+    }
+
+    /**
+     * JavaScript SDK was changed to store dates as long, rather than a readable date string.
+     * For backward compatility, we first try to parse with the new format (time represented by long) and then backward
+     * compatibility for time represented by a string.
+     * @param dateStr The date to parse.
+     * @return The parsed date.
+     */
+    private Date parseDateWithBackwardCompatibility(String dateStr) throws ParseException {
+        try {
+            return new Date(Long.parseLong(dateStr));
+        } catch (NumberFormatException e) {
+            return DateTimeUtils.parseRoundTripDateString(dateStr);
         }
     }
 
