@@ -49,8 +49,8 @@ public class HttpCookieFactory {
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 sessionContext.getId(),
-                DateTimeUtils.formatAsRoundTripDate(context.getSessionCookie().getSessionAcquisitionDate()),
-                DateTimeUtils.formatAsRoundTripDate(renewalDate)
+                String.valueOf(context.getSessionCookie().getSessionAcquisitionDate().getTime()),
+                String.valueOf(renewalDate.getTime())
         });
 
         Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);

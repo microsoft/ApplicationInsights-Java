@@ -103,8 +103,8 @@ public class HttpHelper {
 
         String formattedSessionCookie = String.format(
                 FORMATTED_SESSION_COOKIE_TEMPLATE,
-                DateTimeUtils.formatAsRoundTripDate(sessionAcquisitionTime),
-                DateTimeUtils.formatAsRoundTripDate(sessionRenewalTime));
+                String.valueOf(sessionAcquisitionTime.getTime()),
+                String.valueOf(sessionRenewalTime.getTime()));
 
         return String.format("%s=%s", SessionCookie.COOKIE_NAME, formattedSessionCookie);
     }

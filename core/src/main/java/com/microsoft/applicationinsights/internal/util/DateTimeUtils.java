@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class DateTimeUtils {
 
+    private static final String ROUND_TRIP_DATE_FORMAT = "yyyy-MM-dd'T'HH";
+
     private DateTimeUtils() {
     }
 
@@ -54,13 +56,13 @@ public class DateTimeUtils {
     }
 
     /**
-     * Parses the given round-trip date string into Date object.
+     * Parses the given round-trip date string (e.g. '2015-05-26T07') into Date object.
      * @param roundTripString The string to parse.
      * @return Date represents the string.
      * @throws java.text.ParseException Thrown when failed to parse the given string.
      */
     public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
-        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'");
+        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
         Date date = roundTripDateFormat.parse(roundTripString);
 
         return date;
@@ -72,7 +74,7 @@ public class DateTimeUtils {
      * @return Round-trip date string
      */
     public static String formatAsRoundTripDate(Date date) {
-        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'");
+        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
         return roundTripDateFormat.format(date);
     }
 }
