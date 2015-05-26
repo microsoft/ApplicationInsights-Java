@@ -97,9 +97,9 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config){
         try {
-            if (!ClassDataUtils.INSTANCE.isMethodExists(javax.servlet.http.HttpServletResponse.class, "getStatus")) {
-                InternalLogger.INSTANCE.error(
-                        "Servlet Jars mismatch. The Java SDK needs the Servlet version 3.0, Web request tracking filter will be disabled.");
+            if (!ClassDataUtils.INSTANCE.verifyMethodExists(javax.servlet.http.HttpServletResponse.class, "getStatus")) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
+                        "Unsupported servlet version. The Application Insights web request tracking filter requires the provided javax.servlet library to implement servlet spec 3.0 or above. The web request tracking filter will be disabled.");
 
                 return;
             }

@@ -37,7 +37,7 @@ public class TransmissionNetworkOutputTest {
         field.setAccessible(true);
 
         ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-        Mockito.doReturn(false).when(mockVerifier).isClassExists(anyString());
+        Mockito.doReturn(false).when(mockVerifier).verifyClassExists(anyString());
         field.set(ClassDataUtils.INSTANCE, mockVerifier);
 
         TransmissionNetworkOutput.create();

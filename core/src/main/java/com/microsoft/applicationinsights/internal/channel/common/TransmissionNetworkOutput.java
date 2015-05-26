@@ -82,7 +82,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     }
 
     public static TransmissionNetworkOutput create(String endpoint) {
-        if (!ClassDataUtils.INSTANCE.isClassExists("org.apache.http.conn.HttpClientConnectionManager")) {
+        if (!ClassDataUtils.INSTANCE.verifyClassExists("org.apache.http.conn.HttpClientConnectionManager")) {
             String errorMessage = String.format("HttpClient Jars mismatch: please make sure version 4.3 of HttpClient is used");
             throw new IllegalStateException(errorMessage);
         }

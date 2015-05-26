@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
  */
 final class ClassDataVerifierImpl implements ClassDataVerifier {
     @Override
-    public boolean isClassExists(String className) {
+    public boolean verifyClassExists(String className) {
         try {
             Class<?> result = Class.forName(className);
             if (result != null) {
@@ -41,7 +41,7 @@ final class ClassDataVerifierImpl implements ClassDataVerifier {
     }
 
     @Override
-    public boolean isMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+    public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
         Method method;
         try {
             method = clazz.getMethod(methodName, parameterTypes);

@@ -34,28 +34,28 @@ public final class ClassDataUtilsTest {
     @Test
     public void testMethodExistingPublicMethod() {
         ClassDataUtils.INSTANCE.initialize();
-        boolean found = ClassDataUtils.INSTANCE.isMethodExists(String.class, PUBLIC_EXISTING_METHOD, String.class);
+        boolean found = ClassDataUtils.INSTANCE.verifyMethodExists(String.class, PUBLIC_EXISTING_METHOD, String.class);
         assertTrue("Method not found", found);
     }
 
     @Test
     public void testMethodNotExistingPublicMethod() {
         ClassDataUtils.INSTANCE.initialize();
-        boolean found = ClassDataUtils.INSTANCE.isMethodExists(String.class, PUBLIC_NOT_EXISTING_METHOD);
+        boolean found = ClassDataUtils.INSTANCE.verifyMethodExists(String.class, PUBLIC_NOT_EXISTING_METHOD);
         assertFalse("Method found", found);
     }
 
     @Test
     public void testClassExists() {
         ClassDataUtils.INSTANCE.initialize();
-        boolean found = ClassDataUtils.INSTANCE.isClassExists(EXISTING_CLASS);
+        boolean found = ClassDataUtils.INSTANCE.verifyClassExists(EXISTING_CLASS);
         assertTrue("Class not found", found);
     }
 
     @Test
     public void testClassDoesNotExist() {
         ClassDataUtils.INSTANCE.initialize();
-        boolean found = ClassDataUtils.INSTANCE.isClassExists(NOT_EXISTING_CLASS);
+        boolean found = ClassDataUtils.INSTANCE.verifyClassExists(NOT_EXISTING_CLASS);
         assertFalse("Class found", found);
     }
 }

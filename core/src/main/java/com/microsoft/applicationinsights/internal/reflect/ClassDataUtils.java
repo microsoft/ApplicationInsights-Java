@@ -34,12 +34,12 @@ public enum ClassDataUtils implements ClassDataVerifier {
     }
 
     @Override
-    public boolean isClassExists(String className) {
-        return verifier.isClassExists(className);
+    public boolean verifyClassExists(String className) {
+        return verifier.verifyClassExists(className);
     }
 
     @Override
-    public boolean isMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
-        return verifier.isMethodExists(clazz, methodName, parameterTypes);
+    public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        return verifier.verifyMethodExists(clazz, methodName, parameterTypes);
     }
 }

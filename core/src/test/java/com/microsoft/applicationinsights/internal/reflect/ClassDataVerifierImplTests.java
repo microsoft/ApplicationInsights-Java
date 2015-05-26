@@ -33,25 +33,25 @@ public final class ClassDataVerifierImplTests {
 
     @Test
     public void testMethodExistingPublicMethod() {
-        boolean found = new ClassDataVerifierImpl().isMethodExists(String.class, PUBLIC_EXISTING_METHOD, String.class);
+        boolean found = new ClassDataVerifierImpl().verifyMethodExists(String.class, PUBLIC_EXISTING_METHOD, String.class);
         assertTrue("Method not found", found);
     }
 
     @Test
     public void testMethodNotExistingPublicMethod() {
-        boolean found = new ClassDataVerifierImpl().isMethodExists(String.class, PUBLIC_NOT_EXISTING_METHOD);
+        boolean found = new ClassDataVerifierImpl().verifyMethodExists(String.class, PUBLIC_NOT_EXISTING_METHOD);
         assertFalse("Method found", found);
     }
 
     @Test
     public void testClassExists() {
-        boolean found = new ClassDataVerifierImpl().isClassExists(EXISTING_CLASS);
+        boolean found = new ClassDataVerifierImpl().verifyClassExists(EXISTING_CLASS);
         assertTrue("Class not found", found);
     }
 
     @Test
     public void testClassDoesNotExist() {
-        boolean found = new ClassDataVerifierImpl().isClassExists(NOT_EXISTING_CLASS);
+        boolean found = new ClassDataVerifierImpl().verifyClassExists(NOT_EXISTING_CLASS);
         assertFalse("Class found", found);
     }
 }

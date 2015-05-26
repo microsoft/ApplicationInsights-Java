@@ -35,7 +35,6 @@ import com.microsoft.applicationinsights.web.utils.ServletUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Enumeration;
 
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
@@ -162,7 +161,7 @@ public class WebRequestTrackingFilterTests {
         field.setAccessible(true);
 
         ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-        Mockito.doReturn(false).when(mockVerifier).isClassExists(anyString());
+        Mockito.doReturn(false).when(mockVerifier).verifyClassExists(anyString());
         field.set(ClassDataUtils.INSTANCE, mockVerifier);
 
         FilterConfig config = Mockito.mock(FilterConfig.class);

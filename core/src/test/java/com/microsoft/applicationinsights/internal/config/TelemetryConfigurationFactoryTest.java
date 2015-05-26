@@ -347,7 +347,7 @@ public final class TelemetryConfigurationFactoryTest {
             field.setAccessible(true);
 
             ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-            Mockito.doReturn(true).when(mockVerifier).isClassExists(anyString());
+            Mockito.doReturn(true).when(mockVerifier).verifyClassExists(anyString());
             field.set(ClassDataUtils.INSTANCE, mockVerifier);
             TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
             TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);

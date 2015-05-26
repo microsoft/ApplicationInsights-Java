@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
  * Created by gupele on 5/26/2015.
  */
 public interface ClassDataVerifier {
-    boolean isClassExists(String className);
+    boolean verifyClassExists(String className);
 
-    boolean isMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes);
+    boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes);
 }
