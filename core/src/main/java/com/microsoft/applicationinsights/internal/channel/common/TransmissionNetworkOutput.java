@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -81,6 +82,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     }
 
     public static TransmissionNetworkOutput create(String endpoint) {
+        if (!ClassDataUtils.INSTANCE.isClassExists("org.apache.http.conn.HttpClientConnectionManager")) {
+            String errorMessage = String.format("HttpClient Jars mismatch: please make sure version 4.3.1 of HttpClient is used");
+            throw new IllegalStateException(errorMessage);
+        }
+
         String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
         return new TransmissionNetworkOutput(realEndpoint, null);
     }

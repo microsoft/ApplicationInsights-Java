@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -30,6 +31,8 @@ import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
+import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
+import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -338,7 +341,20 @@ public final class TelemetryConfigurationFactoryTest {
 
 
     private void initializeWithFactory(AppInsightsConfigurationBuilder mockParser, TelemetryConfiguration mockConfiguration) {
-        TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
-        TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
+        Field field = null;
+        try {
+            field = ClassDataUtils.class.getDeclaredField("verifier");
+            field.setAccessible(true);
+
+            ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
+            Mockito.doReturn(true).when(mockVerifier).isClassExists(anyString());
+            field.set(ClassDataUtils.INSTANCE, mockVerifier);
+            TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
+            TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException();
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException();
+        }
     }
 }

@@ -19,27 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.channel.common;
+package com.microsoft.applicationinsights.internal.reflect;
 
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
-import org.junit.Test;
-import org.mockito.Mockito;
+import java.lang.reflect.Method;
 
-import java.lang.reflect.Field;
+/**
+ * Created by gupele on 5/26/2015.
+ */
+final class ClassDataVerifierImpl implements ClassDataVerifier {
+    @Override
+    public boolean isClassExists(String className) {
+        try {
+            Class<?> result = Class.forName(className);
+            if (result != null) {
+                return true;
+            }
+        } catch (ClassNotFoundException e) {
+        }
 
-import static org.mockito.Matchers.anyString;
+        return false;
+    }
 
-public class TransmissionNetworkOutputTest {
-    @Test(expected = IllegalStateException.class)
-    public void testBadJar() throws NoSuchFieldException, IllegalAccessException {
-        Field field = ClassDataUtils.class.getDeclaredField("verifier");
-        field.setAccessible(true);
+    @Override
+    public boolean isMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        Method method;
+        try {
+            method = clazz.getMethod(methodName, parameterTypes);
+            if (method != null) {
+                return true;
+            }
+        } catch (NoSuchMethodException e) {
+        }
 
-        ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-        Mockito.doReturn(false).when(mockVerifier).isClassExists(anyString());
-        field.set(ClassDataUtils.INSTANCE, mockVerifier);
-
-        TransmissionNetworkOutput.create();
+        return false;
     }
 }
