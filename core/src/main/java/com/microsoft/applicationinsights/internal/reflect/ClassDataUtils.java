@@ -19,27 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.channel.common;
+package com.microsoft.applicationinsights.internal.reflect;
 
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
-import org.junit.Test;
-import org.mockito.Mockito;
+/**
+ * Created by gupele on 5/26/2015.
+ */
+public enum ClassDataUtils implements ClassDataVerifier {
+    INSTANCE;
 
-import java.lang.reflect.Field;
+    private ClassDataVerifier verifier = new ClassDataVerifierImpl();
 
-import static org.mockito.Matchers.anyString;
+    public void initialize() {
+        verifier = new ClassDataVerifierImpl();
+    }
 
-public class TransmissionNetworkOutputTest {
-    @Test(expected = IllegalStateException.class)
-    public void testBadJar() throws NoSuchFieldException, IllegalAccessException {
-        Field field = ClassDataUtils.class.getDeclaredField("verifier");
-        field.setAccessible(true);
+    @Override
+    public boolean verifyClassExists(String className) {
+        return verifier.verifyClassExists(className);
+    }
 
-        ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-        Mockito.doReturn(false).when(mockVerifier).verifyClassExists(anyString());
-        field.set(ClassDataUtils.INSTANCE, mockVerifier);
-
-        TransmissionNetworkOutput.create();
+    @Override
+    public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        return verifier.verifyMethodExists(clazz, methodName, parameterTypes);
     }
 }

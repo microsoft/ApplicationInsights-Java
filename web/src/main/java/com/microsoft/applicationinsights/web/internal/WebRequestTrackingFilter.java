@@ -28,6 +28,7 @@ import java.util.Date;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -42,6 +43,10 @@ public final class WebRequestTrackingFilter implements Filter {
     // endregion Members
 
     // region Public
+
+    public boolean isInitialized() {
+        return isInitialized;
+    }
 
     /**
      * Processing the given request and response.
@@ -92,6 +97,13 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config){
         try {
+            if (!ClassDataUtils.INSTANCE.verifyMethodExists(javax.servlet.http.HttpServletResponse.class, "getStatus")) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
+                        "Unsupported servlet version. The Application Insights web request tracking filter requires the provided javax.servlet library to implement servlet spec 3.0 or above. The web request tracking filter will be disabled.");
+
+                return;
+            }
+
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
 
             if (configuration == null) {
