@@ -24,7 +24,14 @@ plugins {
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/publishing.gradle"
+
+jar {
+    classifier = 'standalone'
+}
+
+shadowJar {
+    classifier = ''
+}
 
 def collectdLibDir = System.env.'COLLECTD_HOME'
 def collectDLibPath = new File(collectdLibDir, "lib/collectd-api.jar")
@@ -36,15 +43,11 @@ if (!collectDLibPath.exists()) {
 archivesBaseName = 'applicationinsights-collectd'
 
 dependencies {
-    compile project(':core')
+    compile group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '0.9.5'
     compile files(collectDLibPath)
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
-// region Publishing properties
-
-projectPomName = project.msftAppInsights + " Java SDK CollectD Writer Plugin"
-projectPomDescription = "This is the CollectD writer plugin for " + project.msftAppInsightsJavaSdk
-
-// endregion Publishing properties
+// Building the shadow (fat) jar after compiling sources.
+tasks.assemble.doLast { tasks.shadowJar.execute() }
