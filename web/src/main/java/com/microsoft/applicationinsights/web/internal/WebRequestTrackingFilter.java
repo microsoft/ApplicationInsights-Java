@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.web.internal;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 
@@ -57,14 +58,15 @@ public final class WebRequestTrackingFilter implements Filter {
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse)res);
         boolean isRequestProcessedSuccessfully = true;
 
         if (isInitialized) {
-            isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, res);
+            isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
         }
 
         try {
-            chain.doFilter(req, res);
+            chain.doFilter(req, response);
         } catch (ServletException se) {
             onException(se);
             throw se;
@@ -77,7 +79,7 @@ public final class WebRequestTrackingFilter implements Filter {
         }
 
         if (isInitialized && isRequestProcessedSuccessfully) {
-            invokeSafeOnEndRequest(req, res);
+            invokeSafeOnEndRequest(req, response);
         }
     }
 
@@ -97,13 +99,6 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config){
         try {
-            if (!ClassDataUtils.INSTANCE.verifyMethodExists(javax.servlet.http.HttpServletResponse.class, "getStatus")) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
-                        "Unsupported servlet version. The Application Insights web request tracking filter requires the provided javax.servlet library to implement servlet spec 3.0 or above. The web request tracking filter will be disabled.");
-
-                return;
-            }
-
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
 
             if (configuration == null) {
