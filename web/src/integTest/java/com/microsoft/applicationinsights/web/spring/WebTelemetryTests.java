@@ -33,9 +33,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import javax.xml.bind.JAXBException;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -48,8 +45,8 @@ import java.util.Hashtable;
  */
 public class WebTelemetryTests {
     String runId = Helpers.getRandomUUIDString();
-    String configEnvironmentVariable = "AI_JAVASDK_INTEGRATION_TEST_CONFIGURATION";
-    IntegrationTestConfiguration config;
+    TestEnvironment testEnv;
+    TestSettings testSettings;
     private static final int millisecondsInSecond = 1000;
 
     /**
@@ -59,8 +56,7 @@ public class WebTelemetryTests {
     @Test
     public void sendHttpRequestsTest() throws Exception {
 
-        initConfiguration();
-        Helpers.clearAzureQueue(config.getStorageConnectionString(), config.getQueueName());
+        initTestConfiguration();
 
         HashSet<TelemetryItem> expectedTelemetries = sendHttpGetRequests();
         HashSet<TelemetryItem> realTelemetries = getLoggedTelemetry(DocumentType.Requests);
@@ -80,24 +76,17 @@ public class WebTelemetryTests {
         }
     }
 
-    private void initConfiguration() throws JAXBException, FileNotFoundException {
-        String location = System.getenv(configEnvironmentVariable);
-        if (location == null) {
-            throw new RuntimeException("Environment variable " + configEnvironmentVariable + " not defined");
-        }
-        File configFile = new File(location);
-        if (!configFile.exists()) {
-            throw new FileNotFoundException("Configuration file \"" + location + "\" could not be found");
-        }
-        System.out.println("Configuration file located in " + location);
-        config = IntegrationTestConfiguration.load(location);
+    private void initTestConfiguration() throws Exception {
+        testEnv = new TestEnvironment();
+        testSettings = new TestSettings();
+        Helpers.clearAzureQueue(testEnv.getApplicationStorageConnectionString(), testEnv.getApplicationStorageExportQueueName());
     }
 
     private HashSet<TelemetryItem> sendHttpGetRequests() throws Exception {
 
-        String serverAddress = config.getTestServerAddress();
-        int port = config.getPort();
-        String applicationFolder = config.getApplicationFolder();
+        String serverAddress = testEnv.getApplicationServer();
+        int port = testEnv.getApplicationServerPort();
+        String applicationName = testEnv.getApplicationName();
 
         ArrayList<String> uriPathsToRequest = new ArrayList<String>();
         uriPathsToRequest.add("books?id=Thriller&runId=" + runId);
@@ -108,7 +97,7 @@ public class WebTelemetryTests {
 
         for (String uriPath : uriPathsToRequest) {
             String requestId = Helpers.getRandomUUIDString();
-            URI uri = Helpers.constructUrl(serverAddress, port, applicationFolder, uriPath + "&requestId=" + requestId);
+            URI uri = Helpers.constructUrl(serverAddress, port, applicationName, uriPath + "&requestId=" + requestId);
             int responseCode = sendHttpGetRequest(uri);
             TelemetryItem expectedTelemetry = createExpectedResult(uri, requestId, responseCode);
             expectedTelemetries.add(expectedTelemetry);
@@ -168,24 +157,24 @@ public class WebTelemetryTests {
      */
     private HashSet<TelemetryItem> getLoggedTelemetry(DocumentType docType) throws Exception {
         System.out.println("Creating Azure storage account connection");
-        CloudStorageAccount account = CloudStorageAccount.parse(config.getStorageConnectionString());
+        CloudStorageAccount account = CloudStorageAccount.parse(testEnv.getApplicationStorageConnectionString());
         CloudBlobClient blobClient = account.createCloudBlobClient();
 
         System.out.println("Creating Azure queue connection");
         CloudQueueClient queueClient = account.createCloudQueueClient();
-        CloudQueue queue = queueClient.getQueueReference(config.getQueueName());
+        CloudQueue queue = queueClient.getQueueReference(testEnv.getApplicationStorageExportQueueName());
 
         ArrayList<JSONObject> telemetryAsJson = new ArrayList<JSONObject>();
         StopWatch stopWatch = new StopWatch();
 
-        System.out.println("Starting to poll the queue for " + config.getPollingInterval() + "seconds ...");
+        System.out.println("Starting to poll the queue for " + testSettings.getPollingInterval() + "seconds ...");
         stopWatch.start();
 
-        while (stopWatch.getTime() < config.getPollingInterval() * millisecondsInSecond) {
+        while (stopWatch.getTime() < testSettings.getMaxWaitTime() * millisecondsInSecond) {
             System.out.println(stopWatch.getTime() / millisecondsInSecond + " seconds passed. Got " + telemetryAsJson.size() + " items so far.");
 
             ArrayList<CloudQueueMessage> messages = (ArrayList<CloudQueueMessage>)
-                    queue.retrieveMessages(config.getNumberOfMessagesToRetrieve(), config.getPollingInterval(), null, null);
+                    queue.retrieveMessages(testSettings.getMessageBatchSize(), testSettings.getMaxWaitTime(), null, null);
             ArrayList<String> blobUris = getBlobUrisFromQueueMessages(docType, messages);
             for (String blobUri : blobUris) {
                 CloudBlockBlob blob = new CloudBlockBlob(new URI(blobUri), blobClient);
@@ -193,8 +182,8 @@ public class WebTelemetryTests {
                 telemetryAsJson.addAll(jsonsFromBlobContent);
             }
 
-            if (messages.size() < config.getNumberOfMessagesToRetrieve()){
-                Helpers.sleep(config.getSecondsToSleep() * millisecondsInSecond);
+            if (messages.size() < testSettings.getMessageBatchSize()){
+                Helpers.sleep(testSettings.getPollingInterval() * millisecondsInSecond);
             }
         }
 
