@@ -12,9 +12,8 @@ Prerequisites
 
 Getting started
 ---------------
-1.  Set JAVA_HOME environment variable to point to point to the [JDK installation directory]
-2.  Recommended IDE is IntelliJ idea by using ‘Import Project’ rather than ‘Open Project’.
-3.  You can use gradlew.bat on Windows to get gradle installed.
+1.  Set JAVA_HOME environment variable to point to point to the JDK installation directory
+2.  To build run ./gradlew build on Linux systems or gradlew.bat build on Windows systems.
 
 Using Eclipse IDE
 -----------------
@@ -26,14 +25,16 @@ Using Eclipse IDE
 
 CollectD Plugin - Optional
 --------------------------
-For contributing code to Application Insights CollectD writer plugin, please do the following:
-1.  Download CollectD Java API sources and compile them using JDK 1.6 (OpenSDK is preferable).
+To build Application Insights CollectD writer plugin, please do the following:
+
+1.  Download CollectD Java API sources and compile them using JDK 1.6.
     The output jar should be named: 'collectd-api.jar'.
     More info on compiling CollectD sources can be found here: https://collectd.org/dev-info.shtml
 2.  Create a new directory for CollectD library you just created, and set a new environment variable 'COLLECTD_HOME'
     pointing to that folder.   
 3.  Copy the new jar into %COLLECTD_HOME%/lib
-4.  Refresh Application Insights project. CollectD writer plugin sub-project should now be loaded.
+4.  Reload Application Insights project. CollectD writer plugin sub-project should now be loaded.
+    IDE restart may be required in order to identify the new environment variable.
 
 Notes
 -----
