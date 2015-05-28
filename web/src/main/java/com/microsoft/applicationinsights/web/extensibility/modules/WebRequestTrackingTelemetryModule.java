@@ -25,9 +25,9 @@ import java.util.Date;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import com.google.common.base.Strings;
 import org.apache.http.HttpStatus;
+import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -115,9 +115,14 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
             long endTime = new Date().getTime();
 
-            HttpServletResponse response = (HttpServletResponse)res;
-            telemetry.setSuccess(HttpStatus.SC_OK == response.getStatus());
-            telemetry.setResponseCode(Integer.toString(response.getStatus()));
+            ApplicationInsightsHttpResponseWrapper response = ((ApplicationInsightsHttpResponseWrapper)res);
+            if (response != null) {
+                telemetry.setSuccess(HttpStatus.SC_OK == response.getStatus());
+                telemetry.setResponseCode(Integer.toString(response.getStatus()));
+            } else {
+                InternalLogger.INSTANCE.error("Failed to get response status for request ID: %s", telemetry.getId());
+            }
+
             telemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
 
             telemetryClient.track(telemetry);

@@ -135,7 +135,7 @@ public class HttpHelper {
 
                 UserCookie userCookie = new UserCookie(cookie);
                 cookiesContainer.setUserCookie(userCookie);
-            } else {
+            } else if(formattedCookieWithExpiration.startsWith("ai_session")) {
                 String formattedCookie = formattedCookieWithExpiration.split("=")[1].split(";")[0];
                 Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
 
