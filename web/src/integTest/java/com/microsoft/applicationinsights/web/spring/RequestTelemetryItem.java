@@ -21,26 +21,69 @@
 
 package com.microsoft.applicationinsights.web.spring;
 
-import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URISyntaxException;
+import java.util.Hashtable;
 
 /**
  * Created by moralt on 05/05/2015.
  */
 public class RequestTelemetryItem extends TelemetryItem {
-    /**
-     * Initializes a new TelemetryItem object
-     *
-     * @param id      The ID of this object
-     */
-    public RequestTelemetryItem(String id) {
-        super(DocumentType.Requests, id);
+    private static final String[] propertiesToCompare = new String[] {
+        "port",
+        "responseCode",
+        "uri"
+    };
+
+    public RequestTelemetryItem() {
+        super(DocumentType.Requests);
+    }
+
+    public RequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
+        this();
+
+        initRequestTelemetryItem(json);
     }
 
     @Override
-    protected void initDefaultPropertiesToCompare() {
-        defaultPropertiesToCompare = new ArrayList<String>();
-        defaultPropertiesToCompare.add("port");
-        defaultPropertiesToCompare.add("responseCode");
-        defaultPropertiesToCompare.add("uri");
+    protected String[] getDefaultPropertiesToCompare() {
+        return propertiesToCompare;
     }
+
+    /**
+     * Converts JSON object to Request TelemetryItem
+     * @param json The JSON object
+     * @return A TelemetryItem
+     */
+    private void initRequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
+        System.out.println("Converting JSON object to telemetry item RequestTelemetryItem");
+        JSONObject requestProperties = json.getJSONArray("request").getJSONObject(0);
+
+        String address       = requestProperties.getString("url");
+        Integer port         = requestProperties.getJSONObject("urlData").getInt("port");
+        Integer responseCode = requestProperties.getInt("responseCode");
+
+        JSONArray parameters = requestProperties.getJSONObject("urlData").getJSONArray("queryParameters");
+        Hashtable<String, String> queryParameters = new Hashtable<String, String>();
+        for (int i = 0; i < parameters.length(); ++i) {
+            JSONObject parameterPair = parameters.getJSONObject(i);
+            String name  = parameterPair.getString("parameter");
+            String value = parameterPair.getString("value");
+            queryParameters.put(name, value);
+        }
+
+        this.setProperty("uri", address);
+        this.setProperty("port", port.toString());
+        this.setProperty("responseCode", responseCode.toString());
+
+        for (String key : queryParameters.keySet()) {
+            this.setProperty("queryParameter." + key, queryParameters.get(key));
+        }
+
+    }
+
+
 }

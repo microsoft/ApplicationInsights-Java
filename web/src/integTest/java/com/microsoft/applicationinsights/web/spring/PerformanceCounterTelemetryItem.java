@@ -21,24 +21,46 @@
 
 package com.microsoft.applicationinsights.web.spring;
 
-import java.util.ArrayList;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by moralt on 05/05/2015.
  */
 public class PerformanceCounterTelemetryItem extends TelemetryItem {
-    /**
-     * Initializes a new TelemetryItem object     *
-     * @param id      The ID of this object
-     */
-    public PerformanceCounterTelemetryItem(String id) {
-        super(DocumentType.PerformanceCounters, id);
+    private static final String[] propertiesToCompare = new String[] {
+            "category",
+            "instance",
+    };
+
+    public PerformanceCounterTelemetryItem() {
+        super(DocumentType.PerformanceCounters);
     }
 
-    @Override
-    protected void initDefaultPropertiesToCompare() {
-        defaultPropertiesToCompare = new ArrayList<String>();
-        defaultPropertiesToCompare.add("category");
-        defaultPropertiesToCompare.add("instance");
+    public PerformanceCounterTelemetryItem(JSONObject json) throws JSONException {
+        this();
+
+        initPerformanceCounterTelemetryItem(json);
+    }
+
+    protected String[] getDefaultPropertiesToCompare() {
+        return propertiesToCompare;
+    }
+
+    /**
+     * Converts JSON object to PerformanceCounter TelemetryItem
+     * @param json The JSON object
+     * @return A TelemetryItem
+     */
+    private void initPerformanceCounterTelemetryItem(JSONObject json) throws JSONException {
+        System.out.println("Converting JSON object to telemetry item PerformanceCounterTelemetryItem");
+
+        JSONObject performanceCounterProperties = json.getJSONArray("performanceCounter").getJSONObject(0);
+
+        String category = performanceCounterProperties.getString("categoryName");
+        String instance = performanceCounterProperties.getString("instanceName");
+
+        this.setProperty("category", category);
+        this.setProperty("instance", instance);
     }
 }

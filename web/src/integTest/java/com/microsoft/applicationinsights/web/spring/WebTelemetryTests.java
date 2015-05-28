@@ -28,17 +28,14 @@ import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import org.apache.commons.lang3.time.StopWatch;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 
 /**
  * Created by moralt on 05/05/2015.
@@ -134,19 +131,20 @@ public class WebTelemetryTests {
      */
     private TelemetryItem createExpectedResult(URI uri, String requestId, Integer responseCode) {
         // Create expected result
-        TelemetryItem expectedResult = new RequestTelemetryItem(requestId);
-        expectedResult.setProperty("port", Integer.toString(uri.getPort()));
-        expectedResult.setProperty("responseCode", responseCode.toString());
-        expectedResult.setProperty("uri", uri.toString());
+        TelemetryItem telemetryItem = new RequestTelemetryItem();
+        telemetryItem.setProperty("id", requestId);
+        telemetryItem.setProperty("port", Integer.toString(uri.getPort()));
+        telemetryItem.setProperty("responseCode", responseCode.toString());
+        telemetryItem.setProperty("uri", uri.toString());
 
         String[] params = uri.getQuery().split("&");
         for (String param : params) {
             String name = param.split("=")[0];
             String value = param.split("=")[1];
-            expectedResult.setProperty("queryParameter." + name, value);
+            telemetryItem.setProperty("queryParameter." + name, value);
         }
 
-        return expectedResult;
+        return telemetryItem;
     }
 
     /**
@@ -189,7 +187,8 @@ public class WebTelemetryTests {
 
         HashSet<TelemetryItem> telemetryItems = new HashSet<TelemetryItem>();
         for (JSONObject json : telemetryAsJson) {
-            telemetryItems.add(getTelemetryItemFromJson(docType, json));
+            TelemetryItem telemetryItem = TelemetryItemFactory.createTelemetryItem(docType, json);
+            telemetryItems.add(telemetryItem);
         }
 
         return telemetryItems;
@@ -238,79 +237,6 @@ public class WebTelemetryTests {
     }
 
     /**
-     * Converts JSON object to TelemetryItem by it's document type
-     * @param docType The document type of the telemetry
-     * @param json The JSON object
-     * @return A TelemetryItem
-     * @throws Exception
-     */
-    private TelemetryItem getTelemetryItemFromJson(DocumentType docType, JSONObject json) throws Exception {
-        switch (docType) {
-            case Requests:
-                return getRequestTelemetryItemFromJson(json);
-            case PerformanceCounters:
-                return getPerformanceCounterTelemetryItemFromJson(json);
-            default:
-                throw new Exception("Unsupported document type: " + docType.toString());
-        }
-    }
-
-    /**
-     * Converts JSON object to Request TelemetryItem
-     * @param json The JSON object
-     * @return A TelemetryItem
-     */
-    private TelemetryItem getRequestTelemetryItemFromJson(JSONObject json) throws URISyntaxException, JSONException {
-        System.out.println("Converting JSON object to telemetry item with document type " + DocumentType.Requests.toString());
-        JSONObject requestProperties = json.getJSONArray("request").getJSONObject(0);
-
-        String address       = requestProperties.getString("url");
-        Integer port         = requestProperties.getJSONObject("urlData").getInt("port");
-        Integer responseCode = requestProperties.getInt("responseCode");
-
-        JSONArray parameters = requestProperties.getJSONObject("urlData").getJSONArray("queryParameters");
-        Hashtable<String, String> queryParameters = new Hashtable<String, String>();
-        for (int i = 0; i < parameters.length(); ++i) {
-            JSONObject parameterPair = parameters.getJSONObject(i);
-            String name  = parameterPair.getString("parameter");
-            String value = parameterPair.getString("value");
-            queryParameters.put(name, value);
-        }
-
-        TelemetryItem telemetryResult = new RequestTelemetryItem(queryParameters.get("requestId"));
-        telemetryResult.setProperty("uri", address);
-        telemetryResult.setProperty("port", port.toString());
-        telemetryResult.setProperty("responseCode", responseCode.toString());
-
-        for (String key : queryParameters.keySet()) {
-            telemetryResult.setProperty("queryParameter." + key, queryParameters.get(key));
-        }
-
-        return telemetryResult;
-    }
-
-    /**
-     * Converts JSON object to PerformanceCounter TelemetryItem
-     * @param json The JSON object
-     * @return A TelemetryItem
-     */
-    private TelemetryItem getPerformanceCounterTelemetryItemFromJson(JSONObject json) throws JSONException {
-        System.out.println("Converting JSON object to telemetry item with document type " + DocumentType.PerformanceCounters.toString());
-
-        JSONObject performanceCounterProperties = json.getJSONArray("performanceCounter").getJSONObject(0);
-
-        String category = performanceCounterProperties.getString("categoryName");
-        String instance = performanceCounterProperties.getString("instanceName");
-
-        // TODO when implementing the usage of performance counters test, think of logic for id.
-        TelemetryItem telemetryResult = new RequestTelemetryItem("");
-        telemetryResult.setProperty("category", category);
-        telemetryResult.setProperty("instance", instance);
-
-        return telemetryResult;
-    }
-
-    /**
      * Tests if the expected telemetry exists in the real telemetry from AppInsights
      * @param containsTelemetryItems The telemetry items that should contain all telemetry items in 'containedTelemetryItems'
      * @param containedTelemetryItems The telemetry items that should be contained in the 'containsTelemetryItems'
@@ -323,7 +249,7 @@ public class WebTelemetryTests {
 
         for (TelemetryItem item : containedTelemetryItems) {
             if (!containsTelemetryItems.contains(item)) {
-                System.out.println("Missing expected telemetry item with id " + item.getId() + " and document type " + item.getDocType());
+                System.out.println("Missing expected telemetry item with document type " + item.getDocType());
                 missingExpectedTelemetry.add(item);
             }
         }
