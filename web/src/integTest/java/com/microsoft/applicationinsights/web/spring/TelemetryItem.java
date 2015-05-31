@@ -21,36 +21,26 @@
 
 package com.microsoft.applicationinsights.web.spring;
 
-import java.util.ArrayList;
 import java.util.Properties;
 
 /**
  * Created by moralt on 05/05/2015.
  */
 public abstract class TelemetryItem extends Properties {
-    protected static ArrayList<String> defaultPropertiesToCompare;
     private DocumentType docType;
-    private String id;
 
     /**
      * Initializes a new TelemetryItem object
      * @param docType The document type of the telemetry item
-     * @param id The ID of this object
      */
-    public TelemetryItem(DocumentType docType, String id) {
+    public TelemetryItem(DocumentType docType) {
         this.docType = docType;
-        this.id = id;
-        initDefaultPropertiesToCompare();
     }
 
-    protected abstract void initDefaultPropertiesToCompare();
+    protected abstract String[] getDefaultPropertiesToCompare();
 
     public DocumentType getDocType() {
         return this.docType;
-    }
-
-    public String getId() {
-        return this.id;
     }
 
     /**
@@ -74,7 +64,7 @@ public abstract class TelemetryItem extends Properties {
             return false;
         }
 
-        for (String propertyName : defaultPropertiesToCompare) {
+        for (String propertyName : getDefaultPropertiesToCompare()) {
             if (telemetry.getProperty(propertyName) == null && this.getProperty(propertyName) == null) {
                 continue;
             }
@@ -90,14 +80,16 @@ public abstract class TelemetryItem extends Properties {
         return true;
     }
 
-
-
     /**
      * Returns the Hashcode of the ID of this object
      * @return The Hashcode of the ID of this object
      */
     @Override
     public int hashCode() {
-        return this.id.hashCode();
+        int hash = 0;
+        for (String propertyName : getDefaultPropertiesToCompare()) {
+            hash ^= getProperty(propertyName).hashCode();
+        }
+        return hash;
     }
 }
