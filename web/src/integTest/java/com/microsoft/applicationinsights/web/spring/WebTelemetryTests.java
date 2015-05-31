@@ -56,7 +56,7 @@ public class WebTelemetryTests {
         initTestConfiguration();
 
         HashSet<TelemetryItem> expectedTelemetries = sendHttpGetRequests();
-        HashSet<TelemetryItem> realTelemetries = getLoggedTelemetry(DocumentType.Requests);
+        HashSet<TelemetryItem> realTelemetries = getLoggedTelemetry(DocumentType.Requests, expectedTelemetries.size());
 
         HashSet<TelemetryItem> missingTelemetry = getMismatchingTelemetryItems(realTelemetries, expectedTelemetries);
         if (missingTelemetry.size() > 0) {
@@ -116,7 +116,7 @@ public class WebTelemetryTests {
         connection.setRequestMethod("GET");
 
         System.out.println("Sending 'GET' request to URL: " + uri.toString());
-        Integer responseCode = connection.getResponseCode();
+        int responseCode = connection.getResponseCode();
         System.out.println("Response Code : " + responseCode);
 
         return responseCode;
@@ -129,12 +129,12 @@ public class WebTelemetryTests {
      * @param responseCode The expected response code for HTTP request with this URI
      * @return A TelemetryItem with the expected results
      */
-    private TelemetryItem createExpectedResult(URI uri, String requestId, Integer responseCode) {
+    private TelemetryItem createExpectedResult(URI uri, String requestId, int responseCode) {
         // Create expected result
         TelemetryItem telemetryItem = new RequestTelemetryItem();
         telemetryItem.setProperty("id", requestId);
         telemetryItem.setProperty("port", Integer.toString(uri.getPort()));
-        telemetryItem.setProperty("responseCode", responseCode.toString());
+        telemetryItem.setProperty("responseCode", Integer.toString(responseCode));
         telemetryItem.setProperty("uri", uri.toString());
 
         String[] params = uri.getQuery().split("&");
@@ -153,7 +153,7 @@ public class WebTelemetryTests {
      * @return The retrieved telemetry items
      * @throws Exception
      */
-    private HashSet<TelemetryItem> getLoggedTelemetry(DocumentType docType) throws Exception {
+    private HashSet<TelemetryItem> getLoggedTelemetry(DocumentType docType, int expectedTelemetries) throws Exception {
         System.out.println("Creating Azure storage account connection");
         CloudStorageAccount account = CloudStorageAccount.parse(testEnv.getApplicationStorageConnectionString());
         CloudBlobClient blobClient = account.createCloudBlobClient();
@@ -168,21 +168,14 @@ public class WebTelemetryTests {
         System.out.println("Starting to poll the queue for " + testSettings.getPollingInterval() + "seconds ...");
         stopWatch.start();
 
-        while (stopWatch.getTime() < testSettings.getMaxWaitTime() * millisecondsInSecond) {
-            System.out.println(stopWatch.getTime() / millisecondsInSecond + " seconds passed. Got " + telemetryAsJson.size() + " items so far.");
+        long maxWaitTimeInMillis = testSettings.getMaxWaitTime() * millisecondsInSecond;
+        while (telemetryAsJson.size() < expectedTelemetries && stopWatch.getTime() < maxWaitTimeInMillis) {
+            long secondsPassed = stopWatch.getTime() / millisecondsInSecond;
+            System.out.println(secondsPassed + " seconds passed. Got " + telemetryAsJson.size() + " items so far.");
 
-            ArrayList<CloudQueueMessage> messages = (ArrayList<CloudQueueMessage>)
-                    queue.retrieveMessages(testSettings.getMessageBatchSize(), testSettings.getMaxWaitTime(), null, null);
-            ArrayList<String> blobUris = getBlobUrisFromQueueMessages(docType, messages);
-            for (String blobUri : blobUris) {
-                CloudBlockBlob blob = new CloudBlockBlob(new URI(blobUri), blobClient);
-                ArrayList<JSONObject> jsonsFromBlobContent = convertToJson(blob.downloadText());
-                telemetryAsJson.addAll(jsonsFromBlobContent);
-            }
+            readTelemetryFromAzureQueue(docType, blobClient, queue, telemetryAsJson);
 
-            if (messages.size() < testSettings.getMessageBatchSize()){
-                Helpers.sleep(testSettings.getPollingInterval() * millisecondsInSecond);
-            }
+            Helpers.sleep(testSettings.getPollingInterval() * millisecondsInSecond);
         }
 
         HashSet<TelemetryItem> telemetryItems = new HashSet<TelemetryItem>();
@@ -192,6 +185,26 @@ public class WebTelemetryTests {
         }
 
         return telemetryItems;
+    }
+
+    private void readTelemetryFromAzureQueue(DocumentType docType, CloudBlobClient blobClient, CloudQueue queue, ArrayList<JSONObject> telemetryAsJson) throws Exception {
+        ArrayList<CloudQueueMessage> messages;
+        do {
+            messages = (ArrayList<CloudQueueMessage>)queue.retrieveMessages(testSettings.getMessageBatchSize(),
+                                                                            testSettings.getMaxWaitTime(),
+                                                                            null,
+                                                                            null);
+            if (messages.size() > 0) {
+                System.out.println("woohoo");
+            }
+            ArrayList<String> blobUris = getBlobUrisFromQueueMessages(docType, messages);
+            for (String blobUri : blobUris) {
+                CloudBlockBlob blob = new CloudBlockBlob(new URI(blobUri), blobClient);
+                ArrayList<JSONObject> jsonsFromBlobContent = convertToJson(blob.downloadText());
+                telemetryAsJson.addAll(jsonsFromBlobContent);
+            }
+
+        } while (messages.size() >= testSettings.getMessageBatchSize());
     }
 
     /**
