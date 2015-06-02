@@ -70,7 +70,7 @@ public class RequestNameInterceptorTests {
         // We can't stub classes of Method and Class, so We should use RequestNameInterceptorTests class for stub
         clazz = this.getClass();
         method = clazz.getMethod("classInitialize");
-    	invocationContext = mock(InvocationContext.class);
+        invocationContext = mock(InvocationContext.class);
         when(invocationContext.getMethod()).thenReturn(method);
         when(invocationContext.proceed()).thenReturn(null);
     }
@@ -86,14 +86,13 @@ public class RequestNameInterceptorTests {
     @Test
     public void testActionInvocationWhenExceptionThrownDuringRequestCalculation() throws Exception {
 
-		// // Mocking the InvocationContext to throw exception.
-		 Mockito.doAnswer(new Answer() {
-		 @Override
-		 public Object answer(InvocationOnMock invocation) throws Throwable {
-		 throw new Exception("FATAL!");
-		 }
-		 }).when(invocationContext).getMethod();
-		
-		 interceptor.invoke(invocationContext);
+        // // Mocking the InvocationContext to throw exception.
+        Mockito.doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                throw new Exception("FATAL!");
+            }
+        }).when(invocationContext).getMethod();
+        interceptor.invoke(invocationContext);
     }
 }
