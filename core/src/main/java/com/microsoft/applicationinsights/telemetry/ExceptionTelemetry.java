@@ -37,7 +37,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
  */
 public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     private final ExceptionData data;
-    private Exception exception;
+    private Throwable throwable;
 
     private ExceptionTelemetry() {
         super();
@@ -50,18 +50,22 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
      * Initializes a new instance.
      * @param exception The exception to track.
      */
-    public ExceptionTelemetry(Exception exception) {
+    public ExceptionTelemetry(Throwable exception) {
         this();
         setException(exception);
     }
 
     public Exception getException() {
-        return exception;
+        return throwable instanceof Exception ? (Exception)throwable : null;
     }
 
-    public void setException(Exception exception) {
-        this.exception = exception;
-        updateException(exception);
+    public Throwable getThrowable() {
+        return throwable;
+    }
+
+    public void setException(Throwable throwable) {
+        this.throwable = throwable;
+        updateException(throwable);
     }
 
     /**
@@ -110,9 +114,9 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         return data.getExceptions();
     }
 
-    private void updateException(Exception exception) {
+    private void updateException(Throwable throwable) {
         ArrayList<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
-        convertExceptionTree(exception, null, exceptions);
+        convertExceptionTree(throwable, null, exceptions);
 
         data.setExceptions(exceptions);
     }
