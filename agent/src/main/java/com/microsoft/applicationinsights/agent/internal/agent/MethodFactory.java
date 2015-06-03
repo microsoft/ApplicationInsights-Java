@@ -19,18 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.agent;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import org.objectweb.asm.MethodVisitor;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+/**
+ * Created by gupele on 5/31/2015.
+ */
+interface MethodFactory {
+    EnterExitMethodWrapper getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor);
 }
-

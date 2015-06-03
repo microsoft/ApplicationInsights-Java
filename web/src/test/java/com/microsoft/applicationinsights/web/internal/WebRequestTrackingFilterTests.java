@@ -21,201 +21,71 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
-import org.junit.Assert;
-import org.junit.Test;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
-
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import com.microsoft.applicationinsights.web.utils.ServletUtils;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.assertFalse;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletResponse;
+
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import static org.mockito.Mockito.*;
 
 /**
  * Created by yonisha on 2/3/2015.
  */
-public class WebRequestTrackingFilterTests {
+public final class WebRequestTrackingFilterTests {
+    private static final class FilterAndImpl {
+        public final WebRequestTrackingFilter filter;
+        public final WebRequestTrackingFilterImpl impl;
 
-    private class StubTelemetryClient extends TelemetryClient {
-        public int trackExceptionCalled;
-
-        public boolean shouldThrow;
-
-        @Override
-        public void trackException(Exception exception) {
-            ++trackExceptionCalled;
-            if (shouldThrow) {
-                throw new RuntimeException();
-            }
-        }
-    }
-
-    private static class FilterAndTelemetryClientMock {
-        public final Filter filter;
-        public final StubTelemetryClient mockTelemetryClient;
-
-        private FilterAndTelemetryClientMock(Filter filter, StubTelemetryClient mockTelemetryClient) {
+        private FilterAndImpl(WebRequestTrackingFilter filter, WebRequestTrackingFilterImpl impl) {
             this.filter = filter;
-            this.mockTelemetryClient = mockTelemetryClient;
+            this.impl = impl;
         }
     }
 
     @Test
-    public void testFilterInitializedSuccessfullyFromConfiguration() throws ServletException {
-        Filter filter = createInitializedFilter();
-        WebModulesContainer container = ServletUtils.getWebModuleContainer(filter);
+    public void testInitIsCalledOnce() throws NoSuchFieldException, IllegalAccessException, ServletException {
+        FilterAndImpl filterAndImpl = createFilterAndImpl();
 
-        Assert.assertNotNull("Container shouldn't be null", container);
-        Assert.assertTrue("Modules container shouldn't be empty", container.getModulesCount() > 0);
+        FilterConfig mockConfig = Mockito.mock(FilterConfig.class);
+        filterAndImpl.filter.init(mockConfig);
+
+        Mockito.verify(filterAndImpl.impl, times(1)).init(mockConfig);
     }
 
     @Test
-    public void testFiltersChainWhenExceptionIsThrownOnModulesInvocation() throws Exception {
-        Filter filter = createInitializedFilter();
+    public void testDoFilterIsCalledOnce() throws NoSuchFieldException, IllegalAccessException, ServletException, IOException {
+        FilterAndImpl filterAndImpl = createFilterAndImpl();
 
-        // mocking
-        WebModulesContainer containerMock = ServletUtils.setMockWebModulesContainer(filter);
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                throw new Exception("FATAL!");
-            }
-        }).when(containerMock).invokeOnBeginRequest(any(ServletRequest.class), any(ServletResponse.class));
+        ServletRequest mockRequest = Mockito.mock(ServletRequest.class);
+        ServletResponse mockResponse = Mockito.mock(ServletResponse.class);
+        FilterChain mockChain = Mockito.mock(FilterChain.class);
+        filterAndImpl.filter.doFilter(mockRequest, mockResponse, mockChain);
 
-        FilterChain chain = mock(FilterChain.class);
-
-        ServletRequest request = ServletUtils.generateDummyServletRequest();
-
-        // execute
-        filter.doFilter(request, ServletUtils.generateDummyServletResponse(), chain);
-
-        // validate
-        verify(chain).doFilter(any(ServletRequest.class), any(ServletResponse.class));
+        Mockito.verify(filterAndImpl.impl, times(1)).doFilter(mockRequest, mockResponse, mockChain);
     }
 
     @Test
-    public void testUnhandledRuntimeExceptionWithTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
-        testException(createdData, new java.lang.IllegalArgumentException());
+    public void testDestroyIsCalledOnce() throws NoSuchFieldException, IllegalAccessException, ServletException, IOException {
+        FilterAndImpl filterAndImpl = createFilterAndImpl();
+
+        filterAndImpl.filter.destroy();
+
+        Mockito.verify(filterAndImpl.impl, times(1)).destroy();
     }
 
-    @Test
-    public void testUnhandledRuntimeExceptionWithoutTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithoutTelemetryClient();
-        testException(createdData, new RuntimeException());
-    }
+    private static FilterAndImpl createFilterAndImpl() throws NoSuchFieldException, IllegalAccessException {
+        Field f = WebRequestTrackingFilter.class.getDeclaredField("impl");
+        f.setAccessible(true);
 
-    @Test
-    public void testUnhandledRuntimeExceptionWithTelemetryClientThatThrows() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClientThatThrows();
-        testException(createdData, new RuntimeException());
-    }
+        WebRequestTrackingFilterImpl mockFilterImpl = Mockito.mock(WebRequestTrackingFilterImpl.class);
+        WebRequestTrackingFilter tested = new WebRequestTrackingFilter();
+        f.set(tested, mockFilterImpl);
 
-    @Test
-    public void testUnhandledServletExceptionWithTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
-        testException(createdData, new ServletException());
-    }
-
-    @Test
-    public void testUnhandledServletExceptionWithoutTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithoutTelemetryClient();
-        testException(createdData, new ServletException());
-    }
-
-    @Test
-    public void testUnhandledServletExceptionWithTelemetryClientThatThrows() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClientThatThrows();
-        testException(createdData, new ServletException());
-    }
-
-    @Test
-    public void testUnhandledIOExceptionWithTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
-        testException(createdData, new IOException());
-    }
-
-    @Test
-    public void testUnhandledIOExceptionWithoutTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithoutTelemetryClient();
-        testException(createdData, new IOException());
-    }
-
-    @Test
-    public void testUnhandledIOExceptionWithTelemetryClientThatThrows() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClientThatThrows();
-        testException(createdData, new IOException());
-    }
-
-    // region Private methods
-
-    private void testException(FilterAndTelemetryClientMock createdData, Exception expectedException) throws NoSuchFieldException, IllegalAccessException, ServletException {
-
-        try {
-            FilterChain chain = mock(FilterChain.class);
-
-            ServletRequest request = ServletUtils.generateDummyServletRequest();
-            ServletResponse response = ServletUtils.generateDummyServletResponse();
-            Mockito.doThrow(expectedException).when(chain).doFilter(eq(request), any(ServletResponse.class));
-
-            // execute
-            createdData.filter.doFilter(request, response, chain);
-
-            assertFalse("doFilter should have throw", true);
-        } catch (Exception se) {
-            Assert.assertSame(expectedException, se);
-
-            if (createdData.mockTelemetryClient != null) {
-                Assert.assertTrue(createdData.mockTelemetryClient.trackExceptionCalled == 1);
-            }
-        }
-    }
-
-    private Filter createInitializedFilter() throws ServletException {
-        Filter filter = new WebRequestTrackingFilter();
-        filter.init(null);
-
-        return filter;
-    }
-
-    private FilterAndTelemetryClientMock createInitializedFilterWithTelemetryClientThatThrows() throws ServletException, NoSuchFieldException, IllegalAccessException {
-        return createInitializedFilterWithMockTelemetryClient(true, true);
-    }
-
-    private FilterAndTelemetryClientMock createInitializedFilterWithTelemetryClient() throws ServletException, NoSuchFieldException, IllegalAccessException {
-        return createInitializedFilterWithMockTelemetryClient(true, false);
-    }
-
-    private FilterAndTelemetryClientMock createInitializedFilterWithoutTelemetryClient() throws ServletException, NoSuchFieldException, IllegalAccessException {
-        return createInitializedFilterWithMockTelemetryClient(false, false);
-    }
-
-    private FilterAndTelemetryClientMock createInitializedFilterWithMockTelemetryClient(boolean withTelemetryClient, boolean clientThrows) throws ServletException, NoSuchFieldException, IllegalAccessException {
-        Filter filter = createInitializedFilter();
-
-
-        Field field = WebRequestTrackingFilter.class.getDeclaredField("telemetryClient");
-        field.setAccessible(true);
-
-        StubTelemetryClient mockTelemetryClient = null;
-        if (withTelemetryClient) {
-            mockTelemetryClient = new StubTelemetryClient();
-            if (clientThrows) {
-                mockTelemetryClient.shouldThrow = true;
-            }
-        }
-        field.set(filter, mockTelemetryClient);
-
-        return new FilterAndTelemetryClientMock(filter, mockTelemetryClient);
+        return new FilterAndImpl(tested, mockFilterImpl);
     }
     // endregion Private methods
 }

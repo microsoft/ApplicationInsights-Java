@@ -19,18 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.config;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
-
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+/**
+ * Defines the interface for builders that know how to create {@link com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration}
+ * Created by gupele on 5/19/2015.
+ */
+public interface AgentConfigurationBuilder {
+    AgentConfiguration parseConfigurationFile(String baseFolder);
 }
-

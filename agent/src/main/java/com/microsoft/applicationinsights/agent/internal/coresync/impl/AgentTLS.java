@@ -19,18 +19,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.coresync.impl;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+/**
+ * The class is used to set and get a name on application thread.
+ * The name can be used to fetch information on the part of the application, typically a WebApp, that owns that thread
+ *
+ * Created by gupele on 5/6/2015.
+ */
+public final class AgentTLS  {
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+    private static final InheritableThreadLocal<String> tlsData = new InheritableThreadLocal<String>();
+
+    public static String getTLSKey() {
+        return tlsData.get();
+    }
+
+    public static void setTLSKey(String value) {
+        tlsData.set(value);
+    }
 }
-

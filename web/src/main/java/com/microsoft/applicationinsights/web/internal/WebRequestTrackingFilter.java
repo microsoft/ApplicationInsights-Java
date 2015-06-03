@@ -21,145 +21,53 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
+import javax.servlet.Filter;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.FilterChain;
 
 /**
- * Created by yonisha on 2/2/2015.
+ * The file is a wrapper around the {#link WebRequestTrackingFilterImpl}
+ * There is no way to get the instance of a filter from the filter chain
+ * which is needed by the {@link com.microsoft.applicationinsights.web.internal.WebAppInitializer},
+ * Therefore, the class is holding a static reference to the implementation
+ * and by doing so we have a way to get to the implementation and pass data to it.
+ *
+ * Created by gupele on 5/12/2015.
  */
 public final class WebRequestTrackingFilter implements Filter {
-    // region Members
+    private static WebRequestTrackingFilterImpl impl;
 
-    private WebModulesContainer webModulesContainer;
-    private boolean isInitialized = false;
-    private TelemetryClient telemetryClient;
-
-    // endregion Members
-
-    // region Public
-
-    public boolean isInitialized() {
-        return isInitialized;
+    public WebRequestTrackingFilter() {
+        initialize();
     }
 
-    /**
-     * Processing the given request and response.
-     * @param req The servlet request.
-     * @param res The servlet response.
-     * @param chain The filters chain
-     * @throws IOException Exception that can be thrown from invoking the filters chain.
-     * @throws ServletException Exception that can be thrown from invoking the filters chain.
-     */
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse)res);
-        boolean isRequestProcessedSuccessfully = true;
-
-        if (isInitialized) {
-            isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
-        }
-
-        try {
-            chain.doFilter(req, response);
-        } catch (ServletException se) {
-            onException(se);
-            throw se;
-        } catch (IOException ioe) {
-            onException(ioe);
-            throw ioe;
-        } catch (RuntimeException re) {
-            onException(re);
-            throw re;
-        }
-
-        if (isInitialized && isRequestProcessedSuccessfully) {
-            invokeSafeOnEndRequest(req, response);
-        }
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        impl.init(filterConfig);
     }
 
-    private void onException(Exception e) {
-        try {
-            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", e.getMessage());
-            if (telemetryClient != null) {
-                telemetryClient.trackException(e);
-            }
-        } catch (Throwable t) {
-        }
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        impl.doFilter(request, response, chain);
     }
 
-    /**
-     * Initializes the filter from the given config.
-     * @param config The filter configuration.
-     */
-    public void init(FilterConfig config){
-        try {
-            TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
-
-            if (configuration == null) {
-                InternalLogger.INSTANCE.error(
-                        "Java SDK configuration cannot be null. Web request tracking filter will be disabled.");
-
-                return;
-            }
-
-            telemetryClient = new TelemetryClient(configuration);
-            webModulesContainer = new WebModulesContainer(configuration);
-            isInitialized = true;
-        } catch (Exception e) {
-            String filterName = this.getClass().getSimpleName();
-            InternalLogger.INSTANCE.error(
-                    "Application Insights filter %s has been failed to initialized.\n" +
-                    "Web request tracking filter will be disabled. Exception: %s", filterName, e.getMessage());
-        }
-    }
-
-    /**
-     * Destroy the filter by releases resources.
-     */
+    @Override
     public void destroy() {
-        //add code to release any resource
+        impl.destroy();
     }
 
-    // endregion Public
-
-    // region Private
-
-    private boolean invokeSafeOnBeginRequest(ServletRequest req, ServletResponse res) {
-        boolean success = true;
-
-        try {
-            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime());
-            ThreadContext.setRequestTelemetryContext(context);
-
-            webModulesContainer.invokeOnBeginRequest(req, res);
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnBeginRequest on telemetry modules with the following exception: %s", e.getMessage());
-
-            success = false;
-        }
-
-        return success;
+    public static void setName(String name) {
+        impl.setKey(name);
     }
 
-    private void invokeSafeOnEndRequest(ServletRequest req, ServletResponse res) {
-        try {
-            webModulesContainer.invokeOnEndRequest(req, res);
-
-            // We must free TLS before the threads finishes to process the request. Removing this line can result in
-            // a memory leak.
-            ThreadContext.remove();
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s", e.getMessage());
+    private synchronized void initialize() {
+        if (impl == null) {
+            impl = new WebRequestTrackingFilterImpl();
         }
     }
-
-    // endregion Private
 }

@@ -19,18 +19,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.config;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import com.microsoft.applicationinsights.agent.internal.agent.StringUtils;
+import com.microsoft.applicationinsights.agent.internal.logger.InternalLogger;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+/**
+ * The factory is responsible for creating the correct {@link com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilder}
+ *
+ * Created by gupele on 5/19/2015.
+ */
+public class AgentConfigurationBuilderFactory {
+    public AgentConfigurationBuilder createBuilder(String builderClassName) {
+        if (StringUtils.isNullOrEmpty(builderClassName)) {
+            return createDefaultBuilder();
+        }
+        try {
+            Object builder = Class.forName(builderClassName).newInstance();
+            if (builder instanceof AgentConfigurationBuilder) {
+                return (AgentConfigurationBuilder)builder;
+            }
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.error("Failed to create builder: '%s'" + t.getMessage());
+        }
+
+        return null;
+    }
+
+    public AgentConfigurationBuilder createDefaultBuilder() {
+        return new XmlAgentConfigurationBuilder();
+    }
 }
-

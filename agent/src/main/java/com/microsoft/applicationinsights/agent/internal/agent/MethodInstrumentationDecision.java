@@ -19,18 +19,22 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.agent;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+/**
+ * The class holds the type of actions that should be done on an instrumented method
+ * The class is the 'decision' for the method after taking into consideration init/configuration data
+ *
+ * Note, it is recommended to build an instance with {@link com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecisionBuilder}
+ *
+ * Created by gupele on 5/31/2015.
+ */
+final class MethodInstrumentationDecision {
+    public final boolean reportCaughtExceptions;
+    public final boolean reportExecutionTime;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+    public MethodInstrumentationDecision(boolean reportCaughtExceptions, boolean reportExecutionTime) {
+        this.reportCaughtExceptions = reportCaughtExceptions;
+        this.reportExecutionTime = reportExecutionTime;
+    }
 }
-

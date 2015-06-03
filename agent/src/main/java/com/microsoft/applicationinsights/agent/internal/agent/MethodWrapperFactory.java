@@ -19,18 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.agent;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import org.objectweb.asm.MethodVisitor;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+/**
+ * Created by gupele on 5/20/2015.
+ */
+final class MethodWrapperFactory implements MethodFactory {
+    private final ClassNamesProvider provider;
+
+    public MethodWrapperFactory(ClassNamesProvider provider) {
+        this.provider = provider;
+    }
+
+    public EnterExitMethodWrapper getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor) {
+        if (provider.isHttpClass(className)) {
+            return new EnterExitMethodForHttp(access, desc, className, methodName, methodVisitor);
+        } else if (provider.isSqlClass(className)) {
+            return new EnterExitMethodForSqlStatement(access, desc, className, methodName, methodVisitor);
+        }
+
+        return new EnterExitMethodWrapper(decision, access, desc, className, methodName, methodVisitor);
+    }
 }
-

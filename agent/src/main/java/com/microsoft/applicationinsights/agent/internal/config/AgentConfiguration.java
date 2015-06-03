@@ -19,18 +19,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.config;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import java.util.HashMap;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+
+/**
+ * Defines the interface for concrete classes that represent configuration data for the Agent
+ * Created by gupele on 5/17/2015.
+ */
+public interface AgentConfiguration {
+
+    boolean isBuiltInEnabled();
+
+    HashMap<String, ClassInstrumentationData> getRequestedClassesToInstrument();
 }
-

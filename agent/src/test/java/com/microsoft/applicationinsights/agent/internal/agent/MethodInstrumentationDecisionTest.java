@@ -19,18 +19,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.agent;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import org.junit.Test;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+import static org.junit.Assert.*;
+
+public final class MethodInstrumentationDecisionTest {
+    @Test
+    public void testCtor() {
+        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false);
+        assertTrue(test.reportCaughtExceptions);
+        assertFalse(test.reportExecutionTime);
+    }
 }
-
