@@ -69,6 +69,9 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
+                if (statement != null && sqlStatement != null && sqlStatement.length() == 0) {
+                    sqlStatement = statement.toString();
+                }
                 implementation.onMethodEnterSqlStatement(name, statement, sqlStatement);
             }
         } catch (Throwable t) {

@@ -221,7 +221,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             String commandName = methodData.arguments[1];
             Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
 
-            InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', URL: '%s'", dependencyName, commandName);
+            InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s'", dependencyName, commandName);
 
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, !isException);
             telemetryClient.track(telemetry);

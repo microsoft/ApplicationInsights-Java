@@ -139,6 +139,10 @@ class DefaultClassNamesProvider implements ClassNamesProvider {
         sqlClasses.add("org/sqlite/jdbc3/JDBC3PreparedStatement");
         sqlClasses.add("org/sqlite/jdbc4/JDBC4PreparedStatement");
 
+        sqlClasses.add("org/hsqldb/jdbc/JDBCPreparedStatement");
+        sqlClasses.add("org/hsqldb/jdbc/jdbcCallableStatement");
+        sqlClasses.add("org/hsqldb/jdbc/JDBCStatement");
+
         sqlClasses.add("org/postgresql/core/BaseStatement");
         sqlClasses.add("org/postgresql/jdbc2/AbstractJdbc2Statement");
         sqlClasses.add("org/postgresql/jdbc3g/AbstractJdbc3gStatement");
@@ -192,6 +196,7 @@ class DefaultClassNamesProvider implements ClassNamesProvider {
                     continue;
                 }
 
+                InternalLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.className);
                 classesToInstrument.put(classInstrumentationData.className, classInstrumentationData);
             }
         }

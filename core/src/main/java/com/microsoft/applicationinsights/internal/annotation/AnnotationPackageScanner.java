@@ -55,8 +55,8 @@ public final class AnnotationPackageScanner {
         final AnnotationDetector annotationDetector = new AnnotationDetector(reporter);
         try {
             annotationDetector.detect(packageToScan);
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to scan packages '%s': exception: '%s'", packageToScan, e.getMessage());
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.error("Failed to scan packages '%s': exception: '%s'", packageToScan, t.getMessage());
         }
 
         return performanceModuleNames;

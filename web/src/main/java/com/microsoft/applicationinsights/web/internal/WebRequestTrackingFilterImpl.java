@@ -139,11 +139,11 @@ public class WebRequestTrackingFilterImpl implements Filter {
             telemetryClient = new TelemetryClient(configuration);
             webModulesContainer = new WebModulesContainer(configuration);
             isInitialized = true;
-        } catch (Exception e) {
+        } catch (Throwable t) {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.error(
                     "Application Insights filter %s has been failed to initialized.\n" +
-                            "Web request tracking filter will be disabled. Exception: %s", filterName, e.getMessage());
+                            "Web request tracking filter will be disabled. Exception: %s", filterName, t.getMessage());
         }
     }
 

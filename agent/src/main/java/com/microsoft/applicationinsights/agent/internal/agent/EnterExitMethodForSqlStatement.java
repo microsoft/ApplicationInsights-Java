@@ -35,10 +35,12 @@ final class EnterExitMethodForSqlStatement extends EnterExitMethodWrapper {
 
     private final String implementationCoordinatorInternalName;
     private final String implementationCoordinatorJavaName;
+    private final int numberOfArgs;
 
     public EnterExitMethodForSqlStatement(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
         super(false, true, access, desc, owner, methodName, methodVisitor);
 
+        numberOfArgs = Type.getArgumentTypes(desc).length;
         implementationCoordinatorInternalName = Type.getInternalName(ImplementationsCoordinator.class);
         implementationCoordinatorJavaName = "L" + implementationCoordinatorInternalName + ";";
     }
@@ -50,8 +52,12 @@ final class EnterExitMethodForSqlStatement extends EnterExitMethodWrapper {
 
         mv.visitLdcInsn(getMethodName());
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-
-        mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
+        if (numberOfArgs > 1) {
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
+        } else {
+            mv.visitLdcInsn("");
+            mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
+        }
     }
 }

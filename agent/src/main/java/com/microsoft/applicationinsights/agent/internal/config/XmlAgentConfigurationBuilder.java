@@ -66,9 +66,11 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         File configurationFile = new File(configurationFileName);
         if (!configurationFile.exists()) {
+            InternalLogger.INSTANCE.trace("Did not find Agent configuration file in '%s'", configurationFileName);
             return agentConfiguration;
         }
 
+        InternalLogger.INSTANCE.trace("Found Agent configuration file in '%s'", configurationFileName);
         try {
             Element topElementTag = getTopTag(configurationFile);
             if (topElementTag == null) {
