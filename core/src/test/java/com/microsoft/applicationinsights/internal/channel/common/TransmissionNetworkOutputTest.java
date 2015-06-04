@@ -31,15 +31,4 @@ import java.lang.reflect.Field;
 import static org.mockito.Matchers.anyString;
 
 public class TransmissionNetworkOutputTest {
-    @Test(expected = IllegalStateException.class)
-    public void testBadJar() throws NoSuchFieldException, IllegalAccessException {
-        Field field = ClassDataUtils.class.getDeclaredField("verifier");
-        field.setAccessible(true);
-
-        ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-        Mockito.doReturn(false).when(mockVerifier).verifyClassExists(anyString());
-        field.set(ClassDataUtils.INSTANCE, mockVerifier);
-
-        TransmissionNetworkOutput.create();
-    }
 }
