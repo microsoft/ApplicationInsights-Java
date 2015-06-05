@@ -35,7 +35,9 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -62,9 +64,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
-    private final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
-    private final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
-
     private static SenderThreadsBackOffManager s_senderThreadsManager;
 
     // For future use: re-send a failed transmission back to the dispatcher
@@ -75,18 +74,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     private volatile boolean stopped;
 
     // Use one instance for optimization
-    private final CloseableHttpClient httpClient;
+    private final ApacheSender httpClient;
 
     public static TransmissionNetworkOutput create() {
         return create(DEFAULT_SERVER_URI);
     }
 
     public static TransmissionNetworkOutput create(String endpoint) {
-        if (!ClassDataUtils.INSTANCE.verifyClassExists("org.apache.http.conn.HttpClientConnectionManager")) {
-            String errorMessage = String.format("HttpClient Jars mismatch: please make sure version 4.3 of HttpClient is used");
-            throw new IllegalStateException(errorMessage);
-        }
-
         String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
         return new TransmissionNetworkOutput(realEndpoint, null);
     }
@@ -97,11 +91,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
         this.serverUri = serverUri;
 
-        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
-        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-
-        httpClient = HttpClients.custom().setConnectionManager(cm).build();
+        httpClient = new ApacheSenderFactory().create();
         stopped = false;
         initializeSenderThreadsManager(backOffContainerName);
     }
@@ -120,12 +110,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         if (stopped) {
             return;
         }
-        try {
-            s_senderThreadsManager.stopAllSendersBackOffActivities();
-            httpClient.close();
-        } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to close http client, exception: %s", e.getMessage());
-        }
+
+        s_senderThreadsManager.stopAllSendersBackOffActivities();
+        httpClient.close();
         stopped = true;
     }
 
@@ -158,12 +145,12 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     }
 
     private TransmissionSendResult doSend(Transmission transmission) {
-        CloseableHttpResponse response = null;
+        HttpResponse response = null;
         HttpPost request = null;
         try {
             request = createTransmissionPostRequest(transmission);
 
-            response = httpClient.execute(request);
+            response = httpClient.sendPostRequest(request);
 
             HttpEntity respEntity = response.getEntity();
             int code = response.getStatusLine().getStatusCode();
@@ -192,13 +179,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             if (request != null) {
                 request.releaseConnection();
             }
-            try {
-                if (response != null) {
-                    response.close();
-                }
-            } catch (IOException ioeIn) {
-                InternalLogger.INSTANCE.error("Failed to send or failed to close response, exception: %s", ioeIn.getMessage());
-            }
+            httpClient.dispose(response);
         }
     }
 

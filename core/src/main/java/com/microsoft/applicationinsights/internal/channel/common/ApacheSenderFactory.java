@@ -21,25 +21,22 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
-import org.junit.Test;
-import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
+/**
+ * Created by gupele on 6/4/2015.
+ */
+final class ApacheSenderFactory {
+    public ApacheSender create() {
+        if (!ClassDataUtils.INSTANCE.verifyClassExists("org.apache.http.conn.HttpClientConnectionManager")) {
 
-import static org.mockito.Matchers.anyString;
+            InternalLogger.INSTANCE.warn("Found an old version of HttpClient jar, for best performance consider upgrading to version 4.3+");
 
-public class TransmissionNetworkOutputTest {
-    @Test(expected = IllegalStateException.class)
-    public void testBadJar() throws NoSuchFieldException, IllegalAccessException {
-        Field field = ClassDataUtils.class.getDeclaredField("verifier");
-        field.setAccessible(true);
+            return new ApacheSender42();
+        }
 
-        ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-        Mockito.doReturn(false).when(mockVerifier).verifyClassExists(anyString());
-        field.set(ClassDataUtils.INSTANCE, mockVerifier);
-
-        TransmissionNetworkOutput.create();
+        InternalLogger.INSTANCE.trace("Using Http Client version 4.3+");
+        return new ApacheSender43();
     }
 }
