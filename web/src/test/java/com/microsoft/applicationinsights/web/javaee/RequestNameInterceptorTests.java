@@ -18,7 +18,6 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package com.microsoft.applicationinsights.web.javaee;
 
 import java.lang.reflect.Method;
@@ -42,7 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by Daichi Isami on 5/1/2015.
+ * @author Daichi Isami
  */
 public class RequestNameInterceptorTests {
 
@@ -78,14 +77,12 @@ public class RequestNameInterceptorTests {
     @Test
     public void testInterceptorSetRequestNameCorrectly() throws Exception {
         interceptor.invoke(invocationContext);
-
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals(REQUEST_NAME, requestTelemetry.getName());
     }
 
     @Test
     public void testActionInvocationWhenExceptionThrownDuringRequestCalculation() throws Exception {
-
         // // Mocking the InvocationContext to throw exception.
         Mockito.doAnswer(new Answer() {
             @Override
