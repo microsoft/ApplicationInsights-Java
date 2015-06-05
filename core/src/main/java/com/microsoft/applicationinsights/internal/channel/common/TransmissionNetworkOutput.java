@@ -64,9 +64,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
-    private final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
-    private final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
-
     private static SenderThreadsBackOffManager s_senderThreadsManager;
 
     // For future use: re-send a failed transmission back to the dispatcher
@@ -78,7 +75,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     // Use one instance for optimization
     private final ApacheSender httpClient;
-//    private final CloseableHttpClient httpClient;
 
     public static TransmissionNetworkOutput create() {
         return create(DEFAULT_SERVER_URI);
