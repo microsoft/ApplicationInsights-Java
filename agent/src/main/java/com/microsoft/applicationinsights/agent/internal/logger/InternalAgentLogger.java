@@ -137,7 +137,7 @@ public enum InternalAgentLogger {
 
     public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
         String logMessage = createMessage(requestLevel.toString(), message, args);
-        log(requestLevel, logMessage);
+        System.out.println("AI-Agent: " + logMessage);
     }
 
     /**

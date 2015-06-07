@@ -86,7 +86,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 return agentConfiguration;
             }
 
-
+            initializeAgentLogger(topElementTag);
 
             Element instrumentationTag = getInstrumentationTag(topElementTag);
             if (instrumentationTag == null) {

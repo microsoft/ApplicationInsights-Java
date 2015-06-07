@@ -67,5 +67,4 @@ final class EnterExitClassVisitor extends ClassVisitor {
 
         return factory.getMethodVisitor(decision, access, desc, owner, name, originalMV);
     }
-
 }
