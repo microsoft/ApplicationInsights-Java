@@ -90,13 +90,6 @@ public class WebSessionTrackingTelemetryModuleTests {
     // region Tests
 
     @Test
-    public void testNewSessionIsCreatedWhenCookieNotExist() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
-
-        Assert.assertNotNull("Session cookie shouldn't be null.", cookiesContainer.getSessionCookie());
-    }
-
-    @Test
     public void testIsFirstSessionIsPopulatedOnFirstSession() throws Exception {
         HttpHelper.sendRequestAndGetResponseCookie();
 
@@ -121,24 +114,6 @@ public class WebSessionTrackingTelemetryModuleTests {
         Assert.assertNull(cookiesContainer.getSessionCookie());
     }
 
-    @Test
-    public void testNewSessionIsCreatedWhenCookieSessionExpired() throws Exception {
-        sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
-
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
-        SessionCookie sessionCookie = cookiesContainer.getSessionCookie();
-
-        Assert.assertNotNull(sessionCookie);
-        Assert.assertFalse(sessionCookieFormatted.contains(sessionCookie.getSessionId()));
-    }
-
-    @Test
-    public void testNewSessionIsCreatedWhenCookieCorrupted() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie("corrupted;session;cookie");
-
-        Assert.assertNotNull("Session cookie shouldn't be null.", cookiesContainer.getSessionCookie());
-    }
-
     @Ignore
     @Test
     public void testWhenSessionExpiredSessionStateEndTracked() throws Exception {
@@ -150,37 +125,11 @@ public class WebSessionTrackingTelemetryModuleTests {
     }
 
     @Test
-    public void testWhenNewSessionStartedSessionStateStartTracked() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie();
-
-        verifySessionState(SessionState.Start);
-    }
-
-    @Test
     public void testOnFirstSessionStartedNoSessionStateEndTracked() throws Exception {
         HttpHelper.sendRequestAndGetResponseCookie();
 
         SessionStateTelemetry telemetry = getSessionStateTelemetryWithState(SessionState.End);
         Assert.assertNull("No telemetry with SessionEnd expected.", telemetry);
-    }
-
-    @Test
-    public void testSessionStateTelemetryContainsSessionIdOnStartState() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie();
-
-        SessionStateTelemetry telemetry = getSessionStateTelemetryWithState(SessionState.Start);
-
-        Assert.assertNotNull("Session ID shouldn't be null", telemetry.getContext().getSession().getId());
-    }
-
-    @Test
-    public void testWhenCookieNotUpToDateUpdatedCookieReturned() throws Exception {
-        sessionCookieFormatted = HttpHelper.getFormattedSessionCookieWithOldTime(6);
-        String originalSessionId = HttpHelper.getSessionIdFromCookie(sessionCookieFormatted);
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
-
-        String returnedSessionId = cookiesContainer.getSessionCookie().getSessionId();
-        Assert.assertEquals("Session ID shouldn't be generated.", originalSessionId, returnedSessionId);
     }
 
     @Test
@@ -209,50 +158,6 @@ public class WebSessionTrackingTelemetryModuleTests {
                 "Expected session ID of the expired session cookie",
                 expectedSessionId,
                 telemetry.getContext().getSession().getId());
-    }
-
-    @Test
-    public void testModulesInitializedCorrectlyWithGenerateNewSessionParam() {
-        final String value = "false";
-
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(
-                WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, value);
-
-        Assert.assertEquals(Boolean.parseBoolean(value), module.getGenerateNewSessions());
-    }
-
-    @Test
-    public void testModulesInitializedCorrectlyWithSessionTimeoutParam() {
-        final String value = "13";
-
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(
-                WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, value);
-
-        Assert.assertEquals(Integer.parseInt(value),(int)module.getSessionTimeoutInMinutes());
-    }
-
-    @Test
-    public void testWhenGenerateNewSessionIsFalseSessionsAreNotGenerated() {
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(
-                WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, "false");
-
-        Cookie cookie = callOnBeginRequestAndGetCookieResult(module);
-
-        Assert.assertNull("No cookie should be generated." , cookie);
-    }
-
-    @Test
-    public void testWhenSessionTimeoutParameterUsedThenCookieCreatedWithCorrectAge() {
-        int sessionTimeoutInMinutes = 12;
-        Map<String, String> moduleParameters = new HashMap<String, String>();
-        moduleParameters.put(WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, String.valueOf(true));
-        moduleParameters.put(WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, String.valueOf(sessionTimeoutInMinutes));
-
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(moduleParameters);
-
-        Cookie cookie = callOnBeginRequestAndGetCookieResult(module);
-
-        Assert.assertEquals(sessionTimeoutInMinutes * 60, cookie.getMaxAge());
     }
 
     // endregion Tests

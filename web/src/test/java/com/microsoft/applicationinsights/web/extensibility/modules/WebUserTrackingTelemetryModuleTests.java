@@ -97,62 +97,10 @@ public class WebUserTrackingTelemetryModuleTests {
     }
 
     @Test
-    public void testNewUserCookieIsCreatedWhenCookieNotExist() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
-
-        Assert.assertNotNull("User cookie shouldn't be null.", cookiesContainer.getUserCookie());
-    }
-
-    @Test
     public void testNoUserCookieCreatedWhenValidCookieExists() throws Exception {
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(userCookieFormatted);
 
         Assert.assertNull(cookiesContainer.getUserCookie());
-    }
-
-    @Test
-    public void testNewUserCookieIsCreatedWhenCookieCorrupted() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie("corrupted;user;cookie");
-
-        Assert.assertNotNull("User cookie shouldn't be null.", cookiesContainer.getUserCookie());
-    }
-
-    @Test
-    public void testModulesInitializedCorrectlyWithGenerateNewUserParam() {
-        final String value = "false";
-
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(WebUserTrackingTelemetryModule.GENERATE_NEW_USERS_PARAM_KEY, value);
-
-        WebUserTrackingTelemetryModule module = new WebUserTrackingTelemetryModule(map);
-
-        Assert.assertEquals(Boolean.parseBoolean(value), module.getGenerateNewUsers());
-    }
-
-
-    @Test
-    public void testWhenGenerateNewUsersIsFalseUsersAreNotGenerated() {
-        WebUserTrackingTelemetryModule module =
-                createModuleWithParam(WebUserTrackingTelemetryModule.GENERATE_NEW_USERS_PARAM_KEY, "false");
-
-        ThreadContext.setRequestTelemetryContext(new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime()));
-        module.initialize(TelemetryConfiguration.getActive());
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-
-        final Cookie[] cookie = new Cookie[1];
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                cookie[0] = ((Cookie) invocation.getArguments()[0]);
-
-                return null;
-            }
-        }).when(response).addCookie(any(Cookie.class));
-
-        module.onBeginRequest(request, response);
-
-        Assert.assertNull("No cookie should be generated." ,cookie[0]);
     }
 
     // endregion Tests

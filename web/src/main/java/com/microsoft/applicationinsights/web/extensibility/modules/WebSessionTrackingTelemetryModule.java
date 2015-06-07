@@ -24,22 +24,17 @@ package com.microsoft.applicationinsights.web.extensibility.modules;
 import java.util.Map;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ServletUtils;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import com.microsoft.applicationinsights.web.internal.cookies.HttpCookieFactory;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 
@@ -48,17 +43,8 @@ import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
  */
 public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
 
-    // region Consts
-
-    protected final static String GENERATE_NEW_SESSIONS_PARAM_KEY = "GenerateNewSessions";
-    protected final static String SESSION_TIMEOUT_PARAM_KEY = "SessionTimeoutInMinutes";
-
-    // endregion Consts
-
     // region Members
 
-    private Integer sessionTimeoutInMinutes;
-    private boolean generateNewSessions = false;
     private TelemetryClient telemetryClient;
     private boolean isInitialized = false;
     private boolean isUserModuleEnabled = false;
@@ -124,34 +110,10 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         SessionCookie.class, request, SessionCookie.COOKIE_NAME);
 
-        boolean startNewSession = false;
-        if (sessionCookie == null) {
-            startNewSession = true;
-        } else {
-            int sessionTimeout = getSessionTimeout(request);
-            if (sessionCookie.isSessionExpired(sessionTimeout)) {
-                startNewSession = true;
-
-                // Disabling for now. Will be back in future releases.
-                // trackSessionStateWithRequestSessionId(SessionState.End, sessionCookie.getSessionId());
-            } else {
-                // Update ai context with session details.
-                getTelemetrySessionContext(context).setId(sessionCookie.getSessionId());
-                context.setSessionCookie(sessionCookie);
-            }
-        }
-
-        if (!generateNewSessions) {
-
-            // The user configured not to generate new sessions.
-            return;
-        }
-
-        if (startNewSession) {
-            startNewSession(context);
-            setSessionCookie(request, (HttpServletResponse)res);
-        } else if (sessionCookie != null && !sessionCookie.isSessionCookieUpToDate()) {
-            setSessionCookie(request, (HttpServletResponse)res);
+        if (sessionCookie != null) {
+            // Update ai context with session details.
+            getTelemetrySessionContext(context).setId(sessionCookie.getSessionId());
+            context.setSessionCookie(sessionCookie);
         }
     }
 
@@ -183,96 +145,15 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         return isUserModuleEnabled;
     }
 
-    /**
-     * Gets a value indicating whether new sessions should be generated.
-     * @return True if new sessions should be generated, false otherwise.
-     */
-    public boolean getGenerateNewSessions() {
-        return generateNewSessions;
-    }
-
-    /**
-     * Gets the session timeout in minutes, or null if not set yet.
-     * @return Session timeout in minutes
-     */
-    public Integer getSessionTimeoutInMinutes() {
-        return sessionTimeoutInMinutes;
-    }
-
     // endregion Public
 
     // region Private
 
     private void parseArguments(Map<String, String> argumentsMap) {
-        if (argumentsMap.containsKey(GENERATE_NEW_SESSIONS_PARAM_KEY)) {
-            boolean generateNewSessions = Boolean.parseBoolean(argumentsMap.get(GENERATE_NEW_SESSIONS_PARAM_KEY));
-            this.generateNewSessions = generateNewSessions;
-        }
-
-        if (argumentsMap.containsKey(SESSION_TIMEOUT_PARAM_KEY)) {
-            int sessionTimeoutInMinutes = Integer.parseInt(argumentsMap.get(SESSION_TIMEOUT_PARAM_KEY));
-            this.sessionTimeoutInMinutes = sessionTimeoutInMinutes;
-        }
-    }
-
-    private void setSessionCookie(HttpServletRequest req, HttpServletResponse res) {
-        if (res.isCommitted()) {
-            InternalLogger.INSTANCE.error("Response already committed by a different component. Failed to set session cookie.");
-
-            return;
-        }
-
-        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-
-        int sessionTimeout = getSessionTimeout(req);
-        SessionContext sessionContext = getTelemetrySessionContext(context);
-        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(context, sessionContext, sessionTimeout);
-
-        res.addCookie(cookie);
-    }
-
-    /**
-     * If the session timeout has been set by the user via AI config file, then this timeout will be returned.
-     * Otherwise, it will look for a session timeout configured in the application descriptor (web.xml).
-     * Otherwise, default timeout will be returned.
-     */
-    private int getSessionTimeout(ServletRequest servletRequest) {
-        if (sessionTimeoutInMinutes != null) {
-            return sessionTimeoutInMinutes;
-        }
-
-        Integer sessionTimeout = ServletUtils.getRequestSessionTimeout(servletRequest);
-        if (sessionTimeout == null) {
-            sessionTimeout = SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES;
-        }
-
-        synchronized (this) {
-            sessionTimeoutInMinutes = sessionTimeout;
-        }
-
-        return sessionTimeout;
     }
 
     private SessionContext getTelemetrySessionContext(RequestTelemetryContext aiContext) {
         return aiContext.getHttpRequestTelemetry().getContext().getSession();
-    }
-
-    private void startNewSession(RequestTelemetryContext aiContext) {
-        String sessionId = LocalStringsUtils.generateRandomId(true);
-
-        SessionContext session = getTelemetrySessionContext(aiContext);
-        session.setId(sessionId);
-
-        aiContext.setSessionCookie(new SessionCookie(sessionId));
-        trackSessionStateWithRequestSessionId(SessionState.Start, sessionId);
-        aiContext.setIsNewSession(true);
-    }
-
-    private void trackSessionStateWithRequestSessionId(SessionState requiredState, String sessionId) {
-        SessionStateTelemetry sessionStateTelemetry = new SessionStateTelemetry(requiredState);
-        sessionStateTelemetry.getContext().getSession().setId(sessionId);
-
-        telemetryClient.track(sessionStateTelemetry);
     }
 
     private boolean isNewUser(HttpServletRequest request) {
