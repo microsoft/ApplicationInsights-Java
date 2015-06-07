@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 import org.junit.Assert;
 import org.junit.Test;
 import javax.servlet.*;
+import javax.servlet.http.HttpServletResponse;
 
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -95,7 +96,7 @@ public class WebRequestTrackingFilterTests {
         ServletRequest request = ServletUtils.generateDummyServletRequest();
 
         // execute
-        filter.doFilter(request, null, chain);
+        filter.doFilter(request, ServletUtils.generateDummyServletResponse(), chain);
 
         // validate
         verify(chain).doFilter(any(ServletRequest.class), any(ServletResponse.class));
@@ -104,7 +105,7 @@ public class WebRequestTrackingFilterTests {
     @Test
     public void testUnhandledRuntimeExceptionWithTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
-        testException(createdData, new RuntimeException());
+        testException(createdData, new java.lang.IllegalArgumentException());
     }
 
     @Test
@@ -155,21 +156,6 @@ public class WebRequestTrackingFilterTests {
         testException(createdData, new IOException());
     }
 
-    @Test
-    public void testBadJarVersion() throws IllegalAccessException, NoSuchFieldException, ServletException {
-        Field field = ClassDataUtils.class.getDeclaredField("verifier");
-        field.setAccessible(true);
-
-        ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-        Mockito.doReturn(false).when(mockVerifier).verifyClassExists(anyString());
-        field.set(ClassDataUtils.INSTANCE, mockVerifier);
-
-        FilterConfig config = Mockito.mock(FilterConfig.class);
-        WebRequestTrackingFilter filter = new WebRequestTrackingFilter();
-        filter.init(config);
-        assertFalse("Filter is initialized", filter.isInitialized());
-    }
-
     // region Private methods
 
     private void testException(FilterAndTelemetryClientMock createdData, Exception expectedException) throws NoSuchFieldException, IllegalAccessException, ServletException {
@@ -178,14 +164,15 @@ public class WebRequestTrackingFilterTests {
             FilterChain chain = mock(FilterChain.class);
 
             ServletRequest request = ServletUtils.generateDummyServletRequest();
-            Mockito.doThrow(expectedException).when(chain).doFilter(request, null);
+            ServletResponse response = ServletUtils.generateDummyServletResponse();
+            Mockito.doThrow(expectedException).when(chain).doFilter(eq(request), any(ServletResponse.class));
 
             // execute
-            createdData.filter.doFilter(request, null, chain);
+            createdData.filter.doFilter(request, response, chain);
 
             assertFalse("doFilter should have throw", true);
         } catch (Exception se) {
-            Assert.assertSame(se, expectedException);
+            Assert.assertSame(expectedException, se);
 
             if (createdData.mockTelemetryClient != null) {
                 Assert.assertTrue(createdData.mockTelemetryClient.trackExceptionCalled == 1);

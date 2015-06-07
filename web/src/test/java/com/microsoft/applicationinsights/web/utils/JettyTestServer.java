@@ -21,10 +21,9 @@
 
 package com.microsoft.applicationinsights.web.utils;
 
-import javax.servlet.DispatcherType;
-import java.util.EnumSet;
 import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
 /**
@@ -40,7 +39,7 @@ public class JettyTestServer {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         context.addServlet(TestServlet.class, "/");
-        context.addFilter(WebRequestTrackingFilter.class, "/*", EnumSet.of(DispatcherType.INCLUDE, DispatcherType.REQUEST));
+        context.addFilter(WebRequestTrackingFilter.class, "/*", FilterMapping.ALL);
 
         server.setHandler(context);
         server.start();

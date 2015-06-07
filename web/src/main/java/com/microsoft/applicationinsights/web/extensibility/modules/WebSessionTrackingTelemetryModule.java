@@ -37,7 +37,6 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ServletUtils;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.HttpCookieFactory;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
@@ -128,7 +127,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         if (sessionCookie == null) {
             startNewSession = true;
         } else {
-            int sessionTimeout = getSessionTimeout(request);
+            int sessionTimeout = getSessionTimeout();
             if (sessionCookie.isSessionExpired(sessionTimeout)) {
                 startNewSession = true;
 
@@ -224,7 +223,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
-        int sessionTimeout = getSessionTimeout(req);
+        int sessionTimeout = getSessionTimeout();
         SessionContext sessionContext = getTelemetrySessionContext(context);
         Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(context, sessionContext, sessionTimeout);
 
@@ -236,21 +235,16 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      * Otherwise, it will look for a session timeout configured in the application descriptor (web.xml).
      * Otherwise, default timeout will be returned.
      */
-    private int getSessionTimeout(ServletRequest servletRequest) {
+    private int getSessionTimeout() {
         if (sessionTimeoutInMinutes != null) {
             return sessionTimeoutInMinutes;
         }
 
-        Integer sessionTimeout = ServletUtils.getRequestSessionTimeout(servletRequest);
-        if (sessionTimeout == null) {
-            sessionTimeout = SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES;
-        }
-
         synchronized (this) {
-            sessionTimeoutInMinutes = sessionTimeout;
+            sessionTimeoutInMinutes = SessionCookie.SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES;
         }
 
-        return sessionTimeout;
+        return sessionTimeoutInMinutes;
     }
 
     private SessionContext getTelemetrySessionContext(RequestTelemetryContext aiContext) {

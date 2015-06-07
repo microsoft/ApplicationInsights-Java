@@ -23,8 +23,10 @@ package com.microsoft.applicationinsights.web.utils;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
-import org.eclipse.jetty.server.Request;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 
 import static org.mockito.Mockito.mock;
@@ -65,7 +67,11 @@ public class ServletUtils {
     }
 
     public static ServletRequest generateDummyServletRequest() {
-        return new Request();
+        return mock(HttpServletRequest.class);
+    }
+
+    public static ServletResponse generateDummyServletResponse() {
+        return mock(HttpServletResponse.class);
     }
 
     // region Private
