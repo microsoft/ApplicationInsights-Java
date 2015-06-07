@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentati
  */
 final class XmlAgentConfiguration implements AgentConfiguration {
     private HashMap<String, ClassInstrumentationData> classesToInstrument;
-    private boolean buildInEnabled = true;
+    private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
 
     void setRequestedClassesToInstrument(HashMap<String, ClassInstrumentationData> classesToInstrument) {
         this.classesToInstrument = classesToInstrument;
@@ -42,11 +42,11 @@ final class XmlAgentConfiguration implements AgentConfiguration {
     }
 
     @Override
-    public boolean isBuiltInEnabled() {
-        return buildInEnabled;
+    public AgentBuiltInConfiguration getBuiltInSwitches() {
+        return builtInConfiguration;
     }
 
-    public void setBuiltInEnabled(boolean buildInEnabled) {
-        this.buildInEnabled = buildInEnabled;
+    public void setBuiltInData(AgentBuiltInConfiguration builtInData) {
+        this.builtInConfiguration = builtInData;
     }
 }

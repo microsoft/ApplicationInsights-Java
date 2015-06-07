@@ -31,7 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 import com.microsoft.applicationinsights.agent.internal.agent.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -51,6 +51,11 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String METHOD_TAG = "Method";
 
     private final static String BUILT_IN_TAG = "BuiltIn";
+    private final static String HTTP_TAG = "HTTP";
+    private final static String JDBC_TAG = "JDBC";
+    private final static String HIBERNATE_TAG = "HIBERNATE";
+
+    private final static String AGENT_LOGGER_TAG = "AgentLogger";
 
     private final static String ENABLED_ATTRIBUTE = "enabled";
     private final static String NAME_ATTRIBUTE = "name";
@@ -62,20 +67,26 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     public AgentConfiguration parseConfigurationFile(String baseFolder) {
         XmlAgentConfiguration agentConfiguration = new XmlAgentConfiguration();
 
-        String configurationFileName = baseFolder + AGENT_XML_CONFIGURATION_NAME;
+        String configurationFileName = baseFolder;
+        if (!baseFolder.endsWith(File.separator)) {
+            configurationFileName += File.separator;
+        }
+        configurationFileName += AGENT_XML_CONFIGURATION_NAME;
 
         File configurationFile = new File(configurationFileName);
         if (!configurationFile.exists()) {
-            InternalLogger.INSTANCE.trace("Did not find Agent configuration file in '%s'", configurationFileName);
+            InternalAgentLogger.INSTANCE.trace("Did not find Agent configuration file in '%s'", configurationFileName);
             return agentConfiguration;
         }
 
-        InternalLogger.INSTANCE.trace("Found Agent configuration file in '%s'", configurationFileName);
+        InternalAgentLogger.INSTANCE.trace("Found Agent configuration file in '%s'", configurationFileName);
         try {
             Element topElementTag = getTopTag(configurationFile);
             if (topElementTag == null) {
                 return agentConfiguration;
             }
+
+
 
             Element instrumentationTag = getInstrumentationTag(topElementTag);
             if (instrumentationTag == null) {
@@ -110,26 +121,33 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             agentConfiguration.setRequestedClassesToInstrument(classesToInstrument);
             return agentConfiguration;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'" + e.getMessage());
+            InternalAgentLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'" + e.getMessage());
             return null;
         }
     }
 
     private void setBuiltInInstrumentation(XmlAgentConfiguration agentConfiguration, Element instrumentationTags) {
+        AgentBuiltInConfigurationBuilder builtInConfigurationBuilder = new AgentBuiltInConfigurationBuilder();
+
         NodeList nodes = instrumentationTags.getElementsByTagName(BUILT_IN_TAG);
-        Element element = getFirst(nodes);
-        if (element == null) {
+        Element builtInElement = getFirst(nodes);
+        if (builtInElement == null) {
+            agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
             return;
         }
 
-        try {
-            String strValue = element.getAttribute(ENABLED_ATTRIBUTE);
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                boolean value = Boolean.valueOf(strValue);
-                agentConfiguration.setBuiltInEnabled(value);
-            }
-        } catch (Throwable t) {
-        }
+        builtInConfigurationBuilder.setEnabled(getEnabled(builtInElement, BUILT_IN_TAG));
+
+        nodes = builtInElement.getElementsByTagName(HTTP_TAG);
+        builtInConfigurationBuilder.setHttpEnabled(getEnabled(getFirst(nodes), HTTP_TAG));
+
+        nodes = builtInElement.getElementsByTagName(JDBC_TAG);
+        builtInConfigurationBuilder.setJdbcEnabled(getEnabled(getFirst(nodes), JDBC_TAG));
+
+        nodes = builtInElement.getElementsByTagName(HIBERNATE_TAG);
+        builtInConfigurationBuilder.setHibernateEnabled(getEnabled(getFirst(nodes), HIBERNATE_TAG));
+
+        agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
     }
 
     private Element getClassDataElement(Node item) {
@@ -190,6 +208,16 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private Element getInstrumentationTag(Element topElementTag) {
         NodeList customTags = topElementTag.getElementsByTagName(INSTRUMENTATION_TAG);
         return getFirst(customTags);
+    }
+
+    private void initializeAgentLogger(Element topElementTag) {
+        NodeList customTags = topElementTag.getElementsByTagName(AGENT_LOGGER_TAG);
+        Element loggerTag = getFirst(customTags);
+        if (loggerTag == null) {
+            return;
+        }
+
+        InternalAgentLogger.INSTANCE.initialize(loggerTag.getNodeValue());
     }
 
     private NodeList getAllClassesToInstrument(Element tag) {
@@ -282,5 +310,24 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         }
 
         return (Element)node;
+    }
+
+    private boolean getEnabled(Element element, String elementName) {
+        if (element == null) {
+            return true;
+        }
+
+        try {
+            String strValue = element.getAttribute(ENABLED_ATTRIBUTE);
+            if (!StringUtils.isNullOrEmpty(strValue)) {
+                boolean value = Boolean.valueOf(strValue);
+                return value;
+            }
+            return true;
+        } catch (Throwable t) {
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+        }
+
+        return false;
     }
 }

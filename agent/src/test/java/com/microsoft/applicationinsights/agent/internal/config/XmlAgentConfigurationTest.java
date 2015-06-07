@@ -11,18 +11,16 @@ public final class XmlAgentConfigurationTest {
     @Test
     public void testCtor() {
         XmlAgentConfiguration tested = new XmlAgentConfiguration();
-        assertTrue(tested.isBuiltInEnabled());
+        assertTrue(tested.getBuiltInSwitches().isEnabled());
         assertNull(tested.getRequestedClassesToInstrument());
     }
 
     @Test
     public void testSetters() {
         XmlAgentConfiguration tested = new XmlAgentConfiguration();
-        tested.setBuiltInEnabled(false);
         HashMap<String, ClassInstrumentationData> classes = new HashMap<String, ClassInstrumentationData>();
         tested.setRequestedClassesToInstrument(classes);
 
-        assertFalse(tested.isBuiltInEnabled());
         assertSame(classes, tested.getRequestedClassesToInstrument());
     }
 }

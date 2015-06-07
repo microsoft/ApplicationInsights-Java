@@ -28,7 +28,7 @@ import java.security.ProtectionDomain;
 
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -57,10 +57,10 @@ public final class CodeInjector implements ClassFileTransformer {
 
             inst.addTransformer(this);
 
-            InternalLogger.INSTANCE.info("Agent is up");
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is up");
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-            InternalLogger.INSTANCE.error("Agent is NOT activated: failed to initialize CodeInjector: '%s'", throwable.getMessage());
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is NOT activated: failed to initialize CodeInjector: '%s'", throwable.getMessage());
         }
     }
 

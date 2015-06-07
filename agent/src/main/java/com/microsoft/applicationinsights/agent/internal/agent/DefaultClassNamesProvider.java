@@ -27,7 +27,7 @@ import java.util.HashSet;
 
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
  * Created by gupele on 5/11/2015.
@@ -53,7 +53,7 @@ class DefaultClassNamesProvider implements ClassNamesProvider {
         addConfigurationData();
 
         if (builtInEnabled) {
-            InternalLogger.INSTANCE.trace("Adding built-in instrumentation");
+            InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
 
             populateSqlClasses();
             populateHttpClasses();
@@ -186,17 +186,17 @@ class DefaultClassNamesProvider implements ClassNamesProvider {
             return;
         }
 
-        builtInEnabled = agentConfiguration.isBuiltInEnabled();
+        builtInEnabled = agentConfiguration.getBuiltInSwitches().isEnabled();
 
         HashMap<String, ClassInstrumentationData> configurationData = agentConfiguration.getRequestedClassesToInstrument();
         if (configurationData != null) {
             for (ClassInstrumentationData classInstrumentationData : configurationData.values()) {
                 if (isForbidden(classInstrumentationData.className)) {
-                    InternalLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.className);
+                    InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.className);
                     continue;
                 }
 
-                InternalLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.className);
+                InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.className);
                 classesToInstrument.put(classInstrumentationData.className, classInstrumentationData);
             }
         }

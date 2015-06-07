@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.logger.InternalLogger;
-
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.instrument.Instrumentation;
@@ -30,6 +28,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.jar.JarFile;
+
+import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
  * Created by gupele on 5/6/2015.
@@ -47,7 +47,7 @@ public final class AgentImplementation {
             appendJarsToBootstrapClassLoader(inst);
             loadJarsToBootstrapClassLoader(inst);
         } catch (Throwable throwable) {
-            InternalLogger.INSTANCE.error("Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
+            InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
             System.exit(-1);
         }
     }
@@ -79,7 +79,7 @@ public final class AgentImplementation {
             throw new RuntimeException("Could not find agent jar");
         }
 
-        InternalLogger.INSTANCE.info("Found jar: " + agentJarPath + " " + agentJarName);
+        InternalAgentLogger.INSTANCE.info("Found jar: " + agentJarPath + " " + agentJarName);
 
         URL configurationURL = new URL(agentJarPath + agentJarName);
 
@@ -87,7 +87,7 @@ public final class AgentImplementation {
 
         inst.appendToBootstrapClassLoaderSearch(agentJar);
 
-        InternalLogger.INSTANCE.trace("Successfully loaded Agent jar");
+        InternalAgentLogger.INSTANCE.trace("Successfully loaded Agent jar");
     }
 
     public static String getAgentJarLocation() throws UnsupportedEncodingException {
@@ -104,7 +104,7 @@ public final class AgentImplementation {
                 }
             }
         } catch (Throwable throwable) {
-            InternalLogger.INSTANCE.error("Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
+            InternalAgentLogger.INSTANCE.error("Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
         }
 
         String path = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();

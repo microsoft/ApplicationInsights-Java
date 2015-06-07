@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.microsoft.applicationinsights.agent.internal.agent.StringUtils;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
 
 /**
@@ -148,7 +148,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
 
             return implementationName;
         } catch (Throwable throwable) {
-            InternalLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
+            InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
             return null;
         }
     }

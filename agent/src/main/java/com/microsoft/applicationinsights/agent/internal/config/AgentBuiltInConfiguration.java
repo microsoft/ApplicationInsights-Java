@@ -21,18 +21,35 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
-import java.util.HashMap;
-
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-
 /**
- * Defines the interface for concrete classes that represent configuration data for the Agent
- * Created by gupele on 5/17/2015.
+ * Created by gupele on 6/5/2015.
  */
-public interface AgentConfiguration {
+public class AgentBuiltInConfiguration {
+    private final boolean enabled;
+    private final boolean httpEnabled;
+    private final boolean jdbcEnabled;
+    private final boolean hibernateEnabled;
 
-    AgentBuiltInConfiguration getBuiltInSwitches();
+    public AgentBuiltInConfiguration(boolean enabled, boolean httpEnabled, boolean jdbcEnabled, boolean hibernateEnabled) {
+        this.enabled = enabled;
+        this.httpEnabled = httpEnabled;
+        this.jdbcEnabled = jdbcEnabled;
+        this.hibernateEnabled = hibernateEnabled;
+    }
 
-    HashMap<String, ClassInstrumentationData> getRequestedClassesToInstrument();
+    public boolean isEnabled() {
+        return enabled;
+    }
 
+    public boolean isHttpEnabled() {
+        return httpEnabled;
+    }
+
+    public boolean isJdbcEnabled() {
+        return jdbcEnabled;
+    }
+
+    public boolean isHibernateEnabled() {
+        return hibernateEnabled;
+    }
 }

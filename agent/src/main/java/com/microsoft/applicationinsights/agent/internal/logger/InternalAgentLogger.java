@@ -27,7 +27,7 @@ import java.util.Date;
 /**
  * Created by gupele on 6/3/2015.
  */
-public enum InternalLogger {
+public enum InternalAgentLogger {
     INSTANCE;
 
     public enum LoggingLevel {
@@ -49,8 +49,10 @@ public enum InternalLogger {
         }
     }
 
+    private boolean initialized = false;
+
     private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy h:MM");
-    private LoggingLevel loggingLevel = LoggingLevel.TRACE;
+    private LoggingLevel loggingLevel = LoggingLevel.OFF;
 
     public boolean isTraceEnabled() {
         return loggingLevel.getValue() <= LoggingLevel.TRACE.getValue();
@@ -66,6 +68,19 @@ public enum InternalLogger {
 
     public boolean isErrorEnabled() {
         return loggingLevel.getValue() <= LoggingLevel.ERROR.getValue();
+    }
+
+    public synchronized void initialize(String loggerLevel) {
+        if (initialized) {
+            return;
+        }
+
+        try {
+            loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+        } catch (Throwable t) {
+            logAlways(LoggingLevel.ERROR, "Failed to parse logging level, using OFF");
+            loggingLevel = LoggingLevel.OFF;
+        }
     }
 
     /**
@@ -120,11 +135,11 @@ public enum InternalLogger {
         }
     }
 
-//    public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
-//        String logMessage = createMessage(requestLevel.toString(), message, args);
-//        loggerOutput.log(logMessage);
-//    }
-//
+    public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
+        String logMessage = createMessage(requestLevel.toString(), message, args);
+        log(requestLevel, logMessage);
+    }
+
     /**
      * Creates the message that contains the prefix, thread id and the message.
      * @param prefix The prefix to attach to the message.
