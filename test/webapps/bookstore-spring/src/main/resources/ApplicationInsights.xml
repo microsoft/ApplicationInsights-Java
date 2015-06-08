@@ -15,4 +15,5 @@
 	<ContextInitializers>
 		<Add type="com.springapp.mvc.MyContextInitializer" />
 	</ContextInitializers>
+	<SDKLogger></SDKLogger>
 </ApplicationInsights>
