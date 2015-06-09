@@ -58,7 +58,8 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
     private final static String AGENT_LOGGER_TAG = "AgentLogger";
 
-    private final static String FORBIDDEN_PREFIXES = "ForbiddenPrefixes";
+    private final static String FORBIDDEN_PREFIXES_TAG = "ForbiddenPrefixes";
+    private final static String FORBIDDEN_PREFIX_TAG = "Prefix";
 
     private final static String ENABLED_ATTRIBUTE = "enabled";
     private final static String NAME_ATTRIBUTE = "name";
@@ -132,7 +133,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     }
 
     private void getForbiddenPaths(Element parent, AgentConfigurationDefaultImpl agentConfiguration) {
-        NodeList nodes = parent.getElementsByTagName(FORBIDDEN_PREFIXES);
+        NodeList nodes = parent.getElementsByTagName(FORBIDDEN_PREFIXES_TAG);
         Element forbiddenElement = getFirst(nodes);
         if (forbiddenElement == null) {
             return;
@@ -140,7 +141,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         HashSet<String> forbiddenPrefixes = new HashSet<String>();
 
-        NodeList addClasses = forbiddenElement.getElementsByTagName(CLASS_TAG);
+        NodeList addClasses = forbiddenElement.getElementsByTagName(FORBIDDEN_PREFIX_TAG);
         if (addClasses == null) {
             return;
         }

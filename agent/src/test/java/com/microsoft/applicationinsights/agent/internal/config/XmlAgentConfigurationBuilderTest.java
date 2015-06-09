@@ -63,9 +63,9 @@ public final class XmlAgentConfigurationBuilderTest {
         public void print(PrintWriter writer) {
             writer.println("<ForbiddenPrefixes>");
 
-            writer.println("<Class>a.AClass1</Class>");
-            writer.println("<Class>a.AClass1</Class>");
-            writer.println("<Class>a.b.AClass1</Class>");
+            writer.println("<Prefix>a.AClass1</Prefix>");
+            writer.println("<Prefix>a.AClass1</Prefix>");
+            writer.println("<Prefix>a.b.AClass1</Prefix>");
 
             writer.println("</ForbiddenPrefixes>");
         }

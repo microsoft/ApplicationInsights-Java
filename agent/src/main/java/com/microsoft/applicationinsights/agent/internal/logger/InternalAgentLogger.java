@@ -24,6 +24,8 @@ package com.microsoft.applicationinsights.agent.internal.logger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.microsoft.applicationinsights.agent.internal.agent.StringUtils;
+
 /**
  * Created by gupele on 6/3/2015.
  */
@@ -75,8 +77,14 @@ public enum InternalAgentLogger {
             return;
         }
 
+        initialized = true;
+
         try {
-            loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+            if (StringUtils.isNullOrEmpty(loggerLevel)) {
+                loggingLevel = LoggingLevel.TRACE;
+            } else {
+                loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+            }
         } catch (Throwable t) {
             logAlways(LoggingLevel.ERROR, "Failed to parse logging level, using OFF");
             loggingLevel = LoggingLevel.OFF;
