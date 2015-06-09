@@ -25,28 +25,39 @@ package com.microsoft.applicationinsights.management.authentication;
  * Created by yonisha on 4/15/2015.
  */
 public class Settings {
+    private static String tenant = "common"; // "2528489d-68e2-4819-9781-f11214b8b03c"; //72f988bf-86f1-41af-91ab-2d7cd011db47
+    private static String redirectUrl = "https://portal.azure.com"; // https://portal.azure.com "https://msopentech.com/";
+    private static String clientId = "777acee8-5286-4d6e-8b05-f7c851d8ed0a"; //777acee8-5286-4d6e-8b05-f7c851d8ed0a 61d65f5a-6e3b-468b-af73-a033f5098c5c
+
     public static String getTenant() {
-        return "common";
+        return tenant;
+    }
+
+    public static void setTenant(String newTenant) {
+        tenant = newTenant;
     }
 
     public static String getRedirectURI() {
-//        return  "https://portal.azure.com";
-        return  "https://msopentech.com/";
+        return redirectUrl;
+    }
+
+    public static void setRedirectURI(String newUrl) {
+        redirectUrl = newUrl;
     }
 
     public static String getClientId() {
-        return "61d65f5a-6e3b-468b-af73-a033f5098c5c";
+        return clientId;
+    }
 
-//        return "777acee8-5286-4d6e-8b05-f7c851d8ed0a";
+    public static void setClientId(String newId) {
+        clientId = newId;
     }
 
     public static String getAzureServiceManagementUri() {
         return "https://management.core.windows.net/";
     }
 
-    public static String getAdAuthority() {
-        return "login.windows.net";
-    }
+    public static String getAdAuthority() { return "login.windows.net"; }
 
     public static String getResource() {
         return "https://management.core.windows.net/";

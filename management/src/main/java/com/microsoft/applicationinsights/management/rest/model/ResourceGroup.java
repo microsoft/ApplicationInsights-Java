@@ -74,9 +74,9 @@ public class ResourceGroup {
 
     public static ResourceGroup fromJSONObject(JsonObject json) {
         ResourceGroup rg = new ResourceGroup();
-        rg.setId(json.get("id").toString());
-        rg.setName(json.get("name").toString());
-        rg.setLocation(json.get("location").toString());
+        rg.setId(json.get("id").getAsString());
+        rg.setName(json.get("name").getAsString());
+        rg.setLocation(json.get("location").getAsString());
 
         Map<String, String> properties = new HashMap<String, String>();
         JsonObject jsonProperties = (JsonObject) json.get("properties");

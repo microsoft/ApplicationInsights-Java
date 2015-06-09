@@ -29,7 +29,7 @@ repositories {
 
 dependencies {
     // TODO: fix this! required?
-    compile files('C:/AppInsights/adal4j.jar')
+    compile files('C:/sources/adal4j.jar')
 
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'

@@ -54,13 +54,14 @@ public class Program {
         String appName = "yonisha-new-app9";
         String location = "Central US";
 
-        getSubscriptions();
-        getResources(requiredSubscriptionID);
-        getAvailableGeoLocations();
-        getResourceGroups(requiredSubscriptionID);
+        List<Subscription> subscriptions = getSubscriptions();
 
-        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
-        createResource(requiredSubscriptionID, resourceGroup, appName, location);
+        getResources(subscriptions.get(0).getId());
+        getAvailableGeoLocations();
+        getResourceGroups(subscriptions.get(0).getId());
+
+//        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
+//        createResource(requiredSubscriptionID, resourceGroup, appName, location);
     }
 
     private static List<ResourceGroup> getResourceGroups(String subId) throws IOException, RestOperationException {
@@ -107,7 +108,7 @@ public class Program {
         }
     }
 
-    private static void getSubscriptions() throws IOException, RestOperationException {
+    private static List<Subscription> getSubscriptions() throws IOException, RestOperationException {
         System.out.println("Getting subscription");
         List<Subscription> subscriptions = client.getSubscriptions();
         for (Subscription sub : subscriptions) {
@@ -115,7 +116,9 @@ public class Program {
             System.out.println(sub.getId());
         }
 
+        return subscriptions;
     }
+
     private static void getAvailableGeoLocations() throws IOException, RestOperationException {
         List<String> availableGeoLocations = client.getAvailableGeoLocations();
 

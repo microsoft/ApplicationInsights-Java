@@ -70,8 +70,8 @@ public class Subscription {
      */
     public static Subscription fromJSONObject(JsonObject subscriptionJson) {
         Subscription subscription = new Subscription();
-        subscription.setId(subscriptionJson.get("subscriptionId").toString());
-        subscription.setName(subscriptionJson.get("displayName").toString());
+        subscription.setId(subscriptionJson.get("subscriptionId").getAsString());
+        subscription.setName(subscriptionJson.get("displayName").getAsString());
 
         return subscription;
     }

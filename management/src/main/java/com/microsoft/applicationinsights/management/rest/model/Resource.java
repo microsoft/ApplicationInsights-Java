@@ -167,10 +167,10 @@ public class Resource {
      */
     public static Resource fromJSONObject(JsonObject resourceJson) {
         Resource c = new Resource();
-        c.setId(resourceJson.get("id").toString());
-        c.setName(resourceJson.get("name").toString());
-        c.setType(resourceJson.get("type").toString());
-        c.setLocation(resourceJson.get("location").toString());
+        c.setId(resourceJson.get("id").getAsString());
+        c.setName(resourceJson.get("name").getAsString());
+        c.setType(resourceJson.get("type").getAsString());
+        c.setLocation(resourceJson.get("location").getAsString());
 
         c.setResourceGroup(extractResourceGroup(c.getId()));
 
@@ -178,7 +178,8 @@ public class Resource {
         JsonObject jsonProperties = (JsonObject) resourceJson.get("properties");
         for (Map.Entry<String, JsonElement> key : jsonProperties.entrySet()) {
             if (!key.getValue().isJsonObject()) {
-                properties.put(key.getKey(), key.getValue().toString());
+                String value = key.getValue().isJsonNull() ? "" : key.getValue().getAsString();
+                properties.put(key.getKey(), value);
             }
         }
         c.setProperties(properties);

@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.management.rest.operations;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.microsoft.applicationinsights.management.common.Logger;
@@ -81,7 +82,10 @@ public class GetAvailableGeoLocations implements RestOperation<List<String>> {
                 JsonArray jsonLocations = jsonResourceType.getAsJsonArray("locations");
 
                 for (Object location : jsonLocations) {
-                    locations.add(location.toString());
+                    if (location instanceof JsonElement && !((JsonElement)location).getAsString().equalsIgnoreCase("")) {
+                        JsonElement jsonLocation = (JsonElement) location;
+                        locations.add(jsonLocation.getAsString());
+                    }
                 }
             }
         }
