@@ -28,17 +28,17 @@ import org.objectweb.asm.Opcodes;
 
 /**
  * The class is responsible for identifying public methods on non-interface classes.
- * When a method is found the class will call the {@link EnterExitMethodWrapper}
+ * When a method is found the class will call the {@link DefaultMethodInstrumentor}
  *
  * Created by gupele on 5/11/2015.
  */
-final class EnterExitClassVisitor extends ClassVisitor {
+final class DefaultClassInstrumentor extends ClassVisitor {
     private String owner;
     private boolean isInterface;
     private final ClassInstrumentationData instrumentationData;
-    private final MethodFactory factory;
+    private final MethodInstrumentorsFactory factory;
 
-    public EnterExitClassVisitor(MethodFactory factory, ClassInstrumentationData instrumentationData, ClassWriter cv) {
+    public DefaultClassInstrumentor(MethodInstrumentorsFactory factory, ClassInstrumentationData instrumentationData, ClassWriter cv) {
         super(Opcodes.ASM5, cv);
 
         owner = instrumentationData.className;

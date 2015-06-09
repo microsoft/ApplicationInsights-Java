@@ -31,7 +31,7 @@ import org.objectweb.asm.Type;
 /**
  * Created by gupele on 5/20/2015.
  */
-final class EnterExitMethodForHttp extends EnterExitMethodWrapper {
+final class HttpMethodInstrumentor extends DefaultMethodInstrumentor {
     private final static String PARENT_NAME_IN_INSTANCE = "this$0";
     private final static String PARENT_JAVA_NAME = "sun/net/www/protocol/http/HttpURLConnection";
     private final static String PARENT_FULL_JAVA_NAME = "Lsun/net/www/protocol/http/HttpURLConnection;";
@@ -43,7 +43,7 @@ final class EnterExitMethodForHttp extends EnterExitMethodWrapper {
 
     private final String owner;
 
-    public EnterExitMethodForHttp(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+    public HttpMethodInstrumentor(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
         super(false, true, access, desc, owner, methodName, methodVisitor);
         this.owner = owner;
     }

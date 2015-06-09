@@ -38,10 +38,10 @@ import static org.mockito.Matchers.anyString;
 public final class EnterExitClassVisitorTest {
     @Test
     public void testVisitMethodForInterfaceClass() {
-        MethodFactory mockFactory = Mockito.mock(MethodFactory.class);
+        MethodInstrumentorsFactory mockFactory = Mockito.mock(MethodInstrumentorsFactory.class);
         ClassInstrumentationData classInstrumentationData = new ClassInstrumentationData("java/lang/Runnable", InstrumentedClassType.OTHER);
         classInstrumentationData.addMethod("run", null, true, true);
-        EnterExitClassVisitor tested = new EnterExitClassVisitor(mockFactory, classInstrumentationData, new ClassWriter(10));
+        DefaultClassInstrumentor tested = new DefaultClassInstrumentor(mockFactory, classInstrumentationData, new ClassWriter(10));
         tested.visit(Opcodes.ASM5, Opcodes.ACC_INTERFACE, "java/lang/Runnable", "()V", null, null);
         tested.visitMethod(Opcodes.ACC_INTERFACE, "run", "()V", null, new String[]{});
 
@@ -50,9 +50,9 @@ public final class EnterExitClassVisitorTest {
 
     @Test
     public void testVisitCtor1() {
-        MethodFactory mockFactory = Mockito.mock(MethodFactory.class);
+        MethodInstrumentorsFactory mockFactory = Mockito.mock(MethodInstrumentorsFactory.class);
         ClassInstrumentationData classInstrumentationData = new ClassInstrumentationData("java/lang/Runnable", InstrumentedClassType.OTHER);
-        EnterExitClassVisitor tested = new EnterExitClassVisitor(mockFactory, classInstrumentationData, new ClassWriter(10));
+        DefaultClassInstrumentor tested = new DefaultClassInstrumentor(mockFactory, classInstrumentationData, new ClassWriter(10));
         tested.visit(Opcodes.ASM5, ~Opcodes.ACC_INTERFACE, "java/lang/String", "()V", null, null);
         tested.visitMethod(~Opcodes.ACC_INTERFACE, "<init>", "()V", null, new String[]{});
 
@@ -61,9 +61,9 @@ public final class EnterExitClassVisitorTest {
 
     @Test
     public void testVisitCtor2() {
-        MethodFactory mockFactory = Mockito.mock(MethodFactory.class);
+        MethodInstrumentorsFactory mockFactory = Mockito.mock(MethodInstrumentorsFactory.class);
         ClassInstrumentationData classInstrumentationData = new ClassInstrumentationData("java/lang/String", InstrumentedClassType.OTHER);
-        EnterExitClassVisitor tested = new EnterExitClassVisitor(mockFactory, classInstrumentationData, new ClassWriter(10));
+        DefaultClassInstrumentor tested = new DefaultClassInstrumentor(mockFactory, classInstrumentationData, new ClassWriter(10));
         tested.visit(Opcodes.ASM5, ~Opcodes.ACC_INTERFACE, "java/lang/String", "()V", null, null);
         tested.visitMethod(~Opcodes.ACC_INTERFACE, "<clinit>", "()V", null, new String[]{});
 
@@ -72,10 +72,10 @@ public final class EnterExitClassVisitorTest {
 
     @Test
     public void testVisitQualifiedMethod() {
-        MethodFactory mockFactory = Mockito.mock(MethodFactory.class);
+        MethodInstrumentorsFactory mockFactory = Mockito.mock(MethodInstrumentorsFactory.class);
         ClassInstrumentationData classInstrumentationData = new ClassInstrumentationData("java/lang/String", InstrumentedClassType.OTHER);
         classInstrumentationData.addMethod("indexOf", null, true, true);
-        EnterExitClassVisitor tested = new EnterExitClassVisitor(mockFactory, classInstrumentationData, new ClassWriter(10));
+        DefaultClassInstrumentor tested = new DefaultClassInstrumentor(mockFactory, classInstrumentationData, new ClassWriter(10));
         tested.visit(Opcodes.ASM5, ~Opcodes.ACC_INTERFACE, "java/lang/String", "()V", null, null);
         tested.visitMethod(~Opcodes.ACC_INTERFACE, "indexOf", "(Ljava/lang/String;)V", null, new String[]{});
 

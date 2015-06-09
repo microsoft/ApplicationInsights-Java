@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.config;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -57,6 +58,8 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
     private final static String AGENT_LOGGER_TAG = "AgentLogger";
 
+    private final static String FORBIDDEN_PREFIXES = "ForbiddenPrefixes";
+
     private final static String ENABLED_ATTRIBUTE = "enabled";
     private final static String NAME_ATTRIBUTE = "name";
     private final static String REPORT_CAUGHT_EXCEPTIONS_ATTRIBUTE = "reportCaughtExceptions";
@@ -65,7 +68,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
     @Override
     public AgentConfiguration parseConfigurationFile(String baseFolder) {
-        XmlAgentConfiguration agentConfiguration = new XmlAgentConfiguration();
+        AgentConfigurationDefaultImpl agentConfiguration = new AgentConfigurationDefaultImpl();
 
         String configurationFileName = baseFolder;
         if (!baseFolder.endsWith(File.separator)) {
@@ -87,6 +90,8 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             }
 
             initializeAgentLogger(topElementTag);
+
+            getForbiddenPaths(topElementTag, agentConfiguration);
 
             Element instrumentationTag = getInstrumentationTag(topElementTag);
             if (instrumentationTag == null) {
@@ -126,7 +131,33 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         }
     }
 
-    private void setBuiltInInstrumentation(XmlAgentConfiguration agentConfiguration, Element instrumentationTags) {
+    private void getForbiddenPaths(Element parent, AgentConfigurationDefaultImpl agentConfiguration) {
+        NodeList nodes = parent.getElementsByTagName(FORBIDDEN_PREFIXES);
+        Element forbiddenElement = getFirst(nodes);
+        if (forbiddenElement == null) {
+            return;
+        }
+
+        HashSet<String> forbiddenPrefixes = new HashSet<String>();
+
+        NodeList addClasses = forbiddenElement.getElementsByTagName(CLASS_TAG);
+        if (addClasses == null) {
+            return;
+        }
+
+        for (int index = 0; index < addClasses.getLength(); ++index) {
+            Element classElement = getClassDataElement(addClasses.item(index));
+            if (classElement == null) {
+                continue;
+            }
+
+            forbiddenPrefixes.add(classElement.getFirstChild().getTextContent());
+        }
+
+        agentConfiguration.setForbiddenPrefixes(forbiddenPrefixes);
+    }
+
+    private void setBuiltInInstrumentation(AgentConfigurationDefaultImpl agentConfiguration, Element instrumentationTags) {
         AgentBuiltInConfigurationBuilder builtInConfigurationBuilder = new AgentBuiltInConfigurationBuilder();
 
         NodeList nodes = instrumentationTags.getElementsByTagName(BUILT_IN_TAG);

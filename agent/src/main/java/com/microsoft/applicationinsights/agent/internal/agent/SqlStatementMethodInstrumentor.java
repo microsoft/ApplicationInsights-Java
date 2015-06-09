@@ -29,7 +29,7 @@ import org.objectweb.asm.Type;
 /**
  * Created by gupele on 5/20/2015.
  */
-final class EnterExitMethodForSqlStatement extends EnterExitMethodWrapper {
+final class SqlStatementMethodInstrumentor extends DefaultMethodInstrumentor {
     private final static String ON_ENTER_METHOD_NANE = "onMethodEnterSqlStatement";
     private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/Statement;Ljava/lang/String;)V";
 
@@ -37,7 +37,7 @@ final class EnterExitMethodForSqlStatement extends EnterExitMethodWrapper {
     private final String implementationCoordinatorJavaName;
     private final int numberOfArgs;
 
-    public EnterExitMethodForSqlStatement(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+    public SqlStatementMethodInstrumentor(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
         super(false, true, access, desc, owner, methodName, methodVisitor);
 
         numberOfArgs = Type.getArgumentTypes(desc).length;

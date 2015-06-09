@@ -40,8 +40,8 @@ import org.objectweb.asm.ClassWriter;
  */
 public final class CodeInjector implements ClassFileTransformer {
 
-    private final ClassNamesProvider classNamesProvider = new DefaultClassNamesProvider();
-    private MethodWrapperFactory factory;
+    private final ClassDataProvider classNamesProvider = new DefaultClassDataProvider();
+    private DefaultMethodInstrumentorsFactory factory;
 
     /**
      * The constructor will set all the data needed for the transformation and then
@@ -53,7 +53,7 @@ public final class CodeInjector implements ClassFileTransformer {
     public CodeInjector(Instrumentation inst, String agentJarLocation) {
         try {
             loadConfiguration(agentJarLocation);
-            factory = new MethodWrapperFactory(classNamesProvider);
+            factory = new DefaultMethodInstrumentorsFactory(classNamesProvider);
 
             inst.addTransformer(this);
 
@@ -94,7 +94,7 @@ public final class CodeInjector implements ClassFileTransformer {
     }
 
     /**
-     * The method will create the {@link EnterExitClassVisitor}
+     * The method will create the {@link DefaultClassInstrumentor}
      * which is responsible for injecting the code to do so the method will pass the class the needed data that will enable its work
      * @param originalBuffer The original buffer of the class
      * @param instrumentationData The instrumentation data for that class
@@ -103,7 +103,7 @@ public final class CodeInjector implements ClassFileTransformer {
     private byte[] getTransformedBytes(byte[] originalBuffer, ClassInstrumentationData instrumentationData) {
         ClassReader cr = new ClassReader(originalBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        EnterExitClassVisitor mcw = new EnterExitClassVisitor(factory, instrumentationData, cw);
+        DefaultClassInstrumentor mcw = new DefaultClassInstrumentor(factory, instrumentationData, cw);
         cr.accept(mcw, ClassReader.EXPAND_FRAMES);
         byte[] b2 = cw.toByteArray();
         return b2;

@@ -24,22 +24,8 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import org.objectweb.asm.MethodVisitor;
 
 /**
- * Created by gupele on 5/20/2015.
+ * Created by gupele on 5/31/2015.
  */
-final class MethodWrapperFactory implements MethodFactory {
-    private final ClassNamesProvider provider;
-
-    public MethodWrapperFactory(ClassNamesProvider provider) {
-        this.provider = provider;
-    }
-
-    public EnterExitMethodWrapper getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor) {
-        if (provider.isHttpClass(className)) {
-            return new EnterExitMethodForHttp(access, desc, className, methodName, methodVisitor);
-        } else if (provider.isSqlClass(className)) {
-            return new EnterExitMethodForSqlStatement(access, desc, className, methodName, methodVisitor);
-        }
-
-        return new EnterExitMethodWrapper(decision, access, desc, className, methodName, methodVisitor);
-    }
+interface MethodInstrumentorsFactory {
+    DefaultMethodInstrumentor getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor);
 }

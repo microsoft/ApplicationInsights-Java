@@ -29,11 +29,11 @@ import org.objectweb.asm.commons.AdviceAdapter;
 
 /**
  * A base class that lets its derived classes to enjoy utilities
- * like creating Temp variables managing end of methods method names etc.
+ * like creating temporary variables, managing methods points, method names etc.
  *
  * Created by gupele on 5/11/2015.
  */
-abstract class AdvancedAdapter extends AdviceAdapter {
+abstract class AdvancedAdviceAdapter extends AdviceAdapter {
 
     protected final boolean reportExecutionTime;
 
@@ -41,7 +41,7 @@ abstract class AdvancedAdapter extends AdviceAdapter {
         EXIT_WITH_EXCEPTION,
         EXIT_WITH_RETURN_VALUE,
         EXIT_VOID,
-        UNKNOWN
+        EXIT_UNKNOWN
     }
 
     protected static class TempVar {
@@ -99,7 +99,7 @@ abstract class AdvancedAdapter extends AdviceAdapter {
         super.visitMethodInsn(opcode, owner, name, desc, isMethodOwnerAnInterface);
     }
 
-    protected AdvancedAdapter(boolean reportExecutionTime, int api, MethodVisitor methodVisitor, int access, String owner, String methodName, String desc) {
+    protected AdvancedAdviceAdapter(boolean reportExecutionTime, int api, MethodVisitor methodVisitor, int access, String owner, String methodName, String desc) {
         super(api, methodVisitor, access, methodName, desc);
         this.reportExecutionTime = reportExecutionTime;
         this.desc = desc;
@@ -161,7 +161,7 @@ abstract class AdvancedAdapter extends AdviceAdapter {
                 return ExitStatus.EXIT_VOID;
 
             default:
-                return ExitStatus.UNKNOWN;
+                return ExitStatus.EXIT_UNKNOWN;
         }
     }
 

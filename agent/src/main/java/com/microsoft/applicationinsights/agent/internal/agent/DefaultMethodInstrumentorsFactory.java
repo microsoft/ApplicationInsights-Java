@@ -19,34 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.config;
+package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.util.HashMap;
-
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import org.objectweb.asm.MethodVisitor;
 
 /**
- * Created by gupele on 5/19/2015.
+ * Created by gupele on 5/20/2015.
  */
-final class XmlAgentConfiguration implements AgentConfiguration {
-    private HashMap<String, ClassInstrumentationData> classesToInstrument;
-    private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
+final class DefaultMethodInstrumentorsFactory implements MethodInstrumentorsFactory {
+    private final ClassDataProvider provider;
 
-    void setRequestedClassesToInstrument(HashMap<String, ClassInstrumentationData> classesToInstrument) {
-        this.classesToInstrument = classesToInstrument;
+    public DefaultMethodInstrumentorsFactory(ClassDataProvider provider) {
+        this.provider = provider;
     }
 
-    @Override
-    public HashMap<String, ClassInstrumentationData> getRequestedClassesToInstrument() {
-        return classesToInstrument;
-    }
+    public DefaultMethodInstrumentor getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor) {
+        if (provider.isHttpClass(className)) {
+            return new HttpMethodInstrumentor(access, desc, className, methodName, methodVisitor);
+        } else if (provider.isSqlClass(className)) {
+            return new SqlStatementMethodInstrumentor(access, desc, className, methodName, methodVisitor);
+        }
 
-    @Override
-    public AgentBuiltInConfiguration getBuiltInSwitches() {
-        return builtInConfiguration;
-    }
-
-    public void setBuiltInData(AgentBuiltInConfiguration builtInData) {
-        this.builtInConfiguration = builtInData;
+        return new DefaultMethodInstrumentor(decision, access, desc, className, methodName, methodVisitor);
     }
 }

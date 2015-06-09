@@ -26,7 +26,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import java.io.*;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -54,6 +55,19 @@ public final class XmlAgentConfigurationBuilderTest {
             writer.println("<HTTP enabled=\"true\"/>");
 
             writer.println("</BuiltIn>");
+        }
+    }
+
+    private static class ForbiddenSectionTestPrinter implements Printer {
+        @Override
+        public void print(PrintWriter writer) {
+            writer.println("<ForbiddenPrefixes>");
+
+            writer.println("<Class>a.AClass1</Class>");
+            writer.println("<Class>a.AClass1</Class>");
+            writer.println("<Class>a.b.AClass1</Class>");
+
+            writer.println("</ForbiddenPrefixes>");
         }
     }
 
@@ -86,6 +100,20 @@ public final class XmlAgentConfigurationBuilderTest {
     }
 
     @Test
+    public void testForbiddenSection() throws IOException {
+        AgentConfiguration configuration = testConfiguration(new ForbiddenSectionTestPrinter());
+
+        assertNotNull(configuration);
+
+        Set<String> forbiddenPrefixes = configuration.getForbiddenPrefixes();
+
+        assertNotNull(forbiddenPrefixes);
+        assertEquals(forbiddenPrefixes.size(), 2);
+        assertTrue(forbiddenPrefixes.contains("a.AClass1"));
+        assertTrue(forbiddenPrefixes.contains("a.b.AClass1"));
+    }
+
+    @Test
     public void testMalformedConfiguration() throws IOException {
         AgentConfiguration configuration = testConfiguration(new MalformedXmlTestPrinter());
         assertNull(configuration);
@@ -94,7 +122,7 @@ public final class XmlAgentConfigurationBuilderTest {
     @Test
     public void testClassesConfiguration() throws IOException {
         AgentConfiguration configuration = testConfiguration(new ConfigurationTestPrinter());
-        HashMap<String, ClassInstrumentationData> classes = configuration.getRequestedClassesToInstrument();
+        Map<String, ClassInstrumentationData> classes = configuration.getRequestedClassesToInstrument();
         assertNotNull(classes);
         assertEquals(classes.size(), 2);
     }

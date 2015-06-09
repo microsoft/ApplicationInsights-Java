@@ -21,20 +21,45 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 
 /**
- * Defines the interface for concrete classes that represent configuration data for the Agent
- * Created by gupele on 5/17/2015.
+ * Created by gupele on 5/19/2015.
  */
-public interface AgentConfiguration {
+final class AgentConfigurationDefaultImpl implements AgentConfiguration {
+    private HashMap<String, ClassInstrumentationData> classesToInstrument;
+    private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
+    private Set<String> forbiddenPrefixes = new HashSet<String>();
 
-    AgentBuiltInConfiguration getBuiltInSwitches();
+    void setRequestedClassesToInstrument(HashMap<String, ClassInstrumentationData> classesToInstrument) {
+        this.classesToInstrument = classesToInstrument;
+    }
 
-    Map<String, ClassInstrumentationData> getRequestedClassesToInstrument();
+    @Override
+    public Map<String, ClassInstrumentationData> getRequestedClassesToInstrument() {
+        return classesToInstrument;
+    }
 
-    Set<String> getForbiddenPrefixes();
+    @Override
+    public AgentBuiltInConfiguration getBuiltInSwitches() {
+        return builtInConfiguration;
+    }
+
+    @Override
+    public Set<String> getForbiddenPrefixes() {
+        return forbiddenPrefixes;
+    }
+
+    public void setBuiltInData(AgentBuiltInConfiguration builtInData) {
+        this.builtInConfiguration = builtInData;
+    }
+
+    public void setForbiddenPrefixes(Set<String> forbiddenPrefixes) {
+        this.forbiddenPrefixes = forbiddenPrefixes;
+    }
 }

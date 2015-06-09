@@ -21,9 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Collection;
 
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
@@ -32,19 +34,97 @@ import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogg
 /**
  * Created by gupele on 5/11/2015.
  */
-class DefaultClassNamesProvider implements ClassNamesProvider {
+class DefaultClassDataProvider implements ClassDataProvider {
+    private final static String HIBERNATE_SESSION_IMPL_CLASS_NAME = "org/hibernate/impl/SessionImpl";
+    private final static String HIBERNATE_STATELESS_SESSION_IMPL_CLASS_NAME = "org/hibernate/impl/StatelessSessionImpl";
+
+    private final static String HTTP_CLASS_NAME = "sun/net/www/protocol/http/HttpURLConnection$HttpInputStream";
+    private final static String HTTP_METHOD_NAME = "read";
+    private final static String HTTP_METHOD_SIGNATURE = "([BII)I";
+
+    private final static String[] FORBIDDEN_CLASS_PREFIXES = new String[] {
+        "java/",
+        "javax/",
+        "org/apache",
+        "com/microsoft/applicationinsights",
+        "sun/nio/",
+        "sun/rmi/",
+        "com/sun/jmx/",
+        "sun/net/www/http/KeepAlive",
+        "com.google"
+    };
+
+    private final static String[] JDBC_CLASS_NAMES = new String[] {
+        "com/mysql/jdbc/StatementImpl",
+        "com/mysql/jdbc/PreparedStatement",
+        "com/mysql/jdbc/ServerPreparedStatement",
+        "com/mysql/jdbc/CallableStatement",
+        "com/mysql/jdbc/JDBC4CallableStatement",
+        "com/mysql/jdbc/JDBC4PreparedStatement",
+        "com/mysql/jdbc/JDBC4ServerPreparedStatement",
+        "com/mysql/jdbc/jdbc2/optional/StatementWrapper",
+        "com/mysql/jdbc/jdbc2/optional/JDBC4StatementWrapper",
+        "com/mysql/jdbc/jdbc2/optional/CallableStatementWrapper",
+        "com/mysql/jdbc/jdbc2/optional/JDBC4PreparedStatementWrapper",
+
+        "org/sqlite/jdbc4/JDBC4Statement",
+        "org/sqlite/core/CorePreparedStatement",
+        "org/sqlite/jdbc3/JDBC3PreparedStatement",
+        "org/sqlite/jdbc4/JDBC4PreparedStatement",
+
+        "org/hsqldb/jdbc/JDBCPreparedStatement",
+        "org/hsqldb/jdbc/jdbcCallableStatement",
+        "org/hsqldb/jdbc/JDBCStatement",
+
+        "org/postgresql/core/BaseStatement",
+        "org/postgresql/jdbc2/AbstractJdbc2Statement",
+        "org/postgresql/jdbc3g/AbstractJdbc3gStatement",
+        "org/postgresql/jdbc4/AbstractJdbc4Statement",
+        "org/postgresql/jdbc4/Jdbc4Statement",
+        "org/postgresql/jdbc4/Jdbc4PreparedStatement",
+        "org/postgresql/jdbc4/Jdbc4CallableStatement"
+    };
+
+    private final static String[] JDBC_METHODS_TO_TRACK = {
+        "execute",
+        "executeQuery",
+        "executeUpdate"
+    };
+
+    private final static String[] HIBERNATE_SESSION_IMPL_METHODS_TO_TRACK = {
+        "delete",
+        "execute",
+        "executeNativeUpdate",
+        "executeUpdate",
+        "find",
+        "get",
+        "save",
+        "list",
+        "load",
+        "saveOrUpdate",
+        "update"
+    };
+
+    private final static String[] HIBERNATE_STATELESS_SESSION_IMPL_METHODS_TO_TRACK = {
+        "delete",
+        "get",
+        "insert",
+        "list",
+        "update"
+    };
+
     private AgentConfiguration agentConfiguration;
 
     private final HashSet<String> sqlClasses = new HashSet<String>();
     private final HashSet<String> httpClasses = new HashSet<String>();
-    private final HashSet<String> forbiddenPaths = new HashSet<String>();
+    private final HashSet<String> forbiddenPaths;
 
     private final HashMap<String, ClassInstrumentationData> classesToInstrument = new HashMap<String, ClassInstrumentationData>();
 
     private boolean builtInEnabled = true;
 
-    public DefaultClassNamesProvider() {
-        populateForbiddenClasses();
+    public DefaultClassDataProvider() {
+        forbiddenPaths = new HashSet<String>((Arrays.asList(FORBIDDEN_CLASS_PREFIXES)));
     }
 
     @Override
@@ -83,77 +163,20 @@ class DefaultClassNamesProvider implements ClassNamesProvider {
     }
 
     private void addHibernate() {
-        HashSet<String> methodNamesOnly = new HashSet<String>();
-        methodNamesOnly.add("delete");
-        methodNamesOnly.add("execute");
-        methodNamesOnly.add("executeNativeUpdate");
-        methodNamesOnly.add("executeUpdate");
-        methodNamesOnly.add("find");
-        methodNamesOnly.add("get");
-        methodNamesOnly.add("save");
-        methodNamesOnly.add("list");
-        methodNamesOnly.add("load");
-        methodNamesOnly.add("saveOrUpdate");
-        methodNamesOnly.add("update");
+        HashSet<String> methodNames = new HashSet<String>(Arrays.asList(HIBERNATE_SESSION_IMPL_METHODS_TO_TRACK));
 
-        addToClasses("org/hibernate/impl/SessionImpl", InstrumentedClassType.SQL, methodNamesOnly);
+        addToClasses(HIBERNATE_SESSION_IMPL_CLASS_NAME, InstrumentedClassType.SQL, methodNames);
 
-        methodNamesOnly.clear();
-        methodNamesOnly.add("delete");
-        methodNamesOnly.add("get");
-        methodNamesOnly.add("insert");
-        methodNamesOnly.add("list");
-        methodNamesOnly.add("update");
+        methodNames.clear();
+        methodNames.addAll(Arrays.asList(HIBERNATE_STATELESS_SESSION_IMPL_METHODS_TO_TRACK));
 
-        addToClasses("org/hibernate/impl/StatelessSessionImpl", InstrumentedClassType.SQL, methodNamesOnly);
-    }
-
-    private void populateForbiddenClasses() {
-        forbiddenPaths.add("java/");
-        forbiddenPaths.add("java/");
-        forbiddenPaths.add("javax/");
-        forbiddenPaths.add("org/apache");
-        forbiddenPaths.add("com/microsoft/applicationinsights");
-        forbiddenPaths.add("sun/nio/");
-        forbiddenPaths.add("sun/rmi/");
-        forbiddenPaths.add("com/sun/jmx/");
-        forbiddenPaths.add("sun/net/www/http/KeepAlive");
-        forbiddenPaths.add("com.google");
+        addToClasses(HIBERNATE_STATELESS_SESSION_IMPL_CLASS_NAME,InstrumentedClassType.SQL, methodNames);
     }
 
     private void populateSqlClasses() {
-        sqlClasses.add("com/mysql/jdbc/StatementImpl");
-        sqlClasses.add("com/mysql/jdbc/PreparedStatement");
-        sqlClasses.add("com/mysql/jdbc/ServerPreparedStatement");
-        sqlClasses.add("com/mysql/jdbc/CallableStatement");
-        sqlClasses.add("com/mysql/jdbc/JDBC4CallableStatement");
-        sqlClasses.add("com/mysql/jdbc/JDBC4PreparedStatement");
-        sqlClasses.add("com/mysql/jdbc/JDBC4ServerPreparedStatement");
-        sqlClasses.add("com/mysql/jdbc/jdbc2/optional/StatementWrapper");
-        sqlClasses.add("com/mysql/jdbc/jdbc2/optional/JDBC4StatementWrapper");
-        sqlClasses.add("com/mysql/jdbc/jdbc2/optional/CallableStatementWrapper");
-        sqlClasses.add("com/mysql/jdbc/jdbc2/optional/JDBC4PreparedStatementWrapper");
+        sqlClasses.addAll(Arrays.asList(JDBC_CLASS_NAMES));
 
-        sqlClasses.add("org/sqlite/jdbc4/JDBC4Statement");
-        sqlClasses.add("org/sqlite/core/CorePreparedStatement");
-        sqlClasses.add("org/sqlite/jdbc3/JDBC3PreparedStatement");
-        sqlClasses.add("org/sqlite/jdbc4/JDBC4PreparedStatement");
-
-        sqlClasses.add("org/hsqldb/jdbc/JDBCPreparedStatement");
-        sqlClasses.add("org/hsqldb/jdbc/jdbcCallableStatement");
-        sqlClasses.add("org/hsqldb/jdbc/JDBCStatement");
-
-        sqlClasses.add("org/postgresql/core/BaseStatement");
-        sqlClasses.add("org/postgresql/jdbc2/AbstractJdbc2Statement");
-        sqlClasses.add("org/postgresql/jdbc3g/AbstractJdbc3gStatement");
-        sqlClasses.add("org/postgresql/jdbc4/AbstractJdbc4Statement");
-        sqlClasses.add("org/postgresql/jdbc4/Jdbc4Statement");
-        sqlClasses.add("org/postgresql/jdbc4/Jdbc4PreparedStatement");
-        sqlClasses.add("org/postgresql/jdbc4/Jdbc4CallableStatement");
-
-        HashSet<String> methodNamesOnly = new HashSet<String>();
-        methodNamesOnly.add("execute");
-        methodNamesOnly.add("executeQuery");
+        HashSet<String> methodNamesOnly = new HashSet<String>(Arrays.asList(JDBC_METHODS_TO_TRACK));
 
         for (String className : sqlClasses) {
             addToClasses(className, InstrumentedClassType.SQL, methodNamesOnly);
@@ -161,13 +184,13 @@ class DefaultClassNamesProvider implements ClassNamesProvider {
     }
 
     private void populateHttpClasses() {
-        httpClasses.add("sun/net/www/protocol/http/HttpURLConnection$HttpInputStream");
+        httpClasses.add(HTTP_CLASS_NAME);
 
         ClassInstrumentationData data =
-                new ClassInstrumentationData("sun/net/www/protocol/http/HttpURLConnection$HttpInputStream", InstrumentedClassType.HTTP)
+                new ClassInstrumentationData(HTTP_CLASS_NAME, InstrumentedClassType.HTTP)
                     .setReportCaughtExceptions(false)
                     .setReportExecutionTime(true);
-        data.addMethod("read", "([BII)I", false, true);
+        data.addMethod(HTTP_METHOD_NAME, HTTP_METHOD_SIGNATURE, false, true);
 
         classesToInstrument.put(data.className, data);
     }
@@ -188,7 +211,7 @@ class DefaultClassNamesProvider implements ClassNamesProvider {
 
         builtInEnabled = agentConfiguration.getBuiltInSwitches().isEnabled();
 
-        HashMap<String, ClassInstrumentationData> configurationData = agentConfiguration.getRequestedClassesToInstrument();
+        Map<String, ClassInstrumentationData> configurationData = agentConfiguration.getRequestedClassesToInstrument();
         if (configurationData != null) {
             for (ClassInstrumentationData classInstrumentationData : configurationData.values()) {
                 if (isForbidden(classInstrumentationData.className)) {
@@ -200,6 +223,8 @@ class DefaultClassNamesProvider implements ClassNamesProvider {
                 classesToInstrument.put(classInstrumentationData.className, classInstrumentationData);
             }
         }
+
+        forbiddenPaths.addAll(agentConfiguration.getForbiddenPrefixes());
     }
 
     private void addToClasses(String className, InstrumentedClassType type, Collection<String> methodNamesOnly) {

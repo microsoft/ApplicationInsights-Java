@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguratio
  *
  * Created by gupele on 5/11/2015.
  */
-interface ClassNamesProvider {
+interface ClassDataProvider {
     /**
      * The configuration that might add extra information
      * @param agentConfiguration The configuration

@@ -38,7 +38,7 @@ import org.objectweb.asm.Type;
  *
  * Created by gupele on 5/11/2015.
  */
-class EnterExitMethodWrapper extends AdvancedAdapter {
+class DefaultMethodInstrumentor extends AdvancedAdviceAdapter {
 
     private final static String EXCEPTION_METHOD_NAME = "onException";
     private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V";
@@ -55,14 +55,14 @@ class EnterExitMethodWrapper extends AdvancedAdapter {
     private final boolean reportCaughtExceptions;
     private HashSet<Label> labels = null;
 
-    public EnterExitMethodWrapper(boolean reportCaughtExceptions, boolean reportExecutionTime, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+    public DefaultMethodInstrumentor(boolean reportCaughtExceptions, boolean reportExecutionTime, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
         super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
         this.owner = owner;
         this.methodName = methodName;
         this.reportCaughtExceptions = reportCaughtExceptions;
     }
 
-    public EnterExitMethodWrapper(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+    public DefaultMethodInstrumentor(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
         this(decision.reportCaughtExceptions, decision.reportExecutionTime, access, desc, owner, methodName, methodVisitor);
     }
 
