@@ -26,41 +26,21 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.telemetry.SessionState;
-import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
-import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 
 /**
  * Created by yonisha on 2/4/2015.
  */
 public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
 
-    // region Members
-
-    private TelemetryClient telemetryClient;
-    private boolean isInitialized = false;
-    private boolean isUserModuleEnabled = false;
-
-    // endregion Members
-
     // region Constructors
 
-    public WebSessionTrackingTelemetryModule() {}
-
     public WebSessionTrackingTelemetryModule(Map<String, String> argumentsMap) {
-        if (argumentsMap == null) {
-            return;
-        }
-
-        parseArguments(argumentsMap);
     }
 
     // endregion Constructors
@@ -74,13 +54,6 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      */
     @Override
     public void initialize(TelemetryConfiguration configuration) {
-        try {
-            telemetryClient = new TelemetryClient(configuration);
-            isInitialized = true;
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to initialize telemetry module " + this.getClass().getSimpleName() + ". Exception: %s.", e.getMessage());
-        }
     }
 
     /**
@@ -91,30 +64,25 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      */
     @Override
     public void onBeginRequest(ServletRequest req, ServletResponse res) {
-        if (!isInitialized) {
-            // Avoid logging to not spam the log. It is sufficient that the module initialization failure
-            // has been logged.
-            return;
-        }
-
         HttpServletRequest request = (HttpServletRequest)req;
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-
-        boolean isNewUser = isNewUser(request);
-
-        if (isNewUser && isUserModuleEnabled) {
-            context.getHttpRequestTelemetry().getContext().getSession().setIsFirst(true);
-        }
 
         SessionCookie sessionCookie =
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         SessionCookie.class, request, SessionCookie.COOKIE_NAME);
 
+        context.setSessionCookie(sessionCookie);
+
+        boolean isFirst = true;
+        String sessionId = null;
+
         if (sessionCookie != null) {
-            // Update ai context with session details.
-            getTelemetrySessionContext(context).setId(sessionCookie.getSessionId());
-            context.setSessionCookie(sessionCookie);
+            isFirst = false;
+            sessionId = sessionCookie.getSessionId();
         }
+
+        context.getHttpRequestTelemetry().getContext().getSession().setIsFirst(isFirst);
+        getTelemetrySessionContext(context).setId(sessionId);
     }
 
     /**
@@ -129,38 +97,12 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
     public void onEndRequest(ServletRequest req, ServletResponse res) {
     }
 
-    /**
-     * Sets a value indicating whether the user tracking module enabled.
-     * @param isUserModuleEnabled True if the user module enabled, false otherwise.
-     */
-    public void setIsUserModuleEnabled(boolean isUserModuleEnabled){
-        this.isUserModuleEnabled = isUserModuleEnabled;
-    }
-
-    /**
-     * Gets a value indicating whether the user tracking module enabled.
-     * @return True if the user module enabled, false otherwise.
-     */
-    public boolean getIsUserModuleEnabled() {
-        return isUserModuleEnabled;
-    }
-
     // endregion Public
 
     // region Private
 
-    private void parseArguments(Map<String, String> argumentsMap) {
-    }
-
     private SessionContext getTelemetrySessionContext(RequestTelemetryContext aiContext) {
         return aiContext.getHttpRequestTelemetry().getContext().getSession();
-    }
-
-    private boolean isNewUser(HttpServletRequest request) {
-        UserCookie userCookie = com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
-                UserCookie.class, request, UserCookie.COOKIE_NAME);
-
-        return userCookie == null;
     }
 
     // endregion Private
