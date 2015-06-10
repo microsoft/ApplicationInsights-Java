@@ -59,9 +59,9 @@ public final class ConfigurationFileLocator {
         }
 
         if (configurationFile != null) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file found in: '%s'", configurationFile);
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file has been successfully found in: '%s'", configurationFile);
         } else {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Configuration file '%s' could not be found", configurationFileName);
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Configuration file '%s' could not be found", configurationFileName);
         }
 
         return configurationFile;
@@ -99,10 +99,10 @@ public final class ConfigurationFileLocator {
                     return configurationPath;
                 }
             } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Can not access folder '%s'", jarFullPath);
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Can not access folder '%s'", jarFullPath);
             }
         } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to find configuration file, exception: '%s'", e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Failed to find configuration file, exception: '%s'", e.getMessage());
         }
         return null;
     }
@@ -147,8 +147,6 @@ public final class ConfigurationFileLocator {
         File configFile = new File(path, configurationFileName);
 
         if (configFile.exists()) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Found configuration file in: '%s'", path);
-
             return configFile.getAbsolutePath();
         }
 
