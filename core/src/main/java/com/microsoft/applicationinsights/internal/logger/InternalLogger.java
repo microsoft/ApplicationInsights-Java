@@ -207,7 +207,7 @@ public enum InternalLogger {
      */
     public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
         String logMessage = createMessage(requestLevel.toString(), message, args);
-        if (!initialized) {
+        if (!initialized || loggerOutput == null) {
             new ConsoleLoggerOutput().log(logMessage);
         } else {
             loggerOutput.log(logMessage);
