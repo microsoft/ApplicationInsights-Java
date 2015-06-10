@@ -47,11 +47,14 @@ public class WebSessionTelemetryInitializer extends WebTelemetryInitializerBase 
 
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         SessionContext requestSessionContext = requestTelemetry.getContext().getSession();
+        if (requestSessionContext == null) {
+            return;
+        }
 
         session.setId(requestSessionContext.getId());
 
         Boolean isFirstSession = requestSessionContext.getIsFirst();
-        if (isFirstSession != null && isFirstSession) {
+        if (isFirstSession != null) {
             session.setIsFirst(isFirstSession);
         }
     }

@@ -107,13 +107,6 @@ public class WebSessionTrackingTelemetryModuleTests {
         Assert.assertTrue(sessionCookieFormatted.contains(requestTelemetry.getContext().getSession().getId()));
     }
 
-    @Test
-    public void testNoSessionCreatedWhenValidSessionExists() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
-
-        Assert.assertNull(cookiesContainer.getSessionCookie());
-    }
-
     @Ignore
     @Test
     public void testWhenSessionExpiredSessionStateEndTracked() throws Exception {

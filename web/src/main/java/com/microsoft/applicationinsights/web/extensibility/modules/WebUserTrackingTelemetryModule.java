@@ -70,11 +70,11 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         UserCookie.class, request, UserCookie.COOKIE_NAME);
 
+        context.setUserCookie(userCookie);
         if (userCookie == null) {
             return;
         }
 
-        context.setUserCookie(userCookie);
         UserContext userContext = context.getHttpRequestTelemetry().getContext().getUser();
         userContext.setId(userCookie.getUserId());
         userContext.setAcquisitionDate(userCookie.getAcquisitionDate());
