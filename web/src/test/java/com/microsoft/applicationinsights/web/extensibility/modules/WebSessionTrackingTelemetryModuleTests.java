@@ -25,15 +25,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.junit.*;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
-import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
 import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
@@ -53,6 +56,29 @@ import static org.mockito.Mockito.mock;
  * Created by yonisha on 2/5/2015.
  */
 public class WebSessionTrackingTelemetryModuleTests {
+    private static class TestModuleInitializer implements TelemetryInitializer {
+        private final String expectedSessionId;
+        private final boolean expectedIsFirst;
+
+        private TestModuleInitializer(String expectedSessionId, boolean expectedIsFirst) {
+            this.expectedSessionId = expectedSessionId;
+            this.expectedIsFirst = expectedIsFirst;
+        }
+
+        @Override
+        public void initialize(Telemetry telemetry) {
+            RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+            SessionContext requestSessionContext = requestTelemetry.getContext().getSession();
+
+            if (expectedSessionId == null) {
+                Assert.assertTrue(Sanitizer.isUUID(requestSessionContext.getId()));
+                Assert.assertNotEquals(requestSessionContext.getId(), HttpHelper.getCookie());
+            } else {
+                Assert.assertEquals(expectedSessionId, requestSessionContext.getId());
+            }
+            Assert.assertEquals(expectedIsFirst, requestSessionContext.getIsFirst());
+        }
+    }
 
     // region Members
 
@@ -91,6 +117,8 @@ public class WebSessionTrackingTelemetryModuleTests {
 
     @Test
     public void testNewSessionCookieIsNotCreatedWhenCookieNotExist() throws Exception {
+        TelemetryConfiguration.getActive().getTelemetryInitializers().add(new TestModuleInitializer(null, false));
+
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
 
         Assert.assertNull("Session cookie should be null.", cookiesContainer.getSessionCookie());
@@ -112,6 +140,7 @@ public class WebSessionTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
 
         Assert.assertTrue(sessionCookieFormatted.contains(requestTelemetry.getContext().getSession().getId()));
+        Assert.assertEquals(requestTelemetry.getContext().getSession().getId(), HttpHelper.getCookie());
     }
 
     @Ignore
