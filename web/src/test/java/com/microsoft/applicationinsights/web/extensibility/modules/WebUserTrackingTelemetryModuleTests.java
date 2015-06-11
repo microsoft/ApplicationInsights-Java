@@ -88,6 +88,13 @@ public class WebUserTrackingTelemetryModuleTests {
     // region Tests
 
     @Test
+    public void testNewUserCookieIsNotCreatedWhenCookieNotExist() throws Exception {
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
+
+        Assert.assertNull("User cookie should be null.", cookiesContainer.getUserCookie());
+    }
+
+    @Test
     public void testWhenCookieExistCorrectUserIdAttachedToSentTelemetry() throws Exception {
         HttpHelper.sendRequestAndGetResponseCookie(userCookieFormatted);
 

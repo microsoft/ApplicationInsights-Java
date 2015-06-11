@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import java.util.Date;
 import java.util.Map;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -70,14 +71,19 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         UserCookie.class, request, UserCookie.COOKIE_NAME);
 
-        context.setUserCookie(userCookie);
-        if (userCookie == null) {
-            return;
+        String userId = null;
+        Date acquisitionDate = null;
+
+        if (userCookie != null) {
+            userId = userCookie.getUserId();
+            acquisitionDate = userCookie.getAcquisitionDate();
         }
 
+        context.setUserCookie(userCookie);
+
         UserContext userContext = context.getHttpRequestTelemetry().getContext().getUser();
-        userContext.setId(userCookie.getUserId());
-        userContext.setAcquisitionDate(userCookie.getAcquisitionDate());
+        userContext.setId(userId);
+        userContext.setAcquisitionDate(acquisitionDate);
     }
 
     /**

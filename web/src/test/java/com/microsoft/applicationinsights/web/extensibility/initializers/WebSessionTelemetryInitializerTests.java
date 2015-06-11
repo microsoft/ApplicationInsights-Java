@@ -1,7 +1,7 @@
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -18,8 +18,8 @@ public class WebSessionTelemetryInitializerTests {
     private WebSessionTelemetryInitializer sessionTelemetryInitializer = new WebSessionTelemetryInitializer();
 
 
-    @BeforeClass
-    public static void classInitialize() {
+    @Before
+    public void classInitialize() {
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
 
@@ -27,6 +27,16 @@ public class WebSessionTelemetryInitializerTests {
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         requestTelemetry.getContext().getSession().setId(REQUEST_SESSION_ID);
         requestTelemetry.getContext().getSession().setIsFirst(true);
+    }
+
+    @Test
+    public void testNoSessionCookieWithIsFirstAsFalse() {
+        testNoSessionCookie(false);
+    }
+
+    @Test
+    public void testNoSessionCookieWithIsFirstAsNull() {
+        testNoSessionCookie(null);
     }
 
     @Test
@@ -56,5 +66,18 @@ public class WebSessionTelemetryInitializerTests {
         sessionTelemetryInitializer.onInitializeTelemetry(telemetry);
 
         Assert.assertEquals("First session expected.", true, telemetry.getContext().getSession().getIsFirst());
+    }
+
+    private void testNoSessionCookie(Boolean isFirstValue) {
+        RequestTelemetryContext requestTelemetryContext = ThreadContext.getRequestTelemetryContext();
+        requestTelemetryContext.getHttpRequestTelemetry().getContext().getSession().setIsFirst(isFirstValue);
+        requestTelemetryContext.getHttpRequestTelemetry().getContext().getSession().setId(null);
+
+        TraceTelemetry telemetry = new TraceTelemetry();
+
+        sessionTelemetryInitializer.onInitializeTelemetry(telemetry);
+
+        Assert.assertNull(telemetry.getContext().getSession().getId());
+        Assert.assertFalse(telemetry.getContext().getSession().getIsFirst());
     }
 }
