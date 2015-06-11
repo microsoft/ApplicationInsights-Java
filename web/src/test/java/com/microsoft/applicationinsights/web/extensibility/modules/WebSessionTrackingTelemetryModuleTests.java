@@ -90,6 +90,13 @@ public class WebSessionTrackingTelemetryModuleTests {
     // region Tests
 
     @Test
+    public void testNewSessionCookieIsNotCreatedWhenCookieNotExist() throws Exception {
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
+
+        Assert.assertNull("Session cookie should be null.", cookiesContainer.getSessionCookie());
+    }
+
+    @Test
     public void testIsFirstSessionIsPopulatedOnFirstSession() throws Exception {
         HttpHelper.sendRequestAndGetResponseCookie();
 
