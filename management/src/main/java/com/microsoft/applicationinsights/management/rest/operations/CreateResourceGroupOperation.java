@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 
 import java.io.IOException;
 
@@ -38,20 +39,21 @@ public class CreateResourceGroupOperation implements RestOperation<ResourceGroup
     private static final Logger LOG = Logger.getLogger(CreateResourceGroupOperation.class.toString());
     private final String OPERATION_API_VERSION = "2015-01-01";
     private String OPERATION_PATH_TEMPLATE = "subscriptions/%s/resourcegroups/%s?api-version=%s";
-
+    private Tenant tenant;
     private String operationPath;
     private String payload;
 
-    public CreateResourceGroupOperation(String subscriptionId, String resourceGroupName, String location) {
+    public CreateResourceGroupOperation(Tenant tenant, String subscriptionId, String resourceGroupName, String location) {
         this.operationPath = String.format(OPERATION_PATH_TEMPLATE, subscriptionId, resourceGroupName, OPERATION_API_VERSION);
         this.payload = generatePayload(location);
+        this.tenant = tenant;
     }
 
     @Override
     public ResourceGroup execute(Client restClient) throws IOException, RestOperationException {
         LOG.info("Creating new resource group.\nURL path: {0}\nPayload:{1}", this.operationPath, this.payload);
 
-        String resourceJson = restClient.executePut(operationPath, payload, OPERATION_API_VERSION);
+        String resourceJson = restClient.executePut(tenant, operationPath, payload, OPERATION_API_VERSION);
         ResourceGroup resourceGroup = parseResult(resourceJson);
 
         return resourceGroup;

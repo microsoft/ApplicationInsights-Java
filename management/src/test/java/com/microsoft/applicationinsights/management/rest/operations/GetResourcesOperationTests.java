@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.management.rest.operations;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,20 +34,20 @@ public class GetResourcesOperationTests {
     @Before
     public void testInitialize() throws IOException, RestOperationException {
         restClient = mock(Client.class);
-        Mockito.doReturn(resourcesJson).when(restClient).executeGet(Matchers.anyString(), Matchers.anyString());
+        Mockito.doReturn(resourcesJson).when(restClient).executeGet(Matchers.any(Tenant.class), Matchers.anyString(), Matchers.anyString());
     }
 
     @Test
     public void testRestClientCalledWhenExecuting() throws IOException, RestOperationException {
-        GetResourcesOperation getResourcesOperation = new GetResourcesOperation(SUBSCRIPTION_ID);
+        GetResourcesOperation getResourcesOperation = new GetResourcesOperation(new Tenant(), SUBSCRIPTION_ID);
         getResourcesOperation.execute(restClient);
 
-        verify(restClient, times(1)).executeGet(Matchers.anyString(), Matchers.anyString());
+        verify(restClient, times(1)).executeGet(Matchers.any(Tenant.class), Matchers.anyString(), Matchers.anyString());
     }
 
     @Test
     public void testResourcesJsonParsedCorrectly() throws IOException, RestOperationException {
-        GetResourcesOperation getResourcesOperation = new GetResourcesOperation(SUBSCRIPTION_ID);
+        GetResourcesOperation getResourcesOperation = new GetResourcesOperation(new Tenant(), SUBSCRIPTION_ID);
         List<Resource> resources = getResourcesOperation.execute(restClient);
 
         Assert.assertEquals(1, resources.size());

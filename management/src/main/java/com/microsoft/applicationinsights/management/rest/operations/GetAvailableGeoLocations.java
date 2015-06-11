@@ -28,6 +28,7 @@ import com.google.gson.JsonParser;
 import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,18 +46,19 @@ public class GetAvailableGeoLocations implements RestOperation<List<String>> {
     private static final Logger LOG = Logger.getLogger(GetAvailableGeoLocations.class.toString());
     private final String OPERATION_API_VERSION = "2015-01-01";
     private final String OPERATION_PATH_TEMPLATE = "providers/microsoft.insights?api-version=%s";
-
+    private Tenant commonTenant;
     private String operationPath;
 
-    public GetAvailableGeoLocations() {
+    public GetAvailableGeoLocations(Tenant commonTenant) {
         this.operationPath = String.format(OPERATION_PATH_TEMPLATE, OPERATION_API_VERSION);
+        this.commonTenant = commonTenant;
     }
 
     @Override
     public List<String> execute(Client restClient) throws IOException, RestOperationException {
         LOG.info("Getting available geo-locations.\nURL Path: {0}.", this.operationPath);
 
-        String resourceJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
+        String resourceJson = restClient.executeGet(commonTenant, operationPath, OPERATION_API_VERSION);
         List<String> locations = parseResult(resourceJson);
 
         return locations;

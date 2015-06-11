@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,18 +42,20 @@ public class GetResourceGroupsOperation implements RestOperation<List<ResourceGr
     private static final Logger LOG = Logger.getLogger(GetResourceGroupsOperation.class.toString());
     private final String OPERATION_API_VERSION = "2015-01-01";
     private final String OPERATION_PATH_TEMPLATE = "subscriptions/%s/resourcegroups?api-version=%s";
+    private Tenant tenant;
 
     String operationPath;
 
-    public GetResourceGroupsOperation(String subscriptionId) {
+    public GetResourceGroupsOperation(Tenant tenant, String subscriptionId) {
         this.operationPath = String.format(OPERATION_PATH_TEMPLATE, subscriptionId, OPERATION_API_VERSION);
+        this.tenant = tenant;
     }
 
     @Override
     public List<ResourceGroup> execute(Client restClient) throws IOException, RestOperationException {
         LOG.info("Getting available resource groups.\nURL Path: {0}.", this.operationPath);
 
-        String resourceGroupsJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
+        String resourceGroupsJson = restClient.executeGet(this.tenant, operationPath, OPERATION_API_VERSION);
         List<ResourceGroup> resourceGroups = parseResult(resourceGroupsJson);
 
         return resourceGroups;

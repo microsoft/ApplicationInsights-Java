@@ -24,12 +24,16 @@ package com.microsoft.applicationinsights.management.rest;
 import java.io.IOException;
 import java.util.List;
 
+import com.microsoft.applicationinsights.management.authentication.Authenticator;
 import com.microsoft.applicationinsights.management.authentication.Settings;
+import com.microsoft.applicationinsights.management.common.Logger;
+import com.microsoft.applicationinsights.management.rest.client.OperationExceptionDetails;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.RestClient;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import com.microsoft.applicationinsights.management.rest.operations.*;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationContext;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
@@ -41,20 +45,25 @@ import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
  */
 public class ApplicationInsightsManagementClient implements ManagementClient {
 
+    private static final Logger LOG = Logger.getLogger(ApplicationInsightsManagementClient.class.toString());
     private static final String DEFAULT_AUTHENTICATION_TENANT = "common";
-    private AuthenticationResult authenticationResult;
-    private final String userAgent;
+    private List<Subscription> authorizedSubscriptions;
     private RestClient restClient;
+    private Tenant commonTenant;
 
     /**
      * Constructs new Application Insights management client.
      * @param authenticationResult The authentication result.
      * @param userAgent The user agent.
      */
-    public ApplicationInsightsManagementClient(AuthenticationResult authenticationResult, String userAgent) {
-        this.authenticationResult = authenticationResult;
-        this.userAgent = userAgent;
-        this.restClient = new RestClient(authenticationResult, userAgent);
+    public ApplicationInsightsManagementClient(AuthenticationResult authenticationResult, String userAgent) throws IOException, RestOperationException {
+        // Setting the common tenant.
+        this.commonTenant = new Tenant();
+        this.commonTenant.setId("common");
+        this.commonTenant.setAuthenticationToken(authenticationResult);
+
+        this.restClient = new RestClient(userAgent);
+        this.authorizedSubscriptions = getAuthorizedSubscriptions();
     }
 
     /**
@@ -62,12 +71,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @return The list of subscriptions available.
      */
     public List<Subscription> getSubscriptions() throws IOException, RestOperationException {
-        renewAccessTokenIfExpired();
-
-        GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation();
-        List<Subscription> subscriptions = getSubscriptionsOperation.execute(this.restClient);
-
-        return subscriptions;
+        return this.authorizedSubscriptions;
     }
 
     /**
@@ -76,9 +80,9 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @return The resources list.
      */
     public List<Resource> getResources(String subscriptionId) throws IOException, RestOperationException {
-        renewAccessTokenIfExpired();
+        Tenant tenant = getTenantForSubscription(subscriptionId);
 
-        GetResourcesOperation getResourcesOperation = new GetResourcesOperation(subscriptionId);
+        GetResourcesOperation getResourcesOperation = new GetResourcesOperation(tenant, subscriptionId);
         List<Resource> resources = getResourcesOperation.execute(this.restClient);
 
         return resources;
@@ -92,9 +96,9 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      * @return The resource created.
      */
     public Resource createResource(String subscriptionId, String resourceGroupName, String resourceName, String location) throws IOException, RestOperationException {
-        renewAccessTokenIfExpired();
+        Tenant tenant = getTenantForSubscription(subscriptionId);
 
-        CreateResourceOperation createResourceOperation = new CreateResourceOperation(subscriptionId, resourceGroupName, resourceName, location);
+        CreateResourceOperation createResourceOperation = new CreateResourceOperation(tenant, subscriptionId, resourceGroupName, resourceName, location);
         Resource resource = createResourceOperation.execute(this.restClient);
 
         return resource;
@@ -109,9 +113,9 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      */
     @Override
     public ResourceGroup createResourceGroup(String subscriptionId, String resourceGroupName, String location) throws IOException, RestOperationException {
-        renewAccessTokenIfExpired();
+        Tenant tenant = getTenantForSubscription(subscriptionId);
 
-        CreateResourceGroupOperation createResourceGroupOperation = new CreateResourceGroupOperation(subscriptionId, resourceGroupName, location);
+        CreateResourceGroupOperation createResourceGroupOperation = new CreateResourceGroupOperation(tenant, subscriptionId, resourceGroupName, location);
         ResourceGroup resourceGroup = createResourceGroupOperation.execute(this.restClient);
 
         return resourceGroup;
@@ -125,7 +129,9 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      */
     @Override
     public List<ResourceGroup> getResourceGroups(String subscriptionId) throws IOException, RestOperationException {
-        GetResourceGroupsOperation getResourceGroupsOperation = new GetResourceGroupsOperation(subscriptionId);
+        Tenant tenant = getTenantForSubscription(subscriptionId);
+
+        GetResourceGroupsOperation getResourceGroupsOperation = new GetResourceGroupsOperation(tenant, subscriptionId);
         List<ResourceGroup> resourceGroups = getResourceGroupsOperation.execute(this.restClient);
 
         return resourceGroups;
@@ -138,29 +144,74 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      */
     @Override
     public List<String> getAvailableGeoLocations() throws IOException, RestOperationException {
-        renewAccessTokenIfExpired();
+        Tenant commonTenant = getTenantForSubscription(DEFAULT_AUTHENTICATION_TENANT);
 
-        GetAvailableGeoLocations getAvailableGeoLocations = new GetAvailableGeoLocations();
+        GetAvailableGeoLocations getAvailableGeoLocations = new GetAvailableGeoLocations(commonTenant);
         List<String> locations = getAvailableGeoLocations.execute(this.restClient);
 
         return locations;
     }
 
-    private void renewAccessTokenIfExpired() throws IOException {
-        if (this.authenticationResult.getExpiresOn() > 0) {
+    private Tenant getTenantForSubscription(String subscriptionId) throws RestOperationException, IOException {
+        if (subscriptionId.equalsIgnoreCase(DEFAULT_AUTHENTICATION_TENANT)) {
+            return this.commonTenant;
+        }
+
+        for (Subscription subscription : this.authorizedSubscriptions) {
+            if (subscription.getId().equalsIgnoreCase(subscriptionId)) {
+                Tenant tenant = subscription.getTenant();
+                renewAccessTokenIfExpired(tenant);
+
+                return tenant;
+            }
+        }
+
+        String errorMessage = String.format("You not authorized for subscription %s", subscriptionId);
+        throw new RestOperationException(errorMessage, new OperationExceptionDetails(errorMessage));
+    }
+
+    private List<Subscription> getAuthorizedSubscriptions() throws IOException, RestOperationException {
+        LOG.info("Getting available subscriptions.");
+        List<Tenant> azureTenants = getAzureTenants();
+
+        GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation(azureTenants);
+        List<Subscription> subscriptions = getSubscriptionsOperation.execute(this.restClient);
+
+        return subscriptions;
+    }
+
+    private List<Tenant> getAzureTenants() throws IOException, RestOperationException {
+        LOG.info("Getting Azure tenants.");
+
+        GetTenantsOperation getTenantsOperation = new GetTenantsOperation(commonTenant);
+        List<Tenant> tenants = getTenantsOperation.execute(this.restClient);
+
+        for (Tenant tenant : tenants) {
+            AuthenticationResult authenticationResultForTenant = Authenticator.getAuthenticationResultForTenant(tenant.getId());
+            tenant.setAuthenticationToken(authenticationResultForTenant);
+        }
+
+        return tenants;
+    }
+
+    private void renewAccessTokenIfExpired(Tenant tenant) throws IOException {
+        AuthenticationResult authenticationResult = tenant.getAuthenticationToken();
+        if (authenticationResult.getExpiresOn() > 0) {
             return;
         }
 
-        if (this.authenticationResult.getRefreshToken() == null || this.authenticationResult.getRefreshToken().equalsIgnoreCase("")) {
-            // TODO: log.
+        if (authenticationResult.getRefreshToken() == null || authenticationResult.getRefreshToken().equalsIgnoreCase("")) {
+            LOG.severe("No refresh token available, cannot renew access token.");
 
             return;
         }
+
+        LOG.info("Renewing access token for tenant: %s", tenant.getId());
 
         AuthenticationContext context = new AuthenticationContext(Settings.getAdAuthority());
         try {
-            this.authenticationResult = context.acquireTokenByRefreshToken(
-                    this.authenticationResult,
+            authenticationResult = context.acquireTokenByRefreshToken(
+                    authenticationResult,
                     DEFAULT_AUTHENTICATION_TENANT,
                     Settings.getAzureServiceManagementUri(),
                     Settings.getClientId());
@@ -168,6 +219,6 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
             context.dispose();
         }
 
-         this.restClient = new RestClient(this.authenticationResult, userAgent);
+        tenant.setAuthenticationToken(authenticationResult);
     }
 }

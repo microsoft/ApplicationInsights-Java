@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.management.rest.operations;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Matchers.eq;
@@ -31,20 +33,20 @@ public class GetSubscriptionsOperationTests {
     @Before
     public void testInitialize() throws IOException, RestOperationException {
         restClient = mock(Client.class);
-        Mockito.doReturn(subscriptionJson).when(restClient).executeGet(Matchers.anyString(), Matchers.anyString());
+        Mockito.doReturn(subscriptionJson).when(restClient).executeGet(Matchers.any(Tenant.class), Matchers.anyString(), Matchers.anyString());
     }
 
     @Test
     public void testRestClientCalledWhenExecuting() throws IOException, RestOperationException {
-        GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation();
+        GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation(new ArrayList<Tenant>());
         getSubscriptionsOperation.execute(restClient);
 
-        verify(restClient, times(1)).executeGet(Matchers.anyString(), Matchers.anyString());
+        verify(restClient, times(1)).executeGet(Matchers.any(Tenant.class), Matchers.anyString(), Matchers.anyString());
     }
 
     @Test
     public void testSubscriptionsJsonParsedCorrectly() throws IOException, RestOperationException {
-        GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation();
+        GetSubscriptionsOperation getSubscriptionsOperation = new GetSubscriptionsOperation(new ArrayList<Tenant>());
         List<Subscription> subscriptions = getSubscriptionsOperation.execute(restClient);
 
         Assert.assertEquals(1, subscriptions.size());

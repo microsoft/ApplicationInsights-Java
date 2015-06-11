@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,17 +42,18 @@ public class GetResourcesOperation implements RestOperation<List<Resource>> {
     private static final Logger LOG = Logger.getLogger(GetResourcesOperation.class.toString());
     private final String OPERATION_API_VERSION = "2014-08-01";
     private final String OPERATION_PATH_TEMPLATE = "subscriptions/%s/providers/microsoft.insights/components?api-version=%s";
+    private Tenant tenant;
+    private String operationPath;
 
-    String operationPath;
-
-    public GetResourcesOperation(String subscriptionId) {
+    public GetResourcesOperation(Tenant tenant, String subscriptionId) {
         this.operationPath = String.format(OPERATION_PATH_TEMPLATE, subscriptionId, OPERATION_API_VERSION);
+        this.tenant = tenant;
     }
 
     public List<Resource> execute(Client restClient) throws IOException, RestOperationException {
         LOG.info("Getting available resources.\nURL Path: {0}.", this.operationPath);
 
-        String resourcesJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
+        String resourcesJson = restClient.executeGet(tenant, operationPath, OPERATION_API_VERSION);
         List<Resource> resources = parseResult(resourcesJson);
 
         return resources;

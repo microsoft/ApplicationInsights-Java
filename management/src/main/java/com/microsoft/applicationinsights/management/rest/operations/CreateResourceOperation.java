@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 
 /**
  * Created by yonisha on 4/20/2015.
@@ -39,19 +40,20 @@ public class CreateResourceOperation implements RestOperation<Resource> {
     private final String OPERATION_API_VERSION = "2014-08-01";
     private final String OPERATION_PATH_TEMPLATE =
             "subscriptions/%s/resourceGroups/%s/providers/microsoft.insights/components/%s?api-version=%s";
-
+    private Tenant tenant;
     private String operationPath;
     private String payload;
 
-    public CreateResourceOperation(String subscriptionId, String resourceGroupName, String resourceName, String location) {
-        operationPath = String.format(OPERATION_PATH_TEMPLATE, subscriptionId, resourceGroupName, resourceName, OPERATION_API_VERSION);
-        payload = generatePayload(location);
+    public CreateResourceOperation(Tenant tenant, String subscriptionId, String resourceGroupName, String resourceName, String location) {
+        this.operationPath = String.format(OPERATION_PATH_TEMPLATE, subscriptionId, resourceGroupName, resourceName, OPERATION_API_VERSION);
+        this.payload = generatePayload(location);
+        this.tenant = tenant;
     }
 
     public Resource execute(Client restClient) throws IOException, RestOperationException {
         LOG.info("Creating new resource.\nURL path: {0}\nPayload:{1}", this.operationPath, this.payload);
 
-        String resourceJson = restClient.executePut(operationPath, payload, OPERATION_API_VERSION);
+        String resourceJson = restClient.executePut(this.tenant, operationPath, payload, OPERATION_API_VERSION);
         Resource resource = parseResult(resourceJson);
 
         return resource;

@@ -21,12 +21,14 @@
 
 package com.microsoft.applicationinsights.management.rest.client;
 
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
+
 import java.io.IOException;
 
 /**
  * Created by yonisha on 4/19/2015.
  */
 public interface Client {
-    String executeGet(String path, String apiVersion) throws IOException, RestOperationException;
-    String executePut(String path, String payload, String apiVersion) throws IOException, RestOperationException;
+    String executeGet(Tenant tenant, String path, String apiVersion) throws IOException, RestOperationException;
+    String executePut(Tenant tenant, String path, String payload, String apiVersion) throws IOException, RestOperationException;
 }

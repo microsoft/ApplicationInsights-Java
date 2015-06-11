@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.management.rest.client.RestOperationExc
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 
 /**
  * Created by yonisha on 4/21/2015.

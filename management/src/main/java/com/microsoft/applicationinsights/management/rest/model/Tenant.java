@@ -21,19 +21,20 @@
 
 package com.microsoft.applicationinsights.management.rest.model;
 
+import com.google.gson.JsonObject;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 
 /**
  * Created by yonisha on 4/19/2015.
+ *
+ * This class represents an Azure tenant.
+ * An azure account (represented by e-mail) can have several tenants.
  */
 public class Tenant {
 
     private String id;
 
     private AuthenticationResult authenticationToken;
-
-    public Tenant() {
-    }
 
     public String getId() {
         return id;
@@ -56,10 +57,6 @@ public class Tenant {
         this.authenticationToken = authenticationToken;
     }
 
-    public String getName() {
-        return getId().toString();
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -74,5 +71,12 @@ public class Tenant {
 
         Tenant other = (Tenant) obj;
         return id != null && id.equals(other.getId());
+    }
+
+    public static Tenant fromJSONObject(JsonObject tenantJson) {
+        Tenant tenant = new Tenant();
+        tenant.setId(tenantJson.get("tenantId").getAsString());
+
+        return tenant;
     }
 }

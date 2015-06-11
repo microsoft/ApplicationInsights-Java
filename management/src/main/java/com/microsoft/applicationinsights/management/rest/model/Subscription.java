@@ -30,6 +30,7 @@ import com.google.gson.JsonObject;
 public class Subscription {
     private String id;
     private String name;
+    private Tenant tenant;
 
     /**
      * Gets the subscription ID.
@@ -45,6 +46,22 @@ public class Subscription {
      */
     public void setId(String id) {
         this.id = id;
+    }
+
+    /**
+     * Gets the tenant associated with the subscription.
+     * @return The tenant associated with the subscription.
+     */
+    public Tenant getTenant() {
+        return this.tenant;
+    }
+
+    /**
+     * Sets the tenant associated with the subscription.
+     * @param tenant The tenant associated with the subscription.
+     */
+    public void setTenant(Tenant tenant) {
+        this.tenant = tenant;
     }
 
     /**

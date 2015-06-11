@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 
 import java.io.IOException;
@@ -49,19 +50,19 @@ public class Program {
     }
 
     private static void invoke() throws IOException, RestOperationException {
-        String requiredSubscriptionID = "a866e082-246e-4d8b-89df-a9191c5f1aca";
-        String resourceGroup = "GroupNE9";
-        String appName = "yonisha-new-app9";
+        String resourceGroup = "LiveGroup1";
+        String appName = "yonisha-live-api-1";
         String location = "Central US";
 
         List<Subscription> subscriptions = getSubscriptions();
 
-        getResources(subscriptions.get(0).getId());
-        getAvailableGeoLocations();
-        getResourceGroups(subscriptions.get(0).getId());
+        String requiredSubscriptionID = subscriptions.get(0).getId();
+//        getResources(requiredSubscriptionID);
+//        getAvailableGeoLocations();
+//        getResourceGroups(requiredSubscriptionID);
 
-//        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
-//        createResource(requiredSubscriptionID, resourceGroup, appName, location);
+        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
+        createResource(requiredSubscriptionID, resourceGroup, appName, location);
     }
 
     private static List<ResourceGroup> getResourceGroups(String subId) throws IOException, RestOperationException {

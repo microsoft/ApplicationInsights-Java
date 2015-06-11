@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.management.authentication;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationContext;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 import com.microsoftopentechnologies.aad.adal4j.PromptValue;
@@ -34,16 +35,21 @@ import java.io.IOException;
  * Created by yonisha on 4/19/2015.
  */
 public class Authenticator {
-    public static AuthenticationResult getAuthenticationResult() throws IOException, InterruptedException {
+    public static AuthenticationResult getAuthenticationResult() throws IOException {
+        String commonTenant = Settings.getTenant();
+
+        return getAuthenticationResultForTenant(commonTenant);
+    }
+
+    public static AuthenticationResult getAuthenticationResultForTenant(String tenant) throws IOException {
         String authority = Settings.getAdAuthority();
-        String tenantName = Settings.getTenant();
         String resource = Settings.getResource();
         String clientID = Settings.getClientId();
         String redirectURI = Settings.getRedirectURI();
 
         AuthenticationContext context = new AuthenticationContext(authority);
         ListenableFuture<AuthenticationResult> future = context.acquireTokenInteractiveAsync(
-                tenantName,
+                tenant,
                 resource,
                 clientID,
                 redirectURI,
@@ -66,7 +72,10 @@ public class Authenticator {
 
         System.out.println("Waiting to complete authentication...");
         while (!future.isDone()) {
-            Thread.sleep(5000);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+            }
         }
 
         return result[0];

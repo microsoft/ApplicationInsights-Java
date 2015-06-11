@@ -26,6 +26,7 @@ import java.io.*;
 import java.net.URL;
 
 import com.microsoft.applicationinsights.management.common.Logger;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 
 /**
@@ -51,19 +52,12 @@ public class RestClient implements Client {
 
     private static final Logger LOG = Logger.getLogger(RestClient.class.toString());
     private String userAgent;
-    private AuthenticationResult authenticationResult;
 
     // endregion Members
 
     // region Ctor
 
-    public RestClient(AuthenticationResult authenticationResult) {
-        this.authenticationResult = authenticationResult;
-    }
-
-    public RestClient(AuthenticationResult authenticationResult, String userAgent) {
-        this(authenticationResult);
-
+    public RestClient(String userAgent) {
         this.userAgent = userAgent;
     }
 
@@ -73,20 +67,20 @@ public class RestClient implements Client {
 
     // TODO: add expected code, method??
 
-    public String executeGet(String path, String apiVersion) throws IOException, RestOperationException {
+    public String executeGet(Tenant tenant, String path, String apiVersion) throws IOException, RestOperationException {
         LOG.info("Executing 'GET' operation for path {0}.\nAPI version: {1}.", path, apiVersion);
 
-        return execute(path, HttpMethod.GET, null, apiVersion);
+        return execute(tenant, path, HttpMethod.GET, null, apiVersion);
     }
 
-    public String executePut(String path, String payload, String apiVersion) throws IOException, RestOperationException {
+    public String executePut(Tenant tenant, String path, String payload, String apiVersion) throws IOException, RestOperationException {
         LOG.info("Executing 'PUT' operation for path {0}.\nPayload: {1}.\nAPI version: {2}.", path, payload, apiVersion);
 
-        return execute(path, HttpMethod.PUT, payload, apiVersion);
+        return execute(tenant, path, HttpMethod.PUT, payload, apiVersion);
     }
 
-    private String execute(String path, HttpMethod httpMethod, final String payload, String apiVersion) throws IOException, RestOperationException {
-        HttpsURLConnection sslConnection = createSSLConnection(path, apiVersion, httpMethod, payload);
+    private String execute(Tenant tenant, String path, HttpMethod httpMethod, final String payload, String apiVersion) throws IOException, RestOperationException {
+        HttpsURLConnection sslConnection = createSSLConnection(tenant, path, apiVersion, httpMethod, payload);
 
         LOG.info("Getting response.");
         int responseCode = sslConnection.getResponseCode();
@@ -114,6 +108,7 @@ public class RestClient implements Client {
 
     /**
      * Creates SSL connection.
+     * @param tenant The tenant to use.
      * @param path The url.
      * @param apiVersion The API version.
      * @param httpMethod The HTTP method to use.
@@ -121,6 +116,7 @@ public class RestClient implements Client {
      * @return Https connection.
      */
     private HttpsURLConnection createSSLConnection(
+            Tenant tenant,
             String path,
             String apiVersion,
             HttpMethod httpMethod, String payload) throws IOException {
@@ -135,7 +131,7 @@ public class RestClient implements Client {
         conn.addRequestProperty(X_MS_VERSION_HEADER, apiVersion);
         conn.addRequestProperty(ACCEPT_HEADER, JSON_CONTENT_TYPE);
         conn.addRequestProperty(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
-        conn.addRequestProperty(AUTHORIZATION_HEADER, AUTHORIZATION_VALUE_PREFIX + this.authenticationResult.getAccessToken());
+        conn.addRequestProperty(AUTHORIZATION_HEADER, AUTHORIZATION_VALUE_PREFIX + tenant.getAuthenticationToken().getAccessToken());
 
         if (httpMethod.compareTo(HttpMethod.PUT) == 0) {
             conn.setDoOutput(true);

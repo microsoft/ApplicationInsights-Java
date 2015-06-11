@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.client.Client;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
+import com.microsoft.applicationinsights.management.rest.model.Tenant;
 
 /**
  * Created by yonisha on 4/19/2015.
@@ -41,19 +42,28 @@ public class GetSubscriptionsOperation implements RestOperation<List<Subscriptio
     private static final Logger LOG = Logger.getLogger(GetSubscriptionsOperation.class.toString());
     private final String OPERATION_API_VERSION = "2014-06-01";
     private final String OPERATION_PATH_TEMPLATE = "subscriptions?api-version=%s";
+    private List<Tenant> tenants;
+
+    public GetSubscriptionsOperation(List<Tenant> tenants) {
+        this.tenants = tenants;
+    }
 
     public List<Subscription> execute(Client restClient) throws IOException, RestOperationException {
         String operationPath = String.format(OPERATION_PATH_TEMPLATE, OPERATION_API_VERSION);
 
         LOG.info("Getting available subscriptions.\nURL Path: {0}.", operationPath);
 
-        String subscriptionsJson = restClient.executeGet(operationPath, OPERATION_API_VERSION);
-        List<Subscription> subscriptions = parseResult(subscriptionsJson);
+        List<Subscription> subscriptions = new ArrayList<Subscription>();
+
+        for (Tenant tenant : this.tenants) {
+            String subscriptionsJson = restClient.executeGet(tenant, operationPath, OPERATION_API_VERSION);
+            subscriptions.addAll(parseResult(subscriptionsJson, tenant));
+        }
 
         return subscriptions;
     }
 
-    private List<Subscription> parseResult(String resultJson) {
+    private List<Subscription> parseResult(String resultJson, Tenant tenant) {
         List<Subscription> subscriptions = new ArrayList<Subscription>();
 
         if (resultJson == null || resultJson.isEmpty()) {
@@ -66,6 +76,7 @@ public class GetSubscriptionsOperation implements RestOperation<List<Subscriptio
         for (int i = 0; i < subscriptionProtos.size(); i++) {
             JsonObject subscriptionJson = subscriptionProtos.get(i).getAsJsonObject();
             Subscription subscription = Subscription.fromJSONObject(subscriptionJson);
+            subscription.setTenant(tenant);
             subscriptions.add(subscription);
         }
 
