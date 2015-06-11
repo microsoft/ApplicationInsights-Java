@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
 import java.util.Map;
+import java.util.UUID;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -74,11 +75,13 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         context.setSessionCookie(sessionCookie);
 
         boolean isFirst = true;
-        String sessionId = null;
+        String sessionId;
 
         if (sessionCookie != null) {
             isFirst = false;
             sessionId = sessionCookie.getSessionId();
+        } else {
+            sessionId = UUID.randomUUID().toString();
         }
 
         context.getHttpRequestTelemetry().getContext().getSession().setIsFirst(isFirst);
