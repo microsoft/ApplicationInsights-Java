@@ -55,13 +55,6 @@ public class WebModulesContainerTests {
         Assert.assertEquals(3, container.getModulesCount());
     }
 
-    @Test
-    public void testWhenUserModuleEnabledSessionModuleIsUpdated() throws Exception {
-        WebSessionTrackingTelemetryModule sessionModule = getModuleByType(WebSessionTrackingTelemetryModule.class);
-
-        Assert.assertTrue(sessionModule.getIsUserModuleEnabled());
-    }
-
     // endregion Tests
 
     // region Private
