@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
 import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -39,15 +37,6 @@ import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
  * Created by yonisha on 2/7/2015.
  */
 public class WebUserTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
-
-    // region Constructors
-
-    public WebUserTrackingTelemetryModule() {}
-
-    public WebUserTrackingTelemetryModule(Map<String, String> argumentsMap) {
-    }
-
-    // region Public
 
     /**
      * Initializes the telemetry module.
@@ -73,16 +62,12 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         UserCookie.class, request, UserCookie.COOKIE_NAME);
 
-        String userId;
-        Date acquisitionDate;
-
-        if (userCookie != null) {
-            userId = userCookie.getUserId();
-            acquisitionDate = userCookie.getAcquisitionDate();
-        } else {
-            userId = UUID.randomUUID().toString();
-            acquisitionDate = new Date();
+        if (userCookie == null) {
+            return;
         }
+
+        String userId = userCookie.getUserId();
+        Date acquisitionDate = userCookie.getAcquisitionDate();
 
         context.setUserCookie(userCookie);
 

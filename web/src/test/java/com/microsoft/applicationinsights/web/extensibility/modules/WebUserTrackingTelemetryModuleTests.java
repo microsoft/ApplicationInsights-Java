@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
@@ -129,15 +126,4 @@ public class WebUserTrackingTelemetryModuleTests {
     }
 
     // endregion Tests
-
-    // region Private
-
-    private WebUserTrackingTelemetryModule createModuleWithParam(String paramName, String paramValue) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(paramName, paramValue);
-
-        return new WebUserTrackingTelemetryModule(map);
-    }
-
-    // endregion Private
 }

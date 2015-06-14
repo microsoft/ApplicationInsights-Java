@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.Map;
-import java.util.UUID;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -38,13 +36,6 @@ import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
  * Created by yonisha on 2/4/2015.
  */
 public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
-
-    // region Constructors
-
-    public WebSessionTrackingTelemetryModule(Map<String, String> argumentsMap) {
-    }
-
-    // endregion Constructors
 
     // region Public
 
@@ -72,19 +63,13 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
                 com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                         SessionCookie.class, request, SessionCookie.COOKIE_NAME);
 
-        context.setSessionCookie(sessionCookie);
-
-        boolean isFirst = true;
-        String sessionId;
-
-        if (sessionCookie != null) {
-            isFirst = false;
-            sessionId = sessionCookie.getSessionId();
-        } else {
-            sessionId = UUID.randomUUID().toString();
+        if (sessionCookie == null) {
+            return;
         }
 
-        context.getHttpRequestTelemetry().getContext().getSession().setIsFirst(isFirst);
+        context.setSessionCookie(sessionCookie);
+
+        String sessionId = sessionCookie.getSessionId();
         getTelemetrySessionContext(context).setId(sessionId);
     }
 
