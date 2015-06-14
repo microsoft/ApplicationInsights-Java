@@ -29,6 +29,7 @@ dependencies {
     compile 'com.opensymphony:xwork:2.0.4' // Struts 2
     compile 'org.springframework:spring-webmvc:3.1.0.RELEASE'
     compile group: 'javax.servlet', name: 'servlet-api', version: '2.5'
+    compile group: 'javax.enterprise', name: 'cdi-api', version: '1.1' // Java EE
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
     testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '7.0.0.M0'
