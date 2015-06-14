@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
@@ -125,15 +123,6 @@ public class WebSessionTrackingTelemetryModuleTests {
     }
 
     @Test
-    public void testIsFirstSessionIsPopulatedOnFirstSession() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie();
-
-        RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
-
-        Assert.assertTrue(requestTelemetry.getContext().getSession().getIsFirst());
-    }
-
-    @Test
     public void testWhenCookieExistCorrectSessionIdAttachedToSentTelemetry() throws Exception {
         HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
 
@@ -212,17 +201,6 @@ public class WebSessionTrackingTelemetryModuleTests {
         module.onBeginRequest(request, response);
 
         return cookies[0];
-    }
-
-    private WebSessionTrackingTelemetryModule createModuleWithParam(String paramName, String paramValue) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(paramName, paramValue);
-
-        return createModuleWithParam(map);
-    }
-
-    private WebSessionTrackingTelemetryModule createModuleWithParam(Map<String, String> map) {
-        return new WebSessionTrackingTelemetryModule(map);
     }
 
     private void verifySessionState(SessionState expectedSessionState) {
