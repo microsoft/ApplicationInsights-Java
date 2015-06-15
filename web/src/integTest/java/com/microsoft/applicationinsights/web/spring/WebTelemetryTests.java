@@ -36,6 +36,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by moralt on 05/05/2015.
@@ -176,6 +177,16 @@ public class WebTelemetryTests {
             readTelemetryFromAzureQueue(docType, blobClient, queue, telemetryAsJson);
 
             Helpers.sleep(testSettings.getPollingInterval() * millisecondsInSecond);
+        }
+
+        if (telemetryAsJson.size() < expectedTelemetries) {
+            String message = String.format("Got only %d out of %d expected telemetries within the timeout defined by %s (%d seconds)",
+                    telemetryAsJson.size(),
+                    expectedTelemetries,
+                    TestSettings.KEY_MAX_WAIT_TIME,
+                    testSettings.getMaxWaitTime());
+
+            throw new TimeoutException(message);
         }
 
         HashSet<TelemetryItem> telemetryItems = new HashSet<TelemetryItem>();

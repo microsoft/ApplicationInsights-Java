@@ -13,9 +13,9 @@ public class TestSettings {
 
     private final String SETTINGS_RESOURCE_NAME  = "testSettings.properties";
 
-    private final String KEY_MAX_WAIT_TIME       = "maxWaitTime";
-    private final String KEY_POLLING_INTERVAL    = "keyPollingInterval";
-    private final String KEY_MESSAGE_BATCH_SIZE  = "keyMessageBatchSize";
+    public static final String KEY_MAX_WAIT_TIME       = "maxWaitTime";
+    public static final String KEY_POLLING_INTERVAL    = "keyPollingInterval";
+    public static final String KEY_MESSAGE_BATCH_SIZE  = "keyMessageBatchSize";
 
     public TestSettings() throws IOException {
         testProps = PropertiesUtils.loadPropertiesFromResource(SETTINGS_RESOURCE_NAME);
