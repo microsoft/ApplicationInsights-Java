@@ -27,7 +27,6 @@ import java.net.URL;
 
 import com.microsoft.applicationinsights.management.common.Logger;
 import com.microsoft.applicationinsights.management.rest.model.Tenant;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
 
 /**
  * Created by yonisha on 4/19/2015.

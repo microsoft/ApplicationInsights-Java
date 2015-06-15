@@ -57,12 +57,12 @@ public class Program {
         List<Subscription> subscriptions = getSubscriptions();
 
         String requiredSubscriptionID = subscriptions.get(0).getId();
-//        getResources(requiredSubscriptionID);
-//        getAvailableGeoLocations();
-//        getResourceGroups(requiredSubscriptionID);
+        getResources(requiredSubscriptionID);
+        getAvailableGeoLocations();
+        getResourceGroups(requiredSubscriptionID);
 
-        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
-        createResource(requiredSubscriptionID, resourceGroup, appName, location);
+//        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
+//        createResource(requiredSubscriptionID, resourceGroup, appName, location);
     }
 
     private static List<ResourceGroup> getResourceGroups(String subId) throws IOException, RestOperationException {
