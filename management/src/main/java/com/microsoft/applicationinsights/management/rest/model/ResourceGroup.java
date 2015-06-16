@@ -81,8 +81,9 @@ public class ResourceGroup {
         Map<String, String> properties = new HashMap<String, String>();
         JsonObject jsonProperties = (JsonObject) json.get("properties");
         for (Map.Entry<String, JsonElement> key : jsonProperties.entrySet()) {
-            if (!key.getValue().isJsonPrimitive()) {
-                properties.put(key.getKey(), key.getValue().toString());
+            if (!key.getValue().isJsonObject()) {
+                String value = key.getValue().isJsonNull() ? "" : key.getValue().getAsString();
+                properties.put(key.getKey(), value);
             }
         }
 

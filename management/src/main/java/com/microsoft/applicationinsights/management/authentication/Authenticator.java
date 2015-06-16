@@ -42,6 +42,18 @@ public class Authenticator {
     }
 
     public static AuthenticationResult getAuthenticationResultForTenant(String tenant) throws IOException {
+        // We first try to login without prompt the user for a user/password.
+        AuthenticationResult authenticationResult = getAuthenticationResultForTenantInternal(tenant, PromptValue.attemptNone);
+
+        // If we fail to authenticate, we prompt the user for username & password.
+        if (authenticationResult == null){
+            authenticationResult = getAuthenticationResultForTenantInternal(tenant, PromptValue.login);
+        }
+
+        return authenticationResult;
+    }
+
+    public static AuthenticationResult getAuthenticationResultForTenantInternal(String tenant, String promptValue) throws IOException {
         String authority = Settings.getAdAuthority();
         String resource = Settings.getResource();
         String clientID = Settings.getClientId();
@@ -53,7 +65,7 @@ public class Authenticator {
                 resource,
                 clientID,
                 redirectURI,
-                PromptValue.login);
+                promptValue);
 
         final AuthenticationResult[] result = {null};
         Futures.addCallback(future, new FutureCallback<AuthenticationResult>() {
