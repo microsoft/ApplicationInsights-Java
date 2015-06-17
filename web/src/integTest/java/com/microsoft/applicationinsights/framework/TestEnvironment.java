@@ -1,8 +1,6 @@
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.framework;
 
-import com.microsoft.applicationinsights.test.utils.PropertiesUtils;
-
-import java.io.IOException;
+import java.io.*;
 import java.util.Properties;
 
 /**
@@ -25,7 +23,7 @@ public class TestEnvironment {
             throw new RuntimeException("Environment variable " + configurationEnvironmentVariable + " not defined");
         }
 
-        envProps = PropertiesUtils.loadPropertiesFromFile(envPropsFilePath);
+        envProps = loadPropertiesFromFile(envPropsFilePath);
     }
 
     public String getApplicationServer() {
@@ -46,5 +44,34 @@ public class TestEnvironment {
 
     public String getApplicationStorageExportQueueName() {
         return envProps.getProperty(KEY_APPLICATION_STORAGE_EXPORT_QUEUE_NAME);
+    }
+
+    public static Properties loadPropertiesFromFile(String filePath) throws IOException
+    {
+        File configFile = new File(filePath);
+        if (!configFile.exists()) {
+            throw new FileNotFoundException("Configuration file \"" + filePath + "\" could not be found");
+        }
+
+        System.out.println("Found configuration file at: " + filePath);
+
+        InputStream inputStream = new FileInputStream(filePath);
+
+        return readFromStream(inputStream);
+    }
+
+    private static Properties readFromStream(InputStream inputStream) throws IOException {
+        Properties props = new Properties();
+
+        if (inputStream != null)
+        {
+            try {
+                props.load(inputStream);
+            } finally {
+                inputStream.close();
+            }
+        }
+
+        return props;
     }
 }

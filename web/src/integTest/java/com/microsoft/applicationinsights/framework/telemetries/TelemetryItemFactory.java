@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.framework.telemetries;
 
 import org.json.JSONObject;
 

@@ -19,8 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.framework.telemetries;
 
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,6 +62,8 @@ public class RequestTelemetryItem extends TelemetryItem {
     private void initRequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
         System.out.println("Converting JSON object to telemetry item RequestTelemetryItem");
         JSONObject requestProperties = json.getJSONArray("request").getJSONObject(0);
+
+        RequestTelemetry a = new RequestTelemetry();
 
         String address       = requestProperties.getString("url");
         Integer port         = requestProperties.getJSONObject("urlData").getInt("port");

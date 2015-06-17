@@ -19,12 +19,26 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.framework;
 
 /**
- * Created by moralt on 4/30/2015.
+ * Created by yonisha on 6/16/2015.
  */
-public enum DocumentType {
-    Requests,
-    PerformanceCounters
+public class UriWithExpectedResponseCode {
+
+    private final int expectedResponseCode;
+    private final String uri;
+
+    public UriWithExpectedResponseCode(String uri, int expectedResponseCode) {
+        this.uri = uri;
+        this.expectedResponseCode = expectedResponseCode;
+    }
+
+    public String getUri() {
+        return this.uri;
+    }
+
+    public int getExpectedResponseCode() {
+        return this.expectedResponseCode;
+    }
 }

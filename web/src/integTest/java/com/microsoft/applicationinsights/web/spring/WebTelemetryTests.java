@@ -21,31 +21,39 @@
 
 package com.microsoft.applicationinsights.web.spring;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import com.microsoft.azure.storage.queue.CloudQueue;
-import com.microsoft.azure.storage.queue.CloudQueueClient;
-import com.microsoft.azure.storage.queue.CloudQueueMessage;
-import org.apache.commons.lang3.time.StopWatch;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.microsoft.applicationinsights.framework.ApplicationTelemetryManager;
+import com.microsoft.applicationinsights.framework.HttpRequestClient;
+import com.microsoft.applicationinsights.framework.TestEnvironment;
+import com.microsoft.applicationinsights.framework.UriWithExpectedResponseCode;
+import com.microsoft.applicationinsights.framework.telemetries.DocumentType;
+import com.microsoft.applicationinsights.framework.telemetries.RequestTelemetryItem;
+import com.microsoft.applicationinsights.framework.telemetries.TelemetryItem;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.eclipse.jetty.http.HttpStatus;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Created by moralt on 05/05/2015.
  */
 public class WebTelemetryTests {
-    String runId = Helpers.getRandomUUIDString();
-    TestEnvironment testEnv;
-    TestSettings testSettings;
-    private static final int millisecondsInSecond = 1000;
+
+    // same runId for all tests?
+    private String runId = LocalStringsUtils.generateRandomId(false);
+    private static TestEnvironment testEnv;
+    private static ApplicationTelemetryManager applicationTelemetryManager;
+
+    @BeforeClass
+    public static void classInitialization() throws Exception {
+        testEnv = new TestEnvironment();
+        applicationTelemetryManager = new ApplicationTelemetryManager(
+                testEnv.getApplicationStorageConnectionString(), testEnv.getApplicationStorageExportQueueName());
+    }
 
     /**
      * Sends GET requests to server and expects that will telemetry from app insights and it will include the correct information about the request
@@ -53,11 +61,8 @@ public class WebTelemetryTests {
      */
     @Test
     public void sendHttpRequestsTest() throws Exception {
-
-        initTestConfiguration();
-
         HashSet<TelemetryItem> expectedTelemetries = sendHttpGetRequests();
-        HashSet<TelemetryItem> realTelemetries = getLoggedTelemetry(DocumentType.Requests, expectedTelemetries.size());
+        HashSet<TelemetryItem> realTelemetries = applicationTelemetryManager.getApplicationTelemetries(DocumentType.Requests, expectedTelemetries.size());
 
         HashSet<TelemetryItem> missingTelemetry = getMismatchingTelemetryItems(realTelemetries, expectedTelemetries);
         if (missingTelemetry.size() > 0) {
@@ -69,58 +74,38 @@ public class WebTelemetryTests {
 
             throw new Exception("Didn't find match for " + missingTelemetry.size() + " items.\nError HTTP requests:" + errorRequests);
         }
-        else {
-            System.out.println("Test passed successfully");
-        }
-    }
-
-    private void initTestConfiguration() throws Exception {
-        testEnv = new TestEnvironment();
-        testSettings = new TestSettings();
-        Helpers.clearAzureQueue(testEnv.getApplicationStorageConnectionString(), testEnv.getApplicationStorageExportQueueName());
     }
 
     private HashSet<TelemetryItem> sendHttpGetRequests() throws Exception {
-
-        String serverAddress = testEnv.getApplicationServer();
-        int port = testEnv.getApplicationServerPort();
-        String applicationName = testEnv.getApplicationName();
-
-        ArrayList<String> uriPathsToRequest = new ArrayList<String>();
-        uriPathsToRequest.add("books?id=Thriller&runId=" + runId);
-        uriPathsToRequest.add("loan?title=Gone%20Girl&id=030758836x&subject=Thriller&runId=" + runId);
-        uriPathsToRequest.add("nonExistingWebFage?runId=" + runId);
+        ArrayList<UriWithExpectedResponseCode> uriPathsToRequest = new ArrayList<UriWithExpectedResponseCode>();
+        uriPathsToRequest.add(new UriWithExpectedResponseCode("books?id=Thriller&runId=" + runId, HttpStatus.OK_200));
+        uriPathsToRequest.add(new UriWithExpectedResponseCode("loan?title=Gone%20Girl&id=030758836x&subject=Thriller&runId=" + runId, HttpStatus.OK_200));
+        uriPathsToRequest.add(new UriWithExpectedResponseCode("nonExistingWebFage?runId=" + runId, HttpStatus.NOT_FOUND_404));
 
         HashSet<TelemetryItem> expectedTelemetries = new HashSet<TelemetryItem>();
 
-        for (String uriPath : uriPathsToRequest) {
-            String requestId = Helpers.getRandomUUIDString();
-            URI uri = Helpers.constructUrl(serverAddress, port, applicationName, uriPath + "&requestId=" + requestId);
-            int responseCode = sendHttpGetRequest(uri);
-            TelemetryItem expectedTelemetry = createExpectedResult(uri, requestId, responseCode);
+        for (UriWithExpectedResponseCode uriWithExpectedResponseCode : uriPathsToRequest) {
+            String requestId = LocalStringsUtils.generateRandomId(false);
+            String uriWithRequestId = uriWithExpectedResponseCode.getUri() + "&requestId=" + requestId;
+
+            URI fullRequestUri = HttpRequestClient.constructUrl(
+                    testEnv.getApplicationServer(),
+                    testEnv.getApplicationServerPort(),
+                    testEnv.getApplicationName(), uriWithRequestId);
+
+            int responseCode = HttpRequestClient.sendHttpRequest(fullRequestUri);
+
+            int expectedResponseCode = uriWithExpectedResponseCode.getExpectedResponseCode();
+            if (responseCode != expectedResponseCode) {
+                String errorMessage = String.format("Unexpected response code '%s' for URI: %s. Expected: %s.", responseCode, expectedResponseCode);
+                Assert.fail(errorMessage );
+            }
+
+            TelemetryItem expectedTelemetry = createExpectedResult(fullRequestUri, requestId, responseCode);
             expectedTelemetries.add(expectedTelemetry);
         }
 
         return expectedTelemetries;
-    }
-
-    /**
-     * Sends HTTP GET request and returns the expected telemetry from AppInsights
-     * @param uri The URI for the request
-     * @return The expected telemetry items from AppInsights
-     * @throws Exception
-     */
-    private int sendHttpGetRequest(URI uri) throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
-
-        // optional default is GET
-        connection.setRequestMethod("GET");
-
-        System.out.println("Sending 'GET' request to URL: " + uri.toString());
-        int responseCode = connection.getResponseCode();
-        System.out.println("Response Code : " + responseCode);
-
-        return responseCode;
     }
 
     /**
@@ -131,7 +116,6 @@ public class WebTelemetryTests {
      * @return A TelemetryItem with the expected results
      */
     private TelemetryItem createExpectedResult(URI uri, String requestId, int responseCode) {
-        // Create expected result
         TelemetryItem telemetryItem = new RequestTelemetryItem();
         telemetryItem.setProperty("id", requestId);
         telemetryItem.setProperty("port", Integer.toString(uri.getPort()));
@@ -149,135 +133,23 @@ public class WebTelemetryTests {
     }
 
     /**
-     * Connects to Azure export and retrieves the telemetry items
-     * @param docType The document type to retrieve from Azure
-     * @return The retrieved telemetry items
-     * @throws Exception
-     */
-    private HashSet<TelemetryItem> getLoggedTelemetry(DocumentType docType, int expectedTelemetries) throws Exception {
-        System.out.println("Creating Azure storage account connection");
-        CloudStorageAccount account = CloudStorageAccount.parse(testEnv.getApplicationStorageConnectionString());
-        CloudBlobClient blobClient = account.createCloudBlobClient();
-
-        System.out.println("Creating Azure queue connection");
-        CloudQueueClient queueClient = account.createCloudQueueClient();
-        CloudQueue queue = queueClient.getQueueReference(testEnv.getApplicationStorageExportQueueName());
-
-        ArrayList<JSONObject> telemetryAsJson = new ArrayList<JSONObject>();
-        StopWatch stopWatch = new StopWatch();
-
-        System.out.println("Starting to poll the queue for " + testSettings.getPollingInterval() + "seconds ...");
-        stopWatch.start();
-
-        long maxWaitTimeInMillis = testSettings.getMaxWaitTime() * millisecondsInSecond;
-        while (telemetryAsJson.size() < expectedTelemetries && stopWatch.getTime() < maxWaitTimeInMillis) {
-            long secondsPassed = stopWatch.getTime() / millisecondsInSecond;
-            System.out.println(secondsPassed + " seconds passed. Got " + telemetryAsJson.size() + " items so far.");
-
-            readTelemetryFromAzureQueue(docType, blobClient, queue, telemetryAsJson);
-
-            Helpers.sleep(testSettings.getPollingInterval() * millisecondsInSecond);
-        }
-
-        if (telemetryAsJson.size() < expectedTelemetries) {
-            String message = String.format("Got only %d out of %d expected telemetries within the timeout defined by %s (%d seconds)",
-                    telemetryAsJson.size(),
-                    expectedTelemetries,
-                    TestSettings.KEY_MAX_WAIT_TIME,
-                    testSettings.getMaxWaitTime());
-
-            throw new TimeoutException(message);
-        }
-
-        HashSet<TelemetryItem> telemetryItems = new HashSet<TelemetryItem>();
-        for (JSONObject json : telemetryAsJson) {
-            TelemetryItem telemetryItem = TelemetryItemFactory.createTelemetryItem(docType, json);
-            telemetryItems.add(telemetryItem);
-        }
-
-        return telemetryItems;
-    }
-
-    private void readTelemetryFromAzureQueue(DocumentType docType, CloudBlobClient blobClient, CloudQueue queue, ArrayList<JSONObject> telemetryAsJson) throws Exception {
-        ArrayList<CloudQueueMessage> messages;
-        do {
-            messages = (ArrayList<CloudQueueMessage>)queue.retrieveMessages(testSettings.getMessageBatchSize(),
-                                                                            testSettings.getMaxWaitTime(),
-                                                                            null,
-                                                                            null);
-            if (messages.size() > 0) {
-                System.out.println("woohoo");
-            }
-            ArrayList<String> blobUris = getBlobUrisFromQueueMessages(docType, messages);
-            for (String blobUri : blobUris) {
-                CloudBlockBlob blob = new CloudBlockBlob(new URI(blobUri), blobClient);
-                ArrayList<JSONObject> jsonsFromBlobContent = convertToJson(blob.downloadText());
-                telemetryAsJson.addAll(jsonsFromBlobContent);
-            }
-
-        } while (messages.size() >= testSettings.getMessageBatchSize());
-    }
-
-    /**
-     * Gets a list of blob URIs from Azure queue messages
-     * @param docType The document type to retrieve from Azure
-     * @param messages The Azure queue messages
-     * @return An ArrayList of blob URIs
-     * @throws Exception
-     */
-    private ArrayList<String> getBlobUrisFromQueueMessages(DocumentType docType, ArrayList<CloudQueueMessage> messages) throws Exception {
-        ArrayList<String> blobUris = new ArrayList<String>();
-
-        System.out.println("Extracting blob URIs of document type " + docType.toString() + " from " + messages.size() + " messages");
-        for (CloudQueueMessage message : messages) {
-            JSONObject messageContentAsJson = new JSONObject(message.getMessageContentAsString());
-            String msgDocType = messageContentAsJson.getString("DocumentType");
-
-            if (msgDocType.equals(docType.toString())) {
-                blobUris.add(messageContentAsJson.getString("BlobUri"));
-            }
-        }
-
-        System.out.println("Got " + blobUris.size() + " blob URIs with document type " + docType.toString());
-        return blobUris;
-    }
-
-    /**
-     * Converts a string to multiple JSON objects
-     * @param jString The string to convert
-     * @return ArrayList of JSON objects
-     */
-    private ArrayList<JSONObject> convertToJson(String jString) throws JSONException {
-        System.out.println("Extracting JSON objects from string");
-        String[] jsonStrings = jString.split("\n");
-        ArrayList<JSONObject> jsonObjects = new ArrayList<JSONObject>();
-
-        for (String s : jsonStrings) {
-            jsonObjects.add(new JSONObject(s));
-        }
-
-        System.out.println("Got " + jsonObjects.size() + " JSON objects");
-        return jsonObjects;
-    }
-
-    /**
      * Tests if the expected telemetry exists in the real telemetry from AppInsights
-     * @param containsTelemetryItems The telemetry items that should contain all telemetry items in 'containedTelemetryItems'
-     * @param containedTelemetryItems The telemetry items that should be contained in the 'containsTelemetryItems'
-     * @return A collection of telemetry items from 'containedTelemetryItems' that are not in 'containsTelemetryItems'
+     * @param applicationTelemetries The telemetry items that should contain all telemetry items in 'expectedTelemetries'
+     * @param expectedTelemetries The telemetry items that should be contained in the 'applicationTelemetries'
+     * @return A collection of telemetry items from 'expectedTelemetries' that are not in 'applicationTelemetries'
      */
-    private HashSet<TelemetryItem> getMismatchingTelemetryItems(HashSet<TelemetryItem> containsTelemetryItems,
-                                                                HashSet<TelemetryItem> containedTelemetryItems) {
+    private HashSet<TelemetryItem> getMismatchingTelemetryItems(HashSet<TelemetryItem> applicationTelemetries,
+                                                                HashSet<TelemetryItem> expectedTelemetries) {
 
-        HashSet<TelemetryItem> missingExpectedTelemetry = new HashSet<TelemetryItem>();
+        HashSet<TelemetryItem> missingTelemetry = new HashSet<TelemetryItem>();
 
-        for (TelemetryItem item : containedTelemetryItems) {
-            if (!containsTelemetryItems.contains(item)) {
+        for (TelemetryItem item : expectedTelemetries) {
+            if (!applicationTelemetries.contains(item)) {
                 System.out.println("Missing expected telemetry item with document type " + item.getDocType());
-                missingExpectedTelemetry.add(item);
+                missingTelemetry.add(item);
             }
         }
 
-        return missingExpectedTelemetry;
+        return missingTelemetry;
     }
 }

@@ -19,52 +19,57 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring;
-
+package com.microsoft.applicationinsights.framework;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
+import com.microsoft.azure.storage.queue.CloudQueueMessage;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.UUID;
+import java.security.InvalidKeyException;
+import java.util.ArrayList;
 
 /**
- * Created by moralt on 4/30/2015.
+ * Created by yonisha on 6/16/2015.
  */
-public class Helpers {
-    public static void sleep(int milliseconds) {
-        try {
-            System.out.println("Sleeping for " + milliseconds + " milliseconds Zzz...");
-            Thread.sleep(milliseconds);
-        } catch(InterruptedException ex) {
-            System.out.println("Interrupt caught while sleeping.");
-        }
-    }
+public class ApplicationTelemetryQueue {
 
-    public static URI constructUrl(String server, int port, String app, String path) throws URISyntaxException {
-        return new URI("http://" + server + ":" + port + "/" + app + "/" + path);
-    }
+    private static final int QUEUE_VISIBILITY_TIMEOUT_IN_SECONDS = 180;
+    private static final int QUEUE_MESSAGE_BATCH_SIZE = 32;
 
-    /**
-     * Clears an Azure queue from all existing messages
-     * @param connectionString Connection string to the storage account
-     * @param queueName The name of the queue
-     * @throws Exception
-     */
-    public static void clearAzureQueue(String connectionString, String queueName) throws Exception {
+    private CloudQueue queue;
+
+    public ApplicationTelemetryQueue(String connectionString, String queueName) throws URISyntaxException, StorageException, InvalidKeyException {
         CloudStorageAccount account = CloudStorageAccount.parse(connectionString);
         CloudQueueClient queueClient = account.createCloudQueueClient();
-        CloudQueue queue = queueClient.getQueueReference(queueName);
+        queue = queueClient.getQueueReference(queueName);
 
+        // This can be a problem if the queue is used by several tests concurrently.
+        this.clear();
+    }
+
+    public ArrayList<CloudQueueMessage> retrieveMessages() throws StorageException {
+        return retrieveMessagesUntilEmpty();
+    }
+
+    public void clear() throws StorageException {
         queue.downloadAttributes();
-        System.out.println("Before clearing: Queue contains " + queue.getApproximateMessageCount() + " items");
-        System.out.println("Clearing queue ...");
+        System.out.println("Clearing " + queue.getApproximateMessageCount() + " items.");
+
         queue.clear();
     }
 
-    public static String getRandomUUIDString() {
-        return UUID.randomUUID().toString();
+    private ArrayList<CloudQueueMessage> retrieveMessagesUntilEmpty() throws StorageException {
+        ArrayList<CloudQueueMessage> allMessages = new ArrayList<CloudQueueMessage>();
+
+        do {
+            ArrayList<CloudQueueMessage> messages = (ArrayList<CloudQueueMessage>) queue.retrieveMessages(
+                    QUEUE_MESSAGE_BATCH_SIZE, QUEUE_VISIBILITY_TIMEOUT_IN_SECONDS, null, null);
+            allMessages.addAll(messages);
+        } while (allMessages.size() >= QUEUE_MESSAGE_BATCH_SIZE);
+
+        return allMessages;
     }
 }
