@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.framework;
 import com.microsoft.applicationinsights.framework.telemetries.DocumentType;
 import com.microsoft.applicationinsights.framework.telemetries.TelemetryItem;
 import com.microsoft.applicationinsights.framework.telemetries.TelemetryItemFactory;
-import com.microsoft.applicationinsights.web.spring.*;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import org.apache.commons.lang3.time.StopWatch;

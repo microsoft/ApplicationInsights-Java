@@ -29,21 +29,20 @@ import com.microsoft.applicationinsights.framework.telemetries.DocumentType;
 import com.microsoft.applicationinsights.framework.telemetries.RequestTelemetryItem;
 import com.microsoft.applicationinsights.framework.telemetries.TelemetryItem;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * Created by moralt on 05/05/2015.
  */
 public class WebTelemetryTests {
-
-    // same runId for all tests?
     private String runId = LocalStringsUtils.generateRandomId(false);
     private static TestEnvironment testEnv;
     private static ApplicationTelemetryManager applicationTelemetryManager;
@@ -72,7 +71,7 @@ public class WebTelemetryTests {
                 System.out.println("Didn't find matching item in real telemetry for request of URI " + item.getProperty("uri"));
             }
 
-            throw new Exception("Didn't find match for " + missingTelemetry.size() + " items.\nError HTTP requests:" + errorRequests);
+            Assert.fail("Didn't find match for " + missingTelemetry.size() + " items.\nError HTTP requests:" + errorRequests);
         }
     }
 
@@ -93,11 +92,14 @@ public class WebTelemetryTests {
                     testEnv.getApplicationServerPort(),
                     testEnv.getApplicationName(), uriWithRequestId);
 
-            int responseCode = HttpRequestClient.sendHttpRequest(fullRequestUri);
+            List<String> requestHeaders = generateUserAndSessionCookieHeader();
+            int responseCode = HttpRequestClient.sendHttpRequest(fullRequestUri, requestHeaders);
 
             int expectedResponseCode = uriWithExpectedResponseCode.getExpectedResponseCode();
             if (responseCode != expectedResponseCode) {
-                String errorMessage = String.format("Unexpected response code '%s' for URI: %s. Expected: %s.", responseCode, expectedResponseCode);
+                String errorMessage = String.format(
+                        "Unexpected response code '%s' for URI: %s. Expected: %s.", responseCode, uriWithExpectedResponseCode.getUri(), expectedResponseCode);
+
                 Assert.fail(errorMessage );
             }
 
@@ -108,6 +110,17 @@ public class WebTelemetryTests {
         return expectedTelemetries;
     }
 
+    private List<String> generateUserAndSessionCookieHeader() throws ParseException {
+        String formattedUserCookieHeader = HttpHelper.getFormattedUserCookieHeader();
+        String formattedSessionCookie = HttpHelper.getFormattedSessionCookie(false);
+
+        List<String> cookiesList = new ArrayList<String>();
+        cookiesList.add(formattedUserCookieHeader);
+        cookiesList.add(formattedSessionCookie);
+
+        return cookiesList;
+    }
+
     /**
      * Creates expected HTTP request result
      * @param uri The URI for the request
@@ -116,11 +129,15 @@ public class WebTelemetryTests {
      * @return A TelemetryItem with the expected results
      */
     private TelemetryItem createExpectedResult(URI uri, String requestId, int responseCode) {
+        final String expectedUserAndSessionId = "00000000-0000-0000-0000-000000000000";
+
         TelemetryItem telemetryItem = new RequestTelemetryItem();
         telemetryItem.setProperty("id", requestId);
         telemetryItem.setProperty("port", Integer.toString(uri.getPort()));
         telemetryItem.setProperty("responseCode", Integer.toString(responseCode));
         telemetryItem.setProperty("uri", uri.toString());
+        telemetryItem.setProperty("sessionId", expectedUserAndSessionId);
+        telemetryItem.setProperty("userId", expectedUserAndSessionId);
 
         String[] params = uri.getQuery().split("&");
         for (String param : params) {

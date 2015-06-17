@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.framework;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * Created by yonisha on 6/16/2015.
@@ -32,13 +33,17 @@ public class HttpRequestClient {
 
     // URI structure: http://<server>:<port>/<app_name>/<path>
     private static final String REQUEST_URI_TEMPLATE = "http://%s:%s/%s/%s";
+    private static final String COOKIE_HEADER_KEY = "Cookie";
 
     private HttpRequestClient() {
     }
 
-    public static int sendHttpRequest(URI uri) throws Exception {
+    public static int sendHttpRequest(URI uri, List<String> requestCookies) throws Exception {
 
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+
+        String allCookies = String.join("; ", requestCookies);
+        connection.setRequestProperty(COOKIE_HEADER_KEY, allCookies);
 
         System.out.println("Sending 'GET' request to URL: " + uri.toString());
         int responseCode = connection.getResponseCode();

@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.framework.telemetries;
 
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +35,9 @@ public class RequestTelemetryItem extends TelemetryItem {
     private static final String[] propertiesToCompare = new String[] {
         "port",
         "responseCode",
-        "uri"
+        "uri",
+        "sessionId",
+        "userId"
     };
 
     public RequestTelemetryItem() {
@@ -57,13 +58,10 @@ public class RequestTelemetryItem extends TelemetryItem {
     /**
      * Converts JSON object to Request TelemetryItem
      * @param json The JSON object
-     * @return A TelemetryItem
      */
     private void initRequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        System.out.println("Converting JSON object to telemetry item RequestTelemetryItem");
+        System.out.println("Converting JSON object to RequestTelemetryItem");
         JSONObject requestProperties = json.getJSONArray("request").getJSONObject(0);
-
-        RequestTelemetry a = new RequestTelemetry();
 
         String address       = requestProperties.getString("url");
         Integer port         = requestProperties.getJSONObject("urlData").getInt("port");
@@ -78,15 +76,18 @@ public class RequestTelemetryItem extends TelemetryItem {
             queryParameters.put(name, value);
         }
 
+        JSONObject context = json.getJSONObject("context");
+        String sessionId = context.getJSONObject("session").getString("id");
+        String userId = context.getJSONObject("user").getString("anonId");
+
         this.setProperty("uri", address);
         this.setProperty("port", port.toString());
         this.setProperty("responseCode", responseCode.toString());
+        this.setProperty("userId", userId);
+        this.setProperty("sessionId", sessionId);
 
         for (String key : queryParameters.keySet()) {
             this.setProperty("queryParameter." + key, queryParameters.get(key));
         }
-
     }
-
-
 }
