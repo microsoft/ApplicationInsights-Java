@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.web.spring;
 import com.microsoft.applicationinsights.framework.ApplicationTelemetryManager;
 import com.microsoft.applicationinsights.framework.HttpRequestClient;
 import com.microsoft.applicationinsights.framework.TestEnvironment;
-import com.microsoft.applicationinsights.framework.UriWithExpectedResponseCode;
+import com.microsoft.applicationinsights.framework.UriWithExpectedResult;
 import com.microsoft.applicationinsights.framework.telemetries.DocumentType;
 import com.microsoft.applicationinsights.framework.telemetries.RequestTelemetryItem;
 import com.microsoft.applicationinsights.framework.telemetries.TelemetryItem;
@@ -76,16 +76,23 @@ public class WebTelemetryTests {
     }
 
     private HashSet<TelemetryItem> sendHttpGetRequests() throws Exception {
-        ArrayList<UriWithExpectedResponseCode> uriPathsToRequest = new ArrayList<UriWithExpectedResponseCode>();
-        uriPathsToRequest.add(new UriWithExpectedResponseCode("books?id=Thriller&runId=" + runId, HttpStatus.OK_200));
-        uriPathsToRequest.add(new UriWithExpectedResponseCode("loan?title=Gone%20Girl&id=030758836x&subject=Thriller&runId=" + runId, HttpStatus.OK_200));
-        uriPathsToRequest.add(new UriWithExpectedResponseCode("nonExistingWebFage?runId=" + runId, HttpStatus.NOT_FOUND_404));
+        ArrayList<UriWithExpectedResult> uriPathsToRequest = new ArrayList<UriWithExpectedResult>();
+        UriWithExpectedResult booksRequest =
+                new UriWithExpectedResult("books?id=Thriller&runId=" + runId, HttpStatus.OK_200, "GET /bookstore-spring/books");
+        UriWithExpectedResult loanRequest =
+                new UriWithExpectedResult("loan?title=Gone%20Girl&id=030758836x&subject=Thriller&runId=" + runId, HttpStatus.OK_200, "GET /bookstore-spring/loan");
+        UriWithExpectedResult nonExistingPageRequest =
+                new UriWithExpectedResult("nonExistingWebFage?runId=" + runId, HttpStatus.NOT_FOUND_404, "GET /bookstore-spring/nonExistingWebFage");
+
+        uriPathsToRequest.add(booksRequest);
+        uriPathsToRequest.add(loanRequest);
+        uriPathsToRequest.add(nonExistingPageRequest);
 
         HashSet<TelemetryItem> expectedTelemetries = new HashSet<TelemetryItem>();
 
-        for (UriWithExpectedResponseCode uriWithExpectedResponseCode : uriPathsToRequest) {
+        for (UriWithExpectedResult uriWithExpectedResult : uriPathsToRequest) {
             String requestId = LocalStringsUtils.generateRandomId(false);
-            String uriWithRequestId = uriWithExpectedResponseCode.getUri() + "&requestId=" + requestId;
+            String uriWithRequestId = uriWithExpectedResult.getUri() + "&requestId=" + requestId;
 
             URI fullRequestUri = HttpRequestClient.constructUrl(
                     testEnv.getApplicationServer(),
@@ -95,15 +102,15 @@ public class WebTelemetryTests {
             List<String> requestHeaders = generateUserAndSessionCookieHeader();
             int responseCode = HttpRequestClient.sendHttpRequest(fullRequestUri, requestHeaders);
 
-            int expectedResponseCode = uriWithExpectedResponseCode.getExpectedResponseCode();
+            int expectedResponseCode = uriWithExpectedResult.getExpectedResponseCode();
             if (responseCode != expectedResponseCode) {
                 String errorMessage = String.format(
-                        "Unexpected response code '%s' for URI: %s. Expected: %s.", responseCode, uriWithExpectedResponseCode.getUri(), expectedResponseCode);
+                        "Unexpected response code '%s' for URI: %s. Expected: %s.", responseCode, uriWithExpectedResult.getUri(), expectedResponseCode);
 
-                Assert.fail(errorMessage );
+                Assert.fail(errorMessage);
             }
 
-            TelemetryItem expectedTelemetry = createExpectedResult(fullRequestUri, requestId, responseCode);
+            TelemetryItem expectedTelemetry = createExpectedResult(fullRequestUri, requestId, responseCode, uriWithExpectedResult.getExpectedRequestName());
             expectedTelemetries.add(expectedTelemetry);
         }
 
@@ -128,7 +135,7 @@ public class WebTelemetryTests {
      * @param responseCode The expected response code for HTTP request with this URI
      * @return A TelemetryItem with the expected results
      */
-    private TelemetryItem createExpectedResult(URI uri, String requestId, int responseCode) {
+    private TelemetryItem createExpectedResult(URI uri, String requestId, int responseCode, String requestName) {
         final String expectedUserAndSessionId = "00000000-0000-0000-0000-000000000000";
 
         TelemetryItem telemetryItem = new RequestTelemetryItem();
@@ -138,6 +145,7 @@ public class WebTelemetryTests {
         telemetryItem.setProperty("uri", uri.toString());
         telemetryItem.setProperty("sessionId", expectedUserAndSessionId);
         telemetryItem.setProperty("userId", expectedUserAndSessionId);
+        telemetryItem.setProperty("requestName", requestName);
 
         String[] params = uri.getQuery().split("&");
         for (String param : params) {

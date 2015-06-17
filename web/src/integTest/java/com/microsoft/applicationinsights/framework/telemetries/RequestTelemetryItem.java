@@ -37,7 +37,8 @@ public class RequestTelemetryItem extends TelemetryItem {
         "responseCode",
         "uri",
         "sessionId",
-        "userId"
+        "userId",
+        "requestName"
     };
 
     public RequestTelemetryItem() {
@@ -63,9 +64,10 @@ public class RequestTelemetryItem extends TelemetryItem {
         System.out.println("Converting JSON object to RequestTelemetryItem");
         JSONObject requestProperties = json.getJSONArray("request").getJSONObject(0);
 
-        String address       = requestProperties.getString("url");
-        Integer port         = requestProperties.getJSONObject("urlData").getInt("port");
+        String address = requestProperties.getString("url");
+        Integer port = requestProperties.getJSONObject("urlData").getInt("port");
         Integer responseCode = requestProperties.getInt("responseCode");
+        String requestName = requestProperties.getString("name");
 
         JSONArray parameters = requestProperties.getJSONObject("urlData").getJSONArray("queryParameters");
         Hashtable<String, String> queryParameters = new Hashtable<String, String>();
@@ -85,6 +87,7 @@ public class RequestTelemetryItem extends TelemetryItem {
         this.setProperty("responseCode", responseCode.toString());
         this.setProperty("userId", userId);
         this.setProperty("sessionId", sessionId);
+        this.setProperty("requestName", requestName);
 
         for (String key : queryParameters.keySet()) {
             this.setProperty("queryParameter." + key, queryParameters.get(key));

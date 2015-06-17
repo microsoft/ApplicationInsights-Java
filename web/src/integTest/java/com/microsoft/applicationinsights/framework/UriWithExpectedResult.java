@@ -24,14 +24,16 @@ package com.microsoft.applicationinsights.framework;
 /**
  * Created by yonisha on 6/16/2015.
  */
-public class UriWithExpectedResponseCode {
+public class UriWithExpectedResult {
 
     private final int expectedResponseCode;
     private final String uri;
+    private final String expectedRequestName;
 
-    public UriWithExpectedResponseCode(String uri, int expectedResponseCode) {
+    public UriWithExpectedResult(String uri, int expectedResponseCode, String expectedRequestName) {
         this.uri = uri;
         this.expectedResponseCode = expectedResponseCode;
+        this.expectedRequestName = expectedRequestName;
     }
 
     public String getUri() {
@@ -40,5 +42,9 @@ public class UriWithExpectedResponseCode {
 
     public int getExpectedResponseCode() {
         return this.expectedResponseCode;
+    }
+
+    public String getExpectedRequestName() {
+        return this.expectedRequestName;
     }
 }
