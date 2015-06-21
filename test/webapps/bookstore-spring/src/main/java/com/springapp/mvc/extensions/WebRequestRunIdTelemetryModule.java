@@ -19,10 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.springapp.mvc;
+package com.springapp.mvc.extensions;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -40,7 +41,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class WebRequestRunIdTelemetryModule implements WebTelemetryModule, TelemetryModule {
 
-    private final String RUN_ID_QUERY_PARAM_NAME = "runid";
+    protected static final String RUN_ID_QUERY_PARAM_NAME = "runid";
 
     @Override
     public void initialize(TelemetryConfiguration telemetryConfiguration) {
@@ -62,6 +63,10 @@ public class WebRequestRunIdTelemetryModule implements WebTelemetryModule, Telem
     }
 
     private String getRunIdFromQueryString(String queryString) {
+        if (LocalStringsUtils.isNullOrEmpty(queryString)) {
+            return null;
+        }
+
         String[] parameters = queryString.split("&");
 
         for (String parameter : parameters) {
