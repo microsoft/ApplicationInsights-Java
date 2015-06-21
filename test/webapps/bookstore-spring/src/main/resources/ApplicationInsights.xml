@@ -7,6 +7,9 @@
 		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule" />
 		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule" />
 		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule" />
+
+		<!-- This module is used by the integration tests.-->
+		<Add type="com.springapp.mvc.WebRequestRunIdTelemetryModule" />
 	</TelemetryModules>
 	<TelemetryInitializers>
 		<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer" />
