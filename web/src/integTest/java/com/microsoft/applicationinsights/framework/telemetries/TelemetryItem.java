@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights.framework.telemetries;
 
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+
 import java.util.Properties;
 
+// TODO: fetch here properties that are common for all telemetry types such as operation ID/name, user/sesion ID etc.
 /**
  * Created by moralt on 05/05/2015.
  */
@@ -88,8 +91,13 @@ public abstract class TelemetryItem extends Properties {
     public int hashCode() {
         int hash = 0;
         for (String propertyName : getDefaultPropertiesToCompare()) {
-            hash ^= getProperty(propertyName).hashCode();
+            String property = getProperty(propertyName);
+
+            if (!LocalStringsUtils.isNullOrEmpty(property)) {
+                hash ^= property.hashCode();
+            }
         }
+
         return hash;
     }
 }

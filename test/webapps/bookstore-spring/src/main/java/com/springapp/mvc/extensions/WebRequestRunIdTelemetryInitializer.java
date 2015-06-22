@@ -19,13 +19,30 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework.telemetries;
+package com.springapp.mvc.extensions;
+
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebTelemetryInitializerBase;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
 /**
- * Created by moralt on 4/30/2015.
+ * Created by yonisha on 6/21/2015.
  */
-public enum DocumentType {
-    Requests,
-    PerformanceCounters,
-    Event
+public class WebRequestRunIdTelemetryInitializer extends WebTelemetryInitializerBase {
+
+    @Override
+    protected void onInitializeTelemetry(Telemetry telemetry) {
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+
+        String runIdPropertyName = WebRequestRunIdTelemetryModule.RUN_ID_QUERY_PARAM_NAME;
+        String runId = requestTelemetry.getProperties().get(runIdPropertyName);
+
+        if (LocalStringsUtils.isNullOrEmpty(runId)) {
+            return;
+        }
+
+        telemetry.getProperties().put(runIdPropertyName, runId);
+    }
 }

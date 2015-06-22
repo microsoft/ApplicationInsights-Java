@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.framework;
 import com.microsoft.applicationinsights.framework.telemetries.DocumentType;
 import com.microsoft.applicationinsights.framework.telemetries.TelemetryItem;
 import com.microsoft.applicationinsights.framework.telemetries.TelemetryItemFactory;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import org.apache.commons.lang3.time.StopWatch;
@@ -41,10 +42,12 @@ import java.util.concurrent.TimeoutException;
  */
 public class ApplicationTelemetryManager {
 
+    private static final String RUN_ID_QUERY_PARAM_NAME = "runId";
     private static final int POLLING_TIMEOUT_IN_SECONDS = 180;
     private static final int QUEUE_POLLING_INTERVAL_IN_SECONDS = 3;
     private static final int MS_IN_SECOND = 1000;
 
+    private List<TelemetryItem> cachedTelemetries = new ArrayList<TelemetryItem>();
     private ApplicationTelemetryQueue applicationTelemetryQueue;
     private ApplicationBlobClient applicationBlobClient;
 
@@ -53,71 +56,89 @@ public class ApplicationTelemetryManager {
         this.applicationBlobClient = new ApplicationBlobClient(storageAccountConnectionString);
     }
 
-    public HashSet<TelemetryItem> getApplicationTelemetries(DocumentType docType, int numberOfExpectedTelemetries) throws Exception {
-        ArrayList<JSONObject> telemetryAsJson = getApplicationTelemetriesAsJson(docType, numberOfExpectedTelemetries);
+    public List<TelemetryItem> getApplicationTelemetries(String runId, int numberOfExpectedTelemetries) throws Exception {
 
-        if (telemetryAsJson.size() < numberOfExpectedTelemetries) {
-            String message = String.format("Got only %d out of %d expected telemetries within the timeout defined by (%d seconds)",
-                    telemetryAsJson.size(),
+        List<TelemetryItem> telemetriesForRunId = getTelemetriesFromCacheWithRunId(runId);
+
+        if (telemetriesForRunId.size() < numberOfExpectedTelemetries) {
+            int missingTelemetriesCount = numberOfExpectedTelemetries - telemetriesForRunId.size();
+            updateTelemetryCache(runId, missingTelemetriesCount);
+        }
+
+        telemetriesForRunId = getTelemetriesFromCacheWithRunId(runId);
+
+        if (telemetriesForRunId.size() < numberOfExpectedTelemetries) {
+            String message = String.format("Got only %d out of %d expected telemetries within the timeout (%d seconds)",
+                    telemetriesForRunId.size(),
                     numberOfExpectedTelemetries,
                     POLLING_TIMEOUT_IN_SECONDS);
 
             throw new TimeoutException(message);
         }
 
-        HashSet<TelemetryItem> telemetryItems = new HashSet<TelemetryItem>();
-        for (JSONObject json : telemetryAsJson) {
-            TelemetryItem telemetryItem = TelemetryItemFactory.createTelemetryItem(docType, json);
-            telemetryItems.add(telemetryItem);
-        }
-
-        return telemetryItems;
+        return telemetriesForRunId;
     }
 
-    private ArrayList<JSONObject> getApplicationTelemetriesAsJson(DocumentType docType, int numberOfExpectedTelemetries) throws Exception {
-        ArrayList<JSONObject> telemetryAsJson = new ArrayList<JSONObject>();
+    private List<TelemetryItem> getTelemetriesFromCacheWithRunId(String runId) {
+        List<TelemetryItem> telemetryForRunId = new ArrayList<TelemetryItem>();
+
+        for (TelemetryItem telemetryItem : this.cachedTelemetries) {
+            String runIdProperty = telemetryItem.getProperty(RUN_ID_QUERY_PARAM_NAME);
+            if (runIdProperty != null && runIdProperty.equalsIgnoreCase(runId)) {
+                telemetryForRunId.add(telemetryItem);
+            }
+        }
+
+        return telemetryForRunId;
+    }
+
+    private void updateTelemetryCache(String runId, int numberOfExpectedTelemetries) throws Exception {
         long maxWaitTimeInMillis = POLLING_TIMEOUT_IN_SECONDS * MS_IN_SECOND;
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        while (telemetryAsJson.size() < numberOfExpectedTelemetries && stopWatch.getTime() < maxWaitTimeInMillis) {
+
+        int countOfTelemetriesWithExpectedRunId = 0;
+        while (countOfTelemetriesWithExpectedRunId < numberOfExpectedTelemetries && stopWatch.getTime() < maxWaitTimeInMillis) {
             ArrayList<CloudQueueMessage> messages = applicationTelemetryQueue.retrieveMessages();
 
-            ArrayList<String> blobUris = getBlobUrisFromQueueMessages(docType, messages);
-            for (String blobUri : blobUris) {
-                List<JSONObject> telemetriesAsJsonObjects = applicationBlobClient.getTelemetriesAsJsonObjects(blobUri);
+            ArrayList<TelemetryBlob> telemetryBlobs = getBlobUrisFromQueueMessages(messages);
+            for (TelemetryBlob telemetryBlob : telemetryBlobs) {
+                List<JSONObject> telemetriesAsJsonObjects = applicationBlobClient.getTelemetriesAsJsonObjects(telemetryBlob.getBlobUri());
 
-                telemetryAsJson.addAll(telemetriesAsJsonObjects);
+                for (JSONObject json : telemetriesAsJsonObjects) {
+                    TelemetryItem telemetryItem = TelemetryItemFactory.createTelemetryItem(telemetryBlob.getDocType(), json);
+                    this.cachedTelemetries.add(telemetryItem);
+
+                    String runIdProperty = telemetryItem.getProperty(RUN_ID_QUERY_PARAM_NAME);
+                    if (!LocalStringsUtils.isNullOrEmpty(runIdProperty) && runIdProperty.equalsIgnoreCase(runId)) {
+                        countOfTelemetriesWithExpectedRunId++;
+                    }
+                }
             }
+
+            applicationTelemetryQueue.deleteMessages(messages);
 
             sleepSafe();
         }
-
-        return telemetryAsJson;
     }
 
     /**
      * Gets a list of blob URIs from Azure queue messages
-     * @param docType The document type to retrieve from Azure
      * @param messages The Azure queue messages
      * @return An ArrayList of blob URIs
      * @throws Exception
      */
-    private ArrayList<String> getBlobUrisFromQueueMessages(DocumentType docType, ArrayList<CloudQueueMessage> messages) throws Exception {
-        ArrayList<String> blobUris = new ArrayList<String>();
+    private ArrayList<TelemetryBlob> getBlobUrisFromQueueMessages(ArrayList<CloudQueueMessage> messages) throws Exception {
+        ArrayList<TelemetryBlob> telemetryBlobs = new ArrayList<TelemetryBlob>();
 
-        System.out.println("Extracting blob URIs of document type " + docType.toString() + " from " + messages.size() + " messages");
         for (CloudQueueMessage message : messages) {
             JSONObject messageContentAsJson = new JSONObject(message.getMessageContentAsString());
             String msgDocType = messageContentAsJson.getString("DocumentType");
-
-            if (msgDocType.equals(docType.toString())) {
-                blobUris.add(messageContentAsJson.getString("BlobUri"));
-            }
+            telemetryBlobs.add(new TelemetryBlob(DocumentType.valueOf(msgDocType), messageContentAsJson.getString("BlobUri")));
         }
 
-        System.out.println("Got " + blobUris.size() + " blob URIs with document type " + docType.toString());
-        return blobUris;
+        return telemetryBlobs;
     }
 
     private void sleepSafe() {

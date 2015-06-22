@@ -17,6 +17,8 @@ public enum TelemetryItemFactory {
                 return new RequestTelemetryItem(json);
             case PerformanceCounters:
                 return new PerformanceCounterTelemetryItem(json);
+            case Event:
+                return new EventTelemetryItem(json);
             default:
                 throw new Exception("Unsupported document type: " + docType.toString());
         }

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.framework.telemetries;
 
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +39,8 @@ public class RequestTelemetryItem extends TelemetryItem {
         "uri",
         "sessionId",
         "userId",
-        "requestName"
+        "requestName",
+        "runId",
     };
 
     public RequestTelemetryItem() {
@@ -81,6 +83,20 @@ public class RequestTelemetryItem extends TelemetryItem {
         JSONObject context = json.getJSONObject("context");
         String sessionId = context.getJSONObject("session").getString("id");
         String userId = context.getJSONObject("user").getString("anonId");
+        String operationId = context.getJSONObject("operation").getString("id");
+        String operationName = context.getJSONObject("operation").getString("name");
+
+        JSONObject custom = context.getJSONObject("custom");
+        JSONArray dimensions = custom.getJSONArray("dimensions");
+
+        String runId = null;
+        for (int i = 0; i < dimensions.length(); i++) {
+            JSONObject jsonObject = dimensions.getJSONObject(i);
+            if (!jsonObject.isNull("runid")) {
+                runId = jsonObject.getString("runid");
+                break;
+            }
+        }
 
         this.setProperty("uri", address);
         this.setProperty("port", port.toString());
@@ -88,6 +104,9 @@ public class RequestTelemetryItem extends TelemetryItem {
         this.setProperty("userId", userId);
         this.setProperty("sessionId", sessionId);
         this.setProperty("requestName", requestName);
+        this.setProperty("runId", runId);
+        this.setProperty("operationId", operationId);
+        this.setProperty("operationName", operationName);
 
         for (String key : queryParameters.keySet()) {
             this.setProperty("queryParameter." + key, queryParameters.get(key));

@@ -19,13 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework.telemetries;
+package com.microsoft.applicationinsights.framework;
+
+import com.microsoft.applicationinsights.framework.telemetries.DocumentType;
 
 /**
- * Created by moralt on 4/30/2015.
+ * Created by yonisha on 6/21/2015.
  */
-public enum DocumentType {
-    Requests,
-    PerformanceCounters,
-    Event
+public class TelemetryBlob {
+    private final DocumentType docType;
+    private final String blobUri;
+
+    public TelemetryBlob(DocumentType docType, String blobUri) {
+        this.docType = docType;
+        this.blobUri = blobUri;
+    }
+
+    public DocumentType getDocType() {
+        return this.docType;
+    }
+
+    public String getBlobUri() {
+        return this.blobUri;
+    }
 }

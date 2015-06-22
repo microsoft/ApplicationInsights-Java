@@ -61,6 +61,12 @@ public class ApplicationTelemetryQueue {
         queue.clear();
     }
 
+    public void deleteMessages(ArrayList<CloudQueueMessage> messages) throws StorageException {
+        for (CloudQueueMessage message : messages) {
+            this.queue.deleteMessage(message);
+        }
+    }
+
     private ArrayList<CloudQueueMessage> retrieveMessagesUntilEmpty() throws StorageException {
         ArrayList<CloudQueueMessage> allMessages = new ArrayList<CloudQueueMessage>();
 

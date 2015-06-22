@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -43,7 +44,7 @@ import java.util.*;
  * Created by moralt on 05/05/2015.
  */
 public class WebTelemetryTests {
-    private String runId = LocalStringsUtils.generateRandomId(false);
+    private String runId;
     private static TestEnvironment testEnv;
     private static ApplicationTelemetryManager applicationTelemetryManager;
 
@@ -54,14 +55,36 @@ public class WebTelemetryTests {
                 testEnv.getApplicationStorageConnectionString(), testEnv.getApplicationStorageExportQueueName());
     }
 
+    @Before
+    public void testInitialize() {
+        runId = LocalStringsUtils.generateRandomId(false);
+
+        System.out.println("Test run ID: " + runId);
+    }
+
     /**
      * Sends GET requests to server and expects that will telemetry from app insights and it will include the correct information about the request
      * @throws Exception
      */
     @Test
     public void sendHttpRequestsTest() throws Exception {
-        HashSet<TelemetryItem> expectedTelemetries = sendHttpGetRequests();
-        HashSet<TelemetryItem> realTelemetries = applicationTelemetryManager.getApplicationTelemetries(DocumentType.Requests, expectedTelemetries.size());
+        // TODO: why 3 requests? no need.
+        ArrayList<UriWithExpectedResult> uriPathsToRequest = new ArrayList<UriWithExpectedResult>();
+        UriWithExpectedResult booksRequest =
+                new UriWithExpectedResult("books?id=Thriller&runId=" + runId, HttpStatus.OK_200, "GET BooksController/showBooksByCategory");
+        UriWithExpectedResult loanRequest =
+                new UriWithExpectedResult("loan?title=Gone%20Girl&id=030758836x&subject=Thriller&runId=" + runId, HttpStatus.OK_200, "GET LoanController/loanHandler");
+
+        // TODO: move to a new test that validates telemetry status code.
+        UriWithExpectedResult nonExistingPageRequest =
+                new UriWithExpectedResult("nonExistingWebFage?runId=" + runId, HttpStatus.NOT_FOUND_404, "GET /bookstore-spring/nonExistingWebFage");
+
+        uriPathsToRequest.add(booksRequest);
+        uriPathsToRequest.add(loanRequest);
+        uriPathsToRequest.add(nonExistingPageRequest);
+
+        List<TelemetryItem> expectedTelemetries = sendHttpGetRequests(uriPathsToRequest);
+        List<TelemetryItem> realTelemetries = applicationTelemetryManager.getApplicationTelemetries(this.runId, expectedTelemetries.size());
 
         HashSet<TelemetryItem> missingTelemetry = getMismatchingTelemetryItems(realTelemetries, expectedTelemetries);
         if (missingTelemetry.size() > 0) {
@@ -75,22 +98,41 @@ public class WebTelemetryTests {
         }
     }
 
-    private HashSet<TelemetryItem> sendHttpGetRequests() throws Exception {
-        ArrayList<UriWithExpectedResult> uriPathsToRequest = new ArrayList<UriWithExpectedResult>();
-        UriWithExpectedResult booksRequest =
-                new UriWithExpectedResult("books?id=Thriller&runId=" + runId, HttpStatus.OK_200, "GET /bookstore-spring/books");
-        UriWithExpectedResult loanRequest =
-                new UriWithExpectedResult("loan?title=Gone%20Girl&id=030758836x&subject=Thriller&runId=" + runId, HttpStatus.OK_200, "GET /bookstore-spring/loan");
-        UriWithExpectedResult nonExistingPageRequest =
-                new UriWithExpectedResult("nonExistingWebFage?runId=" + runId, HttpStatus.NOT_FOUND_404, "GET /bookstore-spring/nonExistingWebFage");
+    @Test
+    public void testRequestCorrelationWithCustomTelemetry() throws Exception {
+        final int expectedTelemetries = 2;
 
-        uriPathsToRequest.add(booksRequest);
-        uriPathsToRequest.add(loanRequest);
-        uriPathsToRequest.add(nonExistingPageRequest);
+        UriWithExpectedResult categoriesRequest =
+                new UriWithExpectedResult("categories?runId=" + runId, HttpStatus.OK_200, "GET CategoriesController/listCategories");
 
-        HashSet<TelemetryItem> expectedTelemetries = new HashSet<TelemetryItem>();
+        ArrayList<UriWithExpectedResult> uriWithExpectedResults = new ArrayList<UriWithExpectedResult>();
+        uriWithExpectedResults.add(categoriesRequest);
+
+        sendHttpGetRequests(uriWithExpectedResults);
+        List<TelemetryItem> realTelemetries = applicationTelemetryManager.getApplicationTelemetries(this.runId, expectedTelemetries);
+
+        Assert.assertEquals(expectedTelemetries, realTelemetries.size());
+
+        TelemetryItem firstTelemetryItem = realTelemetries.get(0);
+        TelemetryItem secondTelemetryItem = realTelemetries.get(1);
+
+        // Validating that the two telemetries are correlated.
+        Assert.assertEquals(firstTelemetryItem.getProperty("operationId"), secondTelemetryItem.getProperty("operationId"));
+        Assert.assertEquals(firstTelemetryItem.getProperty("operationName"), secondTelemetryItem.getProperty("operationName"));
+
+        RequestTelemetryItem requestTelemetryItem =
+                (RequestTelemetryItem) (firstTelemetryItem instanceof RequestTelemetryItem ? firstTelemetryItem : secondTelemetryItem);
+
+        // Validating that the operation name equals the request name.
+        Assert.assertEquals(requestTelemetryItem.getProperty("requestName"), requestTelemetryItem.getProperty("operationName"));
+    }
+
+    private List<TelemetryItem> sendHttpGetRequests(List<UriWithExpectedResult> uriPathsToRequest) throws Exception {
+        List<TelemetryItem> expectedTelemetries = new ArrayList<TelemetryItem>();
 
         for (UriWithExpectedResult uriWithExpectedResult : uriPathsToRequest) {
+
+            // TODO: request ID can can be generated by the HTTP client.
             String requestId = LocalStringsUtils.generateRandomId(false);
             String uriWithRequestId = uriWithExpectedResult.getUri() + "&requestId=" + requestId;
 
@@ -110,7 +152,7 @@ public class WebTelemetryTests {
                 Assert.fail(errorMessage);
             }
 
-            TelemetryItem expectedTelemetry = createExpectedResult(fullRequestUri, requestId, responseCode, uriWithExpectedResult.getExpectedRequestName());
+            TelemetryItem expectedTelemetry = createExpectedResult(fullRequestUri, this.runId, requestId, responseCode, uriWithExpectedResult.getExpectedRequestName());
             expectedTelemetries.add(expectedTelemetry);
         }
 
@@ -128,18 +170,12 @@ public class WebTelemetryTests {
         return cookiesList;
     }
 
-    /**
-     * Creates expected HTTP request result
-     * @param uri The URI for the request
-     * @param requestId UUID of the request
-     * @param responseCode The expected response code for HTTP request with this URI
-     * @return A TelemetryItem with the expected results
-     */
-    private TelemetryItem createExpectedResult(URI uri, String requestId, int responseCode, String requestName) {
+    private TelemetryItem createExpectedResult(URI uri, String runId, String requestId, int responseCode, String requestName) {
         final String expectedUserAndSessionId = "00000000-0000-0000-0000-000000000000";
 
         TelemetryItem telemetryItem = new RequestTelemetryItem();
-        telemetryItem.setProperty("id", requestId);
+        telemetryItem.setProperty("requestId", requestId);
+        telemetryItem.setProperty("runId", runId);
         telemetryItem.setProperty("port", Integer.toString(uri.getPort()));
         telemetryItem.setProperty("responseCode", Integer.toString(responseCode));
         telemetryItem.setProperty("uri", uri.toString());
@@ -163,8 +199,8 @@ public class WebTelemetryTests {
      * @param expectedTelemetries The telemetry items that should be contained in the 'applicationTelemetries'
      * @return A collection of telemetry items from 'expectedTelemetries' that are not in 'applicationTelemetries'
      */
-    private HashSet<TelemetryItem> getMismatchingTelemetryItems(HashSet<TelemetryItem> applicationTelemetries,
-                                                                HashSet<TelemetryItem> expectedTelemetries) {
+    private HashSet<TelemetryItem> getMismatchingTelemetryItems(List<TelemetryItem> applicationTelemetries,
+                                                                List<TelemetryItem> expectedTelemetries) {
 
         HashSet<TelemetryItem> missingTelemetry = new HashSet<TelemetryItem>();
 
