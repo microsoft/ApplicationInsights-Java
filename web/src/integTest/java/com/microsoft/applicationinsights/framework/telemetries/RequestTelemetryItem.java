@@ -48,7 +48,7 @@ public class RequestTelemetryItem extends TelemetryItem {
     }
 
     public RequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        this();
+        super(DocumentType.Requests, json);
 
         initRequestTelemetryItem(json);
     }
@@ -80,33 +80,10 @@ public class RequestTelemetryItem extends TelemetryItem {
             queryParameters.put(name, value);
         }
 
-        JSONObject context = json.getJSONObject("context");
-        String sessionId = context.getJSONObject("session").getString("id");
-        String userId = context.getJSONObject("user").getString("anonId");
-        String operationId = context.getJSONObject("operation").getString("id");
-        String operationName = context.getJSONObject("operation").getString("name");
-
-        JSONObject custom = context.getJSONObject("custom");
-        JSONArray dimensions = custom.getJSONArray("dimensions");
-
-        String runId = null;
-        for (int i = 0; i < dimensions.length(); i++) {
-            JSONObject jsonObject = dimensions.getJSONObject(i);
-            if (!jsonObject.isNull("runid")) {
-                runId = jsonObject.getString("runid");
-                break;
-            }
-        }
-
         this.setProperty("uri", address);
         this.setProperty("port", port.toString());
         this.setProperty("responseCode", responseCode.toString());
-        this.setProperty("userId", userId);
-        this.setProperty("sessionId", sessionId);
         this.setProperty("requestName", requestName);
-        this.setProperty("runId", runId);
-        this.setProperty("operationId", operationId);
-        this.setProperty("operationName", operationName);
 
         for (String key : queryParameters.keySet()) {
             this.setProperty("queryParameter." + key, queryParameters.get(key));

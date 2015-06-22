@@ -33,7 +33,6 @@ import org.json.JSONObject;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -119,7 +118,9 @@ public class ApplicationTelemetryManager {
 
             applicationTelemetryQueue.deleteMessages(messages);
 
-            sleepSafe();
+            if (countOfTelemetriesWithExpectedRunId < numberOfExpectedTelemetries) {
+                sleepSafe();
+            }
         }
     }
 

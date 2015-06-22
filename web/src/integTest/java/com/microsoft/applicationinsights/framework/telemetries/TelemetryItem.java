@@ -22,10 +22,14 @@
 package com.microsoft.applicationinsights.framework.telemetries;
 
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.net.URISyntaxException;
+import java.util.Hashtable;
 import java.util.Properties;
 
-// TODO: fetch here properties that are common for all telemetry types such as operation ID/name, user/sesion ID etc.
 /**
  * Created by moralt on 05/05/2015.
  */
@@ -38,6 +42,12 @@ public abstract class TelemetryItem extends Properties {
      */
     public TelemetryItem(DocumentType docType) {
         this.docType = docType;
+    }
+
+    public TelemetryItem(DocumentType docType, JSONObject jsonObject) throws URISyntaxException, JSONException {
+        this(docType);
+
+        initTelemetryItemWithCommonProperties(jsonObject);
     }
 
     protected abstract String[] getDefaultPropertiesToCompare();
@@ -99,5 +109,32 @@ public abstract class TelemetryItem extends Properties {
         }
 
         return hash;
+    }
+
+    private void initTelemetryItemWithCommonProperties(JSONObject json) throws URISyntaxException, JSONException {
+        System.out.println("Extracting JSON common properties (" + this.docType + ")");
+        JSONObject context = json.getJSONObject("context");
+        String sessionId = context.getJSONObject("session").getString("id");
+        String userId = context.getJSONObject("user").getString("anonId");
+        String operationId = context.getJSONObject("operation").getString("id");
+        String operationName = context.getJSONObject("operation").getString("name");
+
+        JSONObject custom = context.getJSONObject("custom");
+        JSONArray dimensions = custom.getJSONArray("dimensions");
+
+        String runId = null;
+        for (int i = 0; i < dimensions.length(); i++) {
+            JSONObject jsonObject = dimensions.getJSONObject(i);
+            if (!jsonObject.isNull("runid")) {
+                runId = jsonObject.getString("runid");
+                break;
+            }
+        }
+
+        this.setProperty("userId", userId);
+        this.setProperty("sessionId", sessionId);
+        this.setProperty("runId", runId);
+        this.setProperty("operationId", operationId);
+        this.setProperty("operationName", operationName);
     }
 }

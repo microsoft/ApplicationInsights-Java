@@ -36,38 +36,11 @@ public class EventTelemetryItem extends TelemetryItem {
     }
 
     public EventTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        this();
-
-        initRequestTelemetryItem(json);
+        super(DocumentType.Event, json);
     }
 
     @Override
     protected String[] getDefaultPropertiesToCompare() {
         return new String[0];
-    }
-
-    private void initRequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        System.out.println("Converting JSON object to EventTelemetryItem");
-
-        JSONObject context = json.getJSONObject("context");
-        String operationId = context.getJSONObject("operation").getString("id");
-        String operationName = context.getJSONObject("operation").getString("name");
-
-        this.setProperty("operationId", operationId);
-        this.setProperty("operationName", operationName);
-
-        JSONObject custom = context.getJSONObject("custom");
-        JSONArray dimensions = custom.getJSONArray("dimensions");
-
-        String runId = null;
-        for (int i = 0; i < dimensions.length(); i++) {
-            JSONObject jsonObject = dimensions.getJSONObject(i);
-            if (!jsonObject.isNull("runid")) {
-                runId = jsonObject.getString("runid");
-                break;
-            }
-        }
-
-        this.setProperty("runId", runId);
     }
 }
