@@ -21,4 +21,11 @@
 
     <mvc:annotation-driven />
 
+    <!-- Interceptor for calculating request name -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter" />
+        </mvc:interceptor>
+    </mvc:interceptors>
 </beans>
