@@ -29,15 +29,21 @@ public class UriWithExpectedResult {
     private final int expectedResponseCode;
     private final String uri;
     private final String expectedRequestName;
+    private final String runId;
 
-    public UriWithExpectedResult(String uri, int expectedResponseCode, String expectedRequestName) {
+    public UriWithExpectedResult(String uri, String runId, int expectedResponseCode, String expectedRequestName) {
         this.uri = uri;
+        this.runId = runId;
         this.expectedResponseCode = expectedResponseCode;
         this.expectedRequestName = expectedRequestName;
     }
 
     public String getUri() {
         return this.uri;
+    }
+
+    public String getRunId() {
+        return this.runId;
     }
 
     public int getExpectedResponseCode() {
