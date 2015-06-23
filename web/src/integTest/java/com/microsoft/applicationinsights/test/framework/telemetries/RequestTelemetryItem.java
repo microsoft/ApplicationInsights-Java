@@ -19,9 +19,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework.telemetries;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

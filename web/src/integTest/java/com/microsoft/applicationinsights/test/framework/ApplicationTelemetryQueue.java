@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework;
+package com.microsoft.applicationinsights.test.framework;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
@@ -36,15 +36,17 @@ import java.util.ArrayList;
  */
 public class ApplicationTelemetryQueue {
 
-    private static final int QUEUE_VISIBILITY_TIMEOUT_IN_SECONDS = 180;
-    private static final int QUEUE_MESSAGE_BATCH_SIZE = 32;
-
+    private final int queueVisibilityTimeoutInSeconds;
+    private final int queueMessageBatchSize;
     private CloudQueue queue;
 
-    public ApplicationTelemetryQueue(String connectionString, String queueName) throws URISyntaxException, StorageException, InvalidKeyException {
+    public ApplicationTelemetryQueue(String connectionString, String queueName, int queueMessageBatchSize, int queueVisibilityTimeoutInSeconds) throws URISyntaxException, StorageException, InvalidKeyException {
         CloudStorageAccount account = CloudStorageAccount.parse(connectionString);
         CloudQueueClient queueClient = account.createCloudQueueClient();
-        queue = queueClient.getQueueReference(queueName);
+
+        this.queue = queueClient.getQueueReference(queueName);
+        this.queueVisibilityTimeoutInSeconds = queueVisibilityTimeoutInSeconds;
+        this.queueMessageBatchSize = queueMessageBatchSize;
 
         // This can be a problem if the queue is used by several tests concurrently.
         this.clear();
@@ -72,9 +74,9 @@ public class ApplicationTelemetryQueue {
 
         do {
             ArrayList<CloudQueueMessage> messages = (ArrayList<CloudQueueMessage>) queue.retrieveMessages(
-                    QUEUE_MESSAGE_BATCH_SIZE, QUEUE_VISIBILITY_TIMEOUT_IN_SECONDS, null, null);
+                    this.queueMessageBatchSize, this.queueVisibilityTimeoutInSeconds, null, null);
             allMessages.addAll(messages);
-        } while (allMessages.size() >= QUEUE_MESSAGE_BATCH_SIZE);
+        } while (allMessages.size() >= this.queueMessageBatchSize);
 
         return allMessages;
     }

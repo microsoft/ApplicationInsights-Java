@@ -19,27 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework;
+package com.microsoft.applicationinsights.web.spring;
 
-import com.microsoft.applicationinsights.framework.telemetries.DocumentType;
+import com.microsoft.applicationinsights.test.framework.utils.PropertiesUtils;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
- * Created by yonisha on 6/21/2015.
+ * Created by amnonsh on 5/28/2015.
  */
-public class TelemetryBlob {
-    private final DocumentType docType;
-    private final String blobUri;
+public class TestSettings {
+    private Properties testProps;
 
-    public TelemetryBlob(DocumentType docType, String blobUri) {
-        this.docType = docType;
-        this.blobUri = blobUri;
+    private final String SETTINGS_RESOURCE_NAME  = "testSettings.properties";
+
+    public static final String KEY_MAX_WAIT_TIME       = "maxWaitTime";
+    public static final String KEY_POLLING_INTERVAL    = "keyPollingInterval";
+    public static final String KEY_MESSAGE_BATCH_SIZE  = "keyMessageBatchSize";
+
+    public TestSettings() throws IOException {
+        testProps = PropertiesUtils.loadPropertiesFromResource(SETTINGS_RESOURCE_NAME);
     }
 
-    public DocumentType getDocType() {
-        return this.docType;
+    public Integer getMaxWaitTime() {
+        return Integer.parseInt(testProps.getProperty(KEY_MAX_WAIT_TIME));
     }
 
-    public String getBlobUri() {
-        return this.blobUri;
+    public Integer getPollingInterval() {
+        return Integer.parseInt(testProps.getProperty(KEY_POLLING_INTERVAL));
+    }
+
+    public Integer getMessageBatchSize() {
+        return Integer.parseInt(testProps.getProperty(KEY_MESSAGE_BATCH_SIZE));
     }
 }

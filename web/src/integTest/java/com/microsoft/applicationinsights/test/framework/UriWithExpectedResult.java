@@ -19,42 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework;
-
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
+package com.microsoft.applicationinsights.test.framework;
 
 /**
  * Created by yonisha on 6/16/2015.
  */
-public class HttpRequestClient {
+public class UriWithExpectedResult {
 
-    // URI structure: http://<server>:<port>/<app_name>/<path>
-    private static final String REQUEST_URI_TEMPLATE = "http://%s:%s/%s/%s";
-    private static final String COOKIE_HEADER_KEY = "Cookie";
+    private final int expectedResponseCode;
+    private final String uri;
+    private final String expectedRequestName;
+    private final String runId;
 
-    private HttpRequestClient() {
+    public UriWithExpectedResult(String uri, String runId, int expectedResponseCode, String expectedRequestName) {
+        this.uri = uri;
+        this.runId = runId;
+        this.expectedResponseCode = expectedResponseCode;
+        this.expectedRequestName = expectedRequestName;
     }
 
-    public static int sendHttpRequest(URI uri, List<String> requestCookies) throws Exception {
-
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
-
-        String allCookies = String.join("; ", requestCookies);
-        connection.setRequestProperty(COOKIE_HEADER_KEY, allCookies);
-
-        System.out.println("Sending 'GET' request to URL: " + uri.toString());
-        int responseCode = connection.getResponseCode();
-        System.out.println("Response Code : " + responseCode);
-
-        return responseCode;
+    public String getUri() {
+        return this.uri;
     }
 
-    public static URI constructUrl(String server, int port, String app, String path) throws URISyntaxException {
-        String url = String.format(REQUEST_URI_TEMPLATE, server, port, app, path);
+    public String getRunId() {
+        return this.runId;
+    }
 
-        return new URI(url);
+    public int getExpectedResponseCode() {
+        return this.expectedResponseCode;
+    }
+
+    public String getExpectedRequestName() {
+        return this.expectedRequestName;
     }
 }

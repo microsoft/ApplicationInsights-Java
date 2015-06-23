@@ -19,28 +19,48 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework.telemetries;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.net.URISyntaxException;
 
 /**
- * Created by yonisha on 6/21/2015.
+ * Created by moralt on 05/05/2015.
  */
-public class EventTelemetryItem extends TelemetryItem {
+public class PerformanceCounterTelemetryItem extends TelemetryItem {
+    private static final String[] propertiesToCompare = new String[] {
+            "category",
+            "instance",
+    };
 
-    public EventTelemetryItem() {
-        super(DocumentType.Event);
+    public PerformanceCounterTelemetryItem() {
+        super(DocumentType.PerformanceCounters);
     }
 
-    public EventTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        super(DocumentType.Event, json);
+    public PerformanceCounterTelemetryItem(JSONObject json) throws JSONException {
+        this();
+
+        initPerformanceCounterTelemetryItem(json);
     }
 
-    @Override
     protected String[] getDefaultPropertiesToCompare() {
-        return new String[0];
+        return propertiesToCompare;
+    }
+
+    /**
+     * Converts JSON object to PerformanceCounter TelemetryItem
+     * @param json The JSON object
+     * @return A TelemetryItem
+     */
+    private void initPerformanceCounterTelemetryItem(JSONObject json) throws JSONException {
+        System.out.println("Converting JSON object to telemetry item PerformanceCounterTelemetryItem");
+
+        JSONObject performanceCounterProperties = json.getJSONArray("performanceCounter").getJSONObject(0);
+
+        String category = performanceCounterProperties.getString("categoryName");
+        String instance = performanceCounterProperties.getString("instanceName");
+
+        this.setProperty("category", category);
+        this.setProperty("instance", instance);
     }
 }

@@ -23,6 +23,6 @@
 	</ContextInitializers>
 	<SDKLogger></SDKLogger>
 	<Channel>
-		    <DeveloperMode>true</DeveloperMode>
+		<DeveloperMode>true</DeveloperMode>
 	</Channel>
 </ApplicationInsights>

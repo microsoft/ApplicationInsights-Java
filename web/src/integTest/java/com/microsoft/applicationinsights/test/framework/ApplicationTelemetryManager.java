@@ -19,11 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework;
+package com.microsoft.applicationinsights.test.framework;
 
-import com.microsoft.applicationinsights.framework.telemetries.DocumentType;
-import com.microsoft.applicationinsights.framework.telemetries.TelemetryItem;
-import com.microsoft.applicationinsights.framework.telemetries.TelemetryItemFactory;
+import com.microsoft.applicationinsights.test.framework.telemetries.DocumentType;
+import com.microsoft.applicationinsights.test.framework.telemetries.TelemetryItem;
+import com.microsoft.applicationinsights.test.framework.telemetries.TelemetryItemFactory;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
@@ -42,17 +42,24 @@ import java.util.concurrent.TimeoutException;
 public class ApplicationTelemetryManager {
 
     private static final String RUN_ID_QUERY_PARAM_NAME = "runId";
-    private static final int POLLING_TIMEOUT_IN_SECONDS = 180;
-    private static final int QUEUE_POLLING_INTERVAL_IN_SECONDS = 3;
     private static final int MS_IN_SECOND = 1000;
 
+    private final int pollingTimeoutInSeconds;
+    private final int queuePollingIntervalInSeconds;
     private List<TelemetryItem> cachedTelemetries = new ArrayList<TelemetryItem>();
     private ApplicationTelemetryQueue applicationTelemetryQueue;
     private ApplicationBlobClient applicationBlobClient;
 
-    public ApplicationTelemetryManager(String storageAccountConnectionString, String queueName) throws StorageException, InvalidKeyException, URISyntaxException {
-        this.applicationTelemetryQueue = new ApplicationTelemetryQueue(storageAccountConnectionString, queueName);
+    public ApplicationTelemetryManager(
+            String storageAccountConnectionString,
+            String queueName,
+            int pollingTimeoutInSeconds,
+            int queuePollingIntervalInSeconds,
+            int queueMessageBatchSize) throws StorageException, InvalidKeyException, URISyntaxException {
+        this.applicationTelemetryQueue = new ApplicationTelemetryQueue(storageAccountConnectionString, queueName, queueMessageBatchSize, pollingTimeoutInSeconds);
         this.applicationBlobClient = new ApplicationBlobClient(storageAccountConnectionString);
+        this.pollingTimeoutInSeconds = pollingTimeoutInSeconds;
+        this.queuePollingIntervalInSeconds = queuePollingIntervalInSeconds;
     }
 
     public List<TelemetryItem> getApplicationTelemetries(String runId, int numberOfExpectedTelemetries) throws Exception {
@@ -70,7 +77,7 @@ public class ApplicationTelemetryManager {
             String message = String.format("Got only %d out of %d expected telemetries within the timeout (%d seconds)",
                     telemetriesForRunId.size(),
                     numberOfExpectedTelemetries,
-                    POLLING_TIMEOUT_IN_SECONDS);
+                    this.pollingTimeoutInSeconds);
 
             throw new TimeoutException(message);
         }
@@ -92,7 +99,7 @@ public class ApplicationTelemetryManager {
     }
 
     private void updateTelemetryCache(String runId, int numberOfExpectedTelemetries) throws Exception {
-        long maxWaitTimeInMillis = POLLING_TIMEOUT_IN_SECONDS * MS_IN_SECOND;
+        long maxWaitTimeInMillis = this.pollingTimeoutInSeconds * MS_IN_SECOND;
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -143,10 +150,10 @@ public class ApplicationTelemetryManager {
     }
 
     private void sleepSafe() {
-        int timeToSleepInMilliseconds = QUEUE_POLLING_INTERVAL_IN_SECONDS * MS_IN_SECOND;
+        int timeToSleepInMilliseconds = this.queuePollingIntervalInSeconds * MS_IN_SECOND;
 
         try {
-            System.out.println("Sleeping for " + QUEUE_POLLING_INTERVAL_IN_SECONDS + " seconds...");
+            System.out.println("Sleeping for " + this.queuePollingIntervalInSeconds + " seconds...");
             Thread.sleep(timeToSleepInMilliseconds);
         } catch(InterruptedException ex) {
         }

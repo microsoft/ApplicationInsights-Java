@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.framework.telemetries;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
 import org.json.JSONObject;
 

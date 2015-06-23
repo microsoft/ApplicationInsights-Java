@@ -52,8 +52,6 @@ whenPomConfigured = { p ->
         }
     }
     writePomToArtifactsDirectory(p, project.name)
-
-    System.get
 }
 
 // endregion Publishing properties

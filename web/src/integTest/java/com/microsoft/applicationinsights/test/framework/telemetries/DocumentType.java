@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework.telemetries;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
 /**
  * Created by moralt on 4/30/2015.

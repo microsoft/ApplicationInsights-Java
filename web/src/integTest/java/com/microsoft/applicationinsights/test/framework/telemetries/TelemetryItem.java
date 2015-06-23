@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.framework.telemetries;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.json.JSONArray;
@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
-import java.util.Hashtable;
 import java.util.Properties;
 
 /**
@@ -114,8 +113,13 @@ public abstract class TelemetryItem extends Properties {
     private void initTelemetryItemWithCommonProperties(JSONObject json) throws URISyntaxException, JSONException {
         System.out.println("Extracting JSON common properties (" + this.docType + ")");
         JSONObject context = json.getJSONObject("context");
-        String sessionId = context.getJSONObject("session").getString("id");
-        String userId = context.getJSONObject("user").getString("anonId");
+
+        JSONObject sessionJson = context.getJSONObject("session");
+        String sessionId = !sessionJson.isNull("id") ? sessionJson.getString("id") : "";
+
+        JSONObject userJson = context.getJSONObject("user");
+        String userId = !userJson.isNull("anonId") ? userJson.getString("anonId") : "";
+
         String operationId = context.getJSONObject("operation").getString("id");
         String operationName = context.getJSONObject("operation").getString("name");
 
