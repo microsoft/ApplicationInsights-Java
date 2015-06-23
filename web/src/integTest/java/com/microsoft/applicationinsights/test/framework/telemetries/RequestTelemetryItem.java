@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +35,11 @@ public class RequestTelemetryItem extends TelemetryItem {
     private static final String[] propertiesToCompare = new String[] {
         "port",
         "responseCode",
-        "uri"
+        "uri",
+        "sessionId",
+        "userId",
+        "requestName",
+        "runId",
     };
 
     public RequestTelemetryItem() {
@@ -43,7 +47,7 @@ public class RequestTelemetryItem extends TelemetryItem {
     }
 
     public RequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        this();
+        super(DocumentType.Requests, json);
 
         initRequestTelemetryItem(json);
     }
@@ -56,15 +60,15 @@ public class RequestTelemetryItem extends TelemetryItem {
     /**
      * Converts JSON object to Request TelemetryItem
      * @param json The JSON object
-     * @return A TelemetryItem
      */
     private void initRequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        System.out.println("Converting JSON object to telemetry item RequestTelemetryItem");
+        System.out.println("Converting JSON object to RequestTelemetryItem");
         JSONObject requestProperties = json.getJSONArray("request").getJSONObject(0);
 
-        String address       = requestProperties.getString("url");
-        Integer port         = requestProperties.getJSONObject("urlData").getInt("port");
+        String address = requestProperties.getString("url");
+        Integer port = requestProperties.getJSONObject("urlData").getInt("port");
         Integer responseCode = requestProperties.getInt("responseCode");
+        String requestName = requestProperties.getString("name");
 
         JSONArray parameters = requestProperties.getJSONObject("urlData").getJSONArray("queryParameters");
         Hashtable<String, String> queryParameters = new Hashtable<String, String>();
@@ -78,12 +82,10 @@ public class RequestTelemetryItem extends TelemetryItem {
         this.setProperty("uri", address);
         this.setProperty("port", port.toString());
         this.setProperty("responseCode", responseCode.toString());
+        this.setProperty("requestName", requestName);
 
         for (String key : queryParameters.keySet()) {
             this.setProperty("queryParameter." + key, queryParameters.get(key));
         }
-
     }
-
-
 }

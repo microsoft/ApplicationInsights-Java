@@ -19,38 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
-import com.microsoft.applicationinsights.test.framework.utils.PropertiesUtils;
-
-import java.io.IOException;
-import java.util.Properties;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.net.URISyntaxException;
 
 /**
- * Created by amnonsh on 5/28/2015.
+ * Created by yonisha on 6/21/2015.
  */
-public class TestSettings {
-    private Properties testProps;
+public class EventTelemetryItem extends TelemetryItem {
 
-    private final String SETTINGS_RESOURCE_NAME  = "testSettings.properties";
-
-    public static final String KEY_MAX_WAIT_TIME       = "maxWaitTime";
-    public static final String KEY_POLLING_INTERVAL    = "keyPollingInterval";
-    public static final String KEY_MESSAGE_BATCH_SIZE  = "keyMessageBatchSize";
-
-    public TestSettings() throws IOException {
-        testProps = PropertiesUtils.loadPropertiesFromResource(SETTINGS_RESOURCE_NAME);
+    public EventTelemetryItem() {
+        super(DocumentType.Event);
     }
 
-    public Integer getMaxWaitTime() {
-        return Integer.parseInt(testProps.getProperty(KEY_MAX_WAIT_TIME));
+    public EventTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
+        super(DocumentType.Event, json);
     }
 
-    public Integer getPollingInterval() {
-        return Integer.parseInt(testProps.getProperty(KEY_POLLING_INTERVAL));
-    }
-
-    public Integer getMessageBatchSize() {
-        return Integer.parseInt(testProps.getProperty(KEY_MESSAGE_BATCH_SIZE));
+    @Override
+    protected String[] getDefaultPropertiesToCompare() {
+        return new String[0];
     }
 }

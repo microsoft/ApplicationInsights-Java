@@ -1,8 +1,8 @@
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.test.framework;
 
-import com.microsoft.applicationinsights.test.utils.PropertiesUtils;
+import com.microsoft.applicationinsights.test.framework.utils.PropertiesUtils;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Properties;
 
 /**

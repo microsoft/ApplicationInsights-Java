@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
 import org.json.JSONObject;
 
@@ -17,6 +17,8 @@ public enum TelemetryItemFactory {
                 return new RequestTelemetryItem(json);
             case PerformanceCounters:
                 return new PerformanceCounterTelemetryItem(json);
+            case Event:
+                return new EventTelemetryItem(json);
             default:
                 throw new Exception("Unsupported document type: " + docType.toString());
         }

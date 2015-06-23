@@ -14,6 +14,9 @@
 	<TelemetryInitializers>
 		<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer" />
 		<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer" />
+
+		<!-- This initializer is used by the integration tests to verify correlation between requests & instrumented code. -->
+		<Add type="com.springapp.mvc.extensions.WebRequestRunIdTelemetryInitializer" />
 		<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer" />
 		<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserTelemetryInitializer" />
 		<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer" />
@@ -26,6 +29,6 @@
 	</ContextInitializers>
 	<SDKLogger></SDKLogger>
 	<Channel>
-		    <DeveloperMode>true</DeveloperMode>
+		<DeveloperMode>true</DeveloperMode>
 	</Channel>
 </ApplicationInsights>

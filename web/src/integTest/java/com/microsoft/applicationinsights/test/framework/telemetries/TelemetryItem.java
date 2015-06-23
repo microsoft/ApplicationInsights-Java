@@ -19,8 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring;
+package com.microsoft.applicationinsights.test.framework.telemetries;
 
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 /**
@@ -35,6 +41,12 @@ public abstract class TelemetryItem extends Properties {
      */
     public TelemetryItem(DocumentType docType) {
         this.docType = docType;
+    }
+
+    public TelemetryItem(DocumentType docType, JSONObject jsonObject) throws URISyntaxException, JSONException {
+        this(docType);
+
+        initTelemetryItemWithCommonProperties(jsonObject);
     }
 
     protected abstract String[] getDefaultPropertiesToCompare();
@@ -88,8 +100,45 @@ public abstract class TelemetryItem extends Properties {
     public int hashCode() {
         int hash = 0;
         for (String propertyName : getDefaultPropertiesToCompare()) {
-            hash ^= getProperty(propertyName).hashCode();
+            String property = getProperty(propertyName);
+
+            if (!LocalStringsUtils.isNullOrEmpty(property)) {
+                hash ^= property.hashCode();
+            }
         }
+
         return hash;
+    }
+
+    private void initTelemetryItemWithCommonProperties(JSONObject json) throws URISyntaxException, JSONException {
+        System.out.println("Extracting JSON common properties (" + this.docType + ")");
+        JSONObject context = json.getJSONObject("context");
+
+        JSONObject sessionJson = context.getJSONObject("session");
+        String sessionId = !sessionJson.isNull("id") ? sessionJson.getString("id") : "";
+
+        JSONObject userJson = context.getJSONObject("user");
+        String userId = !userJson.isNull("anonId") ? userJson.getString("anonId") : "";
+
+        String operationId = context.getJSONObject("operation").getString("id");
+        String operationName = context.getJSONObject("operation").getString("name");
+
+        JSONObject custom = context.getJSONObject("custom");
+        JSONArray dimensions = custom.getJSONArray("dimensions");
+
+        String runId = null;
+        for (int i = 0; i < dimensions.length(); i++) {
+            JSONObject jsonObject = dimensions.getJSONObject(i);
+            if (!jsonObject.isNull("runid")) {
+                runId = jsonObject.getString("runid");
+                break;
+            }
+        }
+
+        this.setProperty("userId", userId);
+        this.setProperty("sessionId", sessionId);
+        this.setProperty("runId", runId);
+        this.setProperty("operationId", operationId);
+        this.setProperty("operationName", operationName);
     }
 }
