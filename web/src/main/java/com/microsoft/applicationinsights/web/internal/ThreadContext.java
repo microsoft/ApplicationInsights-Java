@@ -34,4 +34,8 @@ public class ThreadContext {
     public static RequestTelemetryContext getRequestTelemetryContext() {
         return threadLocal.get();
     }
+
+    public static void remove() {
+        threadLocal.remove();
+    }
 }

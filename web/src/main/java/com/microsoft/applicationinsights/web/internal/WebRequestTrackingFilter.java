@@ -151,6 +151,10 @@ public final class WebRequestTrackingFilter implements Filter {
     private void invokeSafeOnEndRequest(ServletRequest req, ServletResponse res) {
         try {
             webModulesContainer.invokeOnEndRequest(req, res);
+
+            // We must free TLS before the threads finishes to process the request. Removing this line can result in
+            // a memory leak.
+            ThreadContext.remove();
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
                     "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s", e.getMessage());
