@@ -29,8 +29,17 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 public final class ExceptionTelemetryTest {
+
+    @Test
+    public void testNullException() {
+        ExceptionTelemetry telemetry = new ExceptionTelemetry(null);
+        assertNotNull(telemetry.getException());
+        assertNotNull(telemetry.getThrowable());
+        assertSame(telemetry.getException(), telemetry.getThrowable());
+    }
 
     @Test
     public void testSetException() {
