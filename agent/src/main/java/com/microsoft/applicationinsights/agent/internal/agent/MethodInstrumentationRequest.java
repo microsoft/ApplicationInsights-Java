@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
+
 /**
  * Represents a request for instrumenting a method.
  * methodName: Must be a non-null non empty value
@@ -33,10 +35,10 @@ package com.microsoft.applicationinsights.agent.internal.agent;
  * Created by gupele on 5/31/2015.
  */
 final class MethodInstrumentationRequest {
-    public final String methodName;
-    public final String methodSignature;
-    public final boolean reportCaughtExceptions;
-    public final boolean reportExecutionTime;
+    private final String methodName;
+    private final String methodSignature;
+    private final boolean reportCaughtExceptions;
+    private final boolean reportExecutionTime;
 
     public MethodInstrumentationRequest(String methodName, String methodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime) {
         if (StringUtils.isNullOrEmpty(methodName)) {
@@ -51,5 +53,21 @@ final class MethodInstrumentationRequest {
 
     public MethodInstrumentationRequest(String methodName, boolean reportCaughtExceptions, boolean reportExecutionTime) {
         this(methodName, null, reportCaughtExceptions, reportExecutionTime);
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public String getMethodSignature() {
+        return methodSignature;
+    }
+
+    public boolean isReportCaughtExceptions() {
+        return reportCaughtExceptions;
+    }
+
+    public boolean isReportExecutionTime() {
+        return reportExecutionTime;
     }
 }

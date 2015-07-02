@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.logger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.microsoft.applicationinsights.agent.internal.agent.StringUtils;
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 
 /**
  * Created by gupele on 6/3/2015.

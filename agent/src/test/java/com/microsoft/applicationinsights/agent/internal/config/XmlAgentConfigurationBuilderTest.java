@@ -35,93 +35,29 @@ public final class XmlAgentConfigurationBuilderTest {
     private final static String TEMP_TEST_FOLDER = "AgentTests";
     private final static String TEMP_CONF_FILE = "AI-Agent.xml";
 
-    private interface Printer {
-        void print(PrintWriter writer);
-    }
-
-    private static class MalformedXmlTestPrinter implements Printer {
-        @Override
-        public void print(PrintWriter writer) {
-            writer.println("<BuiltIn>");
-        }
-    }
-
-    private static class BuiltInTestPrinter implements Printer {
-        @Override
-        public void print(PrintWriter writer) {
-            writer.println("<BuiltIn>");
-
-            writer.println("<HIBERNATE enabled=\"false\"/>");
-            writer.println("<HTTP enabled=\"true\"/>");
-
-            writer.println("</BuiltIn>");
-        }
-    }
-
-    private static class ForbiddenSectionTestPrinter implements Printer {
-        @Override
-        public void print(PrintWriter writer) {
-            writer.println("<ForbiddenPrefixes>");
-
-            writer.println("<Prefix>a.AClass1</Prefix>");
-            writer.println("<Prefix>a.AClass1</Prefix>");
-            writer.println("<Prefix>a.b.AClass1</Prefix>");
-
-            writer.println("</ForbiddenPrefixes>");
-        }
-    }
-
-    private static class ConfigurationTestPrinter implements Printer {
-        @Override
-        public void print(PrintWriter writer) {
-            writer.println("<Class name=\"a.AClass1\">");
-
-            writer.println("<Method name=\"method1\" reportExecutionTime=\"true\">");
-            writer.println("</Method>");
-            writer.println("<Method name=\"method2\" enabled=\"false\" reportExecutionTime=\"true\">");
-            writer.println("</Method>");
-            writer.println("<Method name=\"method3\" reportCaughtExceptions=\"true\">");
-            writer.println("</Method>");
-
-            writer.println("</Class>");
-
-            writer.println("<Class name=\"a.AClass2\">");
-            writer.println("</Class>");
-
-            writer.println("<Class name=\"a.AClass3\" enabled=\"false\">");
-            writer.println("<Method name=\"method1\" reportExecutionTime=\"true\">");
-            writer.println("</Method>");
-            writer.println("<Method name=\"method2\" enabled=\"true\" reportExecutionTime=\"true\">");
-            writer.println("</Method>");
-            writer.println("<Method name=\"method3\" reportCaughtExceptions=\"true\">");
-            writer.println("</Method>");
-            writer.println("</Class>");
-        }
-    }
-
     @Test
     public void testForbiddenSection() throws IOException {
-        AgentConfiguration configuration = testConfiguration(new ForbiddenSectionTestPrinter());
+        AgentConfiguration configuration = testConfiguration("ExcludedTest.xml");
 
         assertNotNull(configuration);
 
-        Set<String> forbiddenPrefixes = configuration.getForbiddenPrefixes();
+        Set<String> excludedPrefixes = configuration.getExcludedPrefixes();
 
-        assertNotNull(forbiddenPrefixes);
-        assertEquals(forbiddenPrefixes.size(), 2);
-        assertTrue(forbiddenPrefixes.contains("a.AClass1"));
-        assertTrue(forbiddenPrefixes.contains("a.b.AClass1"));
+        assertNotNull(excludedPrefixes);
+        assertEquals(excludedPrefixes.size(), 2);
+        assertTrue(excludedPrefixes.contains("a.AClass1"));
+        assertTrue(excludedPrefixes.contains("a.b.AClass1"));
     }
 
     @Test
     public void testMalformedConfiguration() throws IOException {
-        AgentConfiguration configuration = testConfiguration(new MalformedXmlTestPrinter());
+        AgentConfiguration configuration = testConfiguration("MalformedTest.xml");
         assertNull(configuration);
     }
 
     @Test
     public void testClassesConfiguration() throws IOException {
-        AgentConfiguration configuration = testConfiguration(new ConfigurationTestPrinter());
+        AgentConfiguration configuration = testConfiguration("InstrumentationTest.xml");
         Map<String, ClassInstrumentationData> classes = configuration.getRequestedClassesToInstrument();
         assertNotNull(classes);
         assertEquals(classes.size(), 2);
@@ -129,8 +65,8 @@ public final class XmlAgentConfigurationBuilderTest {
 
     @Test
     public void testBuiltInConfiguration() throws IOException {
-        AgentConfiguration configuration = testConfiguration(new BuiltInTestPrinter());
-        AgentBuiltInConfiguration builtInConfiguration = configuration.getBuiltInSwitches();
+        AgentConfiguration configuration = testConfiguration("BuiltInTest.xml");
+        AgentBuiltInConfiguration builtInConfiguration = configuration.getBuiltInConfiguration();
         assertEquals(builtInConfiguration.isEnabled(), true);
         assertEquals(builtInConfiguration.isHttpEnabled(), true);
         assertEquals(builtInConfiguration.isJdbcEnabled(), true);
@@ -138,49 +74,18 @@ public final class XmlAgentConfigurationBuilderTest {
         assertEquals(builtInConfiguration.isHibernateEnabled(), false);
     }
 
-    private AgentConfiguration testConfiguration(Printer printer) throws IOException {
+    private AgentConfiguration testConfiguration(String testFileName) throws IOException {
         File folder = null;
         try {
             folder = createFolder();
-            createConfigurationFileTest(folder, printer);
+            ClassLoader classLoader = getClass().getClassLoader();
+            File sourceFile = new File(classLoader.getResource(testFileName).getFile());
+            File destinationFile = new File(folder, TEMP_CONF_FILE);
+            FileUtils.copyFile(sourceFile, destinationFile);
             return new XmlAgentConfigurationBuilder().parseConfigurationFile(folder.toString());
         } finally {
             cleanFolder(folder);
         }
-    }
-
-    private void createConfigurationFileTest(File folder, Printer printer) throws IOException {
-        PrintWriter writer = null;
-        try {
-            File file = new File(folder, TEMP_CONF_FILE);
-            if (file.exists()) {
-                file.delete();
-            }
-
-            file.createNewFile();
-            writer = createWriter(file);
-            printStart(writer);
-            printer.print(writer);
-            printEnd(writer);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
-        }
-    }
-
-    private void printEnd(PrintWriter writer) {
-        writer.println("</Instrumentation>");
-        writer.println("</ApplicationInsightsAgent>");
-    }
-
-    private void printStart(PrintWriter writer) {
-        writer.println("<ApplicationInsightsAgent>");
-        writer.println("<Instrumentation>");
-    }
-
-    private PrintWriter createWriter(File file) throws FileNotFoundException, UnsupportedEncodingException {
-        return new PrintWriter(file, "UTF-8");
     }
 
     private File createFolder() throws IOException {

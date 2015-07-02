@@ -26,7 +26,7 @@ import java.sql.Statement;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.microsoft.applicationinsights.agent.internal.agent.StringUtils;
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
 
@@ -42,12 +42,29 @@ import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificati
 public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     INSTANCE;
 
+    private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
+
+    /**
+     * The data we expect to have for every thread
+     */
+    public static class RegistrationData {
+        public final ClassLoader classLoader;
+        public final AgentNotificationsHandler handler;
+        public final String key;
+
+        public RegistrationData(ClassLoader classLoader, AgentNotificationsHandler handler, String key) {
+            this.classLoader = classLoader;
+            this.handler = handler;
+            this.key = key;
+        }
+    }
+
     @Override
-    public void onException(String className, String methodName, Throwable throwable) {
+    public void onThrowable(String classAndMethodNames, Throwable throwable) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onException(className, methodName, throwable);
+                implementation.onThrowable(classAndMethodNames, throwable);
             }
         } catch (Throwable t) {
         }
@@ -68,8 +85,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     public void onMethodEnterSqlStatement(String name, Statement statement, String sqlStatement) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                if (statement != null && sqlStatement != null && sqlStatement.length() == 0) {
+            if (implementation != null && statement != null) {
+                if (StringUtils.isNullOrEmpty(sqlStatement)) {
                     sqlStatement = statement.toString();
                 }
                 implementation.onMethodEnterSqlStatement(name, statement, sqlStatement);
@@ -79,11 +96,11 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onDefaultMethodEnter(String name) {
+    public void onMethodEnter(String name) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onDefaultMethodEnter(name);
+                implementation.onMethodEnter(name);
             }
         } catch (Throwable t) {
         }
@@ -111,27 +128,14 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
+    /**
+     * Will return null since this is only the coordinator and not a real SDK handler.
+     * @return null.
+     */
     @Override
     public String getName() {
         return null;
     }
-
-    /**
-     * The data we expect to have for every thread
-     */
-    public static class RegistrationData {
-        public final ClassLoader classLoader;
-        public final AgentNotificationsHandler handler;
-        public final String key;
-
-        public RegistrationData(ClassLoader classLoader, AgentNotificationsHandler handler, String key) {
-            this.classLoader = classLoader;
-            this.handler = handler;
-            this.key = key;
-        }
-    }
-
-    private static ConcurrentHashMap<String, RegistrationData> implementations = new ConcurrentHashMap<String, RegistrationData>();
 
     public String register(ClassLoader classLoader, AgentNotificationsHandler handler) {
         try {
@@ -144,7 +148,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
                 throw new IllegalArgumentException("AgentNotificationsHandler name must have be a non-null non empty value");
             }
 
-            implementations.put(implementationName, new RegistrationData(classLoader, handler, implementationName));
+            notificationHandlersData.put(implementationName, new RegistrationData(classLoader, handler, implementationName));
 
             return implementationName;
         } catch (Throwable throwable) {
@@ -153,14 +157,10 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
-    public Collection<RegistrationData> getRegistered() {
-        return implementations.values();
-    }
-
     private AgentNotificationsHandler getImplementation() {
         String key = AgentTLS.getTLSKey();
         if (key != null && key.length() > 0) {
-            RegistrationData implementation = implementations.get(key);
+            RegistrationData implementation = notificationHandlersData.get(key);
             if (implementation != null) {
                 return implementation.handler;
             }

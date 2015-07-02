@@ -35,8 +35,6 @@ import org.objectweb.asm.commons.AdviceAdapter;
  */
 abstract class AdvancedAdviceAdapter extends AdviceAdapter {
 
-    protected final boolean reportExecutionTime;
-
     protected enum ExitStatus {
         EXIT_WITH_EXCEPTION,
         EXIT_WITH_RETURN_VALUE,
@@ -66,6 +64,8 @@ abstract class AdvancedAdviceAdapter extends AdviceAdapter {
     private Label startTryFinallyBlock = new Label();
     private Label endTryFinallyBlock = new Label();
 
+    protected final boolean reportExecutionTime;
+
     @Override
     public void visitCode() {
         super.visitCode();
@@ -94,12 +94,18 @@ abstract class AdvancedAdviceAdapter extends AdviceAdapter {
         }
     }
 
-    @Override
-    public void visitMethodInsn(int opcode,String owner,String name,String desc, boolean isMethodOwnerAnInterface) {
-        super.visitMethodInsn(opcode, owner, name, desc, isMethodOwnerAnInterface);
-    }
-
-    protected AdvancedAdviceAdapter(boolean reportExecutionTime, int api, MethodVisitor methodVisitor, int access, String owner, String methodName, String desc) {
+//    @Override
+//    public void visitMethodInsn(int opcode,String owner,String name,String desc, boolean isMethodOwnerAnInterface) {
+//        super.visitMethodInsn(opcode, owner, name, desc, isMethodOwnerAnInterface);
+//    }
+//
+    protected AdvancedAdviceAdapter(boolean reportExecutionTime,
+                                    int api,
+                                    MethodVisitor methodVisitor,
+                                    int access,
+                                    String owner,
+                                    String methodName,
+                                    String desc) {
         super(api, methodVisitor, access, methodName, desc);
         this.reportExecutionTime = reportExecutionTime;
         this.desc = desc;
@@ -114,6 +120,13 @@ abstract class AdvancedAdviceAdapter extends AdviceAdapter {
         }
     }
 
+    /**
+     * This method calls a Java enum method with its expected argumentes
+     * @param clazz The enum class to activate
+     * @param methodName The method of the class to activate
+     * @param methodSignature The method signature
+     * @param args The arguments to pass to the method
+     */
     protected void activateEnumMethod(Class<?> clazz, String methodName, String methodSignature, Object... args) {
         String internalName = Type.getInternalName(clazz);
         super.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");

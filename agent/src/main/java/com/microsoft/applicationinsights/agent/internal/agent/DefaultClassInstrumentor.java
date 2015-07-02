@@ -41,7 +41,7 @@ final class DefaultClassInstrumentor extends ClassVisitor {
     public DefaultClassInstrumentor(MethodInstrumentorsFactory factory, ClassInstrumentationData instrumentationData, ClassWriter cv) {
         super(Opcodes.ASM5, cv);
 
-        owner = instrumentationData.className;
+        owner = instrumentationData.getClassName();
         this.instrumentationData = instrumentationData;
         this.factory = factory;
     }

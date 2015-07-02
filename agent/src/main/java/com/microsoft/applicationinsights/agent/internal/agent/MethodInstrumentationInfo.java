@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 
 import java.util.HashMap;
 
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
+
 /**
  * The class holds the data for methods.
  * The class should collect data for methods of one class.
@@ -31,7 +33,7 @@ import java.util.HashMap;
  * that will be used later on if the method of the class is found in runtime.
  *
  * The class knows how to 'merge' the information of methods so methods without signatures
- * mean that all methods with that name qualify, to mark all the methods, set priority between methods
+ * mean that all methods with that name qualify. to mark all the methods, set priority between methods
  *
  * Created by gupele on 5/29/2015.
  */
@@ -41,16 +43,16 @@ public final class MethodInstrumentationInfo {
 
     private static class MethodInfo {
 
-        public HashMap<String, MethodInstrumentationDecision> descriptions = new HashMap<String, MethodInstrumentationDecision>();
+        public HashMap<String, MethodInstrumentationDecision> methodsInstrumentationData = new HashMap<String, MethodInstrumentationDecision>();
 
         public MethodInfo(MethodInstrumentationRequest methodInstrumentationRequest) {
-            if (StringUtils.isNullOrEmpty(methodInstrumentationRequest.methodSignature)) {
+            if (StringUtils.isNullOrEmpty(methodInstrumentationRequest.getMethodSignature())) {
                 MethodInstrumentationDecision decision =
                         new MethodInstrumentationDecisionBuilder()
-                                .withReportCaughtExceptions(methodInstrumentationRequest.reportCaughtExceptions)
-                                .withReportExecutionTime(methodInstrumentationRequest.reportExecutionTime)
+                                .withReportCaughtExceptions(methodInstrumentationRequest.isReportCaughtExceptions())
+                                .withReportExecutionTime(methodInstrumentationRequest.isReportExecutionTime())
                                 .create();
-                descriptions.put(ANY_SIGNATURE_MARKER, decision);
+                methodsInstrumentationData.put(ANY_SIGNATURE_MARKER, decision);
             }
         }
 
@@ -65,7 +67,7 @@ public final class MethodInstrumentationInfo {
                             .withReportCaughtExceptions(reportCaughtExceptions)
                             .withReportExecutionTime(reportExecutionTime)
                             .create();
-            descriptions.put(methodSignature, decision);
+            methodsInstrumentationData.put(methodSignature, decision);
         }
     }
 
@@ -76,19 +78,19 @@ public final class MethodInstrumentationInfo {
             throw new IllegalStateException();
         }
 
-        if (!methodInstrumentationRequest.reportCaughtExceptions && !methodInstrumentationRequest.reportExecutionTime) {
+        if (!methodInstrumentationRequest.isReportCaughtExceptions() && !methodInstrumentationRequest.isReportExecutionTime()) {
             return;
         }
 
-        MethodInfo info = methods.get(methodInstrumentationRequest.methodName);
+        MethodInfo info = methods.get(methodInstrumentationRequest.getMethodName());
         if (info == null) {
             info = new MethodInfo(methodInstrumentationRequest);
-            methods.put(methodInstrumentationRequest.methodName, info);
+            methods.put(methodInstrumentationRequest.getMethodName(), info);
         }
 
-        info.add(methodInstrumentationRequest.methodSignature,
-                methodInstrumentationRequest.reportCaughtExceptions,
-                methodInstrumentationRequest.reportExecutionTime);
+        info.add(methodInstrumentationRequest.getMethodSignature(),
+                methodInstrumentationRequest.isReportCaughtExceptions(),
+                methodInstrumentationRequest.isReportExecutionTime());
     }
 
     public MethodInstrumentationDecision getDecision(String methodName, String methodSignature) {
@@ -105,11 +107,11 @@ public final class MethodInstrumentationInfo {
             return null;
         }
 
-        if (info.descriptions.containsKey(methodSignature)) {
-            return info.descriptions.get(methodSignature);
+        if (info.methodsInstrumentationData.containsKey(methodSignature)) {
+            return info.methodsInstrumentationData.get(methodSignature);
         }
 
-        return info.descriptions.get(ANY_SIGNATURE_MARKER);
+        return info.methodsInstrumentationData.get(ANY_SIGNATURE_MARKER);
     }
 
     public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime) {

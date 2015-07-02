@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 
 import java.util.HashSet;
 
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 
 import org.objectweb.asm.Label;
@@ -40,10 +41,10 @@ import org.objectweb.asm.Type;
  */
 class DefaultMethodInstrumentor extends AdvancedAdviceAdapter {
 
-    private final static String EXCEPTION_METHOD_NAME = "onException";
+    private final static String THROWABLE_METHOD_NAME = "onThrowable";
     private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V";
 
-    private final static String START_DETECT_METHOD_NAME = "onDefaultMethodEnter";
+    private final static String START_DETECT_METHOD_NAME = "onMethodEnter";
     private final static String START_DETECT_METHOD_SIGNATURE = "(Ljava/lang/String;)V";
 
     private final static String FINISH_DETECT_METHOD_NAME = "onMethodFinish";
@@ -55,7 +56,13 @@ class DefaultMethodInstrumentor extends AdvancedAdviceAdapter {
     private final boolean reportCaughtExceptions;
     private HashSet<Label> labels = null;
 
-    public DefaultMethodInstrumentor(boolean reportCaughtExceptions, boolean reportExecutionTime, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+    public DefaultMethodInstrumentor(boolean reportCaughtExceptions,
+                                     boolean reportExecutionTime,
+                                     int access,
+                                     String desc,
+                                     String owner,
+                                     String methodName,
+                                     MethodVisitor methodVisitor) {
         super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
         this.owner = owner;
         this.methodName = methodName;
@@ -63,7 +70,7 @@ class DefaultMethodInstrumentor extends AdvancedAdviceAdapter {
     }
 
     public DefaultMethodInstrumentor(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
-        this(decision.reportCaughtExceptions, decision.reportExecutionTime, access, desc, owner, methodName, methodVisitor);
+        this(decision.isReportCaughtExceptions(), decision.isReportExecutionTime(), access, desc, owner, methodName, methodVisitor);
     }
 
     @Override
@@ -113,10 +120,9 @@ class DefaultMethodInstrumentor extends AdvancedAdviceAdapter {
 
         activateEnumMethod(
                 ImplementationsCoordinator.class,
-                EXCEPTION_METHOD_NAME,
+                THROWABLE_METHOD_NAME,
                 EXCEPTION_METHOD_SIGNATURE,
-                owner,
-                methodName,
+                getMethodName(),
                 duplicateTopStackToTempVariable(Type.getType(Exception.class)));
     }
 

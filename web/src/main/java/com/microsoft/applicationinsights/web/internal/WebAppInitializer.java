@@ -44,8 +44,6 @@ public final class WebAppInitializer implements ServletContextListener {
     private final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
 
-    private String name;
-
     /**
      * The method is called by the container before the WebApp is initialized
      * The method will fetch the WebApp name and then will register itself with that name
@@ -62,7 +60,7 @@ public final class WebAppInitializer implements ServletContextListener {
         try {
             ServletContext context = sce.getServletContext();
 
-            name = getName(context);
+            String name = getName(context);
 
             String key = registerWebApp(name);
 

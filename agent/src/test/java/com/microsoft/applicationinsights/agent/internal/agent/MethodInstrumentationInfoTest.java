@@ -180,8 +180,8 @@ public final class MethodInstrumentationInfoTest {
                                        boolean expectedReportExecutionTime) {
         MethodInstrumentationDecision decision = info.getDecision(methodName, methodSignature);
         assertNotNull(decision);
-        assertEquals(decision.reportExecutionTime, expectedReportExecutionTime);
-        assertEquals(decision.reportCaughtExceptions, expectedReportCaughtExceptions);
+        assertEquals(decision.isReportExecutionTime(), expectedReportExecutionTime);
+        assertEquals(decision.isReportCaughtExceptions(), expectedReportCaughtExceptions);
     }
 
     private static MethodInstrumentationRequest createRequest(String methodName, boolean reportCaughtExceptions, boolean reportExecutionTime) {

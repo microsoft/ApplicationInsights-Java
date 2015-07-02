@@ -32,9 +32,9 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentati
  */
 public interface AgentConfiguration {
 
-    AgentBuiltInConfiguration getBuiltInSwitches();
+    AgentBuiltInConfiguration getBuiltInConfiguration();
 
     Map<String, ClassInstrumentationData> getRequestedClassesToInstrument();
 
-    Set<String> getForbiddenPrefixes();
+    Set<String> getExcludedPrefixes();
 }

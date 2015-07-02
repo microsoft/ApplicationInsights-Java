@@ -42,7 +42,7 @@ class DefaultClassDataProvider implements ClassDataProvider {
     private final static String HTTP_METHOD_NAME = "read";
     private final static String HTTP_METHOD_SIGNATURE = "([BII)I";
 
-    private final static String[] FORBIDDEN_CLASS_PREFIXES = new String[] {
+    private final static String[] EXCLUDED_CLASS_PREFIXES = new String[] {
         "java/",
         "javax/",
         "org/apache",
@@ -117,14 +117,14 @@ class DefaultClassDataProvider implements ClassDataProvider {
 
     private final HashSet<String> sqlClasses = new HashSet<String>();
     private final HashSet<String> httpClasses = new HashSet<String>();
-    private final HashSet<String> forbiddenPaths;
+    private final HashSet<String> excludedPaths;
 
     private final HashMap<String, ClassInstrumentationData> classesToInstrument = new HashMap<String, ClassInstrumentationData>();
 
     private boolean builtInEnabled = true;
 
     public DefaultClassDataProvider() {
-        forbiddenPaths = new HashSet<String>((Arrays.asList(FORBIDDEN_CLASS_PREFIXES)));
+        excludedPaths = new HashSet<String>((Arrays.asList(EXCLUDED_CLASS_PREFIXES)));
     }
 
     @Override
@@ -192,11 +192,11 @@ class DefaultClassDataProvider implements ClassDataProvider {
                     .setReportExecutionTime(true);
         data.addMethod(HTTP_METHOD_NAME, HTTP_METHOD_SIGNATURE, false, true);
 
-        classesToInstrument.put(data.className, data);
+        classesToInstrument.put(data.getClassName(), data);
     }
 
-    private boolean isForbidden(String className) {
-        for (String f : forbiddenPaths) {
+    private boolean isExcluded(String className) {
+        for (String f : excludedPaths) {
             if (className.startsWith(f)) {
                 return true;
             }
@@ -209,22 +209,22 @@ class DefaultClassDataProvider implements ClassDataProvider {
             return;
         }
 
-        builtInEnabled = agentConfiguration.getBuiltInSwitches().isEnabled();
+        builtInEnabled = agentConfiguration.getBuiltInConfiguration().isEnabled();
 
         Map<String, ClassInstrumentationData> configurationData = agentConfiguration.getRequestedClassesToInstrument();
         if (configurationData != null) {
             for (ClassInstrumentationData classInstrumentationData : configurationData.values()) {
-                if (isForbidden(classInstrumentationData.className)) {
-                    InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.className);
+                if (isExcluded(classInstrumentationData.getClassName())) {
+                    InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
                     continue;
                 }
 
-                InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.className);
-                classesToInstrument.put(classInstrumentationData.className, classInstrumentationData);
+                InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
+                classesToInstrument.put(classInstrumentationData.getClassName(), classInstrumentationData);
             }
         }
 
-        forbiddenPaths.addAll(agentConfiguration.getForbiddenPrefixes());
+        excludedPaths.addAll(agentConfiguration.getExcludedPrefixes());
     }
 
     private void addToClasses(String className, InstrumentedClassType type, Collection<String> methodNamesOnly) {

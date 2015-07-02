@@ -38,11 +38,11 @@ public final class ClassInstrumentationDataTest {
         ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
                 .setReportCaughtExceptions(true)
                 .setReportExecutionTime(false);
-        assertTrue(test.methodInstrumentationInfo.isEmpty());
-        assertEquals(test.classType, InstrumentedClassType.HTTP);
-        assertEquals(test.className, MOCK_CLASS_NAME);
-        assertEquals(test.reportCaughtExceptions, true);
-        assertEquals(test.reportExecutionTime, false);
+        assertTrue(test.getMethodInstrumentationInfo().isEmpty());
+        assertEquals(test.getClassType(), InstrumentedClassType.HTTP);
+        assertEquals(test.getClassName(), MOCK_CLASS_NAME);
+        assertEquals(test.isReportCaughtExceptions(), true);
+        assertEquals(test.isReportExecutionTime(), false);
     }
 
     @Test
@@ -55,8 +55,8 @@ public final class ClassInstrumentationDataTest {
         MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 
         assertNotNull(decision);
-        assertEquals(decision.reportCaughtExceptions, true);
-        assertEquals(decision.reportExecutionTime, true);
+        assertEquals(decision.isReportCaughtExceptions(), true);
+        assertEquals(decision.isReportExecutionTime(), true);
 
         decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
 
@@ -74,14 +74,14 @@ public final class ClassInstrumentationDataTest {
         MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 
         assertNotNull(decision);
-        assertEquals(decision.reportCaughtExceptions, true);
-        assertEquals(decision.reportExecutionTime, true);
+        assertEquals(decision.isReportCaughtExceptions(), true);
+        assertEquals(decision.isReportExecutionTime(), true);
 
         decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
 
         assertNotNull(decision);
-        assertEquals(decision.reportCaughtExceptions, false);
-        assertEquals(decision.reportExecutionTime, true);
+        assertEquals(decision.isReportCaughtExceptions(), false);
+        assertEquals(decision.isReportExecutionTime(), true);
     }
 
     @Test
@@ -96,19 +96,19 @@ public final class ClassInstrumentationDataTest {
         MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 
         assertNotNull(decision);
-        assertEquals(decision.reportCaughtExceptions, true);
-        assertEquals(decision.reportExecutionTime, true);
+        assertEquals(decision.isReportCaughtExceptions(), true);
+        assertEquals(decision.isReportExecutionTime(), true);
 
         decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
 
         assertNotNull(decision);
-        assertEquals(decision.reportCaughtExceptions, false);
-        assertEquals(decision.reportExecutionTime, true);
+        assertEquals(decision.isReportCaughtExceptions(), false);
+        assertEquals(decision.isReportExecutionTime(), true);
 
         decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_3);
 
         assertNotNull(decision);
-        assertEquals(decision.reportCaughtExceptions, false);
-        assertEquals(decision.reportExecutionTime, true);
+        assertEquals(decision.isReportCaughtExceptions(), false);
+        assertEquals(decision.isReportExecutionTime(), true);
     }
 }

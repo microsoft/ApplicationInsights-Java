@@ -30,7 +30,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-import com.microsoft.applicationinsights.agent.internal.agent.StringUtils;
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
@@ -58,7 +58,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
     private final static String AGENT_LOGGER_TAG = "AgentLogger";
 
-    private final static String FORBIDDEN_PREFIXES_TAG = "ForbiddenPrefixes";
+    private final static String EXCLUDED_PREFIXES_TAG = "ExcludedPrefixes";
     private final static String FORBIDDEN_PREFIX_TAG = "Prefix";
 
     private final static String ENABLED_ATTRIBUTE = "enabled";
@@ -119,8 +119,8 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 }
 
                 addMethods(data, classElement);
-                if (data.methodInstrumentationInfo.isEmpty() && !data.reportCaughtExceptions && !data.reportExecutionTime) {
-                    classesToInstrument.remove(data.className);
+                if (data.getMethodInstrumentationInfo().isEmpty() && !data.isReportCaughtExceptions() && !data.isReportExecutionTime()) {
+                    classesToInstrument.remove(data.getClassName());
                 }
             }
 
@@ -133,13 +133,13 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     }
 
     private void getForbiddenPaths(Element parent, AgentConfigurationDefaultImpl agentConfiguration) {
-        NodeList nodes = parent.getElementsByTagName(FORBIDDEN_PREFIXES_TAG);
+        NodeList nodes = parent.getElementsByTagName(EXCLUDED_PREFIXES_TAG);
         Element forbiddenElement = getFirst(nodes);
         if (forbiddenElement == null) {
             return;
         }
 
-        HashSet<String> forbiddenPrefixes = new HashSet<String>();
+        HashSet<String> excludedPrefixes = new HashSet<String>();
 
         NodeList addClasses = forbiddenElement.getElementsByTagName(FORBIDDEN_PREFIX_TAG);
         if (addClasses == null) {
@@ -152,10 +152,10 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 continue;
             }
 
-            forbiddenPrefixes.add(classElement.getFirstChild().getTextContent());
+            excludedPrefixes.add(classElement.getFirstChild().getTextContent());
         }
 
-        agentConfiguration.setForbiddenPrefixes(forbiddenPrefixes);
+        agentConfiguration.setExcludedPrefixes(excludedPrefixes);
     }
 
     private void setBuiltInInstrumentation(AgentConfigurationDefaultImpl agentConfiguration, Element instrumentationTags) {
@@ -263,8 +263,8 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private void addMethods(ClassInstrumentationData classData, Element eClassNode) {
         NodeList methodNodes = eClassNode.getElementsByTagName(METHOD_TAG);
         if (methodNodes == null || methodNodes.getLength() == 0) {
-            if (classData.reportCaughtExceptions || classData.reportExecutionTime) {
-                classData.addAllMethods(classData.reportCaughtExceptions, classData.reportExecutionTime);
+            if (classData.isReportCaughtExceptions() || classData.isReportExecutionTime()) {
+                classData.addAllMethods(classData.isReportCaughtExceptions(), classData.isReportExecutionTime());
             }
             return;
         }
@@ -293,13 +293,13 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             boolean reportCaughtExceptions = false;
             String valueStr = methodElement.getAttribute(REPORT_CAUGHT_EXCEPTIONS_ATTRIBUTE);
             if (!StringUtils.isNullOrEmpty(valueStr)) {
-                reportCaughtExceptions = Boolean.valueOf(valueStr) || classData.reportCaughtExceptions;
+                reportCaughtExceptions = Boolean.valueOf(valueStr) || classData.isReportCaughtExceptions();
             }
 
             boolean reportExecutionTime = true;
             valueStr = methodElement.getAttribute(REPORT_EXECUTION_TIME_ATTRIBUTE);
             if (!StringUtils.isNullOrEmpty(valueStr)) {
-                reportExecutionTime = Boolean.valueOf(valueStr) || classData.reportExecutionTime;
+                reportExecutionTime = Boolean.valueOf(valueStr) || classData.isReportExecutionTime();
             }
 
             if (!reportCaughtExceptions && !reportExecutionTime) {

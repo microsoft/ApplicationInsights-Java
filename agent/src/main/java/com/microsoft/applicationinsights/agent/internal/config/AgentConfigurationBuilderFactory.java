@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.microsoft.applicationinsights.agent.internal.agent.StringUtils;
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**

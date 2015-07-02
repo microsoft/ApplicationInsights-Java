@@ -32,17 +32,50 @@ import java.sql.Statement;
  * Created by gupele on 5/6/2015.
  */
 public interface AgentNotificationsHandler {
+    /**
+     * The handler's logical name
+     * @return The handler's logical name
+     */
     String getName();
 
-    void onException(String className, String methodName, Throwable throwable);
+    /**
+     * The method that is called when an exception is caught in the instrumented code.
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param throwable The throwable that was caught
+     */
+    void onThrowable(String classAndMethodNames, Throwable throwable);
 
-    void onMethodEnterURL(String name, URL url);
+    /**
+     * Called when an instrumented class and method that deals with sending URLs.
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param url
+     */
+    void onMethodEnterURL(String classAndMethodNames, URL url);
 
-    void onMethodEnterSqlStatement(String name, Statement statement, String sqlStatement);
+    /**
+     * Called when an java.sql.Statement concrete class is called
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param statement The class that implements the java.sql.Statement interface
+     * @param sqlStatement The sql statement that is used
+     */
+    void onMethodEnterSqlStatement(String classAndMethodNames, Statement statement, String sqlStatement);
 
-    void onDefaultMethodEnter(String name);
+    /**
+     * A 'regular' method enter. Non HTTP/SQL method
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     */
+    void onMethodEnter(String classAndMethodNames);
 
-    void onMethodFinish(String name, Throwable throwable);
+    /**
+     * Marks a method finish with an exception
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param throwable The throwable that was caught
+     */
+    void onMethodFinish(String classAndMethodNames, Throwable throwable);
 
-    void onMethodFinish(String name);
+    /**
+     * Marks a method finish without exception
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     */
+    void onMethodFinish(String classAndMethodNames);
 }

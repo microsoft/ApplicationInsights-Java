@@ -54,10 +54,9 @@ final class SqlStatementMethodInstrumentor extends DefaultMethodInstrumentor {
         mv.visitVarInsn(ALOAD, 0);
         if (numberOfArgs > 1) {
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
         } else {
             mv.visitLdcInsn("");
-            mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
         }
+        mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
     }
 }

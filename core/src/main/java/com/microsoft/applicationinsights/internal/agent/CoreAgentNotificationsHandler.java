@@ -58,13 +58,9 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
     private static class ThreadData {
         public final LinkedList<MethodData> methods = new LinkedList<MethodData>();
-
-        public void done() {
-            methods.clear();
-        }
     }
 
-    static final class ThreadDataThreadLocal extends ThreadLocal<ThreadData> {
+    static final class ThreadLocalData extends ThreadLocal<ThreadData> {
         private ThreadData threadData;
 
         @Override
@@ -74,7 +70,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         }
     };
 
-    private ThreadDataThreadLocal threadDataThreadLocal = new ThreadDataThreadLocal();
+    private ThreadLocalData threadDataThreadLocal = new ThreadLocalData();
 
     private TelemetryClient telemetryClient = new TelemetryClient();
 
@@ -85,7 +81,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onException(String className, String methodName, Throwable throwable) {
+    public void onThrowable(String classAndMethodNames, Throwable throwable) {
         try {
             if (throwable instanceof Exception) {
                 telemetryClient.trackException((Exception)throwable);
@@ -96,7 +92,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
     @Override
     public void onMethodEnterURL(String name, URL url) {
-        String urlAsString = url == null ? null : url.toString();
+        String urlAsString = (url == null) ? null : url.toString();
         startMethod(InstrumentedClassType.HTTP, name, urlAsString);
     }
 
@@ -124,13 +120,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         }
     }
 
-    @Override
+//    @Override
     public String getName() {
         return name;
     }
 
     @Override
-    public void onDefaultMethodEnter(String name) {
+    public void onMethodEnter(String name) {
         startMethod(InstrumentedClassType.OTHER, name, new String[]{});
     }
 
@@ -211,7 +207,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             InternalLogger.INSTANCE.trace("Sending HTTP RDD event, URL: '%s'", url);
 
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(url, null, duration, !isException);
-            telemetryClient.track(telemetry);
+            telemetryClient.trackDependency(telemetry);
         }
     }
 

@@ -29,6 +29,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 /**
+ * The class is responsible for instrumenting the default Java class that is responsible for sending HTTP requests
+ *
  * Created by gupele on 5/20/2015.
  */
 final class HttpMethodInstrumentor extends DefaultMethodInstrumentor {

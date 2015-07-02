@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 
 /**
@@ -29,16 +30,16 @@ import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedCla
  * Created by gupele on 5/19/2015.
  */
 public final class ClassInstrumentationData {
-    public final String className;
+    private final String className;
 
     // The type of class
-    public final InstrumentedClassType classType;
+    private final InstrumentedClassType classType;
 
     // Methods that will be instrumented
-    public final MethodInstrumentationInfo methodInstrumentationInfo;
+    private final MethodInstrumentationInfo methodInstrumentationInfo;
 
-    public boolean reportExecutionTime;
-    public boolean reportCaughtExceptions;
+    private boolean reportExecutionTime;
+    private boolean reportCaughtExceptions;
 
     public ClassInstrumentationData(String className, InstrumentedClassType classType) {
         this.className = className;
@@ -78,4 +79,25 @@ public final class ClassInstrumentationData {
     public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime) {
         methodInstrumentationInfo.addAllMethods(reportCaughtExceptions, reportExecutionTime);
     }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public InstrumentedClassType getClassType() {
+        return classType;
+    }
+
+    public MethodInstrumentationInfo getMethodInstrumentationInfo() {
+        return methodInstrumentationInfo;
+    }
+
+    public boolean isReportExecutionTime() {
+        return reportExecutionTime;
+    }
+
+    public boolean isReportCaughtExceptions() {
+        return reportCaughtExceptions;
+    }
 }
+

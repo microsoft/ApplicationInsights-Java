@@ -34,7 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentati
 final class AgentConfigurationDefaultImpl implements AgentConfiguration {
     private HashMap<String, ClassInstrumentationData> classesToInstrument;
     private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
-    private Set<String> forbiddenPrefixes = new HashSet<String>();
+    private Set<String> excludedPrefixes = new HashSet<String>();
 
     void setRequestedClassesToInstrument(HashMap<String, ClassInstrumentationData> classesToInstrument) {
         this.classesToInstrument = classesToInstrument;
@@ -46,20 +46,20 @@ final class AgentConfigurationDefaultImpl implements AgentConfiguration {
     }
 
     @Override
-    public AgentBuiltInConfiguration getBuiltInSwitches() {
+    public AgentBuiltInConfiguration getBuiltInConfiguration() {
         return builtInConfiguration;
     }
 
     @Override
-    public Set<String> getForbiddenPrefixes() {
-        return forbiddenPrefixes;
+    public Set<String> getExcludedPrefixes() {
+        return excludedPrefixes;
     }
 
     public void setBuiltInData(AgentBuiltInConfiguration builtInData) {
         this.builtInConfiguration = builtInData;
     }
 
-    public void setForbiddenPrefixes(Set<String> forbiddenPrefixes) {
-        this.forbiddenPrefixes = forbiddenPrefixes;
+    public void setExcludedPrefixes(Set<String> excludedPrefixes) {
+        this.excludedPrefixes = excludedPrefixes;
     }
 }

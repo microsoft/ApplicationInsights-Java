@@ -30,11 +30,19 @@ package com.microsoft.applicationinsights.agent.internal.agent;
  * Created by gupele on 5/31/2015.
  */
 final class MethodInstrumentationDecision {
-    public final boolean reportCaughtExceptions;
-    public final boolean reportExecutionTime;
+    private final boolean reportCaughtExceptions;
+    private final boolean reportExecutionTime;
 
     public MethodInstrumentationDecision(boolean reportCaughtExceptions, boolean reportExecutionTime) {
         this.reportCaughtExceptions = reportCaughtExceptions;
         this.reportExecutionTime = reportExecutionTime;
+    }
+
+    public boolean isReportCaughtExceptions() {
+        return reportCaughtExceptions;
+    }
+
+    public boolean isReportExecutionTime() {
+        return reportExecutionTime;
     }
 }

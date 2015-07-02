@@ -29,7 +29,7 @@ public final class MethodInstrumentationDecisionTest {
     @Test
     public void testCtor() {
         MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false);
-        assertTrue(test.reportCaughtExceptions);
-        assertFalse(test.reportExecutionTime);
+        assertTrue(test.isReportCaughtExceptions());
+        assertFalse(test.isReportExecutionTime());
     }
 }

@@ -54,30 +54,30 @@ public final class MethodInstrumentationRequestTest {
     public void testCtor1() {
         MethodInstrumentationRequest test = new MethodInstrumentationRequest(MOCK_METHOD_NAME, MOCK_METHOD_SIGNATURE, false, true);
 
-        assertEquals(test.methodName, MOCK_METHOD_NAME);
-        assertEquals(test.methodSignature, MOCK_METHOD_SIGNATURE);
-        assertFalse(test.reportCaughtExceptions);
-        assertTrue(test.reportExecutionTime);
+        assertEquals(test.getMethodName(), MOCK_METHOD_NAME);
+        assertEquals(test.getMethodSignature(), MOCK_METHOD_SIGNATURE);
+        assertFalse(test.isReportCaughtExceptions());
+        assertTrue(test.isReportExecutionTime());
     }
 
     @Test
     public void testCtor1WithNullSignature() {
         MethodInstrumentationRequest test = new MethodInstrumentationRequest(MOCK_METHOD_NAME, null, false, true);
 
-        assertEquals(test.methodName, MOCK_METHOD_NAME);
-        assertNull(test.methodSignature);
-        assertFalse(test.reportCaughtExceptions);
-        assertTrue(test.reportExecutionTime);
+        assertEquals(test.getMethodName(), MOCK_METHOD_NAME);
+        assertNull(test.getMethodSignature());
+        assertFalse(test.isReportCaughtExceptions());
+        assertTrue(test.isReportExecutionTime());
     }
 
     @Test
     public void testCtor2() {
         MethodInstrumentationRequest test = new MethodInstrumentationRequest(MOCK_METHOD_NAME, false, true);
 
-        assertEquals(test.methodName, MOCK_METHOD_NAME);
-        assertNull(test.methodSignature);
-        assertFalse(test.reportCaughtExceptions);
-        assertTrue(test.reportExecutionTime);
+        assertEquals(test.getMethodName(), MOCK_METHOD_NAME);
+        assertNull(test.getMethodSignature());
+        assertFalse(test.isReportCaughtExceptions());
+        assertTrue(test.isReportExecutionTime());
     }
 }
 
