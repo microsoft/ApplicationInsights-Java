@@ -51,13 +51,13 @@ public final class ByteCodeUtilsTest {
     }
 
     @Test
-    public void testIsPublic() throws Exception {
-        assertTrue(ByteCodeUtils.isPublic(Opcodes.ACC_PUBLIC));
+    public void testIsPrivate() throws Exception {
+        assertTrue(ByteCodeUtils.isPrivate(Opcodes.ACC_PRIVATE));
     }
 
     @Test
-    public void testNotIsPublic() throws Exception {
-        assertFalse(ByteCodeUtils.isPublic(~Opcodes.ACC_PUBLIC));
+    public void testNotIsPrivate() throws Exception {
+        assertFalse(ByteCodeUtils.isPrivate(~Opcodes.ACC_PRIVATE));
     }
 
     @Test

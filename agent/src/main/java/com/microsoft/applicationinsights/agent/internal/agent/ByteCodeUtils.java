@@ -39,8 +39,8 @@ final class ByteCodeUtils {
         return (access & Opcodes.ACC_ABSTRACT) != 0;
     }
 
-    static boolean isPublic(int access) {
-        return (access & Opcodes.ACC_PUBLIC) != 0;
+    static boolean isPrivate(int access) {
+        return (access & Opcodes.ACC_PRIVATE) != 0;
     }
 
     static boolean isStatic(int access) {

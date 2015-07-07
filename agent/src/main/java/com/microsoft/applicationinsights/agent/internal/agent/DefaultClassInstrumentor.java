@@ -56,7 +56,7 @@ final class DefaultClassInstrumentor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
 
-        if (isInterface || originalMV == null || ByteCodeUtils.isConstructor(name) || !ByteCodeUtils.isPublic(access)) {
+        if (isInterface || originalMV == null || ByteCodeUtils.isConstructor(name) || !ByteCodeUtils.isPrivate(access)) {
             return originalMV;
         }
 

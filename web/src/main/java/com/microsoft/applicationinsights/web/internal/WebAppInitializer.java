@@ -43,6 +43,8 @@ public final class WebAppInitializer implements ServletContextListener {
 
     private final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
+    private final static String AI_FILTER_MAPPING_PARAM = "ai-filter-mapping";
+    private final static String DEFAULT_FILTER_MAPPING = "/*";
 
     /**
      * The method is called by the container before the WebApp is initialized
@@ -79,6 +81,11 @@ public final class WebAppInitializer implements ServletContextListener {
     }
 
     private void addFilter(ServletContext context) {
+        String filterMapping = context.getInitParameter(AI_FILTER_MAPPING_PARAM);
+        if (Strings.isNullOrEmpty(filterMapping)) {
+            filterMapping = DEFAULT_FILTER_MAPPING;
+        }
+
         FilterRegistration filterData = getAIFilter(context);
         if (filterData == null) {
             // Adding the filter since we didn't find that in configuration.
@@ -93,9 +100,8 @@ public final class WebAppInitializer implements ServletContextListener {
                 return;
             }
 
-            filterRegistration.addMappingForUrlPatterns(null, false, "/*");
-        } else {
-            filterData.addMappingForUrlPatterns(null, false, "/*");
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "mapping '%s'", filterMapping);
+            filterRegistration.addMappingForUrlPatterns(null, false, filterMapping);
         }
     }
 

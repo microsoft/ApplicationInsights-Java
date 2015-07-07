@@ -41,6 +41,7 @@ import javax.servlet.FilterChain;
  */
 public final class WebRequestTrackingFilter implements Filter {
     private static WebRequestTrackingFilterImpl impl;
+    private static String name;
 
     public WebRequestTrackingFilter() {
         initialize();
@@ -62,12 +63,19 @@ public final class WebRequestTrackingFilter implements Filter {
     }
 
     public static void setName(String name) {
-        impl.setKey(name);
+        if (impl != null) {
+            impl.setKey(name);
+        } else {
+            WebRequestTrackingFilter.name = name;
+        }
     }
 
     private synchronized void initialize() {
         if (impl == null) {
             impl = new WebRequestTrackingFilterImpl();
+            if (name != null) {
+                setName(name);
+            }
         }
     }
 }
