@@ -48,7 +48,7 @@ public interface AgentNotificationsHandler {
     /**
      * Called when an instrumented class and method that deals with sending URLs.
      * @param classAndMethodNames The name of the class and method separated by '.'
-     * @param url
+     * @param url The name of the url that is being sent
      */
     void onMethodEnterURL(String classAndMethodNames, URL url);
 
