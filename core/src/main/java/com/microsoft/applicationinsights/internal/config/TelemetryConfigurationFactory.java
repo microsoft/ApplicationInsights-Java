@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.extensibility.initializer.BuildContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
@@ -141,6 +142,7 @@ public enum TelemetryConfigurationFactory {
         // To keep with prev version. A few will probably be moved to the configuration
         initializerList.add(new SdkVersionContextInitializer());
         initializerList.add(new DeviceInfoContextInitializer());
+        initializerList.add(new BuildContextInitializer());
 
         if (contextInitializers != null) {
             loadComponents(ContextInitializer.class, initializerList, contextInitializers.getAdds());

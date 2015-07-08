@@ -90,7 +90,7 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
+        assertEquals(mockConfiguration.getContextInitializers().size(), 3);
         assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
     }
 
@@ -114,7 +114,7 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
+        assertEquals(mockConfiguration.getContextInitializers().size(), 3);
         assertEquals(mockConfiguration.getTelemetryInitializers().size(), 1);
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
     }
@@ -155,7 +155,7 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 3);
+        assertEquals(mockConfiguration.getContextInitializers().size(), 4);
         assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
     }
@@ -212,7 +212,7 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
+        assertEquals(mockConfiguration.getContextInitializers().size(), 3);
         assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
     }
