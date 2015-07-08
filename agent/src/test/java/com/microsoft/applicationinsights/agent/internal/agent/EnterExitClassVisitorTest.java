@@ -77,7 +77,7 @@ public final class EnterExitClassVisitorTest {
         classInstrumentationData.addMethod("indexOf", null, true, true);
         DefaultClassInstrumentor tested = new DefaultClassInstrumentor(mockFactory, classInstrumentationData, new ClassWriter(10));
         tested.visit(Opcodes.ASM5, ~Opcodes.ACC_INTERFACE, "java/lang/String", "()V", null, null);
-        tested.visitMethod(~Opcodes.ACC_INTERFACE, "indexOf", "(Ljava/lang/String;)V", null, new String[]{});
+        tested.visitMethod(~(Opcodes.ACC_INTERFACE | Opcodes.ACC_PRIVATE), "indexOf", "(Ljava/lang/String;)V", null, new String[]{});
 
         Mockito.verify(mockFactory, Mockito.times(1)).getMethodVisitor(any(MethodInstrumentationDecision.class), anyInt(), anyString(), anyString(), anyString(), any(MethodVisitor.class));
     }

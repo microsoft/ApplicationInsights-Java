@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.agent;
 
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 
 /**
  * The class is responsible for connecting the Agent and register there for future calls
@@ -36,6 +37,24 @@ public enum AgentConnector {
     private boolean registered = false;
     private CoreAgentNotificationsHandler coreDataAgent;
 
+    public static class RegistrationResult {
+        private final String key;
+        private final ThreadLocalCleaner cleaner;
+
+        public RegistrationResult(String key, ThreadLocalCleaner cleaner) {
+            this.key = key;
+            this.cleaner = cleaner;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public ThreadLocalCleaner getCleaner() {
+            return cleaner;
+        }
+    }
+
     /**
      * Registers the caller, and returning a key to represent that data. The method should not throw!
      *
@@ -46,7 +65,7 @@ public enum AgentConnector {
      * @return The key that will represent the caller, null if the registration failed.
      */
     @SuppressWarnings("unchecked")
-    public synchronized String register(ClassLoader classLoader, String name) {
+    public synchronized RegistrationResult register(ClassLoader classLoader, String name) {
         if (!registered) {
             try {
                 coreDataAgent = new CoreAgentNotificationsHandler(name);
@@ -59,7 +78,7 @@ public enum AgentConnector {
             registered = true;
         }
 
-        return agentKey;
+        return new RegistrationResult(agentKey, coreDataAgent.getCleaner());
     }
 
 }

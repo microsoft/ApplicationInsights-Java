@@ -42,7 +42,7 @@ import org.objectweb.asm.Type;
 class DefaultMethodInstrumentor extends AdvancedAdviceAdapter {
 
     private final static String THROWABLE_METHOD_NAME = "onThrowable";
-    private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V";
+    private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
 
     private final static String START_DETECT_METHOD_NAME = "onMethodEnter";
     private final static String START_DETECT_METHOD_SIGNATURE = "(Ljava/lang/String;)V";

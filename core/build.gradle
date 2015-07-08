@@ -31,7 +31,6 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 archivesBaseName = 'applicationinsights-core'
 
-
 dependencies {
     compile project(':agent')
     compile group: 'eu.infomas', name: 'annotation-detector', version: '3.0.4'

@@ -34,7 +34,9 @@ import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedCla
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
+import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 
 /**
@@ -70,11 +72,22 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         }
     };
 
+    private final ThreadLocalCleaner cleaner = new ThreadLocalCleaner() {
+        @Override
+        public void clean() {
+            threadDataThreadLocal.remove();
+        }
+    };
+
     private ThreadLocalData threadDataThreadLocal = new ThreadLocalData();
 
     private TelemetryClient telemetryClient = new TelemetryClient();
 
     private final String name;
+
+    public ThreadLocalCleaner getCleaner() {
+        return cleaner;
+    }
 
     public CoreAgentNotificationsHandler(String name) {
         this.name = name;
@@ -132,12 +145,12 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
     @Override
     public void onMethodFinish(String name, Throwable throwable) {
-        finalizeMethod(null, true);
+        finalizeMethod(null, throwable);
     }
 
     @Override
     public void onMethodFinish(String name) {
-        finalizeMethod(null, false);
+        finalizeMethod(null, null);
     }
 
     private void startMethod(InstrumentedClassType type, String name, String... arguments) {
@@ -152,7 +165,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         localData.methods.addFirst(methodData);
     }
 
-    private void finalizeMethod(Object result, boolean isException) {
+    private void finalizeMethod(Object result, Throwable throwable) {
         long finish = System.nanoTime();
 
         ThreadData localData = threadDataThreadLocal.get();
@@ -169,49 +182,53 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         methodData.interval = finish - methodData.interval;
         methodData.result = result;
 
-        report(methodData, isException);
+        report(methodData, throwable);
     }
 
-    private void report(MethodData methodData, boolean isException) {
+    private void report(MethodData methodData, Throwable throwable) {
 
         switch (methodData.type) {
             case SQL:
-                sendSQLTelemetry(methodData, isException);
+                sendSQLTelemetry(methodData, throwable);
                 break;
 
             case HTTP:
-                sendHTTPTelemetry(methodData, isException);
+                sendHTTPTelemetry(methodData, throwable);
                 break;
 
             default:
-                sendInstrumentationTelemetry(methodData, isException);
+                sendInstrumentationTelemetry(methodData, throwable);
                 break;
         }
     }
 
-    private void sendInstrumentationTelemetry(MethodData methodData, boolean isException) {
+    private void sendInstrumentationTelemetry(MethodData methodData, Throwable throwable) {
         Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, duration, !isException);
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, duration, throwable == null);
         telemetry.setDependencyKind(DependencyKind.Undefined);
 
         InternalLogger.INSTANCE.trace("Sending RDD event for '%s'", methodData.name);
 
         telemetryClient.track(telemetry);
+        if (throwable != null) {
+            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
+            telemetryClient.track(exceptionTelemetry);
+        }
     }
 
-    private void sendHTTPTelemetry(MethodData methodData, boolean isException) {
+    private void sendHTTPTelemetry(MethodData methodData, Throwable throwable) {
         if (methodData.arguments != null && methodData.arguments.length == 1) {
             String url = methodData.arguments[0];
             Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
 
             InternalLogger.INSTANCE.trace("Sending HTTP RDD event, URL: '%s'", url);
 
-            RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(url, null, duration, !isException);
+            RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(url, null, duration, throwable == null);
             telemetryClient.trackDependency(telemetry);
         }
     }
 
-    private void sendSQLTelemetry(MethodData methodData, boolean isException) {
+    private void sendSQLTelemetry(MethodData methodData, Throwable throwable) {
         if (methodData.arguments != null && methodData.arguments.length == 2) {
             String dependencyName = methodData.arguments[0];
             String commandName = methodData.arguments[1];
@@ -219,7 +236,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
             InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s'", dependencyName, commandName);
 
-            RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, !isException);
+            RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, throwable == null);
             telemetryClient.track(telemetry);
         }
     }
