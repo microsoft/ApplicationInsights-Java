@@ -20,6 +20,7 @@
  */
 
 apply plugin: 'maven'
+apply from: "$buildScriptsDir/provided-configuration.gradle"
 
 ext {
     projectPomName = ""
@@ -139,6 +140,8 @@ def updatePomWithGeneralProjectInformation(pomObject) {
             }
         }
     }
+
+    pomObject.scopeMappings.addMapping(MavenPlugin.PROVIDED_COMPILE_PRIORITY, configurations.getByName("provided"), Conf2ScopeMappingContainer.PROVIDED)
 
     pomObject.whenConfigured whenPomConfigured
 }

@@ -19,21 +19,21 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply from: "$buildScriptsDir/common-java.gradle"
-apply plugin: "war"
- 
-repositories {
-    mavenCentral()
+// Adding the "provided" configuration
+
+ext {
+    PROVIDED_CONFIGURATION_NAME = "provided"
 }
 
-def springVersion = "3.1.0.RELEASE"
-version = ""
-
-dependencies {
-    compile project(':core')
-    compile project(':logging:log4j2')
-    compile project(':web')
-    compile "org.springframework:spring-webmvc:$springVersion"
-    providedCompile "javax.servlet:servlet-api:2.5"
-    runtime "jstl:jstl:1.2"
+configurations {
+    provided {
+        // Remove the provided dependencies from the default configuration so
+        // these dependencies won't be derived by projects that has a dependency on
+        // the project using the provided scope
+        dependencies.all { dep ->
+            configurations.default.exclude group: dep.group, module: dep.name
+        }
+    }
+    compile.extendsFrom provided
 }
+
