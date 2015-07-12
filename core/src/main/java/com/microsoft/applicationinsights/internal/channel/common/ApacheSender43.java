@@ -84,10 +84,10 @@ final class ApacheSender43 implements ApacheSender {
     @Override
     public void enhanceRequest(HttpPost request) {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
-                .setSocketTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
-                .setConnectTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
-                .setSocketTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS).build();
+                .setConnectionRequestTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                .setConnectTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS).build();
 
         request.setConfig(requestConfig);
     }

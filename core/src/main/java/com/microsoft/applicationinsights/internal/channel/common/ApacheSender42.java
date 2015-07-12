@@ -39,8 +39,8 @@ final class ApacheSender42 implements ApacheSender {
 
     public ApacheSender42() {
         HttpParams params=new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(params, DEFAULT_REQUEST_TIMEOUT_IN_MILLIS);
-        HttpConnectionParams.setSoTimeout(params, DEFAULT_REQUEST_TIMEOUT_IN_MILLIS);
+        HttpConnectionParams.setConnectionTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
+        HttpConnectionParams.setSoTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
         httpClient = new DefaultHttpClient(params);
     }
 
