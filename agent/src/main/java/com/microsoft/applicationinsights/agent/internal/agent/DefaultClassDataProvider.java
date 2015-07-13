@@ -136,7 +136,7 @@ class DefaultClassDataProvider implements ClassDataProvider {
             InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
 
             populateSqlClasses();
-            populateHttpClasses();
+            // populateHttpClasses();
             addHibernate();
         }
     }
