@@ -32,20 +32,13 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -60,7 +53,6 @@ import com.google.common.base.Strings;
 public final class TransmissionNetworkOutput implements TransmissionOutput {
     private final static String CONTENT_TYPE_HEADER = "Content-Type";
     private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
-    private final static int DEFAULT_REQUEST_TIMEOUT_IN_MILLIS = 60000;
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
@@ -149,6 +141,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         HttpPost request = null;
         try {
             request = createTransmissionPostRequest(transmission);
+            httpClient.enhanceRequest(request);
 
             response = httpClient.sendPostRequest(request);
 
@@ -264,14 +257,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
         ByteArrayEntity bae = new ByteArrayEntity(transmission.getContent());
         request.setEntity(bae);
-
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
-                .setSocketTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
-                .setConnectTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS)
-                .setSocketTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MILLIS).build();
-
-        request.setConfig(requestConfig);
 
         return request;
     }

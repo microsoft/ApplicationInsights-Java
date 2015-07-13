@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -78,5 +79,16 @@ final class ApacheSender43 implements ApacheSender {
     @Override
     public HttpClient getHttpClient() {
         return httpClient;
+    }
+
+    @Override
+    public void enhanceRequest(HttpPost request) {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                .setConnectTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS).build();
+
+        request.setConfig(requestConfig);
     }
 }

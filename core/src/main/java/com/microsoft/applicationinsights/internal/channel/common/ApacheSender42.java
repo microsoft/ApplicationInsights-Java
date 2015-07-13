@@ -27,6 +27,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 
 /**
  * Created by gupele on 6/4/2015.
@@ -35,7 +38,10 @@ final class ApacheSender42 implements ApacheSender {
     private HttpClient httpClient;
 
     public ApacheSender42() {
-        httpClient = new DefaultHttpClient();
+        HttpParams params=new BasicHttpParams();
+        HttpConnectionParams.setConnectionTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
+        HttpConnectionParams.setSoTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
+        httpClient = new DefaultHttpClient(params);
     }
 
     @Override
@@ -55,5 +61,9 @@ final class ApacheSender42 implements ApacheSender {
     @Override
     public HttpClient getHttpClient() {
         return httpClient;
+    }
+
+    @Override
+    public void enhanceRequest(HttpPost request) {
     }
 }

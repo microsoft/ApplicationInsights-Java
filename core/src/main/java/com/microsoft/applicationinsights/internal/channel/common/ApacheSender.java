@@ -31,6 +31,8 @@ import org.apache.http.client.methods.HttpPost;
  * Created by gupele on 6/4/2015.
  */
 interface ApacheSender {
+    final static int REQUEST_TIMEOUT_IN_MILLIS = 60000;
+
     HttpResponse sendPostRequest(HttpPost post) throws IOException;
 
     void dispose(HttpResponse response);
@@ -38,4 +40,6 @@ interface ApacheSender {
     void close();
 
     HttpClient getHttpClient();
+
+    void enhanceRequest(HttpPost request);
 }
