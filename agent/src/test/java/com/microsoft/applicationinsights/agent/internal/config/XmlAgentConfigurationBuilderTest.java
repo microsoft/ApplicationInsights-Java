@@ -26,6 +26,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import java.io.*;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
@@ -79,10 +80,13 @@ public final class XmlAgentConfigurationBuilderTest {
         try {
             folder = createFolder();
             ClassLoader classLoader = getClass().getClassLoader();
-            File sourceFile = new File(classLoader.getResource(testFileName).getFile());
+            URL testFileUrl = classLoader.getResource(testFileName);
+            File sourceFile = new File(testFileUrl.toURI());
             File destinationFile = new File(folder, TEMP_CONF_FILE);
             FileUtils.copyFile(sourceFile, destinationFile);
             return new XmlAgentConfigurationBuilder().parseConfigurationFile(folder.toString());
+        } catch (java.net.URISyntaxException e) {
+            return null;
         } finally {
             cleanFolder(folder);
         }
