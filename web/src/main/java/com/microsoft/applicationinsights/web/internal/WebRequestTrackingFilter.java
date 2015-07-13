@@ -21,33 +21,46 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Date;
+import java.util.LinkedList;
 
+import javax.servlet.Filter;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
+import com.microsoft.applicationinsights.internal.agent.AgentConnector;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
+import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 
 /**
  * Created by yonisha on 2/2/2015.
  */
 public final class WebRequestTrackingFilter implements Filter {
-    // region Members
+    private final static String FILTER_NAME = "ApplicationInsightsWebFilter";
+    private final static String WEB_INF_FOLDER = "WEB-INF/";
 
     private WebModulesContainer webModulesContainer;
     private boolean isInitialized = false;
     private TelemetryClient telemetryClient;
+    private String key;
+    private boolean agentIsUp = false;
+    private final LinkedList<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
 
     // endregion Members
 
     // region Public
-
-    public boolean isInitialized() {
-        return isInitialized;
-    }
 
     /**
      * Processing the given request and response.
@@ -60,6 +73,8 @@ public final class WebRequestTrackingFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse)res);
         boolean isRequestProcessedSuccessfully = true;
+
+        setKeyOnTLS(key);
 
         if (isInitialized) {
             isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
@@ -76,10 +91,22 @@ public final class WebRequestTrackingFilter implements Filter {
         } catch (RuntimeException re) {
             onException(re);
             throw re;
+        } finally {
+            cleanup();
         }
 
         if (isInitialized && isRequestProcessedSuccessfully) {
             invokeSafeOnEndRequest(req, response);
+        }
+    }
+
+    private void cleanup() {
+        try {
+            setKeyOnTLS(null);
+            for (ThreadLocalCleaner cleaner : cleaners) {
+                cleaner.clean();
+            }
+        } catch (Throwable t) {
         }
     }
 
@@ -99,6 +126,8 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config){
         try {
+            initialize(config);
+
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
 
             if (configuration == null) {
@@ -115,7 +144,7 @@ public final class WebRequestTrackingFilter implements Filter {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.error(
                     "Application Insights filter %s has been failed to initialized.\n" +
-                    "Web request tracking filter will be disabled. Exception: %s", filterName, e.getMessage());
+                            "Web request tracking filter will be disabled. Exception: %s", filterName, e.getMessage());
         }
     }
 
@@ -161,5 +190,109 @@ public final class WebRequestTrackingFilter implements Filter {
         }
     }
 
-    // endregion Private
+    private void setKeyOnTLS(String key) {
+        if (agentIsUp) {
+            try {
+                AgentTLS.setTLSKey(key);
+            } catch (Throwable e) {
+                if (e instanceof ClassNotFoundException ||
+                        e instanceof NoClassDefFoundError) {
+
+                    // This means that the Agent is not present and therefore we will stop trying
+                    agentIsUp = false;
+                    InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'", e.getMessage());
+                }
+            }
+        }
+    }
+
+    public WebRequestTrackingFilter() {
+    }
+
+    private synchronized void initialize(FilterConfig filterConfig) {
+        try {
+            ServletContext context = filterConfig.getServletContext();
+
+            String name = getName(context);
+
+            String key = registerWebApp(name);
+            setKey(key);
+
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Successfully registered the filter '%s'", FILTER_NAME);
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.getMessage());
+        }
+    }
+
+    private String registerWebApp(String name) {
+        String key = null;
+
+        if (!Strings.isNullOrEmpty(name)) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Registering WebApp with name '%s'", name);
+            AgentConnector.RegistrationResult result = AgentConnector.INSTANCE.register(this.getClass().getClassLoader(), name);
+            if (result == null) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Did not get a result when registered '%s'. No way to have RDD telemetries for this WebApp", name);
+            }
+            key = result.getKey();
+
+            if (Strings.isNullOrEmpty(key)) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Key for '%s' key is null'. No way to have RDD telemetries for this WebApp", name);
+            } else {
+                if (result.getCleaner() != null) {
+                    cleaners.add(result.getCleaner());
+                }
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Registered WebApp '%s' key='%s'", name, key);
+            }
+        } else {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "WebApp name is not found, unable to register WebApp");
+        }
+
+        return key;
+    }
+
+    private String getName(ServletContext context) {
+        String name = null;
+        try {
+            String contextPath = context.getContextPath();
+            if (Strings.isNullOrEmpty(contextPath)) {
+                URL[] jarPaths = ((URLClassLoader) (this.getClass().getClassLoader())).getURLs();
+                for (URL url : jarPaths) {
+                    String urlPath = url.getPath();
+                    int index = urlPath.lastIndexOf(WEB_INF_FOLDER);
+                    if (index != -1) {
+                        urlPath = urlPath.substring(0, index);
+                        String[] parts = urlPath.split("/");
+                        if (parts.length > 0) {
+                            name = parts[parts.length - 1];
+                            break;
+                        }
+                    }
+                }
+            } else {
+                name = contextPath.substring(1);
+            }
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.getMessage());
+        }
+
+        return name;
+    }
+
+    private void setKey(String key) {
+        if (Strings.isNullOrEmpty(key)) {
+            agentIsUp = false;
+            this.key = key;
+            return;
+        }
+
+        try {
+            AgentTLS.getTLSKey();
+            agentIsUp = true;
+            this.key = key;
+        } catch (Throwable throwable) {
+            agentIsUp = false;
+            this.key = null;
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "setKey: Failed to find AgentTLS");
+        }
+    }
 }

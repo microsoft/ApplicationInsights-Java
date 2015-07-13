@@ -19,19 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.config;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+/**
+ * Created by gupele on 6/5/2015.
+ */
+public class AgentBuiltInConfigurationBuilder {
+    private boolean enabled = true;
+    private boolean httpEnabled = true;
+    private boolean jdbcEnabled = true;
+    private boolean hibernateEnabled = true;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+    public AgentBuiltInConfiguration create() {
+        return new AgentBuiltInConfiguration(enabled, httpEnabled && enabled, jdbcEnabled && enabled, hibernateEnabled && enabled);
+    }
+
+    public AgentBuiltInConfigurationBuilder setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        return this;
+    }
+
+    public AgentBuiltInConfigurationBuilder setHttpEnabled(boolean httpEnabled) {
+        this.httpEnabled = httpEnabled;
+        return this;
+    }
+
+    public AgentBuiltInConfigurationBuilder setJdbcEnabled(boolean jdbcEnabled) {
+        this.jdbcEnabled = jdbcEnabled;
+        return this;
+    }
+
+    public AgentBuiltInConfigurationBuilder setHibernateEnabled(boolean hibernateEnabled) {
+        this.hibernateEnabled = hibernateEnabled;
+        return this;
+    }
 }
-

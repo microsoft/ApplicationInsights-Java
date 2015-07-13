@@ -19,19 +19,29 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.config;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import org.junit.Test;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+import java.util.HashMap;
+
+import static org.junit.Assert.*;
+
+public final class XmlAgentConfigurationTest {
+    @Test
+    public void testCtor() {
+        AgentConfigurationDefaultImpl tested = new AgentConfigurationDefaultImpl();
+        assertTrue(tested.getBuiltInConfiguration().isEnabled());
+        assertNull(tested.getRequestedClassesToInstrument());
+    }
+
+    @Test
+    public void testSetters() {
+        AgentConfigurationDefaultImpl tested = new AgentConfigurationDefaultImpl();
+        HashMap<String, ClassInstrumentationData> classes = new HashMap<String, ClassInstrumentationData>();
+        tested.setRequestedClassesToInstrument(classes);
+
+        assertSame(classes, tested.getRequestedClassesToInstrument());
+    }
 }
-

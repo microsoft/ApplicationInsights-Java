@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -19,19 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.internal.util;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
-
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+/**
+ * Created by gupele on 7/8/2015.
+ */
+public interface ThreadLocalCleaner {
+    void clean();
 }
-

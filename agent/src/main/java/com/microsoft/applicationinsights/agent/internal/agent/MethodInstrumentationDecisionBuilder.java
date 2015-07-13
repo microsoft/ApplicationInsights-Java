@@ -19,19 +19,26 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.agent;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+/**
+ * Created by gupele on 6/2/2015.
+ */
+final class MethodInstrumentationDecisionBuilder {
+    public boolean reportCaughtExceptions;
+    public boolean reportExecutionTime;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+    public MethodInstrumentationDecisionBuilder withReportCaughtExceptions(boolean reportCaughtExceptions) {
+        this.reportCaughtExceptions = reportCaughtExceptions;
+        return this;
+    }
+
+    public MethodInstrumentationDecisionBuilder withReportExecutionTime(boolean reportExecutionTime) {
+        this.reportExecutionTime = reportExecutionTime;
+        return this;
+    }
+
+    public MethodInstrumentationDecision create() {
+        return new MethodInstrumentationDecision(reportCaughtExceptions, reportExecutionTime);
+    }
 }
-

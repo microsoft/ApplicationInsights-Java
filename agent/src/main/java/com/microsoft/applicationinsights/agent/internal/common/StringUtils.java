@@ -19,19 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.common;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
-
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+/**
+ * Created by gupele on 5/31/2015.
+ */
+public final class StringUtils {
+    public static boolean isNullOrEmpty(String string) {
+        return string == null || string.length() == 0;
+    }
 }
-

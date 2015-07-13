@@ -19,19 +19,39 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.agent;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+/**
+ * Created by gupele on 5/11/2015.
+ */
+final class ByteCodeUtils {
+    private final static String BYTE_CODE_CTOR_NAME = "<init>";
+    private final static String BYTE_CODE_STATIC_CTOR_NAME = "<clinit>";
+
+    static boolean isInterface(int access) {
+        return (access & Opcodes.ACC_INTERFACE) != 0;
+    }
+
+    static boolean isAbstract(int access) {
+        return (access & Opcodes.ACC_ABSTRACT) != 0;
+    }
+
+    static boolean isPrivate(int access) {
+        return (access & Opcodes.ACC_PRIVATE) != 0;
+    }
+
+    static boolean isStatic(int access) {
+        return (access & Opcodes.ACC_STATIC) != 0;
+    }
+
+    static boolean isConstructor(String methodName) {
+        return BYTE_CODE_CTOR_NAME.equals(methodName) || BYTE_CODE_STATIC_CTOR_NAME.startsWith(methodName);
+    }
+
+    static boolean isLargeType(Type type) {
+        return type.getSize() == 2;
+    }
 }
-

@@ -19,19 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.agent.internal.agent;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import org.objectweb.asm.MethodVisitor;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+/**
+ * Created by gupele on 5/20/2015.
+ */
+final class DefaultMethodInstrumentorsFactory implements MethodInstrumentorsFactory {
+    private final ClassDataProvider provider;
+
+    public DefaultMethodInstrumentorsFactory(ClassDataProvider provider) {
+        this.provider = provider;
+    }
+
+    public DefaultMethodInstrumentor getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor) {
+        if (provider.isHttpClass(className)) {
+            return new HttpMethodInstrumentor(access, desc, className, methodName, methodVisitor);
+        } else if (provider.isSqlClass(className)) {
+            return new SqlStatementMethodInstrumentor(access, desc, className, methodName, methodVisitor);
+        }
+
+        return new DefaultMethodInstrumentor(decision, access, desc, className, methodName, methodVisitor);
+    }
 }
-

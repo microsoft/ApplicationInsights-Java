@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 archivesBaseName = 'applicationinsights-core'
 
 dependencies {
+    provided project(':agent')
     compile group: 'eu.infomas', name: 'annotation-detector', version: '3.0.4'
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
@@ -62,5 +63,11 @@ sourceSets {
 
 projectPomName = project.msftAppInsights + " Java SDK Core"
 projectPomDescription = "This is the core module of " + project.msftAppInsightsJavaSdk
+
+whenPomConfigured = { p ->
+    def agentArtifactId = project(":agent").jar.baseName
+    p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != agentArtifactId }
+    writePomToArtifactsDirectory(p, project.name)
+}
 
 // endregion Publishing properties
