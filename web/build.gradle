@@ -25,7 +25,7 @@ apply from: "$buildScriptsDir/publishing.gradle"
 archivesBaseName = 'applicationinsights-web'
 
 dependencies {
-    compile project(':agent')
+    provided project(':agent')
     compile project(':core')
     provided 'com.opensymphony:xwork:2.0.4' // Struts 2
     provided 'org.springframework:spring-webmvc:3.1.0.RELEASE'
@@ -45,5 +45,11 @@ dependencies {
 
 projectPomName = project.msftAppInsights + " Java SDK Web Module"
 projectPomDescription = "This is the web module of " + project.msftAppInsightsJavaSdk
+
+whenPomConfigured = { p ->
+    def agentArtifactId = project(":agent").jar.baseName
+    p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != agentArtifactId }
+    writePomToArtifactsDirectory(p, project.name)
+}
 
 // endregion Publishing properties
