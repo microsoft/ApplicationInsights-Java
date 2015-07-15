@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.sample.plugins;
 
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.sample.plugins.GitBuildInfoContextInitializerTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -30,7 +31,7 @@ public final class GitBuildInfoContextInitializerTest {
     private final static String TEST_GIT_BRANCH_VALUE = "features/my-branch";
     private final static String TEST_GIT_COMMIT_VALUE = "commit-value";
     private final static String TEST_GIT_REPO_VALUE = "https://github.com/MyCompany/MyProject.git";
-    private final static String TEST_GIT_URL_VALUE = "https://github.com/MyCompany/MyProject/commit-value";
+    private final static String TEST_GIT_URL_VALUE = "https://github.com/MyCompany/MyProject/commit/commit-value";
 
     @Test
     public void loadSourcePropertiesTest() {

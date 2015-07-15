@@ -44,6 +44,7 @@ public final class GitBuildInfoContextInitializer implements ContextInitializer 
     final static String GIT_COMMIT_URL_KEY = "git.commit.url";
 
     final static String GIT_REPO_SUFFIX = ".git";
+    final static String GIT_COMMIT_URL_PART = "/commit/";
 
     final static String UNKNOWN_SOURCE_VALUE = "unknown";
 
@@ -70,11 +71,11 @@ public final class GitBuildInfoContextInitializer implements ContextInitializer 
 
             gitCommitUrl = UNKNOWN_SOURCE_VALUE;
             if (!gitRepo.equals(UNKNOWN_SOURCE_VALUE) &&
-                !gitCommit.equals(UNKNOWN_SOURCE_VALUE)) {
+                    !gitCommit.equals(UNKNOWN_SOURCE_VALUE)) {
 
                 int index = gitRepo.indexOf(GIT_REPO_SUFFIX);
                 if (index != -1) {
-                    gitCommitUrl = gitRepo.substring(0, index) + '/' + gitCommit;
+                    gitCommitUrl = gitRepo.substring(0, index) + GIT_COMMIT_URL_PART + gitCommit;
                 }
             }
 
