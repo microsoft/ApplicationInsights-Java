@@ -56,7 +56,6 @@ dependencies {
 sourceSets {
     plugins {
         compileClasspath = sourceSets.main.compileClasspath
-        compileClasspath = sourceSets.main.compileClasspath
     }
 
     main {
