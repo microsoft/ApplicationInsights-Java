@@ -41,7 +41,7 @@ public final class GitBuildInfoContextInitializerTest {
         verify(context, GitBuildInfoContextInitializer.GIT_REPO_KEY, TEST_GIT_REPO_VALUE);
         verify(context, GitBuildInfoContextInitializer.GIT_COMMIT_KEY, TEST_GIT_COMMIT_VALUE);
         verify(context, GitBuildInfoContextInitializer.GIT_BRANCH_KEY, TEST_GIT_BRANCH_VALUE);
-        verify(context, GitBuildInfoContextInitializer.GIT_URL_KEY, TEST_GIT_URL_VALUE);
+        verify(context, GitBuildInfoContextInitializer.GIT_COMMIT_URL_KEY, TEST_GIT_URL_VALUE);
     }
 
     private static void verify(TelemetryContext context,

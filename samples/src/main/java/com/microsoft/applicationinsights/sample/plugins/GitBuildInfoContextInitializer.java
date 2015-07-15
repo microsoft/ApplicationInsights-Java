@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 
 /**
@@ -39,17 +38,19 @@ import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 public class GitBuildInfoContextInitializer implements ContextInitializer {
     private final static String BUILD_INFO_FILE_NAME = "source-origin.properties";
 
-    final static String GIT_BRANCH_KEY = "git.branch";
-    final static String GIT_COMMIT_KEY = "git.commit.url";
     final static String GIT_REPO_KEY = "git.repo";
-    final static String GIT_URL_KEY = "git.url";
+    final static String GIT_BRANCH_KEY = "git.branch";
+    final static String GIT_COMMIT_KEY = "git.commit";
+    final static String GIT_COMMIT_URL_KEY = "git.commit.url";
+
+    final static String GIT_REPO_SUFFIX = ".git";
 
     final static String UNKNOWN_SOURCE_VALUE = "unknown";
 
     private String gitBranch;
     private String gitCommit;
     private String gitRepo;
-    private String gitUrl;
+    private String gitCommitUrl;
     private boolean hasBuildData;
 
     public GitBuildInfoContextInitializer() {
@@ -66,22 +67,20 @@ public class GitBuildInfoContextInitializer implements ContextInitializer {
             gitRepo = buildProperties.getProperty(GIT_REPO_KEY, UNKNOWN_SOURCE_VALUE);
             gitBranch = buildProperties.getProperty(GIT_BRANCH_KEY, UNKNOWN_SOURCE_VALUE);
             gitCommit = buildProperties.getProperty(GIT_COMMIT_KEY, UNKNOWN_SOURCE_VALUE);
+
+            gitCommitUrl = UNKNOWN_SOURCE_VALUE;
             if (!gitRepo.equals(UNKNOWN_SOURCE_VALUE) &&
                 !gitCommit.equals(UNKNOWN_SOURCE_VALUE)) {
 
-                int index = gitRepo.indexOf(".git");
+                int index = gitRepo.indexOf(GIT_REPO_SUFFIX);
                 if (index != -1) {
-                    gitUrl = gitRepo.substring(0, index) + '/' + gitCommit;
+                    gitCommitUrl = gitRepo.substring(0, index) + '/' + gitCommit;
                 }
             }
-
-            InternalLogger.INSTANCE.trace("Loaded build properties file '%s'", BUILD_INFO_FILE_NAME);
 
             hasBuildData = true;
         } catch (Throwable t) {
             hasBuildData = false;
-
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to load '%s', exception: '%s", BUILD_INFO_FILE_NAME, t.getMessage());
         }
     }
 
@@ -94,6 +93,6 @@ public class GitBuildInfoContextInitializer implements ContextInitializer {
         context.getProperties().put(GIT_BRANCH_KEY, gitBranch);
         context.getProperties().put(GIT_COMMIT_KEY, gitCommit);
         context.getProperties().put(GIT_REPO_KEY, gitRepo);
-        context.getProperties().put(GIT_URL_KEY, gitUrl);
+        context.getProperties().put(GIT_COMMIT_URL_KEY, gitCommitUrl);
     }
 }
