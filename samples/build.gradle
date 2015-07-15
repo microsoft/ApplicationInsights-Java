@@ -21,6 +21,18 @@
 
 apply from: "$buildScriptsDir/common-java.gradle"
 
+import com.microsoft.applicationinsights.build.tasks.PropsFileGen
+
+def sourceOriginFileDir = "$project.buildDir/src/main/resources"
+task generateSourceOriginProperties(type: PropsFileGen) {
+    targetFile = new File(sourceOriginFileDir, "source-origin.properties")
+    property "git.commit", System.env.'GIT_COMMIT' ?: "unknown"
+    property "git.branch", System.env.'GIT_BRANCH' ?: "unknown"
+    property "git.repo", System.env.'GIT_URL' ?: "unknown"
+}
+
+processResources.dependsOn generateSourceOriginProperties
+
 jar {
     version = '1.0'
     baseName = 'samples'
@@ -31,4 +43,6 @@ dependencies {
     compile project(':logging:log4j1_2')
     compile project(':logging:log4j2')
     compile project(':logging:logback')
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
 }
