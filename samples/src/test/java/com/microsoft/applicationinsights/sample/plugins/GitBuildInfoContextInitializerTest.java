@@ -26,22 +26,22 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class GitBuildInfoContextInitializerTest {
+public final class GitBuildInfoContextInitializerTest {
     private final static String TEST_GIT_BRANCH_VALUE = "features/my-branch";
     private final static String TEST_GIT_COMMIT_VALUE = "commit-value";
     private final static String TEST_GIT_REPO_VALUE = "https://github.com/MyCompany/MyProject.git";
     private final static String TEST_GIT_URL_VALUE = "https://github.com/MyCompany/MyProject/commit-value";
 
     @Test
-    public void testLoad() {
+    public void loadSourcePropertiesTest() {
         GitBuildInfoContextInitializer initializer = new GitBuildInfoContextInitializer();
         TelemetryContext context = new TelemetryContext();
         initializer.initialize(context);
 
-        verify(context, GitBuildInfoContextInitializer.GIT_REPO_NAME, TEST_GIT_REPO_VALUE);
-        verify(context, GitBuildInfoContextInitializer.GIT_COMMIT_NAME, TEST_GIT_COMMIT_VALUE);
-        verify(context, GitBuildInfoContextInitializer.GIT_BRANCH_NAME, TEST_GIT_BRANCH_VALUE);
-        verify(context, GitBuildInfoContextInitializer.GIT_URL_NAME, TEST_GIT_URL_VALUE);
+        verify(context, GitBuildInfoContextInitializer.GIT_REPO_KEY, TEST_GIT_REPO_VALUE);
+        verify(context, GitBuildInfoContextInitializer.GIT_COMMIT_KEY, TEST_GIT_COMMIT_VALUE);
+        verify(context, GitBuildInfoContextInitializer.GIT_BRANCH_KEY, TEST_GIT_BRANCH_VALUE);
+        verify(context, GitBuildInfoContextInitializer.GIT_URL_KEY, TEST_GIT_URL_VALUE);
     }
 
     private static void verify(TelemetryContext context,

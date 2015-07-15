@@ -39,12 +39,12 @@ import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 public class GitBuildInfoContextInitializer implements ContextInitializer {
     private final static String BUILD_INFO_FILE_NAME = "source-origin.properties";
 
-    final static String GIT_BRANCH_NAME = "git.branch";
-    final static String GIT_COMMIT_NAME = "git.commit";
-    final static String GIT_REPO_NAME = "git.repo";
-    final static String GIT_URL_NAME = "git.url";
+    final static String GIT_BRANCH_KEY = "git.branch";
+    final static String GIT_COMMIT_KEY = "git.commit.url";
+    final static String GIT_REPO_KEY = "git.repo";
+    final static String GIT_URL_KEY = "git.url";
 
-    final static String BUILD_DEFAULT_VALUE = "unknown";
+    final static String UNKNOWN_SOURCE_VALUE = "unknown";
 
     private String gitBranch;
     private String gitCommit;
@@ -63,11 +63,11 @@ public class GitBuildInfoContextInitializer implements ContextInitializer {
             Properties buildProperties = new Properties();
             buildProperties.load(inputStream);
 
-            gitRepo = buildProperties.getProperty(GIT_REPO_NAME, BUILD_DEFAULT_VALUE);
-            gitBranch = buildProperties.getProperty(GIT_BRANCH_NAME, BUILD_DEFAULT_VALUE);
-            gitCommit = buildProperties.getProperty(GIT_COMMIT_NAME, BUILD_DEFAULT_VALUE);
-            if (!gitRepo.equals(BUILD_DEFAULT_VALUE) &&
-                !gitCommit.equals(BUILD_DEFAULT_VALUE)) {
+            gitRepo = buildProperties.getProperty(GIT_REPO_KEY, UNKNOWN_SOURCE_VALUE);
+            gitBranch = buildProperties.getProperty(GIT_BRANCH_KEY, UNKNOWN_SOURCE_VALUE);
+            gitCommit = buildProperties.getProperty(GIT_COMMIT_KEY, UNKNOWN_SOURCE_VALUE);
+            if (!gitRepo.equals(UNKNOWN_SOURCE_VALUE) &&
+                !gitCommit.equals(UNKNOWN_SOURCE_VALUE)) {
 
                 int index = gitRepo.indexOf(".git");
                 if (index != -1) {
@@ -91,9 +91,9 @@ public class GitBuildInfoContextInitializer implements ContextInitializer {
             return;
         }
 
-        context.getProperties().put(GIT_BRANCH_NAME, gitBranch);
-        context.getProperties().put(GIT_COMMIT_NAME, gitCommit);
-        context.getProperties().put(GIT_REPO_NAME, gitRepo);
-        context.getProperties().put(GIT_URL_NAME, gitUrl);
+        context.getProperties().put(GIT_BRANCH_KEY, gitBranch);
+        context.getProperties().put(GIT_COMMIT_KEY, gitCommit);
+        context.getProperties().put(GIT_REPO_KEY, gitRepo);
+        context.getProperties().put(GIT_URL_KEY, gitUrl);
     }
 }

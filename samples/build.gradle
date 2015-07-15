@@ -24,11 +24,18 @@ apply from: "$buildScriptsDir/common-java.gradle"
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 def sourceOriginFileDir = "$project.buildDir/src/main/resources"
-task generateSourceOriginProperties(type: PropsFileGen) {
-    targetFile = new File(sourceOriginFileDir, "source-origin.properties")
-    property "git.commit", System.env.'GIT_COMMIT' ?: "unknown"
-    property "git.branch", System.env.'GIT_BRANCH' ?: "unknown"
-    property "git.repo", System.env.'GIT_URL' ?: "unknown"
+task generateSourceOriginProperties() {
+    Properties props = new Properties()
+    props.setProperty "git.commit", System.env.'GIT_COMMIT' ?: "unknown"
+    props.setProperty "git.branch", System.env.'GIT_BRANCH' ?: "unknown"
+    props.setProperty "git.repo", System.env.'GIT_URL' ?: "unknown"
+
+    File targetFile = new File(sourceOriginFileDir, "source-origin.properties")
+    def targetDir = targetFile.getParentFile()
+    targetDir.mkdirs()
+    FileOutputStream out = new FileOutputStream(targetFile.getAbsolutePath())
+    props.store out, "Git source information"
+    out.close()
 }
 
 processResources.dependsOn generateSourceOriginProperties
