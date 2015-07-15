@@ -21,6 +21,9 @@
 
 apply from: "$buildScriptsDir/common-java.gradle"
 
+archivesBaseName = 'applicationinsights-samples'
+version=""
+
 task generateSourceOriginProperties() {
     // Place source properties in a Properties object
     Properties props = new Properties()
@@ -40,11 +43,6 @@ task generateSourceOriginProperties() {
 
 processResources.dependsOn generateSourceOriginProperties
 
-jar {
-    version = '1.0'
-    baseName = 'samples'
-}
-
 dependencies {
     compile project(':core')
     compile project(':logging:log4j1_2')
@@ -53,3 +51,23 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
+
+
+sourceSets {
+    plugins {
+        compileClasspath = sourceSets.main.compileClasspath
+        compileClasspath = sourceSets.main.compileClasspath
+    }
+
+    main {
+        java.srcDir sourceSets.plugins.allSource
+    }
+}
+
+task jarPlugins(type: Jar) {
+    from sourceSets.plugins.output
+    baseName = 'applicationinsights-sample-plugins'
+}
+
+build.dependsOn jarPlugins
+
