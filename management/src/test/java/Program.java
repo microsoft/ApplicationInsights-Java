@@ -5,7 +5,7 @@ import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.model.Tenant;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
+import com.microsoftopentechnologies.auth.AuthenticationResult;
 
 import java.io.IOException;
 import java.util.List;

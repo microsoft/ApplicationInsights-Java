@@ -24,10 +24,9 @@ package com.microsoft.applicationinsights.management.authentication;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.microsoft.applicationinsights.management.rest.model.Tenant;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationContext;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
-import com.microsoftopentechnologies.aad.adal4j.PromptValue;
+import com.microsoftopentechnologies.auth.AuthenticationContext;
+import com.microsoftopentechnologies.auth.AuthenticationResult;
+import com.microsoftopentechnologies.auth.PromptValue;
 
 import java.io.IOException;
 

@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.management.rest.model;
 
 import com.google.gson.JsonObject;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
+import com.microsoftopentechnologies.auth.AuthenticationResult;
 
 /**
  * Created by yonisha on 4/19/2015.

@@ -35,8 +35,8 @@ import com.microsoft.applicationinsights.management.rest.model.ResourceGroup;
 import com.microsoft.applicationinsights.management.rest.model.Subscription;
 import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import com.microsoft.applicationinsights.management.rest.operations.*;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationContext;
-import com.microsoftopentechnologies.aad.adal4j.AuthenticationResult;
+import com.microsoftopentechnologies.auth.AuthenticationContext;
+import com.microsoftopentechnologies.auth.AuthenticationResult;
 
 /**
  * Created by yonisha on 4/19/2015.
