@@ -21,12 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.*;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -42,9 +44,9 @@ import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 
 /**
  * Initializer class for configuration instances.
@@ -58,6 +60,9 @@ public enum TelemetryConfigurationFactory {
     private final static String BUILT_IN_NAME = "BuiltIn";
 
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
+
+    final static String ENV_VARIABLE_I_KEY = "APPLICATION_INSIGHTS_IKEY";
+    final static String JVM_VARIABLE_I_KEY = "-D" + ENV_VARIABLE_I_KEY;
 
     private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
@@ -79,20 +84,20 @@ public enum TelemetryConfigurationFactory {
         try {
             String configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
             if (Strings.isNullOrEmpty(configurationFile)) {
-                configuration.setChannel(new InProcessTelemetryChannel());
+                initializeMinimumCapabilities(null, configuration);
                 return;
             }
 
             ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
             if (applicationInsightsConfig == null) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to read configuration file");
-                configuration.setChannel(new InProcessTelemetryChannel());
+                initializeMinimumCapabilities(applicationInsightsConfig, configuration);
                 return;
             }
 
             setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
 
-            setInstrumentationKey(applicationInsightsConfig.getInstrumentationKey(), configuration);
+            setInstrumentationKey(applicationInsightsConfig, configuration);
 
             setChannel(applicationInsightsConfig.getChannel(), configuration);
 
@@ -106,6 +111,11 @@ public enum TelemetryConfigurationFactory {
         } catch (Exception e) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to initialize configuration, exception: %s", e.getMessage());
         }
+    }
+
+    private void initializeMinimumCapabilities(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
+        setInstrumentationKey(userConfiguration, configuration);
+        configuration.setChannel(new InProcessTelemetryChannel());
     }
 
     private void setInternalLogger(SDKLoggerXmlElement sdkLogger, TelemetryConfiguration configuration) {
@@ -165,20 +175,55 @@ public enum TelemetryConfigurationFactory {
     }
 
     /**
-     * Setting an instrumentation key
-     * @param instrumentationKey The instrumentation key found in the configuration.
+     * Setting an instrumentation key:
+     * First we try the JVM option '-DAPPLICATION_INSIGHTS_IKEY=i_key'
+     * Next we will try the environment variable 'APPLICATION_INSIGHTS_IKEY',
+     * Next we will try to fetch the i-key from the ApplicationInsights.xml
+     * @param userConfiguration The configuration that was represents the user's configuration in ApplicationInsights.xml.
      * @param configuration The configuration class.
      * @return True if succeeded.
      */
-    private boolean setInstrumentationKey(String instrumentationKey, TelemetryConfiguration configuration) {
+    private boolean setInstrumentationKey(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         try {
-            configuration.setInstrumentationKey(instrumentationKey);
+            // First, try to find the i-key as an Env variable 'APPLICATION_INSIGHTS_IKEY'
+            RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+            List<String> arguments = runtimeMxBean.getInputArguments();
+            if (arguments != null) {
+                for (String argument : arguments) {
+                    String[] ikeyData = argument.split("=");
+                    if (ikeyData.length != 2) {
+                        continue;
+                    }
 
-            return true;
+                    if (!JVM_VARIABLE_I_KEY.equals(ikeyData[0])) {
+                        continue;
+                    }
+
+                    String ikey = ikeyData[1];
+                    if (!Strings.isNullOrEmpty(ikey)) {
+                        configuration.setInstrumentationKey(argument);
+                        return true;
+                    }
+                }
+            }
+
+            // Second, try to find the i-key as an JVM argument '-DAPPLICATION_INSIGHTS_IKEY=i_key'
+            String ikey = System.getenv(ENV_VARIABLE_I_KEY);
+            if (!Strings.isNullOrEmpty(ikey)) {
+                configuration.setInstrumentationKey(ikey);
+                return true;
+            }
+
+            // Else, try to find the i-key in the ApplicationInsights.xml
+            if (userConfiguration != null) {
+                configuration.setInstrumentationKey(userConfiguration.getInstrumentationKey());
+                return true;
+            }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.getMessage());
-            return false;
         }
+
+        return false;
     }
 
     @SuppressWarnings("unchecked")
