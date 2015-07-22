@@ -62,7 +62,6 @@ public enum TelemetryConfigurationFactory {
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
     final static String ENV_VARIABLE_I_KEY = "APPLICATION_INSIGHTS_IKEY";
-    final static String JVM_VARIABLE_I_KEY = "-D" + ENV_VARIABLE_I_KEY;
 
     private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
@@ -84,14 +83,14 @@ public enum TelemetryConfigurationFactory {
         try {
             String configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
             if (Strings.isNullOrEmpty(configurationFile)) {
-                initializeMinimumCapabilities(null, configuration);
+                setMinimumConfiguration(null, configuration);
                 return;
             }
 
             ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
             if (applicationInsightsConfig == null) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to read configuration file");
-                initializeMinimumCapabilities(applicationInsightsConfig, configuration);
+                setMinimumConfiguration(applicationInsightsConfig, configuration);
                 return;
             }
 
@@ -113,7 +112,7 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    private void initializeMinimumCapabilities(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
+    private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         setInstrumentationKey(userConfiguration, configuration);
         configuration.setChannel(new InProcessTelemetryChannel());
     }
@@ -176,54 +175,46 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Setting an instrumentation key:
-     * First we try the JVM option '-DAPPLICATION_INSIGHTS_IKEY=i_key'
+     * First we try the system property '-DAPPLICATION_INSIGHTS_IKEY=i_key'
      * Next we will try the environment variable 'APPLICATION_INSIGHTS_IKEY',
      * Next we will try to fetch the i-key from the ApplicationInsights.xml
      * @param userConfiguration The configuration that was represents the user's configuration in ApplicationInsights.xml.
      * @param configuration The configuration class.
-     * @return True if succeeded.
      */
-    private boolean setInstrumentationKey(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
+    private void setInstrumentationKey(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         try {
-            // First, try to find the i-key as an Env variable 'APPLICATION_INSIGHTS_IKEY'
-            RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
-            List<String> arguments = runtimeMxBean.getInputArguments();
-            if (arguments != null) {
-                for (String argument : arguments) {
-                    String[] ikeyData = argument.split("=");
-                    if (ikeyData.length != 2) {
-                        continue;
-                    }
+            // First, try to find the i-key as a system property '-DAPPLICATION_INSIGHTS_IKEY=i_key'
+            String ikey = System.getProperty(ENV_VARIABLE_I_KEY);
 
-                    if (!JVM_VARIABLE_I_KEY.equals(ikeyData[0])) {
-                        continue;
-                    }
-
-                    String ikey = ikeyData[1];
-                    if (!Strings.isNullOrEmpty(ikey)) {
-                        configuration.setInstrumentationKey(argument);
-                        return true;
-                    }
-                }
-            }
-
-            // Second, try to find the i-key as an JVM argument '-DAPPLICATION_INSIGHTS_IKEY=i_key'
-            String ikey = System.getenv(ENV_VARIABLE_I_KEY);
             if (!Strings.isNullOrEmpty(ikey)) {
                 configuration.setInstrumentationKey(ikey);
-                return true;
+                return;
+            }
+
+            // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY'
+            ikey = System.getenv(ENV_VARIABLE_I_KEY);
+            if (!Strings.isNullOrEmpty(ikey)) {
+                configuration.setInstrumentationKey(ikey);
+                return;
             }
 
             // Else, try to find the i-key in the ApplicationInsights.xml
             if (userConfiguration != null) {
-                configuration.setInstrumentationKey(userConfiguration.getInstrumentationKey());
-                return true;
+                ikey = userConfiguration.getInstrumentationKey();
+                if (ikey == null) {
+                    return;
+                }
+
+                ikey = ikey.trim();
+                if (ikey.length() == 0) {
+                    return;
+                }
+
+                configuration.setInstrumentationKey(ikey);
             }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.getMessage());
         }
-
-        return false;
     }
 
     @SuppressWarnings("unchecked")

@@ -33,19 +33,23 @@ import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
-import org.junit.Assert;
-import org.junit.Test;
+
 import org.mockito.Mockito;
 
+import static org.mockito.Matchers.anyString;
+
+import org.junit.Test;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
+import static org.junit.Assert.assertNull;
 
 public final class TelemetryConfigurationFactoryTest {
 
     private final static String MOCK_IKEY = "c9341531-05ac-4d8c-972e-36e97601d5ff";
     private final static String MOCK_ENDPOINT = "MockEndpoint";
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
+    private final static String APP_INSIGHTS_IKEY_TEST_VALYE = "ds";
 
     @PerformanceModule
     static final class MockPerformanceModule implements TelemetryModule, PerformanceCounterConfigurationAware {
@@ -69,6 +73,32 @@ public final class TelemetryConfigurationFactoryTest {
 
         public void initialize(TelemetryConfiguration configuration) {
             initializeWasCalled = true;
+        }
+    }
+
+    @Test
+    public void configurationWithNullIkeyTest() {
+        ikeyTest(null, null);
+    }
+
+    @Test
+    public void configurationWithEmptykeyTest() {
+        ikeyTest("", null);
+    }
+
+    @Test
+    public void configurationWithBlankStringIkeyTest() {
+        ikeyTest(" ", null);
+    }
+
+    @Test
+    public void systemPropertyIKeyBeforeConfigurationIKeyTest() {
+        try {
+            System.setProperty(TelemetryConfigurationFactory.ENV_VARIABLE_I_KEY, APP_INSIGHTS_IKEY_TEST_VALYE);
+            ikeyTest(MOCK_IKEY, APP_INSIGHTS_IKEY_TEST_VALYE);
+        } finally {
+            // Avoid any influence on other unit tests
+            System.getProperties().remove(TelemetryConfigurationFactory.ENV_VARIABLE_I_KEY);
         }
     }
 
@@ -356,5 +386,21 @@ public final class TelemetryConfigurationFactoryTest {
         } catch (IllegalAccessException e) {
             throw new RuntimeException();
         }
+    }
+
+    private void ikeyTest(String configurationIkey, String expectedIkey) {
+        // Make sure that there is no exception when fetching the i-key by having both
+        // the i-key and channel in the configuration, otherwise the channel won't be instantiated
+        AppInsightsConfigurationBuilder mockParser = createMockParser(true, false, false);
+
+        ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
+        appConf.setInstrumentationKey(configurationIkey);
+        Mockito.doReturn(appConf).when(mockParser).build(anyString());
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+        assertEquals(mockConfiguration.getInstrumentationKey(), expectedIkey);
+        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
     }
 }
