@@ -27,7 +27,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
@@ -35,19 +35,27 @@ import org.apache.http.params.HttpParams;
  * Created by gupele on 6/4/2015.
  */
 final class ApacheSender42 implements ApacheSender {
+
     private HttpClient httpClient;
 
     public ApacheSender42() {
-        HttpParams params=new BasicHttpParams();
+        PoolingClientConnectionManager cm = new PoolingClientConnectionManager();
+        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
+        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+
+        httpClient = new DefaultHttpClient(cm);
+
+        HttpParams params = httpClient.getParams();
         HttpConnectionParams.setConnectionTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
         HttpConnectionParams.setSoTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
-        httpClient = new DefaultHttpClient(params);
+
+        System.out.println("using 42");
     }
 
     @Override
     public HttpResponse sendPostRequest(HttpPost post) throws IOException {
-        httpClient.execute(post);
-        return null;
+        HttpResponse response = httpClient.execute(post);
+        return response;
     }
 
     @Override
@@ -67,3 +75,4 @@ final class ApacheSender42 implements ApacheSender {
     public void enhanceRequest(HttpPost request) {
     }
 }
+
