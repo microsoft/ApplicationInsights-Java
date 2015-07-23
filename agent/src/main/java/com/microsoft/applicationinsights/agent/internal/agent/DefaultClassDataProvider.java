@@ -82,7 +82,11 @@ class DefaultClassDataProvider implements ClassDataProvider {
         "org/postgresql/jdbc4/AbstractJdbc4Statement",
         "org/postgresql/jdbc4/Jdbc4Statement",
         "org/postgresql/jdbc4/Jdbc4PreparedStatement",
-        "org/postgresql/jdbc4/Jdbc4CallableStatement"
+        "org/postgresql/jdbc4/Jdbc4CallableStatement",
+
+        "oracle/jdbc/driver/OracleClosedStatement",
+        "oracle/jdbc/driver/OraclePreparedStatement",
+        "oracle/jdbc/driver/OracleStatement"
     };
 
     private final static String[] JDBC_METHODS_TO_TRACK = {
