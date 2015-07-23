@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.List;
@@ -61,7 +59,7 @@ public enum TelemetryConfigurationFactory {
 
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
-    final static String ENV_VARIABLE_I_KEY = "APPLICATION_INSIGHTS_IKEY";
+    final static String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
 
     private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
@@ -183,8 +181,8 @@ public enum TelemetryConfigurationFactory {
      */
     private void setInstrumentationKey(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         try {
-            // First, try to find the i-key as a system property '-DAPPLICATION_INSIGHTS_IKEY=i_key'
-            String ikey = System.getProperty(ENV_VARIABLE_I_KEY);
+            // First, check whether an i-key was provided as a java system property i.e. '-DAPPLICATION_INSIGHTS_IKEY=i_key'
+            String ikey = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
 
             if (!Strings.isNullOrEmpty(ikey)) {
                 configuration.setInstrumentationKey(ikey);
@@ -192,13 +190,13 @@ public enum TelemetryConfigurationFactory {
             }
 
             // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY'
-            ikey = System.getenv(ENV_VARIABLE_I_KEY);
+            ikey = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
             if (!Strings.isNullOrEmpty(ikey)) {
                 configuration.setInstrumentationKey(ikey);
                 return;
             }
 
-            // Else, try to find the i-key in the ApplicationInsights.xml
+            // Else, try to find the i-key in ApplicationInsights.xml
             if (userConfiguration != null) {
                 ikey = userConfiguration.getInstrumentationKey();
                 if (ikey == null) {

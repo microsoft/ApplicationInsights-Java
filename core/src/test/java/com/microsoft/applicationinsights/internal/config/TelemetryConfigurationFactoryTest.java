@@ -42,14 +42,13 @@ import org.junit.Test;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
 
 public final class TelemetryConfigurationFactoryTest {
 
     private final static String MOCK_IKEY = "c9341531-05ac-4d8c-972e-36e97601d5ff";
     private final static String MOCK_ENDPOINT = "MockEndpoint";
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
-    private final static String APP_INSIGHTS_IKEY_TEST_VALYE = "ds";
+    private final static String APP_INSIGHTS_IKEY_TEST_VALUE = "ds";
 
     @PerformanceModule
     static final class MockPerformanceModule implements TelemetryModule, PerformanceCounterConfigurationAware {
@@ -92,13 +91,23 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     @Test
+    public void configurationWithRedundantSpacesIkeyTest() {
+        ikeyTest(" " + MOCK_IKEY + " \t", MOCK_IKEY);
+    }
+
+    @Test
+    public void configurationWithOnlyRedundantSpacesIkeyTest() {
+        ikeyTest("  \t", null);
+    }
+
+    @Test
     public void systemPropertyIKeyBeforeConfigurationIKeyTest() {
         try {
-            System.setProperty(TelemetryConfigurationFactory.ENV_VARIABLE_I_KEY, APP_INSIGHTS_IKEY_TEST_VALYE);
-            ikeyTest(MOCK_IKEY, APP_INSIGHTS_IKEY_TEST_VALYE);
+            System.setProperty(TelemetryConfigurationFactory.EXTERNAL_PROPERTY_IKEY_NAME, APP_INSIGHTS_IKEY_TEST_VALUE);
+            ikeyTest(MOCK_IKEY, APP_INSIGHTS_IKEY_TEST_VALUE);
         } finally {
             // Avoid any influence on other unit tests
-            System.getProperties().remove(TelemetryConfigurationFactory.ENV_VARIABLE_I_KEY);
+            System.getProperties().remove(TelemetryConfigurationFactory.EXTERNAL_PROPERTY_IKEY_NAME);
         }
     }
 
