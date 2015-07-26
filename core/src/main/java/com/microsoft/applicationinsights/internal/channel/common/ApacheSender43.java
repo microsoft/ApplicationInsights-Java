@@ -38,8 +38,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
  * Created by gupele on 6/4/2015.
  */
 final class ApacheSender43 implements ApacheSender {
-    private final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
-    private final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
 
     private final CloseableHttpClient httpClient;
 
