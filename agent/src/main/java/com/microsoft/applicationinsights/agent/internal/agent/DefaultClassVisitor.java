@@ -28,22 +28,18 @@ import org.objectweb.asm.Opcodes;
 
 /**
  * The class is responsible for identifying public methods on non-interface classes.
- * When a method is found the class will call the {@link DefaultMethodInstrumentor}
+ * When a method is found the class will call the {@link DefaultMethodVisitor}
  *
  * Created by gupele on 5/11/2015.
  */
-final class DefaultClassInstrumentor extends ClassVisitor {
-    private String owner;
+final class DefaultClassVisitor extends ClassVisitor {
     private boolean isInterface;
     private final ClassInstrumentationData instrumentationData;
-    private final MethodInstrumentorsFactory factory;
 
-    public DefaultClassInstrumentor(MethodInstrumentorsFactory factory, ClassInstrumentationData instrumentationData, ClassWriter cv) {
-        super(Opcodes.ASM5, cv);
+    public DefaultClassVisitor(ClassInstrumentationData instrumentationData, ClassWriter classWriter) {
+        super(Opcodes.ASM5, classWriter);
 
-        owner = instrumentationData.getClassName();
         this.instrumentationData = instrumentationData;
-        this.factory = factory;
     }
 
     @Override
@@ -60,11 +56,6 @@ final class DefaultClassInstrumentor extends ClassVisitor {
             return originalMV;
         }
 
-        MethodInstrumentationDecision decision = instrumentationData.getDecisionForMethod(name, desc);
-        if (decision == null) {
-            return originalMV;
-        }
-
-        return factory.getMethodVisitor(decision, access, desc, owner, name, originalMV);
+        return instrumentationData.getMethodVisitor(access, name, desc, originalMV);
     }
 }

@@ -25,8 +25,9 @@ package com.microsoft.applicationinsights.agent.internal.agent;
  * Created by gupele on 6/2/2015.
  */
 final class MethodInstrumentationDecisionBuilder {
-    public boolean reportCaughtExceptions;
-    public boolean reportExecutionTime;
+    private boolean reportCaughtExceptions;
+    private boolean reportExecutionTime;
+    private MethodVisitorFactory methodVisitorFactory;
 
     public MethodInstrumentationDecisionBuilder withReportCaughtExceptions(boolean reportCaughtExceptions) {
         this.reportCaughtExceptions = reportCaughtExceptions;
@@ -38,7 +39,15 @@ final class MethodInstrumentationDecisionBuilder {
         return this;
     }
 
+    public MethodInstrumentationDecisionBuilder withMethodVisitorFactory(MethodVisitorFactory methodVisitorFactory) {
+        this.methodVisitorFactory = methodVisitorFactory;
+        return this;
+    }
+
     public MethodInstrumentationDecision create() {
-        return new MethodInstrumentationDecision(reportCaughtExceptions, reportExecutionTime);
+        if (methodVisitorFactory == null) {
+            throw new IllegalArgumentException("methodVisitorFactory must be non null");
+        }
+        return new MethodInstrumentationDecision(reportCaughtExceptions, reportExecutionTime, methodVisitorFactory);
     }
 }

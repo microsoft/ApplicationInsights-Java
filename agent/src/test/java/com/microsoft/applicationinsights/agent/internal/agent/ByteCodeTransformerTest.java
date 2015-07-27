@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -22,22 +22,15 @@
 package com.microsoft.applicationinsights.agent.internal.agent;
 
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import static org.junit.Assert.*;
 
-public final class MethodInstrumentationDecisionTest {
-    @Test(expected = IllegalArgumentException.class)
-    public void testIllegalCtor() {
-        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, null);
-    }
-
+public final class ByteCodeTransformerTest {
     @Test
-    public void testCtor() {
-        MethodVisitorFactory mockFactory = Mockito.mock(MethodVisitorFactory.class);
-        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, mockFactory);
-        assertTrue(test.isReportCaughtExceptions());
-        assertFalse(test.isReportExecutionTime());
-        assertSame(test.getMethodVisitorFactory(), mockFactory);
+    public void noClassInstrumentationDataTest() {
+        ByteCodeTransformer tested = new ByteCodeTransformer(null);
+        byte[] mockArray = new byte[1];
+        byte[] result = tested.transform(mockArray);
+        assertSame(result, mockArray);
     }
 }

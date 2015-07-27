@@ -24,29 +24,28 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * Created by gupele on 5/11/2015.
  */
 class DefaultClassDataProvider implements ClassDataProvider {
-    private final static String HIBERNATE_SESSION_IMPL_CLASS_NAME = "org/hibernate/impl/SessionImpl";
-    private final static String HIBERNATE_STATELESS_SESSION_IMPL_CLASS_NAME = "org/hibernate/impl/StatelessSessionImpl";
-
-    private final static String HTTP_CLASS_NAME = "sun/net/www/protocol/http/HttpURLConnection$HttpInputStream";
-    private final static String HTTP_METHOD_NAME = "read";
-    private final static String HTTP_METHOD_SIGNATURE = "([BII)I";
 
     private final static String[] EXCLUDED_CLASS_PREFIXES = new String[] {
         "java/",
         "javax/",
         "org/apache",
         "com/microsoft/applicationinsights",
+        "com/mysql/",
+        "org/sqlite/",
+        "org/hsqldb/",
+        "org/postgresql/",
+        "org/postgresql/",
         "sun/nio/",
         "sun/rmi/",
         "com/sun/jmx/",
@@ -91,35 +90,10 @@ class DefaultClassDataProvider implements ClassDataProvider {
         "executeUpdate"
     };
 
-    private final static String[] HIBERNATE_SESSION_IMPL_METHODS_TO_TRACK = {
-        "delete",
-        "execute",
-        "executeNativeUpdate",
-        "executeUpdate",
-        "find",
-        "get",
-        "save",
-        "list",
-        "load",
-        "saveOrUpdate",
-        "update"
-    };
-
-    private final static String[] HIBERNATE_STATELESS_SESSION_IMPL_METHODS_TO_TRACK = {
-        "delete",
-        "get",
-        "insert",
-        "list",
-        "update"
-    };
-
-    private AgentConfiguration agentConfiguration;
-
     private final HashSet<String> sqlClasses = new HashSet<String>();
-    private final HashSet<String> httpClasses = new HashSet<String>();
     private final HashSet<String> excludedPaths;
 
-    private final HashMap<String, ClassInstrumentationData> classesToInstrument = new HashMap<String, ClassInstrumentationData>();
+    private final ConcurrentHashMap<String, ClassInstrumentationData> classesToInstrument = new ConcurrentHashMap<String, ClassInstrumentationData>();
 
     private boolean builtInEnabled = true;
 
@@ -129,26 +103,15 @@ class DefaultClassDataProvider implements ClassDataProvider {
 
     @Override
     public void setConfiguration(AgentConfiguration agentConfiguration) {
-        this.agentConfiguration = agentConfiguration;
-        addConfigurationData();
+        setBuiltInDataFlag(agentConfiguration);
 
         if (builtInEnabled) {
             InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
 
             populateSqlClasses();
-            // populateHttpClasses();
-            addHibernate();
         }
-    }
 
-    @Override
-    public boolean isSqlClass(String className) {
-        return sqlClasses.contains(className);
-    }
-
-    @Override
-    public boolean isHttpClass(String className) {
-        return httpClasses.contains(className);
+        addConfigurationData(agentConfiguration);
     }
 
     /**
@@ -158,19 +121,13 @@ class DefaultClassDataProvider implements ClassDataProvider {
      * @return The {@link ClassInstrumentationData}
      */
     @Override
-    public ClassInstrumentationData getAndRemove(String className) {
-        return classesToInstrument.remove(className);
-    }
+    public ByteCodeTransformer getAndRemove(String className) {
+        final ClassInstrumentationData classInstrumentationData = classesToInstrument.remove(className);
+        if (classInstrumentationData == null) {
+            return null;
+        }
 
-    private void addHibernate() {
-        HashSet<String> methodNames = new HashSet<String>(Arrays.asList(HIBERNATE_SESSION_IMPL_METHODS_TO_TRACK));
-
-        addToClasses(HIBERNATE_SESSION_IMPL_CLASS_NAME, InstrumentedClassType.SQL, methodNames);
-
-        methodNames.clear();
-        methodNames.addAll(Arrays.asList(HIBERNATE_STATELESS_SESSION_IMPL_METHODS_TO_TRACK));
-
-        addToClasses(HIBERNATE_STATELESS_SESSION_IMPL_CLASS_NAME,InstrumentedClassType.SQL, methodNames);
+        return new ByteCodeTransformer(classInstrumentationData);
     }
 
     private void populateSqlClasses() {
@@ -178,21 +135,22 @@ class DefaultClassDataProvider implements ClassDataProvider {
 
         HashSet<String> methodNamesOnly = new HashSet<String>(Arrays.asList(JDBC_METHODS_TO_TRACK));
 
+        MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
+            @Override
+            public MethodVisitor create(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+                return new SqlStatementMethodVisitor(access, desc, owner, methodName, methodVisitor);
+            }
+        };
         for (String className : sqlClasses) {
-            addToClasses(className, InstrumentedClassType.SQL, methodNamesOnly);
+            ClassInstrumentationData data =
+                    new ClassInstrumentationData(className, InstrumentedClassType.SQL)
+                            .setReportCaughtExceptions(false)
+                            .setReportExecutionTime(true);
+            for (String methodName : methodNamesOnly) {
+                data.addMethod(methodName, null, false, true, methodVisitorFactory);
+            }
+            classesToInstrument.put(className, data);
         }
-    }
-
-    private void populateHttpClasses() {
-        httpClasses.add(HTTP_CLASS_NAME);
-
-        ClassInstrumentationData data =
-                new ClassInstrumentationData(HTTP_CLASS_NAME, InstrumentedClassType.HTTP)
-                    .setReportCaughtExceptions(false)
-                    .setReportExecutionTime(true);
-        data.addMethod(HTTP_METHOD_NAME, HTTP_METHOD_SIGNATURE, false, true);
-
-        classesToInstrument.put(data.getClassName(), data);
     }
 
     private boolean isExcluded(String className) {
@@ -204,12 +162,10 @@ class DefaultClassDataProvider implements ClassDataProvider {
         return false;
     }
 
-    private void addConfigurationData() {
+    private void addConfigurationData(AgentConfiguration agentConfiguration) {
         if (agentConfiguration == null) {
             return;
         }
-
-        builtInEnabled = agentConfiguration.getBuiltInConfiguration().isEnabled();
 
         Map<String, ClassInstrumentationData> configurationData = agentConfiguration.getRequestedClassesToInstrument();
         if (configurationData != null) {
@@ -227,14 +183,10 @@ class DefaultClassDataProvider implements ClassDataProvider {
         excludedPaths.addAll(agentConfiguration.getExcludedPrefixes());
     }
 
-    private void addToClasses(String className, InstrumentedClassType type, Collection<String> methodNamesOnly) {
-        ClassInstrumentationData data =
-                new ClassInstrumentationData(className, type)
-                .setReportCaughtExceptions(false)
-                .setReportExecutionTime(true);
-        for (String methodName : methodNamesOnly) {
-            data.addMethod(methodName, null, false, true);
+    private void setBuiltInDataFlag(AgentConfiguration agentConfiguration) {
+        if (agentConfiguration == null) {
+            return;
         }
-        classesToInstrument.put(className, data);
+        builtInEnabled = agentConfiguration.getBuiltInConfiguration().isEnabled();
     }
 }

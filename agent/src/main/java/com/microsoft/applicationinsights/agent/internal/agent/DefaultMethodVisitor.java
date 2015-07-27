@@ -39,7 +39,7 @@ import org.objectweb.asm.Type;
  *
  * Created by gupele on 5/11/2015.
  */
-class DefaultMethodInstrumentor extends AdvancedAdviceAdapter {
+class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
     private final static String THROWABLE_METHOD_NAME = "onThrowable";
     private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
@@ -56,20 +56,20 @@ class DefaultMethodInstrumentor extends AdvancedAdviceAdapter {
     private final boolean reportCaughtExceptions;
     private HashSet<Label> labels = null;
 
-    public DefaultMethodInstrumentor(boolean reportCaughtExceptions,
-                                     boolean reportExecutionTime,
-                                     int access,
-                                     String desc,
-                                     String owner,
-                                     String methodName,
-                                     MethodVisitor methodVisitor) {
+    public DefaultMethodVisitor(boolean reportCaughtExceptions,
+                                boolean reportExecutionTime,
+                                int access,
+                                String desc,
+                                String owner,
+                                String methodName,
+                                MethodVisitor methodVisitor) {
         super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
         this.owner = owner;
         this.methodName = methodName;
         this.reportCaughtExceptions = reportCaughtExceptions;
     }
 
-    public DefaultMethodInstrumentor(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+    public DefaultMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
         this(decision.isReportCaughtExceptions(), decision.isReportExecutionTime(), access, desc, owner, methodName, methodVisitor);
     }
 

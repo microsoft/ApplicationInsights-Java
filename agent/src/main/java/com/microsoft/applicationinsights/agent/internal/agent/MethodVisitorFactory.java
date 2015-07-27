@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import org.objectweb.asm.MethodVisitor;
 
 /**
- * Created by gupele on 5/31/2015.
+ * Created by gupele on 7/27/2015.
  */
-interface MethodInstrumentorsFactory {
-    DefaultMethodInstrumentor getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor);
+public interface MethodVisitorFactory {
+    MethodVisitor create(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor);
 }
