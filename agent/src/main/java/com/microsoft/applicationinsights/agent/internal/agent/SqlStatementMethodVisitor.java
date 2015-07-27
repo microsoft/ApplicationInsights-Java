@@ -37,8 +37,12 @@ final class SqlStatementMethodVisitor extends DefaultMethodVisitor {
     private final String implementationCoordinatorJavaName;
     private final int numberOfArgs;
 
-    public SqlStatementMethodVisitor(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
-        super(false, true, access, desc, owner, methodName, methodVisitor);
+    public SqlStatementMethodVisitor(int access,
+                                     String desc,
+                                     String owner,
+                                     String methodName,
+                                     MethodVisitor methodVisitor) {
+        super(false, true, access, desc, owner, methodName, methodVisitor, null);
 
         numberOfArgs = Type.getArgumentTypes(desc).length;
         implementationCoordinatorInternalName = Type.getInternalName(ImplementationsCoordinator.class);

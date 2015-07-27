@@ -45,8 +45,13 @@ final class HttpMethodInstrumentor extends DefaultMethodVisitor {
 
     private final String owner;
 
-    public HttpMethodInstrumentor(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
-        super(false, true, access, desc, owner, methodName, methodVisitor);
+    public HttpMethodInstrumentor(int access,
+                                  String desc,
+                                  String owner,
+                                  String methodName,
+                                  MethodVisitor methodVisitor,
+                                  ClassToMethodTransformationData additionalData) {
+        super(false, true, access, desc, owner, methodName, methodVisitor, additionalData);
         this.owner = owner;
     }
 

@@ -21,17 +21,31 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
+
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 /**
+ * An abstract base class for Method Visitors that handle http method calls.
+ *
  * Created by gupele on 7/27/2015.
  */
-public interface MethodVisitorFactory {
-    MethodVisitor create(MethodInstrumentationDecision decision,
-                         int access,
-                         String desc,
-                         String owner,
-                         String methodName,
-                         MethodVisitor methodVisitor,
-                         ClassToMethodTransformationData additionalData);
+abstract class AbstractHttpMethodVisitor extends DefaultMethodVisitor {
+    protected final static String ON_ENTER_METHOD_NANE = "onMethodEnterURL";
+    protected final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;)V";
+
+    protected final String implementationCoordinatorInternalName;
+    protected final String implementationCoordinatorJavaName;
+
+    public AbstractHttpMethodVisitor(int access,
+                                     String desc,
+                                     String owner,
+                                     String methodName,
+                                     MethodVisitor methodVisitor,
+                                     ClassToMethodTransformationData additionalData) {
+        super(false, true, access, desc, owner, methodName, methodVisitor, additionalData);
+        implementationCoordinatorInternalName = Type.getInternalName(ImplementationsCoordinator.class);
+        implementationCoordinatorJavaName = "L" + implementationCoordinatorInternalName + ";";
+    }
 }

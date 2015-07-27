@@ -71,11 +71,11 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onMethodEnterURL(String name, URL url) {
+    public void onMethodEnterURL(String classAndMethodNames, String url) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onMethodEnterURL(name, url);
+                implementation.onMethodEnterURL(classAndMethodNames, url);
             }
         } catch (Throwable t) {
         }

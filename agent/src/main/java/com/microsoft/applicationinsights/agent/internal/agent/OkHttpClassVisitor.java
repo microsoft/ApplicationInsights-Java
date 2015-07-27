@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -21,45 +21,34 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 /**
- * The class is responsible for identifying public methods on non-interface classes.
- * When a method is found the class will call the {@link DefaultMethodVisitor}
- *
- * Created by gupele on 5/11/2015.
+ * Created by gupele on 7/27/2015.
  */
-class DefaultClassVisitor extends ClassVisitor {
-    private boolean isInterface;
-    protected final ClassInstrumentationData instrumentationData;
+public final class OkHttpClassVisitor extends DefaultClassVisitor {
+    private final static String REQUEST_CLASS_NAME = "Lcom/squareup/okhttp/Request;";
 
-    public DefaultClassVisitor(ClassInstrumentationData instrumentationData, ClassWriter classWriter) {
-        super(Opcodes.ASM5, classWriter);
+    private String requestFieldName;
 
-        this.instrumentationData = instrumentationData;
+    public OkHttpClassVisitor(ClassInstrumentationData instrumentationData, ClassWriter classWriter) {
+        super(instrumentationData, classWriter);
     }
 
     @Override
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        cv.visit(version, access, name, signature, superName, interfaces);
-        isInterface = ByteCodeUtils.isInterface(access);
-    }
-
-    @Override
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
-
-        if (isInterface || originalMV == null || ByteCodeUtils.isConstructor(name) || ByteCodeUtils.isPrivate(access)) {
-            return originalMV;
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        if (REQUEST_CLASS_NAME.equals(desc)) {
+            requestFieldName = name;
         }
 
-        return getMethodVisitor(access, name, desc, originalMV);
+        return super.visitField(access, name, desc, signature, value);
     }
 
+    @Override
     protected MethodVisitor getMethodVisitor(int access, String name, String desc, MethodVisitor originalMV) {
-        return instrumentationData.getMethodVisitor(access, name, desc, originalMV);
+        MethodVisitor mv = instrumentationData.getMethodVisitor(access, name, desc, originalMV, new OkHttpClassToMethodTransformationData(requestFieldName));
+        return mv;
     }
 }
