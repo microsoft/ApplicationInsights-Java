@@ -25,6 +25,9 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 /**
+ * The class coordinates the byte code transformation
+ * It works with the {@link com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData}
+ *
  * Created by gupele on 7/27/2015.
  */
 final class ByteCodeTransformer {
@@ -44,7 +47,6 @@ final class ByteCodeTransformer {
             return originalBuffer;
         }
 
-        System.out.println("class::" + classInstrumentationData.getClassName());
         ClassReader cr = new ClassReader(originalBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         DefaultClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);

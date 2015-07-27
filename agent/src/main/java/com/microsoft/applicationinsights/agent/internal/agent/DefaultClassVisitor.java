@@ -33,14 +33,12 @@ import org.objectweb.asm.Opcodes;
  * Created by gupele on 5/11/2015.
  */
 final class DefaultClassVisitor extends ClassVisitor {
-    private String owner;
     private boolean isInterface;
     private final ClassInstrumentationData instrumentationData;
 
     public DefaultClassVisitor(ClassInstrumentationData instrumentationData, ClassWriter classWriter) {
         super(Opcodes.ASM5, classWriter);
 
-        owner = instrumentationData.getClassName();
         this.instrumentationData = instrumentationData;
     }
 
@@ -51,13 +49,13 @@ final class DefaultClassVisitor extends ClassVisitor {
     }
 
     @Override
-    public MethodVisitor visitMethod(int access, String methodName, String desc, String methodSignature, String[] exceptions) {
-        MethodVisitor originalMV = super.visitMethod(access, methodName, desc, methodSignature, exceptions);
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
 
-        if (isInterface || originalMV == null || ByteCodeUtils.isConstructor(methodName) || ByteCodeUtils.isPrivate(access)) {
+        if (isInterface || originalMV == null || ByteCodeUtils.isConstructor(name) || ByteCodeUtils.isPrivate(access)) {
             return originalMV;
         }
 
-        return instrumentationData.getMethodVisitor(access, desc, owner, methodName, originalMV);
+        return instrumentationData.getMethodVisitor(access, name, desc, originalMV);
     }
 }

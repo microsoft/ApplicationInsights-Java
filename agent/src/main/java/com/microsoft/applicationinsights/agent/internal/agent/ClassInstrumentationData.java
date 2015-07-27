@@ -129,13 +129,13 @@ public final class ClassInstrumentationData {
         }
     }
 
-    public MethodVisitor getMethodVisitor(int access, String desc, String owner, String methodName, MethodVisitor originalMV) {
-        MethodInstrumentationDecision decision = methodInstrumentationInfo.getDecision(methodName, desc);
+    public MethodVisitor getMethodVisitor(int access, String methodName, String methodSignature, MethodVisitor originalMV) {
+        MethodInstrumentationDecision decision = methodInstrumentationInfo.getDecision(methodName, methodSignature);
         if (decision == null || decision.getMethodVisitorFactory() == null) {
             return originalMV;
         }
 
-        return decision.getMethodVisitorFactory().create(decision, access, desc, owner, methodName, originalMV);
+        return decision.getMethodVisitorFactory().create(decision, access, methodSignature, getClassName(), methodName, originalMV);
     }
 }
 
