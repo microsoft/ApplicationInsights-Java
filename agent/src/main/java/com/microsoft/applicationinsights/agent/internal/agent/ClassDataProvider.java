@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.agent;
 
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
+import org.objectweb.asm.ClassWriter;
 
 /**
  * Defines the interface for classes that know to supply
@@ -37,25 +38,11 @@ interface ClassDataProvider {
     void setConfiguration(AgentConfiguration agentConfiguration);
 
     /**
-     * Will return true if the class name is considered as 'Sql' class
-     * @param className The class name to check
-     * @return True if that is an 'Sql' class, false otherwise
-     */
-    boolean isSqlClass(String className);
-
-    /**
-     * Will return true if the class name is considered as 'Http' class
-     * @param className The class name to check
-     * @return True if that is an 'Http' class, false otherwise
-     */
-    boolean isHttpClass(String className);
-
-    /**
      * Get the {@link ClassInstrumentationData}
      * that is associated with the class name, if such information is found it is removed from the container
      * @param className The class name to search
-     * @return {@link ClassInstrumentationData} that is
+     * @return {@link ByteCodeTransformer} that is
      * associated with the class name, null otherwise
      */
-    ClassInstrumentationData getAndRemove(String className);
+    ByteCodeTransformer getAndRemove(String className);
 }

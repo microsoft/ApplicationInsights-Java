@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.agent;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.*;
 
@@ -32,6 +33,8 @@ public final class MethodInstrumentationInfoTest {
 
     private final static String MOCK_METHOD_NAME_2 = "mock_method_2";
 
+    private final MethodVisitorFactory methodVisitorFactory = Mockito.mock(MethodVisitorFactory.class);
+
     @Test
     public void testEmpty() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
@@ -41,7 +44,7 @@ public final class MethodInstrumentationInfoTest {
     @Test
     public void testAddOneMethodWithSignature() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, false, true));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, false, true), methodVisitorFactory);
 
         assertFalse(info.isEmpty());
 
@@ -51,8 +54,8 @@ public final class MethodInstrumentationInfoTest {
     @Test
     public void testAddTwoMethodsWithSignature() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true));
-        info.addMethod(createRequest(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2, true, false));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
+        info.addMethod(createRequest(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2, true, false), methodVisitorFactory);
 
         assertFalse(info.isEmpty());
 
@@ -63,8 +66,8 @@ public final class MethodInstrumentationInfoTest {
     @Test
     public void testAddOneMethodsWithTwoSignatures() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true));
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, false));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, false), methodVisitorFactory);
 
         assertFalse(info.isEmpty());
 
@@ -81,7 +84,7 @@ public final class MethodInstrumentationInfoTest {
     @Test
     public void testAddOneMethodsWithAllSignaturesEnabled() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, false, true));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, false, true), methodVisitorFactory);
 
         assertFalse(info.isEmpty());
 
@@ -93,8 +96,8 @@ public final class MethodInstrumentationInfoTest {
     public void testAddMethodsWithDifferentKindOfSignatures() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
 
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true));
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, true, true));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, true, true), methodVisitorFactory);
 
         assertFalse(info.isEmpty());
 
@@ -105,23 +108,23 @@ public final class MethodInstrumentationInfoTest {
     @Test(expected = IllegalStateException.class)
     public void testAddAllMethodsWhileThereAreMethods() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
 
-        info.addAllMethods(true, false);
+        info.addAllMethods(true, false, methodVisitorFactory);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testAddMethodAfterAllMethodsCalled() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addAllMethods(true, false);
+        info.addAllMethods(true, false, methodVisitorFactory);
 
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
     }
 
     @Test
     public void testAddAllMethods() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addAllMethods(true, false);
+        info.addAllMethods(true, false, methodVisitorFactory);
 
         assertFalse(info.isEmpty());
 
@@ -133,7 +136,7 @@ public final class MethodInstrumentationInfoTest {
     @Test
     public void testAddMethodWithAllFalseReportsAttribute() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addAllMethods(false, false);
+        info.addAllMethods(false, false, methodVisitorFactory);
 
         assertTrue(info.isEmpty());
 
@@ -144,8 +147,8 @@ public final class MethodInstrumentationInfoTest {
     @Test
     public void testAddMethodsOneWithAllFalse() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true));
-        info.addMethod(createRequest(MOCK_METHOD_NAME_2, false, false));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
+        info.addMethod(createRequest(MOCK_METHOD_NAME_2, false, false), methodVisitorFactory);
 
         assertFalse(info.isEmpty());
 
@@ -158,8 +161,8 @@ public final class MethodInstrumentationInfoTest {
     @Test
     public void testAddMethodsTwiceWithDifferentAttributes() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true));
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, false));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, false), methodVisitorFactory);
 
         verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
     }
@@ -167,13 +170,13 @@ public final class MethodInstrumentationInfoTest {
     @Test
     public void testAddMethodsTwiceWithDifferentAttributesFirstWithAllFalse() {
         MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, false));
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true));
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, false), methodVisitorFactory);
+        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
 
         verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
     }
 
-    private static void verifyDecision(MethodInstrumentationInfo info,
+    private void verifyDecision(MethodInstrumentationInfo info,
                                        String methodName,
                                        String methodSignature,
                                        boolean expectedReportCaughtExceptions,
@@ -182,6 +185,7 @@ public final class MethodInstrumentationInfoTest {
         assertNotNull(decision);
         assertEquals(decision.isReportExecutionTime(), expectedReportExecutionTime);
         assertEquals(decision.isReportCaughtExceptions(), expectedReportCaughtExceptions);
+        assertSame(decision.getMethodVisitorFactory(), methodVisitorFactory);
     }
 
     private static MethodInstrumentationRequest createRequest(String methodName, boolean reportCaughtExceptions, boolean reportExecutionTime) {

@@ -45,18 +45,19 @@ public final class MethodInstrumentationInfo {
 
         public HashMap<String, MethodInstrumentationDecision> methodsInstrumentationData = new HashMap<String, MethodInstrumentationDecision>();
 
-        public MethodInfo(MethodInstrumentationRequest methodInstrumentationRequest) {
+        public MethodInfo(MethodInstrumentationRequest methodInstrumentationRequest, MethodVisitorFactory methodVisitorFactory) {
             if (StringUtils.isNullOrEmpty(methodInstrumentationRequest.getMethodSignature())) {
                 MethodInstrumentationDecision decision =
                         new MethodInstrumentationDecisionBuilder()
                                 .withReportCaughtExceptions(methodInstrumentationRequest.isReportCaughtExceptions())
                                 .withReportExecutionTime(methodInstrumentationRequest.isReportExecutionTime())
+                                .withMethodVisitorFactory(methodVisitorFactory)
                                 .create();
                 methodsInstrumentationData.put(ANY_SIGNATURE_MARKER, decision);
             }
         }
 
-        public void add(String requestedMethodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime) {
+        public void add(String requestedMethodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory) {
             String methodSignature = requestedMethodSignature;
             if (StringUtils.isNullOrEmpty(methodSignature)) {
                 methodSignature = ANY_SIGNATURE_MARKER;
@@ -66,6 +67,7 @@ public final class MethodInstrumentationInfo {
                     new MethodInstrumentationDecisionBuilder()
                             .withReportCaughtExceptions(reportCaughtExceptions)
                             .withReportExecutionTime(reportExecutionTime)
+                            .withMethodVisitorFactory(methodVisitorFactory)
                             .create();
             methodsInstrumentationData.put(methodSignature, decision);
         }
@@ -74,6 +76,10 @@ public final class MethodInstrumentationInfo {
     private HashMap<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
 
     public void addMethod(MethodInstrumentationRequest methodInstrumentationRequest) {
+        addMethod(methodInstrumentationRequest, null);
+    }
+
+    public void addMethod(MethodInstrumentationRequest methodInstrumentationRequest, MethodVisitorFactory methodVisitorFactory) {
         if (allClassMethods != null) {
             throw new IllegalStateException();
         }
@@ -84,13 +90,14 @@ public final class MethodInstrumentationInfo {
 
         MethodInfo info = methods.get(methodInstrumentationRequest.getMethodName());
         if (info == null) {
-            info = new MethodInfo(methodInstrumentationRequest);
+            info = new MethodInfo(methodInstrumentationRequest, methodVisitorFactory);
             methods.put(methodInstrumentationRequest.getMethodName(), info);
         }
 
         info.add(methodInstrumentationRequest.getMethodSignature(),
                 methodInstrumentationRequest.isReportCaughtExceptions(),
-                methodInstrumentationRequest.isReportExecutionTime());
+                methodInstrumentationRequest.isReportExecutionTime(),
+                methodVisitorFactory);
     }
 
     public MethodInstrumentationDecision getDecision(String methodName, String methodSignature) {
@@ -114,7 +121,7 @@ public final class MethodInstrumentationInfo {
         return info.methodsInstrumentationData.get(ANY_SIGNATURE_MARKER);
     }
 
-    public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime) {
+    public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory) {
         if (!methods.isEmpty()) {
             throw new IllegalStateException();
         }
@@ -128,6 +135,7 @@ public final class MethodInstrumentationInfo {
                     new MethodInstrumentationDecisionBuilder()
                             .withReportCaughtExceptions(reportCaughtExceptions)
                             .withReportExecutionTime(reportExecutionTime)
+                            .withMethodVisitorFactory(methodVisitorFactory)
                             .create();
             allClassMethods = decision;
         }

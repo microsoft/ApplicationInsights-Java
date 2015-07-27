@@ -33,7 +33,7 @@ import org.objectweb.asm.Type;
  *
  * Created by gupele on 5/20/2015.
  */
-final class HttpMethodInstrumentor extends DefaultMethodInstrumentor {
+final class HttpMethodInstrumentor extends DefaultMethodVisitor {
     private final static String PARENT_NAME_IN_INSTANCE = "this$0";
     private final static String PARENT_JAVA_NAME = "sun/net/www/protocol/http/HttpURLConnection";
     private final static String PARENT_FULL_JAVA_NAME = "Lsun/net/www/protocol/http/HttpURLConnection;";

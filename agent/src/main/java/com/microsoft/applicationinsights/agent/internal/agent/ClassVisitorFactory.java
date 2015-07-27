@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -21,11 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.ClassWriter;
 
 /**
- * Created by gupele on 5/31/2015.
+ * Created by gupele on 7/27/2015.
  */
-interface MethodInstrumentorsFactory {
-    DefaultMethodInstrumentor getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor);
+public interface ClassVisitorFactory {
+    DefaultClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter);
 }

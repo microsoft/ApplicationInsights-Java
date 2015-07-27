@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -21,25 +21,35 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 /**
- * Created by gupele on 5/20/2015.
+ * Created by gupele on 7/27/2015.
  */
-final class DefaultMethodInstrumentorsFactory implements MethodInstrumentorsFactory {
-    private final ClassDataProvider provider;
+final class ByteCodeTransformer {
+    private final ClassInstrumentationData classInstrumentationData;
 
-    public DefaultMethodInstrumentorsFactory(ClassDataProvider provider) {
-        this.provider = provider;
+    ByteCodeTransformer(ClassInstrumentationData classInstrumentationData) {
+        this.classInstrumentationData = classInstrumentationData;
     }
 
-    public DefaultMethodInstrumentor getMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String className, String methodName, MethodVisitor methodVisitor) {
-        if (provider.isHttpClass(className)) {
-            return new HttpMethodInstrumentor(access, desc, className, methodName, methodVisitor);
-        } else if (provider.isSqlClass(className)) {
-            return new SqlStatementMethodInstrumentor(access, desc, className, methodName, methodVisitor);
+    /**
+     * The method will create the the instances that are responsible for transforming the class' code.
+     * @param originalBuffer The original buffer of the class
+     * @return A new buffer containing the class with the changes or the original one if no change was done.
+     */
+    byte[] transform(byte[] originalBuffer) {
+        if (classInstrumentationData == null) {
+            return originalBuffer;
         }
 
-        return new DefaultMethodInstrumentor(decision, access, desc, className, methodName, methodVisitor);
+        System.out.println("class::" + classInstrumentationData.getClassName());
+        ClassReader cr = new ClassReader(originalBuffer);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        DefaultClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
+        cr.accept(dcv, ClassReader.EXPAND_FRAMES);
+        byte[] newBuffer = cw.toByteArray();
+        return newBuffer;
     }
 }

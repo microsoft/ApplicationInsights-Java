@@ -32,10 +32,15 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 final class MethodInstrumentationDecision {
     private final boolean reportCaughtExceptions;
     private final boolean reportExecutionTime;
+    private final MethodVisitorFactory methodVisitorFactory;
 
-    public MethodInstrumentationDecision(boolean reportCaughtExceptions, boolean reportExecutionTime) {
+    public MethodInstrumentationDecision(boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory) {
+        if (methodVisitorFactory == null) {
+            throw new IllegalArgumentException("methodVisitorFactory must be not null");
+        }
         this.reportCaughtExceptions = reportCaughtExceptions;
         this.reportExecutionTime = reportExecutionTime;
+        this.methodVisitorFactory = methodVisitorFactory;
     }
 
     public boolean isReportCaughtExceptions() {
@@ -44,5 +49,9 @@ final class MethodInstrumentationDecision {
 
     public boolean isReportExecutionTime() {
         return reportExecutionTime;
+    }
+
+    public MethodVisitorFactory getMethodVisitorFactory() {
+        return methodVisitorFactory;
     }
 }

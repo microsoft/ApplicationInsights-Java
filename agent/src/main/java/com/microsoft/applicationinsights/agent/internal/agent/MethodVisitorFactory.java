@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -21,23 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.objectweb.asm.MethodVisitor;
 
-import static org.junit.Assert.*;
-
-public final class MethodInstrumentationDecisionTest {
-    @Test(expected = IllegalArgumentException.class)
-    public void testIllegalCtor() {
-        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, null);
-    }
-
-    @Test
-    public void testCtor() {
-        MethodVisitorFactory mockFactory = Mockito.mock(MethodVisitorFactory.class);
-        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, mockFactory);
-        assertTrue(test.isReportCaughtExceptions());
-        assertFalse(test.isReportExecutionTime());
-        assertSame(test.getMethodVisitorFactory(), mockFactory);
-    }
+/**
+ * Created by gupele on 7/27/2015.
+ */
+public interface MethodVisitorFactory {
+    MethodVisitor create(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor);
 }
