@@ -119,7 +119,7 @@ public final class PerformanceCounterTelemetryTest {
         telemetry.serialize(jsonWriter);
         jsonWriter.close();
         String asJson = writer.toString();
-        String expectedPerformanceDataPartFormat = "\"baseData\":{\"ver\":\"2\",\"categoryName\":\"%s\",\"counterName\":\"%s\",\"instanceName\":\"%s\",\"value\":\"%.1f\"}}}";
+        String expectedPerformanceDataPartFormat = "\"baseData\":{\"ver\":\"2\",\"categoryName\":\"%s\",\"counterName\":\"%s\",\"instanceName\":\"%s\",\"value\":\"%.1f\",\"properties\":null}}}";
         String expected = String.format(expectedPerformanceDataPartFormat, expectedCategory, expectedCounter, expectedInstance, expectedValue);
         assertTrue(asJson.indexOf(expected) != -1);
     }
