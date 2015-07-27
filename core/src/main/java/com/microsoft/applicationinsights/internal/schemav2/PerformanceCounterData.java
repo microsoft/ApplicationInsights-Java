@@ -100,6 +100,7 @@ public final class PerformanceCounterData extends Domain {
         writer.write("counterName", counterName);
         writer.write("instanceName", instanceName);
         writer.write("value", value);
+        writer.write("properties", properties);
     }
 
     @Override
