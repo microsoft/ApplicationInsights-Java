@@ -204,7 +204,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     private void sendInstrumentationTelemetry(MethodData methodData, Throwable throwable) {
         Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, duration, throwable == null);
-        telemetry.setDependencyKind(DependencyKind.Undefined);
+        telemetry.setDependencyKind(DependencyKind.Other);
 
         InternalLogger.INSTANCE.trace("Sending RDD event for '%s'", methodData.name);
 
@@ -224,7 +224,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             InternalLogger.INSTANCE.trace("Sending HTTP RDD event, URL: '%s', duration=%s", url, durationInNanoSeconds);
 
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(url, null, duration, throwable == null);
-            telemetry.setDependencyKind(DependencyKind.HttpOnly);
+            telemetry.setDependencyKind(DependencyKind.Http);
             telemetryClient.trackDependency(telemetry);
         }
     }

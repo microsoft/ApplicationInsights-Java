@@ -85,7 +85,7 @@ public class RemoteDependencyData extends Domain {
     /**
      * Backing field for property DependencyKind.
      */
-    private DependencyKind dependencyKind = DependencyKind.Undefined;
+    private DependencyKind dependencyKind = DependencyKind.Other;
 
     /**
      * Backing field for property Success.
