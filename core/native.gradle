@@ -1,0 +1,234 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+apply plugin: 'cpp'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'commons-io', name: 'commons-io', version: '2.4'
+    }
+}
+
+import org.apache.commons.io.FilenameUtils
+import org.gradle.nativeplatform.BuildType
+import org.gradle.nativeplatform.NativeBinarySpec
+import org.gradle.nativeplatform.NativeLibrarySpec
+import org.gradle.nativeplatform.SharedLibraryBinarySpec
+import org.gradle.nativeplatform.StaticLibraryBinarySpec
+import org.gradle.nativeplatform.platform.NativePlatform
+import org.gradle.nativeplatform.toolchain.VisualCpp
+
+def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
+def programFilesX86 = System.env.'ProgramFiles(x86)'
+def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
+
+def builtTypeToBuild = "release"
+
+// region Native binary definition and configuration
+
+model {
+    buildTypes {
+        debug
+        release
+    }
+    platforms {
+        x86 { architecture "x86" }
+        x64 { architecture "amd64" }
+    }
+
+    components {
+        "windows"(NativeLibrarySpec) {
+            targetPlatform "x86"
+            targetPlatform "x64"
+            baseName = "applicationinsights-core-native-win"
+
+            sources {
+                cpp {
+                    source {
+                        include "**/*.cpp"
+                        include "**/*.h"
+                    }
+                }
+            }
+        }
+    }
+}
+
+binaries.all {
+    if (toolChain in VisualCpp) {
+        // Visual Studio Compiler Options: https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx
+        // Visual Studio Linker Options:   https://msdn.microsoft.com/en-us/library/y0zzbyt4.aspx
+
+        // Searches a directory for include files.
+        cppCompiler.args "/I$javaIncludeDir"
+        cppCompiler.args "/I$javaIncludeDir\\win32"
+
+        // Produces an output file to run on the common language runtime.
+        cppCompiler.args "/clr"
+
+        // Forces the use of a file name as if it had been passed to the #using directive.
+        cppCompiler.args "/FU$referenceAssembliesDir\\mscorlib.dll"
+        cppCompiler.args "/FU$referenceAssembliesDir\\System.Data.dll"
+        cppCompiler.args "/FU$referenceAssembliesDir\\System.dll"
+        cppCompiler.args "/FU$referenceAssembliesDir\\System.Xml.dll"
+
+        // Sets warning level.
+        cppCompiler.args "/W3"
+
+        // Catch both asynchronous (structured) and synchronous (C++) exceptions.
+        cppCompiler.args "/EHa"
+
+        // Compiler macros definition
+        cppCompiler.define "WIN32"
+        cppCompiler.define "UNICODE"
+        cppCompiler.define "_UNICODE"
+        cppCompiler.define "_WINDLL"
+
+        if (buildType == buildTypes.release) {
+            cppCompiler.define 'NDEBUG'
+
+            // Use the multithread-specific and DLL-specific version of the run-time library.
+            cppCompiler.args '/MD'
+
+            // Creates the fastest code in the majority of cases.
+            cppCompiler.args '/O2'
+        } else {
+            cppCompiler.define '_DEBUG'
+
+            // Generates complete debugging information.
+            cppCompiler.args '/Zi'
+
+            // Creates debugging information.
+            linker.args '/DEBUG'
+
+            //Disables optimization.
+            cppCompiler.args "/Od"
+
+            // Use the debug multithread-specific and DLL-specific version of the run-time library.
+            cppCompiler.args '/MDd'
+        }
+    }
+}
+
+sourceSets {
+    main {
+        resources {
+            exclude "**/*.exp"
+            exclude "**/*.lib"
+        }
+    }
+}
+
+// region Native binary definition and configuration
+
+// region Applying late configurations
+
+afterEvaluate {
+    RenameNativeBinaries()
+
+    FilterOutComponentsToBuild(builtTypeToBuild)
+
+    DefineSharedLibrariesAsArtifactResources()
+}
+
+ // endregion Applying late configurations
+
+// region Private Methods
+
+// Filter out binaries that their build should be skipped by setting their isBuildable property to false
+// 1. Static libraries
+// 2. Components with buildType other than builtTypeToBuild
+def FilterOutComponentsToBuild(buildTypeToBuild) {
+    artifacts {
+        binaries.matching { b ->
+            b instanceof NativeBinarySpec
+        }.all { NativeBinarySpec b ->
+            if (b instanceof StaticLibraryBinarySpec) {
+                logger.info "Disabling build of static library file $b.staticLibraryFile.name"
+                b.buildable = false
+            }
+            else if (b.buildType.name != buildTypeToBuild) {
+                logger.info "Disabling build of shared libary file $b.sharedLibraryFile.name"
+                logger.info "Reason: b.buildType.name (==\"$b.buildType.name\") != \"$buildTypeToBuild\""
+                b.buildable = false
+            }
+        }
+    }
+}
+
+def DefineSharedLibrariesAsArtifactResources()
+{
+    binaries.matching { b ->
+        b instanceof NativeBinarySpec && b.isBuildable()
+    }.all { b ->
+        b.tasks.all { t ->
+            logger.info "Adding task \"processResources\" a dependency on task \"$t.name\""
+            processResources.dependsOn t
+        }
+
+        logger.info "Adding \"$b.sharedLibraryFile.parentFile\" to sourceSets.main.resources"
+        sourceSets.main.resources.srcDir sharedLibraryFile.parentFile
+    }
+}
+
+def RenameNativeBinaries() {
+    binaries.all { b ->
+        if (b instanceof SharedLibraryBinarySpec) {
+            b.sharedLibraryFile = ReconstructFileName(b.sharedLibraryFile, b.buildType, b.targetPlatform)
+        } else if (project.hasProperty("buildStaticLibraries") && b instanceof StaticLibraryBinarySpec) {
+            b.staticLibraryFile = ReconstructFileName(b.staticLibraryFile, b.buildType, b.targetPlatform)
+        } else if (!b instanceof StaticLibraryBinarySpec) {
+            logger.warn "Unsupported BinarySpec type found ${b.class}"
+        }
+    }
+}
+
+// This function will reconstruct the file name based on the buildType and targetPlatform
+// New file name structure: <baseName><32|64>[dbg].<ext>
+def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform targetPlatform) {
+    def originalFileName = originalFile.absolutePath
+    def filePath = FilenameUtils.getFullPath(originalFileName)
+    def baseName = FilenameUtils.getBaseName(originalFileName)
+    def extension = FilenameUtils.getExtension(originalFileName)
+
+    def bitnessPart = ""
+    switch (targetPlatform.name) {
+        case "x86" :
+            bitnessPart = "32"
+            break;
+        case "x64" :
+            bitnessPart = "64"
+            break;
+        default:
+            logger.warn "Unexpected targetPlatform encountered - skipping setting the file name bitness part"
+    }
+
+    def debugPart = buildType.name == "debug" ? "dbg" : ""
+    def newName = "$baseName$bitnessPart$debugPart.$extension"
+    def newFile = new File(filePath, newName)
+    logger.info "Reconstructed file name: $originalFile => $newFile"
+    newFile
+}
+
+// endregion Private Methods

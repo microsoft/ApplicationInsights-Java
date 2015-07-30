@@ -39,7 +39,6 @@ import com.google.common.base.Strings;
  */
 final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounter {
     private final static String STAT_FILE = "/proc/stat";
-    private final static String INSTANCE_NAME_TOTAL = "_Total";
 
     private long[] prevCpuCounters;
     private long prevTotalCpuValue;
@@ -80,11 +79,11 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
 
             double totalCpuUsage = calculateTotalCpuUsage(array);
 
-            InternalLogger.INSTANCE.trace("Metric: %s %s %s: %s", Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, INSTANCE_NAME_TOTAL, totalCpuUsage);
+            InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s %s: %s", Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, Constants.INSTANCE_NAME_TOTAL, totalCpuUsage);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     Constants.TOTAL_CPU_PC_CATEGORY_NAME,
                     Constants.CPU_PC_COUNTER_NAME,
-                    INSTANCE_NAME_TOTAL,
+                    Constants.INSTANCE_NAME_TOTAL,
                     totalCpuUsage);
 
             telemetryClient.track(telemetry);

@@ -22,9 +22,12 @@
 package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
+import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 import org.junit.Assert;
 import org.junit.Test;
 import javax.servlet.*;
+import javax.servlet.http.HttpServletResponse;
 
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -34,6 +37,7 @@ import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
 /**
@@ -92,7 +96,7 @@ public class WebRequestTrackingFilterTests {
         ServletRequest request = ServletUtils.generateDummyServletRequest();
 
         // execute
-        filter.doFilter(request, null, chain);
+        filter.doFilter(request, ServletUtils.generateDummyServletResponse(), chain);
 
         // validate
         verify(chain).doFilter(any(ServletRequest.class), any(ServletResponse.class));
@@ -101,7 +105,7 @@ public class WebRequestTrackingFilterTests {
     @Test
     public void testUnhandledRuntimeExceptionWithTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
-        testException(createdData, new RuntimeException());
+        testException(createdData, new java.lang.IllegalArgumentException());
     }
 
     @Test
@@ -160,14 +164,15 @@ public class WebRequestTrackingFilterTests {
             FilterChain chain = mock(FilterChain.class);
 
             ServletRequest request = ServletUtils.generateDummyServletRequest();
-            Mockito.doThrow(expectedException).when(chain).doFilter(request, null);
+            ServletResponse response = ServletUtils.generateDummyServletResponse();
+            Mockito.doThrow(expectedException).when(chain).doFilter(eq(request), any(ServletResponse.class));
 
             // execute
-            createdData.filter.doFilter(request, null, chain);
+            createdData.filter.doFilter(request, response, chain);
 
-            Assert.assertFalse("doFilter should have throw", true);
+            assertFalse("doFilter should have throw", true);
         } catch (Exception se) {
-            Assert.assertSame(se, expectedException);
+            Assert.assertSame(expectedException, se);
 
             if (createdData.mockTelemetryClient != null) {
                 Assert.assertTrue(createdData.mockTelemetryClient.trackExceptionCalled == 1);

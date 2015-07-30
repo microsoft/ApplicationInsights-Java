@@ -22,9 +22,13 @@
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.extensibility.context.UserContext;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,27 +37,38 @@ import org.junit.Assert;
 import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 
 /**
  * Created by yonisha on 2/9/2015.
  */
 public class WebUserTrackingTelemetryModuleTests {
+    private static class TestModuleInitializer implements TelemetryInitializer {
+        private final String expectedUserId;
+
+        private TestModuleInitializer(String expectedUserId) {
+            this.expectedUserId = expectedUserId;
+        }
+
+        @Override
+        public void initialize(Telemetry telemetry) {
+            RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+            UserContext requestUserContext = requestTelemetry.getContext().getUser();
+
+            if (expectedUserId == null) {
+                Assert.assertTrue(Sanitizer.isUUID(requestUserContext.getId()));
+                Assert.assertNotEquals(requestUserContext.getId(), HttpHelper.getCookie());
+            } else {
+                Assert.assertEquals(expectedUserId, requestUserContext.getId());
+            }
+            Assert.assertNotNull(requestUserContext.getAcquisitionDate());
+        }
+    }
+
     // region Members
 
     private static String userCookieFormatted;
     private static JettyTestServer server = new JettyTestServer();
+    private static MockTelemetryChannel channel;
 
     // endregion Members
 
@@ -62,11 +77,17 @@ public class WebUserTrackingTelemetryModuleTests {
     @BeforeClass
     public static void classInitialize() throws Exception {
         server.start();
+
+        // Set mock channel
+        channel = MockTelemetryChannel.INSTANCE;
+        TelemetryConfiguration.getActive().setChannel(channel);
+        TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
     }
 
     @Before
     public void testInitialize() {
         userCookieFormatted = HttpHelper.getFormattedUserCookieHeader();
+        channel.reset();
     }
 
     @AfterClass
@@ -79,10 +100,22 @@ public class WebUserTrackingTelemetryModuleTests {
     // region Tests
 
     @Test
-    public void testNewUserCookieIsCreatedWhenCookieNotExist() throws Exception {
+    public void testNewUserCookieIsNotCreatedWhenCookieNotExist() throws Exception {
+        TelemetryConfiguration.getActive().getTelemetryInitializers().add(new TestModuleInitializer(null));
+
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
 
-        Assert.assertNotNull("User cookie shouldn't be null.", cookiesContainer.getUserCookie());
+        Assert.assertNull("User cookie should be null.", cookiesContainer.getUserCookie());
+    }
+
+    @Test
+    public void testWhenCookieExistCorrectUserIdAttachedToSentTelemetry() throws Exception {
+        HttpHelper.sendRequestAndGetResponseCookie(userCookieFormatted);
+
+        RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
+
+        Assert.assertTrue(userCookieFormatted.contains(requestTelemetry.getContext().getUser().getId()));
+        Assert.assertEquals(requestTelemetry.getContext().getUser().getId(), HttpHelper.getCookie());
     }
 
     @Test
@@ -92,61 +125,5 @@ public class WebUserTrackingTelemetryModuleTests {
         Assert.assertNull(cookiesContainer.getUserCookie());
     }
 
-    @Test
-    public void testNewUserCookieIsCreatedWhenCookieCorrupted() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie("corrupted;user;cookie");
-
-        Assert.assertNotNull("User cookie shouldn't be null.", cookiesContainer.getUserCookie());
-    }
-
-    @Test
-    public void testModulesInitializedCorrectlyWithGenerateNewUserParam() {
-        final String value = "false";
-
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(WebUserTrackingTelemetryModule.GENERATE_NEW_USERS_PARAM_KEY, value);
-
-        WebUserTrackingTelemetryModule module = new WebUserTrackingTelemetryModule(map);
-
-        Assert.assertEquals(Boolean.parseBoolean(value), module.getGenerateNewUsers());
-    }
-
-
-    @Test
-    public void testWhenGenerateNewUsersIsFalseUsersAreNotGenerated() {
-        WebUserTrackingTelemetryModule module =
-                createModuleWithParam(WebUserTrackingTelemetryModule.GENERATE_NEW_USERS_PARAM_KEY, "false");
-
-        ThreadContext.setRequestTelemetryContext(new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime()));
-        module.initialize(TelemetryConfiguration.getActive());
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-
-        final Cookie[] cookie = new Cookie[1];
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                cookie[0] = ((Cookie) invocation.getArguments()[0]);
-
-                return null;
-            }
-        }).when(response).addCookie(any(Cookie.class));
-
-        module.onBeginRequest(request, response);
-
-        Assert.assertNull("No cookie should be generated." ,cookie[0]);
-    }
-
     // endregion Tests
-
-    // region Private
-
-    private WebUserTrackingTelemetryModule createModuleWithParam(String paramName, String paramValue) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(paramName, paramValue);
-
-        return new WebUserTrackingTelemetryModule(map);
-    }
-
-    // endregion Private
 }

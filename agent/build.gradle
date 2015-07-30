@@ -1,0 +1,52 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.1'
+}
+
+apply from: "$buildScriptsDir/common-java.gradle"
+
+shadowJar {
+    classifier = ''
+    relocate 'org.objectweb.asm', 'com.microsoft.applicationinsights.agent.dependencies.asm'
+}
+archivesBaseName = 'applicationinsights-agent'
+
+jar {
+    dependsOn shadowJar
+    enabled = false
+    manifest {
+        attributes("Agent-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
+                   "Premain-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
+                    "Can-Redefine-Classes": "true",
+                    "agent-sdk-version":project.version
+        )
+    }
+}
+
+dependencies {
+    compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.0.3'
+    testCompile group: 'commons-io', name: 'commons-io', version: '2.4'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
+}
+

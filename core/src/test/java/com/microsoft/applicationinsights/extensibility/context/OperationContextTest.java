@@ -49,4 +49,16 @@ public final class OperationContextTest {
         assertEquals(map.size(), 1);
         assertEquals(map.get(ContextTagKeys.getKeys().getOperationId()), "mock");
     }
+
+    @Test
+    public void testSetSyntheticSource() {
+        final String source = "mockSource";
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        OperationContext context = new OperationContext(map);
+        context.setSyntheticSource(source);
+
+        assertEquals(context.getSyntheticSource(), source);
+        assertEquals(map.size(), 1);
+        assertEquals(map.get(ContextTagKeys.getKeys().getSyntheticSource()), source);
+    }
 }

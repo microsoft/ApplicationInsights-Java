@@ -28,7 +28,7 @@ import ch.qos.logback.classic.spi.ThrowableProxy;
 import com.microsoft.applicationinsights.internal.common.ApplicationInsightsEvent;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
-import org.apache.log4j.Level;
+import ch.qos.logback.classic.Level;
 
 public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
 
@@ -82,9 +82,6 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
     public SeverityLevel getNormalizedSeverityLevel() {
         int log4jLevelAsInt = loggingEvent.getLevel().toInt();
         switch (log4jLevelAsInt) {
-            case Level.FATAL_INT: // FATAL
-                return SeverityLevel.Critical;
-
             case Level.ERROR_INT: // ERROR
                 return SeverityLevel.Error;
 

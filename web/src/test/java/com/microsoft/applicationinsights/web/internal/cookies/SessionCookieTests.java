@@ -62,8 +62,8 @@ public class SessionCookieTests {
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 sessionId,
-                DateTimeUtils.formatAsRoundTripDate(sessionAcquisitionTime),
-                DateTimeUtils.formatAsRoundTripDate(sessionRenewalTime)
+                String.valueOf(sessionAcquisitionTime.getTime()),
+                String.valueOf(sessionRenewalTime.getTime())
         });
 
         defaultCookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
@@ -149,6 +149,26 @@ public class SessionCookieTests {
         Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(requestTelemetryContextMock, sessionContext, sessionTimeoutInMinutes);
 
         Assert.assertEquals(sessionTimeoutInMinutes * 60, cookie.getMaxAge());
+    }
+
+    @Test
+    public void testCookieParsedSuccessfullyWithBackwardCompatibilityForTimeFormats() throws Exception {
+        String expectedAcquisitionTime = DateTimeUtils.formatAsRoundTripDate(sessionAcquisitionTime);
+        String expectedRenewalTime = DateTimeUtils.formatAsRoundTripDate(sessionRenewalTime);
+
+        String formattedCookie = SessionCookie.formatCookie(new String[] {
+                sessionId,
+                expectedAcquisitionTime,
+                expectedRenewalTime
+        });
+
+        Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
+
+        SessionCookie sessionCookie = new SessionCookie(cookie);
+
+        Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
+        Assert.assertEquals("Wrong session acquisition time", expectedAcquisitionTime, DateTimeUtils.formatAsRoundTripDate(sessionCookie.getSessionAcquisitionDate()));
+        Assert.assertEquals("Wrong session renewal time", expectedRenewalTime, DateTimeUtils.formatAsRoundTripDate(sessionCookie.getSessionRenewalDate()));
     }
 
     // endregion Tests

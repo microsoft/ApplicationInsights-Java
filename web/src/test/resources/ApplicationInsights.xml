@@ -32,8 +32,13 @@
     </TelemetryInitializers>
     <TelemetryModules>
         <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule"/>
-        <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule"/>
-        <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule"/>
+        <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule">
+            <Param name="GenerateNewSessions" value="true" />
+        </Add>
+
+        <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule">
+            <Param name="GenerateNewUsers" value="true" />
+        </Add>
     </TelemetryModules>
     <Channel type="com.microsoft.applicationinsights.internal.shared.LogChannelMock">
         <EndpointAddress>

@@ -74,8 +74,9 @@ public class UserCookieTests {
     public void testCookieParsedSuccessfully() throws Exception {
         UserCookie userCookie = new UserCookie(defaultCookie);
 
+        Date expectedAcquisitionTime = DateTimeUtils.parseRoundTripDateString(DateTimeUtils.formatAsRoundTripDate(acquisitionTime));
         Assert.assertEquals("Wrong user ID", userId, userCookie.getUserId());
-        Assert.assertEquals("Wrong acquisition time", acquisitionTime, userCookie.getAcquisitionDate());
+        Assert.assertEquals("Wrong acquisition time", expectedAcquisitionTime, userCookie.getAcquisitionDate());
     }
 
     @Test

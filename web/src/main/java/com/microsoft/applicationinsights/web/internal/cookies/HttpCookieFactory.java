@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
  */
 public class HttpCookieFactory {
 
+    private static final int COOKIE_VERSION = 1;
     public static String COOKIE_PATH_ALL_URL = "/";
 
     // region Public
@@ -49,8 +50,8 @@ public class HttpCookieFactory {
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 sessionContext.getId(),
-                DateTimeUtils.formatAsRoundTripDate(context.getSessionCookie().getSessionAcquisitionDate()),
-                DateTimeUtils.formatAsRoundTripDate(renewalDate)
+                String.valueOf(context.getSessionCookie().getSessionAcquisitionDate().getTime()),
+                String.valueOf(renewalDate.getTime())
         });
 
         Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
@@ -87,6 +88,7 @@ public class HttpCookieFactory {
 
     private static void setCommonProperties(Cookie cookie) {
         cookie.setPath(COOKIE_PATH_ALL_URL);
+        cookie.setVersion(COOKIE_VERSION);
     }
 
     // endregion Private

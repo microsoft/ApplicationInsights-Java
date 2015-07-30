@@ -25,16 +25,20 @@ apply from: "$buildScriptsDir/publishing.gradle"
 archivesBaseName = 'applicationinsights-web'
 
 dependencies {
+    provided project(':agent')
     compile project(':core')
-    compile 'com.opensymphony:xwork:2.0.4' // Struts 2
-    compile 'org.springframework:spring-webmvc:3.1.0.RELEASE'
-    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
+    provided 'com.opensymphony:xwork:2.0.4' // Struts 2
+    provided 'org.springframework:spring-webmvc:3.1.0.RELEASE'
+    provided group: 'javax.servlet', name: 'servlet-api', version: '2.5'
+    provided group: 'javax.enterprise', name: 'cdi-api', version: '1.1' // Java EE
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '8.1.15.v20140411'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '8.1.15.v20140411'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '8.1.15.v20140411'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '7.0.0.M0'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '7.0.0.M0'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '7.0.0.M0'
     testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
+    testCompile group: 'org.json', name:'json', version:'20090211'
+    testCompile group: 'com.microsoft.azure', name: 'azure-storage', version: '2.1.0'
 }
 
 // region Publishing properties
@@ -43,11 +47,8 @@ projectPomName = project.msftAppInsights + " Java SDK Web Module"
 projectPomDescription = "This is the web module of " + project.msftAppInsightsJavaSdk
 
 whenPomConfigured = { p ->
-    p.dependencies.each { d ->
-        if (d.groupId != "com.microsoft.azure" && d.scope == "compile") {
-            d.scope = "provided"
-        }
-    }
+    def agentArtifactId = project(":agent").jar.baseName
+    p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != agentArtifactId }
     writePomToArtifactsDirectory(p, project.name)
 }
 

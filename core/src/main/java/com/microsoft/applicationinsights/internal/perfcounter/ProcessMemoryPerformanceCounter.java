@@ -56,7 +56,7 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
         double memoryBytes = (double)heapMemoryUsage.getUsed();
         memoryBytes += (double)nonHeapMemoryUsage.getUsed();
 
-        InternalLogger.INSTANCE.trace("Metric: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_MEM_PC_COUNTER_NAME, memoryBytes);
+        InternalLogger.INSTANCE.trace("Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_MEM_PC_COUNTER_NAME, memoryBytes);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 getProcessCategoryName(),
                 Constants.PROCESS_MEM_PC_COUNTER_NAME,

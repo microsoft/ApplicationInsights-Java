@@ -28,6 +28,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public final class ExceptionTelemetryTest {
 
@@ -84,6 +85,24 @@ public final class ExceptionTelemetryTest {
     public void testFirstValueIsNull() {
         ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
         assertEquals(telemetry.getSeverityLevel(), null);
+    }
+
+    @Test
+    public void testGetThrowableOnException() {
+        IOException exception = new IOException("mock");
+        ExceptionTelemetry telemetry = new ExceptionTelemetry(exception);
+
+        assertSame(exception, telemetry.getThrowable());
+        assertSame(exception, telemetry.getException());
+    }
+
+    @Test
+    public void testError() {
+        Error error = new NoSuchMethodError("Method");
+        ExceptionTelemetry telemetry = new ExceptionTelemetry(error);
+
+        assertNull(telemetry.getException());
+        assertSame(error, telemetry.getThrowable());
     }
 
     private static void testSeverityLevel(SeverityLevel severityLevel) {

@@ -21,19 +21,20 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.junit.*;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
-import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
 import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
@@ -53,6 +54,29 @@ import static org.mockito.Mockito.mock;
  * Created by yonisha on 2/5/2015.
  */
 public class WebSessionTrackingTelemetryModuleTests {
+    private static class TestModuleInitializer implements TelemetryInitializer {
+        private final String expectedSessionId;
+        private final boolean expectedIsFirst;
+
+        private TestModuleInitializer(String expectedSessionId, boolean expectedIsFirst) {
+            this.expectedSessionId = expectedSessionId;
+            this.expectedIsFirst = expectedIsFirst;
+        }
+
+        @Override
+        public void initialize(Telemetry telemetry) {
+            RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+            SessionContext requestSessionContext = requestTelemetry.getContext().getSession();
+
+            if (expectedSessionId == null) {
+                Assert.assertTrue(Sanitizer.isUUID(requestSessionContext.getId()));
+                Assert.assertNotEquals(requestSessionContext.getId(), HttpHelper.getCookie());
+            } else {
+                Assert.assertEquals(expectedSessionId, requestSessionContext.getId());
+            }
+            Assert.assertEquals(expectedIsFirst, requestSessionContext.getIsFirst());
+        }
+    }
 
     // region Members
 
@@ -90,44 +114,22 @@ public class WebSessionTrackingTelemetryModuleTests {
     // region Tests
 
     @Test
-    public void testNewSessionIsCreatedWhenCookieNotExist() throws Exception {
+    public void testNewSessionCookieIsNotCreatedWhenCookieNotExist() throws Exception {
+        TelemetryConfiguration.getActive().getTelemetryInitializers().add(new TestModuleInitializer(null, false));
+
         CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
 
-        Assert.assertNotNull("Session cookie shouldn't be null.", cookiesContainer.getSessionCookie());
+        Assert.assertNull("Session cookie should be null.", cookiesContainer.getSessionCookie());
     }
 
     @Test
-    public void testIsFirstSessionIsPopulatedOnFirstSession() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie();
+    public void testWhenCookieExistCorrectSessionIdAttachedToSentTelemetry() throws Exception {
+        HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
 
         RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
 
-        Assert.assertTrue(requestTelemetry.getContext().getSession().getIsFirst());
-    }
-
-    @Test
-    public void testNoSessionCreatedWhenValidSessionExists() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
-
-        Assert.assertNull(cookiesContainer.getSessionCookie());
-    }
-
-    @Test
-    public void testNewSessionIsCreatedWhenCookieSessionExpired() throws Exception {
-        sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
-
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
-        SessionCookie sessionCookie = cookiesContainer.getSessionCookie();
-
-        Assert.assertNotNull(sessionCookie);
-        Assert.assertFalse(sessionCookieFormatted.contains(sessionCookie.getSessionId()));
-    }
-
-    @Test
-    public void testNewSessionIsCreatedWhenCookieCorrupted() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie("corrupted;session;cookie");
-
-        Assert.assertNotNull("Session cookie shouldn't be null.", cookiesContainer.getSessionCookie());
+        Assert.assertTrue(sessionCookieFormatted.contains(requestTelemetry.getContext().getSession().getId()));
+        Assert.assertEquals(requestTelemetry.getContext().getSession().getId(), HttpHelper.getCookie());
     }
 
     @Ignore
@@ -141,13 +143,6 @@ public class WebSessionTrackingTelemetryModuleTests {
     }
 
     @Test
-    public void testWhenNewSessionStartedSessionStateStartTracked() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie();
-
-        verifySessionState(SessionState.Start);
-    }
-
-    @Test
     public void testOnFirstSessionStartedNoSessionStateEndTracked() throws Exception {
         HttpHelper.sendRequestAndGetResponseCookie();
 
@@ -156,26 +151,7 @@ public class WebSessionTrackingTelemetryModuleTests {
     }
 
     @Test
-    public void testSessionStateTelemetryContainsSessionIdOnStartState() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie();
-
-        SessionStateTelemetry telemetry = getSessionStateTelemetryWithState(SessionState.Start);
-
-        Assert.assertNotNull("Session ID shouldn't be null", telemetry.getContext().getSession().getId());
-    }
-
-    @Test
-    public void testWhenCookieNotUpToDateUpdatedCookieReturned() throws Exception {
-        sessionCookieFormatted = HttpHelper.getFormattedSessionCookieWithOldTime(6);
-        String originalSessionId = HttpHelper.getSessionIdFromCookie(sessionCookieFormatted);
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
-
-        String returnedSessionId = cookiesContainer.getSessionCookie().getSessionId();
-        Assert.assertEquals("Session ID shouldn't be generated.", originalSessionId, returnedSessionId);
-    }
-
     @Ignore
-    @Test
     public void testSessionStateTelemetryContainsSessionIdOnEndState() throws Exception {
         sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
 
@@ -186,8 +162,8 @@ public class WebSessionTrackingTelemetryModuleTests {
         Assert.assertNotNull("Session ID shouldn't be null", telemetry.getContext().getSession().getId());
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void testSessionStateTelemetryEndStateContainsExpiredSessionId() throws Exception {
         sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
 
@@ -200,47 +176,6 @@ public class WebSessionTrackingTelemetryModuleTests {
                 "Expected session ID of the expired session cookie",
                 expectedSessionId,
                 telemetry.getContext().getSession().getId());
-    }
-
-    @Test
-    public void testModulesInitializedCorrectlyWithGenerateNewSessionParam() {
-        final String value = "false";
-
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(
-                WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, value);
-
-        Assert.assertEquals(Boolean.parseBoolean(value), module.getGenerateNewSessions());
-    }
-
-    @Test
-    public void testModulesInitializedCorrectlyWithSessionTimeoutParam() {
-        final String value = "13";
-
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(
-                WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, value);
-
-        Assert.assertEquals(Integer.parseInt(value),(int)module.getSessionTimeoutInMinutes());
-    }
-
-    @Test
-    public void testWhenGenerateNewSessionIsFalseSessionsAreNotGenerated() {
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(
-                WebSessionTrackingTelemetryModule.GENERATE_NEW_SESSIONS_PARAM_KEY, "false");
-
-        Cookie cookie = callOnBeginRequestAndGetCookieResult(module);
-
-        Assert.assertNull("No cookie should be generated." , cookie);
-    }
-
-    @Test
-    public void testWhenSessionTimeoutParameterUsedThenCookieCreatedWithCorrectAge() {
-        int sessionTimeoutInMinutes = 12;
-        WebSessionTrackingTelemetryModule module = createModuleWithParam(
-                WebSessionTrackingTelemetryModule.SESSION_TIMEOUT_PARAM_KEY, String.valueOf(sessionTimeoutInMinutes));
-
-        Cookie cookie = callOnBeginRequestAndGetCookieResult(module);
-
-        Assert.assertEquals(sessionTimeoutInMinutes * 60, cookie.getMaxAge());
     }
 
     // endregion Tests
@@ -266,13 +201,6 @@ public class WebSessionTrackingTelemetryModuleTests {
         module.onBeginRequest(request, response);
 
         return cookies[0];
-    }
-
-    private WebSessionTrackingTelemetryModule createModuleWithParam(String paramName, String paramValue) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(paramName, paramValue);
-
-        return new WebSessionTrackingTelemetryModule(map);
     }
 
     private void verifySessionState(SessionState expectedSessionState) {

@@ -48,12 +48,13 @@ public class WebUserTelemetryInitializer extends WebTelemetryInitializerBase {
 
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         UserContext requestUserContext = requestTelemetry.getContext().getUser();
+        if (requestUserContext == null) {
+            return;
+        }
 
         userContext.setId(requestUserContext.getId());
 
         Date requestUserAcquisitionDate = requestUserContext.getAcquisitionDate();
-        if (requestUserAcquisitionDate != null) {
-            userContext.setAcquisitionDate(requestUserAcquisitionDate);
-        }
+        userContext.setAcquisitionDate(requestUserAcquisitionDate);
     }
 }

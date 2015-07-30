@@ -36,7 +36,10 @@ import java.util.Map;
 public class ChannelXmlElement {
 
     private String endpointAddress;
+    private String maxTelemetryBufferCapacity;
+    private String flushIntervalInSeconds;
     private boolean developerMode;
+    private String maxTransmissionStorageFilesCapacityInMB;
     private String type = "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
 
     public String getType() {
@@ -66,6 +69,33 @@ public class ChannelXmlElement {
         this.developerMode = developerMode;
     }
 
+    public String getMaxTelemetryBufferCapacity() {
+        return maxTelemetryBufferCapacity;
+    }
+
+    @XmlElement(name="MaxTelemetryBufferCapacity")
+    public void setMaxTelemetryBufferCapacity(String maxTelemetryBufferCapacity) {
+        this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
+    }
+
+    public String getFlushIntervalInSeconds() {
+        return flushIntervalInSeconds;
+    }
+
+    @XmlElement(name="FlushIntervalInSeconds")
+    public void setFlushIntervalInSeconds(String flushIntervalInSeconds) {
+        this.flushIntervalInSeconds = flushIntervalInSeconds;
+    }
+
+    public String isMaxTransmissionStorageFilesCapacityInMB() {
+        return maxTransmissionStorageFilesCapacityInMB;
+    }
+
+    @XmlElement(name="MaxTransmissionStorageFilesCapacityInMB")
+    public void setMaxTransmissionStorageFilesCapacityInMB(String maxTransmissionStorageFilesCapacityInMB) {
+        this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
+    }
+
     public Map<String, String> getData() {
         HashMap<String, String> data = new HashMap<String, String>();
         if (developerMode) {
@@ -74,6 +104,18 @@ public class ChannelXmlElement {
 
         if (!Strings.isNullOrEmpty(endpointAddress)) {
             data.put("EndpointAddress", endpointAddress);
+        }
+
+        if (!Strings.isNullOrEmpty(maxTelemetryBufferCapacity)) {
+            data.put("MaxTelemetryBufferCapacity", maxTelemetryBufferCapacity);
+        }
+
+        if (!Strings.isNullOrEmpty(flushIntervalInSeconds)) {
+            data.put("FlushIntervalInSeconds", flushIntervalInSeconds);
+        }
+
+        if (!Strings.isNullOrEmpty(maxTransmissionStorageFilesCapacityInMB)) {
+            data.put("MaxTransmissionStorageFilesCapacityInMB", maxTransmissionStorageFilesCapacityInMB);
         }
 
         return data;

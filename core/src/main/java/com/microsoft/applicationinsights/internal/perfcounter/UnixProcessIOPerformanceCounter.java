@@ -68,7 +68,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
             prevProcessIO = processIO;
 
-            InternalLogger.INSTANCE.trace("Metric: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_IO_PC_COUNTER_NAME, value);
+            InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_IO_PC_COUNTER_NAME, value);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     getProcessCategoryName(),
                     Constants.PROCESS_IO_PC_COUNTER_NAME,

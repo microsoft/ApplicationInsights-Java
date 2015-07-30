@@ -21,14 +21,52 @@
 
 apply from: "$buildScriptsDir/common-java.gradle"
 
-jar {
-    version = '1.0'
-    baseName = 'samples'
+archivesBaseName = 'applicationinsights-samples'
+version=""
+
+task generateSourceOriginProperties() {
+    // Place source properties in a Properties object
+    Properties props = new Properties()
+    props.setProperty "git.commit", System.env.'GIT_COMMIT' ?: "unknown"
+    props.setProperty "git.branch", System.env.'GIT_BRANCH' ?: "unknown"
+    props.setProperty "git.repo", System.env.'GIT_URL' ?: "unknown"
+
+    // Save these properties into a resource file named source-origin.properties
+    def sourceOriginFileDir = "$project.buildDir/src/main/resources"
+    File targetFile = new File(sourceOriginFileDir, "source-origin.properties")
+    def targetDir = targetFile.getParentFile()
+    targetDir.mkdirs()
+    FileOutputStream out = new FileOutputStream(targetFile.getAbsolutePath())
+    props.store out, "Git source information"
+    out.close()
 }
+
+processResources.dependsOn generateSourceOriginProperties
 
 dependencies {
     compile project(':core')
     compile project(':logging:log4j1_2')
     compile project(':logging:log4j2')
     compile project(':logging:logback')
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
 }
+
+
+sourceSets {
+    plugins {
+        compileClasspath = sourceSets.main.compileClasspath
+    }
+
+    main {
+        java.srcDir sourceSets.plugins.allSource
+    }
+}
+
+task jarPlugins(type: Jar) {
+    from sourceSets.plugins.output
+    baseName = 'applicationinsights-sample-plugins'
+}
+
+build.dependsOn jarPlugins
+

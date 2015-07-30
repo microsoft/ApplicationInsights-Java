@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -30,19 +31,24 @@ import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
-import org.junit.Assert;
-import org.junit.Test;
+import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
+import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
+
 import org.mockito.Mockito;
 
+import static org.mockito.Matchers.anyString;
+
+import org.junit.Test;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
 
 public final class TelemetryConfigurationFactoryTest {
 
     private final static String MOCK_IKEY = "c9341531-05ac-4d8c-972e-36e97601d5ff";
     private final static String MOCK_ENDPOINT = "MockEndpoint";
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
+    private final static String APP_INSIGHTS_IKEY_TEST_VALUE = "ds";
 
     @PerformanceModule
     static final class MockPerformanceModule implements TelemetryModule, PerformanceCounterConfigurationAware {
@@ -66,6 +72,42 @@ public final class TelemetryConfigurationFactoryTest {
 
         public void initialize(TelemetryConfiguration configuration) {
             initializeWasCalled = true;
+        }
+    }
+
+    @Test
+    public void configurationWithNullIkeyTest() {
+        ikeyTest(null, null);
+    }
+
+    @Test
+    public void configurationWithEmptykeyTest() {
+        ikeyTest("", null);
+    }
+
+    @Test
+    public void configurationWithBlankStringIkeyTest() {
+        ikeyTest(" ", null);
+    }
+
+    @Test
+    public void configurationWithRedundantSpacesIkeyTest() {
+        ikeyTest(" " + MOCK_IKEY + " \t", MOCK_IKEY);
+    }
+
+    @Test
+    public void configurationWithOnlyRedundantSpacesIkeyTest() {
+        ikeyTest("  \t", null);
+    }
+
+    @Test
+    public void systemPropertyIKeyBeforeConfigurationIKeyTest() {
+        try {
+            System.setProperty(TelemetryConfigurationFactory.EXTERNAL_PROPERTY_IKEY_NAME, APP_INSIGHTS_IKEY_TEST_VALUE);
+            ikeyTest(MOCK_IKEY, APP_INSIGHTS_IKEY_TEST_VALUE);
+        } finally {
+            // Avoid any influence on other unit tests
+            System.getProperties().remove(TelemetryConfigurationFactory.EXTERNAL_PROPERTY_IKEY_NAME);
         }
     }
 
@@ -338,7 +380,36 @@ public final class TelemetryConfigurationFactoryTest {
 
 
     private void initializeWithFactory(AppInsightsConfigurationBuilder mockParser, TelemetryConfiguration mockConfiguration) {
-        TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
-        TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
+        Field field = null;
+        try {
+            field = ClassDataUtils.class.getDeclaredField("verifier");
+            field.setAccessible(true);
+
+            ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
+            Mockito.doReturn(true).when(mockVerifier).verifyClassExists(anyString());
+            field.set(ClassDataUtils.INSTANCE, mockVerifier);
+            TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
+            TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException();
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException();
+        }
+    }
+
+    private void ikeyTest(String configurationIkey, String expectedIkey) {
+        // Make sure that there is no exception when fetching the i-key by having both
+        // the i-key and channel in the configuration, otherwise the channel won't be instantiated
+        AppInsightsConfigurationBuilder mockParser = createMockParser(true, false, false);
+
+        ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
+        appConf.setInstrumentationKey(configurationIkey);
+        Mockito.doReturn(appConf).when(mockParser).build(anyString());
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+        assertEquals(mockConfiguration.getInstrumentationKey(), expectedIkey);
+        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
     }
 }

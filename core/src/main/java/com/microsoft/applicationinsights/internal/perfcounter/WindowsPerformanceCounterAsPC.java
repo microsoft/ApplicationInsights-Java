@@ -37,17 +37,7 @@ import com.google.common.base.Strings;
  *
  * Created by gupele on 3/30/2015.
  */
-public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
-    private static final String TOTAL_CPU_CATEGORY_NAME = "Processor";
-    private static final String TOTAL_CPU_COUNTER_NAME = "% Processor time";
-    private static final String TOTAL_CPU_INSTANCE_NAME = "_Total";
-
-    private static final String TOTAL_MEMORY_CATEGORY_NAME = "Memory";
-    private static final String TOTAL_MEMORY_COUNTER_NAME = "Available bytes";
-
-
-    private static final String PROCESS_IO_DATA_BYTES_CATEGORY_NAME = "Process";
-    private static final String PROCESS_IO_DATA_BYTES_COUNTER_NAME = "IO Data Bytes/sec";
+public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerformanceCounter {
 
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "WindowsPerformanceCounterAsPC";
 
@@ -63,9 +53,9 @@ public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
     public WindowsPerformanceCounterAsPC() throws Throwable {
         Preconditions.checkState(SystemInformation.INSTANCE.isWindows(), "Must be used under Windows OS.");
 
-        register(TOTAL_CPU_CATEGORY_NAME, TOTAL_CPU_COUNTER_NAME, TOTAL_CPU_INSTANCE_NAME);
-        register(TOTAL_MEMORY_CATEGORY_NAME, TOTAL_MEMORY_COUNTER_NAME, "");
-        register(PROCESS_IO_DATA_BYTES_CATEGORY_NAME, PROCESS_IO_DATA_BYTES_COUNTER_NAME, JniPCConnector.PROCESS_SELF_INSTANCE_NAME);
+        register(Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, Constants.INSTANCE_NAME_TOTAL);
+        register(Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, "");
+        register(Constants.PROCESS_CATEGORY, Constants.PROCESS_IO_PC_COUNTER_NAME, JniPCConnector.translateInstanceName(JniPCConnector.PROCESS_SELF_INSTANCE_NAME));
 
         if (pcs.isEmpty()) {
             // Failed to register, the performance counter is not needed.
@@ -78,10 +68,16 @@ public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
         for (Map.Entry<String, WindowsPerformanceCounterData> entry : pcs.entrySet()) {
             try {
                 double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
-                send(telemetryClient, value, entry.getValue());
-                InternalLogger.INSTANCE.trace("Sent performance counter for '%s': '%s'", entry.getValue(), value);
+                if (value < 0) {
+                    reportError(value, entry.getValue().displayName);
+                } else {
+                    send(telemetryClient, value, entry.getValue());
+                    WindowsPerformanceCounterData pcData = entry.getValue();
+                    InternalLogger.INSTANCE.trace("Sent performance counter for '%s'(%s, %s, %s): '%s'",
+                            pcData.displayName, pcData.categoryName, pcData.counterName, pcData.instanceName, value);
+                }
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue(), e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.getMessage());
             }
         }
     }
@@ -110,7 +106,8 @@ public final class WindowsPerformanceCounterAsPC implements PerformanceCounter {
                 WindowsPerformanceCounterData data = new WindowsPerformanceCounterData().
                         setCategoryName(category).
                         setCounterName(counter).
-                        setInstanceName(instance);
+                        setInstanceName(instance).
+                        setDisplayName(category + " " + counter);
                 pcs.put(key, data);
             } catch (Throwable e) {
             }

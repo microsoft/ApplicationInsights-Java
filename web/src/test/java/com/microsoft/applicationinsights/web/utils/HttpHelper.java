@@ -41,7 +41,8 @@ import javax.servlet.http.Cookie;
  */
 public class HttpHelper {
 
-    private static final String FORMATTED_USER_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s";
+    private static final String COOKIE = "00000000-0000-0000-0000-000000000000";
+    private static final String FORMATTED_USER_COOKIE_TEMPLATE = COOKIE + "|%s";
     private static final String FORMATTED_SESSION_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s|%s";
     public static final String TEST_USER_AGENT = "Mozilla/5.0 (Windows NT 6.4; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko";
 
@@ -61,6 +62,10 @@ public class HttpHelper {
         CookiesContainer cookiesContainer = getCookiesContainer(responseCookies);
 
         return cookiesContainer;
+    }
+
+    public static String getCookie() {
+        return COOKIE;
     }
 
     public static CookiesContainer sendRequestAndGetResponseCookie() throws Exception {
@@ -103,8 +108,8 @@ public class HttpHelper {
 
         String formattedSessionCookie = String.format(
                 FORMATTED_SESSION_COOKIE_TEMPLATE,
-                DateTimeUtils.formatAsRoundTripDate(sessionAcquisitionTime),
-                DateTimeUtils.formatAsRoundTripDate(sessionRenewalTime));
+                String.valueOf(sessionAcquisitionTime.getTime()),
+                String.valueOf(sessionRenewalTime.getTime()));
 
         return String.format("%s=%s", SessionCookie.COOKIE_NAME, formattedSessionCookie);
     }
@@ -123,6 +128,11 @@ public class HttpHelper {
 
     private static CookiesContainer getCookiesContainer(List<String> responseCookies) throws Exception {
         CookiesContainer cookiesContainer = new CookiesContainer();
+
+        if (responseCookies == null) {
+            return cookiesContainer;
+        }
+
         for (String formattedCookieWithExpiration : responseCookies) {
             if (formattedCookieWithExpiration.startsWith("ai_user")) {
                 String formattedCookie = formattedCookieWithExpiration.split("=")[1].split(";")[0];
@@ -130,7 +140,7 @@ public class HttpHelper {
 
                 UserCookie userCookie = new UserCookie(cookie);
                 cookiesContainer.setUserCookie(userCookie);
-            } else {
+            } else if(formattedCookieWithExpiration.startsWith("ai_session")) {
                 String formattedCookie = formattedCookieWithExpiration.split("=")[1].split(";")[0];
                 Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
 

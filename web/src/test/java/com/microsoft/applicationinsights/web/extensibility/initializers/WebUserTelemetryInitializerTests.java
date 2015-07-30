@@ -1,7 +1,7 @@
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -20,8 +20,8 @@ public class WebUserTelemetryInitializerTests {
     private static Date acquisitionTime;
     private WebUserTelemetryInitializer userTelemetryInitializer = new WebUserTelemetryInitializer();
 
-    @BeforeClass
-    public static void classInitialize() {
+    @Before
+    public void classInitialize() {
         acquisitionTime = DateTimeUtils.getDateTimeNow();
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
@@ -30,6 +30,20 @@ public class WebUserTelemetryInitializerTests {
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         requestTelemetry.getContext().getUser().setId(REQUEST_USER_ID);
         requestTelemetry.getContext().getUser().setAcquisitionDate(acquisitionTime);
+    }
+
+    @Test
+    public void testNoUserCookie() {
+        RequestTelemetryContext requestTelemetryContext = ThreadContext.getRequestTelemetryContext();
+        requestTelemetryContext.getHttpRequestTelemetry().getContext().getUser().setAcquisitionDate(null);
+        requestTelemetryContext.getHttpRequestTelemetry().getContext().getUser().setId(null);
+
+        TraceTelemetry telemetry = new TraceTelemetry();
+
+        userTelemetryInitializer.onInitializeTelemetry(telemetry);
+
+        Assert.assertNull(telemetry.getContext().getUser().getId());
+        Assert.assertNull(telemetry.getContext().getUser().getAcquisitionDate());
     }
 
     @Test

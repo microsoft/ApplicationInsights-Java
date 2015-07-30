@@ -35,5 +35,4 @@ projectPomDescription = "This module provides a $project.msftAppInsights appende
 dependencies {
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.2'
-    compile group: 'log4j', name: 'log4j', version: '1.2.17'
 }

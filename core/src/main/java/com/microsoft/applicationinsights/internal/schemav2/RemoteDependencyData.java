@@ -63,11 +63,6 @@ public class RemoteDependencyData extends Domain {
     private DataPointType kind = DataPointType.Measurement;
 
     /**
-     * Backing field for property Value.
-     */
-    private double value;
-
-    /**
      * Backing field for property Count.
      */
     private Integer count;
@@ -147,14 +142,6 @@ public class RemoteDependencyData extends Domain {
 
     public void setKind(DataPointType value) {
         this.kind = value;
-    }
-
-    public double getValue() {
-        return this.value;
-    }
-
-    public void setValue(double value) {
-        this.value = value;
     }
 
     public Integer getCount() {
@@ -252,7 +239,7 @@ public class RemoteDependencyData extends Domain {
         writer.write("name", name);
         writer.write("commandName", commandName);
         writer.write("kind", kind.getValue());
-        writer.write("value", value);
+        writer.write("value", duration.getTotalMilliseconds());
         writer.write("count", count);
         writer.write("min", min);
         writer.write("max", max);
@@ -262,7 +249,6 @@ public class RemoteDependencyData extends Domain {
         writer.write("async", async);
         writer.write("dependencySource", dependencySource.getValue());
         writer.write("properties", properties);
-        writer.write("duration", duration.toString());
     }
 
     public String getEnvelopName() {

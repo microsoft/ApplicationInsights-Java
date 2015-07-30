@@ -36,12 +36,12 @@ import static org.junit.Assert.assertNull;
 
 public final class TransmissionFileSystemOutputTest {
     private final static String TRANSMISSION_FILE_EXTENSION = "trn";
-    private final static int SIZE_OF_TRANSMISSION_CONTENT = 10;
+    private final static int SIZE_OF_TRANSMISSION_CONTENT = 100;
     private final static String TEMP_TEST_FOLDER = "TransmissionTests";
     private final static String MOCK_CONTENT = "MockContent";
     private final static String MOCK_CONTENT_TYPE_BASE = "MockContent";
     private final static String MOCK_ENCODING_TYPE_BASE = "MockEncodingType";
-    private final static int SIZE_OF_MOCK_TRANSMISSION = 300;
+    private final static int SIZE_OF_MOCK_TRANSMISSION = 1;
 
     private final String workingFolder;
 
@@ -65,13 +65,8 @@ public final class TransmissionFileSystemOutputTest {
     }
 
     @Test
-    public void testSuccessfulSendTwoFilesWhereThereIsNoRoomForTheSecond() throws Exception {
-        testSuccessfulSends(2, 1, new Long(SIZE_OF_MOCK_TRANSMISSION - 1), null);
-    }
-
-    @Test
     public void testSuccessfulSendTenFilesWhereThereIsNoRoomForTheLastThree() throws Exception {
-        testSuccessfulSends(10, 7, new Long(SIZE_OF_MOCK_TRANSMISSION * 7), null);
+        testSuccessfulSends(12, 3, new Integer(SIZE_OF_MOCK_TRANSMISSION), null);
     }
 
     @Test
@@ -111,7 +106,7 @@ public final class TransmissionFileSystemOutputTest {
         return testSuccessfulSends(amount, amount, null, null);
     }
 
-    private TransmissionFileSystemOutput testSuccessfulSends(int amount, int expectedSuccess, Long capacity, File testFolder) throws Exception {
+    private TransmissionFileSystemOutput testSuccessfulSends(int amount, int expectedSuccess, Integer capacity, File testFolder) throws Exception {
         File folder = testFolder == null ? createFolderForTest() : testFolder;
         TransmissionFileSystemOutput tested = null;
         try {
@@ -130,10 +125,12 @@ public final class TransmissionFileSystemOutputTest {
         return tested;
     }
 
-    private TransmissionFileSystemOutput createAndSend(int amount, Long capacity) {
-        TransmissionFileSystemOutput tested = new TransmissionFileSystemOutput(workingFolder);
+    private TransmissionFileSystemOutput createAndSend(int amount, Integer capacity) {
+        TransmissionFileSystemOutput tested = null;
         if (capacity != null) {
-            tested.setCapacity(capacity);
+            tested = new TransmissionFileSystemOutput(workingFolder, String.valueOf(capacity));;
+        } else {
+            tested = new TransmissionFileSystemOutput(workingFolder);
         }
 
         for (int i = 0; i < amount; ++i) {

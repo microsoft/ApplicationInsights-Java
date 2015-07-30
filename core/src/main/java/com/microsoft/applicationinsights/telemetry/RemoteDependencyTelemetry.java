@@ -100,22 +100,6 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     public void setCommandName(String commandName) { this.data.setCommandName(commandName); }
 
     /**
-     * Gets the Value property.
-     * @return Value property.
-     */
-    public double getValue() {
-        return data.getValue();
-    }
-
-    /**
-     * Sets the Value property.
-     * @param value Value property.
-     */
-    public void setValue(double value) {
-        data.setValue(value);
-    }
-
-    /**
      * Gets the Count property.
      * @return Count property.
      */
@@ -252,7 +236,7 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     }
 
     /**
-     * Sets the durations.
+     * Sets the duration.
      * @param duration The duration.
      */
     public void setDuration(Duration duration) {
