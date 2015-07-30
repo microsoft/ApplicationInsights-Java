@@ -27,6 +27,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoftopentechnologies.auth.AuthenticationContext;
 import com.microsoftopentechnologies.auth.AuthenticationResult;
 import com.microsoftopentechnologies.auth.PromptValue;
+import com.microsoftopentechnologies.auth.browser.BrowserLauncher;
 
 import java.io.IOException;
 
@@ -34,31 +35,32 @@ import java.io.IOException;
  * Created by yonisha on 4/19/2015.
  */
 public class Authenticator {
-    public static AuthenticationResult getAuthenticationResult() throws IOException {
+    public static AuthenticationResult getAuthenticationResult(BrowserLauncher browserLauncher) throws IOException {
         String commonTenant = Settings.getTenant();
 
-        return getAuthenticationResultForTenant(commonTenant);
+        return getAuthenticationResultForTenant(commonTenant, browserLauncher);
     }
 
-    public static AuthenticationResult getAuthenticationResultForTenant(String tenant) throws IOException {
+    public static AuthenticationResult getAuthenticationResultForTenant(String tenant, BrowserLauncher browserLauncher) throws IOException {
         // We first try to login without prompt the user for a user/password.
-        AuthenticationResult authenticationResult = getAuthenticationResultForTenantInternal(tenant, PromptValue.attemptNone);
+        AuthenticationResult authenticationResult = getAuthenticationResultForTenantInternal(tenant, PromptValue.attemptNone, browserLauncher);
 
         // If we fail to authenticate, we prompt the user for username & password.
         if (authenticationResult == null){
-            authenticationResult = getAuthenticationResultForTenantInternal(tenant, PromptValue.login);
+            authenticationResult = getAuthenticationResultForTenantInternal(tenant, PromptValue.login, browserLauncher);
         }
 
         return authenticationResult;
     }
 
-    public static AuthenticationResult getAuthenticationResultForTenantInternal(String tenant, String promptValue) throws IOException {
+    public static AuthenticationResult getAuthenticationResultForTenantInternal(String tenant, String promptValue, BrowserLauncher browserLauncher) throws IOException {
         String authority = Settings.getAdAuthority();
         String resource = Settings.getResource();
         String clientID = Settings.getClientId();
         String redirectURI = Settings.getRedirectURI();
 
         AuthenticationContext context = new AuthenticationContext(authority);
+        context.setBrowserLauncher(browserLauncher);
         ListenableFuture<AuthenticationResult> future = context.acquireTokenInteractiveAsync(
                 tenant,
                 resource,

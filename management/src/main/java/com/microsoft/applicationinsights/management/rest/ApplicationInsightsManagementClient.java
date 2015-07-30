@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import com.microsoft.applicationinsights.management.rest.operations.*;
 import com.microsoftopentechnologies.auth.AuthenticationContext;
 import com.microsoftopentechnologies.auth.AuthenticationResult;
+import com.microsoftopentechnologies.auth.browser.BrowserLauncher;
 
 /**
  * Created by yonisha on 4/19/2015.
@@ -50,18 +51,20 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
     private List<Subscription> authorizedSubscriptions;
     private RestClient restClient;
     private Tenant commonTenant;
+    private BrowserLauncher browserLauncher;
 
     /**
      * Constructs new Application Insights management client.
      * @param authenticationResult The authentication result.
      * @param userAgent The user agent.
      */
-    public ApplicationInsightsManagementClient(AuthenticationResult authenticationResult, String userAgent) throws IOException, RestOperationException {
+    public ApplicationInsightsManagementClient(AuthenticationResult authenticationResult, String userAgent, BrowserLauncher browserLauncher) throws IOException, RestOperationException {
         // Setting the common tenant.
         this.commonTenant = new Tenant();
         this.commonTenant.setId("common");
         this.commonTenant.setAuthenticationToken(authenticationResult);
 
+        this.browserLauncher = browserLauncher;
         this.restClient = new RestClient(userAgent);
         this.authorizedSubscriptions = getAuthorizedSubscriptions();
     }
@@ -187,7 +190,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
         List<Tenant> tenants = getTenantsOperation.execute(this.restClient);
 
         for (Tenant tenant : tenants) {
-            AuthenticationResult authenticationResultForTenant = Authenticator.getAuthenticationResultForTenant(tenant.getId());
+            AuthenticationResult authenticationResultForTenant = Authenticator.getAuthenticationResultForTenant(tenant.getId(), this.browserLauncher);
             tenant.setAuthenticationToken(authenticationResultForTenant);
         }
 
@@ -209,6 +212,7 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
         LOG.info("Renewing access token for tenant: %s", tenant.getId());
 
         AuthenticationContext context = new AuthenticationContext(Settings.getAdAuthority());
+        context.setBrowserLauncher(this.browserLauncher);
         try {
             authenticationResult = context.acquireTokenByRefreshToken(
                     authenticationResult,

@@ -6,6 +6,8 @@ import com.microsoft.applicationinsights.management.rest.model.Subscription;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.model.Tenant;
 import com.microsoftopentechnologies.auth.AuthenticationResult;
+import com.microsoftopentechnologies.auth.browser.BrowserLauncher;
+import com.microsoftopentechnologies.auth.browser.BrowserLauncherDefault;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,8 +32,9 @@ public class Program {
                 System.getProperty("os.name"),
                 "10.0");
 
-        AuthenticationResult result = Authenticator.getAuthenticationResult();
-        client = new ApplicationInsightsManagementClient(result, userAgent);
+        BrowserLauncher browserLauncher = new BrowserLauncherDefault();
+        AuthenticationResult result = Authenticator.getAuthenticationResult(browserLauncher);
+        client = new ApplicationInsightsManagementClient(result, userAgent, browserLauncher);
 
         if (result == null) {
             System.out.println("Authentication canceled..");
