@@ -29,12 +29,29 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
 /**
  * Created by gupele on 5/11/2015.
  */
 class DefaultClassDataProvider implements ClassDataProvider {
+
+    private final static String HTTP_CLIENT_43_CLASS_NAME = "org/apache/http/impl/client/InternalHttpClient";
+    private final static String HTTP_CLIENT_METHOD_43_NAME = "doExecute";
+    private final static String HTTP_CLIENT_METHOD_43_SIGNATURE = "(Lorg/apache/http/HttpHost;Lorg/apache/http/HttpRequest;Lorg/apache/http/protocol/HttpContext;)Lorg/apache/http/client/methods/CloseableHttpResponse;";
+
+    private final static String HTTP_CLIENT_42_CLASS_NAME = "org/apache/http/impl/client/AbstractHttpClient";
+    private final static String HTTP_CLIENT_METHOD_42_NAME = "execute";
+    private final static String HTTP_CLIENT_METHOD_42_SIGNATURE = "(Lorg/apache/http/HttpHost;Lorg/apache/http/HttpRequest;Lorg/apache/http/protocol/HttpContext;)Lorg/apache/http/HttpResponse;";
+
+    private final static String OK_HTTP_CLIENT_CALL_CLASS_NAME = "com/squareup/okhttp/Call";
+    private final static String OK_HTTP_CLIENT_CALL_METHOD_NAME = "execute";
+    private final static String OK_HTTP_CLIENT_CALL_METHOD_SIGNATURE = "()Lcom/squareup/okhttp/Response;";
+
+    private final static String OK_HTTP_CLIENT_CALL_ASYNC_CLASS_NAME = "com/squareup/okhttp/Call$AsyncCall";
+    private final static String OK_HTTP_CLIENT_CALL_ASYNC_METHOD_NAME = "execute";
+    private final static String OK_HTTP_CLIENT_CALL_ASYNC_METHOD_SIGNATURE = "()V";
 
     private final static String[] EXCLUDED_CLASS_PREFIXES = new String[] {
         "java/",
@@ -109,6 +126,7 @@ class DefaultClassDataProvider implements ClassDataProvider {
             InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
 
             populateSqlClasses();
+            populateHttpClasses();
         }
 
         addConfigurationData(agentConfiguration);
@@ -137,7 +155,13 @@ class DefaultClassDataProvider implements ClassDataProvider {
 
         MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
             @Override
-            public MethodVisitor create(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+            public MethodVisitor create(MethodInstrumentationDecision decision,
+                                        int access,
+                                        String desc,
+                                        String owner,
+                                        String methodName,
+                                        MethodVisitor methodVisitor,
+                                        ClassToMethodTransformationData additionalData) {
                 return new SqlStatementMethodVisitor(access, desc, owner, methodName, methodVisitor);
             }
         };
@@ -151,6 +175,79 @@ class DefaultClassDataProvider implements ClassDataProvider {
             }
             classesToInstrument.put(className, data);
         }
+    }
+
+    private void populateHttpClasses() {
+        MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
+            @Override
+            public MethodVisitor create(MethodInstrumentationDecision decision,
+                                        int access,
+                                        String desc,
+                                        String className,
+                                        String methodName,
+                                        MethodVisitor methodVisitor,
+                                        ClassToMethodTransformationData additionalData) {
+                return new HttpClientMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
+            }
+        };
+
+        addToHttpClasses(null,
+                         methodVisitorFactory,
+                         InstrumentedClassType.HTTP,
+                         HTTP_CLIENT_43_CLASS_NAME,
+                         HTTP_CLIENT_METHOD_43_NAME,
+                         HTTP_CLIENT_METHOD_43_SIGNATURE);
+        addToHttpClasses(null,
+                         methodVisitorFactory,
+                         InstrumentedClassType.HTTP,
+                         HTTP_CLIENT_42_CLASS_NAME,
+                         HTTP_CLIENT_METHOD_42_NAME,
+                         HTTP_CLIENT_METHOD_42_SIGNATURE);
+
+        ClassVisitorFactory classVisitorFactory = new ClassVisitorFactory() {
+            @Override
+            public DefaultClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
+                return new OkHttpClassVisitor(classInstrumentationData, classWriter);
+            }
+        };
+
+        methodVisitorFactory = new MethodVisitorFactory() {
+            @Override
+            public MethodVisitor create(MethodInstrumentationDecision decision,
+                                        int access,
+                                        String desc,
+                                        String className,
+                                        String methodName,
+                                        MethodVisitor methodVisitor,
+                                        ClassToMethodTransformationData additionalData) {
+                return new OkHttpMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
+            }
+        };
+        addToHttpClasses(classVisitorFactory,
+                         methodVisitorFactory,
+                         InstrumentedClassType.HTTP,
+                         OK_HTTP_CLIENT_CALL_CLASS_NAME,
+                         OK_HTTP_CLIENT_CALL_METHOD_NAME,
+                         OK_HTTP_CLIENT_CALL_METHOD_SIGNATURE);
+
+        methodVisitorFactory = new MethodVisitorFactory() {
+            @Override
+            public MethodVisitor create(MethodInstrumentationDecision decision,
+                                        int access,
+                                        String desc,
+                                        String className,
+                                        String methodName,
+                                        MethodVisitor methodVisitor,
+                                        ClassToMethodTransformationData additionalData) {
+                return new OkHttpAsyncCallMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
+            }
+        };
+        addToHttpClasses(classVisitorFactory,
+                         methodVisitorFactory,
+                         InstrumentedClassType.HTTP,
+                         OK_HTTP_CLIENT_CALL_ASYNC_CLASS_NAME,
+                         OK_HTTP_CLIENT_CALL_ASYNC_METHOD_NAME,
+                         OK_HTTP_CLIENT_CALL_ASYNC_METHOD_SIGNATURE);
     }
 
     private boolean isExcluded(String className) {
@@ -188,5 +285,20 @@ class DefaultClassDataProvider implements ClassDataProvider {
             return;
         }
         builtInEnabled = agentConfiguration.getBuiltInConfiguration().isEnabled();
+    }
+
+    private void addToHttpClasses(ClassVisitorFactory classVisitorFactory,
+                                  MethodVisitorFactory methodVisitorFactory,
+                                  InstrumentedClassType type,
+                                  String className,
+                                  String methodName,
+                                  String methodSignature) {
+        ClassInstrumentationData data =
+                new ClassInstrumentationData(className, type, classVisitorFactory)
+                        .setReportCaughtExceptions(false)
+                        .setReportExecutionTime(true);
+        data.addMethod(methodName, methodSignature, false, true, methodVisitorFactory);
+
+        classesToInstrument.put(className, data);
     }
 }

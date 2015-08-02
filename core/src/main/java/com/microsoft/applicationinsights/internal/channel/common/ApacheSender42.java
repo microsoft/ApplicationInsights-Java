@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -49,7 +50,7 @@ final class ApacheSender42 implements ApacheSender {
         HttpConnectionParams.setConnectionTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
         HttpConnectionParams.setSoTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
 
-        System.out.println("using 42");
+        InternalLogger.INSTANCE.info("Using Apache HttpClient 4.2");
     }
 
     @Override

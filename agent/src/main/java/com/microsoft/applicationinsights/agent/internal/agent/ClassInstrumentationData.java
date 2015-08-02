@@ -42,8 +42,14 @@ public final class ClassInstrumentationData {
 
     private final static MethodVisitorFactory s_defaultMethodVisitorFactory = new MethodVisitorFactory() {
         @Override
-        public MethodVisitor create(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
-            return new DefaultMethodVisitor(decision, access, desc, owner, methodName, methodVisitor);
+        public MethodVisitor create(MethodInstrumentationDecision decision,
+                                    int access,
+                                    String desc,
+                                    String owner,
+                                    String methodName,
+                                    MethodVisitor methodVisitor,
+                                    ClassToMethodTransformationData additionalData) {
+            return new DefaultMethodVisitor(decision, access, desc, owner, methodName, methodVisitor, additionalData);
         }
     };
 
@@ -58,12 +64,21 @@ public final class ClassInstrumentationData {
     private boolean reportExecutionTime;
     private boolean reportCaughtExceptions;
 
-    private ClassVisitorFactory classVisitorFactory = s_defaultClassVisitorFactory;
+    private ClassVisitorFactory classVisitorFactory;
 
     public ClassInstrumentationData(String className, InstrumentedClassType classType) {
+        this(className, classType, null);
+    }
+
+    public ClassInstrumentationData(String className, InstrumentedClassType classType, ClassVisitorFactory classVisitorFactory) {
         this.className = className;
         this.classType = classType;
         this.methodInstrumentationInfo = new MethodInstrumentationInfo();
+        if (classVisitorFactory == null) {
+            this.classVisitorFactory = s_defaultClassVisitorFactory;
+        } else {
+            this.classVisitorFactory = classVisitorFactory;
+        }
     }
 
     public boolean addMethod(String methodName, String signature, boolean reportCaughtExceptions, boolean reportExecutionTime) {
@@ -95,6 +110,13 @@ public final class ClassInstrumentationData {
         return this;
     }
 
+    public ClassInstrumentationData setClassVisitorFactory(ClassVisitorFactory classVisitorFactory) {
+        if (classVisitorFactory != null) {
+            this.classVisitorFactory = classVisitorFactory;
+        }
+        return this;
+    }
+
     public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime) {
         methodInstrumentationInfo.addAllMethods(reportCaughtExceptions, reportExecutionTime, s_defaultMethodVisitorFactory);
     }
@@ -123,19 +145,24 @@ public final class ClassInstrumentationData {
         return classVisitorFactory.create(this, classWriter);
     }
 
-    public void setClassVisitorFactory(ClassVisitorFactory classVisitorFactory) {
-        if (classVisitorFactory != null) {
-            this.classVisitorFactory = classVisitorFactory;
-        }
+    public MethodVisitor getMethodVisitor(int access,
+                                          String methodName,
+                                          String methodSignature,
+                                          MethodVisitor originalMV) {
+        return getMethodVisitor(access, methodName, methodSignature, originalMV, null);
     }
 
-    public MethodVisitor getMethodVisitor(int access, String methodName, String methodSignature, MethodVisitor originalMV) {
+    public MethodVisitor getMethodVisitor(int access,
+                                          String methodName,
+                                          String methodSignature,
+                                          MethodVisitor originalMV,
+                                          ClassToMethodTransformationData additionalData) {
         MethodInstrumentationDecision decision = methodInstrumentationInfo.getDecision(methodName, methodSignature);
         if (decision == null || decision.getMethodVisitorFactory() == null) {
             return originalMV;
         }
 
-        return decision.getMethodVisitorFactory().create(decision, access, methodSignature, getClassName(), methodName, originalMV);
+        return decision.getMethodVisitorFactory().create(decision, access, methodSignature, getClassName(), methodName, originalMV, additionalData);
     }
 }
 

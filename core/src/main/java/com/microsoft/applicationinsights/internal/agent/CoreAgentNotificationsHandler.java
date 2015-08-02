@@ -104,9 +104,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onMethodEnterURL(String name, URL url) {
-        String urlAsString = (url == null) ? null : url.toString();
-        startMethod(InstrumentedClassType.HTTP, name, urlAsString);
+    public void onMethodEnterURL(String classAndMethodNames, String url) {
+        startMethod(InstrumentedClassType.HTTP, name, url);
     }
 
     @Override
@@ -205,7 +204,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     private void sendInstrumentationTelemetry(MethodData methodData, Throwable throwable) {
         Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, duration, throwable == null);
-        telemetry.setDependencyKind(DependencyKind.Undefined);
+        telemetry.setDependencyKind(DependencyKind.Other);
 
         InternalLogger.INSTANCE.trace("Sending RDD event for '%s'", methodData.name);
 
@@ -219,11 +218,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     private void sendHTTPTelemetry(MethodData methodData, Throwable throwable) {
         if (methodData.arguments != null && methodData.arguments.length == 1) {
             String url = methodData.arguments[0];
-            Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
+            long durationInNanoSeconds = nanoToMilliseconds(methodData.interval);
+            Duration duration = new Duration(durationInNanoSeconds);
 
-            InternalLogger.INSTANCE.trace("Sending HTTP RDD event, URL: '%s'", url);
+            InternalLogger.INSTANCE.trace("Sending HTTP RDD event, URL: '%s', duration=%s", url, durationInNanoSeconds);
 
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(url, null, duration, throwable == null);
+            telemetry.setDependencyKind(DependencyKind.Http);
             telemetryClient.trackDependency(telemetry);
         }
     }
@@ -232,11 +233,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         if (methodData.arguments != null && methodData.arguments.length == 2) {
             String dependencyName = methodData.arguments[0];
             String commandName = methodData.arguments[1];
-            Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
+            long durationInNanoSeconds = nanoToMilliseconds(methodData.interval);
+            Duration duration = new Duration(durationInNanoSeconds);
 
-            InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s'", dependencyName, commandName);
+            InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s", dependencyName, commandName, durationInNanoSeconds);
 
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, throwable == null);
+            telemetry.setDependencyKind(DependencyKind.SQL);
             telemetryClient.track(telemetry);
         }
     }

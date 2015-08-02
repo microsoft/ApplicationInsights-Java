@@ -26,10 +26,9 @@ package com.microsoft.applicationinsights.internal.schemav2;
  */
 public enum DependencyKind
 {
-    Undefined(0),
-    HttpOnly(1),
-    HttpAny(2),
-    SQL(3);
+    SQL(0),
+    Http(1),
+    Other(2);
 
     private final int id;
 

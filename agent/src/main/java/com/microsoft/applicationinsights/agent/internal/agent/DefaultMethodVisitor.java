@@ -51,8 +51,6 @@ class DefaultMethodVisitor extends AdvancedAdviceAdapter {
     private final static String FINISH_METHOD_DEFAULT_SIGNATURE = "(Ljava/lang/String;)V";
     private final static String FINISH_METHOD_EXCEPTION_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
 
-    private String owner;
-    private String methodName;
     private final boolean reportCaughtExceptions;
     private HashSet<Label> labels = null;
 
@@ -62,15 +60,20 @@ class DefaultMethodVisitor extends AdvancedAdviceAdapter {
                                 String desc,
                                 String owner,
                                 String methodName,
-                                MethodVisitor methodVisitor) {
+                                MethodVisitor methodVisitor,
+                                ClassToMethodTransformationData additionalData) {
         super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
-        this.owner = owner;
-        this.methodName = methodName;
         this.reportCaughtExceptions = reportCaughtExceptions;
     }
 
-    public DefaultMethodVisitor(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
-        this(decision.isReportCaughtExceptions(), decision.isReportExecutionTime(), access, desc, owner, methodName, methodVisitor);
+    public DefaultMethodVisitor(MethodInstrumentationDecision decision,
+                                int access,
+                                String desc,
+                                String owner,
+                                String methodName,
+                                MethodVisitor methodVisitor,
+                                ClassToMethodTransformationData additionalData) {
+        this(decision.isReportCaughtExceptions(), decision.isReportExecutionTime(), access, desc, owner, methodName, methodVisitor, additionalData);
     }
 
     @Override
