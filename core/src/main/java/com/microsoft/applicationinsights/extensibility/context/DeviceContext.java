@@ -37,7 +37,7 @@ public final class DeviceContext {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceType(), type);
     }
 
-    String getId() {
+    public String getId() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceId());
     }
 
