@@ -49,6 +49,8 @@ class DefaultClassDataProvider implements ClassDataProvider {
     private final static String OK_HTTP_CLIENT_CALL_METHOD_NAME = "execute";
     private final static String OK_HTTP_CLIENT_CALL_METHOD_SIGNATURE = "()Lcom/squareup/okhttp/Response;";
 
+    private final static String REST_TEMPLATE_CLASS_NAME = "org/springframework/web/client/RestTemplate";
+
     private final static String OK_HTTP_CLIENT_CALL_ASYNC_CLASS_NAME = "com/squareup/okhttp/Call$AsyncCall";
     private final static String OK_HTTP_CLIENT_CALL_ASYNC_METHOD_NAME = "execute";
     private final static String OK_HTTP_CLIENT_CALL_ASYNC_METHOD_SIGNATURE = "()V";
@@ -106,6 +108,8 @@ class DefaultClassDataProvider implements ClassDataProvider {
         "executeQuery",
         "executeUpdate"
     };
+
+    private final static String REST_TEMPLATE_METTHOD = "doExecute";
 
     private final HashSet<String> sqlClasses = new HashSet<String>();
     private final HashSet<String> excludedPaths;
@@ -198,11 +202,11 @@ class DefaultClassDataProvider implements ClassDataProvider {
                          HTTP_CLIENT_METHOD_43_NAME,
                          HTTP_CLIENT_METHOD_43_SIGNATURE);
         addToHttpClasses(null,
-                         methodVisitorFactory,
-                         InstrumentedClassType.HTTP,
-                         HTTP_CLIENT_42_CLASS_NAME,
-                         HTTP_CLIENT_METHOD_42_NAME,
-                         HTTP_CLIENT_METHOD_42_SIGNATURE);
+                methodVisitorFactory,
+                InstrumentedClassType.HTTP,
+                HTTP_CLIENT_42_CLASS_NAME,
+                HTTP_CLIENT_METHOD_42_NAME,
+                HTTP_CLIENT_METHOD_42_SIGNATURE);
 
         ClassVisitorFactory classVisitorFactory = new ClassVisitorFactory() {
             @Override
@@ -243,11 +247,31 @@ class DefaultClassDataProvider implements ClassDataProvider {
             }
         };
         addToHttpClasses(classVisitorFactory,
-                         methodVisitorFactory,
-                         InstrumentedClassType.HTTP,
-                         OK_HTTP_CLIENT_CALL_ASYNC_CLASS_NAME,
-                         OK_HTTP_CLIENT_CALL_ASYNC_METHOD_NAME,
-                         OK_HTTP_CLIENT_CALL_ASYNC_METHOD_SIGNATURE);
+                methodVisitorFactory,
+                InstrumentedClassType.HTTP,
+                OK_HTTP_CLIENT_CALL_ASYNC_CLASS_NAME,
+                OK_HTTP_CLIENT_CALL_ASYNC_METHOD_NAME,
+                OK_HTTP_CLIENT_CALL_ASYNC_METHOD_SIGNATURE);
+
+        methodVisitorFactory = new MethodVisitorFactory() {
+            @Override
+            public MethodVisitor create(MethodInstrumentationDecision decision,
+                                        int access,
+                                        String desc,
+                                        String className,
+                                        String methodName,
+                                        MethodVisitor methodVisitor,
+                                        ClassToMethodTransformationData additionalData) {
+                return new RestTemplateMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
+            }
+        };
+        addToHttpClasses(classVisitorFactory,
+                methodVisitorFactory,
+                InstrumentedClassType.HTTP,
+                REST_TEMPLATE_CLASS_NAME,
+                REST_TEMPLATE_METTHOD,
+                null);
+
     }
 
     private boolean isExcluded(String className) {
