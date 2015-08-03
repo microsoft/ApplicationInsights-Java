@@ -108,4 +108,17 @@ public class DockerContextInitializerTests {
         String expectedSdkInfo = String.format(Constants.AI_SDK_INFO_FILE_CONTENT_TEMPLATE, instrumentationKey);
         verify(fileFactoryMock).create(sdkInfoFilePath, expectedSdkInfo);
     }
+
+    @Test
+    public void testIfSDKInfoFileWrittenOnlyOnce() throws IOException {
+        reset(fileFactoryMock);
+
+        initializerUnderTest = new DockerContextInitializer(fileFactoryMock, contextPollerMock);
+
+        // Sending 2 telemetries, which should invoke the file factory mock only once.
+        initializerUnderTest.initialize(telemetry);
+        initializerUnderTest.initialize(telemetry);
+
+        verify(fileFactoryMock, times(1)).create(any(String.class), any(String.class));
+    }
 }
