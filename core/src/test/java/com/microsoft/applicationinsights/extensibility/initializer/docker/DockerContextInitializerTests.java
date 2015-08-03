@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.*;
 import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.Constants;
-import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContext;
-import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContextPoller;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.junit.Assert;
@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
@@ -47,6 +48,7 @@ public class DockerContextInitializerTests {
 
     private static DockerContextInitializer initializerUnderTest;
     private static DockerContextPoller contextPollerMock = mock(DockerContextPoller.class);
+    private static FileFactory fileFactoryMock = mock(FileFactory.class);
     private static DockerContext defaultDockerContext;
     private static Telemetry telemetry = new TraceTelemetry();
 
@@ -54,7 +56,7 @@ public class DockerContextInitializerTests {
     public static void classInit() throws Exception {
         String json = String.format(com.microsoft.applicationinsights.extensibility.initializer.docker.Constants.CONTEXT_FILE_PATTERN, DEFAULT_HOST, DEFAULT_IMAGE, DEFAULT_CONTAINER_NAME, DEFAULT_CONTAINER_ID);
         defaultDockerContext = new DockerContext(json);
-        initializerUnderTest = new DockerContextInitializer(contextPollerMock);
+        initializerUnderTest = new DockerContextInitializer(fileFactoryMock, contextPollerMock);
     }
 
     @Before
@@ -92,5 +94,18 @@ public class DockerContextInitializerTests {
         initializerUnderTest.initialize(telemetry);
 
         verify(contextPollerMock, times(0)).getDockerContext();
+    }
+
+    @Test
+    public void testSDKInfoFileIsWrittenWithInstrumentationKey() throws IOException {
+        reset(fileFactoryMock);
+        String sdkInfoFilePath = String.format("%s/%s", Constants.AI_SDK_DIRECTORY, Constants.AI_SDK_INFO_FILENAME);
+        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
+
+        initializerUnderTest = new DockerContextInitializer(fileFactoryMock, contextPollerMock);
+        initializerUnderTest.initialize(telemetry);
+
+        String expectedSdkInfo = String.format(Constants.AI_SDK_INFO_FILE_CONTENT_TEMPLATE, instrumentationKey);
+        verify(fileFactoryMock).create(sdkInfoFilePath, expectedSdkInfo);
     }
 }
