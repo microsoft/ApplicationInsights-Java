@@ -21,16 +21,16 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker.internal;
 
-/**
- * Created by yonisha on 7/29/2015.
- */
-public class Constants {
-    public static final String AI_SDK_DIRECTORY = "/usr/appinsights/docker";
-    public static final String AI_SDK_INFO_FILENAME = "sdk.info";
-    public static final String AI_SDK_INFO_FILE_CONTENT_TEMPLATE = "InstrumentationKey=";
+import org.apache.commons.io.FileUtils;
 
-    public static final String DOCKER_HOST_PROPERTY_KEY = "docker-host";
-    public static final String DOCKER_IMAGE_PROPERTY_KEY = "docker-image";
-    public static final String DOCKER_CONTAINER_NAME_PROPERTY_KEY = "docker-container-name";
-    public static final String DOCKER_CONTAINER_ID_PROPERTY_KEY = "docker-container-id";
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * Created by yonisha on 8/3/2015.
+ */
+public class FileFactory {
+    public void create(String filePath, String data) throws IOException {
+        FileUtils.writeStringToFile(new File(filePath), data);
+    }
 }

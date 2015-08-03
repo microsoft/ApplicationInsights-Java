@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * Created by yonisha on 7/29/2015.
  */
 public class DockerContextPoller extends Thread {
-    private static final String CONTEXT_FILE_EXPECTED_PATH = "/usr/appinsights/docker/docker.info";
+    private static final String CONTEXT_FILE_NAME = "docker.info";
     private File contextFile;
     private DockerContextFactory dockerContextFactory;
     private volatile DockerContext dockerContext;
@@ -39,9 +39,9 @@ public class DockerContextPoller extends Thread {
         this.dockerContextFactory = dockerContextFactory;
     }
 
-    public DockerContextPoller() {
+    public DockerContextPoller(String contextFileDirectory) {
         this.setDaemon(true);
-        this.contextFile = new File(CONTEXT_FILE_EXPECTED_PATH);
+        this.contextFile = new File(contextFileDirectory + "/" + CONTEXT_FILE_NAME);
         this.dockerContextFactory = new DockerContextFactory();
     }
 

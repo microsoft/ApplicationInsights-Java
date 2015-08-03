@@ -21,22 +21,35 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContext;
-import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContextPoller;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.*;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created by yonisha on 7/29/2015.
+ *
+ * This initializer is required for Docker awareness.
+ * The initializer has two goals:
+ *  1) Identify Docker context file injected by Application Insight for Docker container and initialize
+ *      telemetries with Docker context.
+ *  2) Write SDK context file which enables the Application Insights for Docker container to discover containers with
+ *      integrated SDK, and stop sending performance counters in that case (SDK provides OOB performance counters).
  */
 public class DockerContextInitializer implements TelemetryInitializer {
 
+    private FileFactory fileFactory;
     private DockerContextPoller dockerContextPoller;
+    private boolean sdkInfoFileWritten = false;
 
-    protected DockerContextInitializer(DockerContextPoller dockerContextPoller) {
+    protected DockerContextInitializer(FileFactory fileFactory, DockerContextPoller dockerContextPoller) {
+        this.fileFactory = fileFactory;
         this.dockerContextPoller = dockerContextPoller;
+        this.dockerContextPoller.start();
     }
 
     /**
@@ -45,11 +58,7 @@ public class DockerContextInitializer implements TelemetryInitializer {
      * the docker context.
      */
     public DockerContextInitializer() {
-
-        // TODO: inject SDK-aware file into docker directory.
-
-        dockerContextPoller = new DockerContextPoller();
-        dockerContextPoller.start();
+        this(new FileFactory(), new DockerContextPoller(Constants.AI_SDK_DIRECTORY));
     }
 
     /**
@@ -59,6 +68,12 @@ public class DockerContextInitializer implements TelemetryInitializer {
     @Override
     public void initialize(Telemetry telemetry) {
         DockerContext dockerContext;
+
+        if (!sdkInfoFileWritten) {
+            writeSDKInfoFile();
+            sdkInfoFileWritten = true;
+        }
+
         if (dockerContextPoller.isCompleted() && (dockerContext = dockerContextPoller.getDockerContext()) != null) {
             TelemetryContext context = telemetry.getContext();
 
@@ -66,6 +81,18 @@ public class DockerContextInitializer implements TelemetryInitializer {
 
             ConcurrentMap<String, String> properties = context.getProperties();
             properties.putAll(dockerContext.getProperties());
+        }
+    }
+
+    private void writeSDKInfoFile() {
+        String sdkInfoFilePath = String.format("%s/%s", Constants.AI_SDK_DIRECTORY, Constants.AI_SDK_INFO_FILENAME);
+        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
+        String sdkInfo = String.format(Constants.AI_SDK_INFO_FILE_CONTENT_TEMPLATE, instrumentationKey);
+
+        try {
+            fileFactory.create(sdkInfoFilePath, sdkInfo);
+        } catch (IOException e) {
+            InternalLogger.INSTANCE.error("Failed to write SDK info file for Docker awareness. Error: " + e.getMessage());
         }
     }
 }

@@ -52,7 +52,7 @@ public class ApplicationInsightsWriter implements
         CollectdWriteInterface,
         CollectdShutdownInterface {
 
-    // region Constss
+    // region Consts
 
     protected static final String UNDEFINED_HOST = "N/A";
     protected static final String METRIC_SOURCE_TAG_KEY = "MetricSource";
