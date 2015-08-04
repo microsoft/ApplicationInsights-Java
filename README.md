@@ -4,7 +4,7 @@ Introduction
 ------------
 Application Insights SDK for Java initially prototyped to be used in Java web services. 
 
-Please refer to [AppInsights-Home](https://github.com/Microsoft/ApplicationInsights-Home) for general application insights documentation.
+Please refer to [Application Insights documentation page](https://azure.microsoft.com/en-us/documentation/services/application-insights/) for general application insights documentation.
 
 Prerequisites
 -------------
