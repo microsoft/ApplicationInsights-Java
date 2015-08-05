@@ -19,18 +19,21 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-import org.junit.Test;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
 
-import static org.junit.Assert.*;
+import java.util.Set;
 
-public final class ByteCodeTransformerTest {
-    @Test
-    public void noClassInstrumentationDataTest() {
-        ByteCodeTransformer tested = new ByteCodeTransformer(null);
-        byte[] mockArray = new byte[1];
-        byte[] result = tested.transform(mockArray);
-        assertSame(result, mockArray);
+/**
+ * Created by gupele on 8/3/2015.
+ */
+public class PreparedStatementMetaData implements ClassToMethodTransformationData {
+    public final String fieldName = "__aijdk_sql_string__";
+    public final Set<String> ctorSignatures;
+    public int sqlStringInCtor;
+
+    public PreparedStatementMetaData(Set<String> ctorSignatures) {
+        this.ctorSignatures = ctorSignatures;
     }
 }

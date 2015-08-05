@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.coresync;
 
-import java.net.URL;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 
 /**
@@ -59,6 +59,16 @@ public interface AgentNotificationsHandler {
      * @param sqlStatement The sql statement that is used
      */
     void onMethodEnterSqlStatement(String classAndMethodNames, Statement statement, String sqlStatement);
+
+    void onExecuteQueryEnterSqlStatementWithPossibleExplain(String name, Statement statement, String sqlStatement);
+
+    /**
+     * Called when an java.sql.PreparedStatement concrete class is called
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param sqlStatement The sql statement that is used
+     * @param args The values for the statement
+     */
+    void onMethodEnterPreparedStatement(String classAndMethodNames, PreparedStatement statement, String sqlStatement, Object[] args);
 
     /**
      * A 'regular' method enter. Non HTTP/SQL method

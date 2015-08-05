@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -19,43 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 /**
- * Created by gupele on 5/11/2015.
+ * Created by gupele on 8/4/2015.
  */
-public final class ByteCodeUtils {
-    private final static String BYTE_CODE_CTOR_NAME = "<init>";
-    private final static String BYTE_CODE_STATIC_CTOR_NAME = "<clinit>";
+final class PreparedStatementCtorMethodVisitor extends DefaultMethodVisitor {
+    private final PreparedStatementMetaData metaData;
 
-    public static boolean isInterface(int access) {
-        return (access & Opcodes.ACC_INTERFACE) != 0;
+    public PreparedStatementCtorMethodVisitor(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor, ClassToMethodTransformationData additionalData) {
+        super(false, false, access, desc, owner, methodName, methodVisitor, additionalData);
+        this.metaData = (PreparedStatementMetaData)additionalData;
     }
 
-    public static boolean isAbstract(int access) {
-        return (access & Opcodes.ACC_ABSTRACT) != 0;
+    @Override
+    public void visitCode() {
+        super.visitCode();
+        super.visitVarInsn(Opcodes.ALOAD, 0);
+        super.visitVarInsn(Opcodes.ALOAD, metaData.sqlStringInCtor);
+        super.visitFieldInsn(Opcodes.PUTFIELD, owner, metaData.fieldName, "Ljava/lang/String;");
     }
 
-    public static boolean isPrivate(int access) {
-        return (access & Opcodes.ACC_PRIVATE) != 0;
-    }
-
-    public static boolean isStatic(int access) {
-        return (access & Opcodes.ACC_STATIC) != 0;
-    }
-
-    public static boolean isAnyConstructor(String methodName) {
-        return BYTE_CODE_CTOR_NAME.equals(methodName) || BYTE_CODE_STATIC_CTOR_NAME.startsWith(methodName);
-    }
-
-    public static boolean isConstructor(String methodName) {
-        return BYTE_CODE_CTOR_NAME.equals(methodName);
-    }
-
-    static boolean isLargeType(Type type) {
-        return type.getSize() == 2;
+    @Override
+    protected void onMethodExit(int opcode) {
     }
 }

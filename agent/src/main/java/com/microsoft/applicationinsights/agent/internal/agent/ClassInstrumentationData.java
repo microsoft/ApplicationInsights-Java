@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
@@ -141,7 +142,7 @@ public final class ClassInstrumentationData {
         return reportCaughtExceptions;
     }
 
-    public DefaultClassVisitor getDefaultClassInstrumentor(ClassWriter classWriter) {
+    public ClassVisitor getDefaultClassInstrumentor(ClassWriter classWriter) {
         return classVisitorFactory.create(this, classWriter);
     }
 

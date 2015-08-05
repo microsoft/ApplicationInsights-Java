@@ -39,7 +39,7 @@ import org.objectweb.asm.Type;
  *
  * Created by gupele on 5/11/2015.
  */
-class DefaultMethodVisitor extends AdvancedAdviceAdapter {
+public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
     private final static String THROWABLE_METHOD_NAME = "onThrowable";
     private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
@@ -54,6 +54,8 @@ class DefaultMethodVisitor extends AdvancedAdviceAdapter {
     private final boolean reportCaughtExceptions;
     private HashSet<Label> labels = null;
 
+    protected final String owner;
+
     public DefaultMethodVisitor(boolean reportCaughtExceptions,
                                 boolean reportExecutionTime,
                                 int access,
@@ -64,6 +66,7 @@ class DefaultMethodVisitor extends AdvancedAdviceAdapter {
                                 ClassToMethodTransformationData additionalData) {
         super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
         this.reportCaughtExceptions = reportCaughtExceptions;
+        this.owner = owner;
     }
 
     public DefaultMethodVisitor(MethodInstrumentationDecision decision,

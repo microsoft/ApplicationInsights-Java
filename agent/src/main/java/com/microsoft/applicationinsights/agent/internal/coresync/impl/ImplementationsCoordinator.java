@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.coresync.impl;
 
-import java.net.URL;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
+import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
 
@@ -42,7 +42,14 @@ import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificati
 public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     INSTANCE;
 
+    private long maxSqlMaxQueryLimit = Long.MAX_VALUE;
+
     private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
+
+    public void setConfigurationData(AgentConfiguration configurationData) {
+        System.out.println("ic    =" + configurationData.getBuiltInConfiguration().getSqlMaxQueryLimit());
+        maxSqlMaxQueryLimit = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimit();
+    }
 
     /**
      * The data we expect to have for every thread
@@ -71,13 +78,36 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onMethodEnterURL(String classAndMethodNames, String url) {
+    public void onMethodEnterURL(String classAndMethodName, String url) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onMethodEnterURL(classAndMethodNames, url);
+                implementation.onMethodEnterURL(classAndMethodName, url);
             }
         } catch (Throwable t) {
+        }
+    }
+
+    @Override
+    public void onMethodEnterPreparedStatement(String classAndMethodName, PreparedStatement statement, String sqlStatement, Object[] args) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation != null) {
+                implementation.onMethodEnterPreparedStatement(classAndMethodName, statement, sqlStatement, args);
+            }
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
+    public void onExecuteQueryEnterSqlStatementWithPossibleExplain(String name, Statement statement, String sqlStatement) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation != null) {
+                implementation.onExecuteQueryEnterSqlStatementWithPossibleExplain(name, statement, sqlStatement);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 
@@ -85,13 +115,11 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     public void onMethodEnterSqlStatement(String name, Statement statement, String sqlStatement) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null && statement != null) {
-                if (StringUtils.isNullOrEmpty(sqlStatement)) {
-                    sqlStatement = statement.toString();
-                }
+            if (implementation != null) {
                 implementation.onMethodEnterSqlStatement(name, statement, sqlStatement);
             }
         } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 
@@ -155,6 +183,11 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
             return null;
         }
+    }
+
+    public long getMaxSqlQueryTime() {
+        System.out.println("getMaxSqlQueryTime    =" + maxSqlMaxQueryLimit);
+        return this.maxSqlMaxQueryLimit;
     }
 
     private AgentNotificationsHandler getImplementation() {

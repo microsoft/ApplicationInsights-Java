@@ -19,12 +19,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.agent.sql;
+
+import com.microsoft.applicationinsights.agent.internal.agent.ByteCodeTransformer;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+
+import org.objectweb.asm.*;
 
 /**
- * A marker to allow Class Visitors to pass data to Method Visitors
- *
- * Created by gupele on 7/27/2015.
+ * Created by gupele on 8/3/2015.
  */
-public interface ClassToMethodTransformationData {
+public final class PreparedStatementByteCodeTransformer implements ByteCodeTransformer {
+    private final ClassInstrumentationData classInstrumentationData;
+
+    PreparedStatementByteCodeTransformer(ClassInstrumentationData classInstrumentationData) {
+        this.classInstrumentationData = classInstrumentationData;
+    }
+
+    @Override
+    public byte[] transform(byte[] originalBuffer) {
+        if (classInstrumentationData == null) {
+            return originalBuffer;
+        }
+
+        ClassReader cr = new ClassReader(originalBuffer);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
+        cr.accept(dcv, ClassReader.EXPAND_FRAMES);
+        byte[] newBuffer = cw.toByteArray();
+        return newBuffer;
+    }
 }

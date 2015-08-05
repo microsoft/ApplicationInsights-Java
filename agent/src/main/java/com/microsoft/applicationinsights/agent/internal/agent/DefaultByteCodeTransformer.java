@@ -21,12 +21,39 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
 /**
+ * The class coordinates the byte code transformation
+ * It works with the {@link com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData}
+ *
  * Created by gupele on 7/27/2015.
  */
-public interface ClassVisitorFactory {
-    ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter);
+final class DefaultByteCodeTransformer implements ByteCodeTransformer {
+    private final ClassInstrumentationData classInstrumentationData;
+
+    DefaultByteCodeTransformer(ClassInstrumentationData classInstrumentationData) {
+        this.classInstrumentationData = classInstrumentationData;
+    }
+
+    /**
+     * The method will create the the instances that are responsible for transforming the class' code.
+     * @param originalBuffer The original buffer of the class
+     * @return A new buffer containing the class with the changes or the original one if no change was done.
+     */
+    @Override
+    public byte[] transform(byte[] originalBuffer) {
+        if (classInstrumentationData == null) {
+            return originalBuffer;
+        }
+
+        ClassReader cr = new ClassReader(originalBuffer);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
+        cr.accept(dcv, ClassReader.EXPAND_FRAMES);
+        byte[] newBuffer = cw.toByteArray();
+        return newBuffer;
+    }
 }

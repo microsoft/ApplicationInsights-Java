@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.agent;
 
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
-import org.objectweb.asm.ClassWriter;
 
 /**
  * Defines the interface for classes that know to supply
@@ -41,8 +40,8 @@ interface ClassDataProvider {
      * Get the {@link ClassInstrumentationData}
      * that is associated with the class name, if such information is found it is removed from the container
      * @param className The class name to search
-     * @return {@link ByteCodeTransformer} that is
+     * @return {@link DefaultByteCodeTransformer} that is
      * associated with the class name, null otherwise
      */
-    ByteCodeTransformer getAndRemove(String className);
+    DefaultByteCodeTransformer getAndRemove(String className);
 }

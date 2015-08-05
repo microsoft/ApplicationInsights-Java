@@ -21,10 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-/**
- * A marker to allow Class Visitors to pass data to Method Visitors
- *
- * Created by gupele on 7/27/2015.
- */
-public interface ClassToMethodTransformationData {
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+public final class DefaultByteCodeTransformerTest {
+    @Test
+    public void noClassInstrumentationDataTest() {
+        DefaultByteCodeTransformer tested = new DefaultByteCodeTransformer(null);
+        byte[] mockArray = new byte[1];
+        byte[] result = tested.transform(mockArray);
+        assertSame(result, mockArray);
+    }
 }
