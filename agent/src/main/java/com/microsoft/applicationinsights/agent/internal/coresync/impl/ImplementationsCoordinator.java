@@ -47,11 +47,16 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     public final static String internalNameAsJavaName = "L" + internalName + ";";
 
     private long maxSqlMaxQueryLimit = Long.MAX_VALUE;
+    private long jedisThresholdInNS = 0;
 
     private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
 
     public void setConfigurationData(AgentConfiguration configurationData) {
         maxSqlMaxQueryLimit = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimit();
+        jedisThresholdInNS = configurationData.getBuiltInConfiguration().getJedisThresholdInMS() * 1000000;
+        if (jedisThresholdInNS < 0) {
+            jedisThresholdInNS = 0;
+        }
     }
 
     /**
@@ -99,6 +104,18 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
                 implementation.preparedStatementMethodStarted(classAndMethodName, statement, sqlStatement, args);
             }
         } catch (Throwable t) {
+        }
+    }
+
+    @Override
+    public void methodFinished(String classAndMethodName, long deltaInNS, Object[] args, Throwable throwable) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation != null) {
+                implementation.methodFinished(classAndMethodName, deltaInNS, args, throwable);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 
@@ -196,6 +213,10 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
             return null;
         }
+    }
+
+    public long getRedisLimit() {
+        return jedisThresholdInNS;
     }
 
     public long getMaxSqlQueryTime() {

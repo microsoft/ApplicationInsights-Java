@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.microsoft.applicationinsights.agent.internal.agent.http.HttpClassDataProvider;
+import com.microsoft.applicationinsights.agent.internal.agent.redis.JedisClassDataProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.sql.PreparedStatementClassDataProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.sql.StatementClassDataDataProvider;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
@@ -112,6 +113,7 @@ class DefaultClassDataProvider implements ClassDataProvider {
             new StatementClassDataDataProvider(classesToInstrument).add();
             new PreparedStatementClassDataProvider(classesToInstrument).add();
             new HttpClassDataProvider(classesToInstrument).add();
+            new JedisClassDataProvider(classesToInstrument).add();
         }
 
         addConfigurationData(agentConfiguration);

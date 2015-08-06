@@ -118,8 +118,12 @@ public final class ClassInstrumentationData {
         return this;
     }
 
+    public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory) {
+        methodInstrumentationInfo.addAllMethods(reportCaughtExceptions, reportExecutionTime, methodVisitorFactory == null ? s_defaultMethodVisitorFactory : methodVisitorFactory);
+    }
+
     public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime) {
-        methodInstrumentationInfo.addAllMethods(reportCaughtExceptions, reportExecutionTime, s_defaultMethodVisitorFactory);
+        addAllMethods(reportCaughtExceptions, reportExecutionTime, null);
     }
 
     public String getClassName() {

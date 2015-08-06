@@ -55,7 +55,7 @@ public final class ByteCodeUtils {
         return BYTE_CODE_CTOR_NAME.equals(methodName);
     }
 
-    static boolean isLargeType(Type type) {
+    public static boolean isLargeType(Type type) {
         return type.getSize() == 2;
     }
 }

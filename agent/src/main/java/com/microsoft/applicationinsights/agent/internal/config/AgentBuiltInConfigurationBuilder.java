@@ -29,10 +29,18 @@ public class AgentBuiltInConfigurationBuilder {
     private boolean httpEnabled = true;
     private boolean jdbcEnabled = true;
     private boolean hibernateEnabled = true;
+    private boolean jedisEnabled = true;
+    private long jedisThresholdInMS = 0;
     private Long maxSqlQueryLimit = Long.MAX_VALUE;
 
     public AgentBuiltInConfiguration create() {
-        return new AgentBuiltInConfiguration(enabled, httpEnabled && enabled, jdbcEnabled && enabled, hibernateEnabled && enabled, maxSqlQueryLimit);
+        return new AgentBuiltInConfiguration(enabled,
+                                             httpEnabled && enabled,
+                                             jdbcEnabled && enabled,
+                                             hibernateEnabled && enabled,
+                                             hibernateEnabled && jedisEnabled,
+                                             maxSqlQueryLimit,
+                jedisThresholdInMS);
     }
 
     public AgentBuiltInConfigurationBuilder setEnabled(boolean enabled) {
@@ -61,6 +69,12 @@ public class AgentBuiltInConfigurationBuilder {
         } else {
             this.maxSqlQueryLimit = maxSqlQueryLimit;
         }
+        return this;
+    }
+
+    public AgentBuiltInConfigurationBuilder setJedisValues(boolean jedisEnabled, long jedisThresholdInMS) {
+        this.jedisEnabled = jedisEnabled;
+        this.jedisThresholdInMS = jedisThresholdInMS < 0 ? 0 : jedisThresholdInMS;
         return this;
     }
 }

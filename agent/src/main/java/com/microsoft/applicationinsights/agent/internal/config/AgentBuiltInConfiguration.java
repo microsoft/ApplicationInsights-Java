@@ -29,9 +29,11 @@ public class AgentBuiltInConfiguration {
     private final boolean httpEnabled;
     private final boolean jdbcEnabled;
     private final boolean hibernateEnabled;
+    private final boolean jedisEnabled;
     private final long maxSqlQueryLimit;
+    private final long jedisThresholdInMS;
 
-    public AgentBuiltInConfiguration(boolean enabled, boolean httpEnabled, boolean jdbcEnabled, boolean hibernateEnabled, Long maxSqlQueryLimit) {
+    public AgentBuiltInConfiguration(boolean enabled, boolean httpEnabled, boolean jdbcEnabled, boolean hibernateEnabled, boolean jedisEnabled, Long maxSqlQueryLimit, long jedisThresholdInMS) {
         this.enabled = enabled;
         this.httpEnabled = httpEnabled;
         this.jdbcEnabled = jdbcEnabled;
@@ -39,6 +41,8 @@ public class AgentBuiltInConfiguration {
         if (maxSqlQueryLimit == null) {
             throw new IllegalArgumentException("maxSqlQueryLimit cannot be null");
         }
+        this.jedisThresholdInMS = jedisThresholdInMS;
+        this.jedisEnabled = jedisEnabled;
         this.maxSqlQueryLimit = maxSqlQueryLimit;
     }
 
@@ -60,5 +64,13 @@ public class AgentBuiltInConfiguration {
 
     public long getSqlMaxQueryLimit() {
         return maxSqlQueryLimit;
+    }
+
+    public boolean isJedisEnabled() {
+        return jedisEnabled;
+    }
+
+    public long getJedisThresholdInMS() {
+        return jedisThresholdInMS;
     }
 }
