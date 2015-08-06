@@ -21,7 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
-import java.sql.*;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
@@ -51,7 +56,6 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         public String name;
         public Object[] arguments;
         public long interval;
-        public long max = Long.MAX_VALUE;
         public InstrumentedClassType type;
         public Object result;
     }
@@ -92,7 +96,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onThrowable(String classAndMethodNames, Throwable throwable) {
+    public void exceptionCaught(String classAndMethodNames, Throwable throwable) {
         try {
             if (throwable instanceof Exception) {
                 telemetryClient.trackException((Exception)throwable);
@@ -102,80 +106,29 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onMethodEnterURL(String classAndMethodNames, String url) {
+    public void httpMethodStarted(String classAndMethodNames, String url) {
         startMethod(InstrumentedClassType.HTTP, name, url);
     }
 
     @Override
-    public void onExecuteQueryEnterSqlStatementWithPossibleExplain(String name, Statement statement, String sqlStatement) {
-        if (statement == null) {
-            return;
-        }
-
-        try {
-            Connection connection = statement.getConnection();
-            if (connection == null) {
-                return;
-            }
-
-            DatabaseMetaData metaData = connection.getMetaData();
-            if (metaData == null) {
-                return;
-            }
-
-            String url = metaData.getURL();
-            startSqlQueryWithPossibleExplainMethod(name, url, sqlStatement, connection);
-
-        } catch (SQLException e) {
-        }
+    public void sqlStatementExecuteQueryPossibleQueryPlan(String name, Statement statement, String sqlStatement) {
+        startSqlMethod(statement, sqlStatement, null);
     }
 
     @Override
-    public void onMethodEnterSqlStatement(String name, Statement statement, String sqlStatement) {
-        if (statement == null) {
-            return;
-        }
-
-        try {
-            Connection connection = statement.getConnection();
-            if (connection == null) {
-                return;
-            }
-
-            DatabaseMetaData metaData = connection.getMetaData();
-            if (metaData == null) {
-                return;
-            }
-
-            String url = metaData.getURL();
-            startMethod(InstrumentedClassType.SQL, name, url, sqlStatement, connection);
-
-        } catch (SQLException e) {
-        }
+    public void preparedStatementMethodStarted(String classAndMethodNames, PreparedStatement statement, String sqlStatement, Object[] args) {
+        startSqlMethod(statement, sqlStatement, args);
     }
 
     @Override
-    public void onMethodEnterPreparedStatement(String classAndMethodNames, PreparedStatement statement, String sqlStatement, Object[] args) {
-        if (statement == null) {
-            return;
-        }
+    public void sqlStatementMethodStarted(String name, Statement statement, String sqlStatement) {
+        startSqlMethod(statement, sqlStatement, null);
+    }
 
-        try {
-            Connection connection = statement.getConnection();
-            if (connection == null) {
-                return;
-            }
-
-            DatabaseMetaData metaData = connection.getMetaData();
-            if (metaData == null) {
-                return;
-            }
-
-            String url = metaData.getURL();
-            startMethod(InstrumentedClassType.SQL, name, url, sqlStatement, connection, args);
-
-        } catch (SQLException e) {
-        }
+    @Override
+    public void preparedStatementExecuteBatchMethodStarted(String classAndMethodNames, PreparedStatement statement, String sqlStatement, int batchCounter) {
+        final String batchData = String.format("Batch of %d", batchCounter);
+        startSqlMethod(statement, sqlStatement, new Object[]{batchData});
     }
 
     public String getName() {
@@ -183,12 +136,12 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onMethodEnter(String name) {
+    public void methodStarted(String name) {
         startMethod(InstrumentedClassType.OTHER, name, new String[]{});
     }
 
     @Override
-    public void onMethodFinish(String name, Throwable throwable) {
+    public void methodFinished(String name, Throwable throwable) {
         if (!finalizeMethod(null, throwable)) {
             InternalLogger.INSTANCE.error("Agent has detected a 'Finish' method '%s' with exception '%s' event without a 'Start'",
                     name, throwable == null ? "unknown" : throwable.getClass().getName());
@@ -196,9 +149,43 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onMethodFinish(String name) {
+    public void methodFinished(String name) {
         if (!finalizeMethod(null, null)) {
             InternalLogger.INSTANCE.error("Agent has detected a 'Finish' method ('%s') event without a 'Start'", name);
+        }
+    }
+
+    private void startSqlMethod(Statement statement, String sqlStatement, Object[] additionalArgs) {
+
+        try {
+            Connection connection = null;
+            DatabaseMetaData metaData;
+            String url = null;
+            if (statement != null) {
+                try {
+                    connection = statement.getConnection();
+                    if (connection != null) {
+                        metaData = connection.getMetaData();
+
+                        if (metaData != null) {
+                            url = metaData.getURL();
+                        }
+                    }
+                } catch (Throwable t) {
+                    url = "jdbc:Unknown DB URL (failed to fetch from connection)";
+                }
+            }
+
+            Object[] sqlMetaData;
+            if (additionalArgs == null) {
+                sqlMetaData = new Object[] {url, sqlStatement, connection};
+            } else {
+                sqlMetaData = new Object[] {url, sqlStatement, connection, additionalArgs};
+            }
+            startSqlMethod(InstrumentedClassType.SQL, name, sqlMetaData);
+            ThreadData localData = threadDataThreadLocal.get();
+
+        } catch (Throwable e) {
         }
     }
 
@@ -214,20 +201,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         localData.methods.addFirst(methodData);
     }
 
-    private void startSqlQueryWithPossibleExplainMethod(String name, Object... arguments) {
-        long start = System.nanoTime();
-
-        ThreadData localData = threadDataThreadLocal.get();
-        MethodData methodData = new MethodData();
-        methodData.interval = start;
-        methodData.type = InstrumentedClassType.SQL;
-        methodData.max = ImplementationsCoordinator.INSTANCE.getMaxSqlQueryTime();
-        methodData.arguments = arguments;
-        methodData.name = name;
-        localData.methods.addFirst(methodData);
-    }
-
-    private void startMethod(InstrumentedClassType type, String name, Object... arguments) {
+    private void startSqlMethod(InstrumentedClassType type, String name, Object... arguments) {
         long start = System.nanoTime();
 
         ThreadData localData = threadDataThreadLocal.get();
@@ -261,7 +235,6 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     private void report(MethodData methodData, Throwable throwable) {
-
         switch (methodData.type) {
             case SQL:
                 sendSQLTelemetry(methodData, throwable);
@@ -302,36 +275,59 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(url, null, duration, throwable == null);
             telemetry.setDependencyKind(DependencyKind.Http);
             telemetryClient.trackDependency(telemetry);
+            if (throwable != null) {
+                ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
+                telemetryClient.track(exceptionTelemetry);
+            }
         }
     }
 
     private void sendSQLTelemetry(MethodData methodData, Throwable throwable) {
         if (methodData.arguments != null && methodData.arguments.length >= 3 && methodData.arguments[1] != null) {
-            String dependencyName = methodData.arguments[0].toString();
-            String commandName = methodData.arguments[1].toString();
-
-            long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
-            Duration duration = new Duration(durationInMilliSeconds);
-
-            StringBuilder explainSB = null;
-            if (methodData.arguments.length > 3) {
-                commandName = formatPreparedSqlArguments(commandName, methodData);
-            } else {
-                System.out.println("duration" + durationInMilliSeconds + " " + methodData.max);
-                if (durationInMilliSeconds > methodData.max) {
-                    explainSB = fetchExplainQuery(commandName, methodData.arguments[2]);
+            try {
+                String dependencyName = null;
+                if (methodData.arguments[0] != null) {
+                    dependencyName = methodData.arguments[0].toString();
                 }
-            }
+                String commandName = null;
+                if (methodData.arguments[1] == null) {
+                    return;
+                }
 
-            InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
+                commandName = methodData.arguments[1].toString();
+                long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
+                Duration duration = new Duration(durationInMilliSeconds);
 
-            RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, throwable == null);
-            telemetry.setDependencyKind(DependencyKind.SQL);
-            if (explainSB != null) {
-                System.out.println(explainSB.toString());
-                telemetry.getContext().getProperties().put("Query Plan", explainSB.toString());
+                StringBuilder explainSB = null;
+                if (methodData.arguments.length > 3) {
+                    commandName = formatAdditionalSqlArguments(commandName, methodData);
+                } else {
+                    if (durationInMilliSeconds > ImplementationsCoordinator.INSTANCE.getMaxSqlQueryTime()) {
+                        explainSB = fetchExplainQuery(commandName, methodData.arguments[2]);
+                    }
+                }
+
+                InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
+
+                RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(
+                        dependencyName,
+                        commandName,
+                        duration,
+                        throwable == null);
+                telemetry.setDependencyKind(DependencyKind.SQL);
+                if (explainSB != null) {
+                    telemetry.getContext().getProperties().put("Query Plan", explainSB.toString());
+                }
+
+                telemetryClient.track(telemetry);
+                if (throwable != null) {
+                    InternalLogger.INSTANCE.trace("Sending Sql exception");
+                    ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
+                    telemetryClient.track(exceptionTelemetry);
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
             }
-            telemetryClient.track(telemetry);
         }
     }
 
@@ -339,7 +335,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         return nanoSeconds / 1000000;
     }
 
-    private String formatPreparedSqlArguments(String prefix, MethodData methodData) {
+    private String formatAdditionalSqlArguments(String prefix, MethodData methodData) {
         StringBuilder sb = new StringBuilder(prefix);
         sb.append(" [");
         try {
@@ -367,7 +363,11 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         ResultSet rs = null;
         try {
             if (commandName.startsWith("SELECT ")) {
-                explain = ((Connection)object).createStatement();
+                Connection connection = (Connection)object;
+                if (connection == null) {
+                    return explainSB;
+                }
+                explain = connection.createStatement();
                 rs = explain.executeQuery("EXPLAIN " + commandName);
                 explainSB = new StringBuilder();
                 while (rs.next()) {

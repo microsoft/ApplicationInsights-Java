@@ -19,28 +19,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
-
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 /**
- * An abstract base class for Method Visitors that handle http method calls.
- *
- * Created by gupele on 7/27/2015.
+ * Created by gupele on 8/5/2015.
  */
-abstract class AbstractHttpMethodVisitor extends DefaultMethodVisitor {
-    protected final static String ON_ENTER_METHOD_NAME = "httpMethodStarted";
-    protected final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;)V";
+final class SqlConstants {
+    final static String AI_SDK_ARGS_ARRAY = "__aijdk_sql_args__";
 
-    public AbstractHttpMethodVisitor(int access,
-                                     String desc,
-                                     String owner,
-                                     String methodName,
-                                     MethodVisitor methodVisitor,
-                                     ClassToMethodTransformationData additionalData) {
-        super(false, true, access, desc, owner, methodName, methodVisitor, additionalData);
-    }
+    final static String AI_SDK_BATCH_COUNTER = "__aijdk_sql_batch_counter__";
+
+    final static String AI_SDK_SQL_STRING = "__aijdk_sql_string__";
+
+    private SqlConstants() {}
 }

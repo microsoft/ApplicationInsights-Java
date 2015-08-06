@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
+import org.objectweb.asm.Type;
 
 /**
  * The class serves as the contact point between injected code and its real implementation.
@@ -42,12 +43,14 @@ import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificati
 public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     INSTANCE;
 
+    public final static String internalName = Type.getInternalName(ImplementationsCoordinator.class);
+    public final static String internalNameAsJavaName = "L" + internalName + ";";
+
     private long maxSqlMaxQueryLimit = Long.MAX_VALUE;
 
     private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
 
     public void setConfigurationData(AgentConfiguration configurationData) {
-        System.out.println("ic    =" + configurationData.getBuiltInConfiguration().getSqlMaxQueryLimit());
         maxSqlMaxQueryLimit = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimit();
     }
 
@@ -67,44 +70,66 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onThrowable(String classAndMethodNames, Throwable throwable) {
+    public void exceptionCaught(String classAndMethodNames, Throwable throwable) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onThrowable(classAndMethodNames, throwable);
+                implementation.exceptionCaught(classAndMethodNames, throwable);
             }
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void onMethodEnterURL(String classAndMethodName, String url) {
+    public void httpMethodStarted(String classAndMethodName, String url) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onMethodEnterURL(classAndMethodName, url);
+                implementation.httpMethodStarted(classAndMethodName, url);
             }
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void onMethodEnterPreparedStatement(String classAndMethodName, PreparedStatement statement, String sqlStatement, Object[] args) {
+    public void preparedStatementMethodStarted(String classAndMethodName, PreparedStatement statement, String sqlStatement, Object[] args) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onMethodEnterPreparedStatement(classAndMethodName, statement, sqlStatement, args);
+                implementation.preparedStatementMethodStarted(classAndMethodName, statement, sqlStatement, args);
             }
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void onExecuteQueryEnterSqlStatementWithPossibleExplain(String name, Statement statement, String sqlStatement) {
+    public void preparedStatementExecuteBatchMethodStarted(String name, PreparedStatement statement, String sqlStatement, int batchCounter) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onExecuteQueryEnterSqlStatementWithPossibleExplain(name, statement, sqlStatement);
+                implementation.preparedStatementExecuteBatchMethodStarted(name, statement, sqlStatement, batchCounter);
+            }
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
+    public void sqlStatementExecuteQueryPossibleQueryPlan(String name, Statement statement, String sqlStatement) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation != null) {
+                implementation.sqlStatementExecuteQueryPossibleQueryPlan(name, statement, sqlStatement);
+            }
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
+    public void sqlStatementMethodStarted(String name, Statement statement, String sqlStatement) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation != null) {
+                implementation.sqlStatementMethodStarted(name, statement, sqlStatement);
             }
         } catch (Throwable t) {
             t.printStackTrace();
@@ -112,45 +137,33 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     @Override
-    public void onMethodEnterSqlStatement(String name, Statement statement, String sqlStatement) {
+    public void methodStarted(String name) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onMethodEnterSqlStatement(name, statement, sqlStatement);
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onMethodEnter(String name) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.onMethodEnter(name);
+                implementation.methodStarted(name);
             }
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void onMethodFinish(String name, Throwable throwable) {
+    public void methodFinished(String name, Throwable throwable) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onMethodFinish(name, throwable);
+                implementation.methodFinished(name, throwable);
             }
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void onMethodFinish(String name) {
+    public void methodFinished(String name) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.onMethodFinish(name);
+                implementation.methodFinished(name);
             }
         } catch (Throwable t) {
         }
@@ -186,7 +199,6 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     public long getMaxSqlQueryTime() {
-        System.out.println("getMaxSqlQueryTime    =" + maxSqlMaxQueryLimit);
         return this.maxSqlMaxQueryLimit;
     }
 

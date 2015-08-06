@@ -21,55 +21,58 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
 import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 /**
- * Created by gupele on 8/4/2015.
+ * Created by gupele on 8/5/2015.
  */
-public class QueryStatementWithPossibleExplainMethodVisitor extends DefaultMethodVisitor {
-    private final static String ON_ENTER_METHOD_NANE = "sqlStatementExecuteQueryPossibleQueryPlan";
-    private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/Statement;Ljava/lang/String;)V";
+final class PreparedStatementForClearParametersMethodVisitor extends DefaultMethodVisitor {
 
-    public QueryStatementWithPossibleExplainMethodVisitor(int access,
-                                                          String desc,
-                                                          String owner,
-                                                          String methodName,
-                                                          MethodVisitor methodVisitor) {
+    public PreparedStatementForClearParametersMethodVisitor(int access,
+                                                            String desc,
+                                                            String owner,
+                                                            String methodName,
+                                                            MethodVisitor methodVisitor,
+                                                            ClassToMethodTransformationData additionalData) {
         super(false, true, access, desc, owner, methodName, methodVisitor, null);
     }
 
     @Override
     protected void onMethodEnter() {
+        int localIndex = this.newLocal(Type.getType(Integer.class));
 
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitLdcInsn("EXPLAIN");
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFNE, l0);
-
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitLdcInsn(getMethodName());
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        Label l0 = new Label();
+        mv.visitJumpInsn(IFNULL, l0);
 
+        mv.visitInsn(ICONST_0);
+        mv.visitVarInsn(ISTORE, localIndex);
+        Label l1 = new Label();
+        mv.visitLabel(l1);
+        mv.visitFrame(Opcodes.F_APPEND, localIndex, new Object[] {Opcodes.INTEGER}, 0, null);
+        mv.visitVarInsn(ILOAD, localIndex);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitInsn(ARRAYLENGTH);
+        mv.visitJumpInsn(IF_ICMPGE, l0);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitVarInsn(ILOAD, localIndex);
+        mv.visitInsn(ACONST_NULL);
+        mv.visitInsn(AASTORE);
+        mv.visitIincInsn(localIndex, 1);
+        mv.visitJumpInsn(GOTO, l1);
         mv.visitLabel(l0);
     }
 
     @Override
     protected void byteCodeForMethodExit(int opcode) {
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitLdcInsn("EXPLAIN");
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFNE, l0);
-
-        super.byteCodeForMethodExit(opcode);
-
-        mv.visitLabel(l0);
     }
 }

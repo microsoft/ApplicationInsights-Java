@@ -55,7 +55,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String HTTP_TAG = "HTTP";
     private final static String JDBC_TAG = "JDBC";
     private final static String HIBERNATE_TAG = "HIBERNATE";
-    private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MAX_STATEMENT_QUERY_LIMIT";
+    private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimit";
 
     private final static String AGENT_LOGGER_TAG = "AgentLogger";
 
@@ -374,13 +374,6 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         try {
             String strValue = element.getFirstChild().getTextContent();
-            System.out.println("found lond" + strValue);
-            System.out.println("found lond" + strValue);
-            System.out.println("found lond" + strValue);
-            System.out.println("found lond" + strValue);
-            System.out.println("found lond" + strValue);
-            System.out.println("found lond" + strValue);
-            System.out.println("found lond" + strValue);
             if (!StringUtils.isNullOrEmpty(strValue)) {
                 Long value = Long.valueOf(strValue);
                 return value;

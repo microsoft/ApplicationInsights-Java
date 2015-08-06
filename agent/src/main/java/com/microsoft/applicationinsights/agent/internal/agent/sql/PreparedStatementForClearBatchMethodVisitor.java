@@ -19,28 +19,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
-
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
+package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 
 /**
- * An abstract base class for Method Visitors that handle http method calls.
- *
- * Created by gupele on 7/27/2015.
+ * Created by gupele on 8/5/2015.
  */
-abstract class AbstractHttpMethodVisitor extends DefaultMethodVisitor {
-    protected final static String ON_ENTER_METHOD_NAME = "httpMethodStarted";
-    protected final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;)V";
+final class PreparedStatementForClearBatchMethodVisitor extends DefaultMethodVisitor {
+    public PreparedStatementForClearBatchMethodVisitor(int access,
+                                                       String desc,
+                                                       String owner,
+                                                       String methodName,
+                                                       MethodVisitor methodVisitor,
+                                                       ClassToMethodTransformationData additionalData) {
+        super(false, true, access, desc, owner, methodName, methodVisitor, null);
+    }
 
-    public AbstractHttpMethodVisitor(int access,
-                                     String desc,
-                                     String owner,
-                                     String methodName,
-                                     MethodVisitor methodVisitor,
-                                     ClassToMethodTransformationData additionalData) {
-        super(false, true, access, desc, owner, methodName, methodVisitor, additionalData);
+    @Override
+    protected void onMethodEnter() {
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitInsn(ICONST_0);
+        mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_BATCH_COUNTER, "I");
+    }
+
+    @Override
+    protected void byteCodeForMethodExit(int opcode) {
     }
 }

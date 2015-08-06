@@ -31,11 +31,8 @@ import org.objectweb.asm.Type;
  * Created by gupele on 5/20/2015.
  */
 final class StatementMethodVisitor extends DefaultMethodVisitor {
-    private final static String ON_ENTER_METHOD_NANE = "onMethodEnterSqlStatement";
+    private final static String ON_ENTER_METHOD_NANE = "sqlStatementMethodStarted";
     private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/Statement;Ljava/lang/String;)V";
-
-    private final String implementationCoordinatorInternalName;
-    private final String implementationCoordinatorJavaName;
 
     public StatementMethodVisitor(int access,
                                   String desc,
@@ -43,20 +40,17 @@ final class StatementMethodVisitor extends DefaultMethodVisitor {
                                   String methodName,
                                   MethodVisitor methodVisitor) {
         super(false, true, access, desc, owner, methodName, methodVisitor, null);
-
 //        numberOfArgs = Type.getArgumentTypes(desc).length;
-        implementationCoordinatorInternalName = Type.getInternalName(ImplementationsCoordinator.class);
-        implementationCoordinatorJavaName = "L" + implementationCoordinatorInternalName + ";";
     }
 
     @Override
     protected void onMethodEnter() {
 
-        super.visitFieldInsn(GETSTATIC, implementationCoordinatorInternalName, "INSTANCE", implementationCoordinatorJavaName);
+        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
 
         mv.visitLdcInsn(getMethodName());
         mv.visitVarInsn(ALOAD, 0);
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
     }
 }

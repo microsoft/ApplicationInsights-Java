@@ -43,14 +43,14 @@ public interface AgentNotificationsHandler {
      * @param classAndMethodNames The name of the class and method separated by '.'
      * @param throwable The throwable that was caught
      */
-    void onThrowable(String classAndMethodNames, Throwable throwable);
+    void exceptionCaught(String classAndMethodNames, Throwable throwable);
 
     /**
      * Called when an instrumented class and method that deals with sending URLs.
      * @param classAndMethodNames The name of the class and method separated by '.'
      * @param url The url that is being sent
      */
-    void onMethodEnterURL(String classAndMethodNames, String url);
+    void httpMethodStarted(String classAndMethodNames, String url);
 
     /**
      * Called when an java.sql.Statement concrete class is called
@@ -58,9 +58,16 @@ public interface AgentNotificationsHandler {
      * @param statement The class that implements the java.sql.Statement interface
      * @param sqlStatement The sql statement that is used
      */
-    void onMethodEnterSqlStatement(String classAndMethodNames, Statement statement, String sqlStatement);
+    void sqlStatementMethodStarted(String classAndMethodNames, Statement statement, String sqlStatement);
 
-    void onExecuteQueryEnterSqlStatementWithPossibleExplain(String name, Statement statement, String sqlStatement);
+    /**
+     * Called when an java.sql.Statement concrete class is called for its 'executeQuery'
+     * method, this method is called by classes that can create an EXPLAIN query from the current sql statement
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param statement The class that implements the java.sql.Statement interface
+     * @param sqlStatement The sql statement that is used
+     */
+    void sqlStatementExecuteQueryPossibleQueryPlan(String classAndMethodNames, Statement statement, String sqlStatement);
 
     /**
      * Called when an java.sql.PreparedStatement concrete class is called
@@ -68,24 +75,32 @@ public interface AgentNotificationsHandler {
      * @param sqlStatement The sql statement that is used
      * @param args The values for the statement
      */
-    void onMethodEnterPreparedStatement(String classAndMethodNames, PreparedStatement statement, String sqlStatement, Object[] args);
+    void preparedStatementMethodStarted(String classAndMethodNames, PreparedStatement statement, String sqlStatement, Object[] args);
+
+    /**
+     * Called when an java.sql.PreparedStatement concrete class 'executeBatch' method is called
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param sqlStatement The sql statement that is used
+     * @param batchCounter The number of batches sent to the server
+     */
+    void preparedStatementExecuteBatchMethodStarted(String classAndMethodNames, PreparedStatement statement, String sqlStatement, int batchCounter);
 
     /**
      * A 'regular' method enter. Non HTTP/SQL method
      * @param classAndMethodNames The name of the class and method separated by '.'
      */
-    void onMethodEnter(String classAndMethodNames);
+    void methodStarted(String classAndMethodNames);
 
     /**
      * Marks a method finish with an exception
      * @param classAndMethodNames The name of the class and method separated by '.'
      * @param throwable The throwable that was caught
      */
-    void onMethodFinish(String classAndMethodNames, Throwable throwable);
+    void methodFinished(String classAndMethodNames, Throwable throwable);
 
     /**
      * Marks a method finish without exception
      * @param classAndMethodNames The name of the class and method separated by '.'
      */
-    void onMethodFinish(String classAndMethodNames);
+    void methodFinished(String classAndMethodNames);
 }

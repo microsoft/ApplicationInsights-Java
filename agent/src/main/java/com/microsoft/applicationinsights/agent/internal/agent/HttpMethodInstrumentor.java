@@ -40,7 +40,7 @@ final class HttpMethodInstrumentor extends DefaultMethodVisitor {
     private final static String GET_URL_METHOD_NAME = "getURL";
     private final static String GET_URL_METHOD_SIGNATURE = "()Ljava/net/URL;";
 
-    private final static String ON_ENTER_METHOD_NAME = "onMethodEnterURL";
+    private final static String ON_ENTER_METHOD_NAME = "httpMethodStarted";
     private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/net/URL;)V";
 
     private final String owner;

@@ -31,11 +31,8 @@ import org.objectweb.asm.Type;
  * Created by gupele on 8/3/2015.
  */
 final class PreparedStatementMethodVisitor extends DefaultMethodVisitor {
-    private final static String ON_ENTER_METHOD_NAME = "onMethodEnterPreparedStatement";
+    private final static String ON_ENTER_METHOD_NAME = "preparedStatementMethodStarted";
     private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/PreparedStatement;Ljava/lang/String;[Ljava/lang/Object;)V";
-
-    private final String implementationCoordinatorInternalName;
-    private final String implementationCoordinatorJavaName;
 
     public PreparedStatementMethodVisitor(int access,
                                           String desc,
@@ -44,26 +41,22 @@ final class PreparedStatementMethodVisitor extends DefaultMethodVisitor {
                                           MethodVisitor methodVisitor,
                                           ClassToMethodTransformationData additionalData) {
         super(false, true, access, desc, owner, methodName, methodVisitor, null);
-
-//        numberOfArgs = Type.getArgumentTypes(desc).length;
-        implementationCoordinatorInternalName = Type.getInternalName(ImplementationsCoordinator.class);
-        implementationCoordinatorJavaName = "L" + implementationCoordinatorInternalName + ";";
     }
 
     @Override
     protected void onMethodEnter() {
-        super.visitFieldInsn(GETSTATIC, implementationCoordinatorInternalName, "INSTANCE", implementationCoordinatorJavaName);
+        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
 
         mv.visitLdcInsn(getMethodName());
 
         mv.visitVarInsn(ALOAD, 0);
 
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, "__aijdk_sql_string__", "Ljava/lang/String;");
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_SQL_STRING, "Ljava/lang/String;");
 
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, "sdkargs", "[Ljava/lang/Object;");
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
     }
 }

@@ -32,7 +32,6 @@ import org.objectweb.asm.Type;
  * Created by gupele on 8/3/2015.
  */
 final class PreparedStatementSetMethod extends DefaultMethodVisitor {
-    protected final static String AI_SDK_ARGS_ARRAY = "sdkargs";
 
     protected final PreparedStatementMetaData metaData;
     private final String methodName;
@@ -59,14 +58,14 @@ final class PreparedStatementSetMethod extends DefaultMethodVisitor {
         mv.visitJumpInsn(IFLT, l0);
 
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
         Label l1 = new Label();
         mv.visitJumpInsn(IFNONNULL, l1);
 
         mv.visitVarInsn(ALOAD, 0);
         mv.visitVarInsn(ILOAD, 1);
         mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-        mv.visitFieldInsn(PUTFIELD, owner, AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
 
         Label l2 = new Label();
 
@@ -77,24 +76,24 @@ final class PreparedStatementSetMethod extends DefaultMethodVisitor {
 
         mv.visitVarInsn(ILOAD, 1);
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
         mv.visitInsn(ARRAYLENGTH);
 
         mv.visitJumpInsn(IF_ICMPLE, l2);
 
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
         mv.visitVarInsn(ASTORE, tmpArrayIndex);
 
         mv.visitVarInsn(ILOAD, 0);
         mv.visitVarInsn(ILOAD, 1);
         mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-        mv.visitFieldInsn(PUTFIELD, owner, AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
 
         mv.visitVarInsn(ALOAD, tmpArrayIndex);
         mv.visitInsn(ICONST_0);
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
         mv.visitInsn(ICONST_0);
         mv.visitVarInsn(ALOAD, tmpArrayIndex);
         mv.visitInsn(ARRAYLENGTH);
@@ -104,7 +103,7 @@ final class PreparedStatementSetMethod extends DefaultMethodVisitor {
         mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
         mv.visitVarInsn(ILOAD, localIndex);
         addArgument();
         mv.visitInsn(AASTORE);

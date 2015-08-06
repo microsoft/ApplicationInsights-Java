@@ -62,14 +62,28 @@ public final class PreparedStatementClassDataProvider {
                                         String methodName,
                                         MethodVisitor methodVisitor,
                                         ClassToMethodTransformationData additionalData) {
+                if (methodName.equals("executeBatch")) {
+                    return new PreparedStatementMethodForExecuteBatchVisitor(access, desc, owner, methodName, methodVisitor, null);
+                } else if (methodName.equals("clearParameters")) {
+                    return new PreparedStatementForClearParametersMethodVisitor(access, desc, owner, methodName, methodVisitor, null);
+                } else if (methodName.equals("clearBatch")) {
+                    return new PreparedStatementForClearBatchMethodVisitor(access, desc, owner, methodName, methodVisitor, null);
+                } else if (methodName.equals("addBatch")) {
+                    return new PreparedStatementForAddBatchMethodVisitor(access, desc, owner, methodName, methodVisitor, null);
+                }
+
                 return new PreparedStatementMethodVisitor(access, desc, owner, methodName, methodVisitor, null);
             }
         };
 
         final HashMap<String, String> sqlStatementSignatures = new HashMap<String, String>();
+        sqlStatementSignatures.put("executeBatch", "()[I");
         sqlStatementSignatures.put("execute", "()Z");
         sqlStatementSignatures.put("executeUpdate", "()I");
         sqlStatementSignatures.put("executeQuery", "()Ljava/sql/ResultSet;");
+        sqlStatementSignatures.put("clearParameters", "()V");
+        sqlStatementSignatures.put("clearBatch", "()V");
+        sqlStatementSignatures.put("addBatch", "()V");
 
         ClassInstrumentationData data =
                 new ClassInstrumentationData(className, InstrumentedClassType.SQL, classVisitorFactory)

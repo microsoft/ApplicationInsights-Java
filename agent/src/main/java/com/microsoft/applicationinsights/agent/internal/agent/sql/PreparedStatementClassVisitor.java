@@ -23,15 +23,19 @@ package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import java.util.HashMap;
 
-import com.microsoft.applicationinsights.agent.internal.agent.*;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+
+import com.microsoft.applicationinsights.agent.internal.agent.ByteCodeUtils;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 
 /**
  * Created by gupele on 8/3/2015.
  */
 public final class PreparedStatementClassVisitor extends ClassVisitor {
-
-    private final static String AI_SDK_ARGS_ARRAY = "sdkargs";
 
     private final HashMap<String, String> nameAndSignature = new HashMap<String, String>();
 
@@ -71,11 +75,15 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
         if (fv != null && shouldAdd) {
             shouldAdd = false;
 
-            FieldVisitor fv1 = super.visitField(Opcodes.ACC_PRIVATE, "__aijdk_sql_string__", "Ljava/lang/String;", null, null);
+            FieldVisitor fv1 = super.visitField(Opcodes.ACC_PRIVATE, SqlConstants.AI_SDK_SQL_STRING, "Ljava/lang/String;", null, null);
             if (fv1 != null) {
                 fv1.visitEnd();
             }
-            fv1 = super.visitField(Opcodes.ACC_PRIVATE, AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;", null, null);
+            fv1 = super.visitField(Opcodes.ACC_PRIVATE, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;", null, null);
+            if (fv1 != null) {
+                fv1.visitEnd();
+            }
+            fv1 = super.visitField(Opcodes.ACC_PRIVATE, SqlConstants.AI_SDK_BATCH_COUNTER, "I", null, null);
             if (fv1 != null) {
                 fv1.visitEnd();
             }

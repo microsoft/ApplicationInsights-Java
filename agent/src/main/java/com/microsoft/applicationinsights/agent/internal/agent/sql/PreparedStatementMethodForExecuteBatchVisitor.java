@@ -21,55 +21,42 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
 import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 /**
- * Created by gupele on 8/4/2015.
+ * Created by gupele on 8/5/2015.
  */
-public class QueryStatementWithPossibleExplainMethodVisitor extends DefaultMethodVisitor {
-    private final static String ON_ENTER_METHOD_NANE = "sqlStatementExecuteQueryPossibleQueryPlan";
-    private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/Statement;Ljava/lang/String;)V";
+final class PreparedStatementMethodForExecuteBatchVisitor extends DefaultMethodVisitor {
+    private final static String ON_ENTER_METHOD_NAME = "preparedStatementExecuteBatchMethodStarted";
+    private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/PreparedStatement;Ljava/lang/String;I)V";
 
-    public QueryStatementWithPossibleExplainMethodVisitor(int access,
-                                                          String desc,
-                                                          String owner,
-                                                          String methodName,
-                                                          MethodVisitor methodVisitor) {
+    public PreparedStatementMethodForExecuteBatchVisitor(int access,
+                                                         String desc,
+                                                         String owner,
+                                                         String methodName,
+                                                         MethodVisitor methodVisitor,
+                                                         ClassToMethodTransformationData additionalData) {
         super(false, true, access, desc, owner, methodName, methodVisitor, null);
     }
 
     @Override
     protected void onMethodEnter() {
-
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitLdcInsn("EXPLAIN");
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFNE, l0);
-
         super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
+
         mv.visitLdcInsn(getMethodName());
+
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
 
-        mv.visitLabel(l0);
-    }
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_SQL_STRING, "Ljava/lang/String;");
 
-    @Override
-    protected void byteCodeForMethodExit(int opcode) {
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitLdcInsn("EXPLAIN");
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFNE, l0);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_BATCH_COUNTER, "I");
 
-        super.byteCodeForMethodExit(opcode);
-
-        mv.visitLabel(l0);
+        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
     }
 }

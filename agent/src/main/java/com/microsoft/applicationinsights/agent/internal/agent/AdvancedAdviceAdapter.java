@@ -68,8 +68,8 @@ abstract class AdvancedAdviceAdapter extends AdviceAdapter {
 
     @Override
     public void visitCode() {
-        super.visitCode();
         mark(startTryFinallyBlock);
+        super.visitCode();
     }
 
     @Override
