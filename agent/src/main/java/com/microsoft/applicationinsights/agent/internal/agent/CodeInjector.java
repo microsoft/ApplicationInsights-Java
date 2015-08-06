@@ -26,6 +26,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 
+import com.microsoft.applicationinsights.agent.internal.agent.jmx.JmxConnectorLoader;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
@@ -39,6 +40,7 @@ import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogg
 public final class CodeInjector implements ClassFileTransformer {
 
     private final ClassDataProvider classNamesProvider = new DefaultClassDataProvider();
+    private JmxConnectorLoader jmxConnectorLoader;
 
     /**
      * The constructor will set all the data needed for the transformation and then
@@ -99,5 +101,9 @@ public final class CodeInjector implements ClassFileTransformer {
         AgentConfiguration agentConfiguration = new AgentConfigurationBuilderFactory().createDefaultBuilder().parseConfigurationFile(agentJarLocation);
         classNamesProvider.setConfiguration(agentConfiguration);
         ImplementationsCoordinator.INSTANCE.setConfigurationData(agentConfiguration);
+
+        if (agentConfiguration.getBuiltInConfiguration().isJmxEnabled()) {
+            jmxConnectorLoader = new JmxConnectorLoader();
+        }
     }
 }

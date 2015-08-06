@@ -30,6 +30,7 @@ public class AgentBuiltInConfigurationBuilder {
     private boolean jdbcEnabled = true;
     private boolean hibernateEnabled = true;
     private boolean jedisEnabled = true;
+    private boolean jmxEnabled = true;
     private long jedisThresholdInMS = 0;
     private Long maxSqlQueryLimit = Long.MAX_VALUE;
 
@@ -39,8 +40,9 @@ public class AgentBuiltInConfigurationBuilder {
                                              jdbcEnabled && enabled,
                                              hibernateEnabled && enabled,
                                              hibernateEnabled && jedisEnabled,
+                                             enabled && jmxEnabled,
                                              maxSqlQueryLimit,
-                jedisThresholdInMS);
+                                             jedisThresholdInMS);
     }
 
     public AgentBuiltInConfigurationBuilder setEnabled(boolean enabled) {
@@ -60,6 +62,11 @@ public class AgentBuiltInConfigurationBuilder {
 
     public AgentBuiltInConfigurationBuilder setHibernateEnabled(boolean hibernateEnabled) {
         this.hibernateEnabled = hibernateEnabled;
+        return this;
+    }
+
+    public AgentBuiltInConfigurationBuilder setJmxEnabled(boolean jmxEnabled) {
+        this.jmxEnabled = jmxEnabled;
         return this;
     }
 
