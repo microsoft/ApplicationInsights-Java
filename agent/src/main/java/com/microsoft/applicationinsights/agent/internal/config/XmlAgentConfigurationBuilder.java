@@ -52,6 +52,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String METHOD_TAG = "Method";
 
     private final static String BUILT_IN_TAG = "BuiltIn";
+    private final static String JEDIS_TAG = "Jedis";
     private final static String HTTP_TAG = "HTTP";
     private final static String JDBC_TAG = "JDBC";
     private final static String HIBERNATE_TAG = "HIBERNATE";
@@ -62,6 +63,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String EXCLUDED_PREFIXES_TAG = "ExcludedPrefixes";
     private final static String FORBIDDEN_PREFIX_TAG = "Prefix";
 
+    private final static String THRESHOLD_ATTRIBUTE = "thresholdInMS";
     private final static String ENABLED_ATTRIBUTE = "enabled";
     private final static String NAME_ATTRIBUTE = "name";
     private final static String REPORT_CAUGHT_EXCEPTIONS_ATTRIBUTE = "reportCaughtExceptions";
@@ -170,6 +172,11 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         }
 
         builtInConfigurationBuilder.setEnabled(getEnabled(builtInElement, BUILT_IN_TAG));
+
+        nodes = builtInElement.getElementsByTagName(JEDIS_TAG);
+        Element element = getFirst(nodes);
+        long threshold = getLongAttribute(element, JEDIS_TAG, THRESHOLD_ATTRIBUTE, 0);
+        builtInConfigurationBuilder.setJedisValues(getEnabled(element, JEDIS_TAG), threshold);
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
         builtInConfigurationBuilder.setHttpEnabled(getEnabled(getFirst(nodes), HTTP_TAG));
@@ -346,6 +353,25 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         }
 
         return (Element)node;
+    }
+
+    private long getLongAttribute(Element element, String elementName, String attributeName, long defaultValue) {
+        if (element == null) {
+            return defaultValue;
+        }
+
+        try {
+            String strValue = element.getAttribute(attributeName);
+            if (!StringUtils.isNullOrEmpty(strValue)) {
+                long value = Long.valueOf(strValue);
+                return value;
+            }
+            return defaultValue;
+        } catch (Throwable t) {
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+        }
+
+        return defaultValue;
     }
 
     private boolean getEnabled(Element element, String elementName) {

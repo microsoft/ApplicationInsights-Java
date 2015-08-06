@@ -27,6 +27,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
@@ -152,6 +155,27 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     public void methodFinished(String name) {
         if (!finalizeMethod(null, null)) {
             InternalLogger.INSTANCE.error("Agent has detected a 'Finish' method ('%s') event without a 'Start'", name);
+        }
+    }
+
+    @Override
+    public void methodFinished(String classAndMethodNames, long deltaInNS, Object[] args, Throwable throwable) {
+        long durationInMS =nanoToMilliseconds(deltaInNS);
+        Duration duration = new Duration(durationInMS);
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(classAndMethodNames, null, duration, throwable == null);
+        telemetry.setDependencyKind(DependencyKind.Other);
+
+        if (args != null) {
+            String argsAsString = new ArgsFormatter().format(args);
+            telemetry.getContext().getProperties().put("Args", argsAsString);
+        }
+
+        InternalLogger.INSTANCE.trace("Sending RDD event for '%s', duration=%s ms", classAndMethodNames, durationInMS);
+
+        telemetryClient.track(telemetry);
+        if (throwable != null) {
+            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
+            telemetryClient.track(exceptionTelemetry);
         }
     }
 

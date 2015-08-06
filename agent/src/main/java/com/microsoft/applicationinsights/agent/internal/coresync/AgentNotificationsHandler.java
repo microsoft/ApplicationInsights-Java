@@ -103,4 +103,13 @@ public interface AgentNotificationsHandler {
      * @param classAndMethodNames The name of the class and method separated by '.'
      */
     void methodFinished(String classAndMethodNames);
+
+    /**
+     * An instrumented method might call this method to signal end of method
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param deltaInNS The amount of time that the method was executed in nano seconds
+     * @param args The method's arguments, that is an optional value and can be null
+     * @param throwable A possible exception that was thrown and caused the method to finish
+     */
+    void methodFinished(String classAndMethodNames, long deltaInNS, Object[] args, Throwable throwable);
 }
