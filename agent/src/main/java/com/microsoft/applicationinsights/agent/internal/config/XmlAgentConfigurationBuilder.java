@@ -56,6 +56,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String HTTP_TAG = "HTTP";
     private final static String JDBC_TAG = "JDBC";
     private final static String HIBERNATE_TAG = "HIBERNATE";
+    private final static String JMX_TAG = "AgentJmx";
     private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimit";
 
     private final static String AGENT_LOGGER_TAG = "AgentLogger";
@@ -186,6 +187,9 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         nodes = builtInElement.getElementsByTagName(HIBERNATE_TAG);
         builtInConfigurationBuilder.setHibernateEnabled(getEnabled(getFirst(nodes), HIBERNATE_TAG));
+
+        nodes = builtInElement.getElementsByTagName(JMX_TAG);
+        builtInConfigurationBuilder.setJmxEnabled(getEnabled(getFirst(nodes), JMX_TAG));
 
         nodes = builtInElement.getElementsByTagName(MAX_STATEMENT_QUERY_LIMIT_TAG);
         builtInConfigurationBuilder.setSqlMaxQueryLimit(getLong(getFirst(nodes), MAX_STATEMENT_QUERY_LIMIT_TAG));

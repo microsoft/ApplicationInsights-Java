@@ -30,18 +30,27 @@ public class AgentBuiltInConfiguration {
     private final boolean jdbcEnabled;
     private final boolean hibernateEnabled;
     private final boolean jedisEnabled;
+    private final boolean jmxEnabled;
     private final long maxSqlQueryLimit;
-    private final long jedisThresholdInMS;
+    private final long redisThresholdInMS;
 
-    public AgentBuiltInConfiguration(boolean enabled, boolean httpEnabled, boolean jdbcEnabled, boolean hibernateEnabled, boolean jedisEnabled, Long maxSqlQueryLimit, long jedisThresholdInMS) {
+    public AgentBuiltInConfiguration(boolean enabled,
+                                     boolean httpEnabled,
+                                     boolean jdbcEnabled,
+                                     boolean hibernateEnabled,
+                                     boolean jedisEnabled,
+                                     boolean jmxEnabled,
+                                     Long maxSqlQueryLimit,
+                                     long redisThresholdInMS) {
         this.enabled = enabled;
         this.httpEnabled = httpEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.hibernateEnabled = hibernateEnabled;
+        this.jmxEnabled = jmxEnabled;
         if (maxSqlQueryLimit == null) {
             throw new IllegalArgumentException("maxSqlQueryLimit cannot be null");
         }
-        this.jedisThresholdInMS = jedisThresholdInMS;
+        this.redisThresholdInMS = redisThresholdInMS;
         this.jedisEnabled = jedisEnabled;
         this.maxSqlQueryLimit = maxSqlQueryLimit;
     }
@@ -66,11 +75,15 @@ public class AgentBuiltInConfiguration {
         return maxSqlQueryLimit;
     }
 
-    public boolean isJedisEnabled() {
+    public boolean isRedisEnabled() {
         return jedisEnabled;
     }
 
-    public long getJedisThresholdInMS() {
-        return jedisThresholdInMS;
+    public long getRedisThresholdInMS() {
+        return redisThresholdInMS;
+    }
+
+    public boolean isJmxEnabled() {
+        return jmxEnabled;
     }
 }

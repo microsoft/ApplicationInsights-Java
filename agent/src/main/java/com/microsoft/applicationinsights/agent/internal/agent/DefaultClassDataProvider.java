@@ -110,10 +110,18 @@ class DefaultClassDataProvider implements ClassDataProvider {
         if (builtInEnabled) {
             InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
 
-            new StatementClassDataDataProvider(classesToInstrument).add();
-            new PreparedStatementClassDataProvider(classesToInstrument).add();
-            new HttpClassDataProvider(classesToInstrument).add();
-            new JedisClassDataProvider(classesToInstrument).add();
+            if (agentConfiguration.getBuiltInConfiguration().isJdbcEnabled()) {
+                new StatementClassDataDataProvider(classesToInstrument).add();
+                new PreparedStatementClassDataProvider(classesToInstrument).add();
+            }
+
+            if (agentConfiguration.getBuiltInConfiguration().isHttpEnabled()) {
+                new HttpClassDataProvider(classesToInstrument).add();
+            }
+
+            if (agentConfiguration.getBuiltInConfiguration().isRedisEnabled()) {
+                new JedisClassDataProvider(classesToInstrument).add();
+            }
         }
 
         addConfigurationData(agentConfiguration);

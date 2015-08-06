@@ -47,16 +47,13 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     public final static String internalNameAsJavaName = "L" + internalName + ";";
 
     private long maxSqlMaxQueryLimit = Long.MAX_VALUE;
-    private long jedisThresholdInNS = 0;
+    private volatile long redisThresholdInNS = 0;
 
     private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
 
     public void setConfigurationData(AgentConfiguration configurationData) {
         maxSqlMaxQueryLimit = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimit();
-        jedisThresholdInNS = configurationData.getBuiltInConfiguration().getJedisThresholdInMS() * 1000000;
-        if (jedisThresholdInNS < 0) {
-            jedisThresholdInNS = 0;
-        }
+        setRedisThresholdInMS(configurationData.getBuiltInConfiguration().getRedisThresholdInMS());
     }
 
     /**
@@ -215,8 +212,15 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
-    public long getRedisLimit() {
-        return jedisThresholdInNS;
+    public void setRedisThresholdInMS(long thresholdInMS) {
+        redisThresholdInNS = thresholdInMS * 1000000;
+        if (redisThresholdInNS < 0) {
+            redisThresholdInNS = 0;
+        }
+    }
+
+    public long getRedisThresholdInNS() {
+        return redisThresholdInNS;
     }
 
     public long getMaxSqlQueryTime() {

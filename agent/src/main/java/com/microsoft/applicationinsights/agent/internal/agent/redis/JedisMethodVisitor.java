@@ -108,7 +108,7 @@ final class JedisMethodVisitor extends DefaultMethodVisitor {
         mv.visitVarInsn(LLOAD, localDelta);
 
         mv.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, "getRedisLimit", "()J", false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, "getRedisThresholdInNS", "()J", false);
 
         mv.visitInsn(LCMP);
 
