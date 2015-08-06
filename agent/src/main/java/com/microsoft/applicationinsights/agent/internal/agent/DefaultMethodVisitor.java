@@ -39,20 +39,22 @@ import org.objectweb.asm.Type;
  *
  * Created by gupele on 5/11/2015.
  */
-class DefaultMethodVisitor extends AdvancedAdviceAdapter {
+public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
-    private final static String THROWABLE_METHOD_NAME = "onThrowable";
+    private final static String THROWABLE_METHOD_NAME = "exceptionCaught";
     private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
 
-    private final static String START_DETECT_METHOD_NAME = "onMethodEnter";
+    private final static String START_DETECT_METHOD_NAME = "methodStarted";
     private final static String START_DETECT_METHOD_SIGNATURE = "(Ljava/lang/String;)V";
 
-    private final static String FINISH_DETECT_METHOD_NAME = "onMethodFinish";
+    private final static String FINISH_DETECT_METHOD_NAME = "methodFinished";
     private final static String FINISH_METHOD_DEFAULT_SIGNATURE = "(Ljava/lang/String;)V";
     private final static String FINISH_METHOD_EXCEPTION_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
 
     private final boolean reportCaughtExceptions;
     private HashSet<Label> labels = null;
+
+    protected final String owner;
 
     public DefaultMethodVisitor(boolean reportCaughtExceptions,
                                 boolean reportExecutionTime,
@@ -64,6 +66,7 @@ class DefaultMethodVisitor extends AdvancedAdviceAdapter {
                                 ClassToMethodTransformationData additionalData) {
         super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
         this.reportCaughtExceptions = reportCaughtExceptions;
+        this.owner = owner;
     }
 
     public DefaultMethodVisitor(MethodInstrumentationDecision decision,

@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.agent;
 
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -59,22 +58,22 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         mv.visitMethodInsn(INVOKEVIRTUAL, "org/apache/http/message/BasicRequestLine", "getUri", "()Ljava/lang/String;", false);
         mv.visitVarInsn(ASTORE, requestLineLocalIndex);
 
-        super.visitFieldInsn(GETSTATIC, implementationCoordinatorInternalName, "INSTANCE", implementationCoordinatorJavaName);
+        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
 
         mv.visitLdcInsn(getMethodName());
         mv.visitVarInsn(ALOAD, requestLineLocalIndex);
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
 
         Label notNullLabel = new Label();
         mv.visitJumpInsn(GOTO, notNullLabel);
 
         mv.visitLabel(nullLabel);
-        super.visitFieldInsn(GETSTATIC, implementationCoordinatorInternalName, "INSTANCE", implementationCoordinatorJavaName);
+        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
         mv.visitLdcInsn(getMethodName());
         mv.visitInsn(ACONST_NULL);
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, implementationCoordinatorInternalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
 
         mv.visitLabel(notNullLabel);
     }

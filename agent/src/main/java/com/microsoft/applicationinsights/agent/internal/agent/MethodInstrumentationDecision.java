@@ -29,7 +29,7 @@ package com.microsoft.applicationinsights.agent.internal.agent;
  *
  * Created by gupele on 5/31/2015.
  */
-final class MethodInstrumentationDecision {
+public final class MethodInstrumentationDecision {
     private final boolean reportCaughtExceptions;
     private final boolean reportExecutionTime;
     private final MethodVisitorFactory methodVisitorFactory;

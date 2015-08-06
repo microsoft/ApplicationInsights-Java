@@ -27,28 +27,32 @@ import org.objectweb.asm.Type;
 /**
  * Created by gupele on 5/11/2015.
  */
-final class ByteCodeUtils {
+public final class ByteCodeUtils {
     private final static String BYTE_CODE_CTOR_NAME = "<init>";
     private final static String BYTE_CODE_STATIC_CTOR_NAME = "<clinit>";
 
-    static boolean isInterface(int access) {
+    public static boolean isInterface(int access) {
         return (access & Opcodes.ACC_INTERFACE) != 0;
     }
 
-    static boolean isAbstract(int access) {
+    public static boolean isAbstract(int access) {
         return (access & Opcodes.ACC_ABSTRACT) != 0;
     }
 
-    static boolean isPrivate(int access) {
+    public static boolean isPrivate(int access) {
         return (access & Opcodes.ACC_PRIVATE) != 0;
     }
 
-    static boolean isStatic(int access) {
+    public static boolean isStatic(int access) {
         return (access & Opcodes.ACC_STATIC) != 0;
     }
 
-    static boolean isConstructor(String methodName) {
+    public static boolean isAnyConstructor(String methodName) {
         return BYTE_CODE_CTOR_NAME.equals(methodName) || BYTE_CODE_STATIC_CTOR_NAME.startsWith(methodName);
+    }
+
+    public static boolean isConstructor(String methodName) {
+        return BYTE_CODE_CTOR_NAME.equals(methodName);
     }
 
     static boolean isLargeType(Type type) {

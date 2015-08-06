@@ -21,26 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
+import org.junit.Test;
 
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+import static org.junit.Assert.*;
 
-/**
- * An abstract base class for Method Visitors that handle http method calls.
- *
- * Created by gupele on 7/27/2015.
- */
-abstract class AbstractHttpMethodVisitor extends DefaultMethodVisitor {
-    protected final static String ON_ENTER_METHOD_NAME = "httpMethodStarted";
-    protected final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;)V";
-
-    public AbstractHttpMethodVisitor(int access,
-                                     String desc,
-                                     String owner,
-                                     String methodName,
-                                     MethodVisitor methodVisitor,
-                                     ClassToMethodTransformationData additionalData) {
-        super(false, true, access, desc, owner, methodName, methodVisitor, additionalData);
+public final class DefaultByteCodeTransformerTest {
+    @Test
+    public void noClassInstrumentationDataTest() {
+        DefaultByteCodeTransformer tested = new DefaultByteCodeTransformer(null);
+        byte[] mockArray = new byte[1];
+        byte[] result = tested.transform(mockArray);
+        assertSame(result, mockArray);
     }
 }

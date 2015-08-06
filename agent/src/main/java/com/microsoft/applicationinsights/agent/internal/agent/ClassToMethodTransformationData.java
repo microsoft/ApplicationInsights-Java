@@ -26,5 +26,5 @@ package com.microsoft.applicationinsights.agent.internal.agent;
  *
  * Created by gupele on 7/27/2015.
  */
-interface ClassToMethodTransformationData {
+public interface ClassToMethodTransformationData {
 }

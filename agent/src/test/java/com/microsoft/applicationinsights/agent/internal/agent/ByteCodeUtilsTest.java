@@ -72,17 +72,17 @@ public final class ByteCodeUtilsTest {
 
     @Test
     public void testIsConstructorInit() throws Exception {
-        assertTrue(ByteCodeUtils.isConstructor("<init>"));
+        assertTrue(ByteCodeUtils.isAnyConstructor("<init>"));
     }
 
     @Test
     public void testIsConstructorCinit() throws Exception {
-        assertTrue(ByteCodeUtils.isConstructor("<clinit>"));
+        assertTrue(ByteCodeUtils.isAnyConstructor("<clinit>"));
     }
 
     @Test
     public void testIsNonConstructor() throws Exception {
-        assertFalse(ByteCodeUtils.isConstructor("bafsd"));
+        assertFalse(ByteCodeUtils.isAnyConstructor("bafsd"));
     }
 
     @Test

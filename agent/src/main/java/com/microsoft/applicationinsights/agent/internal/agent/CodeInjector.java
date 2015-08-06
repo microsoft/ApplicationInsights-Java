@@ -28,6 +28,7 @@ import java.security.ProtectionDomain;
 
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
@@ -76,7 +77,7 @@ public final class CodeInjector implements ClassFileTransformer {
             ProtectionDomain protectionDomain,
             byte[] originalBuffer) throws IllegalClassFormatException {
 
-        ByteCodeTransformer byteCodeTransformer = classNamesProvider.getAndRemove(className);
+        DefaultByteCodeTransformer byteCodeTransformer = classNamesProvider.getAndRemove(className);
         if (byteCodeTransformer != null) {
             try {
                 return byteCodeTransformer.transform(originalBuffer);
@@ -97,5 +98,6 @@ public final class CodeInjector implements ClassFileTransformer {
     private void loadConfiguration(String agentJarLocation) {
         AgentConfiguration agentConfiguration = new AgentConfigurationBuilderFactory().createDefaultBuilder().parseConfigurationFile(agentJarLocation);
         classNamesProvider.setConfiguration(agentConfiguration);
+        ImplementationsCoordinator.INSTANCE.setConfigurationData(agentConfiguration);
     }
 }

@@ -19,56 +19,44 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 /**
- * Created by gupele on 8/2/2015.
+ * Created by gupele on 8/3/2015.
  */
-public final class RestTemplateMethodVisitor extends AbstractHttpMethodVisitor {
+final class PreparedStatementMethodVisitor extends DefaultMethodVisitor {
+    private final static String ON_ENTER_METHOD_NAME = "preparedStatementMethodStarted";
+    private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/PreparedStatement;Ljava/lang/String;[Ljava/lang/Object;)V";
 
-    public RestTemplateMethodVisitor(int access,
-                                     String desc,
-                                     String owner,
-                                     String methodName,
-                                     MethodVisitor methodVisitor,
-                                     ClassToMethodTransformationData additionalData) {
-        super(access, desc, owner, methodName, methodVisitor, additionalData);
+    public PreparedStatementMethodVisitor(int access,
+                                          String desc,
+                                          String owner,
+                                          String methodName,
+                                          MethodVisitor methodVisitor,
+                                          ClassToMethodTransformationData additionalData) {
+        super(false, true, access, desc, owner, methodName, methodVisitor, null);
     }
 
     @Override
-    public void onMethodEnter() {
-        int stringLocalIndex = this.newLocal(Type.getType(String.class));
-
-        mv.visitVarInsn(ALOAD, 1);
-        Label nullLabel = new Label();
-
-        mv.visitJumpInsn(IFNULL, nullLabel);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URI", "toString", "()Ljava/lang/String;", false);
-        mv.visitVarInsn(ASTORE, stringLocalIndex);
-
+    protected void onMethodEnter() {
         super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
+
         mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(ALOAD, stringLocalIndex);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
 
-        Label notNullLabel = new Label();
-        mv.visitJumpInsn(GOTO, notNullLabel);
+        mv.visitVarInsn(ALOAD, 0);
 
-        mv.visitLabel(nullLabel);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_SQL_STRING, "Ljava/lang/String;");
 
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitLdcInsn(getMethodName());
-        mv.visitInsn(ACONST_NULL);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
 
         mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
-
-        mv.visitLabel(notNullLabel);
     }
 }
-

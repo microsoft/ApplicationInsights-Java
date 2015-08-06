@@ -32,7 +32,7 @@ import org.objectweb.asm.Opcodes;
  *
  * Created by gupele on 5/11/2015.
  */
-class DefaultClassVisitor extends ClassVisitor {
+public class DefaultClassVisitor extends ClassVisitor {
     private boolean isInterface;
     protected final ClassInstrumentationData instrumentationData;
 
@@ -52,7 +52,7 @@ class DefaultClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
 
-        if (isInterface || originalMV == null || ByteCodeUtils.isConstructor(name) || ByteCodeUtils.isPrivate(access)) {
+        if (isInterface || originalMV == null || ByteCodeUtils.isAnyConstructor(name) || ByteCodeUtils.isPrivate(access)) {
             return originalMV;
         }
 

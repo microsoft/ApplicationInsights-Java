@@ -29,12 +29,17 @@ public class AgentBuiltInConfiguration {
     private final boolean httpEnabled;
     private final boolean jdbcEnabled;
     private final boolean hibernateEnabled;
+    private final long maxSqlQueryLimit;
 
-    public AgentBuiltInConfiguration(boolean enabled, boolean httpEnabled, boolean jdbcEnabled, boolean hibernateEnabled) {
+    public AgentBuiltInConfiguration(boolean enabled, boolean httpEnabled, boolean jdbcEnabled, boolean hibernateEnabled, Long maxSqlQueryLimit) {
         this.enabled = enabled;
         this.httpEnabled = httpEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.hibernateEnabled = hibernateEnabled;
+        if (maxSqlQueryLimit == null) {
+            throw new IllegalArgumentException("maxSqlQueryLimit cannot be null");
+        }
+        this.maxSqlQueryLimit = maxSqlQueryLimit;
     }
 
     public boolean isEnabled() {
@@ -51,5 +56,9 @@ public class AgentBuiltInConfiguration {
 
     public boolean isHibernateEnabled() {
         return hibernateEnabled;
+    }
+
+    public long getSqlMaxQueryLimit() {
+        return maxSqlQueryLimit;
     }
 }

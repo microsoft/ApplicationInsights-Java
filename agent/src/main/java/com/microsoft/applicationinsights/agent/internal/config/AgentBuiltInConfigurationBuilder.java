@@ -29,9 +29,10 @@ public class AgentBuiltInConfigurationBuilder {
     private boolean httpEnabled = true;
     private boolean jdbcEnabled = true;
     private boolean hibernateEnabled = true;
+    private Long maxSqlQueryLimit = Long.MAX_VALUE;
 
     public AgentBuiltInConfiguration create() {
-        return new AgentBuiltInConfiguration(enabled, httpEnabled && enabled, jdbcEnabled && enabled, hibernateEnabled && enabled);
+        return new AgentBuiltInConfiguration(enabled, httpEnabled && enabled, jdbcEnabled && enabled, hibernateEnabled && enabled, maxSqlQueryLimit);
     }
 
     public AgentBuiltInConfigurationBuilder setEnabled(boolean enabled) {
@@ -51,6 +52,15 @@ public class AgentBuiltInConfigurationBuilder {
 
     public AgentBuiltInConfigurationBuilder setHibernateEnabled(boolean hibernateEnabled) {
         this.hibernateEnabled = hibernateEnabled;
+        return this;
+    }
+
+    public AgentBuiltInConfigurationBuilder setSqlMaxQueryLimit(Long maxSqlQueryLimit) {
+        if (maxSqlQueryLimit == null) {
+            this.maxSqlQueryLimit = Long.MAX_VALUE;
+        } else {
+            this.maxSqlQueryLimit = maxSqlQueryLimit;
+        }
         return this;
     }
 }

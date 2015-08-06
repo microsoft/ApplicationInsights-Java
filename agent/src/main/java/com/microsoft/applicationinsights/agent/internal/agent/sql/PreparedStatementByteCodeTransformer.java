@@ -19,28 +19,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
+import com.microsoft.applicationinsights.agent.internal.agent.ByteCodeTransformer;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 
 /**
- * An abstract base class for Method Visitors that handle http method calls.
- *
- * Created by gupele on 7/27/2015.
+ * Created by gupele on 8/3/2015.
  */
-abstract class AbstractHttpMethodVisitor extends DefaultMethodVisitor {
-    protected final static String ON_ENTER_METHOD_NAME = "httpMethodStarted";
-    protected final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;)V";
+public final class PreparedStatementByteCodeTransformer implements ByteCodeTransformer {
+    private final ClassInstrumentationData classInstrumentationData;
 
-    public AbstractHttpMethodVisitor(int access,
-                                     String desc,
-                                     String owner,
-                                     String methodName,
-                                     MethodVisitor methodVisitor,
-                                     ClassToMethodTransformationData additionalData) {
-        super(false, true, access, desc, owner, methodName, methodVisitor, additionalData);
+    PreparedStatementByteCodeTransformer(ClassInstrumentationData classInstrumentationData) {
+        this.classInstrumentationData = classInstrumentationData;
+    }
+
+    @Override
+    public byte[] transform(byte[] originalBuffer) {
+        if (classInstrumentationData == null) {
+            return originalBuffer;
+        }
+
+        ClassReader cr = new ClassReader(originalBuffer);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
+        cr.accept(dcv, ClassReader.EXPAND_FRAMES);
+        byte[] newBuffer = cw.toByteArray();
+        return newBuffer;
     }
 }

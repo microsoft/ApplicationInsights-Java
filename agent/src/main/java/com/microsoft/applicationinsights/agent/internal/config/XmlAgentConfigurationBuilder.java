@@ -55,6 +55,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String HTTP_TAG = "HTTP";
     private final static String JDBC_TAG = "JDBC";
     private final static String HIBERNATE_TAG = "HIBERNATE";
+    private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimit";
 
     private final static String AGENT_LOGGER_TAG = "AgentLogger";
 
@@ -178,6 +179,9 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         nodes = builtInElement.getElementsByTagName(HIBERNATE_TAG);
         builtInConfigurationBuilder.setHibernateEnabled(getEnabled(getFirst(nodes), HIBERNATE_TAG));
+
+        nodes = builtInElement.getElementsByTagName(MAX_STATEMENT_QUERY_LIMIT_TAG);
+        builtInConfigurationBuilder.setSqlMaxQueryLimit(getLong(getFirst(nodes), MAX_STATEMENT_QUERY_LIMIT_TAG));
 
         agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
     }
@@ -361,5 +365,24 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         }
 
         return false;
+    }
+
+    private Long getLong(Element element, String elementName) {
+        if (element == null) {
+            return null;
+        }
+
+        try {
+            String strValue = element.getFirstChild().getTextContent();
+            if (!StringUtils.isNullOrEmpty(strValue)) {
+                Long value = Long.valueOf(strValue);
+                return value;
+            }
+            return null;
+        } catch (Throwable t) {
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+        }
+
+        return null;
     }
 }

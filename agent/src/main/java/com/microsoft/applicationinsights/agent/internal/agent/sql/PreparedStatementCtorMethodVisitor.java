@@ -19,28 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.Opcodes;
 
 /**
- * An abstract base class for Method Visitors that handle http method calls.
- *
- * Created by gupele on 7/27/2015.
+ * Created by gupele on 8/4/2015.
  */
-abstract class AbstractHttpMethodVisitor extends DefaultMethodVisitor {
-    protected final static String ON_ENTER_METHOD_NAME = "httpMethodStarted";
-    protected final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;)V";
+final class PreparedStatementCtorMethodVisitor extends DefaultMethodVisitor {
+    private final PreparedStatementMetaData metaData;
 
-    public AbstractHttpMethodVisitor(int access,
-                                     String desc,
-                                     String owner,
-                                     String methodName,
-                                     MethodVisitor methodVisitor,
-                                     ClassToMethodTransformationData additionalData) {
-        super(false, true, access, desc, owner, methodName, methodVisitor, additionalData);
+    public PreparedStatementCtorMethodVisitor(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor, ClassToMethodTransformationData additionalData) {
+        super(false, false, access, desc, owner, methodName, methodVisitor, additionalData);
+        this.metaData = (PreparedStatementMetaData)additionalData;
+    }
+
+    @Override
+    public void visitCode() {
+        super.visitCode();
+        super.visitVarInsn(Opcodes.ALOAD, 0);
+        super.visitVarInsn(Opcodes.ALOAD, metaData.sqlStringInCtor);
+        super.visitFieldInsn(Opcodes.PUTFIELD, owner, metaData.fieldName, "Ljava/lang/String;");
+    }
+
+    @Override
+    protected void onMethodExit(int opcode) {
     }
 }
