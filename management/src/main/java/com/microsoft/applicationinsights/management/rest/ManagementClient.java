@@ -94,5 +94,12 @@ public interface ManagementClient {
      */
     List<String> getAvailableGeoLocations() throws IOException, RestOperationException;
 
+    /**
+     * Gets all the available geo-locations for a subscription id.
+     * @param subscriptionId The subscription ID.
+     * @return Collection of available geo-locations.
+     */
+    List<String> getAvailableGeoLocations(String subscriptionId) throws IOException, RestOperationException;
+
     // endregion Geo Locations
 }

@@ -62,6 +62,7 @@ public class Program {
         String requiredSubscriptionID = subscriptions.get(0).getId();
         getResources(requiredSubscriptionID);
         getAvailableGeoLocations();
+        getAvailableGeoLocations(requiredSubscriptionID);
         getResourceGroups(requiredSubscriptionID);
 
 //        createResourceGroup(requiredSubscriptionID, resourceGroup, location);
@@ -125,6 +126,14 @@ public class Program {
 
     private static void getAvailableGeoLocations() throws IOException, RestOperationException {
         List<String> availableGeoLocations = client.getAvailableGeoLocations();
+
+        for (String location : availableGeoLocations) {
+            System.out.println(location);
+        }
+    }
+
+    private static void getAvailableGeoLocations(String subscriptionId) throws IOException, RestOperationException {
+        List<String> availableGeoLocations = client.getAvailableGeoLocations(subscriptionId);
 
         for (String location : availableGeoLocations) {
             System.out.println(location);

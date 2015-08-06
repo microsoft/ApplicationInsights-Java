@@ -147,9 +147,19 @@ public class ApplicationInsightsManagementClient implements ManagementClient {
      */
     @Override
     public List<String> getAvailableGeoLocations() throws IOException, RestOperationException {
-        Tenant commonTenant = getTenantForSubscription(DEFAULT_AUTHENTICATION_TENANT);
+        return getAvailableGeoLocations(DEFAULT_AUTHENTICATION_TENANT);
+    }
 
-        GetAvailableGeoLocations getAvailableGeoLocations = new GetAvailableGeoLocations(commonTenant);
+    /**
+     * Gets all the available geo-locations for a subscription id.
+     *
+     * @return Collection of available geo-locations.
+     */
+    @Override
+    public List<String> getAvailableGeoLocations(String subscriptionId) throws IOException, RestOperationException {
+        Tenant tenant = getTenantForSubscription(subscriptionId);
+
+        GetAvailableGeoLocations getAvailableGeoLocations = new GetAvailableGeoLocations(tenant);
         List<String> locations = getAvailableGeoLocations.execute(this.restClient);
 
         return locations;
