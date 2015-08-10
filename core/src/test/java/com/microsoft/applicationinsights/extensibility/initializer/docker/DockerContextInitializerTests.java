@@ -50,7 +50,7 @@ public class DockerContextInitializerTests {
     private static DockerContextPoller contextPollerMock = mock(DockerContextPoller.class);
     private static FileFactory fileFactoryMock = mock(FileFactory.class);
     private static DockerContext defaultDockerContext;
-    private static Telemetry telemetry = new TraceTelemetry();
+    private static Telemetry telemetry;
 
     @BeforeClass
     public static void classInit() throws Exception {
@@ -61,8 +61,10 @@ public class DockerContextInitializerTests {
 
     @Before
     public void testInit() {
+        reset(contextPollerMock);
         when(contextPollerMock.getDockerContext()).thenReturn(defaultDockerContext);
         when(contextPollerMock.isCompleted()).thenReturn(true);
+        telemetry = new TraceTelemetry();
     }
 
     @Test
@@ -70,10 +72,29 @@ public class DockerContextInitializerTests {
         initializerUnderTest.initialize(telemetry);
 
         Map<String, String> properties = telemetry.getProperties();
-        Assert.assertEquals(DEFAULT_HOST, telemetry.getContext().getDevice().getId());
+        Assert.assertEquals(DEFAULT_CONTAINER_NAME, telemetry.getContext().getDevice().getId());
         Assert.assertEquals(DEFAULT_IMAGE, properties.get(Constants.DOCKER_IMAGE_PROPERTY_KEY));
         Assert.assertEquals(DEFAULT_CONTAINER_NAME, properties.get(Constants.DOCKER_CONTAINER_NAME_PROPERTY_KEY));
         Assert.assertEquals(DEFAULT_CONTAINER_ID, properties.get(Constants.DOCKER_CONTAINER_ID_PROPERTY_KEY));
+    }
+
+    @Test
+    public void testTelemetryPropertiesNotInitializedWhenAlreadyPopulated() {
+        final String host = "predefined_host";
+        telemetry.getProperties().put(Constants.DOCKER_HOST_PROPERTY_KEY, host);
+        initializerUnderTest.initialize(telemetry);
+
+        Assert.assertEquals(host, telemetry.getProperties().get(Constants.DOCKER_HOST_PROPERTY_KEY));
+    }
+
+    @Test
+    public void testWhenTelemetryPropertiesAlreadyPopulatedDeviceIdStillSet() {
+        final String host = "predefined_host";
+        telemetry.getProperties().put(Constants.DOCKER_HOST_PROPERTY_KEY, host);
+        initializerUnderTest.initialize(telemetry);
+
+        Assert.assertEquals(host, telemetry.getProperties().get(Constants.DOCKER_HOST_PROPERTY_KEY));
+        Assert.assertEquals(DEFAULT_CONTAINER_NAME, telemetry.getContext().getDevice().getId());
     }
 
     @Test
@@ -82,7 +103,7 @@ public class DockerContextInitializerTests {
 
         initializerUnderTest.initialize(telemetry);
 
-        verify(contextPollerMock, times(1)).getDockerContext();
+        verify(contextPollerMock).getDockerContext();
     }
 
     @Test
@@ -121,4 +142,6 @@ public class DockerContextInitializerTests {
 
         verify(fileFactoryMock, times(1)).create(any(String.class), any(String.class));
     }
+
+
 }
