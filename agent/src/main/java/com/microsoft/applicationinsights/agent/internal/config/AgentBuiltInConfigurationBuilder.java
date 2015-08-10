@@ -31,8 +31,8 @@ public class AgentBuiltInConfigurationBuilder {
     private boolean hibernateEnabled = true;
     private boolean jedisEnabled = true;
     private boolean jmxEnabled = true;
-    private long jedisThresholdInMS = 0;
-    private Long maxSqlQueryLimit = Long.MAX_VALUE;
+    private long jedisThresholdInMS = 10000L;
+    private Long maxSqlQueryLimitInMS = 10000L;
 
     public AgentBuiltInConfiguration create() {
         return new AgentBuiltInConfiguration(enabled,
@@ -41,7 +41,7 @@ public class AgentBuiltInConfigurationBuilder {
                                              hibernateEnabled && enabled,
                                              hibernateEnabled && jedisEnabled,
                                              enabled && jmxEnabled,
-                                             maxSqlQueryLimit,
+                                             maxSqlQueryLimitInMS,
                                              jedisThresholdInMS);
     }
 
@@ -70,11 +70,11 @@ public class AgentBuiltInConfigurationBuilder {
         return this;
     }
 
-    public AgentBuiltInConfigurationBuilder setSqlMaxQueryLimit(Long maxSqlQueryLimit) {
-        if (maxSqlQueryLimit == null) {
-            this.maxSqlQueryLimit = Long.MAX_VALUE;
+    public AgentBuiltInConfigurationBuilder setSqlMaxQueryLimitInMS(Long maxSqlQueryLimitInMS) {
+        if (maxSqlQueryLimitInMS == null) {
+            this.maxSqlQueryLimitInMS = 10000L;
         } else {
-            this.maxSqlQueryLimit = maxSqlQueryLimit;
+            this.maxSqlQueryLimitInMS = maxSqlQueryLimitInMS;
         }
         return this;
     }

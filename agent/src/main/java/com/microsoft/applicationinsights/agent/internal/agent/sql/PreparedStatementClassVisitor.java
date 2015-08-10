@@ -75,15 +75,15 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
         if (fv != null && shouldAdd) {
             shouldAdd = false;
 
-            FieldVisitor fv1 = super.visitField(Opcodes.ACC_PRIVATE, SqlConstants.AI_SDK_SQL_STRING, "Ljava/lang/String;", null, null);
+            FieldVisitor fv1 = super.visitField(Opcodes.ACC_PROTECTED, SqlConstants.AI_SDK_SQL_STRING, "Ljava/lang/String;", null, null);
             if (fv1 != null) {
                 fv1.visitEnd();
             }
-            fv1 = super.visitField(Opcodes.ACC_PRIVATE, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;", null, null);
+            fv1 = super.visitField(Opcodes.ACC_PROTECTED, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;", null, null);
             if (fv1 != null) {
                 fv1.visitEnd();
             }
-            fv1 = super.visitField(Opcodes.ACC_PRIVATE, SqlConstants.AI_SDK_BATCH_COUNTER, "I", null, null);
+            fv1 = super.visitField(Opcodes.ACC_PROTECTED, SqlConstants.AI_SDK_BATCH_COUNTER, "I", null, null);
             if (fv1 != null) {
                 fv1.visitEnd();
             }

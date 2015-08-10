@@ -322,26 +322,29 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                 long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
                 Duration duration = new Duration(durationInMilliSeconds);
 
-                StringBuilder explainSB = null;
-                if (methodData.arguments.length > 3) {
-                    commandName = formatAdditionalSqlArguments(commandName, methodData);
-                } else {
-                    if (durationInMilliSeconds > ImplementationsCoordinator.INSTANCE.getMaxSqlQueryTime()) {
-                        explainSB = fetchExplainQuery(commandName, methodData.arguments[2]);
-                    }
-                }
-
-                InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
-
                 RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(
                         dependencyName,
                         commandName,
                         duration,
                         throwable == null);
                 telemetry.setDependencyKind(DependencyKind.SQL);
-                if (explainSB != null) {
-                    telemetry.getContext().getProperties().put("Query Plan", explainSB.toString());
+
+                StringBuilder sb = null;
+                if (methodData.arguments.length > 3) {
+                    sb = formatAdditionalSqlArguments(methodData);
+                    if (sb != null) {
+                        telemetry.getContext().getProperties().put("Args", sb.toString());
+                    }
+                } else {
+                    if (durationInMilliSeconds > ImplementationsCoordinator.INSTANCE.getQueryPlanThresholdInMS()) {
+                        sb = fetchExplainQuery(commandName, methodData.arguments[2]);
+                        if (sb != null) {
+                            telemetry.getContext().getProperties().put("Query Plan", sb.toString());
+                        }
+                    }
                 }
+
+                InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
 
                 telemetryClient.track(telemetry);
                 if (throwable != null) {
@@ -359,10 +362,10 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         return nanoSeconds / 1000000;
     }
 
-    private String formatAdditionalSqlArguments(String prefix, MethodData methodData) {
-        StringBuilder sb = new StringBuilder(prefix);
-        sb.append(" [");
+    private StringBuilder formatAdditionalSqlArguments(MethodData methodData) {
         try {
+            StringBuilder sb = new StringBuilder();
+            sb.append(" [");
             Object[] args = (Object[])methodData.arguments[3];
             if (args != null && args.length > 0) {
                 for (Object arg : args) {
@@ -376,9 +379,10 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                 sb.deleteCharAt(sb.length() - 1);
             }
             sb.append(']');
+            return sb;
         } catch (Throwable t) {
+            return null;
         }
-        return sb.toString();
     }
 
     private StringBuilder fetchExplainQuery(String commandName, Object object) {
@@ -396,20 +400,24 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                 explainSB = new StringBuilder();
                 while (rs.next()) {
                     explainSB.append('[');
-                    for (int i1 = 1; i1 < rs.getMetaData().getColumnCount(); ++i1) {
-                        Object obj = rs.getObject(i1);
-                        explainSB.append(rs.getMetaData().getColumnName(i1));
-                        explainSB.append(':');
-                        explainSB.append(obj == null ? "" : obj.toString());
-                        explainSB.append(',');
+                    int columns = rs.getMetaData().getColumnCount();
+                    if (columns == 1) {
+                        explainSB.append(rs.getString(1));
+                    } else {
+                        for (int i1 = 1; i1 < rs.getMetaData().getColumnCount(); ++i1) {
+                            explainSB.append(rs.getMetaData().getColumnName(i1));
+                            explainSB.append(':');
+                            Object obj = rs.getObject(i1);
+                            explainSB.append(obj == null ? "" : obj.toString());
+                            explainSB.append(',');
+                        }
+                        explainSB.deleteCharAt(explainSB.length() - 1);
                     }
-                    explainSB.deleteCharAt(explainSB.length() - 1);
                     explainSB.append("],");
                 }
                 explainSB.deleteCharAt(explainSB.length() - 1);
             }
         } catch (Throwable t) {
-            t.printStackTrace();
         } finally {
             if (rs != null) {
                 try {

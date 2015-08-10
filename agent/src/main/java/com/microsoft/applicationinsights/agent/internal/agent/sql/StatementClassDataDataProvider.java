@@ -37,15 +37,13 @@ public class StatementClassDataDataProvider {
     };
 
     private final static String[] JDBC_STATEMENT_CLASS_NAMES = new String[] {
-
             "org/hsqldb/jdbc/JDBCStatement",
-
-            "org/postgresql/jdbc2/AbstractJdbc2Statement",
-            "org/postgresql/jdbc3/AbstractJdbc3Statement"
+            "org/apache/derby/client/am/Statement",
+            "org/sqlite/jdbc3/JDBC3Statement"
     };
 
     private final Map<String, ClassInstrumentationData> classesToInstrument;
-    private final HashMap<String, List<String>> sqlPreparedSignatures = new HashMap<String, List<String>>();
+    private final HashMap<String, List<String>> sqlSignatures = new HashMap<String, List<String>>();
 
     public StatementClassDataDataProvider(Map<String, ClassInstrumentationData> classesToInstrument) {
         this.classesToInstrument = classesToInstrument;
@@ -57,20 +55,20 @@ public class StatementClassDataDataProvider {
             ArrayList<String> signatures = new ArrayList<String>();
 
             signatures.add("(Ljava/lang/String;)Ljava/sql/ResultSet;");
-            sqlPreparedSignatures.put("executeQuery", signatures);
+            sqlSignatures.put("executeQuery", signatures);
 
             signatures = new ArrayList<String>();
             signatures.add("(Ljava/lang/String;I)I");
             signatures.add("(Ljava/lang/String;[I)I");
             signatures.add("(Ljava/lang/String;[Ljava/lang/String;)I");
-            sqlPreparedSignatures.put("executeUpdate", signatures);
+            sqlSignatures.put("executeUpdate", signatures);
 
             signatures = new ArrayList<String>();
             signatures.add("(Ljava/lang/String;)Z");
             signatures.add("((Ljava/lang/String;I)Z");
             signatures.add("(Ljava/lang/String;[I)Z");
             signatures.add("(Ljava/lang/String;[Ljava/lang/String;)Z");
-            sqlPreparedSignatures.put("execute", signatures);
+            sqlSignatures.put("execute", signatures);
 
             addStatements();
             addPossibleQueryLimit();
@@ -104,7 +102,7 @@ public class StatementClassDataDataProvider {
                     new ClassInstrumentationData(className, InstrumentedClassType.SQL)
                             .setReportCaughtExceptions(false)
                             .setReportExecutionTime(true);
-            for (Map.Entry<String, List<String>> methodAndSignature : sqlPreparedSignatures.entrySet()) {
+            for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
                 for (String signature : methodAndSignature.getValue()) {
                     data.addMethod(methodAndSignature.getKey(), signature, false, true, methodVisitorFactory);
                 }
@@ -135,7 +133,7 @@ public class StatementClassDataDataProvider {
                     new ClassInstrumentationData(className, InstrumentedClassType.SQL)
                             .setReportCaughtExceptions(false)
                             .setReportExecutionTime(true);
-            for (Map.Entry<String, List<String>> methodAndSignature : sqlPreparedSignatures.entrySet()) {
+            for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
                 for (String signature : methodAndSignature.getValue()) {
                     data.addMethod(methodAndSignature.getKey(), signature, false, true, methodVisitorFactory);
                 }
