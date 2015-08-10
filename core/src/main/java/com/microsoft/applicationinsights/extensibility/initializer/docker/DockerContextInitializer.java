@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.extensibility.initializer.docker;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.*;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -77,7 +78,14 @@ public class DockerContextInitializer implements TelemetryInitializer {
         if (dockerContextPoller.isCompleted() && (dockerContext = dockerContextPoller.getDockerContext()) != null) {
             TelemetryContext context = telemetry.getContext();
 
-            context.getDevice().setId(dockerContext.getHostName());
+            // We always set the device ID, since by default it is represented by a GUID inside Docker container.
+            String containerName = dockerContext.getProperties().get(Constants.DOCKER_CONTAINER_NAME_PROPERTY_KEY);
+            context.getDevice().setId(containerName);
+
+            // If telemetry already initialized with Docker properties, we don't overwrite it.
+            if (!StringUtils.isNullOrEmpty(context.getProperties().get(Constants.DOCKER_HOST_PROPERTY_KEY))) {
+                return;
+            }
 
             ConcurrentMap<String, String> properties = context.getProperties();
             properties.putAll(dockerContext.getProperties());

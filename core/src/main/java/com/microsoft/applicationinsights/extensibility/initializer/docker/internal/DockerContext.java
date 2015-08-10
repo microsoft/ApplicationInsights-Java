@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class DockerContext {
     private String hostName;
-    private Map properties = new HashMap();
+    private Map<String, String> properties = new HashMap<String, String>();
 
     public DockerContext(String json) throws Exception {
         extract(json);
@@ -43,7 +43,7 @@ public class DockerContext {
         return this.hostName;
     }
 
-    public Map getProperties() {
+    public Map<String, String> getProperties() {
         return this.properties;
     }
 
