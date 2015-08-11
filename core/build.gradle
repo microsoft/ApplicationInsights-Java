@@ -41,6 +41,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
     testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
+    compile files('src/test/resources/ApplicationInsightsConfigurationJar.jar')
 }
 
 def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"

@@ -72,11 +72,20 @@ public final class ConfigurationFileLocator {
         String configurationFile = null;
         URL resourceUrl = classLoader.getResource(configurationFileName);
         if (resourceUrl != null) {
+//            if(resourceUrl.getProtocol() == null || !resourceUrl.getProtocol().equals("file")) {
+//                throw new RuntimeException("Path is not a file!");
+//            }
+//
             File filePath = normalizeUrlToFile(resourceUrl);
             if (filePath != null) {
+//                if(!filePath.exists()) {
+//                    throw new RuntimeException("File path does not exist on filesystem: " + filePath.toURI());
+//                }
                 configurationFile = filePath.toString();
             }
+
         }
+
 
         InternalLogger.INSTANCE.logAlways(
                 InternalLogger.LoggingLevel.INFO,
