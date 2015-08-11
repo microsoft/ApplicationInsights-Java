@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.internal.agent;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -111,7 +111,7 @@ public final class ArgsFormatterTest {
     public void twoObjectsAndMapTest() {
         String s1 = "1";
         String s2 = "2";
-        HashMap<String, String> strings = new HashMap<String, String>();
+        TreeMap<String, String> strings = new TreeMap<String, String>();
         strings.put("a", "object");
         strings.put("a1", "object1");
         String s = new ArgsFormatter().format(new Object[] {s1, s2, strings});
@@ -122,7 +122,7 @@ public final class ArgsFormatterTest {
 
     @Test
     public void mapOfCollectionsTest() {
-        HashMap<String, List<String>> mapOfStrings = new HashMap<String,  List<String>>();
+        TreeMap<String, List<String>> mapOfStrings = new TreeMap<String,  List<String>>();
         ArrayList<String> strings = new ArrayList<String>();
         strings.add("a");
         strings.add("a1");
@@ -150,7 +150,7 @@ public final class ArgsFormatterTest {
 
     @Test
     public void mapTest() {
-        HashMap<String, String> strings = new HashMap<String, String>();
+        TreeMap<String, String> strings = new TreeMap<String, String>();
         strings.put("a", "object");
         strings.put("a1", "object1");
         String s = new ArgsFormatter().format(new Object[] {strings});
