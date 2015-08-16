@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import org.junit.Assert;
 import org.junit.Test;
 import com.microsoft.applicationinsights.web.utils.ThreadContextValidator;
 
@@ -55,5 +56,28 @@ public class ThreadContextTests {
         for (ThreadContextValidator validator : threadContextValidators) {
             validator.join();
         }
+    }
+
+    @Test
+    public void testNewCreatedThreadGetsTheParentContext() throws InterruptedException {
+        final String expectedRequestName = "inherited_context";
+        RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
+        requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName);
+
+        ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
+
+        final RequestTelemetryContext[] context = new RequestTelemetryContext[1];
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                context[0] = ThreadContext.getRequestTelemetryContext();
+            }
+        });
+
+        thread.start();
+        thread.join();
+
+        Assert.assertNotNull(context[0]);
+        Assert.assertEquals(expectedRequestName, context[0].getHttpRequestTelemetry().getName());
     }
 }
