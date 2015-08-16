@@ -54,6 +54,12 @@ public final class PreparedStatementClassDataProvider {
             factory = classFactoryForPostgreSql();
             doAdd(factory, "org/postgresql/jdbc2/AbstractJdbc2Statement");
 
+            factory = classFactoryForOracle();
+            doAdd(factory, "oracle/jdbc/driver/OraclePreparedStatement");
+
+            factory = classFactoryForSqlServer();
+            doAdd(factory, "com/microsoft/sqlserver/jdbc/SQLServerPreparedStatement");
+
             addSqlite();
         } catch (Throwable t) {
             InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.getMessage());
@@ -204,6 +210,39 @@ public final class PreparedStatementClassDataProvider {
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
                 HashSet<String> ctorSignatures = new HashSet<String>();
                 ctorSignatures.add("(Lorg/postgresql/jdbc2/AbstractJdbc2Connection;Ljava/lang/String;ZII)V");
+                final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
+                metaData1.sqlStringInCtor = 2;
+                return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);
+            }
+        };
+
+        return classVisitorFactory;
+    }
+
+    private ClassVisitorFactory classFactoryForOracle() {
+
+        ClassVisitorFactory classVisitorFactory = new ClassVisitorFactory() {
+            @Override
+            public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
+                HashSet<String> ctorSignatures = new HashSet<String>();
+                ctorSignatures.add("(Loracle/jdbc/driver/PhysicalConnection;Ljava/lang/String;II)V");
+                ctorSignatures.add("(Loracle/jdbc/driver/PhysicalConnection;Ljava/lang/String;IIII)V");
+                final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
+                metaData1.sqlStringInCtor = 2;
+                return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);
+            }
+        };
+
+        return classVisitorFactory;
+    }
+
+    private ClassVisitorFactory classFactoryForSqlServer() {
+
+        ClassVisitorFactory classVisitorFactory = new ClassVisitorFactory() {
+            @Override
+            public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
+                HashSet<String> ctorSignatures = new HashSet<String>();
+                ctorSignatures.add("(Lcom/microsoft/sqlserver/jdbc/SQLServerConnection;Ljava/lang/String;II)V");
                 final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
                 metaData1.sqlStringInCtor = 2;
                 return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);

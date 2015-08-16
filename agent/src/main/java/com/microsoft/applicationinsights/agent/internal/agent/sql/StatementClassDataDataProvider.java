@@ -38,6 +38,8 @@ public class StatementClassDataDataProvider {
 
     private final static String[] JDBC_STATEMENT_CLASS_NAMES = new String[] {
             "org/hsqldb/jdbc/JDBCStatement",
+            "oracle/jdbc/driver/OracleStatement",
+            "com/microsoft/sqlserver/jdbc/SQLServerStatement",
             "org/apache/derby/client/am/Statement",
             "org/sqlite/jdbc3/JDBC3Statement"
     };
