@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,7 +45,13 @@ public final class ConfigurationFileLocator {
         this.configurationFileName = configurationFileName;
     }
 
-    public String getConfigurationFile() {
+    public ResourceFile getConfigurationFile() {
+        InputStream inputStream = ConfigurationFileLocator.class.getClassLoader().getResourceAsStream(configurationFileName);
+        if (inputStream != null) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file has been successfully found as resource");
+            return new ResourceFile(inputStream);
+        }
+
         // Trying to load configuration as a resource.
         String configurationFile = getConfigurationFromCurrentClassLoader();
 
@@ -64,7 +71,7 @@ public final class ConfigurationFileLocator {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Configuration file '%s' could not be found", configurationFileName);
         }
 
-        return configurationFile;
+        return new ResourceFile(configurationFile);
     }
 
     private String getConfigurationFromCurrentClassLoader() {

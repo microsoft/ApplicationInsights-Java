@@ -79,8 +79,8 @@ public enum TelemetryConfigurationFactory {
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
-            String configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
-            if (Strings.isNullOrEmpty(configurationFile)) {
+            ResourceFile configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
+            if (configurationFile == null) {
                 setMinimumConfiguration(null, configuration);
                 return;
             }

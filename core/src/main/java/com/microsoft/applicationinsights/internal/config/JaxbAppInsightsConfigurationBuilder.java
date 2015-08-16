@@ -25,7 +25,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.InputStream;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
@@ -35,7 +37,15 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  */
 class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBuilder {
     @Override
-    public ApplicationInsightsXmlConfiguration build(String filename) {
+    public ApplicationInsightsXmlConfiguration build(ResourceFile resourceFile) {
+        if (!Strings.isNullOrEmpty(resourceFile.filename)) {
+            return fetchInformation(resourceFile.filename);
+        } else {
+            return fetchInformation(resourceFile.fileInputStream);
+        }
+    }
+
+    private ApplicationInsightsXmlConfiguration fetchInformation(String filename) {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -53,4 +63,23 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
 
         return null;
     }
+
+    private ApplicationInsightsXmlConfiguration fetchInformation(InputStream inputStream) {
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(inputStream);
+
+            return applicationInsights;
+        } catch (JAXBException e) {
+            if (e.getCause() != null) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getCause().getMessage());
+            } else {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getMessage());
+            }
+        }
+
+        return null;
+    }
 }
+

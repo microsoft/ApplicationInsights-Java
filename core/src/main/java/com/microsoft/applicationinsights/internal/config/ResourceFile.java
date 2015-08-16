@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -21,12 +21,25 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import java.io.InputStream;
+
 /**
- * The class defines the interface of builders that know
- * to get the configuration file and create the data represented in {@link com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration}
- *
- * Created by gupele on 3/15/2015.
+ * Created by gupele on 8/16/2015.
  */
-interface AppInsightsConfigurationBuilder {
-    ApplicationInsightsXmlConfiguration build(ResourceFile resourceFile);
+final class ResourceFile {
+    public final String filename;
+    public final InputStream fileInputStream;
+
+    ResourceFile(InputStream fileInputStream) {
+        this(null, fileInputStream);
+    }
+
+    ResourceFile(String filename) {
+        this(filename, null);
+    }
+
+    ResourceFile(String filename, InputStream fileInputStream) {
+        this.filename = filename;
+        this.fileInputStream = fileInputStream;
+    }
 }
