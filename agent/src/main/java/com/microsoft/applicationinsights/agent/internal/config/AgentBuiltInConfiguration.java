@@ -31,7 +31,7 @@ public class AgentBuiltInConfiguration {
     private final boolean hibernateEnabled;
     private final boolean jedisEnabled;
     private final boolean jmxEnabled;
-    private final long maxSqlQueryLimit;
+    private final long maxSqlQueryLimitInMS;
     private final long redisThresholdInMS;
 
     public AgentBuiltInConfiguration(boolean enabled,
@@ -40,19 +40,19 @@ public class AgentBuiltInConfiguration {
                                      boolean hibernateEnabled,
                                      boolean jedisEnabled,
                                      boolean jmxEnabled,
-                                     Long maxSqlQueryLimit,
+                                     Long maxSqlQueryLimitInMS,
                                      long redisThresholdInMS) {
         this.enabled = enabled;
         this.httpEnabled = httpEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.hibernateEnabled = hibernateEnabled;
         this.jmxEnabled = jmxEnabled;
-        if (maxSqlQueryLimit == null) {
+        if (maxSqlQueryLimitInMS == null) {
             throw new IllegalArgumentException("maxSqlQueryLimit cannot be null");
         }
         this.redisThresholdInMS = redisThresholdInMS;
         this.jedisEnabled = jedisEnabled;
-        this.maxSqlQueryLimit = maxSqlQueryLimit;
+        this.maxSqlQueryLimitInMS = maxSqlQueryLimitInMS;
     }
 
     public boolean isEnabled() {
@@ -71,8 +71,8 @@ public class AgentBuiltInConfiguration {
         return hibernateEnabled;
     }
 
-    public long getSqlMaxQueryLimit() {
-        return maxSqlQueryLimit;
+    public long getSqlMaxQueryLimitInMS() {
+        return maxSqlQueryLimitInMS;
     }
 
     public boolean isRedisEnabled() {

@@ -32,7 +32,7 @@ import java.lang.management.ManagementFactory;
 public final class JmxConnectorLoader {
     private JmxConnectorMXBean mxBean;
 
-    private final static String AI_SDK_JMX_NAME = "com.microsoft.applicationinsights.sample:type=AIJavaSDKAgent";
+    private final static String AI_SDK_JMX_NAME = "com.microsoft.applicationinsights.java.sdk:type=AIJavaSDKAgent";
 
     public JmxConnectorLoader() {
         try {

@@ -57,9 +57,11 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String JDBC_TAG = "JDBC";
     private final static String HIBERNATE_TAG = "HIBERNATE";
     private final static String JMX_TAG = "AgentJmx";
-    private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimit";
+    private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
 
     private final static String AGENT_LOGGER_TAG = "AgentLogger";
+
+    private final static long JEDIS_ARGS_THRESHOLD_IN_MS = 10000L;
 
     private final static String EXCLUDED_PREFIXES_TAG = "ExcludedPrefixes";
     private final static String FORBIDDEN_PREFIX_TAG = "Prefix";
@@ -176,7 +178,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         nodes = builtInElement.getElementsByTagName(JEDIS_TAG);
         Element element = getFirst(nodes);
-        long threshold = getLongAttribute(element, JEDIS_TAG, THRESHOLD_ATTRIBUTE, 0);
+        long threshold = getLongAttribute(element, JEDIS_TAG, THRESHOLD_ATTRIBUTE, JEDIS_ARGS_THRESHOLD_IN_MS);
         builtInConfigurationBuilder.setJedisValues(getEnabled(element, JEDIS_TAG), threshold);
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
@@ -192,7 +194,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         builtInConfigurationBuilder.setJmxEnabled(getEnabled(getFirst(nodes), JMX_TAG));
 
         nodes = builtInElement.getElementsByTagName(MAX_STATEMENT_QUERY_LIMIT_TAG);
-        builtInConfigurationBuilder.setSqlMaxQueryLimit(getLong(getFirst(nodes), MAX_STATEMENT_QUERY_LIMIT_TAG));
+        builtInConfigurationBuilder.setSqlMaxQueryLimitInMS(getLong(getFirst(nodes), MAX_STATEMENT_QUERY_LIMIT_TAG));
 
         agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
     }
