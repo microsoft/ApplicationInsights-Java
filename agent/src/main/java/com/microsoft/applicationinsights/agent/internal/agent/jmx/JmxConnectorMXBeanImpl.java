@@ -28,6 +28,16 @@ import com.microsoft.applicationinsights.agent.internal.coresync.impl.Implementa
  */
 public class JmxConnectorMXBeanImpl implements JmxConnectorMXBean {
     @Override
+    public long getQueryPlanThresholdInMS() {
+        return ImplementationsCoordinator.INSTANCE.getQueryPlanThresholdInMS();
+    }
+
+    @Override
+    public void setQueryPlanThresholdInMS(long thresholdInMS) {
+        ImplementationsCoordinator.INSTANCE.setQueryPlanThresholdInMS(thresholdInMS);
+    }
+
+    @Override
     public long getRedisThresholdInMS() {
         return ImplementationsCoordinator.INSTANCE.getRedisThresholdInNS() / 1000000;
     }
