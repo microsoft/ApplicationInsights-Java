@@ -34,6 +34,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Strings;
@@ -163,7 +164,7 @@ public final class WebRequestTrackingFilter implements Filter {
         boolean success = true;
 
         try {
-            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime());
+            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(), (HttpServletRequest)req);
             ThreadContext.setRequestTelemetryContext(context);
 
             webModulesContainer.invokeOnBeginRequest(req, res);
