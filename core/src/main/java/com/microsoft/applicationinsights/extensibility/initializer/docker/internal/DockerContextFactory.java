@@ -30,7 +30,7 @@ import java.io.File;
  */
 public class DockerContextFactory {
     public DockerContext createDockerContext(File contextFile) throws Exception {
-        String json = FileUtils.readFileToString(contextFile, "utf-8");
+        String json = FileUtils.readLines(contextFile, "utf-8").get(0);
 
         return new DockerContext(json);
     }
