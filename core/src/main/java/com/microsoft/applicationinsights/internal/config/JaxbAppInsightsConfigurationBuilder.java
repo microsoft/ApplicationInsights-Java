@@ -25,7 +25,10 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
@@ -35,22 +38,32 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  */
 class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBuilder {
     @Override
-    public ApplicationInsightsXmlConfiguration build(String filename) {
+    public ApplicationInsightsXmlConfiguration build(InputStream resourceFile) {
+        if (resourceFile == null) {
+            return null;
+        }
+
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            File configurationFile = new File(filename);
-            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(configurationFile);
+            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFile);
 
             return applicationInsights;
         } catch (JAXBException e) {
             if (e.getCause() != null) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file '%s': '%s'", filename, e.getCause().getMessage());
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getCause().getMessage());
             } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file '%s': '%s'", filename, e.getMessage());
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getMessage());
+            }
+        } finally {
+            try {
+                resourceFile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
         return null;
     }
 }
+
