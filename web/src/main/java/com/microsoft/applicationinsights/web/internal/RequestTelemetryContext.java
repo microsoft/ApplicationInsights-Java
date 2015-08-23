@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
@@ -34,14 +36,25 @@ public class RequestTelemetryContext {
     private SessionCookie sessionCookie;
     private UserCookie userCookie;
     private boolean isNewSession = false;
+    private HttpServletRequest servletRequest;
 
     /**
      * Constructs new RequestTelemetryContext object.
      * @param ticks The time in ticks
      */
     public RequestTelemetryContext(long ticks) {
+        this(ticks, null);
+    }
+
+    /**
+     * Constructs new RequestTelemetryContext object.
+     * @param ticks The time in ticks
+     * @param servletRequest The servlet request
+     */
+    public RequestTelemetryContext(long ticks, HttpServletRequest servletRequest) {
         requestTelemetry = new RequestTelemetry();
         requestStartTimeTicks = ticks;
+        this.servletRequest = servletRequest;
     }
 
     /**
@@ -106,5 +119,9 @@ public class RequestTelemetryContext {
      */
     public boolean getIsNewSession() {
         return isNewSession;
+    }
+
+    public HttpServletRequest getHttpServletRequest() {
+        return servletRequest;
     }
 }
