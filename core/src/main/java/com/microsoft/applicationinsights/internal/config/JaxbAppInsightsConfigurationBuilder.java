@@ -25,6 +25,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 import com.google.common.base.Strings;
@@ -37,38 +38,15 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  */
 class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBuilder {
     @Override
-    public ApplicationInsightsXmlConfiguration build(ResourceFile resourceFile) {
-        if (!Strings.isNullOrEmpty(resourceFile.filename)) {
-            return fetchInformation(resourceFile.filename);
-        } else {
-            return fetchInformation(resourceFile.fileInputStream);
+    public ApplicationInsightsXmlConfiguration build(InputStream resourceFile) {
+        if (resourceFile == null) {
+            return null;
         }
-    }
 
-    private ApplicationInsightsXmlConfiguration fetchInformation(String filename) {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            File configurationFile = new File(filename);
-            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(configurationFile);
-
-            return applicationInsights;
-        } catch (JAXBException e) {
-            if (e.getCause() != null) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file '%s': '%s'", filename, e.getCause().getMessage());
-            } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file '%s': '%s'", filename, e.getMessage());
-            }
-        }
-
-        return null;
-    }
-
-    private ApplicationInsightsXmlConfiguration fetchInformation(InputStream inputStream) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(inputStream);
+            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFile);
 
             return applicationInsights;
         } catch (JAXBException e) {
@@ -76,6 +54,12 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getCause().getMessage());
             } else {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getMessage());
+            }
+        } finally {
+            try {
+                resourceFile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 

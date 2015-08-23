@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -52,7 +53,7 @@ public final class ConfigurationFileLocatorTest {
     public void testGetConfigurationFileWhereFileIsResource() throws Exception {
         String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
 
-        ResourceFile resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
+        InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
         verifyFile(resourceFile);
     }
 
@@ -60,7 +61,7 @@ public final class ConfigurationFileLocatorTest {
     public void testGetConfigurationFileWhereFileIsJarLocationOnly() throws Exception {
         String configurationFileName = putConfigurationFileInLibraryLocationOnly();
 
-        ResourceFile resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
+        InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
         verifyFile(resourceFile);
     }
 
@@ -68,7 +69,7 @@ public final class ConfigurationFileLocatorTest {
     public void testGetConfigurationFileWhereFileIsInClassPathOnly() throws Exception {
         String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
 
-        ResourceFile resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
+        InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
         verifyFile(resourceFile);
     }
 
@@ -76,7 +77,7 @@ public final class ConfigurationFileLocatorTest {
     public void testGetConfigurationFileWhereFileInBothClassPathAndJarLocation() throws Exception {
         putConfigurationFileInClassPathAndJarLocation(MOCK_CONF_FILE, MOCK_CONF_FILE);
 
-        ResourceFile resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
+        InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
         verifyFile(resourceFile);
     }
 
@@ -84,7 +85,7 @@ public final class ConfigurationFileLocatorTest {
     public void testGetConfigurationFileJarLocationIsfoundFirst() throws Exception {
         putConfigurationFileInClassPathAndJarLocation("dontfind" + MOCK_CONF_FILE, MOCK_CONF_FILE);
 
-        ResourceFile resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
+        InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
         verifyFile(resourceFile);
     }
 
@@ -182,17 +183,7 @@ public final class ConfigurationFileLocatorTest {
         return null;
     }
 
-    private void verifyFile(ResourceFile resourceFile) {
+    private void verifyFile(InputStream resourceFile) {
         assertNotNull("Configuration file is not found in the jar location", resourceFile);
-
-        if (resourceFile.fileInputStream == null) {
-            assertNotNull("Configuration file is not found in the jar location", resourceFile.filename);
-
-            File confFile = new File(resourceFile.filename);
-            assertTrue("Returned value is not a file", confFile.isFile());
-            assertTrue("Returned value does not exist", confFile.exists());
-        } else {
-            assertNull("Configuration file name must be null", resourceFile.filename);
-        }
     }
 }

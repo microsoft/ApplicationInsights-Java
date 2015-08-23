@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.List;
@@ -79,7 +80,7 @@ public enum TelemetryConfigurationFactory {
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
-            ResourceFile configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
+            InputStream configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
             if (configurationFile == null) {
                 setMinimumConfiguration(null, configuration);
                 return;
