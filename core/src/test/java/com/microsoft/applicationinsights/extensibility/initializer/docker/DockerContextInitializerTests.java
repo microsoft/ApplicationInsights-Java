@@ -119,14 +119,15 @@ public class DockerContextInitializerTests {
 
     @Test
     public void testSDKInfoFileIsWrittenWithInstrumentationKey() throws IOException {
+        // The expected instrumentation key below is taken from the ApplicationInsights.xml under the resources folder.
+        final String expectedSdkInfo = "InstrumentationKey=A-test-instrumentation-key";
+
         reset(fileFactoryMock);
         String sdkInfoFilePath = String.format("%s/%s", Constants.AI_SDK_DIRECTORY, Constants.AI_SDK_INFO_FILENAME);
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
 
         initializerUnderTest = new DockerContextInitializer(fileFactoryMock, contextPollerMock);
         initializerUnderTest.initialize(telemetry);
 
-        String expectedSdkInfo = String.format(Constants.AI_SDK_INFO_FILE_CONTENT_TEMPLATE, instrumentationKey);
         verify(fileFactoryMock).create(sdkInfoFilePath, expectedSdkInfo);
     }
 
