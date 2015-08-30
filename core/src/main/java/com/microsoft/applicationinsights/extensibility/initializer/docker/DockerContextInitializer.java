@@ -71,8 +71,12 @@ public class DockerContextInitializer implements TelemetryInitializer {
         DockerContext dockerContext;
 
         if (!sdkInfoFileWritten) {
-            writeSDKInfoFile();
-            sdkInfoFileWritten = true;
+            synchronized (this) {
+                if (!sdkInfoFileWritten) {
+                    writeSDKInfoFile();
+                    sdkInfoFileWritten = true;
+                }
+            }
         }
 
         if (dockerContextPoller.isCompleted() && (dockerContext = dockerContextPoller.getDockerContext()) != null) {

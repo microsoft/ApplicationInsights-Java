@@ -32,6 +32,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
@@ -144,5 +146,29 @@ public class DockerContextInitializerTests {
         verify(fileFactoryMock, times(1)).create(any(String.class), any(String.class));
     }
 
+    @Test
+    public void testWritingOfSdkInfoFileIsSynchonizedAndWrittenOnlyOnce() throws IOException, InterruptedException {
+        reset(fileFactoryMock);
 
+        initializerUnderTest = new DockerContextInitializer(fileFactoryMock, contextPollerMock);
+
+        // Sending many telemetries to increase the possibility of collision in case of a bug.
+        List<Thread> threads = new ArrayList<Thread>();
+        for (int i = 0; i < 100; i++) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    initializerUnderTest.initialize(telemetry);
+                }
+            });
+            thread.start();
+            threads.add(thread);
+        }
+
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        verify(fileFactoryMock, times(1)).create(any(String.class), any(String.class));
+    }
 }
