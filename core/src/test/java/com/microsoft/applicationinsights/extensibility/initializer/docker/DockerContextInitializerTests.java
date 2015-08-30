@@ -32,6 +32,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
@@ -119,14 +121,15 @@ public class DockerContextInitializerTests {
 
     @Test
     public void testSDKInfoFileIsWrittenWithInstrumentationKey() throws IOException {
+        // The expected instrumentation key below is taken from the ApplicationInsights.xml under the resources folder.
+        final String expectedSdkInfo = "InstrumentationKey=A-test-instrumentation-key";
+
         reset(fileFactoryMock);
         String sdkInfoFilePath = String.format("%s/%s", Constants.AI_SDK_DIRECTORY, Constants.AI_SDK_INFO_FILENAME);
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
 
         initializerUnderTest = new DockerContextInitializer(fileFactoryMock, contextPollerMock);
         initializerUnderTest.initialize(telemetry);
 
-        String expectedSdkInfo = String.format(Constants.AI_SDK_INFO_FILE_CONTENT_TEMPLATE, instrumentationKey);
         verify(fileFactoryMock).create(sdkInfoFilePath, expectedSdkInfo);
     }
 
@@ -143,5 +146,29 @@ public class DockerContextInitializerTests {
         verify(fileFactoryMock, times(1)).create(any(String.class), any(String.class));
     }
 
+    @Test
+    public void testWritingOfSdkInfoFileIsSynchonizedAndWrittenOnlyOnce() throws IOException, InterruptedException {
+        reset(fileFactoryMock);
 
+        initializerUnderTest = new DockerContextInitializer(fileFactoryMock, contextPollerMock);
+
+        // Sending many telemetries to increase the possibility of collision in case of a bug.
+        List<Thread> threads = new ArrayList<Thread>();
+        for (int i = 0; i < 100; i++) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    initializerUnderTest.initialize(telemetry);
+                }
+            });
+            thread.start();
+            threads.add(thread);
+        }
+
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        verify(fileFactoryMock, times(1)).create(any(String.class), any(String.class));
+    }
 }

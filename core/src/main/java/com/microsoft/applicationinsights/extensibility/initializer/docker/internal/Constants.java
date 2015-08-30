@@ -27,7 +27,7 @@ package com.microsoft.applicationinsights.extensibility.initializer.docker.inter
 public class Constants {
     public static final String AI_SDK_DIRECTORY = "/usr/appinsights/docker";
     public static final String AI_SDK_INFO_FILENAME = "sdk.info";
-    public static final String AI_SDK_INFO_FILE_CONTENT_TEMPLATE = "InstrumentationKey=";
+    public static final String AI_SDK_INFO_FILE_CONTENT_TEMPLATE = "InstrumentationKey=%s";
 
     public static final String DOCKER_HOST_PROPERTY_KEY = "docker-host";
     public static final String DOCKER_IMAGE_PROPERTY_KEY = "docker-image";
