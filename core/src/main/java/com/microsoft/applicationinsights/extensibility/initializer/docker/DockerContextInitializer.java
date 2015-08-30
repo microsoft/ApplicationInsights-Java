@@ -22,10 +22,10 @@
 package com.microsoft.applicationinsights.extensibility.initializer.docker;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.*;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import java.io.IOException;
@@ -83,7 +83,7 @@ public class DockerContextInitializer implements TelemetryInitializer {
             context.getDevice().setId(containerName);
 
             // If telemetry already initialized with Docker properties, we don't overwrite it.
-            if (!StringUtils.isNullOrEmpty(context.getProperties().get(Constants.DOCKER_HOST_PROPERTY_KEY))) {
+            if (!LocalStringsUtils.isNullOrEmpty(context.getProperties().get(Constants.DOCKER_HOST_PROPERTY_KEY))) {
                 return;
             }
 
