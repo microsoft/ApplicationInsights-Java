@@ -185,7 +185,7 @@ public final class TelemetryContext {
     }
 
     public void initialize(TelemetryContext source) {
-        if (!Strings.isNullOrEmpty(source.getInstrumentationKey()))
+        if (Strings.isNullOrEmpty(this.instrumentationKey) && !Strings.isNullOrEmpty(source.getInstrumentationKey()))
             setInstrumentationKey(source.getInstrumentationKey());
 
         if (source.tags != null && source.tags.size() > 0) {
