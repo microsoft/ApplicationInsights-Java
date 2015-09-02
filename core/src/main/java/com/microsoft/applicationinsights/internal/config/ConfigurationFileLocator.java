@@ -86,11 +86,22 @@ public final class ConfigurationFileLocator {
         String configurationFile = null;
         URL resourceUrl = classLoader.getResource(configurationFileName);
         if (resourceUrl != null) {
+            //If the URL is not a file, resourceUrl.getProtocol() will be something else - like "jar", for instance.
+//            if(resourceUrl.getProtocol() == null || !resourceUrl.getProtocol().equals("file")) {
+//                throw new RuntimeException("Path is not a file!");
+//            }
+
             File filePath = normalizeUrlToFile(resourceUrl);
             if (filePath != null) {
+                //When loading from a jar, the filePath is not null, but exists() will return false.
+//                if(!filePath.exists()) {
+//                    throw new RuntimeException("File path does not exist on filesystem: " + filePath.toURI());
+//                }
                 configurationFile = filePath.toString();
             }
+
         }
+
 
         InternalLogger.INSTANCE.logAlways(
                 InternalLogger.LoggingLevel.INFO,

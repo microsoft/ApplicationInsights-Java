@@ -24,19 +24,21 @@ package com.microsoft.applicationinsights.internal.config;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import static org.junit.Assert.*;
 
 public final class ConfigurationFileLocatorTest {
     private final static String MOCK_CONF_FILE = "MockApplicationInsights.xml";
+    private final static String MOCK_JAR_FILE = "ApplicationInsightsConfigurationJar.jar";
+    private final static String MOCK_CONF_FILE_IN_JAR = "ApplicationInsightsJar.xml";
     private final static String EXISTING_CONF_TEST_FILE = "ApplicationInsights.xml";
 
     @Test(expected = IllegalArgumentException.class)
@@ -63,6 +65,14 @@ public final class ConfigurationFileLocatorTest {
 
         InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
         verifyFile(resourceFile);
+    }
+
+    @Test
+    public void testGetConfigurationFileWhereFileIsJarFileLocationOnly() throws Exception {
+        String configurationFileName = putConfigurationFileInJarFileLocationOnly();
+
+        configurationFileName = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
+        verifyFile(configurationFileName);
     }
 
     @Test
@@ -124,6 +134,12 @@ public final class ConfigurationFileLocatorTest {
         putConfigurationInLibraryLocation(MOCK_CONF_FILE);
 
         return MOCK_CONF_FILE;
+    }
+
+    private String putConfigurationFileInJarFileLocationOnly() throws URISyntaxException, IOException {
+        eraseFromClassPath();
+
+        return MOCK_CONF_FILE_IN_JAR;
     }
 
     private void putConfigurationInLibraryLocation(String configurationFileName) throws URISyntaxException, IOException {
