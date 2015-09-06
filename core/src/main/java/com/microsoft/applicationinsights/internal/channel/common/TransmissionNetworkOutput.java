@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -53,10 +54,9 @@ import com.google.common.base.Strings;
 public final class TransmissionNetworkOutput implements TransmissionOutput {
     private final static String CONTENT_TYPE_HEADER = "Content-Type";
     private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
+    private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
-
-    private static SenderThreadsBackOffManager s_senderThreadsManager;
 
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
@@ -68,24 +68,27 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     // Use one instance for optimization
     private final ApacheSender httpClient;
 
-    public static TransmissionNetworkOutput create() {
-        return create(DEFAULT_SERVER_URI);
+    private TransmissionPolicyManager transmissionPolicyManager;
+
+    public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
+        return create(DEFAULT_SERVER_URI, transmissionPolicyManager);
     }
 
-    public static TransmissionNetworkOutput create(String endpoint) {
+    public static TransmissionNetworkOutput create(String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
         String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
-        return new TransmissionNetworkOutput(realEndpoint, null);
+        return new TransmissionNetworkOutput(realEndpoint, transmissionPolicyManager);
     }
 
-    private TransmissionNetworkOutput(String serverUri, String backOffContainerName) {
+    private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager) {
         Preconditions.checkNotNull(serverUri, "serverUri should be a valid non-null value");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(serverUri), "serverUri should be a valid non-null value");
+        Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
 
         this.serverUri = serverUri;
 
         httpClient = new ApacheSenderFactory().create();
+        this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
-        initializeSenderThreadsManager(backOffContainerName);
     }
 
     public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
@@ -103,7 +106,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             return;
         }
 
-        s_senderThreadsManager.stopAllSendersBackOffActivities();
         httpClient.close();
         stopped = true;
     }
@@ -118,66 +120,79 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     @Override
     public boolean send(Transmission transmission) {
         while (!stopped) {
-            TransmissionSendResult result = doSend(transmission);
-            switch (result) {
-                case THROTTLED:
-                    boolean backOffDone = s_senderThreadsManager.backOffCurrentSenderThread();
-                    if (!backOffDone) {
-                        return true;
-                    }
-                    break;
+            if (transmissionPolicyManager.getTransmissionPolicyState().getCurrentState() != TransmissionPolicy.UNBLOCKED) {
+                return false;
+            }
 
-                default:
-                   s_senderThreadsManager.onDoneSending();
-                   return true;
+            HttpResponse response = null;
+            HttpPost request = null;
+            try {
+                request = createTransmissionPostRequest(transmission);
+                httpClient.enhanceRequest(request);
+
+                response = httpClient.sendPostRequest(request);
+
+                HttpEntity respEntity = response.getEntity();
+                int code = response.getStatusLine().getStatusCode();
+
+                TransmissionSendResult sendResult = translateResponse(code, respEntity);
+                switch (sendResult) {
+                    case PAYMENT_REQUIRED:
+                    case THROTTLED:
+                        suspendTransmissions(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, response);
+                        break;
+
+                    case THROTTLED_OVER_EXTENDED_TIME:
+                        suspendTransmissions(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, response);
+                        break;
+
+                    default:
+                        return true;
+                }
+            } catch (ConnectionPoolTimeoutException e) {
+                InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
+            } catch (SocketException e) {
+                InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
+            } catch (UnknownHostException e) {
+                InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
+            } catch (IOException ioe) {
+                InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
+            } catch (Exception e) {
+                InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
+            } catch (Throwable t) {
+                InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
+            }
+            finally {
+                if (request != null) {
+                    request.releaseConnection();
+                }
+                httpClient.dispose(response);
             }
         }
 
         return true;
     }
 
-    private TransmissionSendResult doSend(Transmission transmission) {
-        HttpResponse response = null;
-        HttpPost request = null;
-        try {
-            request = createTransmissionPostRequest(transmission);
-            httpClient.enhanceRequest(request);
-
-            response = httpClient.sendPostRequest(request);
-
-            HttpEntity respEntity = response.getEntity();
-            int code = response.getStatusLine().getStatusCode();
-
-            return translateResponse(code, respEntity);
-        } catch (ConnectionPoolTimeoutException e) {
-            InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
-            return TransmissionSendResult.FAILED_TO_SEND_DUE_TO_CONNECTION_POOL;
-        } catch (SocketException e) {
-            InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
-            return TransmissionSendResult.FAILED_TO_RECEIVE_DUE_TO_TIMEOUT;
-        } catch (UnknownHostException e) {
-            InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
-            return TransmissionSendResult.FAILED_TO_SEND_DUE_TO_NETWORK_ISSUES;
-        } catch (IOException ioe) {
-            InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
-            return TransmissionSendResult.FAILED_TO_READ_RESPONSE;
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
-            return TransmissionSendResult.UNKNOWN_ERROR;
-        } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
-            return TransmissionSendResult.UNKNOWN_ERROR;
+    private void suspendTransmissions(TransmissionPolicy suspensionPolicy, HttpResponse response) {
+        Header retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
+        if (retryAfterHeader == null) {
+            return;
         }
-        finally {
-            if (request != null) {
-                request.releaseConnection();
-            }
-            httpClient.dispose(response);
+
+        String retryAfterAsString = retryAfterHeader.getValue();
+        if (Strings.isNullOrEmpty(retryAfterAsString)) {
+            return;
+        }
+
+        try {
+            long retryAfterAsSeconds = Long.valueOf(retryAfterAsString);
+            transmissionPolicyManager.suspendInSeconds(suspensionPolicy, retryAfterAsSeconds);
+        } catch (Throwable e) {
         }
     }
 
     private TransmissionSendResult translateResponse(int code, HttpEntity respEntity) {
-        if (code >= 200 && code < 300) {
+        if (code == HttpStatus.SC_OK) {
             return TransmissionSendResult.SENT_SUCCESSFULLY;
         }
 
@@ -185,7 +200,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
         String errorMessage;
         if (code < HttpStatus.SC_OK ||
-            (code >= HttpStatus.SC_MULTIPLE_CHOICES && code < HttpStatus.SC_BAD_REQUEST) ||
+                (code >= HttpStatus.SC_MULTIPLE_CHOICES && code < HttpStatus.SC_BAD_REQUEST) ||
                 code > HttpStatus.SC_INTERNAL_SERVER_ERROR) {
 
             errorMessage = String.format("Unexpected response code: %d", code);
@@ -200,6 +215,16 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 case 429:
                     result = TransmissionSendResult.THROTTLED;
                     errorMessage = "Throttling (All messages of the transmission were rejected) ";
+                    break;
+
+                case 439:
+                    result = TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME;
+                    errorMessage = "Throttling extended";
+                    break;
+
+                case 402:
+                    result = TransmissionSendResult.PAYMENT_REQUIRED;
+                    errorMessage = "Throttling: payment required";
                     break;
 
                 case HttpStatus.SC_PARTIAL_CONTENT:
@@ -260,13 +285,4 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
         return request;
     }
-
-    private synchronized void initializeSenderThreadsManager(String backOffContainerName) {
-        if (s_senderThreadsManager != null) {
-            return;
-        }
-
-        s_senderThreadsManager = new SenderThreadsBackOffManager(new BackOffTimesPolicyFactory().create(backOffContainerName));
-    }
-
 }

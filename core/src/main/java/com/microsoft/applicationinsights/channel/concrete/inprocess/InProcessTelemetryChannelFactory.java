@@ -27,14 +27,7 @@ import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 
-import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
-import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionNetworkOutput;
-import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionFileSystemOutput;
-import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
-import com.microsoft.applicationinsights.internal.channel.common.NonBlockingDispatcher;
-import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionLoader;
-import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
-import com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySerializer;
+import com.microsoft.applicationinsights.internal.channel.common.*;
 
 /**
  * Created by gupele on 1/15/2015.
@@ -42,20 +35,25 @@ import com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySe
 final class InProcessTelemetryChannelFactory implements TransmitterFactory {
     @Override
     public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity) {
+        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager();
+
         // An active object with the network sender
-        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint);
-        TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender);
+        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, transmissionPolicyManager);
+
+        TransmissionPolicyStateFetcher stateFetcher = transmissionPolicyManager.getTransmissionPolicyState();
+
+        TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
 
         // An active object with the file system sender
         TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput(null, maxTransmissionStorageCapacity);
-        TransmissionOutput activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender);
+        TransmissionOutput activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender, stateFetcher);
 
         // The dispatcher works with the two active senders
         TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[] {networkSender, activeFileSystemOutput});
         actualNetworkSender.setTransmissionDispatcher(dispatcher);
 
         // The loader works with the file system loader as the active one does
-        TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, dispatcher);
+        TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, stateFetcher, dispatcher);
 
         // The Transmitter manage all
         TelemetriesTransmitter telemetriesTransmitter = new TransmitterImpl(dispatcher, new GzipTelemetrySerializer(), transmissionsLoader);

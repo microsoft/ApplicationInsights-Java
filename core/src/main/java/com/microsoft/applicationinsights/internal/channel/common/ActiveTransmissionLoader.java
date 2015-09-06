@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
 /**
  * The class is responsible for loading transmission files that were saved to the disk
@@ -58,23 +59,31 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
 
     private CyclicBarrier barrier;
 
+    private final TransmissionPolicyStateFetcher transmissionPolicyFetcher;
+
     // The threads that do the work
     private final Thread[] threads;
 
     private final long sleepIntervalWhenNoTransmissionsFoundInMills;
 
-    public ActiveTransmissionLoader(TransmissionFileSystemOutput fileSystem, TransmissionDispatcher dispatcher) {
-        this(fileSystem, dispatcher, DEFAULT_NUMBER_OF_THREADS);
+    public ActiveTransmissionLoader(TransmissionFileSystemOutput fileSystem, TransmissionPolicyStateFetcher transmissionPolicy, TransmissionDispatcher dispatcher) {
+        this(fileSystem, dispatcher, transmissionPolicy, DEFAULT_NUMBER_OF_THREADS);
     }
 
-    public ActiveTransmissionLoader(final TransmissionFileSystemOutput fileSystem, final TransmissionDispatcher dispatcher, int numberOfThreads) {
+    public ActiveTransmissionLoader(final TransmissionFileSystemOutput fileSystem,
+                                    final TransmissionDispatcher dispatcher,
+                                    final TransmissionPolicyStateFetcher transmissionPolicy,
+                                    int numberOfThreads) {
         Preconditions.checkNotNull(fileSystem, "fileSystem must be a non-null value");
         Preconditions.checkNotNull(dispatcher, "dispatcher must be a non-null value");
+        Preconditions.checkNotNull(transmissionPolicy, "transmissionPolicy must be a non-null value");
         Preconditions.checkArgument(numberOfThreads > 0, "numberOfThreads must be a positive number");
         Preconditions.checkArgument(numberOfThreads < MAX_THREADS_ALLOWED, "numberOfThreads must be smaller than %s", MAX_THREADS_ALLOWED);
 
         // Guy: This will probably be changed once we have configuration
         this.sleepIntervalWhenNoTransmissionsFoundInMills = DEFAULT_SLEEP_INTERVAL_WHEN_NO_TRANSMISSIONS_FOUND_IN_MILLS;
+
+        this.transmissionPolicyFetcher = transmissionPolicy;
 
         this.fileSystem = fileSystem;
         this.dispatcher = dispatcher;
@@ -94,14 +103,26 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                     // Avoid un-expected exit of threads
                     while (!done.get()) {
                         try {
-                            Transmission transmission = fileSystem.fetchOldestFile();
-                            if (transmission == null) {
-                                Thread.sleep(sleepIntervalWhenNoTransmissionsFoundInMills);
-                            } else {
-                                dispatcher.dispatch(transmission);
+                            TransmissionPolicy currentTransmissionState = transmissionPolicyFetcher.getCurrentState();
+                            switch (currentTransmissionState) {
+                                case UNBLOCKED:
+                                    fetchNext(true);
+                                    break;
 
-                                // TODO: check if we need this as configuration value
-                                Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
+                                case BLOCKED_BUT_CAN_BE_PERSISTED:
+                                    Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
+                                    break;
+
+                                case BLOCKED_AND_CANNOT_BE_PERSISTED:
+                                    // We fetch but don't do anything with the Transmission
+                                    // which means that we are cleaning the disk as needed by that policy
+                                    fetchNext(false);
+                                    break;
+
+                                default:
+                                    InternalLogger.INSTANCE.error("Could not find transmission policy '%s'", currentTransmissionState);
+                                    Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
+                                    break;
                             }
                         } catch (Exception e) {
                         } catch (Throwable t) {
@@ -142,10 +163,25 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
         done.set(true);
         for (Thread thread : threads) {
             try {
+                thread.interrupt();
                 thread.join();
             } catch (InterruptedException e) {
                 InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.getMessage());
             }
+        }
+    }
+
+    private void fetchNext(boolean shouldDispatch) throws InterruptedException {
+        Transmission transmission = fileSystem.fetchOldestFile();
+        if (transmission == null) {
+            Thread.sleep(sleepIntervalWhenNoTransmissionsFoundInMills);
+        } else {
+            if (shouldDispatch) {
+                dispatcher.dispatch(transmission);
+            }
+
+            // TODO: check if we need this as configuration value
+            Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
         }
     }
 }

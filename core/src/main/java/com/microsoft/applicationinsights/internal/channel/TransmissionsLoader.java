@@ -21,13 +21,13 @@
 
 package com.microsoft.applicationinsights.internal.channel;
 
+import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
+
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created by gupele on 12/22/2014.
  */
-public interface TransmissionsLoader {
+public interface TransmissionsLoader extends Stoppable {
     boolean load(boolean waitForThreadsToStart);
-
-    void stop(long timeout, TimeUnit timeUnit);
 }

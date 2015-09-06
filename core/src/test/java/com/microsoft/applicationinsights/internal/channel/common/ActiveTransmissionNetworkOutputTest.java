@@ -99,7 +99,10 @@ public class ActiveTransmissionNetworkOutputTest {
                 }
             }
         };
-        ActiveTransmissionNetworkOutput tested = new ActiveTransmissionNetworkOutput(mock, 1);
+        TransmissionPolicyStateFetcher mockStateFetcher = Mockito.mock(TransmissionPolicyStateFetcher.class);
+        Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
+
+        ActiveTransmissionNetworkOutput tested = new ActiveTransmissionNetworkOutput(mock, mockStateFetcher, 1);
         numberExpected[0] = tested.getNumberOfMaxThreads();
         testSend(100, 1, tested);
         assertTrue("Too many calls to send", isError[0]);
@@ -115,7 +118,11 @@ public class ActiveTransmissionNetworkOutputTest {
         if (theTested == null) {
             mockOutput = Mockito.mock(TransmissionOutput.class);
             Mockito.doReturn(true).when(mockOutput).send((Transmission) anyObject());
-            tested = new ActiveTransmissionNetworkOutput(mockOutput);
+
+            TransmissionPolicyStateFetcher mockStateFetcher = Mockito.mock(TransmissionPolicyStateFetcher.class);
+            Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
+
+            tested = new ActiveTransmissionNetworkOutput(mockOutput, mockStateFetcher);
         } else {
             tested = theTested;
         }

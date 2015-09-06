@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
@@ -44,12 +45,17 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
 
     private final TransmissionOutput actualOutput;
 
-    public ActiveTransmissionNetworkOutput(TransmissionOutput actualOutput) {
-        this(actualOutput, DEFAULT_MAX_MESSAGES_IN_BUFFER);
+    private final TransmissionPolicyStateFetcher transmissionPolicy;
+
+    public ActiveTransmissionNetworkOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
+        this(actualOutput, transmissionPolicy, DEFAULT_MAX_MESSAGES_IN_BUFFER);
     }
 
-    public ActiveTransmissionNetworkOutput(TransmissionOutput actualOutput, int maxMessagesInBuffer) {
+    public ActiveTransmissionNetworkOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy, int maxMessagesInBuffer) {
+        Preconditions.checkNotNull(transmissionPolicy, "transmissionPolicy must be a valid non-null value");
+
         this.actualOutput = actualOutput;
+        this.transmissionPolicy = transmissionPolicy;
 
         maxThreads = DEFAULT_MAX_NUMBER_OF_THREADS;
         outputThreads = ThreadPoolUtils.newLimitedThreadPool(
@@ -70,6 +76,10 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
     @Override
     public boolean send(final Transmission transmission) {
         try {
+            if (transmissionPolicy.getCurrentState() != TransmissionPolicy.UNBLOCKED) {
+                return false;
+            }
+
             outputThreads.execute(new Runnable() {
                 @Override
                 public void run() {
