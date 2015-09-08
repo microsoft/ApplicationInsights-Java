@@ -72,6 +72,7 @@ public interface AgentNotificationsHandler {
     /**
      * Called when an java.sql.PreparedStatement concrete class is called
      * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param statement The class that implements the java.sql.PreparedStatement interface
      * @param sqlStatement The sql statement that is used
      * @param args The values for the statement
      */
@@ -80,6 +81,7 @@ public interface AgentNotificationsHandler {
     /**
      * Called when an java.sql.PreparedStatement concrete class 'executeBatch' method is called
      * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param statement The class that implements the java.sql.PreparedStatement interface
      * @param sqlStatement The sql statement that is used
      * @param batchCounter The number of batches sent to the server
      */
