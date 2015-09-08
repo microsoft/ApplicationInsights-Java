@@ -29,6 +29,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.CodeSource;
 import java.util.HashSet;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -59,11 +60,11 @@ public final class ConfigurationFileLocator {
 
         // If not found as a resource, trying to load from the executing jar directory
         if (configurationFile == null) {
-            configurationFile =  getConfigurationFromLibraryLocation();
+            configurationFile = getConfigurationFromLibraryLocation();
 
             // If still not found try to get it from the class path
             if (configurationFile == null) {
-                configurationFile =  getConfFromClassPath();
+                configurationFile = getConfFromClassPath();
             }
         }
 
@@ -81,29 +82,48 @@ public final class ConfigurationFileLocator {
         }
     }
 
+    private static void logException(Throwable t, String message) {
+        if (t.getCause() != null) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Failed to find configuration file, exception while fetching from %s: '%s'", message, t.getCause().getMessage());
+        } else {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Failed to find configuration file, exception while fetching from %s: '%s'", message, t.getMessage());
+        }
+    }
+
     private String getConfigurationFromCurrentClassLoader() {
-        ClassLoader classLoader = ConfigurationFileLocator.class.getClassLoader();
-        String configurationFile = null;
-        URL resourceUrl = classLoader.getResource(configurationFileName);
-        if (resourceUrl != null) {
-            File filePath = normalizeUrlToFile(resourceUrl);
-            if (filePath != null) {
-                configurationFile = filePath.toString();
+        try {
+            ClassLoader classLoader = ConfigurationFileLocator.class.getClassLoader();
+            String configurationFile = null;
+            URL resourceUrl = classLoader.getResource(configurationFileName);
+            if (resourceUrl != null) {
+                File filePath = normalizeUrlToFile(resourceUrl);
+                if (filePath != null) {
+                    configurationFile = filePath.toString();
+                }
             }
+
+            InternalLogger.INSTANCE.logAlways(
+                    InternalLogger.LoggingLevel.INFO,
+                    "Configuration file '%s' was %sfound by default class loader",
+                    configurationFileName,
+                    configurationFile == null ? "NOT " : "");
+
+            return configurationFile;
+        } catch (Throwable t) {
+            logException(t, "current class loader");
         }
 
-        InternalLogger.INSTANCE.logAlways(
-                InternalLogger.LoggingLevel.INFO,
-                "Configuration file '%s' was %sfound by default class loader",
-                configurationFileName,
-                configurationFile == null ? "NOT " : "");
-
-        return configurationFile;
+        return null;
     }
 
     private String getConfigurationFromLibraryLocation() {
         try {
-            String jarFullPath = ConfigurationFileLocator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            CodeSource codeSource = ConfigurationFileLocator.class.getProtectionDomain().getCodeSource();
+            if (codeSource == null) {
+                return null;
+            }
+
+            String jarFullPath = codeSource.getLocation().toURI().getPath();
             File jarFile = new File(jarFullPath);
 
             if (jarFile.exists()) {
@@ -115,44 +135,48 @@ public final class ConfigurationFileLocator {
             } else {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Can not access folder '%s'", jarFullPath);
             }
-        } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Failed to find configuration file, exception: '%s'", e.getMessage());
+        } catch (Throwable t) {
+            logException(t, "library location");
         }
         return null;
     }
 
     private String getConfFromClassPath() {
-        ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
-        if (!(classLoader instanceof URLClassLoader)) {
-            return null;
-        }
-
-        HashSet<String> checkedUrls = new HashSet<String>();
-
-        URL[] urls = ((URLClassLoader) classLoader).getURLs();
-        for (URL url : urls) {
-            File filePath = normalizeUrlToFile(url);
-
-            if (filePath == null) {
-                continue;
+        try {
+            ClassLoader classLoader = TelemetryConfigurationFactory.class.getClassLoader();
+            if (!(classLoader instanceof URLClassLoader)) {
+                return null;
             }
 
-            if (filePath.isFile()) {
-                filePath = filePath.getParentFile();
-            }
+            HashSet<String> checkedUrls = new HashSet<String>();
 
-            String configurationPath = filePath.toString();
+            URL[] urls = ((URLClassLoader) classLoader).getURLs();
+            for (URL url : urls) {
+                File filePath = normalizeUrlToFile(url);
 
-            if (checkedUrls.contains(configurationPath)) {
-                continue;
-            }
+                if (filePath == null) {
+                    continue;
+                }
 
-            String configurationFile = getConfigurationAbsolutePath(configurationPath);
-            if (configurationFile != null) {
-                return configurationFile;
-            } else {
-                checkedUrls.add(configurationPath);
+                if (filePath.isFile()) {
+                    filePath = filePath.getParentFile();
+                }
+
+                String configurationPath = filePath.toString();
+
+                if (checkedUrls.contains(configurationPath)) {
+                    continue;
+                }
+
+                String configurationFile = getConfigurationAbsolutePath(configurationPath);
+                if (configurationFile != null) {
+                    return configurationFile;
+                } else {
+                    checkedUrls.add(configurationPath);
+                }
             }
+        } catch (Throwable t) {
+            logException(t, "class path");
         }
         return null;
     }
