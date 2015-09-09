@@ -177,7 +177,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     }
 
     private TransmissionSendResult translateResponse(int code, HttpEntity respEntity) {
-        if (code == HttpStatus.SC_OK) {
+        if (code >= 200 && code < 300) {
             return TransmissionSendResult.SENT_SUCCESSFULLY;
         }
 
