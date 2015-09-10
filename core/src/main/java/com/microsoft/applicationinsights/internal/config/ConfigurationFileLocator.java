@@ -70,16 +70,15 @@ public final class ConfigurationFileLocator {
 
         if (configurationFile != null) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file has been successfully found in: '%s'", configurationFile);
+            try {
+                return new FileInputStream(configurationFile);
+            } catch (FileNotFoundException e) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Configuration file '%s' could not be opened for reading", configurationFile);
+            }
         } else {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Configuration file '%s' could not be found", configurationFileName);
         }
-
-        try {
-            return new FileInputStream(configurationFile);
-        } catch (FileNotFoundException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Configuration file '%s' could not be opened for reading", configurationFile);
-            return null;
-        }
+        return null;
     }
 
     private static void logException(Throwable t, String message) {

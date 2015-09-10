@@ -50,6 +50,12 @@ public final class ConfigurationFileLocatorTest {
     }
 
     @Test
+    public void testNoConfigurationFound() throws Exception {
+        InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
+        assertNull(resourceFile);
+    }
+
+    @Test
     public void testGetConfigurationFileWhereFileIsResource() throws Exception {
         String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
 
@@ -87,14 +93,6 @@ public final class ConfigurationFileLocatorTest {
 
         InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
         verifyFile(resourceFile);
-    }
-
-    private String putConfigurationFileInClassPathOnly() throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        eraseFromLibraryLocation();
-
-        putFileInClassPath(MOCK_CONF_FILE);
-
-        return MOCK_CONF_FILE;
     }
 
     private void putFileInClassPath(String configurationFileName) throws URISyntaxException, NoSuchMethodException, IOException, InvocationTargetException, IllegalAccessException {
