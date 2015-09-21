@@ -25,5 +25,5 @@ package com.microsoft.applicationinsights.extensibility.initializer.docker;
  * Created by yonisha on 8/2/2015.
  */
 public class Constants {
-    public static final String CONTEXT_FILE_PATTERN = "docker-host=%s,docker-image=%s,docker-container-name=%s,docker-container-id=%s";
+    public static final String CONTEXT_FILE_PATTERN = "Docker host=%s,Docker image=%s,Docker container name=%s,Docker container id=%s";
 }

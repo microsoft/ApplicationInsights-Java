@@ -28,7 +28,7 @@ import org.junit.Test;
  * Created by yonisha on 7/29/2015.
  */
 public class DockerContextTests {
-    private static final String CONTEXT_FILE_PATTERN = "docker-host=%s,docker-image=%s,docker-container-name=%s,docker-container-id=%s";
+    private static final String CONTEXT_FILE_PATTERN = "Docker host=%s,Docker image=%s,Docker container name=%s,Docker container id=%s";
     private static final String DEFAULT_HOST = "docker_host";
     private static final String DEFAULT_IMAGE = "docker_image";
     private static final String DEFAULT_CONTAINER_NAME = "docker_container";
