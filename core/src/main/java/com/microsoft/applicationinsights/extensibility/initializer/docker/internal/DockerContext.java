@@ -29,7 +29,7 @@ import java.util.Map;
  *
  * Represents the Docker context, which includes the host name, image name, container name and container ID.
  * The Docker context file is written in the following structure:
- *      docker-host=host_name,docker-image=image_name,docker-container-id=con_id,docker-container-name=con_name
+ *      Docker host=host_name,Docker image=image_name,Docker container id=con_id,Docker container name=con_name
  */
 public class DockerContext {
     private String hostName;

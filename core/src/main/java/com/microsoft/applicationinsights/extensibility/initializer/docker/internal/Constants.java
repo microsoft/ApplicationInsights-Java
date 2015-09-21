@@ -29,8 +29,8 @@ public class Constants {
     public static final String AI_SDK_INFO_FILENAME = "sdk.info";
     public static final String AI_SDK_INFO_FILE_CONTENT_TEMPLATE = "InstrumentationKey=%s";
 
-    public static final String DOCKER_HOST_PROPERTY_KEY = "docker-host";
-    public static final String DOCKER_IMAGE_PROPERTY_KEY = "docker-image";
-    public static final String DOCKER_CONTAINER_NAME_PROPERTY_KEY = "docker-container-name";
-    public static final String DOCKER_CONTAINER_ID_PROPERTY_KEY = "docker-container-id";
+    public static final String DOCKER_HOST_PROPERTY_KEY = "Docker host";
+    public static final String DOCKER_IMAGE_PROPERTY_KEY = "Docker image";
+    public static final String DOCKER_CONTAINER_NAME_PROPERTY_KEY = "Docker container name";
+    public static final String DOCKER_CONTAINER_ID_PROPERTY_KEY = "Docker container id";
 }
