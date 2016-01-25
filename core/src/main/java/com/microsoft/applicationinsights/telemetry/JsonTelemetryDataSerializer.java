@@ -68,9 +68,7 @@ public final class JsonTelemetryDataSerializer {
 
     public void write(String name, int value) throws IOException {
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
@@ -80,17 +78,13 @@ public final class JsonTelemetryDataSerializer {
         }
 
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
     public void write(String name, double value) throws IOException {
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
@@ -100,17 +94,13 @@ public final class JsonTelemetryDataSerializer {
         }
 
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
     public void write(String name, short value) throws IOException {
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
@@ -120,17 +110,13 @@ public final class JsonTelemetryDataSerializer {
         }
 
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
     public void write(String name, long value) throws IOException {
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
@@ -140,17 +126,13 @@ public final class JsonTelemetryDataSerializer {
         }
 
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
     public void write(String name, boolean value) throws IOException {
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
@@ -160,9 +142,7 @@ public final class JsonTelemetryDataSerializer {
         }
 
         writeName(name);
-        out.write(JSON_COMMA);
         out.write(String.valueOf(value));
-        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 

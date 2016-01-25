@@ -58,7 +58,7 @@ public final class SessionStateDataTest {
         envelope.serialize(jsonWriter);
         jsonWriter.close();
         String asJson = writer.toString();
-        String expectedDataAsString = String.format("\"data\":{\"baseType\":\"Microsoft.ApplicationInsights.SessionStateData\",\"baseData\":{\"ver\":\"2\",\"state\":\"%s\"}}", expectedState.toString());
+        String expectedDataAsString = String.format("\"data\":{\"baseType\":\"Microsoft.ApplicationInsights.SessionStateData\",\"baseData\":{\"ver\":2,\"state\":\"%s\"}}", expectedState.toString());
         int index = asJson.indexOf(expectedDataAsString);
         assertTrue(index != -1);
         index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.SessionState\"");
