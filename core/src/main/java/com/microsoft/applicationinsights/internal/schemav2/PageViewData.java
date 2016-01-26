@@ -77,7 +77,7 @@ public class PageViewData extends EventData {
         super.serializeContent(writer);
 
         writer.write("url", url);
-        writer.write("duration", duration);
+        writer.write("duration", String.valueOf(duration));
     }
 
     @Override

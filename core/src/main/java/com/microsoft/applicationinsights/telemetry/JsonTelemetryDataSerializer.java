@@ -25,9 +25,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.common.base.Strings;
 
@@ -46,6 +44,8 @@ public final class JsonTelemetryDataSerializer {
     private final static String JSON_COMMA = "\"";
     private final static String JSON_NAME_VALUE_SEPARATOR = ":";
     private final static String JSON_EMPTY_OBJECT = "{}";
+
+    private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
 
     private Writer out;
 
@@ -246,9 +246,14 @@ public final class JsonTelemetryDataSerializer {
 
             out.write(jsonStringToAppend);
         } else {
-            out.write(JSON_COMMA);
-            out.write(String.valueOf(item));
-            out.write(JSON_COMMA);
+            if (WRAPPER_TYPES.contains(item.getClass()))
+            {
+                out.write(String.valueOf(item));
+            } else {
+                out.write(JSON_COMMA);
+                out.write(String.valueOf(item));
+                out.write(JSON_COMMA);
+            }
         }
     }
 
@@ -272,6 +277,21 @@ public final class JsonTelemetryDataSerializer {
         out.write(name);
         out.write(JSON_COMMA);
         out.write(JSON_NAME_VALUE_SEPARATOR);
+    }
+
+    private static Set<Class<?>> getWrapperTypes()
+    {
+        Set<Class<?>> ret = new HashSet<Class<?>>();
+        ret.add(Boolean.class);
+        ret.add(Character.class);
+        ret.add(Byte.class);
+        ret.add(Short.class);
+        ret.add(Integer.class);
+        ret.add(Long.class);
+        ret.add(Float.class);
+        ret.add(Double.class);
+        ret.add(Void.class);
+        return ret;
     }
 
     protected void writeEscapedString(String value) throws IOException {
