@@ -12,7 +12,7 @@ Prerequisites
 
 Getting started
 ---------------
-1.  Set JAVA_HOME environment variable to point to point to the JDK installation directory
+1.  Set JAVA_HOME environment variable to point to the JDK installation directory
 2.  To build run ./gradlew build on Linux systems or gradlew.bat build on Windows systems.
 
 Using Eclipse IDE
