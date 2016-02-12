@@ -22,11 +22,17 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Helper methods for dealing with files and folders.
  */
 public class FileSystemUtils {
+
+    private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =
+            Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
 
     /**
      * Finds a suitable folder to use for temporary files,
@@ -42,7 +48,7 @@ public class FileSystemUtils {
      */
     public static File getTempDir() {
         final String tempDirectory = System.getProperty("java.io.tmpdir");
-        final String currentUserName = System.getProperty("user.name");
+        final String currentUserName = determineCurrentUserName();
 
         final File result = getTempDir(tempDirectory, currentUserName);
         if (!result.isDirectory()) {
@@ -64,5 +70,33 @@ public class FileSystemUtils {
 
         final File result = new File(tempDirectory);
         return result;
+    }
+
+    /**
+     * Attempts to find the login/sign-in name of the user.
+     *
+     * @return the best guess at what the current user's login name is.
+     */
+    public static String determineCurrentUserName() {
+        String userName;
+        // start with the value of the "user.name" property
+        userName = System.getProperty("user.name");
+
+        if (LocalStringsUtils.isNullOrEmpty(userName)) {
+            // try some environment variables
+            for (final String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
+                userName = System.getenv(candidate);
+                if (!LocalStringsUtils.isNullOrEmpty(userName)) {
+                    break;
+                }
+            }
+        }
+
+        if (LocalStringsUtils.isNullOrEmpty(userName)) {
+            // TODO: it might be nice to use a unique-ish value, such as the current process ID
+            userName = "unknown";
+        }
+
+        return userName;
     }
 }
