@@ -61,4 +61,24 @@ public class FileSystemUtilsTest {
         final File expected = new File(input, "olivida").getAbsoluteFile();
         Assert.assertEquals(expected, actual);
     }
+
+    @Test
+    public void getTempDir_PerUser() {
+        final String input = "/tmp/olivida";
+
+        final File actual = FileSystemUtils.getTempDir(input, "olivida");
+
+        final File expected = new File(input);
+        Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void getTempDir_InsideUserHome() {
+        final String input = "/home/olivida/tmp";
+
+        final File actual = FileSystemUtils.getTempDir(input, "olivida");
+
+        final File expected = new File(input);
+        Assert.assertEquals(expected, actual);
+    }
 }
