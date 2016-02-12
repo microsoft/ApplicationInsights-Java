@@ -37,7 +37,11 @@ public class FileSystemUtils {
     public static File getTempDir() {
         final String tempDirectory = System.getProperty("java.io.tmpdir");
 
-        final File result = new File(tempDirectory);
+        final File result = getTempDir(tempDirectory);
         return result;
+    }
+
+    static File getTempDir(final String initialValue) {
+        return new File(initialValue);
     }
 }
