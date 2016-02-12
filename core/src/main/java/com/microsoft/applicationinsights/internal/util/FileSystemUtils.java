@@ -21,9 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
+import java.io.File;
+
 /**
  * Helper methods for dealing with files and folders.
  */
 public class FileSystemUtils {
 
+    /**
+     * Finds a suitable folder to use for temporary files
+     *
+     * @return a {@link File} representing a folder in which temporary files will be stored
+     *
+     */
+    public static File getTempDir() {
+        final String tempDirectory = System.getProperty("java.io.tmpdir");
+
+        final File result = new File(tempDirectory);
+        return result;
+    }
 }

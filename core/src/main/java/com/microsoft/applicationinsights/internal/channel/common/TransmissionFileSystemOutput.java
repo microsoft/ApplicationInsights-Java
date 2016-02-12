@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
+import com.microsoft.applicationinsights.internal.util.FileSystemUtils;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -100,7 +101,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
 
     public TransmissionFileSystemOutput(String folderPath, String maxTransmissionStorageCapacity) {
         if (folderPath == null) {
-            folderPath = new File(System.getProperty("java.io.tmpdir"), TRANSMISSION_DEFAULT_FOLDER).getPath();
+            folderPath = new File(FileSystemUtils.getTempDir(), TRANSMISSION_DEFAULT_FOLDER).getPath();
         }
 
         capacityEnforcer = LimitsEnforcer.createWithClosestLimitOnError(MIN_CAPACITY_MEGABYTES,
