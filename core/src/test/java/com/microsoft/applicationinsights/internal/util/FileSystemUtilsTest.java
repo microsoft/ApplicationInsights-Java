@@ -24,6 +24,31 @@ package com.microsoft.applicationinsights.internal.util;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+
 public class FileSystemUtilsTest {
 
+    /*
+    NOTE: it doesn't matter that Windows paths are converted to *nix paths and vice-versa.
+     */
+
+    @Test
+    public void getTempDir_WindowsForUser() {
+        final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
+
+        final File actual = FileSystemUtils.getTempDir(input);
+
+        final File expected = new File(input);
+        Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void getTempDir_MacForUser() {
+        final String input = "/var/folders/8b/n6pydwyj1cg9yb7822n277xc0000gs/T/";
+
+        final File actual = FileSystemUtils.getTempDir(input);
+
+        final File expected = new File(input);
+        Assert.assertEquals(expected, actual);
+    }
 }
