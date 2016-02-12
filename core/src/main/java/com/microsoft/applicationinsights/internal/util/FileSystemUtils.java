@@ -29,19 +29,40 @@ import java.io.File;
 public class FileSystemUtils {
 
     /**
-     * Finds a suitable folder to use for temporary files
+     * Finds a suitable folder to use for temporary files,
+     * while avoiding the risk of collision when multiple users
+     * are running applications that make use of Application Insights.
+     *
+     * See the third paragraph at http://www.chiark.greenend.org.uk/~peterb/uxsup/project/tmp-per-user/
+     * for a great explanation of the motivation behind this method.
      *
      * @return a {@link File} representing a folder in which temporary files will be stored
+     * for the current user.
      *
      */
     public static File getTempDir() {
         final String tempDirectory = System.getProperty("java.io.tmpdir");
+        final String currentUserName = System.getProperty("user.name");
 
-        final File result = getTempDir(tempDirectory);
+        final File result = getTempDir(tempDirectory, currentUserName);
+        if (!result.isDirectory()) {
+            //noinspection ResultOfMethodCallIgnored
+            result.mkdirs();
+        }
         return result;
     }
 
-    static File getTempDir(final String initialValue) {
-        return new File(initialValue);
+    static File getTempDir(final String initialValue, final String userName) {
+        String tempDirectory = initialValue;
+
+        // does it look shared?
+        // TODO: this only catches the Linux case; I think a few system users on Windows might share c:\Windows\Temp
+        if ("/tmp".contentEquals(tempDirectory)) {
+            final File candidate = new File(tempDirectory, userName);
+            tempDirectory = candidate.getAbsolutePath();
+        }
+
+        final File result = new File(tempDirectory);
+        return result;
     }
 }

@@ -36,7 +36,7 @@ public class FileSystemUtilsTest {
     public void getTempDir_WindowsForUser() {
         final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
 
-        final File actual = FileSystemUtils.getTempDir(input);
+        final File actual = FileSystemUtils.getTempDir(input, null);
 
         final File expected = new File(input);
         Assert.assertEquals(expected, actual);
@@ -46,9 +46,19 @@ public class FileSystemUtilsTest {
     public void getTempDir_MacForUser() {
         final String input = "/var/folders/8b/n6pydwyj1cg9yb7822n277xc0000gs/T/";
 
-        final File actual = FileSystemUtils.getTempDir(input);
+        final File actual = FileSystemUtils.getTempDir(input, null);
 
         final File expected = new File(input);
+        Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void getTempDir_Linux() {
+        final String input = "/tmp";
+
+        final File actual = FileSystemUtils.getTempDir(input, "olivida");
+
+        final File expected = new File(input, "olivida").getAbsoluteFile();
         Assert.assertEquals(expected, actual);
     }
 }
