@@ -1,7 +1,7 @@
-﻿ApplicationInsights-Java
-========================
-Introduction
-------------
+# ApplicationInsights-Java
+
+## Introduction
+
 This is the repository of the Java SDK for [Visual Studio Application Insights](https://acom-prod-uswest-01.azurewebsites.net/documentation/articles/app-insights-overview/). Application Insights is a service that monitors the availability, performance and usage of your application. The SDK sends telemetry about the performance and usage of your app to the Application Insights service where your data can be visualized in the [Azure Portal](https://portal.azure.com). The SDK automatically collects telemetry about HTTP requests, dependencies, and exceptions. You can also use the SDK to send your own events and trace logs. 
 
 Please refer to:
@@ -9,26 +9,26 @@ Please refer to:
 * [Get started with Application Insights in a Java web project](https://azure.microsoft.com/documentation/articles/app-insights-java-get-started/) 
 * [Application Insights overview](https://azure.microsoft.com/services/application-insights/)
 
-Prerequisites
--------------
+## Prerequisites
+
 1.  Java SDK 1.6 or higher
 2.  Sign-in to [Microsoft Azure](https://azure.com)
 
-Getting started
----------------
+## Getting started
+
 1.  Set JAVA_HOME environment variable to point to the JDK installation directory.
 2.  To build run ./gradlew build on Linux systems or gradlew.bat build on Windows systems.
 
-Using Eclipse IDE
------------------
+### Using Eclipse IDE
+
 1.  Install gradle from http://www.gradle.org/installation
 2.  Add GRADLE_HOME/bin to your PATH environment variable
 3.  In build.gradle add line [apply plugin: "eclipse"]
 4.  In Eclipse used File->Import Existing Project in a workspace.
 5.  Use [gradle build] to build the project from the command line.
 
-CollectD Plugin - Optional
---------------------------
+### CollectD Plugin - Optional
+
 To build Application Insights CollectD writer plugin, please do the following:
 
 1.  Download CollectD Java API sources and compile them using JDK 1.6.
@@ -40,12 +40,32 @@ To build Application Insights CollectD writer plugin, please do the following:
 4.  Reload Application Insights project. CollectD writer plugin sub-project should now be loaded.
     IDE restart may be required in order to identify the new environment variable.
 
-Notes
------
+### Notes
+
 * To create a Java 6 compatible build you need to either have JAVA_HOME point to "Java 6 SDK" path or set JAVA_JRE_6 environment variable to point to [JRE 6 JRE installation directory]
 
-Release Notes
--------------
+
+
+## To upgrade to the latest SDK 
+
+After you upgrade, you'll need to merge back any customizations you made to ApplicationInsights.xml. Take a copy of it to compare with the new file.
+
+*If you're using Maven or Gradle*
+
+1. If you specified a particular version number in pom.xml or build.gradle, update it.
+2. Refresh your project's dependencies.
+
+*Otherwise*
+
+* Download the latest version of [Azure Libraries for Java](http://dl.msopentech.com/lib/PackageForWindowsAzureLibrariesForJava.html) and replace the old ones. 
+ 
+Compare the old and new ApplicationInsights.xml. Many of the changes you see are because we added and removed modules. Reinstate any customizations that you made.
+
+
+##Release Notes
+
+
+
 #### Version 1.0.3
 - Align to a new BOND schema used by the Application Insights data collection endpoints.
 
@@ -82,17 +102,4 @@ Release Notes
 - Support manual tracking of dependencies using a new ```trackDependency``` method API.
 - Ability to tag a telemetry item as synthetic, by adding a ```SyntheticSource``` property to the reported item.
 
-## To upgrade to the latest SDK
 
-After you upgrade, you'll need to merge back any customizations you made to ApplicationInsights.xml. Take a copy of it to compare with the new file.
-
-*If you're using Maven or Gradle*
-
-1. If you specified a particular version number in pom.xml or build.gradle, update it.
-2. Refresh your project's dependencies.
-
-*Otherwise*
-
-* Download the latest version of [Azure Libraries for Java](http://dl.msopentech.com/lib/PackageForWindowsAzureLibrariesForJava.html) and replace the old ones.
-
-Compare the old and new ApplicationInsights.xml. Many of the changes you see are because we added and removed modules. Reinstate any customizations that you made.
