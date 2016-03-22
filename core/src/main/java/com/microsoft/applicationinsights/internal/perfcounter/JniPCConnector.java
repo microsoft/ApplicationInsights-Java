@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -213,7 +214,8 @@ public final class JniPCConnector {
             throw new RuntimeException("Failed to find SDK version.");
         }
 
-        File dllPath = new File(System.getProperty("java.io.tmpdir"));
+        File dllPath = LocalFileSystemUtils.getTempDir();
+
         dllPath = new File(dllPath.toString(), AI_BASE_FOLDER);
         dllPath = new File(dllPath.toString(), AI_NATIVE_FOLDER);
         dllPath = new File(dllPath.toString(), version);

@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
+import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -46,7 +47,7 @@ public final class TransmissionFileSystemOutputTest {
     private final String workingFolder;
 
     public TransmissionFileSystemOutputTest() {
-        workingFolder = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
+        workingFolder = new File(LocalFileSystemUtils.getTempDir(), TEMP_TEST_FOLDER).getAbsolutePath();
     }
 
     @Test

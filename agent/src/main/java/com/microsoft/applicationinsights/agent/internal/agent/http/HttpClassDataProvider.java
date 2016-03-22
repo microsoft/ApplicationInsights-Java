@@ -61,99 +61,99 @@ public final class HttpClassDataProvider {
     }
 
     public void add() {
-        try {
-            MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
-                @Override
-                public MethodVisitor create(MethodInstrumentationDecision decision,
-                                            int access,
-                                            String desc,
-                                            String className,
-                                            String methodName,
-                                            MethodVisitor methodVisitor,
-                                            ClassToMethodTransformationData additionalData) {
-                    return new HttpClientMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
-                }
-            };
-
-            addToHttpClasses(null,
-                    methodVisitorFactory,
-                    InstrumentedClassType.HTTP,
-                    HTTP_CLIENT_43_CLASS_NAME,
-                    HTTP_CLIENT_METHOD_43_NAME,
-                    HTTP_CLIENT_METHOD_43_SIGNATURE);
-            addToHttpClasses(null,
-                    methodVisitorFactory,
-                    InstrumentedClassType.HTTP,
-                    HTTP_CLIENT_42_CLASS_NAME,
-                    HTTP_CLIENT_METHOD_42_NAME,
-                    HTTP_CLIENT_METHOD_42_SIGNATURE);
-
-            ClassVisitorFactory classVisitorFactory = new ClassVisitorFactory() {
-                @Override
-                public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
-                    return new OkHttpClassVisitor(classInstrumentationData, classWriter);
-                }
-            };
-
-            methodVisitorFactory = new MethodVisitorFactory() {
-                @Override
-                public MethodVisitor create(MethodInstrumentationDecision decision,
-                                            int access,
-                                            String desc,
-                                            String className,
-                                            String methodName,
-                                            MethodVisitor methodVisitor,
-                                            ClassToMethodTransformationData additionalData) {
-                    return new OkHttpMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
-                }
-            };
-            addToHttpClasses(classVisitorFactory,
-                    methodVisitorFactory,
-                    InstrumentedClassType.HTTP,
-                    OK_HTTP_CLIENT_CALL_CLASS_NAME,
-                    OK_HTTP_CLIENT_CALL_METHOD_NAME,
-                    OK_HTTP_CLIENT_CALL_METHOD_SIGNATURE);
-
-            methodVisitorFactory = new MethodVisitorFactory() {
-                @Override
-                public MethodVisitor create(MethodInstrumentationDecision decision,
-                                            int access,
-                                            String desc,
-                                            String className,
-                                            String methodName,
-                                            MethodVisitor methodVisitor,
-                                            ClassToMethodTransformationData additionalData) {
-                    return new OkHttpAsyncCallMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
-                }
-            };
-            addToHttpClasses(classVisitorFactory,
-                    methodVisitorFactory,
-                    InstrumentedClassType.HTTP,
-                    OK_HTTP_CLIENT_CALL_ASYNC_CLASS_NAME,
-                    OK_HTTP_CLIENT_CALL_ASYNC_METHOD_NAME,
-                    OK_HTTP_CLIENT_CALL_ASYNC_METHOD_SIGNATURE);
-
-            methodVisitorFactory = new MethodVisitorFactory() {
-                @Override
-                public MethodVisitor create(MethodInstrumentationDecision decision,
-                                            int access,
-                                            String desc,
-                                            String className,
-                                            String methodName,
-                                            MethodVisitor methodVisitor,
-                                            ClassToMethodTransformationData additionalData) {
-                    return new RestTemplateMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
-                }
-            };
-            addToHttpClasses(classVisitorFactory,
-                    methodVisitorFactory,
-                    InstrumentedClassType.HTTP,
-                    REST_TEMPLATE_CLASS_NAME,
-                    REST_TEMPLATE_METTHOD,
-                    null);
-        } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.getMessage());
-        }
+//        try {
+//            MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
+//                @Override
+//                public MethodVisitor create(MethodInstrumentationDecision decision,
+//                                            int access,
+//                                            String desc,
+//                                            String className,
+//                                            String methodName,
+//                                            MethodVisitor methodVisitor,
+//                                            ClassToMethodTransformationData additionalData) {
+//                    return new HttpClientMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
+//                }
+//            };
+//
+//            addToHttpClasses(null,
+//                    methodVisitorFactory,
+//                    InstrumentedClassType.HTTP,
+//                    HTTP_CLIENT_43_CLASS_NAME,
+//                    HTTP_CLIENT_METHOD_43_NAME,
+//                    HTTP_CLIENT_METHOD_43_SIGNATURE);
+//            addToHttpClasses(null,
+//                    methodVisitorFactory,
+//                    InstrumentedClassType.HTTP,
+//                    HTTP_CLIENT_42_CLASS_NAME,
+//                    HTTP_CLIENT_METHOD_42_NAME,
+//                    HTTP_CLIENT_METHOD_42_SIGNATURE);
+//
+//            ClassVisitorFactory classVisitorFactory = new ClassVisitorFactory() {
+//                @Override
+//                public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
+//                    return new OkHttpClassVisitor(classInstrumentationData, classWriter);
+//                }
+//            };
+//
+//            methodVisitorFactory = new MethodVisitorFactory() {
+//                @Override
+//                public MethodVisitor create(MethodInstrumentationDecision decision,
+//                                            int access,
+//                                            String desc,
+//                                            String className,
+//                                            String methodName,
+//                                            MethodVisitor methodVisitor,
+//                                            ClassToMethodTransformationData additionalData) {
+//                    return new OkHttpMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
+//                }
+//            };
+//            addToHttpClasses(classVisitorFactory,
+//                    methodVisitorFactory,
+//                    InstrumentedClassType.HTTP,
+//                    OK_HTTP_CLIENT_CALL_CLASS_NAME,
+//                    OK_HTTP_CLIENT_CALL_METHOD_NAME,
+//                    OK_HTTP_CLIENT_CALL_METHOD_SIGNATURE);
+//
+//            methodVisitorFactory = new MethodVisitorFactory() {
+//                @Override
+//                public MethodVisitor create(MethodInstrumentationDecision decision,
+//                                            int access,
+//                                            String desc,
+//                                            String className,
+//                                            String methodName,
+//                                            MethodVisitor methodVisitor,
+//                                            ClassToMethodTransformationData additionalData) {
+//                    return new OkHttpAsyncCallMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
+//                }
+//            };
+//            addToHttpClasses(classVisitorFactory,
+//                    methodVisitorFactory,
+//                    InstrumentedClassType.HTTP,
+//                    OK_HTTP_CLIENT_CALL_ASYNC_CLASS_NAME,
+//                    OK_HTTP_CLIENT_CALL_ASYNC_METHOD_NAME,
+//                    OK_HTTP_CLIENT_CALL_ASYNC_METHOD_SIGNATURE);
+//
+//            methodVisitorFactory = new MethodVisitorFactory() {
+//                @Override
+//                public MethodVisitor create(MethodInstrumentationDecision decision,
+//                                            int access,
+//                                            String desc,
+//                                            String className,
+//                                            String methodName,
+//                                            MethodVisitor methodVisitor,
+//                                            ClassToMethodTransformationData additionalData) {
+//                    return new RestTemplateMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData);
+//                }
+//            };
+//            addToHttpClasses(classVisitorFactory,
+//                    methodVisitorFactory,
+//                    InstrumentedClassType.HTTP,
+//                    REST_TEMPLATE_CLASS_NAME,
+//                    REST_TEMPLATE_METTHOD,
+//                    null);
+//        } catch (Throwable t) {
+//            InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.getMessage());
+//        }
     }
 
     private void addToHttpClasses(ClassVisitorFactory classVisitorFactory,

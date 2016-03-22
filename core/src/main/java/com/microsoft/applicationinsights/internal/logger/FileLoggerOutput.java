@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
 
@@ -72,7 +73,6 @@ public final class FileLoggerOutput implements LoggerOutput {
             this.date = date;
         }
     }
-
 
     private String uniquePrefix;
     private LogFileProxy[] files;
@@ -137,7 +137,7 @@ public final class FileLoggerOutput implements LoggerOutput {
         }
         this.maxSizePerFileInMB = tempSizePerFileInMB;
 
-        baseFolder = new File(System.getProperty("java.io.tmpdir"), baseFolderName);
+        baseFolder = new File(LocalFileSystemUtils.getTempDir(), baseFolderName);
         if (!baseFolder.exists()) {
             baseFolder.mkdirs();
         } else {

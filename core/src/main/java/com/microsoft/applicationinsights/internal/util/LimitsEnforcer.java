@@ -60,7 +60,7 @@ public final class LimitsEnforcer {
             case CLOSEST_LIMIT_ON_ERROR:
                 if (value == null) {
                     currentValue = defaultValue;
-                    InternalLogger.INSTANCE.warn("'%s': null value is replaced with '%d'", propertyName, defaultValue);
+                    InternalLogger.INSTANCE.info("'%s': null value is replaced with '%d'", propertyName, defaultValue);
                 } else if (value < minimum) {
                     currentValue = minimum;
                     InternalLogger.INSTANCE.warn("'%s': value is under the minimum, therefore is replaced with '%d'", propertyName, minimum);

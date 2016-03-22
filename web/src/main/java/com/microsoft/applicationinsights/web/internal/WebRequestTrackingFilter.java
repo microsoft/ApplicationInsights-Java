@@ -143,7 +143,7 @@ public final class WebRequestTrackingFilter implements Filter {
             isInitialized = true;
         } catch (Exception e) {
             String filterName = this.getClass().getSimpleName();
-            InternalLogger.INSTANCE.error(
+            InternalLogger.INSTANCE.info(
                     "Application Insights filter %s has been failed to initialized.\n" +
                             "Web request tracking filter will be disabled. Exception: %s", filterName, e.getMessage());
         }

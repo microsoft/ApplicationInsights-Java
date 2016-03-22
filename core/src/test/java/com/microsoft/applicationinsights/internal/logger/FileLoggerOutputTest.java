@@ -43,6 +43,8 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 
+import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
+
 public final class FileLoggerOutputTest {
     private final static String TEMP_LOG_TEST_FOLDER = "JavaSDKLogTests";
     private final static String LOG_FILE_SUFFIX = "jsl";
@@ -50,7 +52,7 @@ public final class FileLoggerOutputTest {
     private final String workingFolder;
 
     public FileLoggerOutputTest() {
-        workingFolder = System.getProperty("java.io.tmpdir") + File.separator + TEMP_LOG_TEST_FOLDER;
+        workingFolder = new File(LocalFileSystemUtils.getTempDir(), TEMP_LOG_TEST_FOLDER).getAbsolutePath();
     }
 
     @Test
