@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.LinkedList;
 import java.util.HashMap;
 
+import com.microsoft.applicationinsights.internal.util.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -50,7 +51,7 @@ public final class FileLoggerOutputTest {
     private final String workingFolder;
 
     public FileLoggerOutputTest() {
-        workingFolder = System.getProperty("java.io.tmpdir") + File.separator + TEMP_LOG_TEST_FOLDER;
+        workingFolder = new File(FileSystemUtils.getTempDir(), TEMP_LOG_TEST_FOLDER).getAbsolutePath();
     }
 
     @Test
