@@ -38,7 +38,7 @@ public class LocalFileSystemUtils {
      * Finds a suitable folder to use for temporary files,
      * while avoiding the risk of collision when multiple users
      * are running applications that make use of Application Insights.
-     * <p/>
+     * 
      * See the third paragraph at http://www.chiark.greenend.org.uk/~peterb/uxsup/project/tmp-per-user/
      * for a great explanation of the motivation behind this method.
      *
