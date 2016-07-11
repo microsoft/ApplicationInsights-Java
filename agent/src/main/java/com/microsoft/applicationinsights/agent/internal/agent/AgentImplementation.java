@@ -64,7 +64,7 @@ public final class AgentImplementation {
     }
 
     private static void appendJarsToBootstrapClassLoader(Instrumentation inst) throws Throwable {
-        String agentJarPath = agentJarLocation.startsWith("file:/") ? agentJarLocation : "file:/" + agentJarLocation;
+        String agentJarPath = agentJarLocation.startsWith("file:/") ? agentJarLocation : new File(agentJarLocation).toURI().toString();
 
         String agentJarName = null;
         File agentFolder = new File(agentJarLocation);
