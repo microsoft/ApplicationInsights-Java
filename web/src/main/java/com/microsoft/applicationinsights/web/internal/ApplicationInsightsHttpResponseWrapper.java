@@ -46,6 +46,13 @@ public class ApplicationInsightsHttpResponseWrapper extends HttpServletResponseW
     }
 
     @Override
+    public void setStatus(int sc, String sm) {
+        super.setStatus(sc, sm);
+
+        this.httpStatusCode = sc;
+    }
+
+    @Override
     public void sendError(int sc) throws IOException {
         super.sendError(sc);
 
