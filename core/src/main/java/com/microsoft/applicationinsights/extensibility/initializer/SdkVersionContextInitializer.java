@@ -32,7 +32,7 @@ import java.util.Properties;
  * Initializer for SDK version.
  */
 public final class SdkVersionContextInitializer implements ContextInitializer {
-    final String sdkPrefix = "Java";
+    final String sdkPrefix = "java";
 
     @Override
     public void initialize(TelemetryContext context) {
@@ -41,9 +41,9 @@ public final class SdkVersionContextInitializer implements ContextInitializer {
         Properties sdkVersionProps = PropertyHelper.getSdkVersionProperties();
         if (sdkVersionProps != null) {
             String version = sdkVersionProps.getProperty("version");
-            sdkVersion = sdkPrefix + " " + version;
+            sdkVersion = String.format("%s:%s", sdkPrefix, version);
         }
 
-        context.getInternal().setSdkVersion(sdkVersion);
+        context.getInternal().setSdkVersion(sdkVersion.toLowerCase());
     }
 }
