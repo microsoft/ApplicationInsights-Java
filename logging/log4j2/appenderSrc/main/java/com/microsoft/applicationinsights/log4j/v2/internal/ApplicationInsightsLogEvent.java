@@ -84,6 +84,10 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
             addLogEventProperty("LineNumber", String.valueOf(stackTraceElement.getLineNumber()), metaData);
         }
 
+        for (Map.Entry<String, String> entry : logEvent.getContextMap().entrySet()) {
+            addLogEventProperty(entry.getKey(), entry.getValue(), metaData);
+        }
+
         // TODO: Username, domain and identity should be included as in .NET version.
         // TODO: Should check, seems that it is not included in Log4j2.
 
