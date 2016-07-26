@@ -48,8 +48,9 @@ final class ApacheSender43 implements ApacheSender {
 
         httpClient = HttpClients.custom()
                 .setConnectionManager(cm)
+                .useSystemProperties()
                 .build();
-    }
+         }
 
     @Override
     public HttpResponse sendPostRequest(HttpPost post) throws IOException {
