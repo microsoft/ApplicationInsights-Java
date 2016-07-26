@@ -23,19 +23,15 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 /**
@@ -44,33 +40,17 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 final class ApacheSender43 implements ApacheSender {
 
     private final CloseableHttpClient httpClient;
-    private final static String HTTP_PROXY_HOST_PROPERTY_NAME = "http.proxyHost";
-    private final static String HTTP_PROXY_PORT_PROPERTY_NAME = "http.proxyPort";
 
     public ApacheSender43() {
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
 
-        HttpClientBuilder builder = HttpClients.custom()
-                .setConnectionManager(cm);
-
-        // If proxy host and (optionally) port were set, create and set a default route planner to use it
-        String proxyHost = System.getProperty(HTTP_PROXY_HOST_PROPERTY_NAME);
-        if (!Strings.isNullOrEmpty(proxyHost)){
-            HttpHost proxy;
-            String portString = System.getProperty(HTTP_PROXY_PORT_PROPERTY_NAME);
-            if (!Strings.isNullOrEmpty(portString)){
-                int portNum = Integer.parseInt(portString);
-                proxy = new HttpHost(proxyHost, portNum);
-            } else{
-                proxy = new HttpHost(proxyHost);
-            }
-            builder = builder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
-        }
-
-        httpClient = builder.build();
-    }
+        httpClient = HttpClients.custom()
+                .setConnectionManager(cm)
+                .useSystemProperties()
+                .build();
+         }
 
     @Override
     public HttpResponse sendPostRequest(HttpPost post) throws IOException {
