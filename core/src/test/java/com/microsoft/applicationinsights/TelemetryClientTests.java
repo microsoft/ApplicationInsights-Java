@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -31,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
 import com.microsoft.applicationinsights.telemetry.*;
 
 import org.junit.Before;
@@ -376,6 +379,30 @@ public final class TelemetryClientTests {
         client.flush();
 
         Mockito.verify(channel, Mockito.times(1)).flush();
+    }
+
+    @Test
+    public void testFilterOutTelemetry() throws Throwable {
+        RequestTelemetryFilter filter = new RequestTelemetryFilter();
+        filter.setNotNeededResponseCodes("200-400");
+        configuration.getTelemetryProcessors().add(filter);
+
+        RequestTelemetry rt = new RequestTelemetry();
+        rt.setUrl(new URL("http:///www.microsoft.com/"));
+        client.trackRequest(rt);
+
+        Mockito.verify(channel, Mockito.never()).send(rt);
+    }
+
+    @Test
+    public void testDontFilterOutTelemetry() throws Throwable {
+        RequestTelemetryFilter filter = new RequestTelemetryFilter();
+        filter.setNotNeededResponseCodes("201-400");
+        RequestTelemetry rt = new RequestTelemetry();
+        rt.setUrl(new URL("http:///www.microsoft.com/"));
+        client.trackRequest(rt);
+
+        Mockito.verify(channel, Mockito.times(1)).send(rt);
     }
 
     // endregion Track tests

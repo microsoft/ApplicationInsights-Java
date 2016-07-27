@@ -23,6 +23,9 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -30,14 +33,17 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
+import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -104,6 +110,7 @@ public enum TelemetryConfigurationFactory {
             setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
             setTelemetryInitializers(applicationInsightsConfig.getTelemetryInitializers(), configuration);
             setTelemetryModules(applicationInsightsConfig, configuration);
+            setTelemetryProcessors(applicationInsightsConfig, configuration);
 
             initializeComponents(configuration);
         } catch (Exception e) {
@@ -172,6 +179,37 @@ public enum TelemetryConfigurationFactory {
         modules.addAll(pcModules);
     }
 
+    private void setTelemetryProcessors(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
+        TelemetryProcessorsXmlElement configurationProcessors = appConfiguration.getTelemetryProcessors();
+        List<TelemetryProcessor> processors = configuration.getTelemetryProcessors();
+
+        if (configurationProcessors != null) {
+            ArrayList<TelemetryProcessorXmlElement> b = configurationProcessors.getBuiltInTelemetryProcessors();
+            if (!b.isEmpty()) {
+                final List<String> processorsBuiltInNames =
+                        new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{BuiltInProcessor.class}, performanceCountersSection);
+                final HashMap<String, String> builtInMap = new HashMap<String, String>();
+                for (String processorsBuiltInName : processorsBuiltInNames) {
+                    builtInMap.put(processorsBuiltInName.substring(processorsBuiltInName.lastIndexOf(".") + 1), processorsBuiltInName);
+                }
+                ArrayList<TelemetryProcessorXmlElement> legal = new ArrayList<TelemetryProcessorXmlElement>();
+                for (TelemetryProcessorXmlElement element : b) {
+                    String fullTypeName = builtInMap.get(element.getType());
+                    if (StringUtils.isNullOrEmpty(fullTypeName)) {
+                        InternalLogger.INSTANCE.error("Failed to find built in processor: '%s', ignored", element.getType());
+                        continue;
+                    }
+                    element.setType(fullTypeName);
+                    legal.add(element);
+                }
+                loadProcessorComponents(TelemetryProcessor.class, processors, legal);
+            }
+            ArrayList<TelemetryProcessorXmlElement> customs = configurationProcessors.getCustomTelemetryProcessors();
+            loadProcessorComponents(TelemetryProcessor.class, processors, customs);
+        }
+    }
+
+
     /**
      * Setting an instrumentation key:
      * First we try the system property '-DAPPLICATION_INSIGHTS_IKEY=i_key'
@@ -214,6 +252,12 @@ public enum TelemetryConfigurationFactory {
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.getMessage());
         }
+    }
+
+    private List<TelemetryProcessor> getTelemetryProcessors() {
+        ArrayList<TelemetryProcessor> processors = new ArrayList<TelemetryProcessor>();
+
+        return processors;
     }
 
     @SuppressWarnings("unchecked")
@@ -401,6 +445,31 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
+    private <T> void loadProcessorComponents(
+            Class<T> clazz,
+            List<T> list,
+            Collection<TelemetryProcessorXmlElement> classNames) {
+        if (classNames == null) {
+            return;
+        }
+
+        for (TelemetryProcessorXmlElement className : classNames) {
+            T initializer = null;
+
+            initializer = createInstance(className.getType(), clazz);
+            for (ParamXmlElement param : className.getAdds()){
+                String methodName = "set" + param.getName();
+                try {
+                    if (activateMethod(initializer, methodName, param.getValue(), String.class)) {
+                        list.add(initializer);
+                    }
+                } catch (Throwable t) {
+                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, className + ": failed to activate method " + methodName + ", exception: " + t.getMessage() + ", the class will not be used.");
+                }
+            }
+        }
+    }
+
     /**
      * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
      *
@@ -489,6 +558,26 @@ public enum TelemetryConfigurationFactory {
                         "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Excepption");
             }
         }
+    }
+
+    private static <V, A> boolean activateMethod(Object object, String methodName, V value, A argumentClass) {
+        Class<?> clazz = object.getClass();
+        Method method = null;
+        try {
+            method = clazz.getDeclaredMethod(methodName, String.class);
+            method.invoke(object, value);
+            return true;
+        } catch (NoSuchMethodException e) {
+            InternalLogger.INSTANCE.error(
+                    "Failed to call method " + methodName + ". NoSuchMethodException");
+        } catch (InvocationTargetException e) {
+            InternalLogger.INSTANCE.error(
+                    "Failed to call method " + methodName + ". InvocationTargetException");
+        } catch (IllegalAccessException e) {
+            InternalLogger.INSTANCE.error(
+                    "Failed to call method " + methodName + ". IllegalAccessException");
+        }
+        return false;
     }
 
     void setPerformanceCountersSection(String performanceCountersSection) {

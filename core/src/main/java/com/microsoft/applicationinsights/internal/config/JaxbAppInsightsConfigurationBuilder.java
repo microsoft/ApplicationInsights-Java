@@ -55,6 +55,8 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
             } else {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getMessage());
             }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         } finally {
             try {
                 resourceFile.close();
