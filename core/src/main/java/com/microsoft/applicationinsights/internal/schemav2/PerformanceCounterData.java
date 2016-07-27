@@ -41,7 +41,7 @@ public final class PerformanceCounterData extends Domain {
     /**
      * Base Type for this telemetry.
      */
-    private static final String PERFORMANCE_COUNTER_BASE_TYPE = "Microsoft.ApplicationInsights.PerformanceCounterData";
+    private static final String PERFORMANCE_COUNTER_BASE_TYPE = "PerformanceCounterData";
 
     private final int ver = 2;
     private String categoryName;

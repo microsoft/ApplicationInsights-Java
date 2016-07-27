@@ -41,7 +41,7 @@ public class RequestData extends Domain {
     /**
      * Base Type for this telemetry.
      */
-    public static final String REQUEST_BASE_TYPE = "Microsoft.ApplicationInsights.RequestData";
+    public static final String REQUEST_BASE_TYPE = "RequestData";
 
     /**
      * Backing field for property Ver.

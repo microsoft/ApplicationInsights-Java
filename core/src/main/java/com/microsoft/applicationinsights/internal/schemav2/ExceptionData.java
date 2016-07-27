@@ -44,7 +44,7 @@ public class ExceptionData extends Domain implements JsonSerializable {
     /**
      * Base Type for this telemetry.
      */
-    public static final String EXCEPTION_BASE_TYPE = "Microsoft.ApplicationInsights.ExceptionData";
+    public static final String EXCEPTION_BASE_TYPE = "ExceptionData";
 
     /**
      * Backing field for property Ver.
