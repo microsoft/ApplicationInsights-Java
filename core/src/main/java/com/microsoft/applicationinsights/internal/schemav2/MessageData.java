@@ -41,7 +41,7 @@ public class MessageData extends Domain implements JsonSerializable {
     /**
      * Base Type for this telemetry.
      */
-    public static final String MESSAGE_BASE_TYPE = "Microsoft.ApplicationInsights.MessageData";
+    public static final String MESSAGE_BASE_TYPE = "MessageData";
 
     /**
      * Backing field for property Ver.

@@ -42,7 +42,7 @@ public class MetricData extends Domain implements JsonSerializable {
     /**
      * Base Type for this telemetry.
      */
-    public static final String METRIC_BASE_TYPE = "Microsoft.ApplicationInsights.MetricData";
+    public static final String METRIC_BASE_TYPE = "MetricData";
 
     /**
      * Backing field for property Ver.

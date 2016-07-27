@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.schemav2;
 
 import java.io.IOException;
 
+import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 /**
@@ -37,7 +38,7 @@ public class PageViewData extends EventData {
     /**
      * Base Type for this telemetry.
      */
-    public static final String PAGE_VIEW_BASE_TYPE = "Microsoft.ApplicationInsights.PageViewData";
+    public static final String PAGE_VIEW_BASE_TYPE = "PageViewData";
 
     /**
      * Backing field for property Url.
@@ -77,7 +78,7 @@ public class PageViewData extends EventData {
         super.serializeContent(writer);
 
         writer.write("url", url);
-        writer.write("duration", String.valueOf(duration));
+        writer.write("duration", new Duration(duration).toString());
     }
 
     @Override

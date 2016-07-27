@@ -40,7 +40,7 @@ public class RemoteDependencyData extends Domain {
     /**
      * Base Type for this telemetry.
      */
-    public static final String REMOTE_BASE_TYPE = "Microsoft.ApplicationInsights.RemoteDependencyData";
+    public static final String REMOTE_BASE_TYPE = "RemoteDependencyData";
 
     /**
      * Backing field for property Ver.

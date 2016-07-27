@@ -41,7 +41,7 @@ public class EventData extends Domain {
     /**
      * Base Type for this telemetry.
      */
-    private static final String EVENT_BASE_TYPE = "Microsoft.ApplicationInsights.EventData";
+    private static final String EVENT_BASE_TYPE = "EventData";
 
     /**
      * Backing field for property Ver.

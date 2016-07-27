@@ -37,7 +37,7 @@ public class PageViewPerfData extends PageViewData {
     /**
      * Base Type for this telemetry.
      */
-    public static final String PAGE_VIEW_PERF_BASE_TYPE = "Microsoft.ApplicationInsights.PageViewPerfData";
+    public static final String PAGE_VIEW_PERF_BASE_TYPE = "PageViewPerfData";
 
     /**
      * Backing field for property PerfTotal.
