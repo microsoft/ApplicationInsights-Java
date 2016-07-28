@@ -71,7 +71,6 @@ public final class TransmissionPolicyManager implements Stoppable {
         @Override
         public void run() {
             try {
-                System.out.println("ca UnSuspender");
                 cancelSuspension(expectedGeneration);
             } catch (Throwable t) {
             }
@@ -114,7 +113,6 @@ public final class TransmissionPolicyManager implements Stoppable {
 
             long currentGeneration = generation.incrementAndGet();
 
-            System.out.println("create UnSuspender");
             threads.schedule(new UnSuspender(currentGeneration), suspendInSeconds, TimeUnit.SECONDS);
             policyState.setCurrentState(policy);
             suspensionDate = date;
@@ -123,13 +121,11 @@ public final class TransmissionPolicyManager implements Stoppable {
     }
 
     private synchronized void cancelSuspension(long expectedGeneration) {
-        System.out.println("ca UnSuspender1");
         if (expectedGeneration != generation.get()) {
             System.out.println("wrong");
             return;
         }
 
-        System.out.println("ca UnSuspender2");
         policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
     }
 
@@ -138,7 +134,6 @@ public final class TransmissionPolicyManager implements Stoppable {
             return;
         }
 
-        System.out.println("create scheduler");
         threads = new ScheduledThreadPoolExecutor(1);
         threads.setThreadFactory(new ThreadFactory() {
             @Override
