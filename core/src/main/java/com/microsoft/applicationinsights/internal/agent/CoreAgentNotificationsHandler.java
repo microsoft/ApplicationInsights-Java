@@ -145,22 +145,22 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
     @Override
     public void methodFinished(String name, Throwable throwable) {
-        if (!finalizeMethod(null, throwable)) {
+        if (!finalizeMethod(0, null, throwable)) {
             InternalLogger.INSTANCE.error("Agent has detected a 'Finish' method '%s' with exception '%s' event without a 'Start'",
                     name, throwable == null ? "unknown" : throwable.getClass().getName());
         }
     }
 
     @Override
-    public void methodFinished(String name) {
-        if (!finalizeMethod(null, null)) {
+    public void methodFinished(String name, long thresholdInMS) {
+        if (!finalizeMethod(thresholdInMS, null, null)) {
             InternalLogger.INSTANCE.error("Agent has detected a 'Finish' method ('%s') event without a 'Start'", name);
         }
     }
 
     @Override
     public void methodFinished(String classAndMethodNames, long deltaInNS, Object[] args, Throwable throwable) {
-        long durationInMS =nanoToMilliseconds(deltaInNS);
+        long durationInMS = nanoToMilliseconds(deltaInNS);
         Duration duration = new Duration(durationInMS);
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(classAndMethodNames, null, duration, throwable == null);
         telemetry.setDependencyKind(DependencyKind.Other);
@@ -237,7 +237,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         localData.methods.addFirst(methodData);
     }
 
-    private boolean finalizeMethod(Object result, Throwable throwable) {
+    private boolean finalizeMethod(long thresholdInMS, Object result, Throwable throwable) {
         long finish = System.nanoTime();
 
         ThreadData localData = threadDataThreadLocal.get();
@@ -251,6 +251,12 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         }
 
         methodData.interval = finish - methodData.interval;
+        if (throwable == null && thresholdInMS > 0) {
+            long asMS = nanoToMilliseconds(methodData.interval);
+            if (asMS < thresholdInMS){
+                return true;
+            }
+        }
         methodData.result = result;
 
         report(methodData, throwable);

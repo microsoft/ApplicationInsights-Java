@@ -106,7 +106,7 @@ public class StatementClassDataDataProvider {
                             .setReportExecutionTime(true);
             for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
                 for (String signature : methodAndSignature.getValue()) {
-                    data.addMethod(methodAndSignature.getKey(), signature, false, true, methodVisitorFactory);
+                    data.addMethod(methodAndSignature.getKey(), signature, false, true, 0, methodVisitorFactory);
                 }
             }
 
@@ -137,7 +137,7 @@ public class StatementClassDataDataProvider {
                             .setReportExecutionTime(true);
             for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
                 for (String signature : methodAndSignature.getValue()) {
-                    data.addMethod(methodAndSignature.getKey(), signature, false, true, methodVisitorFactory);
+                    data.addMethod(methodAndSignature.getKey(), signature, false, true, 0, methodVisitorFactory);
                 }
             }
 

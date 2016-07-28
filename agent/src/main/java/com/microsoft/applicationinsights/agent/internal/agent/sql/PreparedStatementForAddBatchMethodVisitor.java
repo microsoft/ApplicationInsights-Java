@@ -38,7 +38,7 @@ final class PreparedStatementForAddBatchMethodVisitor extends DefaultMethodVisit
                                                      String methodName,
                                                      MethodVisitor methodVisitor,
                                                      ClassToMethodTransformationData additionalData) {
-        super(false, true, access, desc, owner, methodName, methodVisitor, null);
+        super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
     }
 
     @Override

@@ -32,12 +32,12 @@ public final class MethodInstrumentationRequestTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCtor1EmptyMethodName() {
-        new MethodInstrumentationRequest("", MOCK_METHOD_SIGNATURE, false, true);
+        new MethodInstrumentationRequest("", MOCK_METHOD_SIGNATURE, false, true, 0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCtor1NullMethodName() {
-        new MethodInstrumentationRequest(null, MOCK_METHOD_SIGNATURE, false, true);
+        new MethodInstrumentationRequest(null, MOCK_METHOD_SIGNATURE, false, true, 0);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -52,7 +52,7 @@ public final class MethodInstrumentationRequestTest {
 
     @Test
     public void testCtor1() {
-        MethodInstrumentationRequest test = new MethodInstrumentationRequest(MOCK_METHOD_NAME, MOCK_METHOD_SIGNATURE, false, true);
+        MethodInstrumentationRequest test = new MethodInstrumentationRequest(MOCK_METHOD_NAME, MOCK_METHOD_SIGNATURE, false, true, 0);
 
         assertEquals(test.getMethodName(), MOCK_METHOD_NAME);
         assertEquals(test.getMethodSignature(), MOCK_METHOD_SIGNATURE);
@@ -62,7 +62,7 @@ public final class MethodInstrumentationRequestTest {
 
     @Test
     public void testCtor1WithNullSignature() {
-        MethodInstrumentationRequest test = new MethodInstrumentationRequest(MOCK_METHOD_NAME, null, false, true);
+        MethodInstrumentationRequest test = new MethodInstrumentationRequest(MOCK_METHOD_NAME, null, false, true, 0);
 
         assertEquals(test.getMethodName(), MOCK_METHOD_NAME);
         assertNull(test.getMethodSignature());

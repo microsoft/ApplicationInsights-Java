@@ -29,13 +29,13 @@ import static org.junit.Assert.*;
 public final class MethodInstrumentationDecisionTest {
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalCtor() {
-        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, null);
+        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, null, 0);
     }
 
     @Test
     public void testCtor() {
         MethodVisitorFactory mockFactory = Mockito.mock(MethodVisitorFactory.class);
-        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, mockFactory);
+        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, mockFactory, 0);
         assertTrue(test.isReportCaughtExceptions());
         assertFalse(test.isReportExecutionTime());
         assertSame(test.getMethodVisitorFactory(), mockFactory);

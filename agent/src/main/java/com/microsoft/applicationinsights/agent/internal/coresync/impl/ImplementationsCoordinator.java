@@ -172,12 +172,12 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
-    @Override
-    public void methodFinished(String name) {
+     @Override
+    public void methodFinished(String name, long thresholdInMS) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.methodFinished(name);
+                implementation.methodFinished(name, thresholdInMS);
             }
         } catch (Throwable t) {
         }

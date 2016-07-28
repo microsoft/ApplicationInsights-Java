@@ -124,7 +124,7 @@ public final class PreparedStatementClassDataProvider {
                         .setReportCaughtExceptions(false)
                         .setReportExecutionTime(true);
         for (Map.Entry<String, String> methodAndSignature : sqlStatementSignatures.entrySet()) {
-            data.addMethod(methodAndSignature.getKey(), methodAndSignature.getValue(), false, true, methodVisitorFactory);
+            data.addMethod(methodAndSignature.getKey(), methodAndSignature.getValue(), false, true, 0, methodVisitorFactory);
         }
 
         classesToInstrument.put(className, data);
@@ -150,7 +150,7 @@ public final class PreparedStatementClassDataProvider {
 
         for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
             for (String signature : methodAndSignature.getValue()) {
-                data.addMethod(methodAndSignature.getKey(), signature, false, true, methodVisitorFactory);
+                data.addMethod(methodAndSignature.getKey(), signature, false, true, 0, methodVisitorFactory);
             }
         }
     }
@@ -270,7 +270,7 @@ public final class PreparedStatementClassDataProvider {
                 new ClassInstrumentationData(className, InstrumentedClassType.SQL, classVisitorFactory)
                         .setReportCaughtExceptions(false)
                         .setReportExecutionTime(true);
-        data.addMethod("executeBatch", "()[I", false, true, new MethodVisitorFactory() {
+        data.addMethod("executeBatch", "()[I", false, true, 0, new MethodVisitorFactory() {
             @Override
             public MethodVisitor create(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor, ClassToMethodTransformationData additionalData) {
                 return new PreparedStatementMethodForExecuteBatchVisitor(access, desc, owner, methodName, methodVisitor, null);
