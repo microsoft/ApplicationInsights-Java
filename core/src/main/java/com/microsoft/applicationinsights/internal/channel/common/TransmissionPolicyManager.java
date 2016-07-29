@@ -122,7 +122,6 @@ public final class TransmissionPolicyManager implements Stoppable {
 
     private synchronized void cancelSuspension(long expectedGeneration) {
         if (expectedGeneration != generation.get()) {
-            System.out.println("wrong");
             return;
         }
 
