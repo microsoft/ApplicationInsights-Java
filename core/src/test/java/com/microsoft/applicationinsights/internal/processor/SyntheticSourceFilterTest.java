@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.internal.processor;
 
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import junit.framework.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -44,7 +43,6 @@ public class SyntheticSourceFilterTest {
     @Test
     public void testEmptySources() throws Throwable {
         SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        tested.setNotNeededSources("");
         boolean result = tested.process(new PageViewTelemetry());
 
         assertTrue(result);
@@ -53,7 +51,6 @@ public class SyntheticSourceFilterTest {
     @Test
     public void testNullTelemetry() throws Throwable {
         SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        tested.setNotNeededSources("a");
         boolean result = tested.process(null);
 
         assertTrue(result);
@@ -63,7 +60,6 @@ public class SyntheticSourceFilterTest {
     @Test
     public void testOneSourceThatIsFound() throws Throwable {
         SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        tested.setNotNeededSources("A");
         Telemetry telemetry = new PageViewTelemetry();
         telemetry.getContext().getOperation().setSyntheticSource("A");
         boolean result = tested.process(telemetry);
@@ -72,36 +68,24 @@ public class SyntheticSourceFilterTest {
     }
 
     @Test
-    public void testOneSourceThatIsNotFound() throws Throwable {
+    public void testSourcesThatIsDeclaredAndFound() throws Throwable {
         SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        tested.setNotNeededSources("A");
+        tested.setNotNeededSources("A, B");
         Telemetry telemetry = new PageViewTelemetry();
-        telemetry.getContext().getOperation().setSyntheticSource("B");
+        telemetry.getContext().getOperation().setSyntheticSource("A");
         boolean result = tested.process(telemetry);
 
-        assertTrue(result);
+        assertFalse(result);
     }
 
     @Test
-    public void testMultipleSourcesThatIsNotFound() throws Throwable {
+    public void testSourcesThatIsDeclaredAndNOTFound() throws Throwable {
         SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        tested.setNotNeededSources("F, B,C,D, E , A,");
+        tested.setNotNeededSources("A, B");
+        Telemetry telemetry = new PageViewTelemetry();
+        telemetry.getContext().getOperation().setSyntheticSource("A1");
+        boolean result = tested.process(telemetry);
 
-        String[] unneededSources = {"A", "B", "C", "D", "E", "F"};
-        String[] neededSources = {"A1", "H"};
-
-        for (String unneeded : unneededSources){
-            Telemetry telemetry = new PageViewTelemetry();
-            telemetry.getContext().getOperation().setSyntheticSource(unneeded);
-            boolean result = tested.process(telemetry);
-            assertFalse(result);
-        }
-
-        for (String needed : neededSources){
-            Telemetry telemetry = new PageViewTelemetry();
-            telemetry.getContext().getOperation().setSyntheticSource(needed);
-            boolean result = tested.process(telemetry);
-            assertTrue(result);
-        }
+        assertTrue(result);
     }
 }

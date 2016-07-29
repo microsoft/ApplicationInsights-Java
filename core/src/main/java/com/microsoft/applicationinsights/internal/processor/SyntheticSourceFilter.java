@@ -53,6 +53,9 @@ public final class SyntheticSourceFilter implements TelemetryProcessor {
             return true;
         }
 
+        if (notNeededSources.isEmpty()) {
+            return StringUtils.isNullOrEmpty(telemetry.getContext().getOperation().getSyntheticSource());
+        }
         if (notNeededSources.contains(telemetry.getContext().getOperation().getSyntheticSource())) {
             return false;
         }

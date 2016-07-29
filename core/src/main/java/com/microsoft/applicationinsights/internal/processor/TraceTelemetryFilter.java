@@ -48,7 +48,7 @@ import java.util.Map;
  */
 @BuiltInProcessor("TraceTelemetryFilter")
 public final class TraceTelemetryFilter implements TelemetryProcessor {
-    private SeverityLevel fromTraceLevel = null;
+    private SeverityLevel fromSeverityLevel = null;
 
     public TraceTelemetryFilter() {
     }
@@ -63,7 +63,7 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
             return true;
         }
 
-        if (fromTraceLevel == null) {
+        if (fromSeverityLevel == null) {
             return false;
         }
 
@@ -76,18 +76,18 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
             return true;
         }
 
-        if (tt.getSeverityLevel().compareTo(this.fromTraceLevel) < 0) {
+        if (tt.getSeverityLevel().compareTo(this.fromSeverityLevel) < 0) {
             return false;
         }
 
         return true;
     }
 
-    public void setFromTraceLevel(String fromTraceLevel) throws Throwable {
+    public void setFromSeverityLevel(String fromSeverityLevel) throws Throwable {
         try {
-            String trimmed = fromTraceLevel.trim();
+            String trimmed = fromSeverityLevel.trim();
             if (trimmed.toUpperCase().equals("OFF")) {
-                fromTraceLevel = null;
+                fromSeverityLevel = null;
             } else {
                 final Map<String, SeverityLevel> severityLevels = new HashMap<String, SeverityLevel>();
                 severityLevels.put("TRACE", SeverityLevel.Verbose);
@@ -97,15 +97,15 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
                 severityLevels.put("CRITICAL", SeverityLevel.Critical);
                 SeverityLevel sl = severityLevels.get(trimmed.toUpperCase());
                 if (sl == null) {
-                    throw new IllegalArgumentException(String.format("Unknown option: %s", fromTraceLevel));
+                    throw new IllegalArgumentException(String.format("Unknown option: %s", fromSeverityLevel));
                 }
-                this.fromTraceLevel = sl;
+                this.fromSeverityLevel = sl;
             }
-            InternalLogger.INSTANCE.trace(String.format("TraceTelemetryFilter: set severity level to %s", this.fromTraceLevel));
+            InternalLogger.INSTANCE.trace(String.format("TraceTelemetryFilter: set severity level to %s", this.fromSeverityLevel));
         } catch (Throwable e) {
-            this.fromTraceLevel = SeverityLevel.Verbose;
+            this.fromSeverityLevel = SeverityLevel.Verbose;
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
-                    String.format("TraceTelemetryFilter: failed to parse: %s", fromTraceLevel));
+                    String.format("TraceTelemetryFilter: failed to parse: %s", fromSeverityLevel));
             throw e;
         }
     }

@@ -76,15 +76,7 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
 
         if (telemetry instanceof RequestTelemetry) {
             RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
-            Duration requestDuration = requestTelemetry.getDuration();
-            if (requestDuration != null && requestDuration.getTotalMilliseconds() < minimumDurationInMS) {
-                return false;
-            }
-
             String requestRespohseCode = requestTelemetry.getResponseCode();
-            if (StringUtils.isNullOrEmpty(requestTelemetry.getResponseCode())) {
-                return true;
-            }
 
             if (exactBadResponseCodes.contains(requestTelemetry.getResponseCode())) {
                 return false;
@@ -95,6 +87,15 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                 if (fromTo.from <= asInt && fromTo.to >= asInt) {
                     return false;
                 }
+            }
+
+            Duration requestDuration = requestTelemetry.getDuration();
+            if (requestDuration != null && requestDuration.getTotalMilliseconds() < minimumDurationInMS) {
+                return false;
+            }
+
+            if (StringUtils.isNullOrEmpty(requestTelemetry.getResponseCode())) {
+                return true;
             }
         }
 

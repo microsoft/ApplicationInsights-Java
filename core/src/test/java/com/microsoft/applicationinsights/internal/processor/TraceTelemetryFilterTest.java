@@ -21,14 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.junit.Test;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +36,7 @@ public class TraceTelemetryFilterTest {
     @Test(expected = Throwable.class)
     public void testProcessWithNullData() throws Throwable {
         TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromTraceLevel(null);
+        tested.setFromSeverityLevel(null);
         TraceTelemetry traceTelemetry = new TraceTelemetry();
         traceTelemetry.setMessage("A A 1");
         boolean result = tested.process(traceTelemetry);
@@ -51,7 +47,7 @@ public class TraceTelemetryFilterTest {
     @Test(expected = Throwable.class)
     public void testProcessWithEmptyData() throws Throwable {
         TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromTraceLevel("");
+        tested.setFromSeverityLevel("");
         TraceTelemetry traceTelemetry = new TraceTelemetry();
         traceTelemetry.setMessage("A A 1");
         boolean result = tested.process(traceTelemetry);
@@ -62,7 +58,7 @@ public class TraceTelemetryFilterTest {
     @Test
     public void testProcessOffSeverityLevel() throws Throwable {
         TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromTraceLevel(" off");
+        tested.setFromSeverityLevel(" off");
 
         for (SeverityLevel sl : SeverityLevel.values()) {
             TraceTelemetry traceTelemetry = new TraceTelemetry();
@@ -77,7 +73,7 @@ public class TraceTelemetryFilterTest {
     @Test
     public void testProcessWarningLevel() throws Throwable {
         TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromTraceLevel(" Warn");
+        tested.setFromSeverityLevel(" Warn");
 
         for (SeverityLevel sl : SeverityLevel.values()) {
             TraceTelemetry traceTelemetry = new TraceTelemetry();
@@ -96,7 +92,7 @@ public class TraceTelemetryFilterTest {
     @Test
     public void testProcessWithMetricTelemetry() throws Throwable {
         TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromTraceLevel(" trace ");
+        tested.setFromSeverityLevel(" trace ");
         boolean result = tested.process(new MetricTelemetry());
         assertTrue(result);
     }
