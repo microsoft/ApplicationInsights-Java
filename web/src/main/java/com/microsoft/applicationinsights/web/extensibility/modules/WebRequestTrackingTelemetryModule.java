@@ -117,7 +117,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
             ApplicationInsightsHttpResponseWrapper response = ((ApplicationInsightsHttpResponseWrapper)res);
             if (response != null) {
-                telemetry.setSuccess(response.getStatus() < 400);
+                telemetry.setSuccess(response.getStatus() < 400 || response.getStatus() == 401 );
                 telemetry.setResponseCode(Integer.toString(response.getStatus()));
             } else {
                 InternalLogger.INSTANCE.error("Failed to get response status for request ID: %s", telemetry.getId());
