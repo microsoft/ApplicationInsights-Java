@@ -26,6 +26,7 @@ package com.microsoft.applicationinsights.agent.internal.config;
  */
 public class AgentBuiltInConfiguration {
     private final boolean enabled;
+    private final boolean runtimeExceptionDetectionEnabled;
     private final boolean httpEnabled;
     private final boolean jdbcEnabled;
     private final boolean hibernateEnabled;
@@ -35,6 +36,7 @@ public class AgentBuiltInConfiguration {
     private final long redisThresholdInMS;
 
     public AgentBuiltInConfiguration(boolean enabled,
+                                     boolean runtimeExceptionDetectionEnabled,
                                      boolean httpEnabled,
                                      boolean jdbcEnabled,
                                      boolean hibernateEnabled,
@@ -43,6 +45,7 @@ public class AgentBuiltInConfiguration {
                                      Long maxSqlQueryLimitInMS,
                                      long redisThresholdInMS) {
         this.enabled = enabled;
+        this.runtimeExceptionDetectionEnabled = runtimeExceptionDetectionEnabled;
         this.httpEnabled = httpEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.hibernateEnabled = hibernateEnabled;
@@ -53,6 +56,10 @@ public class AgentBuiltInConfiguration {
         this.redisThresholdInMS = redisThresholdInMS;
         this.jedisEnabled = jedisEnabled;
         this.maxSqlQueryLimitInMS = maxSqlQueryLimitInMS;
+    }
+
+    public boolean isRuntimeExceptionDetectionEnabled() {
+        return runtimeExceptionDetectionEnabled;
     }
 
     public boolean isEnabled() {

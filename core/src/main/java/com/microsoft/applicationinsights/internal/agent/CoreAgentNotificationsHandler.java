@@ -179,6 +179,11 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         }
     }
 
+    @Override
+    public void exceptionThrown(Exception e) {
+        e.printStackTrace();
+    }
+
     private void startSqlMethod(Statement statement, String sqlStatement, Object[] additionalArgs) {
 
         try {

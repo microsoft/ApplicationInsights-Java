@@ -183,6 +183,17 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
+    @Override
+    public void exceptionThrown(Exception e) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation != null) {
+                implementation.exceptionThrown(e);
+            }
+        } catch (Throwable t) {
+        }
+    }
+
     /**
      * Will return null since this is only the coordinator and not a real SDK handler.
      * @return null.

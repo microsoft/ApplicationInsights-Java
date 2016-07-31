@@ -29,6 +29,10 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.jar.JarFile;
 
+import com.microsoft.applicationinsights.agent.internal.agent.jmx.JmxConnectorLoader;
+import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
+import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
@@ -47,7 +51,7 @@ public final class AgentImplementation {
             appendJarsToBootstrapClassLoader(inst);
             loadJarsToBootstrapClassLoader(inst);
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load the bootstrap class loader: " + throwable.getMessage());
             System.exit(-1);
         }
     }
@@ -60,7 +64,19 @@ public final class AgentImplementation {
             throw new IllegalStateException("Failed to load CodeInjector");
         }
 
-        cic.getDeclaredConstructor(Instrumentation.class, String.class).newInstance(inst, agentJarLocation);
+        AgentConfiguration agentConfiguration = new AgentConfigurationBuilderFactory().createDefaultBuilder().parseConfigurationFile(agentJarLocation);
+
+        CodeInjector codeInjector = cic.getDeclaredConstructor(AgentConfiguration.class).newInstance(agentConfiguration);
+
+        inst.addTransformer(codeInjector, true);
+
+        if (agentConfiguration.getBuiltInConfiguration().isRuntimeExceptionDetectionEnabled()) {
+            if (!inst.isRetransformClassesSupported()) {
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.WARN, "The JVM does not support res-transformation of classes, therefore the runtime exception will not be automatically reported.");
+            } else {
+                inst.retransformClasses(RuntimeException.class);
+            }
+        }
     }
 
     private static void appendJarsToBootstrapClassLoader(Instrumentation inst) throws Throwable {

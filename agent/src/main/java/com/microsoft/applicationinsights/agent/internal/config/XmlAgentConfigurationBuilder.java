@@ -53,6 +53,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
     private final static String BUILT_IN_TAG = "BuiltIn";
     private final static String JEDIS_TAG = "Jedis";
+    private final static String RUNTIME_EXCEPTION_TAG = "RuntimeException";
     private final static String HTTP_TAG = "HTTP";
     private final static String JDBC_TAG = "JDBC";
     private final static String HIBERNATE_TAG = "HIBERNATE";
@@ -180,6 +181,9 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         Element element = getFirst(nodes);
         long threshold = getLongAttribute(element, JEDIS_TAG, THRESHOLD_ATTRIBUTE, JEDIS_ARGS_THRESHOLD_IN_MS);
         builtInConfigurationBuilder.setJedisValues(getEnabled(element, JEDIS_TAG), threshold);
+
+        nodes = builtInElement.getElementsByTagName(RUNTIME_EXCEPTION_TAG);
+        builtInConfigurationBuilder.setRuntimeExceptionDetectionEnabled(getEnabled(getFirst(nodes), RUNTIME_EXCEPTION_TAG));
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
         builtInConfigurationBuilder.setHttpEnabled(getEnabled(getFirst(nodes), HTTP_TAG));

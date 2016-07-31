@@ -26,6 +26,7 @@ package com.microsoft.applicationinsights.agent.internal.config;
  */
 public class AgentBuiltInConfigurationBuilder {
     private boolean enabled = true;
+    private boolean runtimeExceptionDetectionEnabled = true;
     private boolean httpEnabled = true;
     private boolean jdbcEnabled = true;
     private boolean hibernateEnabled = true;
@@ -36,6 +37,7 @@ public class AgentBuiltInConfigurationBuilder {
 
     public AgentBuiltInConfiguration create() {
         return new AgentBuiltInConfiguration(enabled,
+                                             runtimeExceptionDetectionEnabled && enabled,
                                              httpEnabled && enabled,
                                              jdbcEnabled && enabled,
                                              hibernateEnabled && enabled,
@@ -52,6 +54,11 @@ public class AgentBuiltInConfigurationBuilder {
 
     public AgentBuiltInConfigurationBuilder setHttpEnabled(boolean httpEnabled) {
         this.httpEnabled = httpEnabled;
+        return this;
+    }
+
+    public AgentBuiltInConfigurationBuilder setRuntimeExceptionDetectionEnabled(boolean runtimeExceptionDetectionEnabled) {
+        this.runtimeExceptionDetectionEnabled = runtimeExceptionDetectionEnabled;
         return this;
     }
 

@@ -42,7 +42,9 @@ import org.objectweb.asm.Type;
 public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
     private final static String THROWABLE_METHOD_NAME = "exceptionCaught";
+    private final static String RT_EXCEPTION_METHOD_NAME = "exceptionThrown";
     private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
+    private final static String RT_EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/Exception;)V";
 
     private final static String START_DETECT_METHOD_NAME = "methodStarted";
     private final static String START_DETECT_METHOD_SIGNATURE = "(Ljava/lang/String;)V";
@@ -53,6 +55,7 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
     private final boolean reportCaughtExceptions;
     private HashSet<Label> labels = null;
+    private boolean regularMethod = true;
 
     protected final String owner;
 
@@ -83,7 +86,7 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
     protected void byteCodeForMethodExit(int opcode) {
 
         Object[] args = null;
-        String methodSignature = FINISH_METHOD_DEFAULT_SIGNATURE;
+        String methodSignature = regularMethod ? FINISH_METHOD_DEFAULT_SIGNATURE : RT_EXCEPTION_METHOD_SIGNATURE;
         switch (translateExitCode(opcode)) {
             case EXIT_WITH_EXCEPTION:
                 args = new Object[] { getMethodName(), duplicateTopStackToTempVariable(Type.getType(Throwable.class)) };
@@ -92,7 +95,12 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
             case EXIT_WITH_RETURN_VALUE:
             case EXIT_VOID:
-                args = new Object[] { getMethodName() };
+                if (regularMethod) {
+                    args = new Object[] { getMethodName() };
+                } else {
+                    mv.visitVarInsn(ALOAD, 0);
+                    activateEnumMethod(ImplementationsCoordinator.class, RT_EXCEPTION_METHOD_NAME, methodSignature);
+                }
                 break;
 
             default:
@@ -143,5 +151,9 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
                 START_DETECT_METHOD_NAME,
                 START_DETECT_METHOD_SIGNATURE,
                 getMethodName());
+    }
+
+    public void setRegularMethod(boolean regularMethod) {
+        this.regularMethod = regularMethod;
     }
 }

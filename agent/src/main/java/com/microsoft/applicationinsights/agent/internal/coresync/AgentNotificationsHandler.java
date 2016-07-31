@@ -114,4 +114,6 @@ public interface AgentNotificationsHandler {
      * @param throwable A possible exception that was thrown and caused the method to finish
      */
     void methodFinished(String classAndMethodNames, long deltaInNS, Object[] args, Throwable throwable);
+
+    void exceptionThrown(Exception e);
 }

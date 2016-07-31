@@ -43,17 +43,13 @@ public final class CodeInjector implements ClassFileTransformer {
     private JmxConnectorLoader jmxConnectorLoader;
 
     /**
-     * The constructor will set all the data needed for the transformation and then
-     * will register itself as a {@link ClassFileTransformer} that will be called to manipulate the byte code
+     * The constructor will set all the data needed for the transformation
      *
-     * @param inst             The instrumentation instance that we use to register the CodeInjector
-     * @param agentJarLocation The location of the agent jar
+     * @param agentConfiguration  The configuration
      */
-    public CodeInjector(Instrumentation inst, String agentJarLocation) {
+    public CodeInjector(AgentConfiguration agentConfiguration) {
         try {
-            loadConfiguration(agentJarLocation);
-
-            inst.addTransformer(this);
+            loadConfiguration(agentConfiguration);
 
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is up");
         } catch (Throwable throwable) {
@@ -95,10 +91,9 @@ public final class CodeInjector implements ClassFileTransformer {
     /**
      * The method will try to load the configuration file for the Agent. The file is optional but
      * is assumed to be located 'near' the agent jar. Failing to put the file there will cause the file not to be loaded
-     * @param agentJarLocation The agent jar location
+     * @param agentConfiguration The configuration
      */
-    private void loadConfiguration(String agentJarLocation) {
-        AgentConfiguration agentConfiguration = new AgentConfigurationBuilderFactory().createDefaultBuilder().parseConfigurationFile(agentJarLocation);
+    private void loadConfiguration(AgentConfiguration agentConfiguration) {
         classNamesProvider.setConfiguration(agentConfiguration);
         ImplementationsCoordinator.INSTANCE.setConfigurationData(agentConfiguration);
 
