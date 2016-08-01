@@ -81,16 +81,13 @@ public final class WebRequestTrackingFilter implements Filter {
             chain.doFilter(req, response);
             invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
         } catch (ServletException se) {
-            onException(se);
-            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
+            onException(se, req, response,isRequestProcessedSuccessfully);
             throw se;
         } catch (IOException ioe) {
-            onException(ioe);
-            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
+            onException(ioe, req, response, isRequestProcessedSuccessfully);
             throw ioe;
         } catch (RuntimeException re) {
-            onException(re);
-            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
+            onException(re, req, response, isRequestProcessedSuccessfully);
             throw re;
         } finally {
             cleanup();
@@ -108,7 +105,7 @@ public final class WebRequestTrackingFilter implements Filter {
         }
     }
 
-    private void onException(Exception e) {
+    private void onException(Exception e, ServletRequest req, ServletResponse res, boolean isRequestProcessedSuccessfully) {
         try {
             InternalLogger.INSTANCE.trace("Unhandled application exception: %s", e.getMessage());
             if (telemetryClient != null) {
@@ -116,6 +113,7 @@ public final class WebRequestTrackingFilter implements Filter {
             }
         } catch (Throwable t) {
         }
+        invokeSafeOnEndRequest(req, res, isRequestProcessedSuccessfully);
     }
 
     /**
