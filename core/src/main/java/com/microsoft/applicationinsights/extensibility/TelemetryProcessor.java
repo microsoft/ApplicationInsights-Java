@@ -31,15 +31,17 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  *
  * To enable this processor you need to add it in the ApplicationInsights.xml like this:
  *
- <TelemetryProcessors>
-
-    <CustomProcessors>
-        <Processor type="full.path.to.Filter">
-            <Add name="Property" value="stringValue"/>
-         </Processor>
-    </CustomProcessors>
-
- </TelemetryProcessors>
+ * <pre>
+ * {@code
+ *  <TelemetryProcessors>
+ *      <CustomProcessors>
+ *          <Processor type="full.path.to.Filter">
+ *              <Add name="Property" value="stringValue"/>
+ *          </Processor>
+ *      </CustomProcessors>
+ *  </TelemetryProcessors>
+ *  }
+ *</pre>
  *
  * Note that the class defines a property named 'Property' which is configured too.
  * Every property that you wish to configure needs to have a 'setX' public method like 'setProperty' in this example
