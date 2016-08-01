@@ -49,12 +49,12 @@ public final class RuntimeExceptionProvider {
             MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
                 @Override
                 public MethodVisitor create(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor, ClassToMethodTransformationData additionalData) {
-                    DefaultMethodVisitor visitor = new DefaultMethodVisitor(decision, access, desc, owner, methodName, methodVisitor, additionalData);
-                    visitor.setRegularMethod(false);
+                    ExceptionMethodVisitor visitor = new ExceptionMethodVisitor(
+                            true, access, desc, owner, methodName, methodVisitor);
                     return visitor;
                 }
             };
-            data.addMethod("<init>", "", false, false, methodVisitorFactory);
+            data.addMethod("<init>", "", false, true, methodVisitorFactory);
 
             classesToInstrument.put(RUNTIME_EXCEPTION_CLASS_NAME, data);
         } catch (Throwable t) {

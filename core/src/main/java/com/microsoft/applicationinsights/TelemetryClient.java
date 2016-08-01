@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
@@ -249,6 +250,8 @@ public class TelemetryClient {
      * @param metrics Measurements associated with this exception event.
      */
     public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
+        ArrayList<String> arrayList = null;
+        arrayList.add("a");
         if (isDisabled()) {
             return;
         }

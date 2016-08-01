@@ -181,7 +181,30 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
     @Override
     public void exceptionThrown(Exception e) {
-        e.printStackTrace();
+        ThreadData localData = threadDataThreadLocal.get();
+        MethodData methodData = null;
+        try {
+            if (localData.methods != null && !localData.methods.isEmpty()) {
+                for (MethodData m : localData.methods) {
+                    if ("exceptionThrown".equals(m.name)) {
+                        return;
+                    }
+                }
+            }
+
+            methodData = new MethodData();
+            methodData.interval = 0;
+            methodData.type = InstrumentedClassType.OTHER;
+            methodData.arguments = null;
+            methodData.name = "exceptionThrown";
+            localData.methods.addFirst(methodData);
+
+            telemetryClient.trackException(e);
+        } catch (Throwable t) {
+        }
+        if (methodData != null) {
+            localData.methods.remove(methodData);
+        }
     }
 
     private void startSqlMethod(Statement statement, String sqlStatement, Object[] additionalArgs) {
