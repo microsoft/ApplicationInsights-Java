@@ -73,36 +73,33 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse)res);
-        boolean isRequestProcessedSuccessfully = true;
-
         setKeyOnTLS(key);
 
-        if (isInitialized) {
-            isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
-        }
+        boolean isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
 
         try {
             chain.doFilter(req, response);
+            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
         } catch (ServletException se) {
             onException(se);
+            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
             throw se;
         } catch (IOException ioe) {
             onException(ioe);
+            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
             throw ioe;
         } catch (RuntimeException re) {
             onException(re);
+            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
             throw re;
         } finally {
             cleanup();
-        }
-
-        if (isInitialized && isRequestProcessedSuccessfully) {
-            invokeSafeOnEndRequest(req, response);
         }
     }
 
     private void cleanup() {
         try {
+            ThreadContext.remove();
             setKeyOnTLS(null);
             for (ThreadLocalCleaner cleaner : cleaners) {
                 cleaner.clean();
@@ -161,6 +158,9 @@ public final class WebRequestTrackingFilter implements Filter {
     // region Private
 
     private boolean invokeSafeOnBeginRequest(ServletRequest req, ServletResponse res) {
+        if (!isInitialized) {
+            return false;
+        }
         boolean success = true;
 
         try {
@@ -178,13 +178,11 @@ public final class WebRequestTrackingFilter implements Filter {
         return success;
     }
 
-    private void invokeSafeOnEndRequest(ServletRequest req, ServletResponse res) {
+    private void invokeSafeOnEndRequest(ServletRequest req, ServletResponse res, boolean inProgress) {
         try {
-            webModulesContainer.invokeOnEndRequest(req, res);
-
-            // We must free TLS before the threads finishes to process the request. Removing this line can result in
-            // a memory leak.
-            ThreadContext.remove();
+            if (isInitialized && inProgress) {
+                webModulesContainer.invokeOnEndRequest(req, res);
+            }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
                     "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s", e.getMessage());
