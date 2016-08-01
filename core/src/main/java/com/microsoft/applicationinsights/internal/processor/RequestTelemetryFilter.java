@@ -59,7 +59,7 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
     private long minimumDurationInMS = 0;
     private boolean hasBlocked;
     private final Set<String> exactBadResponseCodes = new HashSet<String>();
-    private final List<FromTo> fromTos = new ArrayList<FromTo>();
+    private final List<FromTo> ignoredResponseCodeRange = new ArrayList<FromTo>();
 
     public RequestTelemetryFilter() {
     }
@@ -76,14 +76,14 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
 
         if (telemetry instanceof RequestTelemetry) {
             RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
-            String requestRespohseCode = requestTelemetry.getResponseCode();
+            String responseCode = requestTelemetry.getResponseCode();
 
             if (exactBadResponseCodes.contains(requestTelemetry.getResponseCode())) {
                 return false;
             }
 
-            int asInt = Integer.valueOf(requestRespohseCode);
-            for (FromTo fromTo : fromTos) {
+            int asInt = Integer.valueOf(responseCode);
+            for (FromTo fromTo : ignoredResponseCodeRange) {
                 if (fromTo.from <= asInt && fromTo.to >= asInt) {
                     return false;
                 }
@@ -137,9 +137,9 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                     }
                     int f = Integer.valueOf(fromTo.get(0));
                     int t = Integer.valueOf(fromTo.get(1));
-                    fromTos.add(new FromTo(f, t));
+                    ignoredResponseCodeRange.add(new FromTo(f, t));
                 }
-                hasBlocked = !exactBadResponseCodes.isEmpty() || !fromTos.isEmpty();
+                hasBlocked = !exactBadResponseCodes.isEmpty() || !ignoredResponseCodeRange.isEmpty();
             }
             InternalLogger.INSTANCE.trace(String.format("ResponseCodeFilter: successfully set non needed response codes: %s", notNeededResponseCodes));
         } catch (Throwable t) {

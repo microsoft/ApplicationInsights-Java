@@ -192,7 +192,7 @@ public enum TelemetryConfigurationFactory {
                 for (String processorsBuiltInName : processorsBuiltInNames) {
                     builtInMap.put(processorsBuiltInName.substring(processorsBuiltInName.lastIndexOf(".") + 1), processorsBuiltInName);
                 }
-                ArrayList<TelemetryProcessorXmlElement> legal = new ArrayList<TelemetryProcessorXmlElement>();
+                ArrayList<TelemetryProcessorXmlElement> validProcessors = new ArrayList<TelemetryProcessorXmlElement>();
                 for (TelemetryProcessorXmlElement element : b) {
                     String fullTypeName = builtInMap.get(element.getType());
                     if (StringUtils.isNullOrEmpty(fullTypeName)) {
@@ -200,9 +200,9 @@ public enum TelemetryConfigurationFactory {
                         continue;
                     }
                     element.setType(fullTypeName);
-                    legal.add(element);
+                    validProcessors.add(element);
                 }
-                loadProcessorComponents(TelemetryProcessor.class, processors, legal);
+                loadProcessorComponents(TelemetryProcessor.class, processors, validProcessors);
             }
             ArrayList<TelemetryProcessorXmlElement> customs = configurationProcessors.getCustomTelemetryProcessors();
             loadProcessorComponents(TelemetryProcessor.class, processors, customs);

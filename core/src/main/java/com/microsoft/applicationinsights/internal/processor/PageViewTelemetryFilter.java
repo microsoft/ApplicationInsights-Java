@@ -36,11 +36,11 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
  * The class can filter out PageViewTelemetries that
- *   have a duration which is less than a predefined value
- *   have URLs that has parts that are not needed, based on configuration
- *   have unneeded page names that were predefined in configuration
+ * have a duration which is less than a predefined value
+ * have URLs that has parts that are not needed, i.e. telemetries that will not be sent, based on configuration
+ * have unneeded page names i.e. telemetries that will not be sent, that were predefined in configuration
  *
- *  Illegal value will prevent from the filter from being used.
+ * Invalid values would prevent the filter from being used.
  *
  * Created by gupele on 7/26/2016.
  */
