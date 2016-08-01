@@ -26,6 +26,7 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
@@ -370,13 +371,7 @@ public class TelemetryClient {
             InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.getMessage());
         }
 
-        for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
-            try {
-                initializer.initialize(telemetry);
-            } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed during telemetry initialization class '%s', exception: %s", initializer.getClass().getName(), e.getMessage());
-            }
-        }
+        activateInitializers(telemetry);
 
         if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey())) {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
@@ -388,11 +383,39 @@ public class TelemetryClient {
             InternalLogger.INSTANCE.error("Exception while sanitizing telemetry: '%s'",t.getMessage());
         }
 
+        if (!activateProcessors(telemetry)) {
+            return;
+        }
+
         try {
             getChannel().send(telemetry);
         } catch (Throwable t) {
             InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.getMessage());
         }
+    }
+
+    private void activateInitializers(Telemetry telemetry) {
+        for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
+            try {
+                initializer.initialize(telemetry);
+            } catch (Throwable e) {
+                InternalLogger.INSTANCE.error("Failed during telemetry initialization class '%s', exception: %s", initializer.getClass().getName(), e.getMessage());
+            }
+        }
+    }
+
+    private boolean activateProcessors(Telemetry telemetry) {
+        for (TelemetryProcessor processor : configuration.getTelemetryProcessors()) {
+            try {
+                if (!processor.process(telemetry)) {
+                    return false;
+                }
+            } catch (Throwable t) {
+                InternalLogger.INSTANCE.error("Exception while processing telemetry: '%s'",t.getMessage());
+            }
+        }
+
+        return true;
     }
 
     /**

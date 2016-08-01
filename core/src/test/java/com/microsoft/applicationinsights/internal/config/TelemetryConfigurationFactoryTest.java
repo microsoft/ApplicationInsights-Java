@@ -157,6 +157,7 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
         assertEquals(mockConfiguration.getContextInitializers().size(), 2);
         assertEquals(mockConfiguration.getTelemetryInitializers().size(), 1);
+        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
     }
 
@@ -198,6 +199,7 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
         assertEquals(mockConfiguration.getContextInitializers().size(), 3);
         assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
+        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
     }
 
@@ -255,6 +257,7 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
         assertEquals(mockConfiguration.getContextInitializers().size(), 2);
         assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
+        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
     }
 

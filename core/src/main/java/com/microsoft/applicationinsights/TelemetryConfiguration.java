@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
@@ -53,6 +54,7 @@ public final class TelemetryConfiguration {
     private final ArrayList<ContextInitializer> contextInitializers = new ArrayList<ContextInitializer>();
     private final ArrayList<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
     private final ArrayList<TelemetryModule> telemetryModules = new ArrayList<TelemetryModule>();
+    private final ArrayList<TelemetryProcessor> telemetryProcessors = new ArrayList<TelemetryProcessor>();
 
     private TelemetryChannel channel;
 
@@ -156,6 +158,10 @@ public final class TelemetryConfiguration {
 
     public List<TelemetryModule> getTelemetryModules() {
         return telemetryModules;
+    }
+
+    public List<TelemetryProcessor> getTelemetryProcessors() {
+        return telemetryProcessors;
     }
 
     /**

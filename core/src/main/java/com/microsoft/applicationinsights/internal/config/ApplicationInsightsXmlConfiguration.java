@@ -35,6 +35,7 @@ public class ApplicationInsightsXmlConfiguration {
     private boolean disableTelemetry = false;
 
     private TelemetryInitializersXmlElement telemetryInitializers;
+    private TelemetryProcessorsXmlElement telemetryProcessors;
     private ContextInitializersXmlElement contextInitializers;
     private ChannelXmlElement channel = new ChannelXmlElement();
     private TelemetryModulesXmlElement modules;
@@ -72,6 +73,15 @@ public class ApplicationInsightsXmlConfiguration {
 
     public ContextInitializersXmlElement getContextInitializers() {
         return contextInitializers;
+    }
+
+    @XmlElement(name="TelemetryProcessors")
+    public void setTelemetryProcessors(TelemetryProcessorsXmlElement telemetryProcessors) {
+        this.telemetryProcessors = telemetryProcessors;
+    }
+
+    public TelemetryProcessorsXmlElement getTelemetryProcessors() {
+        return telemetryProcessors;
     }
 
     @XmlElement(name="ContextInitializers")
