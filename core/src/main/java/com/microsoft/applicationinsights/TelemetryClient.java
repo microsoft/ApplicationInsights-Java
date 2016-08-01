@@ -250,8 +250,6 @@ public class TelemetryClient {
      * @param metrics Measurements associated with this exception event.
      */
     public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
-        ArrayList<String> arrayList = null;
-        arrayList.add("a");
         if (isDisabled()) {
             return;
         }
