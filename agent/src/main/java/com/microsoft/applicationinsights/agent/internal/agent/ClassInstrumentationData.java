@@ -62,6 +62,7 @@ public final class ClassInstrumentationData {
     // Methods that will be instrumented
     private final MethodInstrumentationInfo methodInstrumentationInfo;
 
+    private long thresholdInMS;
     private boolean reportExecutionTime;
     private boolean reportCaughtExceptions;
 
@@ -82,11 +83,11 @@ public final class ClassInstrumentationData {
         }
     }
 
-    public boolean addMethod(String methodName, String signature, boolean reportCaughtExceptions, boolean reportExecutionTime) {
-        return addMethod(methodName, signature, reportCaughtExceptions, reportExecutionTime, null);
+    public boolean addMethod(String methodName, String signature, boolean reportCaughtExceptions, boolean reportExecutionTime, long thresholdInMS) {
+        return addMethod(methodName, signature, reportCaughtExceptions, reportExecutionTime, thresholdInMS, null);
     }
 
-    public boolean addMethod(String methodName, String signature, boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory) {
+    public boolean addMethod(String methodName, String signature, boolean reportCaughtExceptions, boolean reportExecutionTime, long thresholdInMS, MethodVisitorFactory methodVisitorFactory) {
         if (StringUtils.isNullOrEmpty(methodName)) {
             return false;
         }
@@ -95,6 +96,7 @@ public final class ClassInstrumentationData {
                 new MethodInstrumentationRequestBuilder()
                 .withMethodName(methodName)
                 .withMethodSignature(signature)
+                .withThresholdInMS(thresholdInMS)
                 .withReportCaughtExceptions(reportCaughtExceptions)
                 .withReportExecutionTime(reportExecutionTime).create();
         methodInstrumentationInfo.addMethod(request, methodVisitorFactory == null ? s_defaultMethodVisitorFactory : methodVisitorFactory);
@@ -146,6 +148,10 @@ public final class ClassInstrumentationData {
         return reportCaughtExceptions;
     }
 
+    public long getThresholdInMS() {
+        return thresholdInMS;
+    }
+
     public ClassVisitor getDefaultClassInstrumentor(ClassWriter classWriter) {
         return classVisitorFactory.create(this, classWriter);
     }
@@ -168,6 +174,11 @@ public final class ClassInstrumentationData {
         }
 
         return decision.getMethodVisitorFactory().create(decision, access, methodSignature, getClassName(), methodName, originalMV, additionalData);
+    }
+
+    public ClassInstrumentationData setThresholdInMS(long thresholdInMS) {
+        this.thresholdInMS = thresholdInMS;
+        return this;
     }
 }
 

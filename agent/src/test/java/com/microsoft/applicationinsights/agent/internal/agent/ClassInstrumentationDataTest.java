@@ -50,7 +50,7 @@ public final class ClassInstrumentationDataTest {
         ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
                 .setReportCaughtExceptions(false)
                 .setReportExecutionTime(false);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
 
 //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 
@@ -68,8 +68,8 @@ public final class ClassInstrumentationDataTest {
         ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
                 .setReportCaughtExceptions(false)
                 .setReportExecutionTime(false);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
 
 //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 //
@@ -89,9 +89,9 @@ public final class ClassInstrumentationDataTest {
         ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
                 .setReportCaughtExceptions(true)
                 .setReportExecutionTime(false);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true);
-        test.addMethod(MOCK_METHOD, null, false, true);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
+        test.addMethod(MOCK_METHOD, null, false, true, 0);
 
 //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 //

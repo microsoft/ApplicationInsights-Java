@@ -33,7 +33,7 @@ final class PreparedStatementCtorMethodVisitor extends DefaultMethodVisitor {
     private final PreparedStatementMetaData metaData;
 
     public PreparedStatementCtorMethodVisitor(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor, ClassToMethodTransformationData additionalData) {
-        super(false, false, access, desc, owner, methodName, methodVisitor, additionalData);
+        super(false, false, 0, access, desc, owner, methodName, methodVisitor, additionalData);
         this.metaData = (PreparedStatementMetaData)additionalData;
     }
 

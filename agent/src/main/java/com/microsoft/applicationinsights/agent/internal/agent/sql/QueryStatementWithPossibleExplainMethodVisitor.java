@@ -39,7 +39,7 @@ public class QueryStatementWithPossibleExplainMethodVisitor extends DefaultMetho
                                                           String owner,
                                                           String methodName,
                                                           MethodVisitor methodVisitor) {
-        super(false, true, access, desc, owner, methodName, methodVisitor, null);
+        super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
     }
 
     @Override

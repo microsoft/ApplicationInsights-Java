@@ -57,7 +57,7 @@ public final class MethodInstrumentationInfo {
             }
         }
 
-        public void add(String requestedMethodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory) {
+        public void add(String requestedMethodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime, long thresholdInMS, MethodVisitorFactory methodVisitorFactory) {
             String methodSignature = requestedMethodSignature;
             if (StringUtils.isNullOrEmpty(methodSignature)) {
                 methodSignature = ANY_SIGNATURE_MARKER;
@@ -67,6 +67,7 @@ public final class MethodInstrumentationInfo {
                     new MethodInstrumentationDecisionBuilder()
                             .withReportCaughtExceptions(reportCaughtExceptions)
                             .withReportExecutionTime(reportExecutionTime)
+                            .withThresholdInMS(thresholdInMS)
                             .withMethodVisitorFactory(methodVisitorFactory)
                             .create();
             methodsInstrumentationData.put(methodSignature, decision);
@@ -97,6 +98,7 @@ public final class MethodInstrumentationInfo {
         info.add(methodInstrumentationRequest.getMethodSignature(),
                 methodInstrumentationRequest.isReportCaughtExceptions(),
                 methodInstrumentationRequest.isReportExecutionTime(),
+                methodInstrumentationRequest.getThresholdInMS(),
                 methodVisitorFactory);
     }
 

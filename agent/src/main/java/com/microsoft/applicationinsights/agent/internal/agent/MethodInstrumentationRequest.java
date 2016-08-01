@@ -39,8 +39,9 @@ final class MethodInstrumentationRequest {
     private final String methodSignature;
     private final boolean reportCaughtExceptions;
     private final boolean reportExecutionTime;
+    private final long thresholdInMS;
 
-    public MethodInstrumentationRequest(String methodName, String methodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime) {
+    public MethodInstrumentationRequest(String methodName, String methodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime, long thresholdInMS) {
         if (StringUtils.isNullOrEmpty(methodName)) {
             throw new IllegalArgumentException("methodName must be non-null non-empty value.");
         }
@@ -49,10 +50,11 @@ final class MethodInstrumentationRequest {
         this.reportExecutionTime = reportExecutionTime;
         this.methodName = methodName;
         this.methodSignature = methodSignature;
+        this.thresholdInMS = thresholdInMS;
     }
 
     public MethodInstrumentationRequest(String methodName, boolean reportCaughtExceptions, boolean reportExecutionTime) {
-        this(methodName, null, reportCaughtExceptions, reportExecutionTime);
+        this(methodName, null, reportCaughtExceptions, reportExecutionTime, 0);
     }
 
     public String getMethodName() {
@@ -69,5 +71,9 @@ final class MethodInstrumentationRequest {
 
     public boolean isReportExecutionTime() {
         return reportExecutionTime;
+    }
+
+    public long getThresholdInMS() {
+        return thresholdInMS;
     }
 }

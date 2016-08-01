@@ -244,10 +244,17 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             reportCaughtExceptions = Boolean.valueOf(valueStr);
         }
 
+        long thresholdInMS = 0;
+        valueStr = classElement.getAttribute(THRESHOLD_ATTRIBUTE);
+        if (!StringUtils.isNullOrEmpty(valueStr)) {
+            thresholdInMS = getLongAttribute(classElement, className, THRESHOLD_ATTRIBUTE, 0);
+        }
+
         if (data == null) {
             data = new ClassInstrumentationData(className, type)
                     .setReportExecutionTime(reportExecutionTime)
-                    .setReportCaughtExceptions(reportCaughtExceptions);
+                    .setReportCaughtExceptions(reportCaughtExceptions)
+                    .setThresholdInMS(thresholdInMS);
             classesToInstrument.put(className, data);
         }
 
@@ -323,7 +330,17 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 continue;
             }
 
-            classData.addMethod(methodName, methodElement.getAttribute(SIGNATURE_ATTRIBUTE), reportCaughtExceptions, reportExecutionTime);
+            long thresholdInMS = classData.getThresholdInMS();
+            valueStr = methodElement.getAttribute(THRESHOLD_ATTRIBUTE);
+            if (!StringUtils.isNullOrEmpty(valueStr)) {
+                try {
+                    thresholdInMS = Long.valueOf(valueStr);
+                } catch (Throwable t) {
+                    InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", THRESHOLD_ATTRIBUTE, methodElement.getTagName());
+                }
+            }
+
+            classData.addMethod(methodName, methodElement.getAttribute(SIGNATURE_ATTRIBUTE), reportCaughtExceptions, reportExecutionTime, thresholdInMS);
         }
     }
 

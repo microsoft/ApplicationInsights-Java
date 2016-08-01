@@ -103,8 +103,9 @@ public interface AgentNotificationsHandler {
     /**
      * Marks a method finish without exception
      * @param classAndMethodNames The name of the class and method separated by '.'
+     * @param thresholdInMS The threshold in MS that this method should get to in order to be sent
      */
-    void methodFinished(String classAndMethodNames);
+    void methodFinished(String classAndMethodNames, long thresholdInMS);
 
     /**
      * An instrumented method might call this method to signal end of method

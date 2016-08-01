@@ -37,7 +37,7 @@ final class PreparedStatementSetMethod extends DefaultMethodVisitor {
     private final String methodName;
 
     public PreparedStatementSetMethod(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor, ClassToMethodTransformationData additionalData) {
-        super(false, false, access, desc, owner, methodName, methodVisitor, additionalData);
+        super(false, false, 0, access, desc, owner, methodName, methodVisitor, additionalData);
         this.metaData = (PreparedStatementMetaData)additionalData;
         this.methodName = methodName;
     }

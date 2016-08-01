@@ -29,6 +29,7 @@ final class MethodInstrumentationRequestBuilder {
     public String methodSignature;
     public boolean reportCaughtExceptions;
     public boolean reportExecutionTime;
+    public long thresholdInMS;
 
     public MethodInstrumentationRequestBuilder withMethodName(String methodName) {
         this.methodName = methodName;
@@ -50,7 +51,12 @@ final class MethodInstrumentationRequestBuilder {
         return this;
     }
 
+    public MethodInstrumentationRequestBuilder withThresholdInMS(long thresholdInMS) {
+        this.thresholdInMS = thresholdInMS;
+        return this;
+    }
+
     public MethodInstrumentationRequest create() {
-        return new MethodInstrumentationRequest(methodName, methodSignature, reportCaughtExceptions, reportExecutionTime);
+        return new MethodInstrumentationRequest(methodName, methodSignature, reportCaughtExceptions, reportExecutionTime, thresholdInMS);
     }
 }

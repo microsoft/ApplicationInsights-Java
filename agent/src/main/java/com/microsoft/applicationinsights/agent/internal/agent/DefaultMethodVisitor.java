@@ -48,16 +48,18 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
     private final static String START_DETECT_METHOD_SIGNATURE = "(Ljava/lang/String;)V";
 
     private final static String FINISH_DETECT_METHOD_NAME = "methodFinished";
-    private final static String FINISH_METHOD_DEFAULT_SIGNATURE = "(Ljava/lang/String;)V";
+    private final static String FINISH_METHOD_DEFAULT_SIGNATURE = "(Ljava/lang/String;J)V";
     private final static String FINISH_METHOD_EXCEPTION_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
 
     private final boolean reportCaughtExceptions;
+    private final long thresholdInMS;
     private HashSet<Label> labels = null;
 
     protected final String owner;
 
     public DefaultMethodVisitor(boolean reportCaughtExceptions,
                                 boolean reportExecutionTime,
+                                long thresholdInMS,
                                 int access,
                                 String desc,
                                 String owner,
@@ -66,6 +68,7 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
                                 ClassToMethodTransformationData additionalData) {
         super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
         this.reportCaughtExceptions = reportCaughtExceptions;
+        this.thresholdInMS = thresholdInMS;
         this.owner = owner;
     }
 
@@ -76,7 +79,7 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
                                 String methodName,
                                 MethodVisitor methodVisitor,
                                 ClassToMethodTransformationData additionalData) {
-        this(decision.isReportCaughtExceptions(), decision.isReportExecutionTime(), access, desc, owner, methodName, methodVisitor, additionalData);
+        this(decision.isReportCaughtExceptions(), decision.isReportExecutionTime(), decision.getThresholdInMS(), access, desc, owner, methodName, methodVisitor, additionalData);
     }
 
     @Override
@@ -92,7 +95,7 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
             case EXIT_WITH_RETURN_VALUE:
             case EXIT_VOID:
-                args = new Object[] { getMethodName() };
+                args = new Object[] { getMethodName(), thresholdInMS };
                 break;
 
             default:
