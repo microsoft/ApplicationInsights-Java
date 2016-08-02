@@ -47,7 +47,7 @@ public final class AgentImplementation {
             appendJarsToBootstrapClassLoader(inst);
             loadJarsToBootstrapClassLoader(inst);
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
             System.exit(-1);
         }
     }
@@ -87,7 +87,7 @@ public final class AgentImplementation {
 
         inst.appendToBootstrapClassLoaderSearch(agentJar);
 
-        InternalAgentLogger.INSTANCE.trace("Successfully loaded Agent jar");
+        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Successfully loaded Agent jar");
     }
 
     public static String getAgentJarLocation() throws UnsupportedEncodingException {
@@ -104,7 +104,7 @@ public final class AgentImplementation {
                 }
             }
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.error("Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
         }
 
         String path = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
