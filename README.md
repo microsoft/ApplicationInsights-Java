@@ -64,7 +64,13 @@ Compare the old and new ApplicationInsights.xml. Many of the changes you see are
 
 ##Release Notes
 
-
+#### Version 1.0.5
+- [Added proxy support](https://github.com/Microsoft/ApplicationInsights-Java/pull/290).
+- [Treat HTTP response codes below 400 (and 401) as success](https://github.com/Microsoft/ApplicationInsights-Java/pull/295).
+- [Fix agent load problem on Linux](https://github.com/Microsoft/ApplicationInsights-Java/pull/287).
+- [Improve cleanup and exception handling in WebRequestTrackingFilter](https://github.com/Microsoft/ApplicationInsights-Java/pull/294).
+- [Propagate log context properties in custom properties](https://github.com/Microsoft/ApplicationInsights-Java/pull/288).
+- Some other miscellaneous fixes and improvements.
 
 #### Version 1.0.3
 - Align to a new BOND schema used by the Application Insights data collection endpoints.
