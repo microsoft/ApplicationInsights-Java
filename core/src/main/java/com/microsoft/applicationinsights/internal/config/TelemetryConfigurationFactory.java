@@ -121,6 +121,7 @@ public enum TelemetryConfigurationFactory {
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         setInstrumentationKey(userConfiguration, configuration);
         configuration.setChannel(new InProcessTelemetryChannel());
+        setContextInitializers(null, configuration);
     }
 
     private void setInternalLogger(SDKLoggerXmlElement sdkLogger, TelemetryConfiguration configuration) {
