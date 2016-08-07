@@ -49,7 +49,7 @@ public final class AgentImplementation {
         try {
             agentJarLocation = getAgentJarLocation();
             appendJarsToBootstrapClassLoader(inst);
-            loadJarsToBootstrapClassLoader(inst);
+            initializeCodeInjector(inst);
         } catch (Throwable throwable) {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load the bootstrap class loader: " + throwable.getMessage());
             System.exit(-1);
@@ -57,7 +57,7 @@ public final class AgentImplementation {
     }
 
     @SuppressWarnings("unchecked")
-    private static void loadJarsToBootstrapClassLoader(Instrumentation inst) throws Throwable {
+    private static void initializeCodeInjector(Instrumentation inst) throws Throwable {
         ClassLoader bcl = AgentImplementation.class.getClassLoader().getParent();
         Class<CodeInjector> cic = (Class<CodeInjector>) bcl.loadClass("com.microsoft.applicationinsights.agent.internal.agent.CodeInjector");
         if (cic == null) {
