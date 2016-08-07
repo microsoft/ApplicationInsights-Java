@@ -52,6 +52,8 @@ import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
  */
 final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
+    private final static String EXCEPTION_THROWN_ID = "__java_sdk__exceptionThrown__";
+
     /**
      * The class holds the data gathered on a method
      */
@@ -186,7 +188,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         try {
             if (localData.methods != null && !localData.methods.isEmpty()) {
                 for (MethodData m : localData.methods) {
-                    if ("exceptionThrown".equals(m.name)) {
+                    if (EXCEPTION_THROWN_ID.equals(m.name)) {
                         return;
                     }
                 }
@@ -196,7 +198,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             methodData.interval = 0;
             methodData.type = InstrumentedClassType.OTHER;
             methodData.arguments = null;
-            methodData.name = "exceptionThrown";
+            methodData.name = EXCEPTION_THROWN_ID;
             localData.methods.addFirst(methodData);
 
             telemetryClient.trackException(e);

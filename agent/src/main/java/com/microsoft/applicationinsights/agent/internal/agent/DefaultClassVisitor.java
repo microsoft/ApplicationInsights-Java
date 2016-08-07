@@ -52,7 +52,7 @@ public class DefaultClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
 
-        if (isInterface || originalMV == null || ByteCodeUtils.isPrivate(access)) {
+        if (isInterface || originalMV == null || ByteCodeUtils.isStaticInitializer(name) || ByteCodeUtils.isPrivate(access)) {
             return originalMV;
         }
 

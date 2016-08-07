@@ -48,7 +48,11 @@ public final class ByteCodeUtils {
     }
 
     public static boolean isAnyConstructor(String methodName) {
-        return BYTE_CODE_CTOR_NAME.equals(methodName) || BYTE_CODE_STATIC_CTOR_NAME.startsWith(methodName);
+        return isConstructor(methodName) || isStaticInitializer(methodName);
+    }
+
+    public static boolean isStaticInitializer(String methodName) {
+        return BYTE_CODE_STATIC_CTOR_NAME.startsWith(methodName);
     }
 
     public static boolean isConstructor(String methodName) {
