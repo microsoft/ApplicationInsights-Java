@@ -70,7 +70,11 @@ Compare the old and new ApplicationInsights.xml. Many of the changes you see are
 - [Fix agent load problem on Linux](https://github.com/Microsoft/ApplicationInsights-Java/pull/287).
 - [Improve cleanup and exception handling in WebRequestTrackingFilter](https://github.com/Microsoft/ApplicationInsights-Java/pull/294).
 - [Propagate log context properties in custom properties](https://github.com/Microsoft/ApplicationInsights-Java/pull/288).
+- [Ability to filter out certain telemetry from being sent](https://github.com/Microsoft/ApplicationInsights-Java/pull/296).
 - Some other miscellaneous fixes and improvements.
+ 
+#### Version 1.0.4
+- Interim version replaced by 1.0.5 on August 2016
 
 #### Version 1.0.3
 - Align to a new BOND schema used by the Application Insights data collection endpoints.
