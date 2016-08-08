@@ -1,0 +1,102 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+package com.microsoft.applicationinsights.internal.perfcounter;
+
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmMemoryPerformanceCounter;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+
+/**
+ * Created by gupele on 8/8/2016.
+ */
+public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
+    private boolean isEnabled = true;
+    private HashSet<String> disabledJvmPCs;
+
+    @Override
+    public Collection<PerformanceCounter> getPerformanceCounters() {
+        ArrayList<PerformanceCounter> pcs = new ArrayList<PerformanceCounter>();
+        if (isEnabled) {
+            addDeadLockDetector(pcs);
+            addJvmMemoryPerformanceCounter(pcs);
+            addGCPerformanceCounter(pcs);
+        }
+        return pcs;
+    }
+
+    private void addDeadLockDetector(ArrayList<PerformanceCounter> pcs) {
+        try {
+            if (disabledJvmPCs.contains(DeadLockDetectorPerformanceCounter.NAME)) {
+                return;
+            }
+
+            DeadLockDetectorPerformanceCounter dlpc = new DeadLockDetectorPerformanceCounter();
+            if (!dlpc.isSupported()) {
+                return;
+            }
+
+            pcs.add(dlpc);
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create DeadLockDetector, exception: %s", t.getMessage());
+        }
+    }
+
+    private void addJvmMemoryPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
+        try {
+            if (disabledJvmPCs.contains(JvmMemoryPerformanceCounter.NAME)) {
+                return;
+            }
+
+            JvmMemoryPerformanceCounter mpc = new JvmMemoryPerformanceCounter();
+            pcs.add(mpc);
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create JvmMemoryPerformanceCounter, exception: %s", t.getMessage());
+        }
+    }
+
+    private void addGCPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
+        try {
+            if (disabledJvmPCs.contains(GCPerformanceCounter.NAME)) {
+                return;
+            }
+
+            GCPerformanceCounter mpc = new GCPerformanceCounter();
+            pcs.add(mpc);
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create GCPerformanceCounter, exception: %s", t.getMessage());
+        }
+    }
+
+    public void setIsEnabled(boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+    public void setDisabledJvmPCs(HashSet<String> disabledJvmPCs) {
+        this.disabledJvmPCs = disabledJvmPCs;
+    }
+
+}
