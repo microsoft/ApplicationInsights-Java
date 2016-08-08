@@ -57,7 +57,7 @@ After you upgrade, you'll need to merge back any customizations you made to Appl
 
 *Otherwise*
 
-* Download the latest version of [Azure Libraries for Java](http://dl.msopentech.com/lib/PackageForWindowsAzureLibrariesForJava.html) and replace the old ones. 
+* Download the latest version of [Application Insights Java SDK](https://azuredownloads.blob.core.windows.net/applicationinsights/sdk.html) and replace the old ones. 
  
 Compare the old and new ApplicationInsights.xml. Many of the changes you see are because we added and removed modules. Reinstate any customizations that you made.
 
