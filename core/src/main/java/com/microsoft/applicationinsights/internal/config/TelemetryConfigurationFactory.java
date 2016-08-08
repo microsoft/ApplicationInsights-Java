@@ -455,18 +455,26 @@ public enum TelemetryConfigurationFactory {
         }
 
         for (TelemetryProcessorXmlElement className : classNames) {
-            T initializer = null;
+            T processor = null;
 
-            initializer = createInstance(className.getType(), clazz);
-            for (ParamXmlElement param : className.getAdds()){
-                String methodName = "set" + param.getName();
-                try {
-                    if (activateMethod(initializer, methodName, param.getValue(), String.class)) {
-                        list.add(initializer);
+            processor = createInstance(className.getType(), clazz);
+            boolean settersOk = true;
+            if (className.getAdds() != null) {
+                for (ParamXmlElement param : className.getAdds()) {
+                    String methodName = "no-method-name-set";
+                    try {
+                        methodName = "set" + param.getName().substring(0, 1).toUpperCase() + param.getName().substring(1);
+                        activateMethod(processor, methodName, param.getValue(), String.class);
+                    } catch (Throwable t) {
+                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, className + ": failed to activate method " + methodName + ", exception: " + t.getMessage() + ", the class will not be used.");
+                        settersOk = false;
+                        break;
                     }
-                } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, className + ": failed to activate method " + methodName + ", exception: " + t.getMessage() + ", the class will not be used.");
                 }
+            }
+
+            if (settersOk) {
+                list.add(processor);
             }
         }
     }
