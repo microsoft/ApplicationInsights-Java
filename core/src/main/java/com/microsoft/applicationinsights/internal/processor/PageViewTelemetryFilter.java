@@ -110,9 +110,6 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
 
                 this.notNeededNames.add(ready);
             }
-            for (String v : notNeededAsList) {
-                System.out.println("filter " + v);
-            }
             InternalLogger.INSTANCE.trace(String.format("PageViewTelemetryFilter: set NotNeededNames: %s", notNeededNames));
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("PageViewTelemetryFilter: failed to parse NotNeededNames: %s", notNeededNames));
@@ -130,8 +127,8 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
                 }
 
                 this.notNeededUrls.add(ready);
-                InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: set " + notNeededUrls);
             }
+            InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: set " + notNeededUrls);
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "PageViewTelemetryFilter: failed to parse NotNeededUrls: " + notNeededUrls);
             throw t;

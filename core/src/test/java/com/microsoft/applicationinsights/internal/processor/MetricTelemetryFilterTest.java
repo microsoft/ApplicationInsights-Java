@@ -19,36 +19,39 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.config;
+package com.microsoft.applicationinsights.internal.processor;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
- * Created by gupele on 7/26/2016.
+ * Created by gupele on 8/7/2016.
  */
-@XmlRootElement(name="Processor")
-public class TelemetryProcessorXmlElement {
-    private String type;
-    private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();
-
-    public ArrayList<ParamXmlElement> getAdds() {
-        return adds;
+public class MetricTelemetryFilterTest {
+    @Test
+    public void testNonMetricTelemetry() throws Exception {
+        MetricTelemetryFilter tested = new MetricTelemetryFilter();
+        boolean result = tested.process(new PageViewTelemetry());
+        Assert.assertTrue(result);
     }
 
-    @XmlElement(name="Add")
-    public void setAdds(ArrayList<ParamXmlElement> adds) {
-        this.adds = adds;
+    @Test
+    public void testNeededTelemetry() throws Throwable {
+        MetricTelemetryFilter tested = new MetricTelemetryFilter();
+        tested.setNotNeeded("name");
+        boolean result = tested.process(new PageViewTelemetry("name111"));
+        Assert.assertTrue(result);
     }
 
-    @XmlAttribute
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type){
-        this.type = type;
+    @Test
+    public void testNotNeededTelemetry() throws Throwable {
+        MetricTelemetryFilter tested = new MetricTelemetryFilter();
+        tested.setNotNeeded("name");
+        boolean result = tested.process(new PageViewTelemetry("name"));
+        Assert.assertTrue(result);
     }
 }

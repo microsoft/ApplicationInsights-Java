@@ -28,10 +28,14 @@ import java.util.*;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
+import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
+import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
+import com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilter;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 
@@ -133,6 +137,95 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
         assertEquals(mockConfiguration.getContextInitializers().size(), 2);
         assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+    }
+
+    @Test
+    public void testTelemetryProcessors() {
+        AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, false);
+        ApplicationInsightsXmlConfiguration appConf = mockParser.build( null );
+        appConf.setInstrumentationKey(MOCK_IKEY);
+
+        TelemetryProcessorsXmlElement telemetryProcessorsXmlElement = new TelemetryProcessorsXmlElement();
+
+        TelemetryProcessorXmlElement builtIn = new TelemetryProcessorXmlElement();
+        builtIn.setType("SyntheticSourceFilter");
+        telemetryProcessorsXmlElement.getBuiltInTelemetryProcessors().add(builtIn);
+
+        builtIn = new TelemetryProcessorXmlElement();
+        builtIn.setType("RequestTelemetryFilter");
+        ParamXmlElement prop = new ParamXmlElement();
+        prop.setName("MinimumDurationInMS");
+        prop.setValue("100");
+        builtIn.getAdds().add(prop);
+
+        prop = new ParamXmlElement();
+        prop.setName("NotNeededResponseCodes");
+        prop.setValue("100-400,500");
+        builtIn.getAdds().add(prop);
+        telemetryProcessorsXmlElement.getBuiltInTelemetryProcessors().add(builtIn);
+
+        TelemetryProcessorXmlElement custom = new TelemetryProcessorXmlElement();
+
+        custom.setType("com.microsoft.applicationinsights.internal.config.TestProcessorThatThrowsOnSetter");
+        prop = new ParamXmlElement();
+        prop.setName("Property");
+        prop.setValue("value");
+        custom.getAdds().add(prop);
+        telemetryProcessorsXmlElement.getCustomTelemetryProcessors().add(custom);
+
+        custom = new TelemetryProcessorXmlElement();
+        custom.setType("com.microsoft.applicationinsights.internal.config.ValidProcessorsWithSetters");
+        prop = new ParamXmlElement();
+        prop.setName("PropertyA");
+        prop.setValue("valueA");
+        custom.getAdds().add(prop);
+
+        prop = new ParamXmlElement();
+        prop.setName("PropertyB");
+        prop.setValue("valudeA");
+        custom.getAdds().add(prop);
+        telemetryProcessorsXmlElement.getCustomTelemetryProcessors().add(custom);
+
+        custom = new TelemetryProcessorXmlElement();
+        custom.setType("com.microsoft.applicationinsights.internal.config.TestProcessorWithoutSetters");
+        telemetryProcessorsXmlElement.getCustomTelemetryProcessors().add(custom);
+
+        appConf.setTelemetryProcessors(telemetryProcessorsXmlElement);
+
+        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+
+        initializeWithFactory(mockParser, mockConfiguration);
+
+        assertEquals(mockConfiguration.isTrackingDisabled(), false);
+        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
+        assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
+        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+
+        assertEquals(mockConfiguration.getTelemetryProcessors().size(), 4);
+
+        int rtf = 1;
+        int sf = 1;
+        int cvf1 = 1;
+        int cvf2 = 1;
+        for (TelemetryProcessor processor : mockConfiguration.getTelemetryProcessors()) {
+            if (processor instanceof SyntheticSourceFilter) {
+                --sf;
+            }
+            else if (processor instanceof RequestTelemetryFilter) {
+                --rtf;
+            }
+            else if (processor instanceof ValidProcessorsWithSetters) {
+                --cvf1;
+            }
+            else if (processor instanceof TestProcessorWithoutSetters) {
+                --cvf2;
+            }
+        }
+        assertEquals(rtf, 0);
+        assertEquals(sf, 0);
+        assertEquals(cvf1, 0);
+        assertEquals(cvf2, 0);
     }
 
     @Test
