@@ -50,7 +50,7 @@ public final class DeviceInfoContextInitializer implements ContextInitializer
             device.setRoleInstance(hostname);
         }
         catch (UnknownHostException ex) {
-            System.out.println("Hostname can not be resolved");
+            // optional parameter. do nothing if unresolvable
         }
 
     }
