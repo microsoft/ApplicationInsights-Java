@@ -70,7 +70,7 @@ final class UnixTotalMemInfoParser {
     private boolean parseValue(UnixParsingState parsingData, String line, String part) {
         int index = line.indexOf(part);
         if (index != -1) {
-            line.trim();
+            line = line.trim();
             String[] strings = line.split(" ");
             parsingData.returnValue += Double.valueOf(strings[strings.length - 2]);
             --(parsingData.doneCounter);
