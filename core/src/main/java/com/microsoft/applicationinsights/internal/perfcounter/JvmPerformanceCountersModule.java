@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.internal.config.PerformanceCounterJvmSe
 import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
-import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmMemoryPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 
 /**
  * The class loads the relevant Jvm PCs
@@ -72,7 +72,7 @@ public final class JvmPerformanceCountersModule extends AbstractPerformanceCount
 
     private String[] JvmPCNames = {
             DeadLockDetectorPerformanceCounter.NAME,
-            JvmMemoryPerformanceCounter.NAME,
+            JvmHeapMemoryUsedPerformanceCounter.NAME,
             GCPerformanceCounter.NAME
     };
 

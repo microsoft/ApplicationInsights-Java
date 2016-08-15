@@ -21,16 +21,17 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
-import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
-import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmMemoryPerformanceCounter;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
+
 /**
+ * The class will create dedicated Jvm performance counters, unless disabled by user in the configuration file
+ *
  * Created by gupele on 8/8/2016.
  */
 public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
@@ -43,7 +44,8 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
         if (isEnabled) {
             addDeadLockDetector(pcs);
             addJvmMemoryPerformanceCounter(pcs);
-            addGCPerformanceCounter(pcs);
+        } else {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "JvmPerformanceCountersFactory is disabled");
         }
         return pcs;
     }
@@ -51,11 +53,13 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     private void addDeadLockDetector(ArrayList<PerformanceCounter> pcs) {
         try {
             if (disabledJvmPCs.contains(DeadLockDetectorPerformanceCounter.NAME)) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "DeadLockDetectorPerformanceCounter is disabled");
                 return;
             }
 
             DeadLockDetectorPerformanceCounter dlpc = new DeadLockDetectorPerformanceCounter();
             if (!dlpc.isSupported()) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "DeadLockDetectorPerformanceCounter is not supported");
                 return;
             }
 
@@ -67,27 +71,15 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
 
     private void addJvmMemoryPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
         try {
-            if (disabledJvmPCs.contains(JvmMemoryPerformanceCounter.NAME)) {
+            if (disabledJvmPCs.contains(JvmHeapMemoryUsedPerformanceCounter.NAME)) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "JvmHeapMemoryUsedPerformanceCounter is disabled");
                 return;
             }
 
-            JvmMemoryPerformanceCounter mpc = new JvmMemoryPerformanceCounter();
+            JvmHeapMemoryUsedPerformanceCounter mpc = new JvmHeapMemoryUsedPerformanceCounter();
             pcs.add(mpc);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create JvmMemoryPerformanceCounter, exception: %s", t.getMessage());
-        }
-    }
-
-    private void addGCPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
-        try {
-            if (disabledJvmPCs.contains(GCPerformanceCounter.NAME)) {
-                return;
-            }
-
-            GCPerformanceCounter mpc = new GCPerformanceCounter();
-            pcs.add(mpc);
-        } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create GCPerformanceCounter, exception: %s", t.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create JvmHeapMemoryUsedPerformanceCounter, exception: %s", t.getMessage());
         }
     }
 

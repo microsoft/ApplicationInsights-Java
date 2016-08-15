@@ -21,10 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter.jvm;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
@@ -33,11 +29,17 @@ import java.util.ArrayList;
 
 import static java.lang.Math.min;
 
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+
 /**
  * The class uses the JVM ThreadMXBean to detect threads dead locks
  * A metric with value 0 is sent when there are no blocked threads,
  * otherwise the number of detected blocked threads is sent with a
- * dimension that holds information like thread id and minimal stack traces
+ * dimension that holds information like thread id and minimal stack traces as trace telemetries
  *
  * Created by gupele on 8/7/2016.
  */
@@ -47,7 +49,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
     private final static String INDENT = "    ";
     private final static String SEPERATOR = " | ";
-    private final static String METRIC_NAME = "Suspected deadlock Threads";
+    private final static String METRIC_NAME = "Suspected Deadlocked Threads";
     private final static int MAX_STACK_TRACE = 3;
 
     private final ThreadMXBean threadBean;
@@ -86,8 +88,14 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             }
 
             if (!blockedThreads.isEmpty()) {
+                String uuid = LocalStringsUtils.generateRandomIntegerId();
+
                 mt.setValue((double)blockedThreads.size());
-                mt.getContext().getProperties().putIfAbsent("Suspected threads that are in dead lock", sb.toString());
+                mt.getContext().getOperation().setId(uuid);
+
+                TraceTelemetry trace = new TraceTelemetry(String.format("%s%s", "Suspected deadlocked threads: ", sb.toString()));
+                trace.getContext().getOperation().setId(uuid);
+                telemetryClient.track(trace);
             }
         }
         telemetryClient.track(mt);
@@ -118,7 +126,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
         sb.append(ti.getThreadName());
         sb.append(" Id=");
         sb.append(ti.getThreadId());
-        sb.append(" in ");
+        sb.append(" is in ");
         sb.append(ti.getThreadState());
         if (ti.getLockName() != null) {
             sb.append(" on lock=" + ti.getLockName());
