@@ -459,7 +459,7 @@ public enum TelemetryConfigurationFactory {
 
             initializer = createInstance(className.getType(), clazz);
             for (ParamXmlElement param : className.getAdds()){
-                String methodName = "set" + param.getName();
+                String methodName = "set" + param.getName().substring(0,1).toUpperCase() + param.getName().substring(1);
                 try {
                     if (activateMethod(initializer, methodName, param.getValue(), String.class)) {
                         list.add(initializer);
