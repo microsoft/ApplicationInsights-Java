@@ -42,39 +42,22 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
     @Override
     public void onMethodEnter() {
-
-        int basicRequestLocalIndex = this.newLocal(Type.getType(Object.class));
-        int requestLineLocalIndex = this.newLocal(Type.getType(Object.class));
-
         mv.visitVarInsn(ALOAD, 2);
-        Label nullLabel = new Label();
-        mv.visitJumpInsn(IFNULL, nullLabel);
-
+        Label l0 = new Label();
+        mv.visitJumpInsn(IFNULL, l0);
         mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "org/apache/http/client/methods/HttpRequestBase", "getRequestLine", "()Lorg/apache/http/RequestLine;", false);
-        mv.visitVarInsn(ASTORE, basicRequestLocalIndex);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "getRequestLine", "()Lorg/apache/http/RequestLine;", true);
+        mv.visitVarInsn(ASTORE, 4);
+        mv.visitVarInsn(ALOAD, 4);
+        mv.visitMethodInsn(INVOKEINTERFACE, "http/RequestLine", "getUri", "()Ljava/lang/String;", true);
+        mv.visitVarInsn(ASTORE, 5);
 
-        mv.visitVarInsn(ALOAD, basicRequestLocalIndex);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "org/apache/http/message/BasicRequestLine", "getUri", "()Ljava/lang/String;", false);
-        mv.visitVarInsn(ASTORE, requestLineLocalIndex);
-
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-
+        mv.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
         mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(ALOAD, requestLineLocalIndex);
-
+        mv.visitVarInsn(ALOAD, 5);
         mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
 
-        Label notNullLabel = new Label();
-        mv.visitJumpInsn(GOTO, notNullLabel);
-
-        mv.visitLabel(nullLabel);
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitLdcInsn(getMethodName());
-        mv.visitInsn(ACONST_NULL);
-
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
-
-        mv.visitLabel(notNullLabel);
+        mv.visitLabel(l0);
+        mv.visitInsn(ARETURN);
     }
 }

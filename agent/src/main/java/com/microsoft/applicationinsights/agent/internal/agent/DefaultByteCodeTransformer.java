@@ -25,6 +25,9 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
+import java.net.URL;
+import java.net.URLClassLoader;
+
 /**
  * The class coordinates the byte code transformation
  * It works with the {@link com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData}
@@ -50,9 +53,9 @@ final class DefaultByteCodeTransformer implements ByteCodeTransformer {
         }
 
         ClassReader cr = new ClassReader(originalBuffer);
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
-        cr.accept(dcv, ClassReader.EXPAND_FRAMES);
+        cr.accept(dcv, ClassReader.SKIP_FRAMES);
         byte[] newBuffer = cw.toByteArray();
         return newBuffer;
     }
