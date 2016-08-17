@@ -21,14 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
 /**
+ * Utililty methods for dealing with reflection
+ *
  * Created by gupele on 8/7/2016.
  */
 public final class ReflectionUtils {
@@ -45,7 +47,8 @@ public final class ReflectionUtils {
     @SuppressWarnings("unchecked")
     public static <T> T createInstance(String className, Class<T> interfaceClass) {
         try {
-            if (Strings.isNullOrEmpty(className)) {
+            if (StringUtils.isNullOrEmpty(className)) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create empty class name");
                 return null;
             }
 
@@ -54,15 +57,15 @@ public final class ReflectionUtils {
 
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         }
 
         return null;
@@ -85,7 +88,8 @@ public final class ReflectionUtils {
     @SuppressWarnings("unchecked")
     public static  <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
         try {
-            if (Strings.isNullOrEmpty(className)) {
+            if (StringUtils.isNullOrEmpty(className)) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create empty class name");
                 return null;
             }
 
@@ -94,15 +98,15 @@ public final class ReflectionUtils {
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         } catch (ClassNotFoundException e) {
             InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
         }
 
         return null;
@@ -126,13 +130,13 @@ public final class ReflectionUtils {
             method.invoke(object, value);
             return true;
         } catch (NoSuchMethodException e) {
-            InternalLogger.INSTANCE.error(
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
                     "Failed to call method " + methodName + ". NoSuchMethodException");
         } catch (InvocationTargetException e) {
-            InternalLogger.INSTANCE.error(
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
                     "Failed to call method " + methodName + ". InvocationTargetException");
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error(
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
                     "Failed to call method " + methodName + ". IllegalAccessException");
         }
         return false;
