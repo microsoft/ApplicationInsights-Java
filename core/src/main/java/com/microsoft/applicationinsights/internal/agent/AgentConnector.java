@@ -35,7 +35,7 @@ public enum AgentConnector {
 
     private String agentKey;
     private boolean registered = false;
-    private CoreAgentNotificationsHandler coreDataAgent;
+    private CoreAgentNotificationsHandler coreDataAgent = null;
 
     public static class RegistrationResult {
         private final String key;
