@@ -263,6 +263,8 @@ public enum TelemetryConfigurationFactory {
 
     @SuppressWarnings("unchecked")
     private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
+        PerformanceCounterContainer.INSTANCE.setCadenceInSec(performanceConfigurationData.getCadenceInSec());
+
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 
         final List<String> performanceModuleNames =

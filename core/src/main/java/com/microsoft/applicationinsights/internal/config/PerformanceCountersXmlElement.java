@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 
 /**
@@ -32,6 +30,7 @@ import java.util.ArrayList;
 @XmlRootElement(name="PerformanceCounters")
 public class PerformanceCountersXmlElement {
     private boolean useBuiltIn = true;
+    private long cadenceInSec = 60;
 //    private WindowsPerformanceCountersXmlElement windowsPCs;
 
     private ArrayList<JmxXmlElement> jmxXmlElements;
@@ -64,5 +63,14 @@ public class PerformanceCountersXmlElement {
     @XmlElement(name="Add")
     public void setWindowsPCs(ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs) {
         this.windowsPCs = windowsPCs;
+    }
+
+    public long getCadenceInSec() {
+        return cadenceInSec;
+    }
+
+    @XmlAttribute
+    public void setCadenceInSec(long cadenceInSec) {
+        this.cadenceInSec = cadenceInSec;
     }
 }
