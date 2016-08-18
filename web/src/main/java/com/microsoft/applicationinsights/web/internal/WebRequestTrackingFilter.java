@@ -212,8 +212,7 @@ public final class WebRequestTrackingFilter implements Filter {
             //if agent is not installed (jar not loaded), can skip the entire registration process
             try {
                 AgentConnector test = AgentConnector.INSTANCE;
-            } catch(Throwable t)
-            {
+            } catch(Throwable t) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Agent was not found. Skipping the agent registration");
                 return;
             }
