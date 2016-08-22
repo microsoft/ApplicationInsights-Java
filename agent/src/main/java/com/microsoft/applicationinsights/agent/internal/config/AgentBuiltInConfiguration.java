@@ -33,16 +33,17 @@ public class AgentBuiltInConfiguration {
     private final boolean jmxEnabled;
     private final long maxSqlQueryLimitInMS;
     private final long redisThresholdInMS;
+    private final DataOfConfigurationForException dataOfConfigurationForException;
 
-    public AgentBuiltInConfiguration(boolean enabled,
-                                     boolean httpEnabled,
+    public AgentBuiltInConfiguration(boolean httpEnabled,
                                      boolean jdbcEnabled,
                                      boolean hibernateEnabled,
                                      boolean jedisEnabled,
                                      boolean jmxEnabled,
                                      Long maxSqlQueryLimitInMS,
-                                     long redisThresholdInMS) {
-        this.enabled = enabled;
+                                     long redisThresholdInMS,
+                                     DataOfConfigurationForException dataOfConfigurationForException) {
+        this.enabled = true;
         this.httpEnabled = httpEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.hibernateEnabled = hibernateEnabled;
@@ -53,6 +54,7 @@ public class AgentBuiltInConfiguration {
         this.redisThresholdInMS = redisThresholdInMS;
         this.jedisEnabled = jedisEnabled;
         this.maxSqlQueryLimitInMS = maxSqlQueryLimitInMS;
+        this.dataOfConfigurationForException = dataOfConfigurationForException;
     }
 
     public boolean isEnabled() {
@@ -85,5 +87,9 @@ public class AgentBuiltInConfiguration {
 
     public boolean isJmxEnabled() {
         return jmxEnabled;
+    }
+
+    public DataOfConfigurationForException getDataOfConfigurationForException() {
+        return dataOfConfigurationForException;
     }
 }

@@ -23,13 +23,16 @@ package com.microsoft.applicationinsights.agent.internal.coresync.impl;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
+import org.objectweb.asm.Type;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
-import org.objectweb.asm.Type;
 
 /**
  * The class serves as the contact point between injected code and its real implementation.
@@ -49,11 +52,14 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     private volatile long maxSqlMaxQueryThresholdInMS = 10000L;
     private volatile long redisThresholdInNS = 10000L * 1000000;
 
+    private static RuntimeExceptionDecider runtimeExceptionDecider;
+
     private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
 
-    public void setConfigurationData(AgentConfiguration configurationData) {
+    public void initialize(AgentConfiguration configurationData) {
         maxSqlMaxQueryThresholdInMS = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimitInMS();
         setRedisThresholdInMS(configurationData.getBuiltInConfiguration().getRedisThresholdInMS());
+        runtimeExceptionDecider = new RuntimeExceptionDecider();
     }
 
     /**
@@ -183,6 +189,30 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
+    @Override
+    public void exceptionThrown(Exception e) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation == null) {
+                return;
+            }
+
+            RuntimeExceptionDecider.ValidationResult decision = runtimeExceptionDecider.isValid(e);
+            if (!decision.valid) {
+                return;
+            }
+
+            implementation.exceptionThrown(e, decision.stackSize);
+
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
+    public void exceptionThrown(Exception e, int i) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Will return null since this is only the coordinator and not a real SDK handler.
      * @return null.
@@ -231,6 +261,10 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         if (maxSqlMaxQueryThresholdInMS >= 0) {
             this.maxSqlMaxQueryThresholdInMS = maxSqlMaxQueryThresholdInMS;
         }
+    }
+
+    public void setExceptionData    (DataOfConfigurationForException exceptionData) {
+        this.runtimeExceptionDecider.setExceptionData(exceptionData);
     }
 
     private AgentNotificationsHandler getImplementation() {

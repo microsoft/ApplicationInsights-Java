@@ -19,47 +19,48 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.config;
 
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import java.util.HashSet;
 
 /**
- * Created by gupele on 5/11/2015.
+ * Created by gupele on 8/18/2016.
  */
-public final class ByteCodeUtils {
-    private final static String BYTE_CODE_CTOR_NAME = "<init>";
-    private final static String BYTE_CODE_STATIC_CTOR_NAME = "<clinit>";
+public final class DataOfConfigurationForException {
+    private boolean enabled = false;
+    private int stackSize = Integer.MAX_VALUE;
+    private HashSet<String> suppressedExceptions = new HashSet<String>();
+    private HashSet<String> validPathForExceptions = new HashSet<String>();
 
-    public static boolean isInterface(int access) {
-        return (access & Opcodes.ACC_INTERFACE) != 0;
+    public int getStackSize() {
+        return stackSize;
     }
 
-    public static boolean isAbstract(int access) {
-        return (access & Opcodes.ACC_ABSTRACT) != 0;
+    public void setStackSize(int stackSize) {
+        this.stackSize = stackSize;
     }
 
-    public static boolean isPrivate(int access) {
-        return (access & Opcodes.ACC_PRIVATE) != 0;
+    public HashSet<String> getSuppressedExceptions() {
+        return suppressedExceptions;
     }
 
-    public static boolean isStatic(int access) {
-        return (access & Opcodes.ACC_STATIC) != 0;
+    public void setSuppressedExceptions(HashSet<String> suppressedExceptions) {
+        this.suppressedExceptions = suppressedExceptions;
     }
 
-    public static boolean isAnyConstructor(String methodName) {
-        return isConstructor(methodName) || isStaticInitializer(methodName);
+    public HashSet<String> getValidPathForExceptions() {
+        return validPathForExceptions;
     }
 
-    public static boolean isStaticInitializer(String methodName) {
-        return BYTE_CODE_STATIC_CTOR_NAME.startsWith(methodName);
+    public void setValidPathForExceptions(HashSet<String> validPathForExceptions) {
+        this.validPathForExceptions = validPathForExceptions;
     }
 
-    public static boolean isConstructor(String methodName) {
-        return BYTE_CODE_CTOR_NAME.equals(methodName);
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public static boolean isLargeType(Type type) {
-        return type.getSize() == 2;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
