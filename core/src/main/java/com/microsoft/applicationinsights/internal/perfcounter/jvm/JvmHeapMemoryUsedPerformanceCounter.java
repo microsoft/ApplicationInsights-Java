@@ -30,52 +30,44 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 /**
+ * The class will create a metric telemetry for capturing the Jvm's heap memory usage
+ *
  * Created by gupele on 8/8/2016.
  */
-public class JvmMemoryPerformanceCounter implements PerformanceCounter {
+public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
+
     public final static String NAME = "MemoryUsage";
 
-    private final static String HEAP_MEM_USED = "Jvm Heap Memory Used";
-    private final static String HEAP_MEM_COMMITTED = "Jvm Heap Memory Committed";
+        private final static String HEAP_MEM_USED = "Heap Memory Used (MB)";
 
-    private final static String NON_HEAP_MEM_USED = "Jvm Non Heap Memory Used";
-    private final static String NON_HEAP_MEM_COMMITTED = "Jvm Non Heap Memory Committed";
+    private final long Megabyte = 1024 * 1024;
+
+    private final MemoryMXBean memory;
+
+    public JvmHeapMemoryUsedPerformanceCounter() {
+        memory = ManagementFactory.getMemoryMXBean();
+    }
 
     @Override
     public String getId() {
-        return "JvmHeapMemoryPerformanceCounter";
+        return "JvmHeapMemoryUsedPerformanceCounter";
     }
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
         if (memory == null) {
             return;
         }
+
         reportHeap(memory, telemetryClient);
-        reportNonHeap(memory, telemetryClient);
-
-    }
-
-    private void reportNonHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
-        MemoryUsage mnhu = memory.getNonHeapMemoryUsage();
-        if (mnhu == null) {
-            return;
-        }
-        MetricTelemetry nonMemoryHeapUsage = new MetricTelemetry(NON_HEAP_MEM_USED, mnhu.getUsed());
-        MetricTelemetry nonMemoryHeapCommitted = new MetricTelemetry(NON_HEAP_MEM_COMMITTED, mnhu.getCommitted());
-
-        telemetryClient.track(nonMemoryHeapUsage);
-        telemetryClient.track(nonMemoryHeapCommitted);
     }
 
     private void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
         MemoryUsage mhu = memory.getHeapMemoryUsage();
         if (mhu != null) {
-            MetricTelemetry memoryHeapUsage = new MetricTelemetry(HEAP_MEM_USED, mhu.getUsed());
-            MetricTelemetry memoryHeapCommitted = new MetricTelemetry(HEAP_MEM_COMMITTED, mhu.getCommitted());
+            long currentHeapUsed = mhu.getUsed() / Megabyte;
+            MetricTelemetry memoryHeapUsage = new MetricTelemetry(HEAP_MEM_USED, currentHeapUsed);
             telemetryClient.track(memoryHeapUsage);
-            telemetryClient.track(memoryHeapCommitted);
         }
     }
 }

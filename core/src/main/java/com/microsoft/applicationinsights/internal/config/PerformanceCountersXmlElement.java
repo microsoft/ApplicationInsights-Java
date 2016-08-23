@@ -31,7 +31,6 @@ import java.util.ArrayList;
 public class PerformanceCountersXmlElement {
     private boolean useBuiltIn = true;
     private long collectionFrequencyInSec = 60;
-
     private PerformanceCounterJvmSectionXmlElement jvmSection;
 
     private ArrayList<JmxXmlElement> jmxXmlElements;
