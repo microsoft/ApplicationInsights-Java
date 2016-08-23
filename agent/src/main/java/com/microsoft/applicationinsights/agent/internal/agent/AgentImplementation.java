@@ -72,20 +72,22 @@ public final class AgentImplementation {
         try {
             CodeInjector codeInjector = cic.getDeclaredConstructor(AgentConfiguration.class).newInstance(agentConfiguration);
 
+            DataOfConfigurationForException exceptionData = agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException();
             if (inst.isRetransformClassesSupported()) {
-
-                DataOfConfigurationForException exceptionData = agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException();
                 if (exceptionData.isEnabled()) {
+                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Instrumenting runtime exceptions.");
+
                     inst.addTransformer(codeInjector, true);
                     ImplementationsCoordinator.INSTANCE.setExceptionData(exceptionData);
                     inst.retransformClasses(RuntimeException.class);
-                } else {
-                    inst.addTransformer(codeInjector, false);
+                    inst.removeTransformer(codeInjector);
                 }
 			} else {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.WARN, "The JVM does not support res-transformation of classes.");
-				inst.addTransformer(codeInjector);
+                if (exceptionData.isEnabled()) {
+                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "The JVM does not support re-transformation of classes.");
+                }
 			}
+            inst.addTransformer(codeInjector);
         } catch (Exception e) {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load the code injector, exception: %s", e.getMessage());
             throw e;
