@@ -27,14 +27,14 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadFactory;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 /**
  * The class serves as the container of all {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
@@ -62,15 +62,15 @@ public enum PerformanceCounterContainer implements Stoppable {
     private final static long START_DEFAULT_MIN_DELAY_IN_MILLIS = 20000;
 
     // By default the container will collect performance data every 1 minute.
-    private final static long COLLECTING_INTERVAL_IN_MILLIS = 40000;
-    private final static long COLLECTING_DEFAULT_MIN_INTERVAL_IN_MILLIS = 20000;
+    private final static long DEFAULT_COLLECTION_FREQUENCY_IN_SEC = 60;
+    private final static long MIN_COLLECTION_FREQUENCY_IN_SEC = 1;
 
     private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<String, PerformanceCounter>();
 
     private volatile boolean initialized = false;
 
     private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
-    private long collectingIntervalInMillis = COLLECTING_INTERVAL_IN_MILLIS;
+    private long collectionFrequencyInMS = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
 
     private TelemetryClient telemetryClient;
 
@@ -129,8 +129,8 @@ public enum PerformanceCounterContainer implements Stoppable {
      * Gets the timeout in milliseconds that the container will wait between collections of Performance Counters.
      * @return The timeout between collections.
      */
-    public long getCollectingIntervalInMillis() {
-        return collectingIntervalInMillis;
+    public long getCollectionFrequencyInSec() {
+        return collectionFrequencyInMS / 1000;
     }
 
     /**
@@ -145,6 +145,25 @@ public enum PerformanceCounterContainer implements Stoppable {
 
         ThreadPoolUtils.stop(threads, timeout, timeUnit);
         initialized = false;
+    }
+
+    /**
+     * Sets the timeout to wait between collection of Performance Counters.
+     *
+     * The number must be a positive number
+     *
+     * Note that the method will be effective if called before the first call to the 'register' method.
+     * @param collectionFrequencyInSec The timeout to wait between collection of Performance Counters.
+     */
+    public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
+        if (collectionFrequencyInSec <= MIN_COLLECTION_FREQUENCY_IN_SEC) {
+            String errorMessage = String.format("Collecting Interval: illegal value '%d'. The minimum value, '%d', is used instead.", collectionFrequencyInSec, MIN_COLLECTION_FREQUENCY_IN_SEC);
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, errorMessage);
+
+            collectionFrequencyInSec = MIN_COLLECTION_FREQUENCY_IN_SEC;
+        }
+
+        this.collectionFrequencyInMS = collectionFrequencyInSec * 1000;
     }
 
     /**
@@ -163,24 +182,6 @@ public enum PerformanceCounterContainer implements Stoppable {
         }
 
         this.startCollectingDelayInMillis = startCollectingDelayInMillis;
-    }
-
-    /**
-     * Sets the timeout to wait between collection of Performance Counters.
-     *
-     * The number must be a positive number
-     *
-     * Note that the method will be effective if called before the first call to the 'register' method.
-     * @param collectingIntervalInMillis The timeout to wait between collection of Performance Counters.
-     */
-    void setCollectingIntervalInMillis(long collectingIntervalInMillis) {
-        if (collectingIntervalInMillis <= COLLECTING_DEFAULT_MIN_INTERVAL_IN_MILLIS) {
-            InternalLogger.INSTANCE.error("Collecting Interval: illegal value '%d'. The minimum value, '%'d, is used instead.", collectingIntervalInMillis, COLLECTING_DEFAULT_MIN_INTERVAL_IN_MILLIS);
-
-            collectingIntervalInMillis = COLLECTING_DEFAULT_MIN_INTERVAL_IN_MILLIS;
-        }
-
-        this.collectingIntervalInMillis = collectingIntervalInMillis;
     }
 
     void clear() {
@@ -226,7 +227,7 @@ public enum PerformanceCounterContainer implements Stoppable {
                     }
                 },
                 startCollectingDelayInMillis,
-                collectingIntervalInMillis,
+                collectionFrequencyInMS,
                 TimeUnit.MILLISECONDS);
 
         // Register the instance so the container is stopped when the application exits.

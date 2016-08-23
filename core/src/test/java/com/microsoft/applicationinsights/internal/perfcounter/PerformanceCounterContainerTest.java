@@ -101,6 +101,7 @@ public final class PerformanceCounterContainerTest {
     public void testSetStartCollectingIntervalInMillisNegativeNumber() {
         PerformanceCounterContainer.INSTANCE.setStartCollectingDelayInMillis(-100);
         assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0);
+        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() == 60);
     }
 
     @Test
@@ -111,14 +112,14 @@ public final class PerformanceCounterContainerTest {
 
     @Test
     public void testSetCollectingIntervalInMillisMillisNegativeNumber() {
-        PerformanceCounterContainer.INSTANCE.setCollectingIntervalInMillis(-100);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectingIntervalInMillis() > 0);
+        PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(-1);
+        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0);
     }
 
     @Test
     public void testSetCollectingIntervalInMillisZero() {
-        PerformanceCounterContainer.INSTANCE.setCollectingIntervalInMillis(0);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectingIntervalInMillis() > 0);
+        PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(0);
+        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0);
     }
 
     @Test(expected = IllegalArgumentException.class)
