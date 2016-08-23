@@ -21,34 +21,15 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
+import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
- * Created by gupele on 7/26/2016.
+ * Created by gupele on 8/7/2016.
  */
-@XmlRootElement(name="Processor")
-public class TelemetryProcessorXmlElement {
-    private String type;
-    private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();
-
-    public ArrayList<ParamXmlElement> getAdds() {
-        return adds;
-    }
-
-    @XmlElement(name="Add")
-    public void setAdds(ArrayList<ParamXmlElement> adds) {
-        this.adds = adds;
-    }
-
-    @XmlAttribute
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type){
-        this.type = type;
+public class TestProcessorWithoutSetters implements TelemetryProcessor  {
+    @Override
+    public boolean process(Telemetry telemetry) {
+        return false;
     }
 }

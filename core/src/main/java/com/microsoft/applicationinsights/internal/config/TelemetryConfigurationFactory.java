@@ -202,10 +202,10 @@ public enum TelemetryConfigurationFactory {
                     element.setType(fullTypeName);
                     validProcessors.add(element);
                 }
-                loadProcessorComponents(TelemetryProcessor.class, processors, validProcessors);
+                loadProcessorComponents(processors, validProcessors);
             }
             ArrayList<TelemetryProcessorXmlElement> customs = configurationProcessors.getCustomTelemetryProcessors();
-            loadProcessorComponents(TelemetryProcessor.class, processors, customs);
+            loadProcessorComponents(processors, customs);
         }
     }
 
@@ -447,28 +447,23 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    private <T> void loadProcessorComponents(
-            Class<T> clazz,
-            List<T> list,
-            Collection<TelemetryProcessorXmlElement> classNames) {
-        if (classNames == null) {
+    private void loadProcessorComponents(
+            List<TelemetryProcessor> list,
+            Collection<TelemetryProcessorXmlElement> classesFromConfigration) {
+        if (classesFromConfigration == null) {
             return;
         }
 
-        for (TelemetryProcessorXmlElement className : classNames) {
-            T initializer = null;
-
-            initializer = createInstance(className.getType(), clazz);
-            for (ParamXmlElement param : className.getAdds()){
-                String methodName = "set" + param.getName();
-                try {
-                    if (activateMethod(initializer, methodName, param.getValue(), String.class)) {
-                        list.add(initializer);
-                    }
-                } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, className + ": failed to activate method " + methodName + ", exception: " + t.getMessage() + ", the class will not be used.");
-                }
+        TelemetryProcessorCreator creator = new TelemetryProcessorCreator();
+        for (TelemetryProcessorXmlElement classData : classesFromConfigration) {
+            TelemetryProcessor processor = creator.Create(classData);
+            if (processor == null) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Processor " + classData.getType() + " failure during initialization");
+                continue;
             }
+
+            InternalLogger.INSTANCE.trace("Processor " + classData.getType() + " was added successfully");
+            list.add(processor);
         }
     }
 
@@ -484,28 +479,7 @@ public enum TelemetryConfigurationFactory {
      */
     @SuppressWarnings("unchecked")
     private <T> T createInstance(String className, Class<T> interfaceClass) {
-        try {
-            if (Strings.isNullOrEmpty(className)) {
-                return null;
-            }
-
-            Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
-            T instance = (T)clazz.newInstance();
-
-            return instance;
-        } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        }
-
-        return null;
+        return new ReflectionUtils().createInstance(className, interfaceClass);
     }
 
     /**
@@ -524,28 +498,7 @@ public enum TelemetryConfigurationFactory {
      */
     @SuppressWarnings("unchecked")
     private <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
-        try {
-            if (Strings.isNullOrEmpty(className)) {
-                return null;
-            }
-
-            Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
-            Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
-            T instance = (T)clazzConstructor.newInstance(argument);
-            return instance;
-        } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
-        }
-
-        return null;
+        return ReflectionUtils.createInstance(className, interfaceClass, argumentClass, argument);
     }
 
     // TODO: include context/telemetry initializers - where do they initialized?
@@ -560,26 +513,6 @@ public enum TelemetryConfigurationFactory {
                         "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Excepption");
             }
         }
-    }
-
-    private static <V, A> boolean activateMethod(Object object, String methodName, V value, A argumentClass) {
-        Class<?> clazz = object.getClass();
-        Method method = null;
-        try {
-            method = clazz.getDeclaredMethod(methodName, String.class);
-            method.invoke(object, value);
-            return true;
-        } catch (NoSuchMethodException e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to call method " + methodName + ". NoSuchMethodException");
-        } catch (InvocationTargetException e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to call method " + methodName + ". InvocationTargetException");
-        } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to call method " + methodName + ". IllegalAccessException");
-        }
-        return false;
     }
 
     void setPerformanceCountersSection(String performanceCountersSection) {

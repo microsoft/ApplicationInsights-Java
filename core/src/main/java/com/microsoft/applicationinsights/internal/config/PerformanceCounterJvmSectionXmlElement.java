@@ -21,34 +21,43 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
- * Created by gupele on 7/26/2016.
+ * Created by gupele on 8/8/2016.
  */
-@XmlRootElement(name="Processor")
-public class TelemetryProcessorXmlElement {
-    private String type;
-    private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();
+@XmlRootElement(name="Jvm")
+public class PerformanceCounterJvmSectionXmlElement {
+    private ArrayList<JvmXmlElement> jvmXmlElements;
+    private boolean enabled = true;
 
-    public ArrayList<ParamXmlElement> getAdds() {
-        return adds;
+    private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
+
+    public ArrayList<JvmXmlElement> getJvmXmlElements() {
+        return jvmXmlElements;
     }
 
-    @XmlElement(name="Add")
-    public void setAdds(ArrayList<ParamXmlElement> adds) {
-        this.adds = adds;
+    @XmlElement(name="JvmPC")
+    public void setJvmXmlElements(ArrayList<JvmXmlElement> jvmXmlElements) {
+        this.jvmXmlElements = jvmXmlElements;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     @XmlAttribute
-    public String getType() {
-        return type;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public void setType(String type){
-        this.type = type;
+    public HashMap<String, JvmXmlElement> getJvmXmlElementsMap() {
+        HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<String, JvmXmlElement>();
+        for (JvmXmlElement jvmPc : jvmXmlElements) {
+            jvmPcsMap.put(jvmPc.getName(), jvmPc);
+        }
+        return jvmPcsMap;
     }
 }

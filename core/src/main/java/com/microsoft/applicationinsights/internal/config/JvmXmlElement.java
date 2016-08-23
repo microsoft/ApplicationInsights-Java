@@ -22,33 +22,31 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
 
 /**
- * Created by gupele on 7/26/2016.
+ * Created by gupele on 8/8/2016.
  */
-@XmlRootElement(name="Processor")
-public class TelemetryProcessorXmlElement {
-    private String type;
-    private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();
+@XmlRootElement(name="JvmPC")
+public class JvmXmlElement {
+    private String name;
+    private boolean enabled = true;
 
-    public ArrayList<ParamXmlElement> getAdds() {
-        return adds;
-    }
-
-    @XmlElement(name="Add")
-    public void setAdds(ArrayList<ParamXmlElement> adds) {
-        this.adds = adds;
+    public String getName() {
+        return name;
     }
 
     @XmlAttribute
-    public String getType() {
-        return type;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setType(String type){
-        this.type = type;
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @XmlAttribute
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
