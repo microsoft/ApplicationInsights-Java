@@ -62,15 +62,15 @@ public enum PerformanceCounterContainer implements Stoppable {
     private final static long START_DEFAULT_MIN_DELAY_IN_MILLIS = 20000;
 
     // By default the container will collect performance data every 1 minute.
-    private final static long DEFAULT_CADENCE_IN_SEC = 60;
-    private final static long MIN_CADENCE_IN_SEC = 1;
+    private final static long DEFAULT_COLLECTION_FREQUENCY_IN_SEC = 60;
+    private final static long MIN_COLLECTION_FREQUENCY_IN_SEC = 1;
 
     private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<String, PerformanceCounter>();
 
     private volatile boolean initialized = false;
 
     private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
-    private long cadenceInMS = DEFAULT_CADENCE_IN_SEC * 1000;
+    private long collectionFrequencyInMS = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
 
     private TelemetryClient telemetryClient;
 
@@ -129,8 +129,8 @@ public enum PerformanceCounterContainer implements Stoppable {
      * Gets the timeout in milliseconds that the container will wait between collections of Performance Counters.
      * @return The timeout between collections.
      */
-    public long getCadenceInSec() {
-        return cadenceInMS / 1000;
+    public long getCollectionFrequencyInSec() {
+        return collectionFrequencyInMS / 1000;
     }
 
     /**
@@ -153,17 +153,17 @@ public enum PerformanceCounterContainer implements Stoppable {
      * The number must be a positive number
      *
      * Note that the method will be effective if called before the first call to the 'register' method.
-     * @param cadenceInSec The timeout to wait between collection of Performance Counters.
+     * @param collectionFrequencyInSec The timeout to wait between collection of Performance Counters.
      */
-    public void setCadenceInSec(long cadenceInSec) {
-        if (cadenceInSec <= MIN_CADENCE_IN_SEC) {
-            String errorMessage = String.format("Collecting Interval: illegal value '%d'. The minimum value, '%d', is used instead.", cadenceInSec, MIN_CADENCE_IN_SEC);
+    public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
+        if (collectionFrequencyInSec <= MIN_COLLECTION_FREQUENCY_IN_SEC) {
+            String errorMessage = String.format("Collecting Interval: illegal value '%d'. The minimum value, '%d', is used instead.", collectionFrequencyInSec, MIN_COLLECTION_FREQUENCY_IN_SEC);
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, errorMessage);
 
-            cadenceInSec = MIN_CADENCE_IN_SEC;
+            collectionFrequencyInSec = MIN_COLLECTION_FREQUENCY_IN_SEC;
         }
 
-        this.cadenceInMS = cadenceInSec * 1000;
+        this.collectionFrequencyInMS = collectionFrequencyInSec * 1000;
     }
 
     /**
@@ -227,7 +227,7 @@ public enum PerformanceCounterContainer implements Stoppable {
                     }
                 },
                 startCollectingDelayInMillis,
-                cadenceInMS,
+                collectionFrequencyInMS,
                 TimeUnit.MILLISECONDS);
 
         // Register the instance so the container is stopped when the application exits.

@@ -30,8 +30,7 @@ import java.util.ArrayList;
 @XmlRootElement(name="PerformanceCounters")
 public class PerformanceCountersXmlElement {
     private boolean useBuiltIn = true;
-    private long cadenceInSec = 60;
-//    private WindowsPerformanceCountersXmlElement windowsPCs;
+    private long collectionFrequencyInSec = 60;
 
     private ArrayList<JmxXmlElement> jmxXmlElements;
     private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
@@ -65,12 +64,12 @@ public class PerformanceCountersXmlElement {
         this.windowsPCs = windowsPCs;
     }
 
-    public long getCadenceInSec() {
-        return cadenceInSec;
+    public long getCollectionFrequencyInSec() {
+        return collectionFrequencyInSec;
     }
 
     @XmlAttribute
-    public void setCadenceInSec(long cadenceInSec) {
-        this.cadenceInSec = cadenceInSec;
+    public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
+        this.collectionFrequencyInSec = collectionFrequencyInSec;
     }
 }

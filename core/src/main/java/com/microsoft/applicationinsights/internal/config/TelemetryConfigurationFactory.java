@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -263,7 +262,7 @@ public enum TelemetryConfigurationFactory {
 
     @SuppressWarnings("unchecked")
     private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
-        PerformanceCounterContainer.INSTANCE.setCadenceInSec(performanceConfigurationData.getCadenceInSec());
+        PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
 
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 
