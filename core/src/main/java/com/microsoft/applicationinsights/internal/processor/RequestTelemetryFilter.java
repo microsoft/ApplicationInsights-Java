@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -94,7 +94,7 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                 return false;
             }
 
-            if (StringUtils.isNullOrEmpty(requestTelemetry.getResponseCode())) {
+            if (LocalStringsUtils.isNullOrEmpty(requestTelemetry.getResponseCode())) {
                 return true;
             }
         }
@@ -114,13 +114,13 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
 
     public void setNotNeededResponseCodes(String notNeededResponseCodes) throws Throwable {
         try {
-            if (StringUtils.isNullOrEmpty(notNeededResponseCodes)) {
+            if (LocalStringsUtils.isNullOrEmpty(notNeededResponseCodes)) {
                 hasBlocked = false;
             } else {
                 List<String> exclusions = Arrays.asList(notNeededResponseCodes.split(","));
                 for (String ex : exclusions) {
                     ex = ex.trim();
-                    if (StringUtils.isNullOrEmpty(ex)) {
+                    if (LocalStringsUtils.isNullOrEmpty(ex)) {
                         continue;
                     }
 
@@ -132,7 +132,7 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                     if (fromTo.size() != 2) {
                         continue;
                     }
-                    if (StringUtils.isNullOrEmpty(fromTo.get(0)) || StringUtils.isNullOrEmpty(fromTo.get(1))) {
+                    if (LocalStringsUtils.isNullOrEmpty(fromTo.get(0)) || LocalStringsUtils.isNullOrEmpty(fromTo.get(1))) {
                         continue;
                     }
                     int f = Integer.valueOf(fromTo.get(0));

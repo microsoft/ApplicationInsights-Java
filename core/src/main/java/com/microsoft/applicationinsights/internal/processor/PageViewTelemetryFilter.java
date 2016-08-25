@@ -27,10 +27,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
@@ -104,7 +104,7 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
             List<String> notNeededAsList = Arrays.asList(notNeededNames.split(","));
             for (String notNeeded : notNeededAsList) {
                 String ready = notNeeded.trim();
-                if (StringUtils.isNullOrEmpty(ready)) {
+                if (LocalStringsUtils.isNullOrEmpty(ready)) {
                     continue;
                 }
 
@@ -122,7 +122,7 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
             List<String> notNeededAsList = Arrays.asList(notNeededUrls.split(","));
             for (String notNeeded : notNeededAsList) {
                 String ready = notNeeded.trim();
-                if (StringUtils.isNullOrEmpty(ready)) {
+                if (LocalStringsUtils.isNullOrEmpty(ready)) {
                     continue;
                 }
 
