@@ -26,10 +26,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
@@ -59,7 +59,7 @@ public final class TelemetryEventFilter implements TelemetryProcessor {
 
         EventTelemetry et = (EventTelemetry)telemetry;
         String eventName = et.getName();
-        if (StringUtils.isNullOrEmpty(eventName)) {
+        if (LocalStringsUtils.isNullOrEmpty(eventName)) {
             return true;
         }
 
@@ -71,7 +71,7 @@ public final class TelemetryEventFilter implements TelemetryProcessor {
             List<String> notNeededAsList = Arrays.asList(notNeededNames.split(","));
             for (String notNeeded : notNeededAsList) {
                 String ready = notNeeded.trim();
-                if (StringUtils.isNullOrEmpty(ready)) {
+                if (LocalStringsUtils.isNullOrEmpty(ready)) {
                     continue;
                 }
 

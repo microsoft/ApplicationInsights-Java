@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
@@ -51,6 +50,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
  * Initializer class for configuration instances.
@@ -195,7 +195,7 @@ public enum TelemetryConfigurationFactory {
                 ArrayList<TelemetryProcessorXmlElement> validProcessors = new ArrayList<TelemetryProcessorXmlElement>();
                 for (TelemetryProcessorXmlElement element : b) {
                     String fullTypeName = builtInMap.get(element.getType());
-                    if (StringUtils.isNullOrEmpty(fullTypeName)) {
+                    if (LocalStringsUtils.isNullOrEmpty(fullTypeName)) {
                         InternalLogger.INSTANCE.error("Failed to find built in processor: '%s', ignored", element.getType());
                         continue;
                     }

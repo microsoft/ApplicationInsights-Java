@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
@@ -69,7 +69,7 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
 
         TraceTelemetry tt = (TraceTelemetry)telemetry;
         String message = tt.getMessage();
-        if (StringUtils.isNullOrEmpty(message)) {
+        if (LocalStringsUtils.isNullOrEmpty(message)) {
             return true;
         }
         if (tt.getSeverityLevel() == null) {

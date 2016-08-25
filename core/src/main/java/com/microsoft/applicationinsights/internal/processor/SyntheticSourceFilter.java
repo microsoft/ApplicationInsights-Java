@@ -26,11 +26,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.sun.org.apache.bcel.internal.generic.LSUB;
 
 /**
  * The class will filter out telemetries that come from 'unneeded' configured list of source names
@@ -54,7 +55,7 @@ public final class SyntheticSourceFilter implements TelemetryProcessor {
         }
 
         if (notNeededSources.isEmpty()) {
-            return StringUtils.isNullOrEmpty(telemetry.getContext().getOperation().getSyntheticSource());
+            return LocalStringsUtils.isNullOrEmpty(telemetry.getContext().getOperation().getSyntheticSource());
         }
         if (notNeededSources.contains(telemetry.getContext().getOperation().getSyntheticSource())) {
             return false;
@@ -68,7 +69,7 @@ public final class SyntheticSourceFilter implements TelemetryProcessor {
             List<String> notNeededAsList = Arrays.asList(notNeededSources.split(","));
             for (String notNeeded : notNeededAsList) {
                 String ready = notNeeded.trim();
-                if (StringUtils.isNullOrEmpty(ready)) {
+                if (LocalStringsUtils.isNullOrEmpty(ready)) {
                     continue;
                 }
 

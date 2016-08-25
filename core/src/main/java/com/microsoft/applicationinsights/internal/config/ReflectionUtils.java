@@ -25,8 +25,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
  * Utililty methods for dealing with reflection
@@ -47,7 +47,7 @@ public final class ReflectionUtils {
     @SuppressWarnings("unchecked")
     public static <T> T createInstance(String className, Class<T> interfaceClass) {
         try {
-            if (StringUtils.isNullOrEmpty(className)) {
+            if (LocalStringsUtils.isNullOrEmpty(className)) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create empty class name");
                 return null;
             }
@@ -88,7 +88,7 @@ public final class ReflectionUtils {
     @SuppressWarnings("unchecked")
     public static  <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
         try {
-            if (StringUtils.isNullOrEmpty(className)) {
+            if (LocalStringsUtils.isNullOrEmpty(className)) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create empty class name");
                 return null;
             }
