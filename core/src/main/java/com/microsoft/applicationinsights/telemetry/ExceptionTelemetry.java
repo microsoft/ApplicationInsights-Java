@@ -64,6 +64,10 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     }
 
     public void setException(Throwable throwable) {
+        if (throwable == null) {
+            throwable = new Exception("");
+        }
+
         this.throwable = throwable;
         updateException(throwable);
     }
@@ -122,10 +126,6 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     }
 
     private static void convertExceptionTree(Throwable exception, ExceptionDetails parentExceptionDetails, List<ExceptionDetails> exceptions) {
-        if (exception == null) {
-            exception = new Exception("");
-        }
-
         ExceptionDetails exceptionDetails = createWithStackInfo(exception, parentExceptionDetails);
         exceptions.add(exceptionDetails);
 
