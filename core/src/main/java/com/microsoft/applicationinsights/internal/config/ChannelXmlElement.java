@@ -39,6 +39,7 @@ public class ChannelXmlElement {
     private String maxTelemetryBufferCapacity;
     private String flushIntervalInSeconds;
     private boolean developerMode;
+    private boolean throttling = true;
     private String maxTransmissionStorageFilesCapacityInMB;
     private String type = "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
 
@@ -53,6 +54,15 @@ public class ChannelXmlElement {
 
     public String getEndpointAddress() {
         return endpointAddress;
+    }
+
+    @XmlElement(name="Throttling")
+    public void setThrottling(boolean throttling) {
+        this.throttling = throttling;
+    }
+
+    public boolean getThrottling() {
+        return throttling;
     }
 
     @XmlElement(name="EndpointAddress")
@@ -117,6 +127,8 @@ public class ChannelXmlElement {
         if (!Strings.isNullOrEmpty(maxTransmissionStorageFilesCapacityInMB)) {
             data.put("MaxTransmissionStorageFilesCapacityInMB", maxTransmissionStorageFilesCapacityInMB);
         }
+
+        data.put("Throttling", throttling ? "true" : "false");
 
         return data;
     }

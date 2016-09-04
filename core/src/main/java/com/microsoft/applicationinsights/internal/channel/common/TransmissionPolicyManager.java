@@ -59,6 +59,7 @@ public final class TransmissionPolicyManager implements Stoppable {
 
     // Keeps the current policy state of the transmission
     private final TransmissionPolicyState policyState = new TransmissionPolicyState();
+    private boolean throttlingIsEnabled = true;
 
     /**
      * The class will be activated when a timeout expires
@@ -79,11 +80,16 @@ public final class TransmissionPolicyManager implements Stoppable {
         }
     }
 
-    public TransmissionPolicyManager() {
+    public TransmissionPolicyManager(boolean throttlingIsEnabled) {
         suspensionDate = null;
+        this.throttlingIsEnabled = throttlingIsEnabled;
     }
 
     public void suspendInSeconds(TransmissionPolicy policy, long suspendInSeconds) {
+        if (!throttlingIsEnabled) {
+            return;
+        }
+
         Preconditions.checkArgument(suspendInSeconds > 0, "Suspension must be greater than zero");
 
         createScheduler();
