@@ -27,6 +27,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
@@ -55,6 +60,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     private final static String CONTENT_TYPE_HEADER = "Content-Type";
     private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
+    private final static String RESPONSE_RETRY_AFTER_DATE_FORMAT = "E, dd MMM yyyy HH:mm:ss";
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
@@ -185,10 +191,31 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         }
 
         try {
-            long retryAfterAsSeconds = Long.valueOf(retryAfterAsString);
+            DateFormat formatter = new SimpleDateFormat(RESPONSE_RETRY_AFTER_DATE_FORMAT);
+            Date date = formatter.parse(retryAfterAsString);
+
+            Date now = Calendar.getInstance().getTime();
+            long retryAfterAsSeconds = (date.getTime() - convertToDateToGmt(now).getTime())/1000;
             transmissionPolicyManager.suspendInSeconds(suspensionPolicy, retryAfterAsSeconds);
         } catch (Throwable e) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Throttled but failed to block transmission, exception: %s", e.getMessage());
         }
+    }
+
+    private  static Date convertToDateToGmt(Date date){
+        TimeZone tz = TimeZone.getDefault();
+        Date ret = new Date(date.getTime() - tz.getRawOffset());
+
+        // If we are now in DST, back off by the delta.  Note that we are checking the GMT date, this is the KEY.
+        if (tz.inDaylightTime(ret)) {
+            Date dstDate = new Date(ret.getTime() - tz.getDSTSavings());
+
+            // Check to make sure we have not crossed back into standard time
+            if (tz.inDaylightTime(dstDate)) {
+                ret = dstDate;
+            }
+        }
+        return ret;
     }
 
     private TransmissionSendResult translateResponse(int code, HttpEntity respEntity) {

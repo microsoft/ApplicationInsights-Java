@@ -21,12 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -78,6 +80,7 @@ public final class TransmissionPolicyManager implements Stoppable {
     }
 
     public TransmissionPolicyManager() {
+        suspensionDate = null;
     }
 
     public void suspendInSeconds(TransmissionPolicy policy, long suspendInSeconds) {
@@ -103,10 +106,11 @@ public final class TransmissionPolicyManager implements Stoppable {
                 return;
             }
 
-            Date date = new Date();
+            Date date = Calendar.getInstance().getTime();
             date.setTime(date.getTime() + 1000 * suspendInSeconds);
-            if (suspensionDate != null) {
-                if (date.getTime() - suspensionDate.getTime() <= 0) {
+            if (this.suspensionDate != null) {
+                long diff = date.getTime() - suspensionDate.getTime();
+                if (diff <= 0) {
                     return;
                 }
             }
@@ -116,7 +120,10 @@ public final class TransmissionPolicyManager implements Stoppable {
             threads.schedule(new UnSuspender(currentGeneration), suspendInSeconds, TimeUnit.SECONDS);
             policyState.setCurrentState(policy);
             suspensionDate = date;
+
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetries are blocked from now, for %s seconds", suspendInSeconds);
         } catch (Throwable t) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.getMessage());
         }
     }
 
@@ -126,6 +133,8 @@ public final class TransmissionPolicyManager implements Stoppable {
         }
 
         policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
+        suspensionDate = null;
+        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled is cancelled");
     }
 
     private synchronized void createScheduler() {
