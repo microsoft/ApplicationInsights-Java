@@ -98,7 +98,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
                    null,
                    developerMode,
                    createDefaultMaxTelemetryBufferCapacityEnforcer(null),
-                   createDefaultSendIntervalInSecondsEnforcer(null));
+                   createDefaultSendIntervalInSecondsEnforcer(null),
+                   true);
     }
 
     /**
@@ -115,7 +116,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
                    null,
                    developerMode,
                    createDefaultMaxTelemetryBufferCapacityEnforcer(maxTelemetryBufferCapacity),
-                   createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis));
+                   createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis),
+                   true);
     }
 
     /**
@@ -131,7 +133,9 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
         LimitsEnforcer sendIntervalInSecondsEnforcer = createDefaultSendIntervalInSecondsEnforcer(null);
 
+        boolean throttling = true;
         if (namesAndValues != null) {
+            throttling = Boolean.valueOf(namesAndValues.get("Throttling"));
             developerMode = Boolean.valueOf(namesAndValues.get(DEVELOPER_MODE_NAME));
             endpointAddress = namesAndValues.get(ENDPOINT_ADDRESS_NAME);
 
@@ -140,7 +144,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         }
 
         String maxTransmissionStorageCapacity = namesAndValues.get(MAX_TRANSMISSION_STORAGE_CAPACITY_NAME);
-        initialize(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSecondsEnforcer);
+        initialize(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSecondsEnforcer, throttling);
     }
 
     /**
@@ -248,14 +252,15 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
                                          String maxTransmissionStorageCapacity,
                                          boolean developerMode,
                                          LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
-                                         LimitsEnforcer sendIntervalInSeconds) {
+                                         LimitsEnforcer sendIntervalInSeconds,
+                                         boolean throttling) {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         if (s_transmitterFactory == null) {
             s_transmitterFactory = new InProcessTelemetryChannelFactory();
         }
 
-        telemetriesTransmitter = s_transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity);
+        telemetriesTransmitter = s_transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity, throttling);
         telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);

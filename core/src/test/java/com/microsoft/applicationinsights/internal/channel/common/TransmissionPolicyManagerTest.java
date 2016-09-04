@@ -28,27 +28,27 @@ import static org.junit.Assert.*;
 public final class TransmissionPolicyManagerTest {
     @Test
     public void testAfterCtor() {
-        TransmissionPolicyManager tested = new TransmissionPolicyManager();
+        TransmissionPolicyManager tested = new TransmissionPolicyManager(true);
         assertNotNull(tested.getTransmissionPolicyState());
         assertEquals(tested.getTransmissionPolicyState().getCurrentState(), TransmissionPolicy.UNBLOCKED);
     }
 
     @Test
     public void testSuspendInSecondsWithUnBlock() {
-        TransmissionPolicyManager tested = new TransmissionPolicyManager();
+        TransmissionPolicyManager tested = new TransmissionPolicyManager(true);
         tested.suspendInSeconds(TransmissionPolicy.UNBLOCKED, 10);
         assertEquals(tested.getTransmissionPolicyState().getCurrentState(), TransmissionPolicy.UNBLOCKED);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testSuspendInSecondsWithZeroSeconds() {
-        TransmissionPolicyManager tested = new TransmissionPolicyManager();
+        TransmissionPolicyManager tested = new TransmissionPolicyManager(true);
         tested.suspendInSeconds(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, 0);
     }
 
     @Test
     public void testSuspendInSecondsWithTwoWhereTheFirstOneCounts() throws InterruptedException {
-        TransmissionPolicyManager tested = new TransmissionPolicyManager();
+        TransmissionPolicyManager tested = new TransmissionPolicyManager(true);
         tested.suspendInSeconds(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, 2);
         tested.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, 1);
 
@@ -60,7 +60,7 @@ public final class TransmissionPolicyManagerTest {
 
     @Test
     public void testSuspendInSecondsWithTwoWhereTheSecondOneCounts() throws InterruptedException {
-        TransmissionPolicyManager tested = new TransmissionPolicyManager();
+        TransmissionPolicyManager tested = new TransmissionPolicyManager(true);
         tested.suspendInSeconds(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, 1);
         tested.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, 2);
 
