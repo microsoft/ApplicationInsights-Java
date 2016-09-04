@@ -63,8 +63,13 @@ final class ConfigRuntimeExceptionDataBuilder {
     private Element fetchMainTag(Element enclosingTag, DataOfConfigurationForException data) {
         NodeList nodes = enclosingTag.getElementsByTagName(RUNTIME_EXCEPTION_TAG);
         Element rtExceptionElement = XmlParserUtils.getFirst(nodes);
+        if (rtExceptionElement == null) {
+            data.setEnabled(false);
+            return null;
+        }
+
         boolean enabled = XmlParserUtils.getEnabled(rtExceptionElement, RUNTIME_EXCEPTION_TAG);
-        if (!enabled || rtExceptionElement == null) {
+        if (!enabled) {
             data.setEnabled(false);
             return null;
         }
