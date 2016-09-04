@@ -42,6 +42,10 @@ public final class ThreadPoolUtils {
     }
 
     public static void stop(ThreadPoolExecutor threadPool, long timeout, TimeUnit timeUnit) {
+        if (threadPool == null) {
+            return;
+        }
+
         threadPool.shutdown();
         try {
             if (!threadPool.awaitTermination(timeout, timeUnit)) {

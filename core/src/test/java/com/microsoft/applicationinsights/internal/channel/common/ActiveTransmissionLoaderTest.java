@@ -40,7 +40,7 @@ public class ActiveTransmissionLoaderTest {
 
     @Test(expected = NullPointerException.class)
     public void testNullFileSystem() throws Exception {
-        new ActiveTransmissionLoader(null, Mockito.mock(TransmissionDispatcher.class), 1);
+        new ActiveTransmissionLoader(null, Mockito.mock(TransmissionDispatcher.class), mockStateFetcher(), 1);
     }
 
     @Test(expected = NullPointerException.class)
@@ -98,7 +98,7 @@ public class ActiveTransmissionLoaderTest {
 
             TransmissionFileSystemOutput fileSystem = new TransmissionFileSystemOutput(filesPath);
             TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
-            tested = new ActiveTransmissionLoader(fileSystem, mockDispatcher, 2);
+            tested = new ActiveTransmissionLoader(fileSystem, mockDispatcher, mockStateFetcher(), 2);
             if (!putFilesFirst) {
                 boolean ok = tested.load(true);
                 assertTrue("Failed to load", ok);
@@ -151,7 +151,7 @@ public class ActiveTransmissionLoaderTest {
             }
 
             TransmissionFileSystemOutput mock = new TransmissionFileSystemOutput(filesPath);
-            new ActiveTransmissionLoader(mock, dispatcher, numberOfThreads);
+            new ActiveTransmissionLoader(mock, dispatcher, mockStateFetcher(), numberOfThreads);
         } finally {
             if (folder != null && folder.exists()) {
                 FileUtils.deleteDirectory(folder);
@@ -159,4 +159,9 @@ public class ActiveTransmissionLoaderTest {
         }
     }
 
+    private TransmissionPolicyStateFetcher mockStateFetcher() {
+        TransmissionPolicyStateFetcher mockStateFetcher = Mockito.mock(TransmissionPolicyStateFetcher.class);
+        Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
+        return mockStateFetcher;
+    }
 }

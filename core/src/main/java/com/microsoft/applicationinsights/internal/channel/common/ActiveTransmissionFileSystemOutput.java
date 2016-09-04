@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
@@ -41,8 +42,15 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
 
     private final TransmissionOutput actualOutput;
 
-    public ActiveTransmissionFileSystemOutput(TransmissionOutput actualOutput) {
+    private final TransmissionPolicyStateFetcher transmissionPolicy;
+
+    public ActiveTransmissionFileSystemOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
+        Preconditions.checkNotNull(transmissionPolicy, "transmissionPolicy must be a non-null value");
+
         this.actualOutput = actualOutput;
+
+        this.transmissionPolicy = transmissionPolicy;
+
         threadPool = ThreadPoolUtils.newLimitedThreadPool(1, 3, 20L, 1024);
         threadPool.setThreadFactory(new ThreadFactory() {
             @Override
@@ -58,6 +66,9 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
     public boolean send(final Transmission transmission) {
         // TODO: check the possibility of refactoring the 'send' and possible log on errors
         try {
+            if (transmissionPolicy.getCurrentState() == TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED) {
+                return false;
+            }
 
             threadPool.execute(new Runnable() {
                 @Override

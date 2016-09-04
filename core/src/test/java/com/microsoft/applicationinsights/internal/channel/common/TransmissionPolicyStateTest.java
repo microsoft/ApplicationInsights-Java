@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -21,29 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-/**
- * Created by gupele on 2/10/2015.
- */
-enum TransmissionSendResult {
-    SENT_SUCCESSFULLY,
+import org.junit.Test;
 
-    FAILED_TO_SEND_DUE_TO_NETWORK_ISSUES,
-    FAILED_TO_SEND_DUE_TO_CONNECTION_POOL,
+import static org.junit.Assert.*;
 
-    FAILED_TO_RECEIVE_DUE_TO_TIMEOUT,
+public final class TransmissionPolicyStateTest {
+    @Test
+    public void testStateAfterCtor() {
+        TransmissionPolicyState tested = new TransmissionPolicyState();
+        assertEquals(tested.getCurrentState(), TransmissionPolicy.UNBLOCKED);
+    }
 
-    FAILED_TO_READ_RESPONSE,
-
-    // Got response
-    BAD_REQUEST,
-    INTERNAL_SERVER_ERROR,
-
-    THROTTLED,
-    THROTTLED_OVER_EXTENDED_TIME,
-    PAYMENT_REQUIRED,
-
-    PARTIALLY_THROTTLED,
-
-    REJECTED_BY_SERVER,
-    UNKNOWN_ERROR,
+    @Test
+    public void testSetCurrentState() {
+        TransmissionPolicyState tested = new TransmissionPolicyState();
+        tested.setCurrentState(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
+        assertEquals(tested.getCurrentState(), TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
+        tested.setCurrentState(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
+        assertEquals(tested.getCurrentState(), TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
+    }
 }

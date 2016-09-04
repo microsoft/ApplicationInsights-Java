@@ -1,5 +1,5 @@
 /*
- * ApplicationInsights-Java
+ * AppInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -22,28 +22,8 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 /**
- * Created by gupele on 2/10/2015.
+ * Created by gupele on 6/29/2015.
  */
-enum TransmissionSendResult {
-    SENT_SUCCESSFULLY,
-
-    FAILED_TO_SEND_DUE_TO_NETWORK_ISSUES,
-    FAILED_TO_SEND_DUE_TO_CONNECTION_POOL,
-
-    FAILED_TO_RECEIVE_DUE_TO_TIMEOUT,
-
-    FAILED_TO_READ_RESPONSE,
-
-    // Got response
-    BAD_REQUEST,
-    INTERNAL_SERVER_ERROR,
-
-    THROTTLED,
-    THROTTLED_OVER_EXTENDED_TIME,
-    PAYMENT_REQUIRED,
-
-    PARTIALLY_THROTTLED,
-
-    REJECTED_BY_SERVER,
-    UNKNOWN_ERROR,
+interface TransmissionPolicyStateSetter {
+    void setCurrentState(TransmissionPolicy currentState);
 }
