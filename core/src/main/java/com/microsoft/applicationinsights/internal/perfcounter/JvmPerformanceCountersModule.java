@@ -39,31 +39,37 @@ import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryU
  *
  * The class will not be activated if the enclosing XML tag will have the 'UseBuiltIn' tag set to false:
  *
- * <code>
+ * <pre>
+ * {@code
  *     <PerformanceCounters>
  *         <UseBuiltIn>false</UseBuiltIn>
  *     </PerformanceCounters>
- * </code>
+ * }
+ * </pre>
  *
  * All Jvm PCs can be disabled like this, without disabling the other built in performance counters:
  *
- * <code>
+ * <pre>
+ * {@code
  *     <PerformanceCounters>
  *
  *         <Jvm enabled="false"/>
  *
  *     </PerformanceCounters>
- * </code>
+ * }
+ * </pre>
  *
  * A specific Jvm counter can be disabled like this:
  *
- * <code>
+ * <pre>
+ * {@code
  *     <PerformanceCounters>
  *         <Jvm>
  *             <JvmPC name="ThreadDeadLockDetector" enabled="false"/>
  *         </Jvm>
  *     </PerformanceCounters>
- * </code>
+ * }
+ * </pre>
  *
  * Created by gupele on 8/7/2016.
  */
