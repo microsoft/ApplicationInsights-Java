@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.microsoft.applicationinsights.agent.internal.agent.exceptions.RuntimeExceptionProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.http.HttpClassDataProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.redis.JedisClassDataProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.sql.PreparedStatementClassDataProvider;
@@ -83,6 +84,10 @@ class DefaultClassDataProvider implements ClassDataProvider {
 
             if (agentConfiguration.getBuiltInConfiguration().isRedisEnabled()) {
                 new JedisClassDataProvider(classesToInstrument).add();
+            }
+
+            if (agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException().isEnabled()) {
+                new RuntimeExceptionProvider(classesToInstrument).add();
             }
         }
 

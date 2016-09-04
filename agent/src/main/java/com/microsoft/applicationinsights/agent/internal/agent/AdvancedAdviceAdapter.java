@@ -33,7 +33,7 @@ import org.objectweb.asm.commons.AdviceAdapter;
  *
  * Created by gupele on 5/11/2015.
  */
-abstract class AdvancedAdviceAdapter extends AdviceAdapter {
+public abstract class AdvancedAdviceAdapter extends AdviceAdapter {
 
     protected enum ExitStatus {
         EXIT_WITH_EXCEPTION,

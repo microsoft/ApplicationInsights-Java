@@ -33,16 +33,21 @@ public class AgentBuiltInConfigurationBuilder {
     private boolean jmxEnabled = true;
     private long jedisThresholdInMS = 10000L;
     private Long maxSqlQueryLimitInMS = 10000L;
+    private DataOfConfigurationForException dataOfConfigurationForException = new DataOfConfigurationForException();
 
     public AgentBuiltInConfiguration create() {
-        return new AgentBuiltInConfiguration(enabled,
-                                             httpEnabled && enabled,
+        if (!enabled) {
+            this.dataOfConfigurationForException.setEnabled(false);
+        }
+
+        return new AgentBuiltInConfiguration(httpEnabled && enabled,
                                              jdbcEnabled && enabled,
                                              hibernateEnabled && enabled,
                                              hibernateEnabled && jedisEnabled,
                                              enabled && jmxEnabled,
                                              maxSqlQueryLimitInMS,
-                                             jedisThresholdInMS);
+                                             jedisThresholdInMS,
+                                             dataOfConfigurationForException);
     }
 
     public AgentBuiltInConfigurationBuilder setEnabled(boolean enabled) {
@@ -83,5 +88,11 @@ public class AgentBuiltInConfigurationBuilder {
         this.jedisEnabled = jedisEnabled;
         this.jedisThresholdInMS = jedisThresholdInMS < 0 ? 0 : jedisThresholdInMS;
         return this;
+    }
+
+    public void setDataOfConfigurationForException(DataOfConfigurationForException dataOfConfigurationForException) {
+        if (dataOfConfigurationForException != null) {
+            this.dataOfConfigurationForException = dataOfConfigurationForException;
+        }
     }
 }

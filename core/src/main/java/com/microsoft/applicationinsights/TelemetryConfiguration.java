@@ -51,7 +51,7 @@ public final class TelemetryConfiguration {
 
     private String instrumentationKey;
 
-    private final ArrayList<ContextInitializer> contextInitializers = new ArrayList<ContextInitializer>();
+    private final ArrayList<ContextInitializer> contextInitializers = new   ArrayList<ContextInitializer>();
     private final ArrayList<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
     private final ArrayList<TelemetryModule> telemetryModules = new ArrayList<TelemetryModule>();
     private final ArrayList<TelemetryProcessor> telemetryProcessors = new ArrayList<TelemetryProcessor>();

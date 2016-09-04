@@ -48,11 +48,20 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
 
     /**
      * Initializes a new instance.
+     * @param stackSize The max stack size to report.
+     * @param exception The exception to track.
+     */
+    public ExceptionTelemetry(Throwable exception, int stackSize) {
+        this();
+        setException(exception, stackSize);
+    }
+
+    /**
+     * Initializes a new instance.
      * @param exception The exception to track.
      */
     public ExceptionTelemetry(Throwable exception) {
-        this();
-        setException(exception);
+        this(exception, Integer.MAX_VALUE);
     }
 
     public Exception getException() {
@@ -64,8 +73,12 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     }
 
     public void setException(Throwable throwable) {
+        setException(throwable, Integer.MAX_VALUE);
+    }
+
+    public void setException(Throwable throwable, int stackSize) {
         this.throwable = throwable;
-        updateException(throwable);
+        updateException(throwable, stackSize);
     }
 
     /**
@@ -114,23 +127,27 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
         return data.getExceptions();
     }
 
-    private void updateException(Throwable throwable) {
+    private void updateException(Throwable throwable, int stackSize) {
         ArrayList<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
-        convertExceptionTree(throwable, null, exceptions);
+        convertExceptionTree(throwable, null, exceptions, stackSize);
 
         data.setExceptions(exceptions);
     }
 
-    private static void convertExceptionTree(Throwable exception, ExceptionDetails parentExceptionDetails, List<ExceptionDetails> exceptions) {
+    private static void convertExceptionTree(Throwable exception, ExceptionDetails parentExceptionDetails, List<ExceptionDetails> exceptions, int stackSize) {
         if (exception == null) {
             exception = new Exception("");
+        }
+
+        if (stackSize == 0) {
+            return;
         }
 
         ExceptionDetails exceptionDetails = createWithStackInfo(exception, parentExceptionDetails);
         exceptions.add(exceptionDetails);
 
         if (exception.getCause() != null) {
-            convertExceptionTree(exception.getCause(), exceptionDetails, exceptions);
+            convertExceptionTree(exception.getCause(), exceptionDetails, exceptions, stackSize - 1);
         }
     }
 

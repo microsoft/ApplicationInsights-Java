@@ -24,11 +24,18 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.jar.JarFile;
 
+import com.microsoft.applicationinsights.agent.internal.agent.jmx.JmxConnectorLoader;
+import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
+import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
+import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
@@ -45,7 +52,7 @@ public final class AgentImplementation {
         try {
             agentJarLocation = getAgentJarLocation();
             appendJarsToBootstrapClassLoader(inst);
-            loadJarsToBootstrapClassLoader(inst);
+            initializeCodeInjector(inst);
         } catch (Throwable throwable) {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
             System.exit(-1);
@@ -53,14 +60,38 @@ public final class AgentImplementation {
     }
 
     @SuppressWarnings("unchecked")
-    private static void loadJarsToBootstrapClassLoader(Instrumentation inst) throws Throwable {
+    private static void initializeCodeInjector(Instrumentation inst) throws Throwable {
         ClassLoader bcl = AgentImplementation.class.getClassLoader().getParent();
         Class<CodeInjector> cic = (Class<CodeInjector>) bcl.loadClass("com.microsoft.applicationinsights.agent.internal.agent.CodeInjector");
         if (cic == null) {
             throw new IllegalStateException("Failed to load CodeInjector");
         }
 
-        cic.getDeclaredConstructor(Instrumentation.class, String.class).newInstance(inst, agentJarLocation);
+        AgentConfiguration agentConfiguration = new AgentConfigurationBuilderFactory().createDefaultBuilder().parseConfigurationFile(agentJarLocation);
+
+        try {
+            CodeInjector codeInjector = cic.getDeclaredConstructor(AgentConfiguration.class).newInstance(agentConfiguration);
+
+            DataOfConfigurationForException exceptionData = agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException();
+            if (inst.isRetransformClassesSupported()) {
+                if (exceptionData.isEnabled()) {
+                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Instrumenting runtime exceptions.");
+
+                    inst.addTransformer(codeInjector, true);
+                    ImplementationsCoordinator.INSTANCE.setExceptionData(exceptionData);
+                    inst.retransformClasses(RuntimeException.class);
+                    inst.removeTransformer(codeInjector);
+                }
+			} else {
+                if (exceptionData.isEnabled()) {
+                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "The JVM does not support re-transformation of classes.");
+                }
+			}
+            inst.addTransformer(codeInjector);
+        } catch (Exception e) {
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load the code injector, exception: %s", e.getMessage());
+            throw e;
+        }
     }
 
     private static void appendJarsToBootstrapClassLoader(Instrumentation inst) throws Throwable {

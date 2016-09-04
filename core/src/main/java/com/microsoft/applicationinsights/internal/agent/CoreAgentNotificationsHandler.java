@@ -27,9 +27,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
@@ -51,6 +48,8 @@ import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
  * Created by gupele on 5/7/2015.
  */
 final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
+
+    private final static String EXCEPTION_THROWN_ID = "__java_sdk__exceptionThrown__";
 
     /**
      * The class holds the data gathered on a method
@@ -176,6 +175,41 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         if (throwable != null) {
             ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
             telemetryClient.track(exceptionTelemetry);
+        }
+    }
+
+    @Override
+    public void exceptionThrown(Exception e) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void exceptionThrown(Exception e, int stackSize) {
+        ThreadData localData = threadDataThreadLocal.get();
+        MethodData methodData = null;
+        try {
+            if (localData.methods != null && !localData.methods.isEmpty()) {
+                for (MethodData m : localData.methods) {
+                    if (EXCEPTION_THROWN_ID.equals(m.name)) {
+                        return;
+                    }
+                }
+            }
+
+            methodData = new MethodData();
+            methodData.interval = 0;
+            methodData.type = InstrumentedClassType.OTHER;
+            methodData.arguments = null;
+            methodData.name = EXCEPTION_THROWN_ID;
+            localData.methods.addFirst(methodData);
+
+            ExceptionTelemetry et = new ExceptionTelemetry(e, stackSize);
+
+            telemetryClient.track(et);
+        } catch (Throwable t) {
+        }
+        if (methodData != null) {
+            localData.methods.remove(methodData);
         }
     }
 

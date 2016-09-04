@@ -38,6 +38,7 @@ jar {
         attributes("Agent-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
                    "Premain-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
                     "Can-Redefine-Classes": "true",
+                    "Can-Retransform-Classes": "true",
                     "agent-sdk-version":project.version
         )
     }

@@ -140,7 +140,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
     private void getForbiddenPaths(Element parent, AgentConfigurationDefaultImpl agentConfiguration) {
         NodeList nodes = parent.getElementsByTagName(EXCLUDED_PREFIXES_TAG);
-        Element forbiddenElement = getFirst(nodes);
+        Element forbiddenElement = XmlParserUtils.getFirst(nodes);
         if (forbiddenElement == null) {
             return;
         }
@@ -168,33 +168,40 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         AgentBuiltInConfigurationBuilder builtInConfigurationBuilder = new AgentBuiltInConfigurationBuilder();
 
         NodeList nodes = instrumentationTags.getElementsByTagName(BUILT_IN_TAG);
-        Element builtInElement = getFirst(nodes);
+        Element builtInElement = XmlParserUtils.getFirst(nodes);
         if (builtInElement == null) {
             agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
             return;
         }
 
-        builtInConfigurationBuilder.setEnabled(getEnabled(builtInElement, BUILT_IN_TAG));
+        boolean builtInIsEnabled = XmlParserUtils.getEnabled(builtInElement, BUILT_IN_TAG);
+        builtInConfigurationBuilder.setEnabled(builtInIsEnabled);
+        if (!builtInIsEnabled) {
+            agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
+            return;
+        }
 
         nodes = builtInElement.getElementsByTagName(JEDIS_TAG);
-        Element element = getFirst(nodes);
-        long threshold = getLongAttribute(element, JEDIS_TAG, THRESHOLD_ATTRIBUTE, JEDIS_ARGS_THRESHOLD_IN_MS);
-        builtInConfigurationBuilder.setJedisValues(getEnabled(element, JEDIS_TAG), threshold);
+        Element element = XmlParserUtils.getFirst(nodes);
+        long threshold = XmlParserUtils.getLongAttribute(element, JEDIS_TAG, THRESHOLD_ATTRIBUTE, JEDIS_ARGS_THRESHOLD_IN_MS);
+        builtInConfigurationBuilder.setJedisValues(XmlParserUtils.getEnabled(element, JEDIS_TAG), threshold);
+
+        new ConfigRuntimeExceptionDataBuilder().setRuntimeExceptionData(builtInElement, builtInConfigurationBuilder);
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
-        builtInConfigurationBuilder.setHttpEnabled(getEnabled(getFirst(nodes), HTTP_TAG));
+        builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), HTTP_TAG));
 
         nodes = builtInElement.getElementsByTagName(JDBC_TAG);
-        builtInConfigurationBuilder.setJdbcEnabled(getEnabled(getFirst(nodes), JDBC_TAG));
+        builtInConfigurationBuilder.setJdbcEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JDBC_TAG));
 
         nodes = builtInElement.getElementsByTagName(HIBERNATE_TAG);
-        builtInConfigurationBuilder.setHibernateEnabled(getEnabled(getFirst(nodes), HIBERNATE_TAG));
+        builtInConfigurationBuilder.setHibernateEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), HIBERNATE_TAG));
 
         nodes = builtInElement.getElementsByTagName(JMX_TAG);
-        builtInConfigurationBuilder.setJmxEnabled(getEnabled(getFirst(nodes), JMX_TAG));
+        builtInConfigurationBuilder.setJmxEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JMX_TAG));
 
         nodes = builtInElement.getElementsByTagName(MAX_STATEMENT_QUERY_LIMIT_TAG);
-        builtInConfigurationBuilder.setSqlMaxQueryLimitInMS(getLong(getFirst(nodes), MAX_STATEMENT_QUERY_LIMIT_TAG));
+        builtInConfigurationBuilder.setSqlMaxQueryLimitInMS(XmlParserUtils.getLong(XmlParserUtils.getFirst(nodes), MAX_STATEMENT_QUERY_LIMIT_TAG));
 
         agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
     }
@@ -247,7 +254,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         long thresholdInMS = 0;
         valueStr = classElement.getAttribute(THRESHOLD_ATTRIBUTE);
         if (!StringUtils.isNullOrEmpty(valueStr)) {
-            thresholdInMS = getLongAttribute(classElement, className, THRESHOLD_ATTRIBUTE, 0);
+            thresholdInMS = XmlParserUtils.getLongAttribute(classElement, className, THRESHOLD_ATTRIBUTE, 0);
         }
 
         if (data == null) {
@@ -263,12 +270,12 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
     private Element getInstrumentationTag(Element topElementTag) {
         NodeList customTags = topElementTag.getElementsByTagName(INSTRUMENTATION_TAG);
-        return getFirst(customTags);
+        return XmlParserUtils.getFirst(customTags);
     }
 
     private void initializeAgentLogger(Element topElementTag) {
         NodeList customTags = topElementTag.getElementsByTagName(AGENT_LOGGER_TAG);
-        Element loggerTag = getFirst(customTags);
+        Element loggerTag = XmlParserUtils.getFirst(customTags);
         if (loggerTag == null) {
             return;
         }
@@ -363,75 +370,5 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         Element topElementTag = (Element)topNodeTag;
         return topElementTag;
-    }
-
-    private Element getFirst(NodeList nodes) {
-        if (nodes == null || nodes.getLength() == 0) {
-            return null;
-        }
-
-        Node node = nodes.item(0);
-        if (node.getNodeType() != Node.ELEMENT_NODE) {
-            return null;
-        }
-
-        return (Element)node;
-    }
-
-    private long getLongAttribute(Element element, String elementName, String attributeName, long defaultValue) {
-        if (element == null) {
-            return defaultValue;
-        }
-
-        try {
-            String strValue = element.getAttribute(attributeName);
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                long value = Long.valueOf(strValue);
-                return value;
-            }
-            return defaultValue;
-        } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
-        }
-
-        return defaultValue;
-    }
-
-    private boolean getEnabled(Element element, String elementName) {
-        if (element == null) {
-            return true;
-        }
-
-        try {
-            String strValue = element.getAttribute(ENABLED_ATTRIBUTE);
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                boolean value = Boolean.valueOf(strValue);
-                return value;
-            }
-            return true;
-        } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
-        }
-
-        return false;
-    }
-
-    private Long getLong(Element element, String elementName) {
-        if (element == null) {
-            return null;
-        }
-
-        try {
-            String strValue = element.getFirstChild().getTextContent();
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                Long value = Long.valueOf(strValue);
-                return value;
-            }
-            return null;
-        } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
-        }
-
-        return null;
     }
 }
