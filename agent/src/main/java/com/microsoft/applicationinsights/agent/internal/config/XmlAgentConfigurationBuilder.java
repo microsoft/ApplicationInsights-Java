@@ -203,6 +203,8 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         nodes = builtInElement.getElementsByTagName(MAX_STATEMENT_QUERY_LIMIT_TAG);
         builtInConfigurationBuilder.setSqlMaxQueryLimitInMS(XmlParserUtils.getLong(XmlParserUtils.getFirst(nodes), MAX_STATEMENT_QUERY_LIMIT_TAG));
 
+        new BuiltInInstrumentedClassesBuilder().setSimpleBuiltInClasses(builtInConfigurationBuilder, builtInElement);
+
         agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
     }
 
