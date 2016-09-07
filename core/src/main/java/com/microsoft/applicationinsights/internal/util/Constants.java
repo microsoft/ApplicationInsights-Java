@@ -19,26 +19,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.channel.common;
-
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-
-import java.util.Map;
+package com.microsoft.applicationinsights.internal.util;
 
 /**
- * Created by gupele on 6/4/2015.
+ * Created by gupele on 9/6/2016.
  */
-final class ApacheSenderFactory {
-    public ApacheSender create(Map<String, String> keysAndValues) {
-        if (!ClassDataUtils.INSTANCE.verifyClassExists("org.apache.http.conn.HttpClientConnectionManager")) {
+public class Constants {
+    public static final String PROXY_AUTH_PORT = "proxyAuthenticatorPort";
+    public static final String PROXY_AUTH_HOST = "proxyAuthenticatorHost";
+    public static final String PROXY_AUTH_REALM = "proxyAuthenticatorRealm";
+    public static final String PROXT_AUTH_SCHMA = "proxyAuthenticatorSchema";
+    public static final String PROXY_AUTH_USER = "proxyAuthenticatorUser";
+    public static final String PROXY_AUTH_PASS = "proxyAuthenticatorPassword";
 
-            InternalLogger.INSTANCE.warn("Found an old version of HttpClient jar, for best performance consider upgrading to version 4.3+");
-
-            return new ApacheSender42();
-        }
-
-        InternalLogger.INSTANCE.trace("Using Http Client version 4.3+");
-        return new ApacheSender43(keysAndValues);
-    }
+    private Constants() {}
 }

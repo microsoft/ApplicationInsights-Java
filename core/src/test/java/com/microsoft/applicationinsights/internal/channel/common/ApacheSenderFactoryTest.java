@@ -57,7 +57,7 @@ public final class ApacheSenderFactoryTest {
         Mockito.doReturn(isNewVersion).when(mockVerifier).verifyClassExists(anyString());
         field.set(ClassDataUtils.INSTANCE, mockVerifier);
 
-        ApacheSender sender = new ApacheSenderFactory().create();
+        ApacheSender sender = new ApacheSenderFactory().create(null);
         assertNotNull(sender);
         return sender;
     }

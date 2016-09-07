@@ -31,6 +31,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -77,22 +78,22 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     private TransmissionPolicyManager transmissionPolicyManager;
 
     public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
-        return create(DEFAULT_SERVER_URI, transmissionPolicyManager);
+        return create(DEFAULT_SERVER_URI, transmissionPolicyManager, null);
     }
 
-    public static TransmissionNetworkOutput create(String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
+    public static TransmissionNetworkOutput create(String endpoint, TransmissionPolicyManager transmissionPolicyManager, Map<String, String> keysAndValues) {
         String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
-        return new TransmissionNetworkOutput(realEndpoint, transmissionPolicyManager);
+        return new TransmissionNetworkOutput(realEndpoint, transmissionPolicyManager, keysAndValues);
     }
 
-    private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager) {
+    private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager, Map<String, String> keysAndValues) {
         Preconditions.checkNotNull(serverUri, "serverUri should be a valid non-null value");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(serverUri), "serverUri should be a valid non-null value");
         Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
 
         this.serverUri = serverUri;
 
-        httpClient = new ApacheSenderFactory().create();
+        httpClient = new ApacheSenderFactory().create(keysAndValues);
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
     }

@@ -35,6 +35,7 @@ import java.util.Map;
 @XmlRootElement(name="Channel")
 public class ChannelXmlElement {
 
+    private ProxyAuthenticator proxyAuthenticator;
     private String endpointAddress;
     private String maxTelemetryBufferCapacity;
     private String flushIntervalInSeconds;
@@ -129,7 +130,19 @@ public class ChannelXmlElement {
         }
 
         data.put("Throttling", throttling ? "true" : "false");
+        if (proxyAuthenticator != null) {
+            proxyAuthenticator.setDataInMap(data);
+        }
 
         return data;
+    }
+
+    @XmlElement(name="ProxyAuthenticator")
+    public ProxyAuthenticator getProxyAuthenticator() {
+        return proxyAuthenticator;
+    }
+
+    public void setProxyAuthenticator(ProxyAuthenticator proxyAuthenticator) {
+        this.proxyAuthenticator = proxyAuthenticator;
     }
 }
