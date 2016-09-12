@@ -32,6 +32,8 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentati
  * Created by gupele on 5/19/2015.
  */
 final class AgentConfigurationDefaultImpl implements AgentConfiguration {
+    private boolean selfRegistrationMode = false;
+    private String sdkPath;
     private HashMap<String, ClassInstrumentationData> classesToInstrument;
     private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
     private Set<String> excludedPrefixes = new HashSet<String>();
@@ -55,11 +57,30 @@ final class AgentConfigurationDefaultImpl implements AgentConfiguration {
         return excludedPrefixes;
     }
 
+    @Override
+    public boolean isSelfRegistrationMode() {
+        return selfRegistrationMode;
+    }
+
+    @Override
+    public String getSdkPath() {
+        return sdkPath;
+    }
+
     public void setBuiltInData(AgentBuiltInConfiguration builtInData) {
         this.builtInConfiguration = builtInData;
     }
 
     public void setExcludedPrefixes(Set<String> excludedPrefixes) {
         this.excludedPrefixes = excludedPrefixes;
+    }
+
+
+    public void setSelfRegistrationMode(boolean selfRegistrationMode) {
+        this.selfRegistrationMode = selfRegistrationMode;
+    }
+
+    public void setSdkPath(String sdkPath) {
+        this.sdkPath = sdkPath;
     }
 }

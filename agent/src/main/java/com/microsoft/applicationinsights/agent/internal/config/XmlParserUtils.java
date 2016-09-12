@@ -46,7 +46,20 @@ final class XmlParserUtils {
         return (Element)node;
     }
 
-    public static boolean getEnabled(Element element, String elementName) {
+    public static String getAttribute(Element element, String attributeName) {
+        if (element == null) {
+            return null;
+        }
+
+        String attributeValue = element.getAttribute(attributeName);
+        return attributeValue;
+    }
+
+    public static boolean getEnabled(Element element, String attributeName) {
+        return getEnabled(element, attributeName, true);
+    }
+
+    public static boolean getEnabled(Element element, String elementName, boolean defaultValue) {
         if (element == null) {
             return true;
         }
@@ -57,12 +70,12 @@ final class XmlParserUtils {
                 boolean value = Boolean.valueOf(strValue);
                 return value;
             }
-            return true;
+            return defaultValue;
         } catch (Throwable t) {
             InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
         }
 
-        return false;
+        return defaultValue;
     }
 
     public static long getLongAttribute(Element element, String elementName, String attributeName, long defaultValue) {
