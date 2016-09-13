@@ -60,6 +60,7 @@ class DefaultClassDataProvider implements ClassDataProvider {
     private final HashSet<String> excludedPaths;
 
     private final ConcurrentHashMap<String, ClassInstrumentationData> classesToInstrument = new ConcurrentHashMap<String, ClassInstrumentationData>();
+    private final ConcurrentHashMap<String, ClassInstrumentationData> regExpClassesToInstrument = new ConcurrentHashMap<String, ClassInstrumentationData>();
 
     private boolean builtInEnabled = true;
 
@@ -103,16 +104,30 @@ class DefaultClassDataProvider implements ClassDataProvider {
     /**
      * Gets the {@link ClassInstrumentationData} that is associated
      * with the argument 'className', and removes that entry from the container once this is found
+     * If not found, the method will try to find a match using a regular expression in the regex container
      * @param className The class name to search for
      * @return The {@link ClassInstrumentationData}
      */
     @Override
     public DefaultByteCodeTransformer getAndRemove(String className) {
-        final ClassInstrumentationData classInstrumentationData = classesToInstrument.remove(className);
+        ClassInstrumentationData classInstrumentationData = classesToInstrument.remove(className);
+        if (classInstrumentationData == null) {
+            if (!regExpClassesToInstrument.isEmpty()) {
+                int index = className.lastIndexOf('/');
+                if (index != -1) {
+                    String fullPackageName = className.substring(0, index + 1);
+                    String onlycClassName = className.substring(index + 1);
+                    classInstrumentationData = regExpClassesToInstrument.get(fullPackageName);
+                    if (!classInstrumentationData.isClassNameMatches(onlycClassName)) {
+                        return null;
+                    }
+                }
+            }
+        }
+
         if (classInstrumentationData == null) {
             return null;
         }
-
         return new DefaultByteCodeTransformer(classInstrumentationData);
     }
 
@@ -131,13 +146,21 @@ class DefaultClassDataProvider implements ClassDataProvider {
         }
 
         for (ClassInstrumentationData classInstrumentationData : requestedClassesToInstrument) {
-            if (isExcluded(classInstrumentationData.getClassName())) {
-                InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
-                continue;
+            if (!classInstrumentationData.isRegExp()) {
+                if (isExcluded(classInstrumentationData.getClassName())) {
+                    InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
+                    continue;
+                }
+                InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
+            } else {
+                InternalAgentLogger.INSTANCE.trace("Adding regex classes in package'%s'", classInstrumentationData.getFullPackageName());
             }
 
-            InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
-            classesToInstrument.put(classInstrumentationData.getClassName(), classInstrumentationData);
+            if (classInstrumentationData.isRegExp()) {
+                regExpClassesToInstrument.put(classInstrumentationData.getFullPackageName(), classInstrumentationData);
+            } else {
+                classesToInstrument.put(classInstrumentationData.getClassName(), classInstrumentationData);
+            }
         }
     }
 

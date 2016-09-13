@@ -27,6 +27,9 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * An 'instrumented' class data
  *
@@ -68,12 +71,14 @@ public final class ClassInstrumentationData {
 
     private ClassVisitorFactory classVisitorFactory;
 
+    private Pattern classNamePattern;
+    private String onlyPackageName;
+
     public ClassInstrumentationData(String className, InstrumentedClassType classType) {
         this(className, classType, null);
     }
 
     public ClassInstrumentationData(String className, InstrumentedClassType classType, ClassVisitorFactory classVisitorFactory) {
-        this.className = className;
         this.classType = classType;
         this.methodInstrumentationInfo = new MethodInstrumentationInfo();
         if (classVisitorFactory == null) {
@@ -81,6 +86,22 @@ public final class ClassInstrumentationData {
         } else {
             this.classVisitorFactory = classVisitorFactory;
         }
+
+        int index = className.lastIndexOf("/");
+        if (index != -1) {
+            String onlyClassName = className.substring(index + 1);
+            if (className.contains("*")) {
+                onlyPackageName = className.substring(0, index + 1);
+                onlyClassName = onlyClassName.replace("*", "\\*");
+                classNamePattern = Pattern.compile(onlyClassName);
+                this.className = null;
+                return;
+            }
+        }
+
+        onlyPackageName = null;
+        classNamePattern = null;
+        this.className = className;
     }
 
     public boolean addMethod(String methodName, String signature, boolean reportCaughtExceptions, boolean reportExecutionTime, long thresholdInMS) {
@@ -179,6 +200,19 @@ public final class ClassInstrumentationData {
     public ClassInstrumentationData setThresholdInMS(long thresholdInMS) {
         this.thresholdInMS = thresholdInMS;
         return this;
+    }
+
+    public boolean isRegExp() {
+        return classNamePattern != null;
+    }
+
+    public String getFullPackageName() {
+        return onlyPackageName;
+    }
+
+    public boolean isClassNameMatches(String onlycClassName) {
+        Matcher matcher = classNamePattern.matcher(onlycClassName);
+        return matcher.matches();
     }
 }
 
