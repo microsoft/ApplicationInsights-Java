@@ -24,6 +24,9 @@ package com.microsoft.applicationinsights.internal.config;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -141,4 +144,43 @@ public final class ReflectionUtils {
         }
         return false;
     }
+
+    /**
+     * Generic method that creates instances based on their names and adds them to a Collection
+     *
+     * Note that the class does its 'best effort' to create an instance and will not fail the method
+     * if an instance (or more) was failed to create. This is naturally, a policy we can easily replace
+     *
+     * @param clazz The class all instances should have
+     * @param list The container of instances, this is where we store our instances that we create
+     * @param classNames Classes to create.
+     * @param <T>
+     */
+    public static <T> void loadComponents(
+            Class<T> clazz,
+            List<T> list,
+            Collection<AddTypeXmlElement> classNames) {
+        if (classNames == null) {
+            return;
+        }
+
+        for (AddTypeXmlElement className : classNames) {
+            T initializer = null;
+
+            // If parameters have been provided, we try to load the component with provided parameters map. Otherwise,
+            // we fallback to initialize the component with the default ctor.
+            if (className.getParameters().size() != 0) {
+                initializer = createInstance(className.getType(), clazz, Map.class, className.getData());
+            }
+
+            if (initializer == null) {
+                initializer = createInstance(className.getType(), clazz);
+            }
+
+            if (initializer != null) {
+                list.add(initializer);
+            }
+        }
+    }
+
 }
