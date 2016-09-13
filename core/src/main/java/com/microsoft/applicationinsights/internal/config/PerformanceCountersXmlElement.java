@@ -32,6 +32,7 @@ public class PerformanceCountersXmlElement {
     private boolean useBuiltIn = true;
     private long collectionFrequencyInSec = 60;
     private PerformanceCounterJvmSectionXmlElement jvmSection;
+    private String plugin;
 
     private ArrayList<JmxXmlElement> jmxXmlElements;
     private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
@@ -81,5 +82,14 @@ public class PerformanceCountersXmlElement {
     @XmlElement(name="Jvm")
     public void setJvmSection(PerformanceCounterJvmSectionXmlElement jvmSection) {
         this.jvmSection = jvmSection;
+    }
+
+    public String getPlugin() {
+        return plugin;
+    }
+
+    @XmlElement(name="Plugin")
+    public void setPlugin(String plugin) {
+        this.plugin = plugin;
     }
 }

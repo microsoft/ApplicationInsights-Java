@@ -32,12 +32,9 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.extensibility.*;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
@@ -263,6 +260,10 @@ public enum TelemetryConfigurationFactory {
     @SuppressWarnings("unchecked")
     private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
+        String pluginName = performanceConfigurationData.getPlugin();
+
+        PerformanceCountersCollectionPlugin plugin = ReflectionUtils.createInstance(pluginName, PerformanceCountersCollectionPlugin.class);
+        PerformanceCounterContainer.INSTANCE.setPlugin(plugin);
 
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 
