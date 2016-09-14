@@ -21,6 +21,8 @@
 
 // region Shared java configuration
 
+import org.gradle.internal.os.OperatingSystem;
+
 apply plugin: 'java'
 
 def java6JreDir = System.env.'JAVA_JRE_6'
@@ -44,6 +46,36 @@ if (java6JreDir) {
     logger.warn "Environment variable 'JAVA_JRE_6' is not defined - falling back to use machine default Java SDK"
 }
 
+if (hasProperty("JDKToUse")) {
+    logger.info("using $JDKToUse to compile and run tests")
+    def javaExecutablesPath = new File(JDKToUse, 'bin')
+    def javaExecutables = [:].withDefault { execName ->
+        def execNameToUse = execName
+        if (OperatingSystem.current().isWindows()){
+            execNameToUse = execName + ".exe"
+        }
+        def executable = new File(javaExecutablesPath, execNameToUse)
+        assert executable.exists(): "There is no ${execName} executable in ${javaExecutablesPath}"
+        executable
+    }
+    tasks.withType(AbstractCompile) {
+        options.with {
+            fork = true
+            forkOptions.executable = javaExecutables.javac
+        }
+    }
+    tasks.withType(Javadoc) {
+        executable = javaExecutables.javadoc
+    }
+    tasks.withType(Test) {
+        executable = javaExecutables.java
+    }
+    tasks.withType(JavaExec) {
+        executable = javaExecutables.java
+    }
+} else {
+    logger.info("JDKToUse not found. Using default JAVA_HOME")
+}
 updateTestDirectories()
 
 sourceSets {
