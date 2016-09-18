@@ -31,7 +31,6 @@ import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.sun.org.apache.bcel.internal.generic.LSUB;
 
 /**
  * The class will filter out telemetries that come from 'unneeded' configured list of source names
