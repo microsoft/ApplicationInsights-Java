@@ -31,6 +31,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.extensibility.PerformanceCountersCollectionPlugin;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
@@ -68,6 +69,8 @@ public enum PerformanceCounterContainer implements Stoppable {
     private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<String, PerformanceCounter>();
 
     private volatile boolean initialized = false;
+
+    private PerformanceCountersCollectionPlugin plugin;
 
     private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
     private long collectionFrequencyInMS = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
@@ -217,11 +220,25 @@ public enum PerformanceCounterContainer implements Stoppable {
                             telemetryClient = new TelemetryClient();
                         }
 
+                        if (plugin != null) {
+                            try {
+                                plugin.preCollection();
+                            } catch (Throwable t) {
+                            }
+                        }
+
                         for (PerformanceCounter performanceCounter : performanceCounters.values()) {
                             try {
                                 performanceCounter.report(telemetryClient);
                             } catch (Throwable e) {
                                 InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': '%s'", performanceCounter.getId(), e.getMessage());
+                            }
+                        }
+
+                        if (plugin != null) {
+                            try {
+                                plugin.postCollection();
+                            } catch (Throwable t) {
                             }
                         }
                     }
@@ -244,5 +261,9 @@ public enum PerformanceCounterContainer implements Stoppable {
                 return thread;
             }
         });
+    }
+
+    public void setPlugin(PerformanceCountersCollectionPlugin plugin) {
+        this.plugin = plugin;
     }
 }
