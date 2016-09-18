@@ -33,8 +33,14 @@ import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 public enum AgentConnector {
     INSTANCE;
 
+    enum RegistrationType {
+        NONE,
+        WEB,
+        SELF
+    }
+
     private String agentKey;
-    private boolean registered = false;
+    private RegistrationType registrationType = RegistrationType.NONE;
     private CoreAgentNotificationsHandler coreDataAgent = null;
 
     public static class RegistrationResult {
@@ -66,19 +72,65 @@ public enum AgentConnector {
      */
     @SuppressWarnings("unchecked")
     public synchronized RegistrationResult register(ClassLoader classLoader, String name) {
-        if (!registered) {
-            try {
-                coreDataAgent = new CoreAgentNotificationsHandler(name);
-                agentKey = ImplementationsCoordinator.INSTANCE.register(classLoader, coreDataAgent);
-            } catch (Throwable t) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
-                agentKey = null;
-            }
+        switch (registrationType) {
+            case NONE:
+                try {
+                    coreDataAgent = new CoreAgentNotificationsHandler(name);
+                    agentKey = ImplementationsCoordinator.INSTANCE.register(classLoader, coreDataAgent);
+                } catch (Throwable t) {
+                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
+                    agentKey = null;
+                }
 
-            registered = true;
+                registrationType = RegistrationType.WEB;
+                return new RegistrationResult(agentKey, coreDataAgent.getCleaner());
+
+            case WEB:
+                return new RegistrationResult(agentKey, coreDataAgent.getCleaner());
+
+            case SELF:
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Core was already registered by the Agent");
+                return null;
+
+            default:
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Unknown registration type '%s' found", registrationType);
+                return null;
         }
-
-        return new RegistrationResult(agentKey, coreDataAgent.getCleaner());
     }
 
+    /**
+     * Registers the caller, and returning a key to represent that data. The method should not throw!
+     *
+     * The method is basically delegating the call to the relevant Agent class.
+     *
+     */
+    @SuppressWarnings("unchecked")
+    public synchronized boolean registerSelf() {
+        switch (registrationType) {
+            case NONE:
+                try {
+                    coreDataAgent = new CoreAgentNotificationsHandler("app");
+                } catch (Throwable t) {
+                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
+                    return false;
+                }
+                ImplementationsCoordinator.INSTANCE.registerSelf(coreDataAgent);
+
+                registrationType = RegistrationType.SELF;
+
+                return true;
+
+            case WEB:
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Core was already registered by the Web module");
+                return false;
+
+            case SELF:
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Core was already registered by the Agent, ignored");
+                return true;
+
+            default:
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Unknown registration type '%s' found", registrationType);
+                return false;
+        }
+    }
 }

@@ -56,6 +56,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
 
     private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
 
+    private AgentNotificationsHandler mainHandler;
+
     public void initialize(AgentConfiguration configurationData) {
         maxSqlMaxQueryThresholdInMS = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimitInMS();
         setRedisThresholdInMS(configurationData.getBuiltInConfiguration().getRedisThresholdInMS());
@@ -242,6 +244,19 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
+    public void registerSelf(AgentNotificationsHandler handler) {
+        try {
+            if (handler == null) {
+                throw new IllegalArgumentException("registerSelf: AgentNotificationsHandler must be a non-null value");
+            }
+
+            mainHandler = handler;
+            InternalAgentLogger.INSTANCE.trace("Setting main handler");
+        } catch (Throwable throwable) {
+            InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
+        }
+    }
+
     public void setRedisThresholdInMS(long thresholdInMS) {
         redisThresholdInNS = thresholdInMS * 1000000;
         if (redisThresholdInNS < 0) {
@@ -276,6 +291,6 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             }
         }
 
-        return null;
+        return mainHandler;
     }
 }

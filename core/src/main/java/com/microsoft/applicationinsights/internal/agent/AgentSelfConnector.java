@@ -19,26 +19,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.config;
-
-import java.util.Map;
-import java.util.Set;
-
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+package com.microsoft.applicationinsights.internal.agent;
 
 /**
- * Defines the interface for concrete classes that represent configuration data for the Agent
- * Created by gupele on 5/17/2015.
+ * A utility class to load the core SDK into the Agent
+ * This is an internal class that should only used by the Agent
+ *
+ * Created by gupele on 9/11/2016.
  */
-public interface AgentConfiguration {
-
-    AgentBuiltInConfiguration getBuiltInConfiguration();
-
-    Map<String, ClassInstrumentationData> getRequestedClassesToInstrument();
-
-    Set<String> getExcludedPrefixes();
-
-    boolean isSelfRegistrationMode();
-
-    String getSdkPath();
+public class AgentSelfConnector {
+    public AgentSelfConnector() throws Exception {
+        if (!AgentConnector.INSTANCE.registerSelf()) {
+            throw new Exception("Failed to register Core in Agent");
+        }
+    }
 }

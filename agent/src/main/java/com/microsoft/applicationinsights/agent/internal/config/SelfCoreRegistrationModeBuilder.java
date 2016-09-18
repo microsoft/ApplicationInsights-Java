@@ -21,24 +21,30 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
-import java.util.Map;
-import java.util.Set;
-
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
- * Defines the interface for concrete classes that represent configuration data for the Agent
- * Created by gupele on 5/17/2015.
+ * Created by gupele on 9/11/2016.
  */
-public interface AgentConfiguration {
+public class SelfCoreRegistrationModeBuilder {
+    private final static String SELF_MODE_TAG = "SelfMode";
+    private final static String SELF_MODE_SDK_PATH_ATTRIBUTE = "sdkPath";
 
-    AgentBuiltInConfiguration getBuiltInConfiguration();
+    public void create(AgentConfigurationDefaultImpl agentConfiguration, Element enclosingTag) {
+        NodeList nodes = enclosingTag.getElementsByTagName(SELF_MODE_TAG);
+        Element selfModeElement = XmlParserUtils.getFirst(nodes);
+        if (selfModeElement == null) {
+            agentConfiguration.setSelfRegistrationMode(false);
+            return;
+        }
 
-    Map<String, ClassInstrumentationData> getRequestedClassesToInstrument();
+        boolean enabled = XmlParserUtils.getEnabled(selfModeElement, SELF_MODE_TAG, false);
+        agentConfiguration.setSelfRegistrationMode(enabled);
 
-    Set<String> getExcludedPrefixes();
-
-    boolean isSelfRegistrationMode();
-
-    String getSdkPath();
+        if (enabled) {
+            String sdkPath = XmlParserUtils.getAttribute(selfModeElement, SELF_MODE_SDK_PATH_ATTRIBUTE);
+            agentConfiguration.setSdkPath(sdkPath);
+        }
+    }
 }

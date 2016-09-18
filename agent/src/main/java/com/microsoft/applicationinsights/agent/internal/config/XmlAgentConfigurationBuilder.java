@@ -105,6 +105,8 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 return agentConfiguration;
             }
 
+            setSelfCoreRegistratorMode(agentConfiguration, topElementTag);
+
             setBuiltInInstrumentation(agentConfiguration, instrumentationTag);
 
             NodeList addClasses = getAllClassesToInstrument(instrumentationTag);
@@ -136,6 +138,10 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             InternalAgentLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'" + e.getMessage());
             return null;
         }
+    }
+
+    private void setSelfCoreRegistratorMode(AgentConfigurationDefaultImpl agentConfiguration, Element instrumentationTag) {
+        new SelfCoreRegistrationModeBuilder().create(agentConfiguration, instrumentationTag);
     }
 
     private void getForbiddenPaths(Element parent, AgentConfigurationDefaultImpl agentConfiguration) {
