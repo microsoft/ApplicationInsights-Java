@@ -41,7 +41,7 @@ import org.w3c.dom.NodeList;
  *
  * To add a new class you can do one of the following:
  *
- * <code>
+ * {@code
  *   // Start define new class
  *   builtInInstrumentedClasses.put(
  *    // The XML tag in AI-Agent.xml (in the 'BuiltIn' section)
@@ -54,10 +54,10 @@ import org.w3c.dom.NodeList;
  *     // All methods to instrument
  *      "method1", "method2"));
  *
- * </code>
+ * }
  *
  * or (no method define, all methods will be instrumented)
- * <code>
+ * {@code
  *   // Start define new class
  *   builtInInstrumentedClasses.put(
  *   // The XML tag in AI-Agent.xml (in the 'BuiltIn' section)
@@ -67,10 +67,10 @@ import org.w3c.dom.NodeList;
  *       // Full class name
  *       "an.example.of.full.class.path.to.RelevantClass"));
  *
- * </code>
+ * }
  *
  * or (set threshold in MS. Methods that will pass this threshold will be reported)
- *   <code>
+ *   {@code
  *   // Start define new class
  *   builtInInstrumentedClasses.put(
  *   // The XML tag in AI-Agent.xml (in the 'BuiltIn' section)
@@ -80,27 +80,27 @@ import org.w3c.dom.NodeList;
  *  // Full class name
  *  "an.example.of.full.class.path.to.RelevantClass", 100L));
  *
- * </code>
+ * }
  *
  * To disable the class from being instrumented you now need to go to the AI-Agent.xml and:
  *
- * <code>
+ * {@code
  *      <BuiltIn>
  *
  *           <NewClassLogicalName enabled="false"/>
  *
  *       </BuiltIn>
- * </code>
+ * }
  *
  * To change the class threshold:
  *
- * <code>
+ * {@code
  *    <BuiltIn>
  *
  *       <NewClassLogicalName thresholdInMS="10001"/>
  *
  *   </BuiltIn>
- * </code>
+ * }
  *
  * Created by gupele on 8/2/2016.
  */
@@ -112,11 +112,11 @@ final class BuiltInInstrumentedClasses {
         private ArrayList<String> methods;
 
         public BuiltInInstrumentedClass(String className) {
-            this(className, 0, null);
+            this(className, 0, (String[])null);
         }
 
         public BuiltInInstrumentedClass(String className, long thresholdInMS) {
-            this(className, thresholdInMS, null);
+            this(className, thresholdInMS, (String[])null);
         }
 
         public BuiltInInstrumentedClass(String className, String... methods) {
