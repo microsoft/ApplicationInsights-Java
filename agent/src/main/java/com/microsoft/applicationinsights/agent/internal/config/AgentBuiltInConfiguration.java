@@ -21,6 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+
+import java.util.List;
+
 /**
  * Created by gupele on 6/5/2015.
  */
@@ -34,8 +38,10 @@ public class AgentBuiltInConfiguration {
     private final long maxSqlQueryLimitInMS;
     private final long redisThresholdInMS;
     private final DataOfConfigurationForException dataOfConfigurationForException;
+    private final List<ClassInstrumentationData> simpleBuiltInClasses;
 
-    public AgentBuiltInConfiguration(boolean httpEnabled,
+    public AgentBuiltInConfiguration(List<ClassInstrumentationData> simpleBuiltInClasses,
+                                     boolean httpEnabled,
                                      boolean jdbcEnabled,
                                      boolean hibernateEnabled,
                                      boolean jedisEnabled,
@@ -43,6 +49,7 @@ public class AgentBuiltInConfiguration {
                                      Long maxSqlQueryLimitInMS,
                                      long redisThresholdInMS,
                                      DataOfConfigurationForException dataOfConfigurationForException) {
+        this.simpleBuiltInClasses = simpleBuiltInClasses;
         this.enabled = true;
         this.httpEnabled = httpEnabled;
         this.jdbcEnabled = jdbcEnabled;
@@ -91,5 +98,9 @@ public class AgentBuiltInConfiguration {
 
     public DataOfConfigurationForException getDataOfConfigurationForException() {
         return dataOfConfigurationForException;
+    }
+
+    public List<ClassInstrumentationData> getSimpleBuiltInClasses() {
+        return simpleBuiltInClasses;
     }
 }

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Arrays;
@@ -89,9 +90,14 @@ class DefaultClassDataProvider implements ClassDataProvider {
             if (agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException().isEnabled()) {
                 new RuntimeExceptionProvider(classesToInstrument).add();
             }
+
+            addConfigurationData(agentConfiguration.getBuiltInConfiguration().getSimpleBuiltInClasses());
         }
 
-        addConfigurationData(agentConfiguration);
+        Collection<ClassInstrumentationData> requestedClsssesToInstrument = agentConfiguration.getRequestedClassesToInstrument().values();
+        addConfigurationData(requestedClsssesToInstrument);
+
+        excludedPaths.addAll(agentConfiguration.getExcludedPrefixes());
     }
 
     /**
@@ -119,25 +125,20 @@ class DefaultClassDataProvider implements ClassDataProvider {
         return false;
     }
 
-    private void addConfigurationData(AgentConfiguration agentConfiguration) {
-        if (agentConfiguration == null) {
+    private void addConfigurationData(Collection<ClassInstrumentationData> requestedClassesToInstrument) {
+        if (requestedClassesToInstrument == null) {
             return;
         }
 
-        Map<String, ClassInstrumentationData> configurationData = agentConfiguration.getRequestedClassesToInstrument();
-        if (configurationData != null) {
-            for (ClassInstrumentationData classInstrumentationData : configurationData.values()) {
-                if (isExcluded(classInstrumentationData.getClassName())) {
-                    InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
-                    continue;
-                }
-
-                InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
-                classesToInstrument.put(classInstrumentationData.getClassName(), classInstrumentationData);
+        for (ClassInstrumentationData classInstrumentationData : requestedClassesToInstrument) {
+            if (isExcluded(classInstrumentationData.getClassName())) {
+                InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
+                continue;
             }
-        }
 
-        excludedPaths.addAll(agentConfiguration.getExcludedPrefixes());
+            InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
+            classesToInstrument.put(classInstrumentationData.getClassName(), classInstrumentationData);
+        }
     }
 
     private void setBuiltInDataFlag(AgentConfiguration agentConfiguration) {
