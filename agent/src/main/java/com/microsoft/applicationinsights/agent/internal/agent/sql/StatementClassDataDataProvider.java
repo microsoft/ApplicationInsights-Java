@@ -41,6 +41,7 @@ public class StatementClassDataDataProvider {
             "oracle/jdbc/driver/OracleStatement",
             "com/microsoft/sqlserver/jdbc/SQLServerStatement",
             "org/apache/derby/client/am/Statement",
+            "org/apache/derby/client/am/ClientStatement",
             "org/sqlite/jdbc3/JDBC3Statement"
     };
 

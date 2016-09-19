@@ -44,6 +44,7 @@ public final class PreparedStatementClassDataProvider {
         try {
             ClassVisitorFactory factory = classFactoryForDerbyDB();
             doAdd(factory, "org/apache/derby/client/am/PreparedStatement");
+            doAdd(factory, "org/apache/derby/client/am/ClientPreparedStatement");
 
             factory = classFactoryForHSQLDB();
             doAdd(factory, "org/hsqldb/jdbc/JDBCPreparedStatement");
