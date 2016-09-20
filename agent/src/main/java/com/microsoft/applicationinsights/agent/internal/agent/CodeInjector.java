@@ -99,6 +99,9 @@ public final class CodeInjector implements ClassFileTransformer {
 
         if (agentConfiguration.getBuiltInConfiguration().isJmxEnabled()) {
             jmxConnectorLoader = new JmxConnectorLoader();
+			if (!jmxConnectorLoader.initialize()) {
+				jmxConnectorLoader = null;
+			}
         }
     }
 }

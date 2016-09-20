@@ -76,19 +76,24 @@ class DefaultClassDataProvider implements ClassDataProvider {
             InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
 
             if (agentConfiguration.getBuiltInConfiguration().isJdbcEnabled()) {
+				InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Statements instrumentation");
                 new StatementClassDataDataProvider(classesToInstrument).add();
+				InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Prepared Statements instrumentation");
                 new PreparedStatementClassDataProvider(classesToInstrument).add();
             }
 
             if (agentConfiguration.getBuiltInConfiguration().isHttpEnabled()) {
+				InternalAgentLogger.INSTANCE.trace("Adding built-in HTTP instrumentation");
                 new HttpClassDataProvider(classesToInstrument).add();
             }
 
             if (agentConfiguration.getBuiltInConfiguration().isRedisEnabled()) {
+				InternalAgentLogger.INSTANCE.trace("Adding built-in Jedis instrumentation");
                 new JedisClassDataProvider(classesToInstrument).add();
             }
 
             if (agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException().isEnabled()) {
+				InternalAgentLogger.INSTANCE.trace("Adding built-in Runtime instrumentation");
                 new RuntimeExceptionProvider(classesToInstrument).add();
             }
 

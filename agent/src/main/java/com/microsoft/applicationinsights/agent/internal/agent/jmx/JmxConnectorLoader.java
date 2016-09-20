@@ -35,6 +35,9 @@ public final class JmxConnectorLoader {
     private final static String AI_SDK_JMX_NAME = "com.microsoft.applicationinsights.java.sdk:type=AIJavaSDKAgent";
 
     public JmxConnectorLoader() {
+	}
+	
+	public boolean initialize() {
         try {
             MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = new ObjectName(AI_SDK_JMX_NAME);
@@ -42,6 +45,8 @@ public final class JmxConnectorLoader {
             mbs.registerMBean(mxBean, name);
 
             InternalAgentLogger.INSTANCE.info("Successfully registered Jmx connector.");
+			
+			return true;
         } catch (MalformedObjectNameException e) {
             InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MalformedObjectNameException': '%s'", e.getMessage());
         } catch (NotCompliantMBeanException e) {
@@ -50,6 +55,10 @@ public final class JmxConnectorLoader {
             InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'InstanceAlreadyExistsException': '%s'", e.getMessage());
         } catch (MBeanRegistrationException e) {
             InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MBeanRegistrationException': '%s'", e.getMessage());
+        } catch (Throwable t) {
+            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.getMessage());
         }
-    }
+		
+		return false;
+	}
 }
