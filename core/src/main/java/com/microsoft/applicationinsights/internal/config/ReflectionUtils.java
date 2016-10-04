@@ -154,7 +154,7 @@ public final class ReflectionUtils {
      * @param clazz The class all instances should have
      * @param list The container of instances, this is where we store our instances that we create
      * @param classNames Classes to create.
-     * @param <T>
+     * @param <T> The class type to create
      */
     public static <T> void loadComponents(
             Class<T> clazz,
