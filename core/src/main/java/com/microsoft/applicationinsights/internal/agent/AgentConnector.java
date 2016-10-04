@@ -102,7 +102,7 @@ public enum AgentConnector {
      * Registers the caller, and returning a key to represent that data. The method should not throw!
      *
      * The method is basically delegating the call to the relevant Agent class.
-     *
+     * @return A boolean value representing the agent registration
      */
     @SuppressWarnings("unchecked")
     public synchronized boolean registerSelf() {
