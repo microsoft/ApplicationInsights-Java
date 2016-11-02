@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
@@ -63,9 +63,9 @@ public class WebSyntheticRequestTelemetryInitializerTest {
         TraceTelemetry telemetry = new TraceTelemetry();
         tested.initialize(telemetry);
 
-        assertTrue(Strings.isNullOrEmpty(telemetry.getContext().getSession().getId()));
-        assertTrue(Strings.isNullOrEmpty(telemetry.getContext().getUser().getId()));
-        assertTrue(Strings.isNullOrEmpty(telemetry.getContext().getOperation().getId()));
+        assertTrue(CommonUtils.isNullOrEmpty(telemetry.getContext().getSession().getId()));
+        assertTrue(CommonUtils.isNullOrEmpty(telemetry.getContext().getUser().getId()));
+        assertTrue(CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId()));
     }
 
     @Test

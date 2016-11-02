@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -41,7 +41,7 @@ public class WebSessionTelemetryInitializer extends WebTelemetryInitializerBase 
     protected void onInitializeTelemetry(Telemetry telemetry) {
         SessionContext session = telemetry.getContext().getSession();
 
-        if (!Strings.isNullOrEmpty(session.getId())) {
+        if (!CommonUtils.isNullOrEmpty(session.getId())) {
             return;
         }
 

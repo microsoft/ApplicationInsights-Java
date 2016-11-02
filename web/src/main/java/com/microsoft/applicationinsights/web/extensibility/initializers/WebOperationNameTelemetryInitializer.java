@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
@@ -57,7 +57,7 @@ public class WebOperationNameTelemetryInitializer extends WebTelemetryInitialize
         RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
 
         // We only update the request telemetry name if not already provided by the user.
-        if (requestTelemetry != null && Strings.isNullOrEmpty(requestTelemetry.getName())) {
+        if (requestTelemetry != null && CommonUtils.isNullOrEmpty(requestTelemetry.getName())) {
             requestTelemetry.setName(operationName);
         }
     }

@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import java.util.Date;
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -42,7 +42,7 @@ public class WebUserTelemetryInitializer extends WebTelemetryInitializerBase {
     protected void onInitializeTelemetry(Telemetry telemetry) {
         UserContext userContext = telemetry.getContext().getUser();
 
-        if (!Strings.isNullOrEmpty(userContext.getId())) {
+        if (!CommonUtils.isNullOrEmpty(userContext.getId())) {
             return;
         }
 
