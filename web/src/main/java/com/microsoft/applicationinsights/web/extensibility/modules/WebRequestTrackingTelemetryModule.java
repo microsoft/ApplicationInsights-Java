@@ -25,8 +25,8 @@ import java.util.Date;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import com.google.common.base.Strings;
-import org.apache.http.HttpStatus;
+import com.microsoft.applicationinsights.common.CommonUtils;
+//import org.apache.http.HttpStatus;
 import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -77,7 +77,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             String userAgent = request.getHeader("User-Agent");
 
             telemetry.setHttpMethod(method);
-            if (!Strings.isNullOrEmpty(query)) {
+            if (!CommonUtils.isNullOrEmpty(query)) {
                 telemetry.setUrl(String.format("%s://%s%s?%s", scheme, host, rURI, query));
             }
             else {

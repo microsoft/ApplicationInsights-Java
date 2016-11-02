@@ -37,7 +37,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
@@ -233,7 +233,7 @@ public final class WebRequestTrackingFilter implements Filter {
     private String registerWebApp(String name) {
         String key = null;
 
-        if (!Strings.isNullOrEmpty(name)) {
+        if (!CommonUtils.isNullOrEmpty(name)) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Registering WebApp with name '%s'", name);
             AgentConnector.RegistrationResult result = AgentConnector.INSTANCE.register(this.getClass().getClassLoader(), name);
             if (result == null) {
@@ -241,7 +241,7 @@ public final class WebRequestTrackingFilter implements Filter {
             }
             key = result.getKey();
 
-            if (Strings.isNullOrEmpty(key)) {
+            if (CommonUtils.isNullOrEmpty(key)) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Key for '%s' key is null'. No way to have RDD telemetries for this WebApp", name);
             } else {
                 if (result.getCleaner() != null) {
@@ -260,7 +260,7 @@ public final class WebRequestTrackingFilter implements Filter {
         String name = null;
         try {
             String contextPath = context.getContextPath();
-            if (Strings.isNullOrEmpty(contextPath)) {
+            if (CommonUtils.isNullOrEmpty(contextPath)) {
                 URL[] jarPaths = ((URLClassLoader) (this.getClass().getClassLoader())).getURLs();
                 for (URL url : jarPaths) {
                     String urlPath = url.getPath();
@@ -285,7 +285,7 @@ public final class WebRequestTrackingFilter implements Filter {
     }
 
     private void setKey(String key) {
-        if (Strings.isNullOrEmpty(key)) {
+        if (CommonUtils.isNullOrEmpty(key)) {
             agentIsUp = false;
             this.key = key;
             return;

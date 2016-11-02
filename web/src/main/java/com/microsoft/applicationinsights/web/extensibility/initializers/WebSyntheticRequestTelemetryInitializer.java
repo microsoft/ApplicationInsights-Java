@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.CommonUtils;
 
 /**
  * Created by gupele on 8/17/2015.
@@ -58,7 +58,7 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
         }
 
         String syntheticSourceHeader = request.getHeader(SYNTHETIC_TEST_SOURCE);
-        if (Strings.isNullOrEmpty(syntheticSourceHeader)) {
+        if (CommonUtils.isNullOrEmpty(syntheticSourceHeader)) {
             handlePossibleGSMSyntheticRequest(telemetry, request);
         } else {
             handleCommonSyntheticRequest(syntheticSourceHeader, telemetry, request);
@@ -67,22 +67,22 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
 
     private void handlePossibleGSMSyntheticRequest(Telemetry telemetry, HttpServletRequest request) {
         String gsmSyntheticTestRunId = request.getHeader(SYNTHETIC_TEST_RUN_ID);
-        if (Strings.isNullOrEmpty(gsmSyntheticTestRunId)) {
+        if (CommonUtils.isNullOrEmpty(gsmSyntheticTestRunId)) {
             return;
         }
 
         String syntheticSource = telemetry.getContext().getOperation().getSyntheticSource();
-        if (Strings.isNullOrEmpty(syntheticSource)) {
+        if (CommonUtils.isNullOrEmpty(syntheticSource)) {
             telemetry.getContext().getOperation().setSyntheticSource(SYNTHETIC_SOURCE_NAME);
         }
 
         String sessionId = telemetry.getContext().getSession().getId();
-        if (Strings.isNullOrEmpty(sessionId)) {
+        if (CommonUtils.isNullOrEmpty(sessionId)) {
             telemetry.getContext().getSession().setId(gsmSyntheticTestRunId);
         }
 
         String userId = telemetry.getContext().getUser().getId();
-        if (Strings.isNullOrEmpty(userId)) {
+        if (CommonUtils.isNullOrEmpty(userId)) {
             String header = request.getHeader(SYNTHETIC_TEST_LOCATION);
             telemetry.getContext().getUser().setId(header);
         }
@@ -90,24 +90,24 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
 
     private void handleCommonSyntheticRequest(String syntheticSourceHeader, Telemetry telemetry, HttpServletRequest request) {
         String syntheticSource = telemetry.getContext().getOperation().getSyntheticSource();
-        if (Strings.isNullOrEmpty(syntheticSource)) {
+        if (CommonUtils.isNullOrEmpty(syntheticSource)) {
             telemetry.getContext().getOperation().setSyntheticSource(syntheticSourceHeader);
         }
 
         String userId = telemetry.getContext().getUser().getId();
-        if (Strings.isNullOrEmpty(userId)) {
+        if (CommonUtils.isNullOrEmpty(userId)) {
             String header = request.getHeader(SYNTHETIC_TEST_USER_ID);
             telemetry.getContext().getUser().setId(header);
         }
 
         String sessionId = telemetry.getContext().getSession().getId();
-        if (Strings.isNullOrEmpty(sessionId)) {
+        if (CommonUtils.isNullOrEmpty(sessionId)) {
             String header = request.getHeader(SYNTHETIC_TEST_SESSION_ID);
             telemetry.getContext().getSession().setId(header);
         }
 
         String operationId = telemetry.getContext().getOperation().getId();
-        if (Strings.isNullOrEmpty(operationId)) {
+        if (CommonUtils.isNullOrEmpty(operationId)) {
             String header = request.getHeader(SYNTHETIC_TEST_OPERATION_ID);
             telemetry.getContext().getOperation().setId(header);
         }

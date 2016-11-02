@@ -19,27 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.extensibility.initializers;
-
-import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
+package com.microsoft.applicationinsights.common;
 
 /**
- * Created by yonisha on 2/16/2015.
+ * Created by oriy on 11/2/2016.
  */
-public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerBase {
-
-    /**
-     * Initializes the properties of the given telemetry.
-     */
-    @Override
-    protected void onInitializeTelemetry(Telemetry telemetry) {
-        RequestTelemetryContext telemetryContext = ThreadContext.getRequestTelemetryContext();
-
-        if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
-            telemetry.getContext().getOperation().setId(telemetryContext.getHttpRequestTelemetry().getId());
-        }
+public class CommonUtils {
+    public static boolean isNullOrEmpty(String string) {
+        return string == null || string.length() == 0;
     }
 }
