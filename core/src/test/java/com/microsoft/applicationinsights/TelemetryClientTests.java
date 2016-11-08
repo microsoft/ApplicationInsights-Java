@@ -99,6 +99,32 @@ public final class TelemetryClientTests {
     // region Track tests
 
     @Test
+    public void testNodeNameExists()
+    {
+        String nodeName = client.getContext().getInternal().getNodeName();
+        Assert.assertFalse(nodeName == null || nodeName.length()==0);
+    }
+
+    @Test
+    public void testNodeNameSent() {
+        client.trackEvent("Event");
+
+        EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
+        String nodeName = telemetry.getContext().getInternal().getNodeName();
+        Assert.assertFalse(nodeName == null || nodeName.length()==0);
+    }
+
+    @Test
+    public void testOverideNodeName(){
+        String overrideNode = "NewNodeName";
+        client.getContext().getInternal().setNodeName(overrideNode);
+        client.trackEvent("Event");
+        EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
+        String nodeName = telemetry.getContext().getInternal().getNodeName();
+        Assert.assertTrue("NodeName was not overriden", nodeName.equals(overrideNode));
+    }
+
+    @Test
     public void testChannelSendException() {
         TelemetryChannel mockChannel = new TelemetryChannel() {
             @Override

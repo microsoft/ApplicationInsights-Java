@@ -21,11 +21,27 @@
 
 package com.microsoft.applicationinsights.common;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+
 /**
  * Created by oriy on 11/2/2016.
  */
 public class CommonUtils {
     public static boolean isNullOrEmpty(String string) {
         return string == null || string.length() == 0;
+    }
+    public static String getHostName(){
+        try
+        {
+            InetAddress addr;
+            addr = InetAddress.getLocalHost();
+            return addr.getCanonicalHostName();
+        }
+        catch (UnknownHostException ex) {
+            // optional parameter. do nothing if unresolvable
+            return null;
+        }
     }
 }

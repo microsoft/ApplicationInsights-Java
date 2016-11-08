@@ -25,9 +25,7 @@ import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import com.microsoft.applicationinsights.common.CommonUtils;
 
 /**
  * Initializer class for device context information.
@@ -42,16 +40,9 @@ public final class DeviceInfoContextInitializer implements ContextInitializer
         device.setOperatingSystemVersion(DeviceInfo.getOperatingSystemVersion());
         device.setId(DeviceInfo.getHostName());
         device.setLocale(DeviceInfo.getLocale());
-        try
-        {
-            InetAddress addr;
-            addr = InetAddress.getLocalHost();
-            String hostname = addr.getCanonicalHostName();
-            device.setRoleInstance(hostname);
+        String hostName = CommonUtils.getHostName();
+        if (!CommonUtils.isNullOrEmpty(hostName)) {
+            device.setRoleInstance(hostName);
         }
-        catch (UnknownHostException ex) {
-            // optional parameter. do nothing if unresolvable
-        }
-
     }
 }

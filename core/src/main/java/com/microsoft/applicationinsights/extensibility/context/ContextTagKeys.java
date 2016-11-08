@@ -33,6 +33,8 @@
 //------------------------------------------------------------------------------
 package com.microsoft.applicationinsights.extensibility.context;
 
+import javax.naming.SizeLimitExceededException;
+
 /**
 * ContextTagKeys
 */
@@ -169,6 +171,9 @@ public class ContextTagKeys
 
     // 1001: Optional string InternalAgentVersion
     private String InternalAgentVersion;
+
+    // 1002: Optional string InternalNodeName
+    private String InternalNodeName;
 
     /**
      * @return current value of ApplicationId property
@@ -772,6 +777,22 @@ public class ContextTagKeys
         this.InternalAgentVersion = value;
     }
 
+    /**
+     * The node name used for billing purposes. Use it to override the standard detection of nodes.
+     * @return current value of InternalNodeNName
+     */
+    public final String getInternalNodeName() {
+        return this.InternalNodeName;
+    }
+
+    /**
+     * The node name used for billing purposes. Use it to override the standard detection of nodes.
+     * @param internalNodeName
+     */
+    public final void setInternalNodeName(String internalNodeName) {
+        this.InternalNodeName = internalNodeName;
+    }
+
     public static ContextTagKeys getKeys()
     {
         return s_keys;
@@ -842,6 +863,7 @@ public class ContextTagKeys
         InternalSdkVersion = "ai.internal.sdkVersion";
         InternalAgentVersion = "ai.internal.agentVersion";
         SyntheticSource = "ai.operation.syntheticSource";
+        InternalNodeName = "ai.internal.nodename";
     }
 
 } // class ContextTagKeys
