@@ -30,10 +30,11 @@ import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 /**
  * An initializer to fetch Git data from a properties file
  * Note: the file with its full package name should appear in the 'ApplicationInsights.xml':
- *
+ *{@code
  * <ContextInitializers>
  *   <Add type="com.microsoft.applicationinsights.sample.plugins.GitBuildInfoContextInitializer" />
  * </ContextInitializers>
+ * }
  */
 public final class GitBuildInfoContextInitializer implements ContextInitializer {
     private final static String BUILD_INFO_FILE_NAME = "source-origin.properties";
