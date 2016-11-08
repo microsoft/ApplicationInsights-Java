@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  * To enable this processor you need to add it in the ApplicationInsights.xml like this:
  *
  *
+ * {@code
  <TelemetryProcessors>
 
      <CustomProcessors>
@@ -46,6 +47,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
     </CustomProcessors>
 
  </TelemetryProcessors>
+}
  *
  * Note that the class defines a property named 'pass' which is configured too.
  * Every property that you wish to configure needs to have a 'setX' public method like 'setPass' in this example
