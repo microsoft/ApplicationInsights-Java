@@ -53,6 +53,9 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
         Preconditions.checkState(SystemInformation.INSTANCE.isWindows(), "Must be used under Windows OS.");
         Preconditions.checkNotNull(pcsData, "pcsData must be non-null value.");
 
+        // indicate that this is used for performance counters, not custom metrics.
+        telemetry.markAsCustomPerfCounter();
+
         register(pcsData);
         if (keyToDisplayName.isEmpty()) {
             // Failed to register, the performance counter is not needed.

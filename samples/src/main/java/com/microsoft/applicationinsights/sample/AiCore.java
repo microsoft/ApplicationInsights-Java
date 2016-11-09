@@ -100,6 +100,13 @@ public class AiCore {
         appInsights.trackDependency(remoteDependencyTelemetry);
         System.out.println("[7] Remote Dependency       -- DependencyName, commandName, 61001 ms, success = true.");
 
+        // Custom Performance counter (Metric) Telemetry
+        MetricTelemetry mtPc = new MetricTelemetry("Test PC Metric", 23.0);
+        mtPc.markAsCustomPerfCounter();
+        appInsights.trackMetric(mtPc);
+        System.out.println("[8] Metric                -- metric:\"Test PC Metric\", value=23.0");
+
+
         System.out.println();
         System.out.println("Press any key to exit");
         System.in.read();
