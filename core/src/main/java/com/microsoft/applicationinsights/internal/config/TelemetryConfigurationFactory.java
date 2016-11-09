@@ -465,7 +465,7 @@ public enum TelemetryConfigurationFactory {
                 module.initialize(configuration);
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error(
-                        "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Excepption");
+                        "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Exception");
             }
         }
     }

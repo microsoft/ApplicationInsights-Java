@@ -32,7 +32,7 @@ public final class InternalContext {
         this.tags = tags;
     }
 
-    String getSdkVersion() {
+    public String getSdkVersion() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalSdkVersion());
     }
 
@@ -40,11 +40,19 @@ public final class InternalContext {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalSdkVersion(), version);
     }
 
-    String getAgentVersion() {
+    public String getAgentVersion() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalAgentVersion());
     }
 
     public void setAgentVersion(String version) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalAgentVersion(), version);
+    }
+
+    public String getNodeName() {
+        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalNodeName());
+    }
+
+    public void setNodeName(String nodeName) {
+        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalNodeName(), nodeName);
     }
 }

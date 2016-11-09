@@ -24,9 +24,11 @@ package com.microsoft.applicationinsights;
 import java.util.Date;
 import java.util.Map;
 
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
+import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
@@ -51,6 +53,7 @@ public class TelemetryClient {
     private TelemetryChannel channel;
 
     private static final Object TELEMETRY_STOP_HOOK_LOCK = new Object();
+    private static final Object TELEMETRY_CONTEXT_LOCK = new Object();
 
     /**
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
@@ -82,7 +85,12 @@ public class TelemetryClient {
      */
     public TelemetryContext getContext() {
         if (context == null) {
-            context = createInitializedContext();
+            // lock and recheck there is still no initialized context. If so, create one.
+            synchronized (TELEMETRY_CONTEXT_LOCK) {
+                if (context==null) {
+                    context = createInitializedContext();
+                }
+            }
         }
 
         return context;
@@ -447,6 +455,14 @@ public class TelemetryClient {
             }
         }
 
+        // Set the nodeName for billing purpose if it does not already exist
+        InternalContext internal = ctx.getInternal();
+        if (CommonUtils.isNullOrEmpty(internal.getNodeName())) {
+            String host = CommonUtils.getHostName();
+            if (!CommonUtils.isNullOrEmpty(host)) {
+                internal.setNodeName(host);
+            }
+        }
         return ctx;
     }
 }
