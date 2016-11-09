@@ -787,7 +787,7 @@ public class ContextTagKeys
 
     /**
      * The node name used for billing purposes. Use it to override the standard detection of nodes.
-     * @param internalNodeName
+     * @param internalNodeName new value of InternalNodeName
      */
     public final void setInternalNodeName(String internalNodeName) {
         this.InternalNodeName = internalNodeName;
