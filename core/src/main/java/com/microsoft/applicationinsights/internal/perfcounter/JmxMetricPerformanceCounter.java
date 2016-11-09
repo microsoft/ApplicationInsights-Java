@@ -38,7 +38,7 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
 
     public JmxMetricPerformanceCounter(String id, String objectName, Collection<JmxAttributeData> attributes) {
         super(id, objectName, attributes);
-        telemetry.markAsPerfCounter();
+        telemetry.markAsCustomPerfCounter();
     }
 
     @Override

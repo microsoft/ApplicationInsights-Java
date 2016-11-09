@@ -67,7 +67,7 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
         if (mhu != null) {
             long currentHeapUsed = mhu.getUsed() / Megabyte;
             MetricTelemetry memoryHeapUsage = new MetricTelemetry(HEAP_MEM_USED, currentHeapUsed);
-            memoryHeapUsage.markAsPerfCounter();
+            memoryHeapUsage.markAsCustomPerfCounter();
             telemetryClient.track(memoryHeapUsage);
         }
     }

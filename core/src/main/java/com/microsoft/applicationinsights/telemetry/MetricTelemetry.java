@@ -61,7 +61,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     /**
      * indicate that this metric is a custom performance counter and should be sent to the performance counters table
      */
-    public void markAsPerfCounter(){
+    public void markAsCustomPerfCounter(){
         data.getProperties().putIfAbsent("CustomPerfCounter", "true");
     }
 

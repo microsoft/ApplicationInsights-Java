@@ -102,7 +102,7 @@ public class AiCore {
 
         // Custom Performance counter (Metric) Telemetry
         MetricTelemetry mtPc = new MetricTelemetry("Test PC Metric", 23.0);
-        mtPc.markAsPerfCounter();
+        mtPc.markAsCustomPerfCounter();
         appInsights.trackMetric(mtPc);
         System.out.println("[8] Metric                -- metric:\"Test PC Metric\", value=23.0");
 

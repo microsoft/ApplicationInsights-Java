@@ -71,7 +71,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
     @Override
     public void report(TelemetryClient telemetryClient) {
         MetricTelemetry mt = new MetricTelemetry(METRIC_NAME, 0.0);
-        mt.markAsPerfCounter();
+        mt.markAsCustomPerfCounter();
 
         long[] threadIds = threadBean.findDeadlockedThreads();
         if (threadIds != null && threadIds.length > 0) {
