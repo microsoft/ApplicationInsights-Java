@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentati
  */
 final class AgentConfigurationDefaultImpl implements AgentConfiguration {
     private boolean selfRegistrationMode = false;
+    private boolean debugMode = false;
     private String sdkPath;
     private HashMap<String, ClassInstrumentationData> classesToInstrument;
     private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
@@ -65,6 +66,15 @@ final class AgentConfigurationDefaultImpl implements AgentConfiguration {
     @Override
     public String getSdkPath() {
         return sdkPath;
+    }
+
+    @Override
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 
     public void setBuiltInData(AgentBuiltInConfiguration builtInData) {

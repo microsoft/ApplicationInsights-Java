@@ -78,7 +78,7 @@ public final class CodeInjector implements ClassFileTransformer {
         DefaultByteCodeTransformer byteCodeTransformer = classNamesProvider.getAndRemove(className);
         if (byteCodeTransformer != null) {
             try {
-                return byteCodeTransformer.transform(originalBuffer);
+                return byteCodeTransformer.transform(originalBuffer, className);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
                 InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to instrument '%s', exception: '%s': ", className, throwable.getMessage());

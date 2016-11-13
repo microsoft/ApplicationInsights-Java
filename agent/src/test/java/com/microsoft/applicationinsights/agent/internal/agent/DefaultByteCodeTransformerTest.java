@@ -28,9 +28,9 @@ import static org.junit.Assert.*;
 public final class DefaultByteCodeTransformerTest {
     @Test
     public void noClassInstrumentationDataTest() {
-        DefaultByteCodeTransformer tested = new DefaultByteCodeTransformer(null);
+        DefaultByteCodeTransformer tested = new DefaultByteCodeTransformer(null, false);
         byte[] mockArray = new byte[1];
-        byte[] result = tested.transform(mockArray);
+        byte[] result = tested.transform(mockArray, "mock");
         assertSame(result, mockArray);
     }
 }

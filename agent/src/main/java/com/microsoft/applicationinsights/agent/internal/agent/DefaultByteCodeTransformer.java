@@ -21,12 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.util.CheckClassAdapter;
 
-import java.net.URL;
-import java.net.URLClassLoader;
+import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
  * The class coordinates the byte code transformation
@@ -35,19 +38,23 @@ import java.net.URLClassLoader;
  * Created by gupele on 7/27/2015.
  */
 final class DefaultByteCodeTransformer implements ByteCodeTransformer {
+    private final boolean debugMode;
+
     private final ClassInstrumentationData classInstrumentationData;
 
-    DefaultByteCodeTransformer(ClassInstrumentationData classInstrumentationData) {
+    DefaultByteCodeTransformer(ClassInstrumentationData classInstrumentationData, boolean debugMode) {
+        this.debugMode = debugMode;
         this.classInstrumentationData = classInstrumentationData;
     }
 
     /**
      * The method will create the the instances that are responsible for transforming the class' code.
      * @param originalBuffer The original buffer of the class
+     * @param className The class name
      * @return A new buffer containing the class with the changes or the original one if no change was done.
      */
     @Override
-    public byte[] transform(byte[] originalBuffer) {
+    public byte[] transform(byte[] originalBuffer, String className) {
         if (classInstrumentationData == null) {
             return originalBuffer;
         }
@@ -56,7 +63,22 @@ final class DefaultByteCodeTransformer implements ByteCodeTransformer {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
         cr.accept(dcv, ClassReader.SKIP_FRAMES);
+
         byte[] newBuffer = cw.toByteArray();
+
+        if (debugMode) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            CheckClassAdapter.verify(new ClassReader(newBuffer), false, pw);
+            String errors = sw.toString();
+            if (errors.length() > 0) {
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to instrument class %s", className);
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, errors);
+
+                return originalBuffer;
+            }
+        }
+
         return newBuffer;
     }
 }

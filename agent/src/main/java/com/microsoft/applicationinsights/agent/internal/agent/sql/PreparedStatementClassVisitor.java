@@ -51,14 +51,14 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
 
         nameAndSignature.put("setBoolean", "(IZ)V");
         nameAndSignature.put("setInt", "(II)V");
-        nameAndSignature.put("setLong", "(IJ)V");
         nameAndSignature.put("setShort", "(IS)V");
         nameAndSignature.put("setDouble", "(ID)V");
         nameAndSignature.put("setFloat", "(IF)V");
+        nameAndSignature.put("setString", "(ILjava/lang/String;)V");
+
         nameAndSignature.put("setBigDecimal", "(ILjava/math/BigDecimal;)V");
 
         nameAndSignature.put("setObject", "(ILjava/lang/Object;)V");
-        nameAndSignature.put("setString", "(ILjava/lang/String;)V");
         nameAndSignature.put("setTimestamp", "(ILjava/sql/Timestamp;)V");
         nameAndSignature.put("setTimestamp", "(ILjava/sql/Timestamp;Ljava/util/Calendar)V");
         nameAndSignature.put("setTime", "(ILjava/sql/Time;)V");
@@ -67,6 +67,8 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
         nameAndSignature.put("setBlob", "(ILjava/sql/Blob;)V");
 
         nameAndSignature.put("setNull", "(II)V");
+/*
+		*/
     }
 
     @Override
