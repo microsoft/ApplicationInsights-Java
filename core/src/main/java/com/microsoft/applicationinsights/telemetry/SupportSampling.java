@@ -19,47 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.shared;
-
-import java.lang.Override;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+package com.microsoft.applicationinsights.telemetry;
 
 /**
- * Created by gupele on 1/18/2015.
+ * Created by gupele on 11/2/2016.
  */
-public final class LogChannelMock implements TelemetryChannel {
+public interface SupportSampling {
+    Double getSamplingPercentage();
 
-    public LogChannelMock(Map<String, String> properties) {
-    }
-
-    @Override
-    public boolean isDeveloperMode() {
-        return false;
-    }
-
-    @Override
-    public void setDeveloperMode(boolean value) {
-    }
-
-    @Override
-    public void send(Telemetry item) {
-        LogChannelMockVerifier.INSTANCE.add(item);
-    }
-
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-    }
-
-    @Override
-    public void flush() {
-    }
-
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
-    }
+    void setSamplingPercentage(Double samplingPercentage);
 }

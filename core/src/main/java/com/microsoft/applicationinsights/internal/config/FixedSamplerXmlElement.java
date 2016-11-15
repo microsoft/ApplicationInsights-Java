@@ -19,47 +19,43 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.shared;
+package com.microsoft.applicationinsights.internal.config;
 
-import java.lang.Override;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import javax.xml.bind.annotation.*;
 
 /**
- * Created by gupele on 1/18/2015.
+ * Created by gupele on 11/14/2016.
  */
-public final class LogChannelMock implements TelemetryChannel {
+@XmlRootElement(name="Fixed")
+public class FixedSamplerXmlElement {
+    private String includeTypes;
+    private String excludeTypes;
+    private String samplingPercentage;
 
-    public LogChannelMock(Map<String, String> properties) {
+    public String getSamplingPercentage() {
+        return samplingPercentage;
     }
 
-    @Override
-    public boolean isDeveloperMode() {
-        return false;
+    @XmlElement(name="SamplingPercentage")
+    public void setSamplingPercentage(String samplingPercentage) {
+        this.samplingPercentage = samplingPercentage;
     }
 
-    @Override
-    public void setDeveloperMode(boolean value) {
+    public String getIncludeTypes() {
+        return includeTypes;
     }
 
-    @Override
-    public void send(Telemetry item) {
-        LogChannelMockVerifier.INSTANCE.add(item);
+    @XmlElement(name="IncludeTypes")
+    public void setIncludeTypes(String includeTypes) {
+        this.includeTypes = includeTypes;
     }
 
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
+    public String getExcludeTypes() {
+        return excludeTypes;
     }
 
-    @Override
-    public void flush() {
-    }
-
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
+    @XmlElement(name="ExcludeTypes")
+    public void setExcludeTypes(String excludeTypes) {
+        this.excludeTypes = excludeTypes;
     }
 }

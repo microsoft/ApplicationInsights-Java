@@ -39,7 +39,8 @@ import org.apache.http.HttpStatus;
  * You can send information about requests processed by your web application to Application Insights by
  * passing an instance of this class to the 'trackRequest' method of the {@link com.microsoft.applicationinsights.TelemetryClient}
  */
-public final class RequestTelemetry extends BaseTelemetry<RequestData> {
+public final class RequestTelemetry extends BaseTelemetry<RequestData> implements SupportSampling {
+    private Double samplingPercentage;
     private final RequestData data;
 
     /**
@@ -243,6 +244,16 @@ public final class RequestTelemetry extends BaseTelemetry<RequestData> {
      */
     public void setHttpMethod(String httpMethod) {
         data.setHttpMethod(httpMethod);
+    }
+
+    @Override
+    public Double getSamplingPercentage() {
+        return samplingPercentage;
+    }
+
+    @Override
+    public void setSamplingPercentage(Double samplingPercentage) {
+        this.samplingPercentage = samplingPercentage;
     }
 
     @Override

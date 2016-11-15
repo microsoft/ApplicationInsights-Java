@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.web.utils;
 
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import java.util.ArrayList;
@@ -74,5 +75,9 @@ public enum MockTelemetryChannel implements TelemetryChannel {
 
     public void reset() {
         telemetryItems.clear();
+    }
+
+    @Override
+    public void setSampler(TelemetrySampler telemetrySampler) {
     }
 }

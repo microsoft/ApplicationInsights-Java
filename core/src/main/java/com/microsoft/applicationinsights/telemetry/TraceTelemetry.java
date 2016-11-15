@@ -27,7 +27,8 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * Telemetry type used for log messages.
  */
-public final class TraceTelemetry extends BaseTelemetry<MessageData> {
+public final class TraceTelemetry extends BaseTelemetry<MessageData> implements SupportSampling {
+    private Double samplingPercentage;
     private final MessageData data;
 
     /**
@@ -88,5 +89,15 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
 
     public SeverityLevel getSeverityLevel() {
         return data.getSeverityLevel();
+    }
+
+    @Override
+    public Double getSamplingPercentage() {
+        return samplingPercentage;
+    }
+
+    @Override
+    public void setSamplingPercentage(Double samplingPercentage) {
+        this.samplingPercentage = samplingPercentage;
     }
 }

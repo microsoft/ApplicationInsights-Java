@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
+import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -83,6 +84,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     private TelemetriesTransmitter telemetriesTransmitter;
 
     private TelemetryBuffer telemetryBuffer;
+    private TelemetrySampler telemetrySampler;
 
     public InProcessTelemetryChannel() {
         this(null, false);
@@ -180,6 +182,12 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             telemetry.getContext().getProperties().put("DeveloperMode", "true");
         }
 
+        if (telemetrySampler != null) {
+            if (!telemetrySampler.isSampledIn(telemetry)) {
+                return;
+            }
+        }
+
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = null;
         try {
@@ -220,6 +228,17 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     @Override
     public void flush() {
         telemetryBuffer.flush();
+    }
+
+    /**
+     * Sets an optional Sampler that can sample out telemetries
+     * @param telemetrySampler - The sampler
+     */
+    @Override
+    public void setSampler(TelemetrySampler telemetrySampler) {
+        if (this.telemetrySampler == null) {
+            this.telemetrySampler = telemetrySampler;
+        }
     }
 
     /**

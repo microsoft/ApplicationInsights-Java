@@ -41,6 +41,7 @@ public class ApplicationInsightsXmlConfiguration {
     private TelemetryModulesXmlElement modules;
     private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
     private SDKLoggerXmlElement sdkLogger;
+    private SamplerXmlElement sampler;
 
     private String schemaVersion;
 
@@ -96,6 +97,15 @@ public class ApplicationInsightsXmlConfiguration {
     @XmlElement(name="Channel")
     public void setChannel(ChannelXmlElement channel) {
         this.channel = channel;
+    }
+
+    public SamplerXmlElement getSampler() {
+        return sampler;
+    }
+
+    @XmlElement(name="Sampling")
+    public void setSampler(SamplerXmlElement sampler) {
+        this.sampler = sampler;
     }
 
     public SDKLoggerXmlElement getSdkLogger() {

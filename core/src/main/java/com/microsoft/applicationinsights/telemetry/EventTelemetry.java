@@ -31,7 +31,8 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * Telemetry type used to track events.
  */
-public final class EventTelemetry extends BaseTelemetry<EventData> {
+public final class EventTelemetry extends BaseTelemetry<EventData> implements SupportSampling {
+    private Double samplingPercentage;
     private final EventData data;
 
     /**
@@ -96,5 +97,16 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
     @Override
     protected EventData getData() {
         return data;
+    }
+
+
+    @Override
+    public Double getSamplingPercentage() {
+        return samplingPercentage;
+    }
+
+    @Override
+    public void setSamplingPercentage(Double samplingPercentage) {
+        this.samplingPercentage = samplingPercentage;
     }
 }
