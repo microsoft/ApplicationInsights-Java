@@ -58,7 +58,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         public String name;
         public Object[] arguments;
         public long interval;
-        public InstrumentedClassType type;
+        public String type;
         public Object result;
     }
 
@@ -109,7 +109,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
     @Override
     public void httpMethodStarted(String classAndMethodNames, String url) {
-        startMethod(InstrumentedClassType.HTTP, name, url);
+        startMethod(InstrumentedClassType.HTTP.toString(), name, url);
     }
 
     @Override
@@ -139,7 +139,15 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
     @Override
     public void methodStarted(String name) {
-        startMethod(InstrumentedClassType.OTHER, name, new String[]{});
+        int index = name.lastIndexOf('#');
+        String classType;
+        if (index != -1) {
+            classType = name.substring(index + 1);
+            name = name.substring(0, index);
+        } else {
+            classType = InstrumentedClassType.OTHER.toString();
+        }
+        startMethod(classType, name, new String[]{});
     }
 
     @Override
@@ -147,6 +155,12 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         if (!finalizeMethod(0, null, throwable)) {
             InternalLogger.INSTANCE.error("Agent has detected a 'Finish' method '%s' with exception '%s' event without a 'Start'",
                     name, throwable == null ? "unknown" : throwable.getClass().getName());
+        }
+    }
+
+    public void methodFinished(String name, String type, long thresholdInMS) {
+        if (!finalizeMethod(thresholdInMS, null, null)) {
+            InternalLogger.INSTANCE.error("Agent has detected a 'Finish' method ('%s') event without a 'Start'", name);
         }
     }
 
@@ -198,7 +212,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
             methodData = new MethodData();
             methodData.interval = 0;
-            methodData.type = InstrumentedClassType.OTHER;
+            methodData.type = InstrumentedClassType.OTHER.toString();
             methodData.arguments = null;
             methodData.name = EXCEPTION_THROWN_ID;
             localData.methods.addFirst(methodData);
@@ -240,14 +254,14 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             } else {
                 sqlMetaData = new Object[] {url, sqlStatement, connection, additionalArgs};
             }
-            startSqlMethod(InstrumentedClassType.SQL, name, sqlMetaData);
+            startSqlMethod(InstrumentedClassType.SQL.toString(), name, sqlMetaData);
             ThreadData localData = threadDataThreadLocal.get();
 
         } catch (Throwable e) {
         }
     }
 
-    private void startMethod(InstrumentedClassType type, String name, String... arguments) {
+    private void startMethod(String type, String name, String... arguments) {
         long start = System.nanoTime();
 
         ThreadData localData = threadDataThreadLocal.get();
@@ -259,7 +273,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         localData.methods.addFirst(methodData);
     }
 
-    private void startSqlMethod(InstrumentedClassType type, String name, Object... arguments) {
+    private void startSqlMethod(String type, String name, Object... arguments) {
         long start = System.nanoTime();
 
         ThreadData localData = threadDataThreadLocal.get();
@@ -299,25 +313,19 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     private void report(MethodData methodData, Throwable throwable) {
-        switch (methodData.type) {
-            case SQL:
-                sendSQLTelemetry(methodData, throwable);
-                break;
-
-            case HTTP:
-                sendHTTPTelemetry(methodData, throwable);
-                break;
-
-            default:
-                sendInstrumentationTelemetry(methodData, throwable);
-                break;
+        if ("SQL".equalsIgnoreCase(methodData.type)) {
+            sendSQLTelemetry(methodData, throwable);
+        } else if ("HTTP".equalsIgnoreCase(methodData.type)) {
+            sendHTTPTelemetry(methodData, throwable);
+        } else {
+            sendInstrumentationTelemetry(methodData, throwable);
         }
     }
 
     private void sendInstrumentationTelemetry(MethodData methodData, Throwable throwable) {
         Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, duration, throwable == null);
-        telemetry.setDependencyKind(DependencyKind.Other);
+        telemetry.setType(methodData.type);
 
         InternalLogger.INSTANCE.trace("Sending RDD event for '%s'", methodData.name);
 

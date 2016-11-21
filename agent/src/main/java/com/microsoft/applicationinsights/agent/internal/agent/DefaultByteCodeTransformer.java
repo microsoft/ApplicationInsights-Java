@@ -27,7 +27,7 @@ import java.io.StringWriter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.util.CheckClassAdapter;
+//import org.objectweb.asm.util.CheckClassAdapter;
 
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
@@ -67,16 +67,16 @@ final class DefaultByteCodeTransformer implements ByteCodeTransformer {
         byte[] newBuffer = cw.toByteArray();
 
         if (debugMode) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            CheckClassAdapter.verify(new ClassReader(newBuffer), false, pw);
-            String errors = sw.toString();
-            if (errors.length() > 0) {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to instrument class %s", className);
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, errors);
-
-                return originalBuffer;
-            }
+//            StringWriter sw = new StringWriter();
+//            PrintWriter pw = new PrintWriter(sw);
+//            CheckClassAdapter.verify(new ClassReader(newBuffer), false, pw);
+//            String errors = sw.toString();
+//            if (errors.length() > 0) {
+//                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to instrument class %s", className);
+//                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, errors);
+//
+//                return originalBuffer;
+//            }
         }
 
         return newBuffer;

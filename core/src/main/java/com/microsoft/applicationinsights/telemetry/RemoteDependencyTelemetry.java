@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
@@ -168,7 +169,15 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
      * @return Dependency Kind property.
      */
     public DependencyKind getDependencyKind() {
-        return data.getDependencyKind();
+        DependencyKind result = DependencyKind.Other;
+        String type = data.getType();
+        if (!LocalStringsUtils.isNullOrEmpty(type)) {
+            try {
+                result = Enum.valueOf(DependencyKind.class, type);
+            } catch (Throwable t) {
+            }
+        }
+        return result;
     }
 
     /**
@@ -176,7 +185,23 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
      * @param value Dependency Kind property.
      */
     public void setDependencyKind(DependencyKind value) {
-        data.setDependencyKind(value);
+        data.setType(value.toString());
+    }
+
+    /**
+     * Gets the Type property.
+     * @return type property.
+     */
+    public String getType() {
+        return data.getType();
+    }
+
+    /**
+     * Sets the type property.
+     * @param value Type property.
+     */
+    public void setType(String value) {
+        data.setType(value);
     }
 
     /**

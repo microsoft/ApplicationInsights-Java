@@ -60,7 +60,7 @@ public final class ClassInstrumentationData {
     private final String className;
 
     // The type of class
-    private final InstrumentedClassType classType;
+    private final String classType;
 
     // Methods that will be instrumented
     private MethodInstrumentationInfo methodInstrumentationInfo;
@@ -75,10 +75,18 @@ public final class ClassInstrumentationData {
     private String onlyPackageName;
 
     public ClassInstrumentationData(String className, InstrumentedClassType classType) {
+        this(className, classType.toString());
+    }
+
+    public ClassInstrumentationData(String className, String classType) {
         this(className, classType, null);
     }
 
     public ClassInstrumentationData(String className, InstrumentedClassType classType, ClassVisitorFactory classVisitorFactory) {
+        this(className, classType.toString(), classVisitorFactory);
+    }
+
+    public ClassInstrumentationData(String className, String classType, ClassVisitorFactory classVisitorFactory) {
         this.classType = classType;
         this.methodInstrumentationInfo = new MethodInstrumentationInfo();
         if (classVisitorFactory == null) {
@@ -157,7 +165,7 @@ public final class ClassInstrumentationData {
         return className;
     }
 
-    public InstrumentedClassType getClassType() {
+    public String getClassType() {
         return classType;
     }
 

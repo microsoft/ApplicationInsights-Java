@@ -40,7 +40,8 @@ public class AgentBuiltInConfiguration {
     private final DataOfConfigurationForException dataOfConfigurationForException;
     private final List<ClassInstrumentationData> simpleBuiltInClasses;
 
-    public AgentBuiltInConfiguration(List<ClassInstrumentationData> simpleBuiltInClasses,
+    public AgentBuiltInConfiguration(boolean enabled,
+                                     List<ClassInstrumentationData> simpleBuiltInClasses,
                                      boolean httpEnabled,
                                      boolean jdbcEnabled,
                                      boolean hibernateEnabled,
@@ -50,7 +51,7 @@ public class AgentBuiltInConfiguration {
                                      long redisThresholdInMS,
                                      DataOfConfigurationForException dataOfConfigurationForException) {
         this.simpleBuiltInClasses = simpleBuiltInClasses;
-        this.enabled = true;
+        this.enabled = enabled;
         this.httpEnabled = httpEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.hibernateEnabled = hibernateEnabled;

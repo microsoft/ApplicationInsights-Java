@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.agent.internal.agent.redis.JedisClassDa
 import com.microsoft.applicationinsights.agent.internal.agent.sql.PreparedStatementClassDataProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.sql.StatementClassDataDataProvider;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
@@ -146,7 +147,11 @@ class DefaultClassDataProvider implements ClassDataProvider {
         if (classInstrumentationData == null) {
             return null;
         }
-        return new DefaultByteCodeTransformer(classInstrumentationData, debugMode);
+
+        ImplementationsCoordinator.INSTANCE.addClassNameToType(classInstrumentationData.getClassName(), classInstrumentationData.getClassType());
+        DefaultByteCodeTransformer transformer = new DefaultByteCodeTransformer(classInstrumentationData, debugMode);
+
+        return transformer;
     }
 
     private boolean isExcluded(String className) {

@@ -252,10 +252,9 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         className = className.replace(".", "/");
         ClassInstrumentationData data = classesToInstrument.get(className);
 
-        InstrumentedClassType type = InstrumentedClassType.OTHER;
-        try {
-            type = Enum.valueOf(InstrumentedClassType.class, classElement.getAttribute("type"));
-        } catch (Throwable t) {
+        String type = classElement.getAttribute("type");
+        if (StringUtils.isNullOrEmpty(type)) {
+            type = InstrumentedClassType.OTHER.toString();
         }
 
         boolean reportCaughtExceptions = false;

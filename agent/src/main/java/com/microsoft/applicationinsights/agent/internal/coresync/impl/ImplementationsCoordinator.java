@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.coresync.impl;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,6 +58,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
 
     private AgentNotificationsHandler mainHandler;
+    private ConcurrentHashMap<String, String> classNameToType = new ConcurrentHashMap<String, String>();
 
     public void initialize(AgentConfiguration configurationData) {
         maxSqlMaxQueryThresholdInMS = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimitInMS();
@@ -77,6 +79,10 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             this.handler = handler;
             this.key = key;
         }
+    }
+
+    public void addClassNameToType(String className, String classType) {
+        classNameToType.put(className, classType);
     }
 
     @Override
@@ -162,7 +168,16 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     public void methodStarted(String name) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
+            String classType;
             if (implementation != null) {
+                if (!StringUtils.isNullOrEmpty(name)) {
+                    int index = name.lastIndexOf(".");
+                    if (index != -1) {
+                        String className = name.substring(0, index);
+                        classType = classNameToType.get(className);
+                        name = name + '#' + classType;
+                    }
+                }
                 implementation.methodStarted(name);
             }
         } catch (Throwable t) {

@@ -112,6 +112,8 @@ public class RemoteDependencyData extends Domain {
      */
     private Duration duration;
 
+    private String type;
+
     /**
      * Initializes a new instance of the class.
      */
@@ -227,6 +229,14 @@ public class RemoteDependencyData extends Domain {
         this.duration = duration;
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
@@ -239,12 +249,13 @@ public class RemoteDependencyData extends Domain {
         writer.write("name", name);
         writer.write("commandName", commandName);
         writer.write("kind", kind.getValue());
-        writer.write("value", duration.getTotalMilliseconds());
+        writer.write("value", duration != null ? duration.getTotalMilliseconds() : 0);
         writer.write("count", count);
         writer.write("min", min);
         writer.write("max", max);
         writer.write("stdDev", stdDev);
-        writer.write("dependencyKind", dependencyKind.getValue());
+        writer.write("type", type);
+//        writer.write("dependencyKind", dependencyKind.getValue());
         writer.write("success", success);
         writer.write("async", async);
         writer.write("dependencySource", dependencySource.getValue());
