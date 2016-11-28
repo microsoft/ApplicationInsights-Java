@@ -24,12 +24,16 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 /**
  * Created by gupele on 7/27/2015.
  */
 public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
+
+    private final static String FINISH_DETECT_METHOD_NAME = "httpMethodFinished";
+    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
 
     public HttpClientMethodVisitor(int access,
                                    String desc,
@@ -40,24 +44,72 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         super(access, desc, owner, methodName, methodVisitor, additionalData);
     }
 
+    private int deltaInNS;
+    private int methodLocal;
+    private int uriLocal;
+
     @Override
     public void onMethodEnter() {
-        mv.visitVarInsn(ALOAD, 2);
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFNULL, l0);
+        mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
+        deltaInNS = this.newLocal(Type.LONG_TYPE);
+        mv.visitVarInsn(LSTORE, deltaInNS);
+
         mv.visitVarInsn(ALOAD, 2);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "getRequestLine", "()Lorg/apache/http/RequestLine;", true);
-        mv.visitVarInsn(ASTORE, 4);
-        mv.visitVarInsn(ALOAD, 4);
-        mv.visitMethodInsn(INVOKEINTERFACE, "http/RequestLine", "getUri", "()Ljava/lang/String;", true);
-        mv.visitVarInsn(ASTORE, 5);
+        int requestLineLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, requestLineLocal);
 
-        mv.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(ALOAD, 5);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
+        mv.visitVarInsn(ALOAD, requestLineLocal);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/RequestLine", "getMethod", "()Ljava/lang/String;", true);
+        methodLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, methodLocal);
 
-        mv.visitLabel(l0);
-        mv.visitInsn(ARETURN);
+        mv.visitVarInsn(ALOAD, requestLineLocal);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/RequestLine", "getUri", "()Ljava/lang/String;", true);
+        uriLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, uriLocal);
+    }
+
+    protected TempVar duplicateTopStackToTempVariable(Type typeOfTopElementInStack) {
+        duplicateTop(typeOfTopElementInStack);
+        int tempVarIndex = newLocal(typeOfTopElementInStack);
+        storeLocal(tempVarIndex, typeOfTopElementInStack);
+
+        return new TempVar(tempVarIndex);
+    }
+
+    @Override
+    protected void byteCodeForMethodExit(int opcode) {
+        String internalName = Type.getInternalName(ImplementationsCoordinator.class);
+        switch (translateExitCode(opcode)) {
+            case EXIT_WITH_RETURN_VALUE:
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
+                mv.visitVarInsn(LLOAD, deltaInNS);
+                mv.visitInsn(LSUB);
+                mv.visitVarInsn(LSTORE, deltaInNS);
+
+                TempVar resultOfMethod = duplicateTopStackToTempVariable(Type.getType(Object.class));
+                mv.visitVarInsn(ALOAD, resultOfMethod.tempVarIndex);
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/client/methods/CloseableHttpResponse", "getStatusLine", "()Lorg/apache/http/StatusLine;", true);
+                int statusLineLocal = this.newLocal(Type.getType(Object.class));
+                mv.visitVarInsn(ASTORE, statusLineLocal);
+
+                mv.visitVarInsn(ALOAD, statusLineLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/StatusLine", "getStatusCode", "()I", true);
+                int statusCodeLocal = this.newLocal(Type.INT_TYPE);
+                mv.visitVarInsn(ISTORE, statusCodeLocal);
+
+                mv.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");
+                mv.visitLdcInsn(getMethodName());
+                mv.visitVarInsn(ALOAD, methodLocal);
+                mv.visitVarInsn(ALOAD, uriLocal);
+                mv.visitVarInsn(ILOAD, statusCodeLocal);
+                mv.visitVarInsn(LLOAD, deltaInNS);
+                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_RETURN_SIGNATURE, false);
+                return;
+
+            default:
+                return;
+        }
     }
 }

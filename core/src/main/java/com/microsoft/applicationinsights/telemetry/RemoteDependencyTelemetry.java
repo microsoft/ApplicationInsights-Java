@@ -204,6 +204,10 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
         data.setType(value);
     }
 
+    public void setResultCode(int value) {
+        data.setResultCode(value);
+    }
+
     /**
      * Gets the Success property.
      * @return True if success.

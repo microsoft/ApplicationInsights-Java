@@ -57,6 +57,8 @@ public class RemoteDependencyData extends Domain {
      */
     private String commandName;
 
+    private int resultCode;
+
     /**
      * Backing field for property Kind.
      */
@@ -247,6 +249,7 @@ public class RemoteDependencyData extends Domain {
 
         writer.write("ver", ver);
         writer.write("name", name);
+        writer.write("resultCode", resultCode);
         writer.write("commandName", commandName);
         writer.write("kind", kind.getValue());
         writer.write("value", duration != null ? duration.getTotalMilliseconds() : 0);
@@ -272,5 +275,13 @@ public class RemoteDependencyData extends Domain {
     }
 
     protected void InitializeFields() {
+    }
+
+    public int getResultCode() {
+        return resultCode;
+    }
+
+    public void setResultCode(int resultCode) {
+        this.resultCode = resultCode;
     }
 }

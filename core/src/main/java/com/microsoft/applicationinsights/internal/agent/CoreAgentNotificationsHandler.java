@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -135,6 +136,22 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void httpMethodFinished(String identifier, String method, String uri, int result, long delta) {
+        if (!LocalStringsUtils.isNullOrEmpty(uri) && uri.startsWith("https://dc.services.visualstudio.com")) {
+            return;
+        }
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(identifier, null, new Duration(delta), true);
+        telemetry.setResultCode(result);
+        telemetry.setType("HTTP");
+        telemetry.getContext().getProperties().put("URI", uri);
+        telemetry.getContext().getProperties().put("Method", method);
+
+        InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, delta);
+
+        telemetryClient.track(telemetry);
     }
 
     @Override
