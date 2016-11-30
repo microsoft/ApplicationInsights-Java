@@ -33,7 +33,7 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
- * Telemetry type used to track exceptions.
+ * Telemetry type used to track exceptions sent to Azure Application Insights.
  */
 public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     private final ExceptionData data;
@@ -85,7 +85,8 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     }
 
     /**
-     * Gets a map of application-defined exception metrics.
+     * Gets a map of application-defined exception metrics. 
+     * The metrics appear along with the exception in Analytics, but under Custom Metrics in Metrics Explorer.
      * @return The map of metrics
      */
     public ConcurrentMap<String,Double> getMetrics() {

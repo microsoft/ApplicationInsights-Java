@@ -35,8 +35,10 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Strings;
 
+// Created by gupele
 /**
- * Created by gupele on 1/5/2015.
+ * Create an instance of this class to send telemetry to Azure Application Insights.
+ * General overview https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics
  */
 public class TelemetryClient {
     private final class TelemetryClientChannelFetcher implements ChannelFetcher {
@@ -75,7 +77,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Gets the current context that will be used to augment telemetry you send.
+     * Gets the current context that is used to augment telemetry you send.
      * @return A telemetry context used for all records. Changes to it will impact all future telemetry in this
      * application session.
      */
@@ -88,7 +90,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Checks whether tracking is enabled or not.
+     * Checks whether tracking is enabled. 
      * @return 'true' if tracking is disabled, 'false' otherwise.
      */
     public boolean isDisabled() {
@@ -106,10 +108,10 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends an EventTelemetry record for display in Diagnostic Search and aggregation in Metrics Explorer.
-     * @param name A name for the event.
-     * @param properties Named string values you can use to search and classify events.
-     * @param metrics Measurements associated with this event.
+     * Sends a custom event record to Application Insights. Appears in custom events in Analytics, Search and Metrics Explorer.
+     * @param name A name for the event. Max length 150.
+     * @param properties Named string values you can use to search and filter events.
+     * @param metrics Numeric measurements associated with this event. Appear under Custom Metrics in Metrics Explorer.
      */
     public void trackEvent(String name, Map<String, String> properties, Map<String, Double> metrics) {
         if (isDisabled()) {
@@ -134,24 +136,24 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends an EventTelemetry record for display in Diagnostic Search and aggregation in Metrics Explorer.
-     * @param name A name for the event.
+     * Sends a custom event record to Application Insights. Appears in "custom events" in Analytics, Search and Metrics Explorer.
+     * @param name A name for the event. Max length 150.
      */
     public void trackEvent(String name) {
         trackEvent(name, null, null);
     }
 
     /**
-     * Sends an EventTelemetry record for display in Diagnostic Search and aggregation in Metrics Explorer.
-     * @param telemetry An event log item.
+     * Sends a custom event record to Application Insights. Appears in "custom events" in Analytics, Search and Metrics Explorer.
+     * @param telemetry An event telemetry item.
      */
     public void trackEvent(EventTelemetry telemetry) {
         track(telemetry);
     }
 
     /**
-     * Sends a TraceTelemetry record for display in Diagnostic Search.
-     * @param message A log message.
+     * Sends a TraceTelemetry record to Application Insights. Appears in "traces" in Analytics and Search.
+     * @param message A log message. Max length 10000.
      * @param severityLevel The severity level.
      * @param properties Named string values you can use to search and classify trace messages.
      */
@@ -174,13 +176,18 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a TraceTelemetry record for display in Diagnostic Search.
-     * @param message A log message.
+     * Sends a TraceTelemetry record to Application Insights. Appears in "traces" in Analytics and Search. 
+     * @param message A log message. Max length 10000.
      */
     public void trackTrace(String message) {
         trackTrace(message, null, null);
     }
 
+    /**
+     * Sends a TraceTelemetry record. Appears in "traces" in Analytics and Search. 
+     * @param message A log message. Max length 10000.
+     * @param severityLevel The severity level.
+     */
     public void trackTrace(String message, SeverityLevel severityLevel) {
         trackTrace(message, severityLevel, null);
     }
@@ -194,9 +201,9 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a MetricTelemetry record for aggregation in Metric Explorer.
-     * @param name The name of the measurement
-     * @param value The value of the measurement. Average if based on more than one sample count.
+     * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
+     * @param name The name of the metric. Max length 150.
+     * @param value The value of the metric. Average if based on more than one sample count. Should be > 0.
      * @param sampleCount The sample count.
      * @param min The minimum value of the sample.
      * @param max The maximum value of the sample.
@@ -226,16 +233,16 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a MetricTelemetry record for aggregation in Metric Explorer.
-     * @param name The name of the measurement
-     * @param value The value of the measurement.
+     * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
+     * @param name The name of the metric. Max length 150.
+     * @param value The value of the metric. Should be > 0.
      */
     public void trackMetric(String name, double value) {
         trackMetric(name, value, 1, value, value, null);
     }
 
     /**
-     * Send a MetricTelemetry record for aggregation in Metric Explorer.
+     * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void trackMetric(MetricTelemetry telemetry) {
@@ -243,10 +250,10 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends an ExceptionTelemetry record for display in Diagnostic Search.
+     * Sends an exception record to Application Insights. Appears in "exceptions" in Analytics and Search.
      * @param exception The exception to log information about.
      * @param properties Named string values you can use to search and classify trace messages.
-     * @param metrics Measurements associated with this exception event.
+     * @param metrics Measurements associated with this exception event. Appear in "custom metrics" in Metrics Explorer.
      */
     public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
         if (isDisabled()) {
@@ -268,7 +275,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends an ExceptionTelemetry record for display in Diagnostic Search.
+     * Sends an exception record to Application Insights. Appears in "exceptions" in Analytics and Search.
      * @param exception The exception to log information about.
      */
     public void trackException(Exception exception) {
@@ -284,12 +291,13 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a HttpRequestTelemetry record for display in Diagnostic Search.
-     * @param name A user-friendly name for the request.
+     * Sends a request record to Application Insights. Appears in "requests" in Search and Analytics, 
+     * and contributes to metric charts such as Server Requests, Server Response Time, Failed Requests.
+     * @param name A user-friendly name for the request or operation.
      * @param timestamp The time of the request.
      * @param duration The duration, in milliseconds, of the request processing.
      * @param responseCode The HTTP response code.
-     * @param success 'true' if the request was a success, 'false' otherwise.
+     * @param success true to record the operation as a successful request, false as a failed request.
      */
     public void trackHttpRequest(String name, Date timestamp, long duration, String responseCode, boolean success) {
         if (isDisabled()) {
@@ -299,6 +307,11 @@ public class TelemetryClient {
         track(new RequestTelemetry(name, timestamp, duration, responseCode, success));
     }
 
+
+    /**
+     * Sends a request record to Application Insights. Appears in "requests" in Search and Analytics, 
+     * and contributes to metric charts such as Server Requests, Server Response Time, Failed Requests.
+     */
     public void trackRequest(RequestTelemetry request) {
         track(request);
     }
@@ -309,6 +322,12 @@ public class TelemetryClient {
         trackDependency(remoteDependencyTelemetry);
     }
 
+    /**
+     * Sends a dependency record to Application Insights. Appears in "dependencies" in Search and Analytics. 
+     * Set device type == "PC" to have the record contribute to metric charts such as 
+     * Server Dependency Calls, Dependency Response Time, and Dependency Failures.
+     * 
+     */
     public void trackDependency(RemoteDependencyTelemetry telemetry) {
             if (isDisabled()) {
             return;
@@ -321,6 +340,11 @@ public class TelemetryClient {
         track(telemetry);
     }
 
+    /**
+     * Sends a page view record to Application Insights. Appears in "page views" in Search and Analytics, 
+     * and contributes to metric charts such as Page View Load Time.
+     @param name The name of the page.
+     */
     public void trackPageView(String name) {
         // Avoid creation of data if not needed
         if (isDisabled()) {
@@ -396,7 +420,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Flushes possible pending Telemetries in the channel.
+     * Flushes possible pending Telemetries in the channel. Not required for a continuously-running server application.
      */
     public void flush() {
         getChannel().flush();
