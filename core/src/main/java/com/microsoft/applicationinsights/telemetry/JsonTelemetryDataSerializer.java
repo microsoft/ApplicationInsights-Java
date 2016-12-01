@@ -32,7 +32,7 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
- * This class knows how to transform data that is relevant to {@link Telemetry} instances into JSON
+ * This class knows how to transform data that is relevant to {@link Telemetry} instances into JSON.
  */
 public final class JsonTelemetryDataSerializer {
 

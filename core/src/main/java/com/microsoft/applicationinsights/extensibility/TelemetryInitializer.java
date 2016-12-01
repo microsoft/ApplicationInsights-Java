@@ -23,8 +23,9 @@ package com.microsoft.applicationinsights.extensibility;
 
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
+// Created by gupele on 12/30/2014.
 /**
- * Created by gupele on 12/30/2014.
+ * Interface for telemetry intitializers
  */
 public interface TelemetryInitializer {
     /**

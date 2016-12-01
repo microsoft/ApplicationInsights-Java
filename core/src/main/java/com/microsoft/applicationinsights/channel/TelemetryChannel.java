@@ -26,7 +26,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Represents a communication channel for sending telemetry to application insights.
+ * Represents a communication channel for sending telemetry to Azure Application Insights.
  */
 public interface TelemetryChannel {
 

@@ -34,7 +34,7 @@ import com.google.common.base.Strings;
 
 /**
  * An {@link com.microsoft.applicationinsights.extensibility.TelemetryInitializer} implementation that
- * populates Sequence property for the Microsoft internal telemetry sent to the Vortex endpoint.
+ * populates Sequence property to ensure correct ordering of the telemetry in the portal.
  */
 public final class SequencePropertyInitializer implements TelemetryInitializer {
     private final static String SEPARATOR = ":";
