@@ -31,7 +31,8 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * The class that represents information about collected RDD.
  */
-public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDependencyData> {
+public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<RemoteDependencyData> {
+    private Double samplingPercentage;
     private final RemoteDependencyData data;
 
     /**
@@ -241,6 +242,16 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
      */
     public void setDuration(Duration duration) {
         this.data.setDuration(duration);
+    }
+
+    @Override
+    public Double getSamplingPercentage() {
+        return samplingPercentage;
+    }
+
+    @Override
+    public void setSamplingPercentage(Double samplingPercentage) {
+        this.samplingPercentage = samplingPercentage;
     }
 
     @Override

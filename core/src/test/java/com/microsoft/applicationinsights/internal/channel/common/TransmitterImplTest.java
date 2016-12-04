@@ -165,6 +165,11 @@ public final class TransmitterImplTest {
                     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
 
                     }
+
+                    @Override
+                    public void reset() {
+
+                    }
                 });
             }
             ArrayList<String> asJsons = toJson(telemetries);
@@ -245,6 +250,11 @@ public final class TransmitterImplTest {
 
                     @Override
                     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+
+                    }
+
+                    @Override
+                    public void reset() {
 
                     }
                 });

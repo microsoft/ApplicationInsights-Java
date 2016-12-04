@@ -35,7 +35,8 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * Telemetry type used to track exceptions.
  */
-public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
+public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<ExceptionData> {
+    private Double samplingPercentage;
     private final ExceptionData data;
     private Throwable throwable;
 
@@ -111,6 +112,16 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
 
     public SeverityLevel getSeverityLevel() {
         return data.getSeverityLevel();
+    }
+
+    @Override
+    public Double getSamplingPercentage() {
+        return samplingPercentage;
+    }
+
+    @Override
+    public void setSamplingPercentage(Double samplingPercentage) {
+        this.samplingPercentage = samplingPercentage;
     }
 
     @Override

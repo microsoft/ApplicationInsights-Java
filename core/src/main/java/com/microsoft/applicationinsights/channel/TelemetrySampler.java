@@ -23,46 +23,26 @@ package com.microsoft.applicationinsights.channel;
 
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 /**
- * Represents a communication channel for sending telemetry to application insights.
+ * Telemetry Sampler might be used to reduce the amount of telemetries that are sent by the SDK.
+ * Sampling reduces the volume of telemetry without affecting your statistics.
+ * It keeps together related data points so that you can navigate between them when diagnosing a problem.
+ * In the portal, the total counts are multiplied to compensate for the sampling.
  */
-public interface TelemetryChannel {
+public interface TelemetrySampler {
+    Set<Class> getExcludeTypes();
 
-    /**
-     *  Gets value indicating whether this channel is in developer mode.
-     * @return The developer mode.
-     */
-    boolean isDeveloperMode();
+    void setExcludeTypes(String types);
 
-    /**
-     *  Sets value indicating whether this channel is in developer mode.
-     * @param value True for applying develoer mode
-     */
-    void setDeveloperMode(boolean value);
+    Set<Class> getIncludeTypes();
 
-    /**
-     *  Sends a Telemetry instance through the channel.
-     * @param item The Telemetry item to send.
-     */
-    void send(Telemetry item);
+    void setIncludeTypes(String types);
 
-    /**
-     * Stops on going work
-     * @param timeout Time to try and stop
-     * @param timeUnit The units of the 'timeout' parameter
-     */
-    void stop(long timeout, TimeUnit timeUnit);
+    Double getSamplingPercentage();
 
-    /**
-     * Flushes the data that the channel might have internally.
-     */
-    void flush();
+    void setSamplingPercentage(Double samplingPercentage);
 
-    /**
-     * Sets an optional Sampler that can sample out telemetries
-     * @param telemetrySampler - The sampler
-     */
-    void setSampler(TelemetrySampler telemetrySampler);
+    public boolean isSampledIn(Telemetry telemetry);
 }

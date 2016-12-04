@@ -19,47 +19,35 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.shared;
+package com.microsoft.applicationinsights.internal.config;
 
-import java.lang.Override;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Created by gupele on 1/18/2015.
+ * Created by gupele on 11/2/2016.
  */
-public final class LogChannelMock implements TelemetryChannel {
+@XmlRootElement(name="Sampling")
+public class SamplerXmlElement {
+    private FixedSamplerXmlElement fixedSamplerXmlElement;
+    private AdaptiveSamplerXmlElement adaptiveSamplerXmlElement;
 
-    public LogChannelMock(Map<String, String> properties) {
+    public FixedSamplerXmlElement getFixedSamplerXmlElement() {
+        return fixedSamplerXmlElement;
     }
 
-    @Override
-    public boolean isDeveloperMode() {
-        return false;
+    @XmlElement(name="Fixed")
+    public void setFixedSamplerXmlElement(FixedSamplerXmlElement fixedSamplerXmlElement) {
+        this.fixedSamplerXmlElement = fixedSamplerXmlElement;
     }
 
-    @Override
-    public void setDeveloperMode(boolean value) {
+    public AdaptiveSamplerXmlElement getAdaptiveSamplerXmlElement() {
+        return adaptiveSamplerXmlElement;
     }
 
-    @Override
-    public void send(Telemetry item) {
-        LogChannelMockVerifier.INSTANCE.add(item);
-    }
-
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-    }
-
-    @Override
-    public void flush() {
-    }
-
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
+    @XmlElement(name="Adaptive")
+    public void setAdaptiveSamplerXmlElement(AdaptiveSamplerXmlElement adaptiveSamplerXmlElement) {
+        this.adaptiveSamplerXmlElement = adaptiveSamplerXmlElement;
     }
 }

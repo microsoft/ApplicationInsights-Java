@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
 import com.microsoft.applicationinsights.telemetry.*;
 
@@ -150,6 +150,10 @@ public final class TelemetryClientTests {
             @Override
             public void flush() {
 
+            }
+
+            @Override
+            public void setSampler(TelemetrySampler telemetrySampler) {
             }
         };
 

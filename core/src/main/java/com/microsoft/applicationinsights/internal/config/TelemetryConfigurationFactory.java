@@ -22,9 +22,6 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -35,11 +32,12 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.*;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
-import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
+import com.microsoft.applicationinsights.channel.TelemetrySampler;
+import com.microsoft.applicationinsights.internal.channel.sampling.AdaptiveTelemetrySampler;
+import com.microsoft.applicationinsights.internal.channel.sampling.FixedRateTelemetrySampler;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
@@ -99,7 +97,8 @@ public enum TelemetryConfigurationFactory {
 
             setInstrumentationKey(applicationInsightsConfig, configuration);
 
-            setChannel(applicationInsightsConfig.getChannel(), configuration);
+            TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
+            setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
 
             configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
 
@@ -373,17 +372,23 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
+    private TelemetrySampler getSampler(SamplerXmlElement sampler) {
+        return new TelemetrySamplerInitializer().getSampler(sampler);
+    }
+
     /**
      * Setting the channel.
      * @param channelXmlElement The configuration element holding the channel data.
+     * @param telemetrySampler The sampler that should be injected into the channel
      * @param configuration The configuration class.
      * @return True on success.
      */
-    private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetryConfiguration configuration) {
+    private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetrySampler telemetrySampler, TelemetryConfiguration configuration) {
         String channelName = channelXmlElement.getType();
         if (channelName != null) {
             TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
             if (channel != null) {
+                channel.setSampler(telemetrySampler);
                 configuration.setChannel(channel);
                 return true;
             } else {
@@ -393,11 +398,15 @@ public enum TelemetryConfigurationFactory {
 
         try {
             // We will create the default channel and we assume that the data is relevant.
-            configuration.setChannel(new InProcessTelemetryChannel(channelXmlElement.getData()));
+            TelemetryChannel channel = new InProcessTelemetryChannel(channelXmlElement.getData());
+            channel.setSampler(telemetrySampler);
+            configuration.setChannel(channel);
             return true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.getMessage());
-            configuration.setChannel(new InProcessTelemetryChannel());
+            TelemetryChannel channel = new InProcessTelemetryChannel();
+            channel.setSampler(telemetrySampler);
+            configuration.setChannel(channel);
             return true;
         }
     }

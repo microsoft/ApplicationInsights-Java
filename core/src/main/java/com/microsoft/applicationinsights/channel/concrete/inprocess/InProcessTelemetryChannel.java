@@ -28,12 +28,14 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
+import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
@@ -83,6 +85,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     private TelemetriesTransmitter telemetriesTransmitter;
 
     private TelemetryBuffer telemetryBuffer;
+    private TelemetrySampler telemetrySampler;
 
     public InProcessTelemetryChannel() {
         this(null, false);
@@ -180,6 +183,12 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             telemetry.getContext().getProperties().put("DeveloperMode", "true");
         }
 
+        if (telemetrySampler != null) {
+            if (!telemetrySampler.isSampledIn(telemetry)) {
+                return;
+            }
+        }
+
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = null;
         try {
@@ -188,6 +197,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             jsonWriter.close();
             String asJson = writer.toString();
             telemetryBuffer.add(asJson);
+            telemetry.reset();
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
             return;
@@ -220,6 +230,18 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     @Override
     public void flush() {
         telemetryBuffer.flush();
+    }
+
+    /**
+     * Sets an optional Sampler that can sample out telemetries
+     * Currently, we don't allow to replace a valid telemtry sampler.
+     * @param telemetrySampler - The sampler
+     */
+    @Override
+    public void setSampler(TelemetrySampler telemetrySampler) {
+        if (this.telemetrySampler == null) {
+            this.telemetrySampler = telemetrySampler;
+        }
     }
 
     /**

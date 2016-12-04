@@ -84,4 +84,6 @@ public interface Telemetry extends JsonSerializable
      * @throws IOException a possible exception
      */
     void serialize(JsonTelemetryDataSerializer writer) throws IOException;
+
+    void reset();
 }

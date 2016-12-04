@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.telemetry;
 
 import java.util.concurrent.ConcurrentMap;
 
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 
 import com.google.common.base.Strings;
@@ -31,7 +32,8 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * Telemetry type used to track events.
  */
-public final class EventTelemetry extends BaseTelemetry<EventData> {
+public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
+    private Double samplingPercentage;
     private final EventData data;
 
     /**
@@ -96,5 +98,16 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
     @Override
     protected EventData getData() {
         return data;
+    }
+
+
+    @Override
+    public Double getSamplingPercentage() {
+        return samplingPercentage;
+    }
+
+    @Override
+    public void setSamplingPercentage(Double samplingPercentage) {
+        this.samplingPercentage = samplingPercentage;
     }
 }
