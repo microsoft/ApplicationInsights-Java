@@ -102,7 +102,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
                    developerMode,
                    createDefaultMaxTelemetryBufferCapacityEnforcer(null),
                    createDefaultSendIntervalInSecondsEnforcer(null),
-                   true);
+                   true,
+                   null);
     }
 
     /**
@@ -120,15 +121,16 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
                    developerMode,
                    createDefaultMaxTelemetryBufferCapacityEnforcer(maxTelemetryBufferCapacity),
                    createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis),
-                   true);
+                   true,
+                   null);
     }
 
     /**
-     * This Ctor will query the 'namesAndValues' map for data to initialize itself
+     * This Ctor will query the 'kesyAndValues' map for data to initialize itself
      * It will ignore data that is not of its interest, this Ctor is useful for building an instance from configuration
-     * @param namesAndValues - The data passed as name and value pairs
+     * @param kesyAndValues - The data passed as name and value pairs
      */
-    public InProcessTelemetryChannel(Map<String, String> namesAndValues) {
+    public InProcessTelemetryChannel(Map<String, String> kesyAndValues) {
         boolean developerMode = false;
         String endpointAddress = null;
 
@@ -137,17 +139,17 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         LimitsEnforcer sendIntervalInSecondsEnforcer = createDefaultSendIntervalInSecondsEnforcer(null);
 
         boolean throttling = true;
-        if (namesAndValues != null) {
-            throttling = Boolean.valueOf(namesAndValues.get("Throttling"));
-            developerMode = Boolean.valueOf(namesAndValues.get(DEVELOPER_MODE_NAME));
-            endpointAddress = namesAndValues.get(ENDPOINT_ADDRESS_NAME);
+        if (kesyAndValues != null) {
+            throttling = Boolean.valueOf(kesyAndValues.get("Throttling"));
+            developerMode = Boolean.valueOf(kesyAndValues.get(DEVELOPER_MODE_NAME));
+            endpointAddress = kesyAndValues.get(ENDPOINT_ADDRESS_NAME);
 
-            maxTelemetryBufferCapacityEnforcer.normalizeStringValue(namesAndValues.get(MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME));
-            sendIntervalInSecondsEnforcer.normalizeStringValue(namesAndValues.get(FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME));
+            maxTelemetryBufferCapacityEnforcer.normalizeStringValue(kesyAndValues.get(MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME));
+            sendIntervalInSecondsEnforcer.normalizeStringValue(kesyAndValues.get(FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME));
         }
 
-        String maxTransmissionStorageCapacity = namesAndValues.get(MAX_TRANSMISSION_STORAGE_CAPACITY_NAME);
-        initialize(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSecondsEnforcer, throttling);
+        String maxTransmissionStorageCapacity = kesyAndValues.get(MAX_TRANSMISSION_STORAGE_CAPACITY_NAME);
+        initialize(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSecondsEnforcer, throttling, kesyAndValues);
     }
 
     /**
@@ -275,14 +277,15 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
                                          boolean developerMode,
                                          LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
                                          LimitsEnforcer sendIntervalInSeconds,
-                                         boolean throttling) {
+                                         boolean throttling,
+                                         Map<String, String> keysAndValues) {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         if (s_transmitterFactory == null) {
             s_transmitterFactory = new InProcessTelemetryChannelFactory();
         }
 
-        telemetriesTransmitter = s_transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity, throttling);
+        telemetriesTransmitter = s_transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity, throttling, keysAndValues);
         telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);

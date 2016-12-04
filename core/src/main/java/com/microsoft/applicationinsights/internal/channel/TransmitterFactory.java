@@ -21,9 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.channel;
 
+import java.util.Map;
+
 /**
  * Created by gupele on 12/21/2014.
  */
 public interface TransmitterFactory {
-    TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled);
+    TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, Map<String, String> keysAndValues);
 }

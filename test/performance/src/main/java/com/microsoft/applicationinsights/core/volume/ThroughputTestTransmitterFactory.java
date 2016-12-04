@@ -28,12 +28,14 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.internal.channel.common.*;
 
+import java.util.Map;
+
 /**
  * Created by gupele on 2/4/2015.
  */
 final class ThroughputTestTransmitterFactory implements TransmitterFactory {
     @Override
-    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled) {
+    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, Map<String, String> keysAndValues) {
         // An active object with the network sender
         TransmissionOutput actualNetworkSender = TestThreadLocalData.getTransmissionOutput();
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);

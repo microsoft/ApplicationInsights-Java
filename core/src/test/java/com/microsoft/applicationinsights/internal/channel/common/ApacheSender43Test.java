@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 public final class ApacheSender43Test {
     @Test
     public void testHttpClientType() {
-        HttpClient tested = new ApacheSender43().getHttpClient();
+        HttpClient tested = new ApacheSender43(null).getHttpClient();
         assertNotNull(tested);
         CloseableHttpClient httpClient = (CloseableHttpClient)tested;
         assertNotNull(httpClient);

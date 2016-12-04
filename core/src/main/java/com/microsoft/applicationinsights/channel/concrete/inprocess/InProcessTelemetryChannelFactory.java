@@ -29,16 +29,18 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 
 import com.microsoft.applicationinsights.internal.channel.common.*;
 
+import java.util.Map;
+
 /**
  * Created by gupele on 1/15/2015.
  */
 final class InProcessTelemetryChannelFactory implements TransmitterFactory {
     @Override
-    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled) {
+    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, Map<String, String> keysAndValues) {
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
 
         // An active object with the network sender
-        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, transmissionPolicyManager);
+        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, transmissionPolicyManager, keysAndValues);
 
         TransmissionPolicyStateFetcher stateFetcher = transmissionPolicyManager.getTransmissionPolicyState();
 
