@@ -59,7 +59,7 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
         None
     };
 
-    private class SamplingRageEvaluator implements Runnable {
+    private class SamplingRangeEvaluator implements Runnable {
         private boolean first = true;
         private double average = 0.0;
 
@@ -177,7 +177,7 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
 
         lastChangedDate = new Date();
         sampler.setSamplingPercentage(this.currentSamplingPercentage);
-        threads.scheduleAtFixedRate(new SamplingRageEvaluator(), this.evaluationIntervalInSec, this.evaluationIntervalInSec, TimeUnit.SECONDS);
+        threads.scheduleAtFixedRate(new SamplingRangeEvaluator(), this.evaluationIntervalInSec, this.evaluationIntervalInSec, TimeUnit.SECONDS);
         SDKShutdownActivity.INSTANCE.register(this);
     }
 

@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
  * You can send information about pages viewed by your application to Application Insights by
  * passing an instance of this class to the 'trackPageView' method of the {@link com.microsoft.applicationinsights.TelemetryClient}
  */
-public final class PageViewTelemetry extends BaseTelemetry<PageViewData> implements SupportSampling {
+public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewData> {
     private Double samplingPercentage;
     private PageViewData data;
 

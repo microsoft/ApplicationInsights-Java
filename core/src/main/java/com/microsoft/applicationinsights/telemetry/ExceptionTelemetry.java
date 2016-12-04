@@ -35,7 +35,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * Telemetry type used to track exceptions.
  */
-public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> implements SupportSampling {
+public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<ExceptionData> {
     private Double samplingPercentage;
     private final ExceptionData data;
     private Throwable throwable;

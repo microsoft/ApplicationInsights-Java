@@ -31,7 +31,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * The class that represents information about collected RDD.
  */
-public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDependencyData> implements SupportSampling {
+public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<RemoteDependencyData> {
     private Double samplingPercentage;
     private final RemoteDependencyData data;
 

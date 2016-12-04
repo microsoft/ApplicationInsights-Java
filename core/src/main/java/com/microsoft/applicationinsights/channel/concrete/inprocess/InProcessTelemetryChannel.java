@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
@@ -196,6 +197,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             jsonWriter.close();
             String asJson = writer.toString();
             telemetryBuffer.add(asJson);
+            telemetry.reset();
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
             return;
@@ -232,6 +234,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     /**
      * Sets an optional Sampler that can sample out telemetries
+     * Currently, we don't allow to replace a valid telemtry sampler.
      * @param telemetrySampler - The sampler
      */
     @Override

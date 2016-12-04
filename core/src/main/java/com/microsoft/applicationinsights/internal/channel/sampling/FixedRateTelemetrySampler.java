@@ -107,25 +107,18 @@ public final class FixedRateTelemetrySampler implements TelemetrySampler {
                         testedPercentage = samplingSupportingTelemetry.getSamplingPercentage();
                     }
 
-                    if (isSampledOut(telemetry, testedPercentage)) {
+                    double telemetrySamplingScore = SamplingScoreGenerator.getSamplingScore(telemetry);
+                    if (telemetrySamplingScore >= testedPercentage) {
                         InternalLogger.INSTANCE.trace("Sampled out %s", telemetry.getClass());
 
                         return false;
                     }
+                    samplingSupportingTelemetry.setSamplingPercentage(telemetrySamplingScore);
                 }
             }
         }
 
         return true;
-    }
-
-    private boolean isSampledOut(Telemetry telemetry, Double samplingPercentage) {
-        if (samplingPercentage >= 100.0) {
-            return false;
-        }
-
-        double telemetrySamplingScore = SamplingScoreGenerator.getSamplingScore(telemetry);
-        return samplingPercentage < telemetrySamplingScore;
     }
 
     private HashSet<Class> parseToSet(String value, String prefix) {

@@ -141,6 +141,13 @@ public class Envelope implements JsonSerializable
         return this.sampleRate;
     }
 
+    public void setSampleRate(Double value) {
+        if (value == null) {
+            return;
+        }
+        this.sampleRate = value;
+    }
+
     public void setSampleRate(double value) {
         this.sampleRate = value;
     }

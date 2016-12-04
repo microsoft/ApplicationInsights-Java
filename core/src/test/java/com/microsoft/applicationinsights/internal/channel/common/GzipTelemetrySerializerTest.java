@@ -117,6 +117,10 @@ public final class GzipTelemetrySerializerTest {
             writer.write("telemetryName", telemetryName);
             writer.write("properties", this.getProperties());
         }
+
+        @Override
+        public void reset() {
+        }
     }
 
     @Test(expected = NullPointerException.class)

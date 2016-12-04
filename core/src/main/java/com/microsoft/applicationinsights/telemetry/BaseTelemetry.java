@@ -133,6 +133,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
         Envelope envelope = new Envelope();
 
+        setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
         envelope.setSeq(sequence);
         envelope.setData(new Data<T>(getData()));
@@ -140,6 +141,10 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
         envelope.setTags(context.getTags());
 
         envelope.serialize(writer);
+    }
+
+    @Override
+    public void reset() {
     }
 
     /**
@@ -153,4 +158,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
      * @return The inner data structure
      */
     protected abstract T getData();
+
+    protected void setSampleRate(Envelope envelope) {
+    }
 }

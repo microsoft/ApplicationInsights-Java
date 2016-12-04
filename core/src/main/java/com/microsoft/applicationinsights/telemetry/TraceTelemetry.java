@@ -27,7 +27,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 /**
  * Telemetry type used for log messages.
  */
-public final class TraceTelemetry extends BaseTelemetry<MessageData> implements SupportSampling {
+public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData> {
     private Double samplingPercentage;
     private final MessageData data;
 
