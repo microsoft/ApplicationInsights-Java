@@ -27,6 +27,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
@@ -73,6 +74,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     private final static int MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 300;
     private final static String FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME = "FlushIntervalInSeconds";
 
+    private final static String DEVELOPER_MODE_SYSTEM_PROPRETY_NAME = "APPLICATION_INSIGHTS_DEVELOPER_MODE";
+
     private final static String DEVELOPER_MODE_NAME = "DeveloperMode";
     private final static String ENDPOINT_ADDRESS_NAME = "EndpointAddress";
     private final static String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "MaxTransmissionStorageFilesCapacityInMB";
@@ -88,21 +91,21 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     private TelemetrySampler telemetrySampler;
 
     public InProcessTelemetryChannel() {
-        this(null, false);
-    }
-
-    /**
-     * Ctor
-     * @param endpointAddress Must be empty string or a valid uri, else an exception will be thrown
-     * @param developerMode True will behave in a 'non-production' mode to ease the debugging
-     */
-    public InProcessTelemetryChannel(String endpointAddress, boolean developerMode) {
-        initialize(endpointAddress,
-                   null,
-                   developerMode,
-                   createDefaultMaxTelemetryBufferCapacityEnforcer(null),
-                   createDefaultSendIntervalInSecondsEnforcer(null),
-                   true);
+        boolean developerMode = false;
+        try {
+            String developerModeAsString = System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME);
+            if (!StringUtils.isNullOrEmpty(developerModeAsString)) {
+                developerMode = Boolean.valueOf(developerModeAsString);
+            }
+        } catch (Throwable t) {
+            developerMode = false;
+        }
+        initialize(null,
+                null,
+                developerMode,
+                createDefaultMaxTelemetryBufferCapacityEnforcer(null),
+                createDefaultSendIntervalInSecondsEnforcer(null),
+                true);
     }
 
     /**
@@ -140,6 +143,9 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         if (namesAndValues != null) {
             throttling = Boolean.valueOf(namesAndValues.get("Throttling"));
             developerMode = Boolean.valueOf(namesAndValues.get(DEVELOPER_MODE_NAME));
+            if (!developerMode) {
+                developerMode = Boolean.valueOf(System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME));
+            }
             endpointAddress = namesAndValues.get(ENDPOINT_ADDRESS_NAME);
 
             maxTelemetryBufferCapacityEnforcer.normalizeStringValue(namesAndValues.get(MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME));
