@@ -30,7 +30,7 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
- * Telemetry type used to track events.
+ * Telemetry type used to track custom events in Azure Application Insights. 
  */
 public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     private Double samplingPercentage;
@@ -47,7 +47,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
 
     /**
      * Initializes a new instance.
-     * @param name The event's name.
+     * @param name The event's name. Max length 150.
      */
     public EventTelemetry(String name) {
         this();
@@ -56,6 +56,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
 
     /**
      * Gets a map of application-defined event metrics.
+     * These metrics appear along with the event in Search and Analytics, but appear under 'Custom Metrics' in Metrics Explorer.
      * @return The map of metrics
      */
     public ConcurrentMap<String, Double> getMetrics() {
@@ -72,7 +73,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
 
     /**
      * Sets the name of the event.
-     * @param name Name of the event
+     * @param name Name of the event. Max length 150.
      */
     public void setName(String name) {
         if (Strings.isNullOrEmpty(name)) {
@@ -83,7 +84,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     }
 
     /**
-     * Sanitize additional stuff besides the common
+     * Sanitize name and metrics.
      */
     @Override
     protected void additionalSanitize() {

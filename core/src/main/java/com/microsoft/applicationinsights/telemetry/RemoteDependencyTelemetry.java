@@ -29,7 +29,8 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
- * The class that represents information about collected RDD.
+ * Telemetry sent to Azure Application Insights about dependencies - that is, calls from
+ * your application to external services such as databases or REST APIs.
  */
 public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<RemoteDependencyData> {
     private Double samplingPercentage;
@@ -46,7 +47,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
 
     /**
      * Initializes an instance with a 'name'
-     * @param name The resource name.
+     * @param name The dependency name.
      */
     public RemoteDependencyTelemetry(String name) {
         this();
@@ -56,8 +57,8 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     /**
      * Initializes an instnace with the given parameters.
      * @param dependencyName The dependency name.
-     * @param commandName The command name.
-     * @param duration The duration
+     * @param commandName The command name or call details.
+     * @param duration How long it took to process the call.
      * @param success Whether the remote call successful or not.
      */
     public RemoteDependencyTelemetry(String dependencyName, String commandName, Duration duration, boolean success) {
@@ -69,16 +70,16 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     /**
-     * Gets tne name resource name.
-     * @return The resource name.
+     * Gets tne dependency name.
+     * @return The dependency name.
      */
     public String getName() {
         return data.getName();
     }
 
     /**
-     * Sets the resource name.
-     * @param name The resource name.
+     * Sets the dependency name.
+     * @param name The dependency name.
      */
     public void setName(String name) {
         if (Strings.isNullOrEmpty(name)) {

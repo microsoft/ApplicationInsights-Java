@@ -23,8 +23,9 @@ package com.microsoft.applicationinsights.extensibility;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 
+// Created by yonisha on 2/2/2015.
 /**
- * Created by yonisha on 2/2/2015.
+ * Interface for telemetry modules.
  */
 public interface TelemetryModule {
 

@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker.internal;
 
+// Created by yonisha on 7/29/2015.
 /**
- * Created by yonisha on 7/29/2015.
+ * Constants for Docker SDK
  */
 public class Constants {
     public static final String AI_SDK_DIRECTORY = "/usr/appinsights/docker";

@@ -39,6 +39,11 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
  * Represents a context for sending telemetry to the Application Insights service.
+ * The context holds data that is sent with every telemetry item.
+ * It includes the instrumentation key; the current operation id, for correlating
+ * related telemetry items; and user, session and device data.
+ * You can also set properties that are added to every telemetry item, and can
+ * be used in the portal to filter the telemetry that used this context.
  */
 public final class TelemetryContext {
     private ConcurrentMap<String,String> properties;
@@ -61,7 +66,7 @@ public final class TelemetryContext {
     }
 
     /**
-     * Gets the object describing the component tracked by this instance.
+     * Gets the object describing the component (application) tracked by this instance.
      * @return The component.
      */
     public ComponentContext getComponent() {
@@ -109,7 +114,8 @@ public final class TelemetryContext {
     }
 
     /**
-     * Gets the object describing a operation tracked by this instance.
+     * Gets the current operation (typically an HTTP request).
+     * Used to correlate events - for example, exceptions generated while processing a request.
      * @return The operation.
      */
     public OperationContext getOperation() {

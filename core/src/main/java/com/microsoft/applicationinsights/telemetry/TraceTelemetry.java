@@ -44,7 +44,7 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
 
     /**
      * Initializes a new instance of the class with the specified parameter 'message'.
-     * @param message The message.
+     * @param message The message. Max length 10000.
      * @param severityLevel The severity level.
      */
     public TraceTelemetry(String message, SeverityLevel severityLevel) {

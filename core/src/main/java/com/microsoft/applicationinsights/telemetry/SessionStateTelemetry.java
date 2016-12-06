@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.microsoft.applicationinsights.internal.schemav2.SessionStateData;
 
 /**
- * Telemetry type used to track user sessions.
+ * Telemetry type used to track user sessions in Azure Application Insights.
  */
 public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData> {
     private final SessionStateData data;
@@ -41,7 +41,7 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
 
     /**
      * Initializes a new instance of the class with the specified <code>sessionState</code>
-     * @param sessionState value indicating state of the user session.
+     * @param sessionState value indicating state of the user session (Start or End).
      */
     public SessionStateTelemetry(SessionState sessionState) {
         super();

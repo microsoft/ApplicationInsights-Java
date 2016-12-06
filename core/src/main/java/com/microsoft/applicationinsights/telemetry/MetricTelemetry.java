@@ -30,7 +30,7 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
- * Telemetry type used to track metrics.
+ * Telemetry type used to track metrics sent to Azure Application Insights.
  */
 public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     private final MetricData data;
@@ -49,8 +49,8 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
 
     /**
      * Initializes the instance with a name and value
-     * @param name The name of the metric
-     * @param value The value of the metric
+     * @param name The name of the metric. Length 1-150 characters.
+     * @param value The value of the metric.
      */
     public MetricTelemetry(String name, double value) {
         this();
@@ -74,7 +74,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Sets the name of the metric.
+     * Sets the name of the metric. Length 1-150 characters.
      * @param name The name of the metric.
      */
     public void setName(String name) {
@@ -110,15 +110,15 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Sets the number of samples for this metric.
-     * @param count Number of samples.
+     * Sets the number of samples for this metric. 
+     * @param count Number of samples. >= 1
      */
     public void setCount(Integer count) {
         metric.setCount(count); updateKind();
     }
 
     /**
-     * Gets the min value of this metric.
+     * Gets the min value of this metric across samples.
      * @return The min value.
      */
     public Double getMin() {
@@ -126,7 +126,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Sets the min value of this metric.
+     * Sets the min value of this metric across samples.
      * @param value The min value.
      */
     public void setMin(Double value) {
@@ -134,7 +134,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Gets the max value of this metric.
+     * Gets the max value of this metric across samples.
      * @return The max value.
      */
     public Double getMax() {
@@ -142,7 +142,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Sets the max value of this metric.
+     * Sets the max value of this metric across samples.
      * @param value The max value.
      */
     public void setMax(Double value) {
@@ -150,7 +150,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Gets the standard deviation of this metric.
+     * Gets the standard deviation of this metric across samples.
      * @return The max value.
      */
     public Double getStandardDeviation() {
@@ -158,7 +158,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Sets the standard deviation of this metric.
+     * Sets the standard deviation of this metric across samples.
      * @param value The max value.
      */
     public void setStandardDeviation(Double value) {
