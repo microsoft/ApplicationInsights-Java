@@ -27,13 +27,13 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
@@ -94,7 +94,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         boolean developerMode = false;
         try {
             String developerModeAsString = System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME);
-            if (!StringUtils.isNullOrEmpty(developerModeAsString)) {
+            if (!LocalStringsUtils.isNullOrEmpty(developerModeAsString)) {
                 developerMode = Boolean.valueOf(developerModeAsString);
             }
         } catch (Throwable t) {

@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.perfcounter.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.telemetry.*;
@@ -139,7 +140,7 @@ public class TelemetryClient {
             MapUtil.copy(metrics, et.getMetrics());
         }
 
-        this.track(et);
+        this.track(et, false);
     }
 
     /**
@@ -155,7 +156,7 @@ public class TelemetryClient {
      * @param telemetry An event log item.
      */
     public void trackEvent(EventTelemetry telemetry) {
-        track(telemetry);
+        track(telemetry, false);
     }
 
     /**
@@ -179,7 +180,7 @@ public class TelemetryClient {
             MapUtil.copy(properties, et.getContext().getProperties());
         }
 
-        this.track(et);
+        this.track(et, false);
     }
 
     /**
@@ -199,7 +200,7 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void trackTrace(TraceTelemetry telemetry) {
-        this.track(telemetry);
+        this.track(telemetry, false);
     }
 
     /**
@@ -231,7 +232,7 @@ public class TelemetryClient {
             MapUtil.copy(properties, mt.getContext().getProperties());
         }
 
-        this.track(mt);
+        this.track(mt, false);
     }
 
     /**
@@ -248,7 +249,7 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void trackMetric(MetricTelemetry telemetry) {
-        track(telemetry);
+        track(telemetry, false);
     }
 
     /**
@@ -258,6 +259,8 @@ public class TelemetryClient {
      * @param metrics Measurements associated with this exception event.
      */
     public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
+        QuickPulseDataCollector.INSTANCE.addException();
+
         if (isDisabled()) {
             return;
         }
@@ -273,7 +276,7 @@ public class TelemetryClient {
             MapUtil.copy(metrics, et.getMetrics());
         }
 
-        this.track(et);
+        this.track(et, false);
     }
 
     /**
@@ -289,7 +292,8 @@ public class TelemetryClient {
      * @param telemetry An already constructed exception telemetry record.
      */
     public void trackException(ExceptionTelemetry telemetry) {
-        track(telemetry);
+        QuickPulseDataCollector.INSTANCE.addException();
+        track(telemetry, false);
     }
 
     /**
@@ -301,14 +305,17 @@ public class TelemetryClient {
      * @param success 'true' if the request was a success, 'false' otherwise.
      */
     public void trackHttpRequest(String name, Date timestamp, long duration, String responseCode, boolean success) {
+        QuickPulseDataCollector.INSTANCE.addRequest(success, duration);
+
         if (isDisabled()) {
             return;
         }
 
-        track(new RequestTelemetry(name, timestamp, duration, responseCode, success));
+        track(new RequestTelemetry(name, timestamp, duration, responseCode, success), false);
     }
 
     public void trackRequest(RequestTelemetry request) {
+        QuickPulseDataCollector.INSTANCE.countRequest(request);
         track(request);
     }
 
@@ -319,7 +326,9 @@ public class TelemetryClient {
     }
 
     public void trackDependency(RemoteDependencyTelemetry telemetry) {
-            if (isDisabled()) {
+        QuickPulseDataCollector.INSTANCE.addDependency(telemetry);
+
+        if (isDisabled()) {
             return;
         }
 
@@ -327,7 +336,7 @@ public class TelemetryClient {
             telemetry = new RemoteDependencyTelemetry("");
         }
 
-        track(telemetry);
+        track(telemetry, false);
     }
 
     public void trackPageView(String name) {
@@ -341,7 +350,7 @@ public class TelemetryClient {
         }
 
         Telemetry telemetry = new PageViewTelemetry(name);
-        track(telemetry);
+        track(telemetry, false);
     }
 
     /**
@@ -349,7 +358,7 @@ public class TelemetryClient {
      * @param telemetry The telemetry to send
      */
     public void trackPageView(PageViewTelemetry telemetry) {
-        track(telemetry);
+        track(telemetry, false);
     }
 
     /**
@@ -357,8 +366,16 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void track(Telemetry telemetry) {
+        track(telemetry, true);
+    }
+
+    private void track(Telemetry telemetry, boolean telemetryNeededForQuickPulse) {
         if (telemetry == null) {
             throw new IllegalArgumentException("telemetry item cannot be null");
+        }
+
+        if (telemetryNeededForQuickPulse) {
+            QuickPulseDataCollector.INSTANCE.add(telemetry);
         }
 
         if (isDisabled()) {

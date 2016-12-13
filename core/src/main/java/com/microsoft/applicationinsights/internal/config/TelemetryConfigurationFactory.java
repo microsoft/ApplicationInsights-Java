@@ -45,6 +45,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.perfcounter.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
@@ -107,6 +108,8 @@ public enum TelemetryConfigurationFactory {
             setTelemetryModules(applicationInsightsConfig, configuration);
             setTelemetryProcessors(applicationInsightsConfig, configuration);
 
+            setQuickPulse(applicationInsightsConfig);
+
             initializeComponents(configuration);
         } catch (Exception e) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to initialize configuration, exception: %s", e.getMessage());
@@ -148,6 +151,13 @@ public enum TelemetryConfigurationFactory {
      */
     private void setContextInitializers(ContextInitializersXmlElement contextInitializers, TelemetryConfiguration configuration) {
         new ContextInitializersInitializer().initialize(contextInitializers, configuration);
+    }
+
+    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration) {
+        QuickPulseXmlElement quickPulseXmlElement = appConfiguration.getQuickPulse();
+        if (quickPulseXmlElement == null || quickPulseXmlElement.isEnabled()) {
+            QuickPulse.INSTANCE.initialize();
+        }
     }
 
     /**
@@ -253,8 +263,10 @@ public enum TelemetryConfigurationFactory {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
         String pluginName = performanceConfigurationData.getPlugin();
 
-        PerformanceCountersCollectionPlugin plugin = ReflectionUtils.createInstance(pluginName, PerformanceCountersCollectionPlugin.class);
-        PerformanceCounterContainer.INSTANCE.setPlugin(plugin);
+        if (!LocalStringsUtils.isNullOrEmpty(pluginName)) {
+            PerformanceCountersCollectionPlugin plugin = ReflectionUtils.createInstance(pluginName, PerformanceCountersCollectionPlugin.class);
+            PerformanceCounterContainer.INSTANCE.setPlugin(plugin);
+        }
 
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 

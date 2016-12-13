@@ -42,6 +42,7 @@ public class ApplicationInsightsXmlConfiguration {
     private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
     private SDKLoggerXmlElement sdkLogger;
     private SamplerXmlElement sampler;
+    private QuickPulseXmlElement quickPulse;
 
     private String schemaVersion;
 
@@ -106,6 +107,15 @@ public class ApplicationInsightsXmlConfiguration {
     @XmlElement(name="Sampling")
     public void setSampler(SamplerXmlElement sampler) {
         this.sampler = sampler;
+    }
+
+    public QuickPulseXmlElement getQuickPulse() {
+        return quickPulse;
+    }
+
+    @XmlElement(name="QuickPulse")
+    public void setQuickPulse(QuickPulseXmlElement quickPulse) {
+        this.quickPulse = quickPulse;
     }
 
     public SDKLoggerXmlElement getSdkLogger() {

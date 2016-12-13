@@ -19,29 +19,24 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.channel.common;
+package com.microsoft.applicationinsights.internal.config;
 
-import java.io.IOException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Created by gupele on 6/4/2015.
+ * Created by gupele on 12/13/2016.
  */
-public interface ApacheSender {
-    final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
-    final static int REQUEST_TIMEOUT_IN_MILLIS = 60000;
-    final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
+@XmlRootElement(name="QuickPulse")
+public class QuickPulseXmlElement {
+    private boolean enabled = true;
 
-    HttpResponse sendPostRequest(HttpPost post) throws IOException;
+    @XmlAttribute(name="enabled")
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
-    void dispose(HttpResponse response);
-
-    void close();
-
-    HttpClient getHttpClient();
-
-    void enhanceRequest(HttpPost request);
+    public boolean isEnabled() {
+        return enabled;
+    }
 }
