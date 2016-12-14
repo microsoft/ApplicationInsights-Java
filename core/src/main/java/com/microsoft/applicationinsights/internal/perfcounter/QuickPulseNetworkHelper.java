@@ -21,11 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
+import java.util.Date;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
-
-import java.util.Calendar;
 
 /**
  * Created by gupele on 12/12/2016.
@@ -42,15 +42,10 @@ final class QuickPulseNetworkHelper {
         QP_IS_ON
     }
 
-    public HttpPost buildRequest(Calendar currentDate, String address) {
-        long ticks = currentDate.get(Calendar.SECOND);
-        ticks += currentDate.get(Calendar.MINUTE) * 60;
-        ticks += currentDate.get(Calendar.HOUR) * SECONDS_IN_HOUR;
-        ticks = ticks * 1000 * 10000;
-        ticks += TICKS_AT_EPOCH;
+    public HttpPost buildRequest(Date currentDate, String address) {
+        final long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
 
         HttpPost request = new HttpPost(address);
-        request.addHeader(HEADER_TRANSMISSION_TIME, String.valueOf(ticks));
         return request;
     }
 

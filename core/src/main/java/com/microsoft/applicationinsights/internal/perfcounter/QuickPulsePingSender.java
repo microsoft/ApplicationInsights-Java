@@ -38,9 +38,8 @@ import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
  */
 final class QuickPulsePingSender {
     private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=";
-    private final static String QP_STATUS_HEADER = "x-ms-qps-subscribed";
     private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";
-    private final static int SECONDS_IN_HOUR = 60 * 60;
+
     private final static long TICKS_AT_EPOCH = 621355968000000000L;
 
     private final String quickPulsePingUri;
@@ -74,11 +73,9 @@ final class QuickPulsePingSender {
 
     public QuickPulseNetworkHelper.QuickPulseStatus ping() {
         final Date currentDate = new Date();
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentDate);
-        HttpPost request = buildRequest(calendar, quickPulsePingUri);
+        HttpPost request = networkHelper.buildRequest(currentDate, quickPulsePingUri);
 
-        ByteArrayEntity pingEntity = buildPingEntity(calendar.getTimeInMillis());
+        ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
         request.setEntity(pingEntity);
 
         final long sendTime = System.nanoTime();
@@ -105,25 +102,12 @@ final class QuickPulsePingSender {
     }
 
     private ByteArrayEntity buildPingEntity(long timeInMillis) {
-        long ms = System.currentTimeMillis();
 
         StrBuilder sb = new StrBuilder(pingPrefix);
         sb.append(timeInMillis);
         sb.append(")\\\\/\\\"\"");
         ByteArrayEntity bae = new ByteArrayEntity(sb.toString().getBytes());
         return bae;
-    }
-
-    private HttpPost buildRequest(Calendar currentDate, String address) {
-        long ticks = currentDate.get(Calendar.SECOND);
-        ticks += currentDate.get(Calendar.MINUTE) * 60;
-        ticks += currentDate.get(Calendar.HOUR) * SECONDS_IN_HOUR;
-        ticks = ticks * 1000 * 10000;
-        ticks += TICKS_AT_EPOCH;
-
-        HttpPost request = new HttpPost(address);
-        request.addHeader(HEADER_TRANSMISSION_TIME, String.valueOf(ticks));
-        return request;
     }
 
     private QuickPulseNetworkHelper.QuickPulseStatus onPingError(long sendTime) {

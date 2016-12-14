@@ -62,9 +62,7 @@ final class QuickPulseDataFetcher {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
             final Date currentDate = new Date();
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setTime(currentDate);
-            HttpPost request = networkHelper.buildRequest(calendar, quickPulsePostUri);
+            HttpPost request = networkHelper.buildRequest(currentDate, quickPulsePostUri);
 
             final ByteArrayEntity postEntity = buildPostEntity(counters);
 
