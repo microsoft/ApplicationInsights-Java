@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 /**
  * Created by gupele on 12/12/2016.
  */
-public final class QuickPulseDataSender implements Runnable {
+final class QuickPulseDataSender implements Runnable {
 
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final ApacheSender apacheSender;

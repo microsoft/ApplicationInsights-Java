@@ -36,7 +36,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryU
  */
 public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
     private boolean isEnabled = true;
-    private HashSet<String> disabledJvmPCs;
+    private HashSet<String> disabledJvmPCs = new HashSet<String>();
 
     @Override
     public Collection<PerformanceCounter> getPerformanceCounters() {

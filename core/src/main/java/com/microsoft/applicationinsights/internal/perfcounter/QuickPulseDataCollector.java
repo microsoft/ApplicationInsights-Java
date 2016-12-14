@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -38,14 +39,14 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 public enum QuickPulseDataCollector {
     INSTANCE;
 
-    public static class FinalCounters {
+    static class FinalCounters {
         public final double exceptions;
-        public final int requests;
+        public final long requests;
         public final double requestsDuration;
-        public final int unsuccessfulRequests;
-        public final int rdds;
+        public final long unsuccessfulRequests;
+        public final long rdds;
         public final double rddsDuration;
-        public final int unsuccessfulRdds;
+        public final long unsuccessfulRdds;
         public final long memoryCommitted;
         public final double cpuUsage;
 
@@ -61,35 +62,52 @@ public enum QuickPulseDataCollector {
                 cpuUsage = -1;
             }
             exceptions = currentCounters.exceptions.get();
-            requests = currentCounters.requests.get();
-            double temp = currentCounters.requestsDuration.get();
-            if (requests != 0) {
-                this.requestsDuration = temp / (double)this.requests;
-            } else {
-                this.requestsDuration = 0.0;
-            }
+
+            CountAndDuration countAndDuration = currentCounters.decodeCountAndDuration(currentCounters.requestsAndDurations.get());
+            requests = countAndDuration.count;
+            this.requestsDuration = countAndDuration.duration;
             this.unsuccessfulRequests = currentCounters.unsuccessfulRequests.get();
-            this.rdds = currentCounters.rdds.get();
-            temp = currentCounters.rddsDuration.get();
-            if (rdds != 0) {
-                this.rddsDuration = temp / (double)rdds;
-            } else {
-                this.rddsDuration = 0.0;
-            }
+
+            countAndDuration = currentCounters.decodeCountAndDuration(currentCounters.rddsAndDuations.get());
+            this.rdds = countAndDuration.count;
+            this.rddsDuration = countAndDuration.duration;
             this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
         }
     }
 
+    private static class CountAndDuration {
+        public final long count;
+        public final long duration;
+
+        private CountAndDuration(long count, long duration) {
+            this.count = count;
+            this.duration = duration;
+        }
+    }
+
     private static class Counters {
+        private final static long MAX_COUNT = 524287L;
+        private final static long MAX_DURATION = 17592186044415L;
+
         public AtomicInteger exceptions = new AtomicInteger(0);
 
-        public AtomicInteger requests = new AtomicInteger(0);
-        public AtomicLong requestsDuration = new AtomicLong(0);
+        public AtomicLong requestsAndDurations = new AtomicLong(0);
         public AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
 
-        public AtomicInteger rdds = new AtomicInteger(0);
-        public AtomicLong rddsDuration = new AtomicLong(0);
+        public AtomicLong rddsAndDuations = new AtomicLong(0);
         public AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
+
+        public static long encodeCountAndDuration(long  count, long duration) {
+            if (count > MAX_COUNT || duration > MAX_DURATION) {
+                return 0;
+            }
+
+            return (count << 44) + duration;
+        }
+
+        public static CountAndDuration decodeCountAndDuration(long countAndDuration) {
+            return new CountAndDuration(countAndDuration >> 44, countAndDuration & MAX_DURATION);
+        }
     }
 
     private AtomicReference<Counters> counters = new AtomicReference<Counters>(null);
@@ -124,16 +142,14 @@ public enum QuickPulseDataCollector {
         return null;
     }
 
-    public void countRequest(RequestTelemetry request) {
-        addRequest(request.isSuccess(), request.getDuration().getMilliseconds());
-    }
-
     public void add(Telemetry telemetry) {
         if (telemetry instanceof RequestTelemetry) {
             RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
             addRequest(requestTelemetry.isSuccess(), requestTelemetry.getDuration().getMilliseconds());
         } else if (telemetry instanceof RemoteDependencyTelemetry) {
             addDependency((RemoteDependencyTelemetry)telemetry);
+        } else if (telemetry instanceof ExceptionTelemetry) {
+            addException();
         }
     }
 
@@ -155,23 +171,9 @@ public enum QuickPulseDataCollector {
             return;
         }
 
-        counters.requests.incrementAndGet();
-        counters.requestsDuration.addAndGet(duration);
+        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, duration));
         if (!isSuccessful) {
             counters.unsuccessfulRequests.incrementAndGet();
-        }
-    }
-
-    public void addDependency(boolean isSuccessful, long duration) {
-        Counters counters = this.counters.get();
-        if (counters == null) {
-            return;
-        }
-
-        counters.rdds.incrementAndGet();
-        counters.rddsDuration.addAndGet(duration);
-        if (!isSuccessful) {
-            counters.unsuccessfulRdds.incrementAndGet();
         }
     }
 }

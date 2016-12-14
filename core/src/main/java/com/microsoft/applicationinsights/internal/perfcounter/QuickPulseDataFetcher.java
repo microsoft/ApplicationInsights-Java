@@ -21,19 +21,20 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.text.StrBuilder;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.text.StrBuilder;
+
 /**
  * Created by gupele on 12/12/2016.
  */
-public final class QuickPulseDataFetcher {
+final class QuickPulseDataFetcher {
     private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=";
     private final String quickPulsePostUri;
     private final ArrayBlockingQueue<HttpPost> sendQueue;

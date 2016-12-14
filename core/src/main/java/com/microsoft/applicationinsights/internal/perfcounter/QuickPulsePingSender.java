@@ -21,25 +21,22 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
-import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
-import com.microsoft.applicationinsights.internal.util.DeviceInfo;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+
 import org.apache.commons.lang3.text.StrBuilder;
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.UUID;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 
 /**
  * Created by gupele on 12/12/2016.
  */
-public final class QuickPulsePingSender {
+final class QuickPulsePingSender {
     private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=";
     private final static String QP_STATUS_HEADER = "x-ms-qps-subscribed";
     private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";

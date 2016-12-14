@@ -140,7 +140,7 @@ public class TelemetryClient {
             MapUtil.copy(metrics, et.getMetrics());
         }
 
-        this.track(et, false);
+        this.track(et);
     }
 
     /**
@@ -156,7 +156,7 @@ public class TelemetryClient {
      * @param telemetry An event log item.
      */
     public void trackEvent(EventTelemetry telemetry) {
-        track(telemetry, false);
+        track(telemetry);
     }
 
     /**
@@ -180,7 +180,7 @@ public class TelemetryClient {
             MapUtil.copy(properties, et.getContext().getProperties());
         }
 
-        this.track(et, false);
+        this.track(et);
     }
 
     /**
@@ -200,7 +200,7 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void trackTrace(TraceTelemetry telemetry) {
-        this.track(telemetry, false);
+        this.track(telemetry);
     }
 
     /**
@@ -232,7 +232,7 @@ public class TelemetryClient {
             MapUtil.copy(properties, mt.getContext().getProperties());
         }
 
-        this.track(mt, false);
+        this.track(mt);
     }
 
     /**
@@ -249,7 +249,7 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void trackMetric(MetricTelemetry telemetry) {
-        track(telemetry, false);
+        track(telemetry);
     }
 
     /**
@@ -259,8 +259,6 @@ public class TelemetryClient {
      * @param metrics Measurements associated with this exception event.
      */
     public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
-        QuickPulseDataCollector.INSTANCE.addException();
-
         if (isDisabled()) {
             return;
         }
@@ -276,7 +274,7 @@ public class TelemetryClient {
             MapUtil.copy(metrics, et.getMetrics());
         }
 
-        this.track(et, false);
+        this.track(et);
     }
 
     /**
@@ -292,8 +290,7 @@ public class TelemetryClient {
      * @param telemetry An already constructed exception telemetry record.
      */
     public void trackException(ExceptionTelemetry telemetry) {
-        QuickPulseDataCollector.INSTANCE.addException();
-        track(telemetry, false);
+        track(telemetry);
     }
 
     /**
@@ -305,17 +302,14 @@ public class TelemetryClient {
      * @param success 'true' if the request was a success, 'false' otherwise.
      */
     public void trackHttpRequest(String name, Date timestamp, long duration, String responseCode, boolean success) {
-        QuickPulseDataCollector.INSTANCE.addRequest(success, duration);
-
         if (isDisabled()) {
             return;
         }
 
-        track(new RequestTelemetry(name, timestamp, duration, responseCode, success), false);
+        track(new RequestTelemetry(name, timestamp, duration, responseCode, success));
     }
 
     public void trackRequest(RequestTelemetry request) {
-        QuickPulseDataCollector.INSTANCE.countRequest(request);
         track(request);
     }
 
@@ -336,7 +330,7 @@ public class TelemetryClient {
             telemetry = new RemoteDependencyTelemetry("");
         }
 
-        track(telemetry, false);
+        track(telemetry);
     }
 
     public void trackPageView(String name) {
@@ -350,7 +344,7 @@ public class TelemetryClient {
         }
 
         Telemetry telemetry = new PageViewTelemetry(name);
-        track(telemetry, false);
+        track(telemetry);
     }
 
     /**
@@ -358,7 +352,7 @@ public class TelemetryClient {
      * @param telemetry The telemetry to send
      */
     public void trackPageView(PageViewTelemetry telemetry) {
-        track(telemetry, false);
+        track(telemetry);
     }
 
     /**
@@ -366,16 +360,8 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void track(Telemetry telemetry) {
-        track(telemetry, true);
-    }
-
-    private void track(Telemetry telemetry, boolean telemetryNeededForQuickPulse) {
         if (telemetry == null) {
             throw new IllegalArgumentException("telemetry item cannot be null");
-        }
-
-        if (telemetryNeededForQuickPulse) {
-            QuickPulseDataCollector.INSTANCE.add(telemetry);
         }
 
         if (isDisabled()) {
@@ -410,6 +396,11 @@ public class TelemetryClient {
 
         if (!activateProcessors(telemetry)) {
             return;
+        }
+
+        try {
+            QuickPulseDataCollector.INSTANCE.add(telemetry);
+        } catch (Throwable t) {
         }
 
         try {
