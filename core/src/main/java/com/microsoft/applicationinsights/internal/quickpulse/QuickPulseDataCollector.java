@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.perfcounter;
+package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -38,6 +39,8 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  */
 public enum QuickPulseDataCollector {
     INSTANCE;
+
+    private String ikey;
 
     static class FinalCounters {
         public final double exceptions;
@@ -129,7 +132,8 @@ public enum QuickPulseDataCollector {
         counters.set(null);
     }
 
-    public synchronized void enable() {
+    public synchronized void enable(final String ikey) {
+        this.ikey = ikey;
         counters.set(new Counters());
     }
 
@@ -143,20 +147,24 @@ public enum QuickPulseDataCollector {
     }
 
     public void add(Telemetry telemetry) {
+        if (!telemetry.getContext().getInstrumentationKey().equals(ikey)) {
+            return;
+        }
+
         if (telemetry instanceof RequestTelemetry) {
             RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
-            addRequest(requestTelemetry.isSuccess(), requestTelemetry.getDuration().getMilliseconds());
+            addRequest(requestTelemetry);
         } else if (telemetry instanceof RemoteDependencyTelemetry) {
-            addDependency((RemoteDependencyTelemetry)telemetry);
+            addDependency((RemoteDependencyTelemetry) telemetry);
         } else if (telemetry instanceof ExceptionTelemetry) {
             addException();
         }
     }
 
-    public void addDependency(RemoteDependencyTelemetry telemetry) {
+    private void addDependency(RemoteDependencyTelemetry telemetry) {
     }
 
-    public void addException() {
+    private void addException() {
         Counters counters = this.counters.get();
         if (counters == null) {
             return;
@@ -165,14 +173,14 @@ public enum QuickPulseDataCollector {
         counters.exceptions.incrementAndGet();
     }
 
-    public void addRequest(boolean isSuccessful, long duration) {
+    private void addRequest(RequestTelemetry requestTelemetry) {
         Counters counters = this.counters.get();
         if (counters == null) {
             return;
         }
 
-        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, duration));
-        if (!isSuccessful) {
+        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getMilliseconds()));
+        if (!requestTelemetry.isSuccess()) {
             counters.unsuccessfulRequests.incrementAndGet();
         }
     }

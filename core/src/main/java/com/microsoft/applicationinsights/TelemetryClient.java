@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.perfcounter.QuickPulseDataCollector;
+import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.telemetry.*;
@@ -320,8 +320,6 @@ public class TelemetryClient {
     }
 
     public void trackDependency(RemoteDependencyTelemetry telemetry) {
-        QuickPulseDataCollector.INSTANCE.addDependency(telemetry);
-
         if (isDisabled()) {
             return;
         }

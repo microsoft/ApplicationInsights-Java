@@ -33,7 +33,7 @@ import java.lang.management.RuntimeMXBean;
 /**
  * Created by gupele on 12/12/2016.
  */
-class CpuPerformanceCounterCalculator {
+public final class CpuPerformanceCounterCalculator {
     private final int numberOfCpus;
 
     private long prevUpTime, prevProcessCpuTime;

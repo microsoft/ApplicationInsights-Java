@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.perfcounter;
+package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -32,17 +32,17 @@ import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 /**
  * Created by gupele on 12/12/2016.
  */
-final class QuickPulseDataSender implements Runnable {
+final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final ApacheSender apacheSender;
-    private volatile QuickPulseNetworkHelper.QuickPulseStatus quickPulseStatus;
+    private volatile QuickPulseStatus quickPulseStatus;
     private volatile boolean stopped = false;
     private long lastValidTransmission = 0;
 
     private final ArrayBlockingQueue<HttpPost> sendQueue;
 
-    public QuickPulseDataSender(final ApacheSender apacheSender, final ArrayBlockingQueue<HttpPost> sendQueue) {
+    public DefaultQuickPulseDataSender(final ApacheSender apacheSender, final ArrayBlockingQueue<HttpPost> sendQueue) {
         this.apacheSender = apacheSender;
         this.sendQueue = sendQueue;
     }
@@ -52,7 +52,7 @@ final class QuickPulseDataSender implements Runnable {
         try {
             while (!stopped) {
                 HttpPost post = sendQueue.take();
-                if (quickPulseStatus != QuickPulseNetworkHelper.QuickPulseStatus.QP_IS_ON) {
+                if (quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
                     continue;
                 }
 
@@ -60,7 +60,7 @@ final class QuickPulseDataSender implements Runnable {
                 try {
                     HttpResponse response = apacheSender.sendPostRequest(post);
                     if (networkHelper.isSuccess(response)) {
-                        final QuickPulseNetworkHelper.QuickPulseStatus quickPulseResultStatus = networkHelper.getQuickPulseStatus(response);
+                        final QuickPulseStatus quickPulseResultStatus = networkHelper.getQuickPulseStatus(response);
                         switch (quickPulseResultStatus) {
                             case QP_IS_OFF:
                             case QP_IS_ON:
@@ -82,8 +82,26 @@ final class QuickPulseDataSender implements Runnable {
             }
         } catch (Throwable t) {
             stopped = true;
-            quickPulseStatus = QuickPulseNetworkHelper.QuickPulseStatus.ERROR;
+            quickPulseStatus = QuickPulseStatus.ERROR;
         }
+    }
+
+    @Override
+    public void startSending() {
+        if (!stopped) {
+            quickPulseStatus = QuickPulseStatus.QP_IS_ON;
+        }
+    }
+
+    @Override
+    public QuickPulseStatus getQuickPulseStatus() {
+        return quickPulseStatus;
+    }
+
+    @Override
+    public void stop() {
+        stopped = true;
+        quickPulseStatus = QuickPulseStatus.ERROR;
     }
 
     private void onPostError(long sendTime) {
@@ -93,22 +111,7 @@ final class QuickPulseDataSender implements Runnable {
 
         final double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
         if (timeFromLastValidTransmission >= 20.0) {
-            quickPulseStatus = QuickPulseNetworkHelper.QuickPulseStatus.ERROR;
+            quickPulseStatus = QuickPulseStatus.ERROR;
         }
-    }
-
-    public void startSending() {
-        if (!stopped) {
-            quickPulseStatus = QuickPulseNetworkHelper.QuickPulseStatus.QP_IS_ON;
-        }
-    }
-
-    public QuickPulseNetworkHelper.QuickPulseStatus getQuickPulseStatus() {
-        return quickPulseStatus;
-    }
-
-    public void stop() {
-        stopped = true;
-        quickPulseStatus = QuickPulseNetworkHelper.QuickPulseStatus.ERROR;
     }
 }

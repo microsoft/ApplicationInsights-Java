@@ -36,8 +36,6 @@ import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageSc
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
-import com.microsoft.applicationinsights.internal.channel.sampling.AdaptiveTelemetrySampler;
-import com.microsoft.applicationinsights.internal.channel.sampling.FixedRateTelemetrySampler;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
@@ -45,7 +43,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.perfcounter.QuickPulse;
+import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**

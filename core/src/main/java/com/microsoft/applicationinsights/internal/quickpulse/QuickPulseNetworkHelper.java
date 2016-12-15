@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.perfcounter;
+package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.Date;
 
@@ -31,21 +31,15 @@ import org.apache.http.client.methods.HttpPost;
  * Created by gupele on 12/12/2016.
  */
 final class QuickPulseNetworkHelper {
-    private final static int SECONDS_IN_HOUR = 60 * 60;
     private final static long TICKS_AT_EPOCH = 621355968000000000L;
     private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";
     private final static String QP_STATUS_HEADER = "x-ms-qps-subscribed";
-
-    public enum QuickPulseStatus {
-        ERROR,
-        QP_IS_OFF,
-        QP_IS_ON
-    }
 
     public HttpPost buildRequest(Date currentDate, String address) {
         final long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
 
         HttpPost request = new HttpPost(address);
+        request.addHeader(HEADER_TRANSMISSION_TIME, String.valueOf(ticks));
         return request;
     }
 

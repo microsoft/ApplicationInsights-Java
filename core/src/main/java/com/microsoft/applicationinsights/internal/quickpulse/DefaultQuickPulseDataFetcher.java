@@ -19,9 +19,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.perfcounter;
+package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -29,22 +28,21 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.text.StrBuilder;
 
 /**
  * Created by gupele on 12/12/2016.
  */
-final class QuickPulseDataFetcher {
+final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=";
     private final String quickPulsePostUri;
     private final ArrayBlockingQueue<HttpPost> sendQueue;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private String postPrefix;
 
-    public QuickPulseDataFetcher(final ArrayBlockingQueue<HttpPost> sendQueue, final String ikey, final String instanceName, final String quickPulseId) {
+    public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpPost> sendQueue, final String ikey, final String instanceName, final String quickPulseId) {
         quickPulsePostUri = QP_BASE_URI + "post?ikey=" + ikey;
         this.sendQueue = sendQueue;
-        final StrBuilder sb = new StrBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("\"Instance\":\"" + instanceName + "\"," + "\"InstrumentationKey\":");
         sb.append(ikey);
         sb.append(",\"InvariantVersion\":2,\"MachineName\":\"");
@@ -57,12 +55,13 @@ final class QuickPulseDataFetcher {
         postPrefix = sb.toString();
     }
 
+    @Override
     public void prepareQuickPulseDataForSend() {
         try {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
             final Date currentDate = new Date();
-            HttpPost request = networkHelper.buildRequest(currentDate, quickPulsePostUri);
+            final HttpPost request = networkHelper.buildRequest(currentDate, quickPulsePostUri);
 
             final ByteArrayEntity postEntity = buildPostEntity(counters);
 
@@ -77,7 +76,7 @@ final class QuickPulseDataFetcher {
     }
 
     private ByteArrayEntity buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
-        StrBuilder sb = new StrBuilder(postPrefix);
+        StringBuilder sb = new StringBuilder(postPrefix);
 
         formatDocuments(sb);
         formatMetrics(counters, sb);
@@ -93,11 +92,11 @@ final class QuickPulseDataFetcher {
         return bae;
     }
 
-    private void formatDocuments(StrBuilder sb) {
+    private void formatDocuments(StringBuilder sb) {
         sb.append(",\"Documents\":null");
     }
 
-    private void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StrBuilder sb) {
+    private void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {
         sb.append(
                 String.format(",\"Metrics\":[{" +
                                 "{\"Name\":\"\\\\ApplicationInsights\\\\Exceptions\",\"Value\": %s,\"Weight\":1}," +

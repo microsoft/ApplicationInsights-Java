@@ -19,12 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.perfcounter;
+package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.internal.util.DeviceInfo;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.http.client.methods.HttpPost;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -42,7 +44,7 @@ public enum QuickPulse implements Stoppable {
     private volatile boolean initialized = false;
     private Thread thread;
     private Thread senderThread;
-    private QuickPulseCoordinator coordinator;
+    private DefaultQuickPulseCoordinator coordinator;
     private ApacheSender apacheSender;
     private QuickPulseDataSender quickPulseDataSender;
 
@@ -51,9 +53,42 @@ public enum QuickPulse implements Stoppable {
             synchronized (INSTANCE) {
                 if (!initialized) {
                     initialized = true;
-                    createWorkers();
+                    final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
+                    apacheSender = ApacheSenderFactory.INSTANCE.create();
+                    ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<HttpPost>(256, true);
 
-                    QuickPulseDataCollector.INSTANCE.enable();
+                    quickPulseDataSender = new DefaultQuickPulseDataSender(apacheSender, sendQueue);
+
+                    String instanceName = DeviceInfo.getHostName();
+                    if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
+                        instanceName = "Unknown host";
+                    }
+
+                    final String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
+
+                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, instanceName, quickPulseId);
+                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, ikey, instanceName, quickPulseId);
+
+                    final QuickPulseCoordinatorInitData coordinatorInitData =
+                            new QuickPulseCoordinatorInitDataBuilder()
+                                    .withPingSender(quickPulsePingSender)
+                                    .withDataFetcher(quickPulseDataFetcher)
+                                    .withDataSender(quickPulseDataSender)
+                                    .build();
+
+                    coordinator = new DefaultQuickPulseCoordinator(coordinatorInitData);
+
+                    senderThread = new Thread(quickPulseDataSender);
+                    senderThread.setDaemon(true);
+                    senderThread.start();
+
+                    thread = new Thread(coordinator);
+                    thread.setDaemon(true);
+                    thread.start();
+
+                    SDKShutdownActivity.INSTANCE.register(this);
+
+                    QuickPulseDataCollector.INSTANCE.enable(ikey);
                 }
             }
         }
@@ -69,8 +104,11 @@ public enum QuickPulse implements Stoppable {
             return;
         }
 
-        coordinator.stop();
-        quickPulseDataSender.stop();
+        try {
+            coordinator.stop();
+            quickPulseDataSender.stop();
+        } catch (Throwable e) {
+        }
 
         thread.interrupt();
         try {
@@ -84,25 +122,5 @@ public enum QuickPulse implements Stoppable {
         }
 
         initialized = false;
-    }
-
-    private void createWorkers() {
-        final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-        apacheSender = ApacheSenderFactory.INSTANCE.create();
-        ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<HttpPost>(256, true);
-        quickPulseDataSender = new QuickPulseDataSender(apacheSender, sendQueue);
-
-        final String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        coordinator = new QuickPulseCoordinator(apacheSender, ikey, quickPulseId, quickPulseDataSender, sendQueue);
-
-        senderThread = new Thread(quickPulseDataSender);
-        senderThread.setDaemon(true);
-        senderThread.start();
-
-        thread = new Thread(coordinator);
-        thread.setDaemon(true);
-        thread.start();
-
-        SDKShutdownActivity.INSTANCE.register(this);
     }
 }

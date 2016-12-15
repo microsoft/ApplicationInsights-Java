@@ -19,10 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.perfcounter;
+package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.text.StrBuilder;
@@ -36,11 +35,8 @@ import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 /**
  * Created by gupele on 12/12/2016.
  */
-final class QuickPulsePingSender {
+final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=";
-    private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";
-
-    private final static long TICKS_AT_EPOCH = 621355968000000000L;
 
     private final String quickPulsePingUri;
     private final ApacheSender apacheSender;
@@ -48,7 +44,7 @@ final class QuickPulsePingSender {
     private String pingPrefix;
     private long lastValidTransmission = 0;
 
-    public QuickPulsePingSender(final ApacheSender apacheSender, final String instanceName, final String quickPulseId) {
+    public DefaultQuickPulsePingSender(final ApacheSender apacheSender, final String instanceName, final String quickPulseId) {
         this.apacheSender = apacheSender;
 
         final String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
@@ -71,18 +67,19 @@ final class QuickPulsePingSender {
         pingPrefix = sb.toString();
     }
 
-    public QuickPulseNetworkHelper.QuickPulseStatus ping() {
+    @Override
+    public QuickPulseStatus ping() {
         final Date currentDate = new Date();
-        HttpPost request = networkHelper.buildRequest(currentDate, quickPulsePingUri);
+        final HttpPost request = networkHelper.buildRequest(currentDate, quickPulsePingUri);
 
-        ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
+        final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
         request.setEntity(pingEntity);
 
         final long sendTime = System.nanoTime();
         try {
             HttpResponse response = apacheSender.sendPostRequest(request);
             if (networkHelper.isSuccess(response)) {
-                final QuickPulseNetworkHelper.QuickPulseStatus quickPulseResultStatus = networkHelper.getQuickPulseStatus(response);
+                final QuickPulseStatus quickPulseResultStatus = networkHelper.getQuickPulseStatus(response);
                 switch (quickPulseResultStatus) {
                     case QP_IS_OFF:
                     case QP_IS_ON:
@@ -110,12 +107,12 @@ final class QuickPulsePingSender {
         return bae;
     }
 
-    private QuickPulseNetworkHelper.QuickPulseStatus onPingError(long sendTime) {
+    private QuickPulseStatus onPingError(long sendTime) {
         final double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
         if (timeFromLastValidTransmission >= 60.0) {
-            return QuickPulseNetworkHelper.QuickPulseStatus.ERROR;
+            return QuickPulseStatus.ERROR;
         }
 
-        return QuickPulseNetworkHelper.QuickPulseStatus.QP_IS_OFF;
+        return QuickPulseStatus.QP_IS_OFF;
     }
 }
