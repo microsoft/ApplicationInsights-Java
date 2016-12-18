@@ -19,29 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.channel.common;
-
-import java.io.IOException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
+package com.microsoft.applicationinsights.internal.quickpulse;
 
 /**
- * Created by gupele on 6/4/2015.
+ * Created by gupele on 12/15/2016.
  */
-public interface ApacheSender {
-    final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
-    final static int REQUEST_TIMEOUT_IN_MILLIS = 60000;
-    final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
+final class QuickPulseCoordinatorInitData {
+    public final QuickPulsePingSender pingSender;
+    public final QuickPulseDataFetcher dataFetcher;
+    public final QuickPulseDataSender dataSender;
+    public final long waitBetweenPingsInMS;
+    public final long waitBetweenPostsInMS;
+    public final long waitOnErrorInMS;
 
-    HttpResponse sendPostRequest(HttpPost post) throws IOException;
-
-    void dispose(HttpResponse response);
-
-    void close();
-
-    HttpClient getHttpClient();
-
-    void enhanceRequest(HttpPost request);
+    public QuickPulseCoordinatorInitData(
+            QuickPulsePingSender pingSender,
+            QuickPulseDataFetcher dataFetcher,
+            QuickPulseDataSender dataSender,
+            long waitBetweenPingsInMS,
+            long waitBetweenPostsInMS,
+            long waitOnErrorInMS) {
+        this.pingSender = pingSender;
+        this.dataFetcher = dataFetcher;
+        this.dataSender = dataSender;
+        this.waitBetweenPingsInMS = waitBetweenPingsInMS;
+        this.waitBetweenPostsInMS = waitBetweenPostsInMS;
+        this.waitOnErrorInMS = waitOnErrorInMS;
+    }
 }

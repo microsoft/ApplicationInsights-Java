@@ -19,29 +19,43 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.channel.common;
-
-import java.io.IOException;
+package com.microsoft.applicationinsights.internal.quickpulse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.StatusLine;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.io.File;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 /**
- * Created by gupele on 6/4/2015.
+ * Created by gupele on 12/15/2016.
  */
-public interface ApacheSender {
-    final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
-    final static int REQUEST_TIMEOUT_IN_MILLIS = 60000;
-    final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
+public class QuickPulseNetworkHelperTest {
+    @Test
+    public void testIsSuccessWith200() {
+        final HttpResponse response = mock(HttpResponse.class);
+        final StatusLine statusLine = mock(StatusLine.class);
 
-    HttpResponse sendPostRequest(HttpPost post) throws IOException;
+        Mockito.doReturn(statusLine).when(response).getStatusLine();
+        Mockito.doReturn(200).when(statusLine).getStatusCode();
 
-    void dispose(HttpResponse response);
+        final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+        assertTrue(result);
+    }
 
-    void close();
+    @Test
+    public void testIsSuccessWith500() {
+        final HttpResponse response = mock(HttpResponse.class);
+        final StatusLine statusLine = mock(StatusLine.class);
 
-    HttpClient getHttpClient();
+        Mockito.doReturn(statusLine).when(response).getStatusLine();
+        Mockito.doReturn(500).when(statusLine).getStatusCode();
 
-    void enhanceRequest(HttpPost request);
+        final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+        assertFalse(result);
+    }
 }

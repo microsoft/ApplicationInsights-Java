@@ -27,44 +27,45 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+
 /**
- * The class supplies the cpu usage of the Java process the SDK is in.
- *
- * Created by gupele on 3/3/2015.
+ * Created by gupele on 12/12/2016.
  */
-final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
+public final class CpuPerformanceCounterCalculator {
+    private final int numberOfCpus;
 
-    private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+    private long prevUpTime, prevProcessCpuTime;
 
-    public ProcessCpuPerformanceCounter() {
+    public CpuPerformanceCounterCalculator() {
+        com.sun.management.OperatingSystemMXBean operatingSystemMXBean = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
+    }
+
+    public double getProcessCpuUsage() {
+        double processCpuUsage;
         try {
-            cpuPerformanceCounterCalculator = new CpuPerformanceCounterCalculator();
-        } catch (Throwable t) {
-            cpuPerformanceCounterCalculator = null;
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create ProcessCpuPerformanceCounter: %s", t.getMessage());
-            t.printStackTrace();
-            throw new RuntimeException("Failed to create ProcessCpuPerformanceCounter");
+            RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            com.sun.management.OperatingSystemMXBean operatingSystemMXBean =
+                    (com.sun.management.OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
+
+            long upTime = runtimeMXBean.getUptime();
+            long processCpuTime = operatingSystemMXBean.getProcessCpuTime();
+
+            if (prevUpTime > 0L && upTime > prevUpTime) {
+                long elapsedCpu = processCpuTime - prevProcessCpuTime;
+                long elapsedTime = upTime - prevUpTime;
+                processCpuUsage = Math.min(99F, elapsedCpu / (elapsedTime * 10000F * numberOfCpus));
+            } else {
+                processCpuUsage = Constants.DEFAULT_DOUBLE_VALUE;
+            }
+            prevUpTime = upTime;
+            prevProcessCpuTime = processCpuTime;
+        } catch (Exception e) {
+            processCpuUsage = Constants.DEFAULT_DOUBLE_VALUE;
         }
-    }
 
-    @Override
-    public String getId() {
-        return Constants.PROCESS_CPU_PC_ID;
-    }
-
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        if (cpuPerformanceCounterCalculator == null) {
-            return;
-        }
-        double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
-
-        InternalLogger.INSTANCE.trace("Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
-        Telemetry telemetry = new PerformanceCounterTelemetry(
-                getProcessCategoryName(),
-                Constants.CPU_PC_COUNTER_NAME,
-                SystemInformation.INSTANCE.getProcessId(),
-                processCpuUsage);
-        telemetryClient.track(telemetry);
+        return processCpuUsage;
     }
 }

@@ -92,7 +92,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
         this.serverUri = serverUri;
 
-        httpClient = new ApacheSenderFactory().create();
+        httpClient = ApacheSenderFactory.INSTANCE.create();
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
     }
