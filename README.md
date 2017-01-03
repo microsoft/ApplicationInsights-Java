@@ -43,6 +43,7 @@ To build Application Insights CollectD writer plugin, please do the following:
 ### Notes
 
 * To create a Java 6 compatible build you need to either have JAVA_HOME point to "Java 6 SDK" path or set JAVA_JRE_6 environment variable to point to [JRE 6 JRE installation directory]
+* To enable Windows Performance Counters you need to install the [Visual Studio 2013 C++ Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=40784) (or higher)
 
 
 
