@@ -45,11 +45,12 @@ public class AgentBuiltInConfigurationBuilder {
             this.dataOfConfigurationForException.setEnabled(false);
         }
 
-        return new AgentBuiltInConfiguration(simpleBuiltInClasses,
+        return new AgentBuiltInConfiguration(enabled,
+                                             simpleBuiltInClasses,
                                              httpEnabled && enabled,
                                              jdbcEnabled && enabled,
                                              hibernateEnabled && enabled,
-                                             hibernateEnabled && jedisEnabled,
+                                             jedisEnabled && enabled,
                                              enabled && jmxEnabled,
                                              maxSqlQueryLimitInMS,
                                              jedisThresholdInMS,

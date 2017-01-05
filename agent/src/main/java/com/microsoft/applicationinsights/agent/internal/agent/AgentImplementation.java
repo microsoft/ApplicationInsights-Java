@@ -64,6 +64,7 @@ public final class AgentImplementation {
             initializeCodeInjector(inst);
         } catch (Throwable throwable) {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
+			throwable.printStackTrace();
             System.exit(-1);
         }
     }

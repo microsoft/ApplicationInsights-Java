@@ -41,4 +41,6 @@ public interface AgentConfiguration {
     boolean isSelfRegistrationMode();
 
     String getSdkPath();
+
+    boolean isDebugMode();
 }

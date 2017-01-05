@@ -53,6 +53,16 @@ public interface AgentNotificationsHandler {
     void httpMethodStarted(String classAndMethodNames, String url);
 
     /**
+     * A HTTP call that was ended
+     * @param identifier - HTTP identifier, i.e. the callser
+     * @param method - 'GET'/'PUT' etc.
+     * @param uri - The falled uri
+     * @param result - The result
+     * @param delta - Time it took to do the call
+     */
+    void httpMethodFinished(String identifier, String method, String uri, int result, long delta);
+
+    /**
      * Called when an java.sql.Statement concrete class is called
      * @param classAndMethodNames The name of the class and method separated by '.'
      * @param statement The class that implements the java.sql.Statement interface

@@ -45,31 +45,9 @@ final class PreparedStatementForClearParametersMethodVisitor extends DefaultMeth
 
     @Override
     protected void onMethodEnter() {
-        int localIndex = this.newLocal(Type.getType(Integer.class));
-
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFNULL, l0);
-
-        mv.visitInsn(ICONST_0);
-        mv.visitVarInsn(ISTORE, localIndex);
-        Label l1 = new Label();
-        mv.visitLabel(l1);
-        mv.visitFrame(Opcodes.F_APPEND, localIndex, new Object[] {Opcodes.INTEGER}, 0, null);
-        mv.visitVarInsn(ILOAD, localIndex);
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
-        mv.visitInsn(ARRAYLENGTH);
-        mv.visitJumpInsn(IF_ICMPGE, l0);
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
-        mv.visitVarInsn(ILOAD, localIndex);
         mv.visitInsn(ACONST_NULL);
-        mv.visitInsn(AASTORE);
-        mv.visitIincInsn(localIndex, 1);
-        mv.visitJumpInsn(GOTO, l1);
-        mv.visitLabel(l0);
+        mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
     }
 
     @Override

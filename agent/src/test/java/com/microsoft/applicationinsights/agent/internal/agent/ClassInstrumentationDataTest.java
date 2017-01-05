@@ -39,7 +39,7 @@ public final class ClassInstrumentationDataTest {
                 .setReportCaughtExceptions(true)
                 .setReportExecutionTime(false);
         assertTrue(test.getMethodInstrumentationInfo().isEmpty());
-        assertEquals(test.getClassType(), InstrumentedClassType.HTTP);
+        assertEquals(test.getClassType(), InstrumentedClassType.HTTP.toString());
         assertEquals(test.getClassName(), MOCK_CLASS_NAME);
         assertEquals(test.isReportCaughtExceptions(), true);
         assertEquals(test.isReportExecutionTime(), false);

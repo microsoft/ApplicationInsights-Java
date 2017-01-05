@@ -25,5 +25,5 @@ package com.microsoft.applicationinsights.agent.internal.agent;
  * Created by gupele on 8/3/2015.
  */
 public interface ByteCodeTransformer {
-    byte[] transform(byte[] originalBuffer);
+    byte[] transform(byte[] originalBuffer, String className);
 }

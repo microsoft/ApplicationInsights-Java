@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.agent.internal.agent.redis.JedisClassDa
 import com.microsoft.applicationinsights.agent.internal.agent.sql.PreparedStatementClassDataProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.sql.StatementClassDataDataProvider;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
@@ -64,12 +65,16 @@ class DefaultClassDataProvider implements ClassDataProvider {
 
     private boolean builtInEnabled = true;
 
+    private boolean debugMode = false;
+
     public DefaultClassDataProvider() {
         excludedPaths = new HashSet<String>((Arrays.asList(EXCLUDED_CLASS_PREFIXES)));
     }
 
     @Override
     public void setConfiguration(AgentConfiguration agentConfiguration) {
+        debugMode = agentConfiguration.isDebugMode();
+
         setBuiltInDataFlag(agentConfiguration);
 
         if (builtInEnabled) {
@@ -78,6 +83,7 @@ class DefaultClassDataProvider implements ClassDataProvider {
             if (agentConfiguration.getBuiltInConfiguration().isJdbcEnabled()) {
 				InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Statements instrumentation");
                 new StatementClassDataDataProvider(classesToInstrument).add();
+
 				InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Prepared Statements instrumentation");
                 new PreparedStatementClassDataProvider(classesToInstrument).add();
             }
@@ -123,17 +129,29 @@ class DefaultClassDataProvider implements ClassDataProvider {
                     String fullPackageName = className.substring(0, index + 1);
                     String onlycClassName = className.substring(index + 1);
                     classInstrumentationData = regExpClassesToInstrument.get(fullPackageName);
-                    if (!classInstrumentationData.isClassNameMatches(onlycClassName)) {
+                    if (classInstrumentationData == null) {
                         return null;
                     }
-                }
+					if (!classInstrumentationData.isClassNameMatches(onlycClassName)) {
+						return null;
+					}
+
+					ClassInstrumentationData newClassInstrumentationData = new ClassInstrumentationData(className, classInstrumentationData.getClassType(), classInstrumentationData.getClassVisitorFactory());
+					newClassInstrumentationData.setMethodInstrumentationInfo(classInstrumentationData.getMethodInstrumentationInfo());
+					classInstrumentationData = newClassInstrumentationData;
+					InternalAgentLogger.INSTANCE.trace("Adding " + classInstrumentationData.getFullPackageName());
+               }
             }
         }
 
         if (classInstrumentationData == null) {
             return null;
         }
-        return new DefaultByteCodeTransformer(classInstrumentationData);
+
+        ImplementationsCoordinator.INSTANCE.addClassNameToType(classInstrumentationData.getClassName(), classInstrumentationData.getClassType());
+        DefaultByteCodeTransformer transformer = new DefaultByteCodeTransformer(classInstrumentationData, debugMode);
+
+        return transformer;
     }
 
     private boolean isExcluded(String className) {

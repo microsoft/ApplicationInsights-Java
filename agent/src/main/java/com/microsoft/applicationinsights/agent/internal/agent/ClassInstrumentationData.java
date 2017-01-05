@@ -60,10 +60,10 @@ public final class ClassInstrumentationData {
     private final String className;
 
     // The type of class
-    private final InstrumentedClassType classType;
+    private final String classType;
 
     // Methods that will be instrumented
-    private final MethodInstrumentationInfo methodInstrumentationInfo;
+    private MethodInstrumentationInfo methodInstrumentationInfo;
 
     private long thresholdInMS;
     private boolean reportExecutionTime;
@@ -75,10 +75,18 @@ public final class ClassInstrumentationData {
     private String onlyPackageName;
 
     public ClassInstrumentationData(String className, InstrumentedClassType classType) {
+        this(className, classType.toString());
+    }
+
+    public ClassInstrumentationData(String className, String classType) {
         this(className, classType, null);
     }
 
     public ClassInstrumentationData(String className, InstrumentedClassType classType, ClassVisitorFactory classVisitorFactory) {
+        this(className, classType.toString(), classVisitorFactory);
+    }
+
+    public ClassInstrumentationData(String className, String classType, ClassVisitorFactory classVisitorFactory) {
         this.classType = classType;
         this.methodInstrumentationInfo = new MethodInstrumentationInfo();
         if (classVisitorFactory == null) {
@@ -92,7 +100,7 @@ public final class ClassInstrumentationData {
             String onlyClassName = className.substring(index + 1);
             if (className.contains("*")) {
                 onlyPackageName = className.substring(0, index + 1);
-                onlyClassName = onlyClassName.replace("*", "\\*");
+                onlyClassName = onlyClassName.replace("*", ".*");
                 classNamePattern = Pattern.compile(onlyClassName);
                 this.className = null;
                 return;
@@ -141,6 +149,10 @@ public final class ClassInstrumentationData {
         return this;
     }
 
+    public ClassVisitorFactory getClassVisitorFactory() {
+        return this.classVisitorFactory;
+    }
+
     public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory) {
         methodInstrumentationInfo.addAllMethods(reportCaughtExceptions, reportExecutionTime, methodVisitorFactory == null ? s_defaultMethodVisitorFactory : methodVisitorFactory);
     }
@@ -153,12 +165,16 @@ public final class ClassInstrumentationData {
         return className;
     }
 
-    public InstrumentedClassType getClassType() {
+    public String getClassType() {
         return classType;
     }
 
     public MethodInstrumentationInfo getMethodInstrumentationInfo() {
         return methodInstrumentationInfo;
+    }
+
+    public void setMethodInstrumentationInfo(MethodInstrumentationInfo methodInstrumentationInfo) {
+        this.methodInstrumentationInfo = methodInstrumentationInfo;
     }
 
     public boolean isReportExecutionTime() {

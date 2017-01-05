@@ -105,6 +105,17 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 return agentConfiguration;
             }
 
+            String debugModeAsString = XmlParserUtils.getAttribute(instrumentationTag, "debug");
+            if (!StringUtils.isNullOrEmpty(debugModeAsString)) {
+                try {
+                    boolean debugMode = Boolean.valueOf(debugModeAsString);
+                    agentConfiguration.setDebugMode(debugMode);
+                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Instrumentation debug mode set to '%s'", debugMode);
+                } catch (Throwable t) {
+                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to parse debug attribute '%s'", debugModeAsString);
+                }
+            }
+
             setSelfCoreRegistratorMode(agentConfiguration, topElementTag);
 
             setBuiltInInstrumentation(agentConfiguration, instrumentationTag);
@@ -241,10 +252,9 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         className = className.replace(".", "/");
         ClassInstrumentationData data = classesToInstrument.get(className);
 
-        InstrumentedClassType type = InstrumentedClassType.OTHER;
-        try {
-            type = Enum.valueOf(InstrumentedClassType.class, classElement.getAttribute("type"));
-        } catch (Throwable t) {
+        String type = classElement.getAttribute("type");
+        if (StringUtils.isNullOrEmpty(type)) {
+            type = InstrumentedClassType.OTHER.toString();
         }
 
         boolean reportCaughtExceptions = false;
