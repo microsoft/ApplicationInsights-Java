@@ -187,6 +187,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         NodeList nodes = instrumentationTags.getElementsByTagName(BUILT_IN_TAG);
         Element builtInElement = XmlParserUtils.getFirst(nodes);
         if (builtInElement == null) {
+            builtInConfigurationBuilder.setEnabled(false);
             agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
             return;
         }
@@ -194,6 +195,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         boolean builtInIsEnabled = XmlParserUtils.getEnabled(builtInElement, BUILT_IN_TAG);
         builtInConfigurationBuilder.setEnabled(builtInIsEnabled);
         if (!builtInIsEnabled) {
+            builtInConfigurationBuilder.setEnabled(false);
             agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
             return;
         }
