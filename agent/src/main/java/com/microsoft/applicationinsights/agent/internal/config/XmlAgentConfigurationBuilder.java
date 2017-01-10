@@ -187,6 +187,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         NodeList nodes = instrumentationTags.getElementsByTagName(BUILT_IN_TAG);
         Element builtInElement = XmlParserUtils.getFirst(nodes);
         if (builtInElement == null) {
+            builtInConfigurationBuilder.setEnabled(false);
             agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
             return;
         }
