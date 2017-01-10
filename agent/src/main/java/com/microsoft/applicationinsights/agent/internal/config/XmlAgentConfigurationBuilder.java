@@ -195,6 +195,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         boolean builtInIsEnabled = XmlParserUtils.getEnabled(builtInElement, BUILT_IN_TAG);
         builtInConfigurationBuilder.setEnabled(builtInIsEnabled);
         if (!builtInIsEnabled) {
+            builtInConfigurationBuilder.setEnabled(false);
             agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
             return;
         }

@@ -29,12 +29,12 @@ import java.util.List;
  * Created by gupele on 6/5/2015.
  */
 public class AgentBuiltInConfigurationBuilder {
-    private boolean enabled = true;
-    private boolean httpEnabled = true;
-    private boolean jdbcEnabled = true;
-    private boolean hibernateEnabled = true;
-    private boolean jedisEnabled = true;
-    private boolean jmxEnabled = true;
+    private boolean enabled = false;
+    private boolean httpEnabled = false;
+    private boolean jdbcEnabled = false;
+    private boolean hibernateEnabled = false;
+    private boolean jedisEnabled = false;
+    private boolean jmxEnabled = false;
     private long jedisThresholdInMS = 10000L;
     private Long maxSqlQueryLimitInMS = 10000L;
     private DataOfConfigurationForException dataOfConfigurationForException = new DataOfConfigurationForException();
