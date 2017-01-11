@@ -39,7 +39,7 @@ public class AiCustomContextInitializer {
         if (args.length > 0) {
             appInsights.getContext().setInstrumentationKey(args[0]);
         }
-        appInsights.getContext().setInstrumentationKey("2ab4ffa8-5d7d-4bb0-bf14-33d9c556be96");
+        appInsights.getContext().setInstrumentationKey("your-ikey");
 
         String iKey = appInsights.getContext().getInstrumentationKey();
         if (iKey == null) {
