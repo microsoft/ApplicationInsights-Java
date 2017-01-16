@@ -38,32 +38,6 @@ import static org.mockito.Mockito.mock;
  */
 public class ConfigRuntimeExceptionDataBuilderTest {
     @Test
-    public void testEnabledExceptionTag() {
-        final Element exceptionTag = createMockElement("enabled", "true");
-
-        final NodeList nodeList = createMockNodeList(exceptionTag);
-
-        Element mainTag = createMockElementWithNodeList(nodeList);
-
-        ConfigRuntimeExceptionDataBuilder tested = new ConfigRuntimeExceptionDataBuilder();
-
-        AgentBuiltInConfigurationBuilder builder = new AgentBuiltInConfigurationBuilder();
-        tested.setRuntimeExceptionData(mainTag, builder);
-
-        AgentBuiltInConfiguration confData = builder.create();
-
-        Assert.assertTrue(confData.isEnabled());
-        DataOfConfigurationForException exceptionData = confData.getDataOfConfigurationForException();
-
-        Assert.assertNotNull(exceptionData);
-
-        Assert.assertTrue(exceptionData.isEnabled());
-        Assert.assertTrue(exceptionData.getSuppressedExceptions().isEmpty());
-        Assert.assertTrue(exceptionData.getValidPathForExceptions().isEmpty());
-        Assert.assertEquals(exceptionData.getStackSize(), Integer.MAX_VALUE);
-    }
-
-    @Test
     public void testEnabledExceptionWithSuppressedAndValidDataTag() {
         final Element suppressedElement = createMockElement("name", "aa.aa");
         final Element validElement = createMockElement("name", "bb.bb");
@@ -83,6 +57,8 @@ public class ConfigRuntimeExceptionDataBuilderTest {
         ConfigRuntimeExceptionDataBuilder tested = new ConfigRuntimeExceptionDataBuilder();
 
         AgentBuiltInConfigurationBuilder builder = new AgentBuiltInConfigurationBuilder();
+        builder.setEnabled(true);
+
         tested.setRuntimeExceptionData(mainTag, builder);
 
         AgentBuiltInConfiguration confData = builder.create();

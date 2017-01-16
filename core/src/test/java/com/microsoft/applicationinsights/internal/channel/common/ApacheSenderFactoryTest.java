@@ -34,12 +34,14 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 
 public final class ApacheSenderFactoryTest {
+	/*
     @Test
     public void testOldVersion() throws NoSuchFieldException, IllegalAccessException {
         ApacheSender sender = createApacheSender(false);
 
         assertEquals(sender.getHttpClient().getClass(), DefaultHttpClient.class);
     }
+	*/
 
     @Test
     public void testNewVersion() throws NoSuchFieldException, IllegalAccessException {
