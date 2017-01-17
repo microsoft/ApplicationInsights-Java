@@ -154,7 +154,16 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
     }
 
     /**
-     * This method must be called prior to any use of the instance.
+     * This method must be called prior to any use of the instance
+     *
+      * @param maxTelemetriesPerSecond  maxTelemetriesPerSecond
+     * @param evaluationIntervalInSeconds evaluationIntervalInSeconds
+     * @param samplingPercentageDecreaseTimeoutInSeconds samplingPercentageDecreaseTimeoutInSeconds
+     * @param samplingPercentageIncreaseTimeoutInSeconds samplingPercentageIncreaseTimeoutInSeconds
+     * @param minSamplingPercentage minSamplingPercentage
+     * @param maxSamplingPercentage maxSamplingPercentage
+     * @param initialSamplingPercentage initialSamplingPercentage
+     * @param movingAverageRatio movingAverageRatio
      */
     public void initialize(String maxTelemetriesPerSecond,
                            String evaluationIntervalInSeconds,

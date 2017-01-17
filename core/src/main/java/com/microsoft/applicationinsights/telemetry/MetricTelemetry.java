@@ -111,7 +111,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
 
     /**
      * Sets the number of samples for this metric. 
-     * @param count Number of samples. >= 1
+     * @param count Number of samples greater than or equal to 1
      */
     public void setCount(Integer count) {
         metric.setCount(count); updateKind();

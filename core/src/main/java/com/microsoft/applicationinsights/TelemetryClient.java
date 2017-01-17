@@ -213,7 +213,7 @@ public class TelemetryClient {
     /**
      * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
      * @param name The name of the metric. Max length 150.
-     * @param value The value of the metric. Average if based on more than one sample count. Should be > 0.
+     * @param value The value of the metric. Average if based on more than one sample count. Should be greater than 0.
      * @param sampleCount The sample count.
      * @param min The minimum value of the sample.
      * @param max The maximum value of the sample.
@@ -245,7 +245,7 @@ public class TelemetryClient {
     /**
      * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
      * @param name The name of the metric. Max length 150.
-     * @param value The value of the metric. Should be > 0.
+     * @param value The value of the metric. Should be greater than 0.
      */
     public void trackMetric(String name, double value) {
         trackMetric(name, value, 1, value, value, null);
@@ -319,8 +319,10 @@ public class TelemetryClient {
 
 
     /**
-     * Sends a request record to Application Insights. Appears in "requests" in Search and Analytics, 
+     * Sends a request record to Application Insights. Appears in "requests" in Search and Analytics,
      * and contributes to metric charts such as Server Requests, Server Response Time, Failed Requests.
+     *
+     *  @param request request
      */
     public void trackRequest(RequestTelemetry request) {
         track(request);
@@ -333,10 +335,10 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a dependency record to Application Insights. Appears in "dependencies" in Search and Analytics. 
-     * Set device type == "PC" to have the record contribute to metric charts such as 
+     * Sends a dependency record to Application Insights. Appears in "dependencies" in Search and Analytics.
+     * Set device type == "PC" to have the record contribute to metric charts such as
      * Server Dependency Calls, Dependency Response Time, and Dependency Failures.
-     * 
+     * @param telemetry telemetry
      */
     public void trackDependency(RemoteDependencyTelemetry telemetry) {
         if (isDisabled()) {
