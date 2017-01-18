@@ -57,7 +57,7 @@ public class RemoteDependencyData extends Domain {
      */
     private String commandName;
 
-    private int resultCode;
+    private String resultCode;
 
     /**
      * Backing field for property Kind.
@@ -277,11 +277,11 @@ public class RemoteDependencyData extends Domain {
     protected void InitializeFields() {
     }
 
-    public int getResultCode() {
+    public String getResultCode() {
         return resultCode;
     }
 
-    public void setResultCode(int resultCode) {
+    public void setResultCode(String resultCode) {
         this.resultCode = resultCode;
     }
 }

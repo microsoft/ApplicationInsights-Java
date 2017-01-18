@@ -206,7 +206,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
         data.setType(value);
     }
 
-    public void setResultCode(int value) {
+    public void setResultCode(String value) {
         data.setResultCode(value);
     }
 

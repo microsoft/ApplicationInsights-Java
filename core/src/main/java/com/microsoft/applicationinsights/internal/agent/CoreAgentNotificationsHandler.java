@@ -144,7 +144,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             return;
         }
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(identifier, null, new Duration(delta), true);
-        telemetry.setResultCode(result);
+        telemetry.setResultCode(Integer.toString(result));
         telemetry.setType("HTTP");
         telemetry.getContext().getProperties().put("URI", uri);
         telemetry.getContext().getProperties().put("Method", method);
