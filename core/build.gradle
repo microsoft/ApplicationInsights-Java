@@ -35,7 +35,7 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 archivesBaseName = 'applicationinsights-core'
 
 dependencies {
-    provided project(':agent')
+    provided (project(':agent')) { transitive = false }
     compile group: 'eu.infomas', name: 'annotation-detector', version: '3.0.4'
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
@@ -51,7 +51,7 @@ shadowJar {
     relocate 'org.apache.http', 'com.microsoft.applicationinsights.core.dependencies.http'
     relocate 'eu.infomas.annotation', 'com.microsoft.applicationinsights.core.dependencies.annotation'
     relocate 'org.apache.commons', 'com.microsoft.applicationinsights.core.dependencies.apachecommons'
-    relocate 'com.google.common', 'com.microsoft.applicationinsights.core.dependencies.googlecommon '
+    relocate 'com.google.common', 'com.microsoft.applicationinsights.core.dependencies.googlecommon'
 }
 
 jar {
