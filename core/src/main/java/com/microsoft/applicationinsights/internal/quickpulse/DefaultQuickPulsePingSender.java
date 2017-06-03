@@ -36,7 +36,7 @@ import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
  * Created by gupele on 12/12/2016.
  */
 final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
-    private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=";
+    private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/";
 
     private final String quickPulsePingUri;
     private final ApacheSender apacheSender;
@@ -51,18 +51,15 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         quickPulsePingUri = QP_BASE_URI + "ping?ikey=" + ikey;
 
         final StrBuilder sb = new StrBuilder();
-        sb.append("\"Instance\":\"" + instanceName + "\"," + "\"InstrumentationKey\":");
-        sb.append(ikey);
-        sb.append(",\"InvariantVersion\":2,\"MachineName\":\"");
-        sb.append(instanceName);
-        sb.append("\"");
-        sb.append(",\"Version\":\"2.2.0-424\"");
-        sb.append(",\"StreamId\":");
-        sb.append(quickPulseId);
-
-        sb.append(",\"Documents\":null");
-        sb.append(",\"Metrics\":null");
-        sb.append(",\"Timestamp\": \"\\/Date(");
+        sb.append("{");
+        sb.append("\"Documents\": null,");
+        sb.append("\"Instance\":\"" + instanceName + "\",");
+        sb.append("\"InstrumentationKey\": null,");
+        sb.append("\"InvariantVersion\": 2,");
+        sb.append("\"MachineName\":\"" + instanceName + "\",");
+        sb.append("\"Metrics\": null,");
+        sb.append("\"StreamId\": \"" + quickPulseId + "\",");
+        sb.append("\"Timestamp\": \"\\/Date(");
 
         pingPrefix = sb.toString();
     }
@@ -102,7 +99,9 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
         StrBuilder sb = new StrBuilder(pingPrefix);
         sb.append(timeInMillis);
-        sb.append(")\\\\/\\\"\"");
+        sb.append(")\\/\",");
+        sb.append("\"Version\":\"2.2.0-738\"");
+        sb.append("}");
         ByteArrayEntity bae = new ByteArrayEntity(sb.toString().getBytes());
         return bae;
     }
