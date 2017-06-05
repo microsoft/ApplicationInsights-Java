@@ -139,17 +139,18 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void httpMethodFinished(String identifier, String method, String uri, int result, long delta) {
-        if (!LocalStringsUtils.isNullOrEmpty(uri) && uri.startsWith("https://dc.services.visualstudio.com")) {
+    public void httpMethodFinished(String identifier, String method, String uri, int result, long deltaInNS) {
+        if (!LocalStringsUtils.isNullOrEmpty(uri) && (uri.startsWith("https://dc.services.visualstudio.com") || uri.startsWith("https://rt.services.visualstudio.com"))) {
             return;
         }
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(identifier, null, new Duration(delta), true);
+        long deltaInMS = nanoToMilliseconds(deltaInNS);
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(identifier, null, new Duration(deltaInMS), true);
         telemetry.setResultCode(Integer.toString(result));
         telemetry.setType("HTTP");
         telemetry.getContext().getProperties().put("URI", uri);
         telemetry.getContext().getProperties().put("Method", method);
 
-        InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, delta);
+        InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, deltaInMS);
 
         telemetryClient.track(telemetry);
     }
