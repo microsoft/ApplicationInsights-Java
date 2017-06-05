@@ -43,6 +43,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
 
@@ -63,6 +64,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     private final static String RESPONSE_RETRY_AFTER_DATE_FORMAT = "E, dd MMM yyyy HH:mm:ss";
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
+    private final static int DEFAULT_BACKOFF_TIME_SECONDS = 300;
 
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
@@ -163,6 +165,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
             } catch (IOException ioe) {
                 InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
+                // backoff retry if no connection is found
+                if (ioe instanceof ConnectTimeoutException) {
+                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+                }
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
             } catch (Throwable t) {
