@@ -109,12 +109,14 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends the specified state of a user session to Application Insights.
+     * Sends the specified state of a user session to Application Insights using {@link #trackEvent(String name)} as this method will be deprecated.
      * @param sessionState {@link com.microsoft.applicationinsights.telemetry.SessionState}
      *                     value indicating the state of a user session.
+     * @deprecated This method will be deprecated in version 2.0.0 of the Java SDK.
      */
+    @Deprecated
     public void trackSessionState(SessionState sessionState) {
-        this.track(new SessionStateTelemetry(sessionState));
+        this.trackEvent("Track Session State: " + sessionState.toString());
     }
 
     /**
