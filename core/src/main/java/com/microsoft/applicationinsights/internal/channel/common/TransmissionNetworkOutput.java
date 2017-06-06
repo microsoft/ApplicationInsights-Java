@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
@@ -161,6 +162,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
             } catch (SocketException e) {
                 InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
+                // backoff retry if no connection is found
+                if (e instanceof ConnectException) {
+                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+                }
             } catch (UnknownHostException e) {
                 InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
             } catch (IOException ioe) {
