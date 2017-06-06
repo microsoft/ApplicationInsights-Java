@@ -168,6 +168,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 }
             } catch (UnknownHostException e) {
                 InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
+                // backoff retry if host unknown
+                transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
             } catch (IOException ioe) {
                 InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
                 // backoff retry if no connection is found
