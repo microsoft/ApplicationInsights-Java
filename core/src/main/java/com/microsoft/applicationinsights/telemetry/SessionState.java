@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.telemetry;
 /**
  * Session states.
  */
-@Deprecated
 public enum SessionState {
     /// Indicates that a user session started.
     Start,

@@ -249,6 +249,13 @@ public final class TelemetryClientTests {
     }
 
     @Test
+    public void testTrackSessionState() {
+        client.trackSessionState(SessionState.End);
+
+        verifyAndGetLastEventSent();
+    }
+
+    @Test
     public void testTrackTraceAll() {
         Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
         client.trackTrace("Trace", SeverityLevel.Error, properties);

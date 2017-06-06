@@ -28,7 +28,6 @@ import com.microsoft.applicationinsights.internal.schemav2.SessionStateData;
 /**
  * Telemetry type used to track user sessions in Azure Application Insights.
  */
-@Deprecated
 public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData> {
     private final SessionStateData data;
 

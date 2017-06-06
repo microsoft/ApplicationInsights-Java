@@ -108,7 +108,16 @@ public class TelemetryClient {
                 Strings.isNullOrEmpty(getContext().getInstrumentationKey()) || configuration.isTrackingDisabled();
     }
 
-     /**
+    /**
+     * Sends the specified state of a user session to Application Insights.
+     * @param sessionState {@link com.microsoft.applicationinsights.telemetry.SessionState}
+     *                     value indicating the state of a user session.
+     */
+    public void trackSessionState(SessionState sessionState) {
+        this.track(new SessionStateTelemetry(sessionState));
+    }
+
+    /**
      * Sends a custom event record to Application Insights. Appears in custom events in Analytics, Search and Metrics Explorer.
      * @param name A name for the event. Max length 150.
      * @param properties Named string values you can use to search and filter events.

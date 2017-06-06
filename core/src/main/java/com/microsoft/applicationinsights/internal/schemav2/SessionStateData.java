@@ -31,7 +31,6 @@ import com.google.common.base.Preconditions;
 /**
  * Created by gupele on 2/19/2015.
  */
-@Deprecated
 public final class SessionStateData extends Domain {
     /**
      * Envelope Name for this telemetry.
