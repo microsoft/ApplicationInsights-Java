@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * Created by gupele on 12/12/2016.
  */
 final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
-    private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=";
+    private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/";
     private final String quickPulsePostUri;
     private final ArrayBlockingQueue<HttpPost> sendQueue;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
@@ -43,15 +43,14 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         quickPulsePostUri = QP_BASE_URI + "post?ikey=" + ikey;
         this.sendQueue = sendQueue;
         final StringBuilder sb = new StringBuilder();
-        sb.append("\"Instance\":\"" + instanceName + "\"," + "\"InstrumentationKey\":");
-        sb.append(ikey);
-        sb.append(",\"InvariantVersion\":2,\"MachineName\":\"");
-        sb.append(instanceName);
-        sb.append("\"");
-        sb.append(",\"Version\":\"2.2.0-424\"");
-        sb.append(",\"StreamId\":");
-        sb.append(quickPulseId);
-
+        sb.append("[{");
+        formatDocuments(sb);
+        sb.append("\"Instance\": \"" + instanceName + "\",");
+        sb.append("\"InstrumentationKey\": \"" + ikey + "\",");
+        sb.append("\"InvariantVersion\": 2,");      
+        sb.append("\"MachineName\": \"" + instanceName + "\",");
+        sb.append("\"StreamId\": \"" + quickPulseId + "\",");
+        
         postPrefix = sb.toString();
     }
 
@@ -77,45 +76,47 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
     private ByteArrayEntity buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
         StringBuilder sb = new StringBuilder(postPrefix);
-
-        formatDocuments(sb);
         formatMetrics(counters, sb);
-
-        sb.append(",\"Timestamp\": \"\\/Date(");
-
+        sb.append("\"Timestamp\": \"\\/Date(");
         long ms = System.currentTimeMillis();
-
         sb.append(ms);
-        sb.append(")\\\\/\\\"\"");
-
+        sb.append(")\\/\",");
+        sb.append("\"Version\": \"2.2.0-738\"");
+        sb.append("}]");
         ByteArrayEntity bae = new ByteArrayEntity(sb.toString().getBytes());
         return bae;
     }
 
     private void formatDocuments(StringBuilder sb) {
-        sb.append(",\"Documents\":null");
+        sb.append("\"Documents\": [] ,");
+    }
+    
+    private void formatSingleMetric(StringBuilder sb, String metricName, double metricValue, int metricWeight, Boolean includeComma) {
+    	String comma = includeComma ? "," : "";
+    	sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
+    }
+    private void formatSingleMetric(StringBuilder sb, String metricName, long metricValue, int metricWeight, Boolean includeComma) {
+    	String comma = includeComma ? "," : "";
+    	sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
+    }
+    private void formatSingleMetric(StringBuilder sb, String metricName, int metricValue, int metricWeight, Boolean includeComma) {
+    	String comma = includeComma ? "," : "";
+    	sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
     }
 
     private void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {
-        sb.append(
-                String.format(",\"Metrics\":[{" +
-                                "{\"Name\":\"\\\\ApplicationInsights\\\\Exceptions\",\"Value\": %s,\"Weight\":1}," +
-                                "{\"Name\":\"\\\\Memory\\\\Committed Bytes\",\"Value\": %s,\"Weight\":1}," +
-                                "{\"Name\":\"\\\\Memory\\\\Processor(_Total)\\\\%% Processor Time\",\"Value\": %s,\"Weight\":1}," +
-                                "{\"Name\":\"\\\\ApplicationInsights\\\\Request\",\"Value\": %s,\"Weight\":1}," +
-                                "{\"Name\":\"\\\\ApplicationInsights\\\\Request Duration\\/Sec\",\"Value\":%s,\"Weight\":%s}," +
-                                "{\"Name\":\"\\\\ApplicationInsights\\\\Requests Failed\\/Sec\",\"Value\":%s,\"Weight\":1}," +
-                                "{\"Name\":\"\\\\ApplicationInsights\\\\Dependency Calls\",\"Value\":%s,\"Weight\":1}," +
-                                "{\"Name\":\"\\\\ApplicationInsights\\\\Dependency Calls Failed\\/Sec\",\"Value\":%s,\"Weight\":1}," +
-                                "{\"Name\":\"\\\\ApplicationInsights\\\\Dependency Call Duration\\/Sec\",\"Value\":%s,\"Weight\":%s}}]",
-                        counters.exceptions,
-                        counters.memoryCommitted,
-                        counters.cpuUsage,
-                        counters.requests,
-                        counters.requestsDuration, counters.requests,
-                        counters.unsuccessfulRequests,
-                        counters.rdds,
-                        counters.unsuccessfulRdds,
-                        counters.rddsDuration, counters.rdds));
+        sb.append("\"Metrics\":[");
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests\\/Sec", counters.requests, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Request Duration", counters.requestsDuration, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests Failed\\/Sec", counters.unsuccessfulRequests, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests Succeeded\\/Sec", (counters.requests - counters.unsuccessfulRequests), 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Calls\\/Sec", counters.rdds, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Call Duration", counters.rddsDuration, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Calls Failed\\/Sec", counters.unsuccessfulRdds, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Calls Succeeded\\/Sec", counters.rdds - counters.unsuccessfulRdds, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Exceptions\\/Sec", counters.exceptions, 1, true);
+        formatSingleMetric(sb, "\\\\Memory\\\\Committed Bytes", counters.memoryCommitted, 1, true);
+        formatSingleMetric(sb, "\\\\Processor(_Total)\\\\% Processor Time", counters.cpuUsage, 1, false);
+        sb.append("],");
     }
 }
