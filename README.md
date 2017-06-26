@@ -63,7 +63,7 @@ After you upgrade, you'll need to merge back any customizations you made to Appl
 Compare the old and new ApplicationInsights.xml. Many of the changes you see are because we added and removed modules. Reinstate any customizations that you made.
 
 
-##Release Notes
+## Release Notes
 
 #### Version 1.0.7
 - Use [Shadow plugin](http://imperceptiblethoughts.com/shadow/) to create self contained JAR files in the SDK
@@ -135,7 +135,7 @@ Compare the old and new ApplicationInsights.xml. Many of the changes you see are
 - Ability to tag a telemetry item as synthetic, by adding a ```SyntheticSource``` property to the reported item.
 
 
-##Microsoft Open Source Code of Conduct
+## Microsoft Open Source Code of Conduct
 
 
 
