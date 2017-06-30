@@ -19,18 +19,21 @@
 * DEALINGS IN THE SOFTWARE.
 */
 /*
- * Generated from DataPointType.bond (https://github.com/Microsoft/bond)
+ * Generated from SeverityLevel.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
 /**
- * Enum DataPointType.
+ * Enum SeverityLevel.
  */
-public class DataPointType
+public class SeverityLevel
 {
-    public static final int Measurement = 0;
-    public static final int Aggregation = 1;
+    public static final int Verbose = 0;
+    public static final int Information = 1;
+    public static final int Warning = 2;
+    public static final int Error = 3;
+    public static final int Critical = 4;
     
-    private DataPointType() {
+    private SeverityLevel() {
         // hide default constructor
     }
     

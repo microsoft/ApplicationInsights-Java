@@ -19,7 +19,7 @@
 * DEALINGS IN THE SOFTWARE.
 */
 /*
- * Generated from ExceptionData.bond (https://github.com/Microsoft/bond)
+ * Generated from AvailabilityData.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
@@ -29,9 +29,9 @@ import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
 
 /**
- * Data contract class ExceptionData.
+ * Data contract class AvailabilityData.
  */
-public class ExceptionData extends Domain implements
+public class AvailabilityData extends Domain implements
     ITelemetryData
 {
     /**
@@ -40,19 +40,34 @@ public class ExceptionData extends Domain implements
     private int ver = 2;
     
     /**
-     * Backing field for property Exceptions.
+     * Backing field for property Id.
      */
-    private List<ExceptionDetails> exceptions;
+    private String id;
     
     /**
-     * Backing field for property SeverityLevel.
+     * Backing field for property Name.
      */
-    private int severityLevel;
+    private String name;
     
     /**
-     * Backing field for property ProblemId.
+     * Backing field for property Duration.
      */
-    private String problemId;
+    private String duration;
+    
+    /**
+     * Backing field for property Success.
+     */
+    private boolean success;
+    
+    /**
+     * Backing field for property RunLocation.
+     */
+    private String runLocation;
+    
+    /**
+     * Backing field for property Message.
+     */
+    private String message;
     
     /**
      * Backing field for property Properties.
@@ -65,9 +80,9 @@ public class ExceptionData extends Domain implements
     private ConcurrentMap<String, Double> measurements;
     
     /**
-     * Initializes a new instance of the ExceptionData class.
+     * Initializes a new instance of the AvailabilityData class.
      */
-    public ExceptionData()
+    public AvailabilityData()
     {
         this.InitializeFields();
     }
@@ -87,48 +102,87 @@ public class ExceptionData extends Domain implements
     }
     
     /**
-     * Gets the Exceptions property.
+     * Gets the Id property.
      */
-    public List<ExceptionDetails> getExceptions() {
-        if (this.exceptions == null) {
-            this.exceptions = new ArrayList<ExceptionDetails>();
-        }
-        return this.exceptions;
+    public String getId() {
+        return this.id;
     }
     
     /**
-     * Sets the Exceptions property.
+     * Sets the Id property.
      */
-    public void setExceptions(List<ExceptionDetails> value) {
-        this.exceptions = value;
+    public void setId(String value) {
+        this.id = value;
     }
     
     /**
-     * Gets the SeverityLevel property.
+     * Gets the Name property.
      */
-    public int getSeverityLevel() {
-        return this.severityLevel;
+    public String getName() {
+        return this.name;
     }
     
     /**
-     * Sets the SeverityLevel property.
+     * Sets the Name property.
      */
-    public void setSeverityLevel(int value) {
-        this.severityLevel = value;
+    public void setName(String value) {
+        this.name = value;
     }
     
     /**
-     * Gets the ProblemId property.
+     * Gets the Duration property.
      */
-    public String getProblemId() {
-        return this.problemId;
+    public String getDuration() {
+        return this.duration;
     }
     
     /**
-     * Sets the ProblemId property.
+     * Sets the Duration property.
      */
-    public void setProblemId(String value) {
-        this.problemId = value;
+    public void setDuration(String value) {
+        this.duration = value;
+    }
+    
+    /**
+     * Gets the Success property.
+     */
+    public boolean getSuccess() {
+        return this.success;
+    }
+    
+    /**
+     * Sets the Success property.
+     */
+    public void setSuccess(boolean value) {
+        this.success = value;
+    }
+    
+    /**
+     * Gets the RunLocation property.
+     */
+    public String getRunLocation() {
+        return this.runLocation;
+    }
+    
+    /**
+     * Sets the RunLocation property.
+     */
+    public void setRunLocation(String value) {
+        this.runLocation = value;
+    }
+    
+    /**
+     * Gets the Message property.
+     */
+    public String getMessage() {
+        return this.message;
+    }
+    
+    /**
+     * Sets the Message property.
+     */
+    public void setMessage(String value) {
+        this.message = value;
     }
     
     /**
@@ -175,10 +229,16 @@ public class ExceptionData extends Domain implements
         super.serializeContent(writer);
         writer.write("ver", ver);
         
-        writer.write("exceptions", exceptions);
+        writer.write("id", id);
         
-        writer.write("severityLevel", severityLevel);
-        writer.write("problemId", problemId);
+        writer.write("name", name);
+        
+        writer.write("duration", duration);
+        
+        writer.write("success", success);
+        
+        writer.write("runLocation", runLocation);
+        writer.write("message", message);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

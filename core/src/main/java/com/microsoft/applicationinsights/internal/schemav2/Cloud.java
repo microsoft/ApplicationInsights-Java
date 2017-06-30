@@ -19,7 +19,7 @@
 * DEALINGS IN THE SOFTWARE.
 */
 /*
- * Generated from StackFrame.bond (https://github.com/Microsoft/bond)
+ * Generated from ContextTagKeys.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
@@ -29,112 +29,70 @@ import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
 
 /**
- * Data contract class StackFrame.
+ * Data contract class Cloud.
  */
-public class StackFrame implements
+public class Cloud implements
     IJsonSerializable
 {
     /**
-     * Backing field for property Level.
+     * Backing field for property Role.
      */
-    private int level;
+    private String role;
     
     /**
-     * Backing field for property Method.
+     * Backing field for property RoleInstance.
      */
-    private String method;
+    private String roleInstance;
     
     /**
-     * Backing field for property Assembly.
+     * Initializes a new instance of the Cloud class.
      */
-    private String assembly;
-    
-    /**
-     * Backing field for property FileName.
-     */
-    private String fileName;
-    
-    /**
-     * Backing field for property Line.
-     */
-    private int line;
-    
-    /**
-     * Initializes a new instance of the StackFrame class.
-     */
-    public StackFrame()
+    public Cloud()
     {
         this.InitializeFields();
     }
     
     /**
-     * Gets the Level property.
+     * Gets the Role property.
      */
-    public int getLevel() {
-        return this.level;
+    public String getRole() {
+        return this.role;
     }
     
     /**
-     * Sets the Level property.
+     * Sets the Role property.
      */
-    public void setLevel(int value) {
-        this.level = value;
+    public void setRole(String value) {
+        this.role = value;
     }
     
     /**
-     * Gets the Method property.
+     * Gets the RoleInstance property.
      */
-    public String getMethod() {
-        return this.method;
+    public String getRoleInstance() {
+        return this.roleInstance;
     }
     
     /**
-     * Sets the Method property.
+     * Sets the RoleInstance property.
      */
-    public void setMethod(String value) {
-        this.method = value;
+    public void setRoleInstance(String value) {
+        this.roleInstance = value;
     }
     
+
     /**
-     * Gets the Assembly property.
+     * Adds all members of this class to a hashmap
+     * @param map to which the members of this class will be added.
      */
-    public String getAssembly() {
-        return this.assembly;
-    }
-    
-    /**
-     * Sets the Assembly property.
-     */
-    public void setAssembly(String value) {
-        this.assembly = value;
-    }
-    
-    /**
-     * Gets the FileName property.
-     */
-    public String getFileName() {
-        return this.fileName;
-    }
-    
-    /**
-     * Sets the FileName property.
-     */
-    public void setFileName(String value) {
-        this.fileName = value;
-    }
-    
-    /**
-     * Gets the Line property.
-     */
-    public int getLine() {
-        return this.line;
-    }
-    
-    /**
-     * Sets the Line property.
-     */
-    public void setLine(int value) {
-        this.line = value;
+    public void addToHashMap(HashMap<String, String> map)
+    {
+        if (this.role != null) {
+            map.put("role", this.role);
+        }
+        if (this.roleInstance != null) {
+            map.put("roleInstance", this.roleInstance);
+        }
     }
     
 
@@ -155,13 +113,8 @@ public class StackFrame implements
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
-        writer.write("level", level);
-        
-        writer.write("method", method);
-        
-        writer.write("assembly", assembly);
-        writer.write("fileName", fileName);
-        writer.write("line", line);
+        writer.write("role", role);
+        writer.write("roleInstance", roleInstance);
     }
     
     /**
