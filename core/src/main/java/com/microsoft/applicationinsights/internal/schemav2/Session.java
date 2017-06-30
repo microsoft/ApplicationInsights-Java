@@ -24,6 +24,9 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
@@ -31,8 +34,8 @@ import com.google.common.base.Preconditions;
 /**
  * Data contract class Session.
  */
-public class Session implements
-    IJsonSerializable
+public class Session
+    implements JsonSerializable
 {
     /**
      * Backing field for property Id.

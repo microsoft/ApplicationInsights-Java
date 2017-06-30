@@ -24,6 +24,9 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
@@ -31,8 +34,7 @@ import com.google.common.base.Preconditions;
 /**
  * Data contract class PageViewData.
  */
-public class PageViewData extends EventData implements
-    ITelemetryData
+public class PageViewData extends EventData
 {
     /**
      * Backing field for property Url.

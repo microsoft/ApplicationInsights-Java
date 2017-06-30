@@ -27,10 +27,12 @@ import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 
 import com.google.common.base.Preconditions;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Created by gupele on 2/19/2015.
  */
+@Obsolete
 public final class SessionStateData extends Domain {
     /**
      * Envelope Name for this telemetry.
