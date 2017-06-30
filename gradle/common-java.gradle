@@ -98,14 +98,16 @@ repositories {
     mavenCentral()
 }
 
-task collectTestResults << {
-    copy {
-        from testResultsDir
-        into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
-    }
-    copy {
-        from testReportDir
-        into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
+task collectTestResults {
+    doLast {
+        copy {
+            from testResultsDir
+            into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
+        }
+        copy {
+            from testReportDir
+            into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
+        }
     }
 }
 
