@@ -32,8 +32,10 @@ apply from: "$buildScriptsDir/test.gradle"
 
 def rootProjectBuildFolder = "$rootDir/build"
 
-task clean << {
-    delete(rootProjectBuildFolder)
+task clean {
+    doLast {
+        delete(rootProjectBuildFolder)
+    }
 }
 
 // endregion Root project script
