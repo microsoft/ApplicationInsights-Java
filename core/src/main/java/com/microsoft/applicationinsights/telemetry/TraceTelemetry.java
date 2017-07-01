@@ -84,11 +84,11 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     }
 
     public void setSeverityLevel(SeverityLevel severityLevel) {
-        data.setSeverityLevel(severityLevel);
+        data.setSeverityLevel(severityLevel == null ? null : com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.values()[severityLevel.getValue()]);
     }
 
     public SeverityLevel getSeverityLevel() {
-        return data.getSeverityLevel();
+        return data.getSeverityLevel() == null ? null : SeverityLevel.values()[data.getSeverityLevel().getValue()];
     }
 
     @Override

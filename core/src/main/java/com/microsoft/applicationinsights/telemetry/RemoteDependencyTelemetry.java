@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Telemetry sent to Azure Application Insights about dependencies - that is, calls from
@@ -65,7 +66,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     public RemoteDependencyTelemetry(String dependencyName, String commandName, Duration duration, boolean success) {
         this(dependencyName);
 
-        this.data.setCommandName(commandName);
+        this.data.setData(commandName);
         this.data.setDuration(duration);
         this.data.setSuccess(success);
     }
@@ -94,82 +95,90 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      * Gets the command name.
      * @return The command name.
      */
-    public String getCommandName() { return this.data.getCommandName(); }
+    public String getCommandName() { return this.data.getData(); }
 
     /**
      * Sets the command name.
      * @param commandName The command name.
      */
-    public void setCommandName(String commandName) { this.data.setCommandName(commandName); }
+    public void setCommandName(String commandName) { this.data.setData(commandName); }
 
     /**
      * Gets the Count property.
      * @return Count property.
      */
+    @Obsolete
     public Integer getCount() {
-        return data.getCount();
+        return null;
     }
 
     /**
      * Sets the Count property.
      * @param value Count property.
      */
+    @Obsolete
     public void setCount(Integer value) {
-        data.setCount(value);
+        //do nothing as this property is no longer in use
     }
 
     /**
      * Gets the Min property.
      * @return Min property.
      */
+    @Obsolete
     public Double getMin() {
-        return data.getMin();
+        return null;
     }
 
     /**
      * Sets the Min property.
      * @param value Min property.
      */
+    @Obsolete
     public void setMin(Double value) {
-        data.setMin(value);
+
     }
 
     /**
      * Gets the Max property.
      * @return Max property.
      */
+    @Obsolete
     public Double getMax() {
-        return data.getMax();
+        return null;
     }
 
     /**
      * Sets the Max property.
      * @param value Max property.
      */
+    @Obsolete
     public void setMax(Double value) {
-        data.setMax(value);
+
     }
 
     /**
      * Gets the Standard Deviation property.
      * @return Standard Deviation property.
      */
+    @Obsolete
     public Double getStdDev() {
-        return data.getStdDev();
+        return null;
     }
 
     /**
      * Sets the StdDev property.
      * @param value Standard Deviation property.
      */
+    @Obsolete
     public void setStdDev(Double value) {
-        data.setStdDev(value);
     }
 
     /**
      * Gets the Dependency Kind property.
      * @return Dependency Kind property.
      */
+    @Obsolete
     public DependencyKind getDependencyKind() {
         DependencyKind result = DependencyKind.Other;
         String type = data.getType();
@@ -186,6 +195,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      * Sets the Dependency Kind property.
      * @param value Dependency Kind property.
      */
+    @Obsolete
     public void setDependencyKind(DependencyKind value) {
         data.setType(value.toString());
     }
@@ -230,32 +240,35 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      * Gets the Async property.
      * @return True if async.
      */
+    @Obsolete
     public Boolean getAsync() {
-        return data.getAsync();
+        return false;
     }
 
     /**
      * Sets the Async property.
      * @param value True if async.
      */
+    @Obsolete
     public void setAsync(Boolean value) {
-        data.setAsync(value);
+
     }
 
     /**
      * Gets the Dependency Source property.
      * @return Dependency Source property.
      */
+    @Obsolete
     public DependencySourceType getDependencySource() {
-        return data.getDependencySource();
+        return DependencySourceType.Undefined;
     }
 
     /**
      * Sets the Dependency Source property.
      * @param value Dependency Source property.
      */
+    @Obsolete
     public void setDependencySource(DependencySourceType value) {
-        data.setDependencySource(value);
     }
 
     /**

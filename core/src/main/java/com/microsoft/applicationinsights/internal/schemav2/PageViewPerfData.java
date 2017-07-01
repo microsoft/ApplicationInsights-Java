@@ -25,9 +25,11 @@ package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
 
@@ -39,27 +41,27 @@ public class PageViewPerfData extends PageViewData
     /**
      * Backing field for property PerfTotal.
      */
-    private String perfTotal;
+    private Duration perfTotal = new Duration(0);
     
     /**
      * Backing field for property NetworkConnect.
      */
-    private String networkConnect;
+    private Duration networkConnect = new Duration(0);
     
     /**
      * Backing field for property SentRequest.
      */
-    private String sentRequest;
+    private Duration sentRequest = new Duration(0);
     
     /**
      * Backing field for property ReceivedResponse.
      */
-    private String receivedResponse;
+    private Duration receivedResponse = new Duration(0);
     
     /**
      * Backing field for property DomProcessing.
      */
-    private String domProcessing;
+    private Duration domProcessing = new Duration(0);
     
     /**
      * Initializes a new instance of the PageViewPerfData class.
@@ -72,70 +74,70 @@ public class PageViewPerfData extends PageViewData
     /**
      * Gets the PerfTotal property.
      */
-    public String getPerfTotal() {
+    public Duration getPerfTotal() {
         return this.perfTotal;
     }
     
     /**
      * Sets the PerfTotal property.
      */
-    public void setPerfTotal(String value) {
+    public void setPerfTotal(Duration value) {
         this.perfTotal = value;
     }
     
     /**
      * Gets the NetworkConnect property.
      */
-    public String getNetworkConnect() {
+    public Duration getNetworkConnect() {
         return this.networkConnect;
     }
     
     /**
      * Sets the NetworkConnect property.
      */
-    public void setNetworkConnect(String value) {
+    public void setNetworkConnect(Duration value) {
         this.networkConnect = value;
     }
     
     /**
      * Gets the SentRequest property.
      */
-    public String getSentRequest() {
+    public Duration getSentRequest() {
         return this.sentRequest;
     }
     
     /**
      * Sets the SentRequest property.
      */
-    public void setSentRequest(String value) {
+    public void setSentRequest(Duration value) {
         this.sentRequest = value;
     }
     
     /**
      * Gets the ReceivedResponse property.
      */
-    public String getReceivedResponse() {
+    public Duration getReceivedResponse() {
         return this.receivedResponse;
     }
     
     /**
      * Sets the ReceivedResponse property.
      */
-    public void setReceivedResponse(String value) {
+    public void setReceivedResponse(Duration value) {
         this.receivedResponse = value;
     }
     
     /**
      * Gets the DomProcessing property.
      */
-    public String getDomProcessing() {
+    public Duration getDomProcessing() {
         return this.domProcessing;
     }
     
     /**
      * Sets the DomProcessing property.
      */
-    public void setDomProcessing(String value) {
+    public void setDomProcessing(Duration value) {
         this.domProcessing = value;
     }
     

@@ -25,9 +25,11 @@ package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
 
@@ -49,7 +51,7 @@ public class RequestData extends Domain
     /**
      * Backing field for property Duration.
      */
-    private String duration;
+    private Duration duration = new Duration(0);
     
     /**
      * Backing field for property ResponseCode.
@@ -125,14 +127,14 @@ public class RequestData extends Domain
     /**
      * Gets the Duration property.
      */
-    public String getDuration() {
+    public Duration getDuration() {
         return this.duration;
     }
     
     /**
      * Sets the Duration property.
      */
-    public void setDuration(String value) {
+    public void setDuration(Duration value) {
         this.duration = value;
     }
     

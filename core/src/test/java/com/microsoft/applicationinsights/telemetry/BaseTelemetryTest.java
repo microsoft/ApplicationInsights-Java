@@ -21,7 +21,8 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.schemav2.SendableData;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -34,24 +35,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public final class BaseTelemetryTest {
-    private static class StubSendableData implements SendableData {
-        @Override
-        public String getEnvelopName() {
-            return null;
-        }
-
-        @Override
-        public String getBaseTypeName() {
-            return null;
-        }
-
+    private static class StubDomainData extends Domain {
         @Override
         public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
 
         }
     }
 
-    private static class StubTelemetry extends BaseTelemetry<StubSendableData> {
+    private static class StubTelemetry extends BaseTelemetry<StubDomainData> {
         public int numberOfCallsToAdditionalSanitize;
 
         public StubTelemetry() {
@@ -67,7 +58,7 @@ public final class BaseTelemetryTest {
         }
 
         @Override
-        protected StubSendableData getData() {
+        protected StubDomainData getData() {
             return null;
         }
     }

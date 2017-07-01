@@ -24,8 +24,9 @@ package com.microsoft.applicationinsights.extensibility.initializer;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.microsoft.applicationinsights.internal.schemav2.SendableData;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
+import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import org.junit.Test;
 
@@ -35,24 +36,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public final class SequencePropertyInitializerTest {
-    private static class StubSendableData implements SendableData {
-        @Override
-        public String getEnvelopName() {
-            return null;
-        }
-
-        @Override
-        public String getBaseTypeName() {
-            return null;
-        }
-
+    private static class StubDomainData extends Domain {
         @Override
         public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
 
         }
     }
 
-    private static class StubTelemetry extends BaseTelemetry<StubSendableData> {
+    private static class StubTelemetry extends BaseTelemetry<StubDomainData> {
         public StubTelemetry() {
         }
 
@@ -65,7 +56,7 @@ public final class SequencePropertyInitializerTest {
         }
 
         @Override
-        protected StubSendableData getData() {
+        protected StubDomainData getData() {
             return null;
         }
     }

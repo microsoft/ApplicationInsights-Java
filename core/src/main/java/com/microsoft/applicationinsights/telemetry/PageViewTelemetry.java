@@ -96,7 +96,7 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
      * @return The page view duration.
      */
     public long getDuration() {
-        return data.getDuration();
+        return data.getDuration().getTotalMilliseconds();
     }
 
     /**
@@ -104,7 +104,7 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
      * @param duration The page view duration.
      */
     public void setDuration(long duration) {
-        data.setDuration(duration);
+        data.setDuration(new Duration(duration));
     }
 
     /**

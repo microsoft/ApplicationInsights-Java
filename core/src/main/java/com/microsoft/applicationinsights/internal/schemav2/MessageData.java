@@ -25,9 +25,11 @@ package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
 
@@ -49,7 +51,7 @@ public class MessageData extends Domain
     /**
      * Backing field for property SeverityLevel.
      */
-    private int severityLevel;
+    private SeverityLevel severityLevel;
     
     /**
      * Backing field for property Properties.
@@ -95,14 +97,14 @@ public class MessageData extends Domain
     /**
      * Gets the SeverityLevel property.
      */
-    public int getSeverityLevel() {
+    public SeverityLevel getSeverityLevel() {
         return this.severityLevel;
     }
     
     /**
      * Sets the SeverityLevel property.
      */
-    public void setSeverityLevel(int value) {
+    public void setSeverityLevel(SeverityLevel value) {
         this.severityLevel = value;
     }
     

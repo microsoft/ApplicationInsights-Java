@@ -21,53 +21,24 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import java.io.IOException;
-
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.microsoft.applicationinsights.telemetry.SessionState;
-
-import com.google.common.base.Preconditions;
 import org.apache.http.annotation.Obsolete;
 
 /**
- * Created by gupele on 2/19/2015.
+ * Enum DependencySourceType.
  */
 @Obsolete
-public final class SessionStateData extends Domain {
-    /**
-     * Envelope Name for this telemetry.
-     */
-    private static final String SESSION_ENVELOPE_NAME = "Microsoft.ApplicationInsights.SessionState";
+public enum DependencySourceType {
+    Undefined(0),
+    Aic(1),
+    Apmc(2);
 
-    /**
-     * Base Type for this telemetry.
-     */
-    private static final String SESSION_BASE_TYPE = "Microsoft.ApplicationInsights.SessionStateData";
+    private final int id;
 
-    private final int ver = 2;
-
-    private SessionState state;
-
-    public SessionStateData(SessionState state) {
-        this.state = state;
+    public int getValue() {
+        return id;
     }
 
-    public int getVer() {
-        return ver;
-    }
-
-    public SessionState getState() {
-        return state;
-    }
-
-    public void setState(SessionState state) {
-        this.state = state;
-    }
-
-    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-        Preconditions.checkNotNull(writer, "writer must be a non-null value");
-
-        writer.write("ver", ver);
-        writer.write("state", state.toString());
+    DependencySourceType(int id) {
+        this.id = id;
     }
 }

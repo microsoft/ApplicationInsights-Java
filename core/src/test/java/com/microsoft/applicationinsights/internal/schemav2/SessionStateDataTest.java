@@ -51,7 +51,9 @@ public final class SessionStateDataTest {
 
     private static void verifyEnvelope(SessionStateData sessionStateData, SessionState expectedState) throws IOException {
         Envelope envelope = new Envelope();
-        envelope.setData(new Data<SessionStateData>(sessionStateData));
+        Data<SessionStateData> tmp = new Data<SessionStateData>();
+        tmp.setBaseData(sessionStateData);
+        envelope.setData(tmp);
 
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);

@@ -25,16 +25,23 @@ package com.microsoft.applicationinsights.internal.schemav2;
 /**
  * Enum SeverityLevel.
  */
-public class SeverityLevel
+public enum SeverityLevel
 {
-    public static final int Verbose = 0;
-    public static final int Information = 1;
-    public static final int Warning = 2;
-    public static final int Error = 3;
-    public static final int Critical = 4;
+    Verbose(0),
+    Information(1),
+    Warning(2),
+    Error(3),
+    Critical(4),
+;
     
-    private SeverityLevel() {
-        // hide default constructor
+    private final int id;
+    
+    public int getValue() {
+        return id;
+    }
+    
+    SeverityLevel (int id) {
+        this.id = id;
     }
     
 }

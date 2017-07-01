@@ -117,35 +117,35 @@ public final class RemoteDependencyTelemetryTest {
     }
 
     @Test
-    public void testSetCount() {
+    public void getAndSetCountDoNotThrow() {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         telemetry.setCount(new Integer(1));
-        assertEquals(telemetry.getCount(), new Integer(1));
+        telemetry.getCount();
     }
 
     @Test
-    public void testSetMin() {
+    public void getAndSetMinDoNotThrow() {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         telemetry.setMin(new Double(1));
-        assertEquals(telemetry.getMin(), new Double(1));
+        telemetry.getMin();
     }
 
     @Test
-    public void testSetMax() {
+    public void getAndSetMaxDoNotThrow() {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         telemetry.setMax(new Double(1));
-        assertEquals(telemetry.getMax(), new Double(1));
+        telemetry.getMax();
     }
 
     @Test
-    public void testSetStdDev() {
+    public void getAndSetStdDevDoNotThrow() {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         telemetry.setStdDev(new Double(1));
-        assertEquals(telemetry.getStdDev(), new Double(1));
+        telemetry.getStdDev();
     }
 
     @Test
@@ -157,10 +157,10 @@ public final class RemoteDependencyTelemetryTest {
     }
 
     @Test
-    public void testSetDependencySource() {
+    public void getAndSetDependencySourceDoNotThrow() {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         telemetry.setDependencySource(DependencySourceType.Aic);
-        assertEquals(telemetry.getDependencySource(), DependencySourceType.Aic);
+        telemetry.getDependencySource();
     }
 }

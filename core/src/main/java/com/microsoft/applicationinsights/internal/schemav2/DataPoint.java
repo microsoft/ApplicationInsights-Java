@@ -25,9 +25,11 @@ package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
 
@@ -45,7 +47,7 @@ public class DataPoint
     /**
      * Backing field for property Kind.
      */
-    private int kind = DataPointType.Measurement;
+    private DataPointType kind = DataPointType.Measurement;
     
     /**
      * Backing field for property Value.
@@ -97,14 +99,14 @@ public class DataPoint
     /**
      * Gets the Kind property.
      */
-    public int getKind() {
+    public DataPointType getKind() {
         return this.kind;
     }
     
     /**
      * Sets the Kind property.
      */
-    public void setKind(int value) {
+    public void setKind(DataPointType value) {
         this.kind = value;
     }
     

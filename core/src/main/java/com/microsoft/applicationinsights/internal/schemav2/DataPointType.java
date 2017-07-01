@@ -25,13 +25,20 @@ package com.microsoft.applicationinsights.internal.schemav2;
 /**
  * Enum DataPointType.
  */
-public class DataPointType
+public enum DataPointType
 {
-    public static final int Measurement = 0;
-    public static final int Aggregation = 1;
+    Measurement(0),
+    Aggregation(1),
+;
     
-    private DataPointType() {
-        // hide default constructor
+    private final int id;
+    
+    public int getValue() {
+        return id;
+    }
+    
+    DataPointType (int id) {
+        this.id = id;
     }
     
 }

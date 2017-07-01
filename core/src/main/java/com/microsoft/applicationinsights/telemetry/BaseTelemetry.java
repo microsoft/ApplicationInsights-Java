@@ -28,15 +28,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.SendableData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
  * Superclass for all telemetry data classes.
  */
-public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
+public abstract class BaseTelemetry<T extends Domain> implements Telemetry
 {
     private TelemetryContext context;
     private Date             timestamp;
@@ -136,7 +136,9 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
         envelope.setSeq(sequence);
-        envelope.setData(new Data<T>(getData()));
+        Data<T> tmp = new Data<T>();
+        tmp.setBaseData(getData());
+        envelope.setData(tmp);
         envelope.setTime(LocalStringsUtils.getDateFormatter().format(getTimestamp()));
         envelope.setTags(context.getTags());
 
@@ -154,7 +156,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Concrete classes should implement this method which supplies the
-     * data structure that this instance works with, which needs to implement {@link SendableData}
+     * data structure that this instance works with, which needs to implement {@link JsonSerializable}
      * @return The inner data structure
      */
     protected abstract T getData();
