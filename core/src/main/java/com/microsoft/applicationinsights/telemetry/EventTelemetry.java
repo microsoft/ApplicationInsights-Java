@@ -37,6 +37,17 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     private final EventData data;
 
     /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Event";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "EventData";
+
+    /**
      * Default initialization for a new instance.
      */
     public EventTelemetry() {
@@ -47,6 +58,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
 
     /**
      * Initializes a new instance.
+     *
      * @param name The event's name. Max length 150.
      */
     public EventTelemetry(String name) {
@@ -57,6 +69,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     /**
      * Gets a map of application-defined event metrics.
      * These metrics appear along with the event in Search and Analytics, but appear under 'Custom Metrics' in Metrics Explorer.
+     *
      * @return The map of metrics
      */
     public ConcurrentMap<String, Double> getMetrics() {
@@ -65,6 +78,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
 
     /**
      * Gets the name of the event.
+     *
      * @return The name
      */
     public String getName() {
@@ -73,6 +87,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
 
     /**
      * Sets the name of the event.
+     *
      * @param name Name of the event. Max length 150.
      */
     public void setName(String name) {
@@ -94,6 +109,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
 
     /**
      * Fetches the data structure the instance works with
+     *
      * @return The inner data structure.
      */
     @Override
@@ -110,5 +126,15 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     @Override
     public void setSamplingPercentage(Double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
+    }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
     }
 }

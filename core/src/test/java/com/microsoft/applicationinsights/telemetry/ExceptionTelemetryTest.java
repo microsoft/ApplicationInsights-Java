@@ -55,12 +55,11 @@ public final class ExceptionTelemetryTest {
     }
 
     @Test
-    public void testSetExceptionHandledAt() {
+    public void getAndSetExceptionHandledAtNotThrows() {
         NullPointerException exception = new NullPointerException("mock");
         ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
         exceptionTelemetry.setExceptionHandledAt(ExceptionHandledAt.Platform);
-
-        assertSame(ExceptionHandledAt.Platform, exceptionTelemetry.getExceptionHandledAt());
+        exceptionTelemetry.getExceptionHandledAt();
     }
 
     @Test

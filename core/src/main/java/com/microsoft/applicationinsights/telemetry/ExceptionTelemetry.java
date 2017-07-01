@@ -41,6 +41,18 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     private final ExceptionData data;
     private Throwable throwable;
 
+    /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Exception";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "ExceptionData";
+
+
     private ExceptionTelemetry() {
         super();
         data = new ExceptionData();
@@ -220,5 +232,14 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         }
 
         return exceptionDetails;
+    }
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
     }
 }

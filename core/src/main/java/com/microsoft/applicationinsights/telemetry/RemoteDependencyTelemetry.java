@@ -39,6 +39,18 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     private final RemoteDependencyData data;
 
     /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.RemoteDependency";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "RemoteDependencyData";
+
+
+    /**
      * Default Ctor
      */
     public RemoteDependencyTelemetry() {
@@ -306,4 +318,15 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     protected RemoteDependencyData getData() {
         return data;
     }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
+    }
+
 }

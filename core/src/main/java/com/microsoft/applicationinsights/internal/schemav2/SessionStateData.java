@@ -34,15 +34,6 @@ import org.apache.http.annotation.Obsolete;
  */
 @Obsolete
 public final class SessionStateData extends Domain {
-    /**
-     * Envelope Name for this telemetry.
-     */
-    private static final String SESSION_ENVELOPE_NAME = "Microsoft.ApplicationInsights.SessionState";
-
-    /**
-     * Base Type for this telemetry.
-     */
-    private static final String SESSION_BASE_TYPE = "Microsoft.ApplicationInsights.SessionStateData";
 
     private final int ver = 2;
 

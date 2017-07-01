@@ -45,6 +45,18 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     private final RequestData data;
 
     /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Request";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "RequestData";
+
+
+    /**
      * Initializes a new instance of the HttpRequestTelemetry class.
      */
     public RequestTelemetry() {
@@ -269,4 +281,15 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     protected RequestData getData() {
         return data;
     }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
+    }
+
 }
