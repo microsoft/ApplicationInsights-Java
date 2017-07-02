@@ -74,7 +74,7 @@ public class WebOperationNameTelemetryInitializerTests {
 
     @Test
     public void testRequestTelemetryInitializedWithOperationName() throws Exception {
-        sendRequestAndGetResponseCookie();
+        sendRequestAndGetResponseCookie(server.getPortNumber());
 
         List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
         assertEquals(1, items.size());

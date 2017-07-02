@@ -43,6 +43,7 @@ import org.apache.http.annotation.Obsolete;
 public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestData> {
     private Double samplingPercentage;
     private final RequestData data;
+    private String httpMethod;
 
     /**
      * Envelope Name for this telemetry.
@@ -248,7 +249,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
      */
     @Obsolete
     public String getHttpMethod() {
-        return "";
+        return httpMethod;
     }
 
     /**
@@ -257,6 +258,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
      */
     @Obsolete
     public void setHttpMethod(String httpMethod) {
+        this.httpMethod = httpMethod;
     }
 
     @Override

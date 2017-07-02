@@ -117,14 +117,14 @@ public class WebSessionTrackingTelemetryModuleTests {
     public void testNewSessionCookieIsNotCreatedWhenCookieNotExist() throws Exception {
         TelemetryConfiguration.getActive().getTelemetryInitializers().add(new TestModuleInitializer(null, false));
 
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber());
 
         Assert.assertNull("Session cookie should be null.", cookiesContainer.getSessionCookie());
     }
 
     @Test
     public void testWhenCookieExistCorrectSessionIdAttachedToSentTelemetry() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(), sessionCookieFormatted);
 
         RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
 
@@ -137,14 +137,14 @@ public class WebSessionTrackingTelemetryModuleTests {
     public void testWhenSessionExpiredSessionStateEndTracked() throws Exception {
         sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
 
-        HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(), sessionCookieFormatted);
 
         verifySessionState(SessionState.End);
     }
 
     @Test
     public void testOnFirstSessionStartedNoSessionStateEndTracked() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie();
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber());
 
         SessionStateTelemetry telemetry = getSessionStateTelemetryWithState(SessionState.End);
         Assert.assertNull("No telemetry with SessionEnd expected.", telemetry);
@@ -155,7 +155,7 @@ public class WebSessionTrackingTelemetryModuleTests {
     public void testSessionStateTelemetryContainsSessionIdOnEndState() throws Exception {
         sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
 
-        HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(), sessionCookieFormatted);
 
         SessionStateTelemetry telemetry = getSessionStateTelemetryWithState(SessionState.End);
 
@@ -167,7 +167,7 @@ public class WebSessionTrackingTelemetryModuleTests {
     public void testSessionStateTelemetryEndStateContainsExpiredSessionId() throws Exception {
         sessionCookieFormatted = HttpHelper.getFormattedSessionCookieHeader(true);
 
-        HttpHelper.sendRequestAndGetResponseCookie(sessionCookieFormatted);
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(), sessionCookieFormatted);
 
         SessionStateTelemetry telemetry = getSessionStateTelemetryWithState(SessionState.End);
 

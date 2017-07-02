@@ -31,9 +31,12 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
  */
 public class JettyTestServer {
     private Server server;
+    private int Min = 1050;
+    private int Max = 15000;
+    private int portNumber = Min + (int)(Math.random() * ((Max - Min) + 1));
 
     public void start() throws Exception {
-        server = new Server(1234);
+        server = new Server(portNumber);
 
         //Initialize the server
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -52,5 +55,9 @@ public class JettyTestServer {
 
         server.stop();
         server.destroy();
+    }
+
+    public int getPortNumber() {
+        return portNumber;
     }
 }

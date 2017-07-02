@@ -46,8 +46,8 @@ public class HttpHelper {
     private static final String FORMATTED_SESSION_COOKIE_TEMPLATE = "00000000-0000-0000-0000-000000000000|%s|%s";
     public static final String TEST_USER_AGENT = "Mozilla/5.0 (Windows NT 6.4; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko";
 
-    public static CookiesContainer sendRequestAndGetResponseCookie(String... requestFormattedCookies) throws Exception {
-        HttpURLConnection con = (HttpURLConnection) (new URL("http://localhost:1234")).openConnection();
+    public static CookiesContainer sendRequestAndGetResponseCookie(int portNumber, String... requestFormattedCookies) throws Exception {
+        HttpURLConnection con = (HttpURLConnection) (new URL("http://localhost:" + portNumber)).openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", TEST_USER_AGENT);
 
@@ -68,8 +68,8 @@ public class HttpHelper {
         return COOKIE;
     }
 
-    public static CookiesContainer sendRequestAndGetResponseCookie() throws Exception {
-        return sendRequestAndGetResponseCookie(new String[] {});
+    public static CookiesContainer sendRequestAndGetResponseCookie(int portNumber) throws Exception {
+        return sendRequestAndGetResponseCookie(portNumber, new String[] {});
     }
 
     public static String getFormattedUserCookieHeader() {
