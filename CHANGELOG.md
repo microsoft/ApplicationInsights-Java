@@ -1,5 +1,8 @@
 #CHANGELOG
 
+## Version 1.0.10
+- 
+
 ## Version 1.0.9
 - Fix the issue of infinite retry and connection drain on certificate error by updating the version of http client packaged with the SDK.
 
