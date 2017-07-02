@@ -35,13 +35,13 @@ public final class PerformanceCounterTelemetry extends BaseTelemetry<Performance
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Metric";
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.PerformanceCounter";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "MetricData";
+    private static final String BASE_TYPE = "PerformanceCounterData";
 
 
     public PerformanceCounterTelemetry() {
