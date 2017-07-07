@@ -28,25 +28,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.SendableData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Superclass for all telemetry data classes.
  */
-public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
-{
+public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
-    private Date             timestamp;
-    private String           sequence;
+    private Date timestamp;
+    private String sequence;
 
     protected BaseTelemetry() {
     }
 
     /**
      * Initializes the instance with the context properties
+     *
      * @param properties The context properties
      */
     protected void initialize(ConcurrentMap<String, String> properties) {
@@ -57,11 +58,12 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
      * Sequence field used to track absolute order of uploaded events.
      * It is a two-part value that includes a stable identifier for the current boot
      * session and an incrementing identifier for each event added to the upload queue
-     *
+     * <p>
      * The Sequence helps track how many events were fired and how many events were uploaded and
      * enables identification of data lost during upload and de-duplication of events on the ingress server.
-     *
+     * <p>
      * Gets the value that defines absolute order of the telemetry item.
+     *
      * @return The sequence of the Telemetry.
      */
     @Override
@@ -71,6 +73,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Sets the value that defines absolute order of the telemetry item.
+     *
      * @param sequence The sequence of the Telemetry.
      */
     @Override
@@ -80,6 +83,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Gets date and time when event was recorded.
+     *
      * @return The timestamp as Date
      */
     @Override
@@ -89,6 +93,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Sets date and time when event was recorded.
+     *
      * @param date The timestamp as Date.
      */
     @Override
@@ -98,6 +103,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Gets the context associated with the current telemetry item.
+     *
      * @return The context
      */
     @Override
@@ -107,6 +113,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Gets a dictionary of application-defined property names and values providing additional information about this event.
+     *
      * @return The properties
      */
     @Override
@@ -125,6 +132,7 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Serializes this object in JSON format.
+     *
      * @param writer The writer that helps with serializing into Json format
      * @throws IOException The exception that might be thrown during the serialization
      */
@@ -132,11 +140,15 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
 
         Envelope envelope = new Envelope();
+        envelope.setName(this.getEnvelopName());
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
         envelope.setSeq(sequence);
-        envelope.setData(new Data<T>(getData()));
+        Data<T> tmp = new Data<T>();
+        tmp.setBaseData(getData());
+        tmp.setBaseType(this.getBaseTypeName());
+        envelope.setData(tmp);
         envelope.setTime(LocalStringsUtils.getDateFormatter().format(getTimestamp()));
         envelope.setTags(context.getTags());
 
@@ -154,11 +166,20 @@ public abstract class BaseTelemetry<T extends SendableData> implements Telemetry
 
     /**
      * Concrete classes should implement this method which supplies the
-     * data structure that this instance works with, which needs to implement {@link SendableData}
+     * data structure that this instance works with, which needs to implement {@link JsonSerializable}
+     *
      * @return The inner data structure
      */
     protected abstract T getData();
 
     protected void setSampleRate(Envelope envelope) {
+    }
+
+    protected String getEnvelopName() {
+        throw new UnsupportedOperationException();
+    }
+
+    protected String getBaseTypeName() {
+        throw new UnsupportedOperationException();
     }
 }

@@ -27,20 +27,13 @@ import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 
 import com.google.common.base.Preconditions;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Created by gupele on 2/19/2015.
  */
+@Obsolete
 public final class SessionStateData extends Domain {
-    /**
-     * Envelope Name for this telemetry.
-     */
-    private static final String SESSION_ENVELOPE_NAME = "Microsoft.ApplicationInsights.SessionState";
-
-    /**
-     * Base Type for this telemetry.
-     */
-    private static final String SESSION_BASE_TYPE = "Microsoft.ApplicationInsights.SessionStateData";
 
     private final int ver = 2;
 
@@ -67,15 +60,5 @@ public final class SessionStateData extends Domain {
 
         writer.write("ver", ver);
         writer.write("state", state.toString());
-    }
-
-    @Override
-    public String getEnvelopName() {
-        return SESSION_ENVELOPE_NAME;
-    }
-
-    @Override
-    public String getBaseTypeName() {
-        return SESSION_BASE_TYPE;
     }
 }

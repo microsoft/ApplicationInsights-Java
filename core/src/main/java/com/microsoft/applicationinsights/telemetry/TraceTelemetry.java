@@ -32,6 +32,18 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     private final MessageData data;
 
     /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Message";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "MessageData";
+
+
+    /**
      * Default Ctor
      */
     public TraceTelemetry() {
@@ -84,11 +96,11 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     }
 
     public void setSeverityLevel(SeverityLevel severityLevel) {
-        data.setSeverityLevel(severityLevel);
+        data.setSeverityLevel(severityLevel == null ? null : com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.values()[severityLevel.getValue()]);
     }
 
     public SeverityLevel getSeverityLevel() {
-        return data.getSeverityLevel();
+        return data.getSeverityLevel() == null ? null : SeverityLevel.values()[data.getSeverityLevel().getValue()];
     }
 
     @Override
@@ -100,4 +112,15 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     public void setSamplingPercentage(Double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
     }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
+    }
+
 }

@@ -37,6 +37,17 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     private final DataPoint metric;
 
     /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Metric";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "MetricData";
+
+    /**
      * Default constructor
      */
     public MetricTelemetry() {
@@ -188,5 +199,15 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         }
 
         metric.setKind(isAggregation ? DataPointType.Aggregation : DataPointType.Measurement);
+    }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
     }
 }

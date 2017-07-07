@@ -32,6 +32,16 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
     private final SessionStateData data;
 
     /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.SessionState";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "SessionStateData";
+    /**
      * Default initialization of a new instance of the class.
      * The session state will be set to 'Start'
      */
@@ -73,4 +83,15 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
     protected SessionStateData getData() {
         return data;
     }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
+    }
+
 }

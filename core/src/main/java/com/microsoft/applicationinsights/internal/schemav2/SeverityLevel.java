@@ -19,16 +19,19 @@
 * DEALINGS IN THE SOFTWARE.
 */
 /*
- * Generated from DataPointType.bond (https://github.com/Microsoft/bond)
+ * Generated from SeverityLevel.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
 /**
- * Enum DataPointType.
+ * Enum SeverityLevel.
  */
-public enum DataPointType
+public enum SeverityLevel
 {
-    Measurement(0),
-    Aggregation(1),
+    Verbose(0),
+    Information(1),
+    Warning(2),
+    Error(3),
+    Critical(4),
 ;
     
     private final int id;
@@ -37,7 +40,7 @@ public enum DataPointType
         return id;
     }
     
-    DataPointType (int id) {
+    SeverityLevel (int id) {
         this.id = id;
     }
     

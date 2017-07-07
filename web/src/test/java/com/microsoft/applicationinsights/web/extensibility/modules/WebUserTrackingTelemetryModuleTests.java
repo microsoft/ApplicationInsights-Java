@@ -103,14 +103,14 @@ public class WebUserTrackingTelemetryModuleTests {
     public void testNewUserCookieIsNotCreatedWhenCookieNotExist() throws Exception {
         TelemetryConfiguration.getActive().getTelemetryInitializers().add(new TestModuleInitializer(null));
 
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie();
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber());
 
         Assert.assertNull("User cookie should be null.", cookiesContainer.getUserCookie());
     }
 
     @Test
     public void testWhenCookieExistCorrectUserIdAttachedToSentTelemetry() throws Exception {
-        HttpHelper.sendRequestAndGetResponseCookie(userCookieFormatted);
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(), userCookieFormatted);
 
         RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
 
@@ -120,7 +120,7 @@ public class WebUserTrackingTelemetryModuleTests {
 
     @Test
     public void testNoUserCookieCreatedWhenValidCookieExists() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(userCookieFormatted);
+        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(),userCookieFormatted);
 
         Assert.assertNull(cookiesContainer.getUserCookie());
     }

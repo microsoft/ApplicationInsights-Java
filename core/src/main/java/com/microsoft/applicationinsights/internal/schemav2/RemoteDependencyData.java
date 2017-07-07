@@ -1,287 +1,294 @@
 /*
- * ApplicationInsights-Java
- * Copyright (c) Microsoft Corporation
- * All rights reserved.
- *
- * MIT License
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the ""Software""), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
- * persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
- * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
-
+* ApplicationInsights-Java
+* Copyright (c) Microsoft Corporation
+* All rights reserved.
+*
+* MIT License
+* Permission is hereby granted, free of charge, to any person obtaining a copy of this
+* software and associated documentation files (the ""Software""), to deal in the Software
+* without restriction, including without limitation the rights to use, copy, modify, merge,
+* publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+* persons to whom the Software is furnished to do so, subject to the following conditions:
+* The above copyright notice and this permission notice shall be included in all copies or
+* substantial portions of the Software.
+* THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+* INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+* PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+* FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+* OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+* DEALINGS IN THE SOFTWARE.
+*/
+/*
+ * Generated from RemoteDependencyData.bond (https://github.com/Microsoft/bond)
+*/
 package com.microsoft.applicationinsights.internal.schemav2;
-
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentMap;
-
+import java.util.concurrent.ConcurrentHashMap;
+import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import com.google.common.base.Preconditions;
 
 /**
  * Data contract class RemoteDependencyData.
  */
-public class RemoteDependencyData extends Domain {
-    /**
-     * Envelope Name for this telemetry.
-     */
-    public static final String REMOTE_ENVELOPE_NAME = "Microsoft.ApplicationInsights.RemoteDependency";
-
-    /**
-     * Base Type for this telemetry.
-     */
-    public static final String REMOTE_BASE_TYPE = "RemoteDependencyData";
-
+public class RemoteDependencyData extends Domain
+{
     /**
      * Backing field for property Ver.
      */
     private int ver = 2;
-
+    
     /**
      * Backing field for property Name.
      */
     private String name;
-
+    
     /**
-     * Backing field for property commandName.
+     * Backing field for property Id.
      */
-    private String commandName;
-
+    private String id;
+    
+    /**
+     * Backing field for property ResultCode.
+     */
     private String resultCode;
-
+    
     /**
-     * Backing field for property Kind.
+     * Backing field for property Duration.
      */
-    private DataPointType kind = DataPointType.Measurement;
-
-    /**
-     * Backing field for property Count.
-     */
-    private Integer count;
-
-    /**
-     * Backing field for property Min.
-     */
-    private Double min;
-
-    /**
-     * Backing field for property Max.
-     */
-    private Double max;
-
-    /**
-     * Backing field for property StdDev.
-     */
-    private Double stdDev;
-
-    /**
-     * Backing field for property DependencyKind.
-     */
-    private DependencyKind dependencyKind = DependencyKind.Other;
-
+    private Duration duration = new Duration(0);
+    
     /**
      * Backing field for property Success.
      */
     private Boolean success = true;
-
+    
     /**
-     * Backing field for property Async.
+     * Backing field for property Data.
      */
-    private Boolean async;
-
+    private String data;
+    
     /**
-     * Backing field for property DependencySource.
+     * Backing field for property Type.
      */
-    private DependencySourceType dependencySource = DependencySourceType.Undefined;
-
+    private String type;
+    
+    /**
+     * Backing field for property Target.
+     */
+    private String target;
+    
     /**
      * Backing field for property Properties.
      */
     private ConcurrentMap<String, String> properties;
-
+    
     /**
-     * Backing field for property Duration.
+     * Backing field for property Measurements.
      */
-    private Duration duration;
-
-    private String type;
-
+    private ConcurrentMap<String, Double> measurements;
+    
     /**
-     * Initializes a new instance of the class.
+     * Initializes a new instance of the RemoteDependencyData class.
      */
     public RemoteDependencyData()
     {
         this.InitializeFields();
     }
-
+    
+    /**
+     * Gets the Ver property.
+     */
     public int getVer() {
         return this.ver;
     }
-
+    
+    /**
+     * Sets the Ver property.
+     */
+    public void setVer(int value) {
+        this.ver = value;
+    }
+    
+    /**
+     * Gets the Name property.
+     */
     public String getName() {
         return this.name;
     }
-
+    
+    /**
+     * Sets the Name property.
+     */
     public void setName(String value) {
         this.name = value;
     }
-
-    public String getCommandName() { return this.commandName; }
-
-    public void setCommandName(String commandName) { this.commandName = commandName; }
-
-    public DataPointType getKind() {
-        return this.kind;
+    
+    /**
+     * Gets the Id property.
+     */
+    public String getId() {
+        return this.id;
     }
-
-    public void setKind(DataPointType value) {
-        this.kind = value;
+    
+    /**
+     * Sets the Id property.
+     */
+    public void setId(String value) {
+        this.id = value;
     }
-
-    public Integer getCount() {
-        return this.count;
+    
+    /**
+     * Gets the ResultCode property.
+     */
+    public String getResultCode() {
+        return this.resultCode;
     }
-
-    public void setCount(Integer value) {
-        this.count = value;
+    
+    /**
+     * Sets the ResultCode property.
+     */
+    public void setResultCode(String value) {
+        this.resultCode = value;
     }
-
-    public Double getMin() {
-        return this.min;
+    
+    /**
+     * Gets the Duration property.
+     */
+    public Duration getDuration() {
+        return this.duration;
     }
-
-    public void setMin(Double value) {
-        this.min = value;
+    
+    /**
+     * Sets the Duration property.
+     */
+    public void setDuration(Duration value) {
+        this.duration = value;
     }
-
-    public Double getMax() {
-        return this.max;
-    }
-
-    public void setMax(Double value) {
-        this.max = value;
-    }
-
-    public Double getStdDev() {
-        return this.stdDev;
-    }
-
-    public void setStdDev(Double value) {
-        this.stdDev = value;
-    }
-
-    public DependencyKind getDependencyKind() {
-        return this.dependencyKind;
-    }
-
-    public void setDependencyKind(DependencyKind value) {
-        this.dependencyKind = value;
-    }
-
+    
+    /**
+     * Gets the Success property.
+     */
     public Boolean getSuccess() {
         return this.success;
     }
-
+    
+    /**
+     * Sets the Success property.
+     */
     public void setSuccess(Boolean value) {
         this.success = value;
     }
-
-    public Boolean getAsync() {
-        return this.async;
+    
+    /**
+     * Gets the Data property.
+     */
+    public String getData() {
+        return this.data;
     }
-
-    public void setAsync(Boolean value) {
-        this.async = value;
+    
+    /**
+     * Sets the Data property.
+     */
+    public void setData(String value) {
+        this.data = value;
     }
-
-    public DependencySourceType getDependencySource() {
-        return this.dependencySource;
+    
+    /**
+     * Gets the Type property.
+     */
+    public String getType() {
+        return this.type;
     }
-
-    public void setDependencySource(DependencySourceType value) {
-        this.dependencySource = value;
+    
+    /**
+     * Sets the Type property.
+     */
+    public void setType(String value) {
+        this.type = value;
     }
-
+    
+    /**
+     * Gets the Target property.
+     */
+    public String getTarget() {
+        return this.target;
+    }
+    
+    /**
+     * Sets the Target property.
+     */
+    public void setTarget(String value) {
+        this.target = value;
+    }
+    
+    /**
+     * Gets the Properties property.
+     */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
             this.properties = new ConcurrentHashMap<String, String>();
         }
         return this.properties;
     }
-
+    
+    /**
+     * Sets the Properties property.
+     */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
-
-    public Duration getDuration() {
-        return this.duration;
+    
+    /**
+     * Gets the Measurements property.
+     */
+    public ConcurrentMap<String, Double> getMeasurements() {
+        if (this.measurements == null) {
+            this.measurements = new ConcurrentHashMap<String, Double>();
+        }
+        return this.measurements;
     }
-
-    public void setDuration(Duration duration) {
-        this.duration = duration;
+    
+    /**
+     * Sets the Measurements property.
+     */
+    public void setMeasurements(ConcurrentMap<String, Double> value) {
+        this.measurements = value;
     }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getType() {
-        return type;
-    }
+    
 
     /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
-     * @throws IOException Might be thrown during serialization.
      */
-    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
+    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
+    {
         super.serializeContent(writer);
-
         writer.write("ver", ver);
+        
         writer.write("name", name);
+        
+        writer.write("id", id);
         writer.write("resultCode", resultCode);
-        writer.write("commandName", commandName);
-        writer.write("kind", kind.getValue());
-        writer.write("value", duration != null ? duration.getTotalMilliseconds() : 0);
-        writer.write("count", count);
-        writer.write("min", min);
-        writer.write("max", max);
-        writer.write("stdDev", stdDev);
-        writer.write("type", type);
-//        writer.write("dependencyKind", dependencyKind.getValue());
+        writer.write("duration", duration);
+        
         writer.write("success", success);
-        writer.write("async", async);
-        writer.write("dependencySource", dependencySource.getValue());
+        writer.write("data", data);
+        writer.write("type", type);
+        writer.write("target", target);
         writer.write("properties", properties);
+        writer.write("measurements", measurements);
     }
-
-    public String getEnvelopName() {
-        return REMOTE_ENVELOPE_NAME;
-    }
-
-    @Override
-    public String getBaseTypeName() {
-        return REMOTE_BASE_TYPE;
-    }
-
+    
+    /**
+     * Optionally initializes fields for the current context.
+     */
     protected void InitializeFields() {
-    }
-
-    public String getResultCode() {
-        return resultCode;
-    }
-
-    public void setResultCode(String resultCode) {
-        this.resultCode = resultCode;
+        
     }
 }

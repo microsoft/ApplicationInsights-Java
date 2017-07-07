@@ -29,6 +29,7 @@ import java.util.*;
 
 import com.google.common.base.Strings;
 
+import com.microsoft.applicationinsights.internal.schemav2.*;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
@@ -66,10 +67,32 @@ public final class JsonTelemetryDataSerializer {
         out.close();
     }
 
+    public void write(String name, Duration value) throws IOException {
+        writeName(name);
+        out.write(String.valueOf(value));
+        separator = JSON_SEPARATOR;
+    }
+
+    public void write(String name, DataPointType value) throws IOException {
+        if (value != null) {
+            writeName(name);
+            out.write(String.valueOf(value.getValue()));
+            separator = JSON_SEPARATOR;
+        }
+    }
+
     public void write(String name, int value) throws IOException {
         writeName(name);
         out.write(String.valueOf(value));
         separator = JSON_SEPARATOR;
+    }
+
+    public void write(String name, com.microsoft.applicationinsights.internal.schemav2.SeverityLevel value) throws IOException {
+        if (value != null) {
+            writeName(name);
+            out.write(String.valueOf(value));
+            separator = JSON_SEPARATOR;
+        }
     }
 
     public void write(String name, Integer value) throws IOException {

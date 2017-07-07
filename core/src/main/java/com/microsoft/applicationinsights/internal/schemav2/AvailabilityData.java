@@ -19,7 +19,7 @@
 * DEALINGS IN THE SOFTWARE.
 */
 /*
- * Generated from EventData.bond (https://github.com/Microsoft/bond)
+ * Generated from AvailabilityData.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
@@ -34,9 +34,9 @@ import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
 
 /**
- * Data contract class EventData.
+ * Data contract class AvailabilityData.
  */
-public class EventData extends Domain
+public class AvailabilityData extends Domain
 {
     /**
      * Backing field for property Ver.
@@ -44,9 +44,34 @@ public class EventData extends Domain
     private int ver = 2;
     
     /**
+     * Backing field for property Id.
+     */
+    private String id;
+    
+    /**
      * Backing field for property Name.
      */
     private String name;
+    
+    /**
+     * Backing field for property Duration.
+     */
+    private Duration duration = new Duration(0);
+    
+    /**
+     * Backing field for property Success.
+     */
+    private boolean success;
+    
+    /**
+     * Backing field for property RunLocation.
+     */
+    private String runLocation;
+    
+    /**
+     * Backing field for property Message.
+     */
+    private String message;
     
     /**
      * Backing field for property Properties.
@@ -59,9 +84,9 @@ public class EventData extends Domain
     private ConcurrentMap<String, Double> measurements;
     
     /**
-     * Initializes a new instance of the EventData class.
+     * Initializes a new instance of the AvailabilityData class.
      */
-    public EventData()
+    public AvailabilityData()
     {
         this.InitializeFields();
     }
@@ -81,6 +106,20 @@ public class EventData extends Domain
     }
     
     /**
+     * Gets the Id property.
+     */
+    public String getId() {
+        return this.id;
+    }
+    
+    /**
+     * Sets the Id property.
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+    
+    /**
      * Gets the Name property.
      */
     public String getName() {
@@ -92,6 +131,62 @@ public class EventData extends Domain
      */
     public void setName(String value) {
         this.name = value;
+    }
+    
+    /**
+     * Gets the Duration property.
+     */
+    public Duration getDuration() {
+        return this.duration;
+    }
+    
+    /**
+     * Sets the Duration property.
+     */
+    public void setDuration(Duration value) {
+        this.duration = value;
+    }
+    
+    /**
+     * Gets the Success property.
+     */
+    public boolean getSuccess() {
+        return this.success;
+    }
+    
+    /**
+     * Sets the Success property.
+     */
+    public void setSuccess(boolean value) {
+        this.success = value;
+    }
+    
+    /**
+     * Gets the RunLocation property.
+     */
+    public String getRunLocation() {
+        return this.runLocation;
+    }
+    
+    /**
+     * Sets the RunLocation property.
+     */
+    public void setRunLocation(String value) {
+        this.runLocation = value;
+    }
+    
+    /**
+     * Gets the Message property.
+     */
+    public String getMessage() {
+        return this.message;
+    }
+    
+    /**
+     * Sets the Message property.
+     */
+    public void setMessage(String value) {
+        this.message = value;
     }
     
     /**
@@ -138,8 +233,16 @@ public class EventData extends Domain
         super.serializeContent(writer);
         writer.write("ver", ver);
         
+        writer.write("id", id);
+        
         writer.write("name", name);
         
+        writer.write("duration", duration);
+        
+        writer.write("success", success);
+        
+        writer.write("runLocation", runLocation);
+        writer.write("message", message);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

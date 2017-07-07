@@ -87,7 +87,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     @Test
     public void testHttpRequestTrackedSuccessfully() throws Exception {
-        sendRequestAndGetResponseCookie();
+        sendRequestAndGetResponseCookie(server.getPortNumber());
 
         List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
         assertEquals(1, items.size());
@@ -96,7 +96,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         assertEquals(String.valueOf(HttpStatus.SC_OK), requestTelemetry.getResponseCode());
         assertEquals(HttpMethods.GET + " /", requestTelemetry.getName());
         assertEquals(HttpMethods.GET, requestTelemetry.getHttpMethod());
-        assertEquals("http://localhost:1234/", requestTelemetry.getUrl().toString());
+        assertEquals("http://localhost:" + server.getPortNumber() + "/", requestTelemetry.getUrl().toString());
     }
 
     @Test
@@ -131,7 +131,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     @Test
     public void testUserAgentIsBeingSet() throws Exception {
-        sendRequestAndGetResponseCookie();
+        sendRequestAndGetResponseCookie(server.getPortNumber());
 
         List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
         assertEquals(1, items.size());
@@ -166,7 +166,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         when(request.getRequestURI()).thenReturn(uri);
         when(request.getMethod()).thenReturn(HttpMethods.GET);
         when(request.getScheme()).thenReturn("http");
-        when(request.getHeader("Host")).thenReturn("localhost:1234");
+        when(request.getHeader("Host")).thenReturn("localhost:" + server.getPortNumber());
         when(request.getQueryString()).thenReturn(queryString);
 
         return request;

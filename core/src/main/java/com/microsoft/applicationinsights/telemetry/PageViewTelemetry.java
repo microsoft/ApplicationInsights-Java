@@ -38,6 +38,17 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     private PageViewData data;
 
     /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.PerformanceCounter";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "PerformanceCounterData";
+
+    /**
      * Default Ctor
      */
     public PageViewTelemetry() {
@@ -96,7 +107,7 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
      * @return The page view duration.
      */
     public long getDuration() {
-        return data.getDuration();
+        return data.getDuration().getTotalMilliseconds();
     }
 
     /**
@@ -104,7 +115,7 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
      * @param duration The page view duration.
      */
     public void setDuration(long duration) {
-        data.setDuration(duration);
+        data.setDuration(new Duration(duration));
     }
 
     /**
@@ -135,5 +146,15 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     @Override
     protected PageViewData getData() {
         return data;
+    }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
     }
 }

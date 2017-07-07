@@ -32,6 +32,18 @@ import com.google.common.base.Strings;
 public final class PerformanceCounterTelemetry extends BaseTelemetry<PerformanceCounterData> {
     private final PerformanceCounterData data;
 
+    /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.PerformanceCounter";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "PerformanceCounterData";
+
+
     public PerformanceCounterTelemetry() {
         data = new PerformanceCounterData();
         initialize(data.getProperties());
@@ -130,4 +142,15 @@ public final class PerformanceCounterTelemetry extends BaseTelemetry<Performance
     protected PerformanceCounterData getData() {
         return data;
     }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
+    }
+
 }

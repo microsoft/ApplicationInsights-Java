@@ -28,10 +28,12 @@ import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 import com.google.common.base.Preconditions;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Created by gupele on 3/1/2015.
  */
+@Obsolete
 public final class PerformanceCounterData extends Domain {
     /**
      * Envelope Name for this telemetry.
@@ -101,15 +103,5 @@ public final class PerformanceCounterData extends Domain {
         writer.write("instanceName", instanceName);
         writer.write("value", value);
         writer.write("properties", properties);
-    }
-
-    @Override
-    public String getEnvelopName() {
-        return PERFORMANCE_COUNTER_ENVELOPE_NAME;
-    }
-
-    @Override
-    public String getBaseTypeName() {
-        return PERFORMANCE_COUNTER_BASE_TYPE;
     }
 }

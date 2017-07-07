@@ -19,7 +19,7 @@
 * DEALINGS IN THE SOFTWARE.
 */
 /*
- * Generated from EventData.bond (https://github.com/Microsoft/bond)
+ * Generated from ContextTagKeys.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
 import java.io.IOException;
@@ -34,98 +34,70 @@ import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
 
 /**
- * Data contract class EventData.
+ * Data contract class Cloud.
  */
-public class EventData extends Domain
+public class Cloud
+    implements JsonSerializable
 {
     /**
-     * Backing field for property Ver.
+     * Backing field for property Role.
      */
-    private int ver = 2;
+    private String role;
     
     /**
-     * Backing field for property Name.
+     * Backing field for property RoleInstance.
      */
-    private String name;
+    private String roleInstance;
     
     /**
-     * Backing field for property Properties.
+     * Initializes a new instance of the Cloud class.
      */
-    private ConcurrentMap<String, String> properties;
-    
-    /**
-     * Backing field for property Measurements.
-     */
-    private ConcurrentMap<String, Double> measurements;
-    
-    /**
-     * Initializes a new instance of the EventData class.
-     */
-    public EventData()
+    public Cloud()
     {
         this.InitializeFields();
     }
     
     /**
-     * Gets the Ver property.
+     * Gets the Role property.
      */
-    public int getVer() {
-        return this.ver;
+    public String getRole() {
+        return this.role;
     }
     
     /**
-     * Sets the Ver property.
+     * Sets the Role property.
      */
-    public void setVer(int value) {
-        this.ver = value;
+    public void setRole(String value) {
+        this.role = value;
     }
     
     /**
-     * Gets the Name property.
+     * Gets the RoleInstance property.
      */
-    public String getName() {
-        return this.name;
+    public String getRoleInstance() {
+        return this.roleInstance;
     }
     
     /**
-     * Sets the Name property.
+     * Sets the RoleInstance property.
      */
-    public void setName(String value) {
-        this.name = value;
+    public void setRoleInstance(String value) {
+        this.roleInstance = value;
     }
     
+
     /**
-     * Gets the Properties property.
+     * Adds all members of this class to a hashmap
+     * @param map to which the members of this class will be added.
      */
-    public ConcurrentMap<String, String> getProperties() {
-        if (this.properties == null) {
-            this.properties = new ConcurrentHashMap<String, String>();
+    public void addToHashMap(HashMap<String, String> map)
+    {
+        if (this.role != null) {
+            map.put("role", this.role);
         }
-        return this.properties;
-    }
-    
-    /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
-    }
-    
-    /**
-     * Gets the Measurements property.
-     */
-    public ConcurrentMap<String, Double> getMeasurements() {
-        if (this.measurements == null) {
-            this.measurements = new ConcurrentHashMap<String, Double>();
+        if (this.roleInstance != null) {
+            map.put("roleInstance", this.roleInstance);
         }
-        return this.measurements;
-    }
-    
-    /**
-     * Sets the Measurements property.
-     */
-    public void setMeasurements(ConcurrentMap<String, Double> value) {
-        this.measurements = value;
     }
     
 
@@ -133,15 +105,21 @@ public class EventData extends Domain
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
      */
+    @Override
+    public void serialize(JsonTelemetryDataSerializer writer) throws IOException
+    {
+        Preconditions.checkNotNull(writer, "writer must be a non-null value");
+        this.serializeContent(writer);
+    }
+
+    /**
+     * Serializes the beginning of this object to the passed in writer.
+     * @param writer The writer to serialize this object to.
+     */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
-        super.serializeContent(writer);
-        writer.write("ver", ver);
-        
-        writer.write("name", name);
-        
-        writer.write("properties", properties);
-        writer.write("measurements", measurements);
+        writer.write("role", role);
+        writer.write("roleInstance", roleInstance);
     }
     
     /**

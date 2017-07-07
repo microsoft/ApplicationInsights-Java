@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Telemetry type used to track exceptions sent to Azure Application Insights.
@@ -39,6 +40,18 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     private Double samplingPercentage;
     private final ExceptionData data;
     private Throwable throwable;
+
+    /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Exception";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "ExceptionData";
+
 
     private ExceptionTelemetry() {
         super();
@@ -86,16 +99,18 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
      * Gets the value indicated where the exception was handled.
      * @return The value indicating the exception
      */
+    @Obsolete
     public ExceptionHandledAt getExceptionHandledAt() {
-        return Enum.valueOf(ExceptionHandledAt.class, data.getHandledAt());
+        return ExceptionHandledAt.Unhandled;
     }
 
     /**
      * Sets the value indicated where the exception was handled.
      * @param value The value indicating the exception
      */
+    @Obsolete
     public void setExceptionHandledAt(ExceptionHandledAt value) {
-        data.setHandledAt(value.toString());
+
     }
 
     /**
@@ -108,11 +123,11 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     public void setSeverityLevel(SeverityLevel severityLevel) {
-        data.setSeverityLevel(severityLevel);
+        data.setSeverityLevel(severityLevel == null ? null : com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.values()[severityLevel.getValue()]);
     }
 
     public SeverityLevel getSeverityLevel() {
-        return data.getSeverityLevel();
+        return data.getSeverityLevel() == null ? null : SeverityLevel.values()[data.getSeverityLevel().getValue()];
     }
 
     @Override
@@ -217,5 +232,14 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         }
 
         return exceptionDetails;
+    }
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
     }
 }

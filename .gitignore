@@ -7,6 +7,7 @@
 *.opensdf
 *.suo
 *.user
+bin/
 Debug/
 Release/
 ipch/

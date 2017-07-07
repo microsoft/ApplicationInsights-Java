@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.apache.http.HttpStatus;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Encapsulates information about a web request handled by the application.
@@ -42,6 +43,19 @@ import org.apache.http.HttpStatus;
 public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestData> {
     private Double samplingPercentage;
     private final RequestData data;
+    private String httpMethod;
+
+    /**
+     * Envelope Name for this telemetry.
+     */
+    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Request";
+
+
+    /**
+     * Base Type for this telemetry.
+     */
+    private static final String BASE_TYPE = "RequestData";
+
 
     /**
      * Initializes a new instance of the HttpRequestTelemetry class.
@@ -112,7 +126,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
         }
 
         super.setTimestamp(timestamp);
-        data.setStartTime(timestamp);
     }
 
     /**
@@ -172,7 +185,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
      * @return Success indication
      */
     public boolean isSuccess() {
-        return data.isSuccess();
+        return data.getSuccess();
     }
 
     /**
@@ -234,16 +247,18 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
      * Gets the HTTP method of the request.
      * @return The HTTP method
      */
+    @Obsolete
     public String getHttpMethod() {
-        return data.getHttpMethod();
+        return httpMethod;
     }
 
     /**
      * Sets the HTTP method of the request.
      * @param httpMethod The HTTP method
      */
+    @Obsolete
     public void setHttpMethod(String httpMethod) {
-        data.setHttpMethod(httpMethod);
+        this.httpMethod = httpMethod;
     }
 
     @Override
@@ -268,4 +283,15 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     protected RequestData getData() {
         return data;
     }
+
+    @Override
+    public String getEnvelopName() {
+        return ENVELOPE_NAME;
+    }
+
+    @Override
+    public String getBaseTypeName() {
+        return BASE_TYPE;
+    }
+
 }

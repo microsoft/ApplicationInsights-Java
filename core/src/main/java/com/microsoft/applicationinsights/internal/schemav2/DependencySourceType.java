@@ -21,9 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
+import org.apache.http.annotation.Obsolete;
+
 /**
  * Enum DependencySourceType.
  */
+@Obsolete
 public enum DependencySourceType {
     Undefined(0),
     Aic(1),
