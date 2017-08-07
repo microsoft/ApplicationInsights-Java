@@ -176,6 +176,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 if (ioe instanceof ConnectTimeoutException) {
                     transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
                 }
+            } catch (IllegalStateException e) {
+                suspendTransmissions(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, response);
+                InternalLogger.INSTANCE.error("Failed to send, illegal state exception: %s", e.getMessage());
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
             } catch (Throwable t) {
