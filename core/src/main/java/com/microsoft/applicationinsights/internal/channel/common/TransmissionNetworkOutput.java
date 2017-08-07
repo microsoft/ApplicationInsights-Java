@@ -171,6 +171,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             } catch (IOException ioe) {
                 InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
                 shouldBackoff = true;
+            } catch (IllegalStateException e) {
+                InternalLogger.INSTANCE.error("Failed to send, illegal state exception: %s", e.getMessage());
+                shouldBackoff = true;
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
                 shouldBackoff = true;
