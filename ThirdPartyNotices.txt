@@ -1,7 +1,7 @@
 ﻿THIRD-PARTY SOFTWARE NOTICES AND INFORMATION
 Do Not Translate or Localize
 
-Microsoft Application Insights Java Software Development Kit consists of material from the project(s) listed below (collectively, �Distributed Code�). Microsoft Corporation ("Microsoft") is not the original author of some of the Distributed Code. The original copyright notices and licenses, under which Microsoft received such Distributed Code, are set out below.  This Distributed Code are licensed to you under their original license terms set forth below.  Microsoft reserves all other rights not expressly granted under these terms, whether by implication, estoppel or otherwise. 
+Microsoft Application Insights Java Software Development Kit consists of material from the project(s) listed below (collectively, "Distributed Code"). Microsoft Corporation ("Microsoft") is not the original author of some of the Distributed Code. The original copyright notices and licenses, under which Microsoft received such Distributed Code, are set out below.  This Distributed Code are licensed to you under their original license terms set forth below.  Microsoft reserves all other rights not expressly granted under these terms, whether by implication, estoppel or otherwise. 
 
 1.	Apache Commons-codec version 1.9 (http://commons.apache.org/proper/commons-codec/download_codec.cgi)
 2.	Apache Commons Lang3 version 3.1 (http://commons.apache.org/proper/commons-lang/)
@@ -87,7 +87,7 @@ END OF Apache Commons-codec NOTICES, INFORMATION, AND LICENSE
 
 %% Apache Commons Lang3 NOTICES, INFORMATION, AND LICENSE BEGIN HERE
 =========================================
-Copyright � 2001-2014 The Apache Software Foundation
+Copyright (c) 2001-2014 The Apache Software Foundation
 This product includes software developed at The Apache Software Foundation (http://www.apache.org/).
 This product includes software from the Spring Framework, under the Apache License 2.0 (see: StringUtils.containsWhitespace())
 
