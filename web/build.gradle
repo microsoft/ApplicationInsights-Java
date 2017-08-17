@@ -27,7 +27,7 @@ archivesBaseName = 'applicationinsights-web'
 dependencies {
     provided (project(':agent')) { transitive = false }
     compile (project(':core')) { transitive = false }
-    compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'])
+    compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'])
     compile ([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'])
     provided 'com.opensymphony:xwork:2.0.4' // Struts 2
     provided 'org.springframework:spring-webmvc:3.1.0.RELEASE'
