@@ -21,29 +21,28 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
+import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.internal.agent.AgentConnector;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.LinkedList;
-
-import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -59,20 +58,24 @@ public final class WebRequestTrackingFilter implements Filter {
     private boolean agentIsUp = false;
     private final LinkedList<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
 
+    //Only for Spring Boot Application (External Name Setting)
+    private String applicationName;
+
     // endregion Members
 
     // region Public
 
     /**
      * Processing the given request and response.
-     * @param req The servlet request.
-     * @param res The servlet response.
+     *
+     * @param req   The servlet request.
+     * @param res   The servlet response.
      * @param chain The filters chain
-     * @throws IOException Exception that can be thrown from invoking the filters chain.
+     * @throws IOException      Exception that can be thrown from invoking the filters chain.
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse)res);
+        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse) res);
         setKeyOnTLS(key);
 
         boolean isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
@@ -81,7 +84,7 @@ public final class WebRequestTrackingFilter implements Filter {
             chain.doFilter(req, response);
             invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
         } catch (ServletException se) {
-            onException(se, req, response,isRequestProcessedSuccessfully);
+            onException(se, req, response, isRequestProcessedSuccessfully);
             throw se;
         } catch (IOException ioe) {
             onException(ioe, req, response, isRequestProcessedSuccessfully);
@@ -118,9 +121,10 @@ public final class WebRequestTrackingFilter implements Filter {
 
     /**
      * Initializes the filter from the given config.
+     *
      * @param config The filter configuration.
      */
-    public void init(FilterConfig config){
+    public void init(FilterConfig config) {
         try {
             initialize(config);
 
@@ -162,7 +166,7 @@ public final class WebRequestTrackingFilter implements Filter {
         boolean success = true;
 
         try {
-            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(), (HttpServletRequest)req);
+            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(), (HttpServletRequest) req);
             ThreadContext.setRequestTelemetryContext(context);
 
             webModulesContainer.invokeOnBeginRequest(req, res);
@@ -206,13 +210,17 @@ public final class WebRequestTrackingFilter implements Filter {
     public WebRequestTrackingFilter() {
     }
 
+    public WebRequestTrackingFilter(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
     private synchronized void initialize(FilterConfig filterConfig) {
         try {
 
             //if agent is not installed (jar not loaded), can skip the entire registration process
             try {
                 AgentConnector test = AgentConnector.INSTANCE;
-            } catch(Throwable t) {
+            } catch (Throwable t) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Agent was not found. Skipping the agent registration");
                 return;
             }
@@ -257,6 +265,12 @@ public final class WebRequestTrackingFilter implements Filter {
     }
 
     private String getName(ServletContext context) {
+
+        // If Application is of type Spring Boot
+        if (applicationName != null) {
+            return applicationName;
+        }
+
         String name = null;
         try {
             String contextPath = context.getContextPath();
