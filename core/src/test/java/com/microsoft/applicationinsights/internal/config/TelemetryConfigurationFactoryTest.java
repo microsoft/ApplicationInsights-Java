@@ -118,6 +118,17 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     @Test
+    public void systemPropertyIKeySecondaryBeforeConfigurationIKeyTest() {
+        try {
+            System.setProperty(TelemetryConfigurationFactory.EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY, APP_INSIGHTS_IKEY_TEST_VALUE);
+            ikeyTest(MOCK_IKEY, APP_INSIGHTS_IKEY_TEST_VALUE);
+        } finally {
+            // Avoid any influence on other unit tests
+            System.getProperties().remove(TelemetryConfigurationFactory.EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
+        }
+    }
+
+    @Test
     public void testWithEmptySections() {
         AppInsightsConfigurationBuilder mockParser = Mockito.mock(AppInsightsConfigurationBuilder.class);
 
