@@ -60,6 +60,7 @@ public enum TelemetryConfigurationFactory {
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
     final static String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
+    final static String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
     private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
@@ -208,24 +209,35 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Setting an instrumentation key:
-     * First we try the system property '-DAPPLICATION_INSIGHTS_IKEY=i_key'
-     * Next we will try the environment variable 'APPLICATION_INSIGHTS_IKEY',
+     * First we try the system property '-DAPPLICATION_INSIGHTS_IKEY=i_key' or '-DAPPINSIGHTS_INSTRUMENTATIONKEY=i_key'
+     * Next we will try the environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
      * Next we will try to fetch the i-key from the ApplicationInsights.xml
      * @param userConfiguration The configuration that was represents the user's configuration in ApplicationInsights.xml.
      * @param configuration The configuration class.
      */
     private void setInstrumentationKey(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         try {
-            // First, check whether an i-key was provided as a java system property i.e. '-DAPPLICATION_INSIGHTS_IKEY=i_key'
-            String ikey = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
+            String ikey;
 
+            // First, check whether an i-key was provided as a java system property i.e. '-DAPPLICATION_INSIGHTS_IKEY=i_key', or '-DAPPINSIGHTS_INSTRUMENTATIONKEY=i_key'
+            ikey = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
+            if (!Strings.isNullOrEmpty(ikey)) {
+                configuration.setInstrumentationKey(ikey);
+                return;
+            }
+            ikey = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
             if (!Strings.isNullOrEmpty(ikey)) {
                 configuration.setInstrumentationKey(ikey);
                 return;
             }
 
-            // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY'
+            // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
             ikey = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
+            if (!Strings.isNullOrEmpty(ikey)) {
+                configuration.setInstrumentationKey(ikey);
+                return;
+            }
+            ikey = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
             if (!Strings.isNullOrEmpty(ikey)) {
                 configuration.setInstrumentationKey(ikey);
                 return;
