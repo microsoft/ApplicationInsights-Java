@@ -1,4 +1,4 @@
-#CHANGELOG
+# CHANGELOG
 
 ## Version 1.0.10
 - Schema updated to the latest version. Changes in internal namespace `core/src/main/java/com/microsoft/applicationinsights/internal/schemav2`.
