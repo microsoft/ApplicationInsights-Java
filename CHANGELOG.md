@@ -8,6 +8,7 @@
 - Methods `getExceptionHandledAt` and `setExceptionHandledAt` of `ExceptionTelemetry` marked obsolete and do not do anything. 
 - Obsolete methods of `RemoteDependencyTelemetry`:  `getCount`, `setCount`, `getMin`, `setMin`, `getMax`, `setMax`, `getStdDev`, `setStdDev`, `getDependencyKind`, `setDependencyKind`, `getAsync`, `setAsync`, `getDependencySource`, `setDependencySource`.
 - Obsolete methods of `RequestTelemetry`: `getHttpMethod`, `setHttpMethod`.
+- Add option to configure instrumentation key via `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable for consistency with other SDKs.
 
 ## Version 1.0.9
 - Fix the issue of infinite retry and connection drain on certificate error by updating the version of http client packaged with the SDK.
