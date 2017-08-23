@@ -66,6 +66,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
     private final static int DEFAULT_BACKOFF_TIME_SECONDS = 300;
+    private final static long SHUTDOWN_TIME = 1L;
 
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
@@ -177,7 +178,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                     transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
                 }
             } catch (IllegalStateException e) {
-                suspendTransmissions(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, response);
+                transmissionPolicyManager.stop(SHUTDOWN_TIME, TimeUnit.SECONDS);
                 InternalLogger.INSTANCE.error("Failed to send, illegal state exception: %s", e.getMessage());
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
