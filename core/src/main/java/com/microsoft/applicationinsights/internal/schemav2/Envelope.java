@@ -139,8 +139,11 @@ public class Envelope
     /**
      * Sets the SampleRate property.
      */
-    public void setSampleRate(double value) {
-        this.sampleRate = value;
+    public void setSampleRate(Double value) {
+        if (value != null) {
+            this.sampleRate = value;
+        }
+
     }
     
     /**
