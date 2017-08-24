@@ -58,7 +58,7 @@ public final class WebRequestTrackingFilter implements Filter {
     private boolean agentIsUp = false;
     private final LinkedList<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
 
-    //Only for Spring Boot Application (External Name Setting)
+    //For External Name Setting
     private String applicationName;
 
     // endregion Members
@@ -210,6 +210,10 @@ public final class WebRequestTrackingFilter implements Filter {
     public WebRequestTrackingFilter() {
     }
 
+    /**
+     * Parameterized constructor, used to set Application name explicitly
+     * @param applicationName
+     */
     public WebRequestTrackingFilter(String applicationName) {
         this.applicationName = applicationName;
     }
@@ -224,14 +228,10 @@ public final class WebRequestTrackingFilter implements Filter {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Agent was not found. Skipping the agent registration");
                 return;
             }
-
             ServletContext context = filterConfig.getServletContext();
-
             String name = getName(context);
-
             String key = registerWebApp(name);
             setKey(key);
-
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Successfully registered the filter '%s'", FILTER_NAME);
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.getMessage());
@@ -266,7 +266,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
     private String getName(ServletContext context) {
 
-        // If Application is of type Spring Boot
+        // If Application Name is set externally
         if (applicationName != null) {
             return applicationName;
         }
