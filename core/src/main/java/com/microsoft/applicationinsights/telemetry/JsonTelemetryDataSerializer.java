@@ -69,7 +69,7 @@ public final class JsonTelemetryDataSerializer {
 
     public void write(String name, Duration value) throws IOException {
         writeName(name);
-        out.write(String.valueOf(value));
+        write(String.valueOf(value));
         separator = JSON_SEPARATOR;
     }
 

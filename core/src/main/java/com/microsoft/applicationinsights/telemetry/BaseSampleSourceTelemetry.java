@@ -17,6 +17,8 @@ public abstract class BaseSampleSourceTelemetry<T extends Domain> extends BaseTe
     @Override
     protected void setSampleRate(Envelope envelope) {
         Double currentSP = getSamplingPercentage();
-        envelope.setSampleRate(currentSP);
+        if (currentSP != null) {
+            envelope.setSampleRate(currentSP);
+        }
     }
 }

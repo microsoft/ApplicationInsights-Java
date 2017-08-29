@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Version 1.0.10
+- Fixed Request Telemetry Sending bug with new schema
 - Schema updated to the latest version. Changes in internal namespace `core/src/main/java/com/microsoft/applicationinsights/internal/schemav2`.
 - Class `SendableData` in internal namespace deleted.
 - Class `com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry` takes generic class qualifier `Domain` instead of `SendableData`.
