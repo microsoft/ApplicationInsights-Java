@@ -140,7 +140,7 @@ public class Envelope
      * Sets the SampleRate property.
      */
     public void setSampleRate(double value) {
-        this.sampleRate = value;
+            this.sampleRate = value;
     }
     
     /**

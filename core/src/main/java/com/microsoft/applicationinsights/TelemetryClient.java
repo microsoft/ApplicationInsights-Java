@@ -394,7 +394,9 @@ public class TelemetryClient {
             return;
         }
 
-        telemetry.setTimestamp(new Date());
+        if (telemetry.getTimestamp() == null) {
+            telemetry.setTimestamp(new Date());
+        }
 
         TelemetryContext ctx = this.getContext();
 

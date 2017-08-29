@@ -382,6 +382,15 @@ public final class TelemetryClientTests {
     }
 
     @Test
+    public void testTrackWithCustomTelemetryTimestamp() {
+        Date timestamp = new Date(10000);
+        client.track(new RequestTelemetry("Name", timestamp, 1, "200", true));
+
+        Telemetry telemetry = verifyAndGetLastEventSent();
+        assertEquals(telemetry.getTimestamp(), timestamp);
+    }
+
+    @Test
     public void testTrack() {
         TraceTelemetry telemetry = new TraceTelemetry("test");
         client.track(telemetry);

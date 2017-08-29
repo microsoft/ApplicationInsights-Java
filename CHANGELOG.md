@@ -1,6 +1,7 @@
-#CHANGELOG
+# CHANGELOG
 
 ## Version 1.0.10
+- Fixed Request Telemetry Sending bug with new schema
 - Schema updated to the latest version. Changes in internal namespace `core/src/main/java/com/microsoft/applicationinsights/internal/schemav2`.
 - Class `SendableData` in internal namespace deleted.
 - Class `com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry` takes generic class qualifier `Domain` instead of `SendableData`.
@@ -8,6 +9,8 @@
 - Methods `getExceptionHandledAt` and `setExceptionHandledAt` of `ExceptionTelemetry` marked obsolete and do not do anything. 
 - Obsolete methods of `RemoteDependencyTelemetry`:  `getCount`, `setCount`, `getMin`, `setMin`, `getMax`, `setMax`, `getStdDev`, `setStdDev`, `getDependencyKind`, `setDependencyKind`, `getAsync`, `setAsync`, `getDependencySource`, `setDependencySource`.
 - Obsolete methods of `RequestTelemetry`: `getHttpMethod`, `setHttpMethod`.
+- Add option to configure instrumentation key via `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable for consistency with other SDKs.
+- Fix the issue where `track(...)` of `TelemetryClient` class was overwriting the provided telemetry timestamp. 
 
 ## Version 1.0.9
 - Fix the issue of infinite retry and connection drain on certificate error by updating the version of http client packaged with the SDK.
