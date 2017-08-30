@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.internal.agent.AgentConnector;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.schemav2.Internal;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 
 import javax.servlet.Filter;
@@ -39,10 +40,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.Properties;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -229,8 +232,8 @@ public final class WebRequestTrackingFilter implements Filter {
                 return;
             }
             ServletContext context = filterConfig.getServletContext();
-            String name = getName(context);
-            String key = registerWebApp(name);
+            applicationName = getName(context);
+            String key = registerWebApp(applicationName);
             setKey(key);
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Successfully registered the filter '%s'", FILTER_NAME);
         } catch (Throwable t) {
@@ -266,12 +269,12 @@ public final class WebRequestTrackingFilter implements Filter {
 
     private String getName(ServletContext context) {
 
-        // If Application Name is set externally
-        if (applicationName != null) {
-            return applicationName;
+        String name = getApplicatioNameFromProperties();
+
+        if (name != null) {
+            return name;
         }
 
-        String name = null;
         try {
             String contextPath = context.getContextPath();
             if (CommonUtils.isNullOrEmpty(contextPath)) {
@@ -295,6 +298,38 @@ public final class WebRequestTrackingFilter implements Filter {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.getMessage());
         }
 
+        return name;
+    }
+
+    /*This method is used to parse application name from the properties file*/
+    private String getApplicatioNameFromProperties() {
+
+        Properties properties = new Properties();
+        InputStream input = null;
+        String name = null;
+        try {
+            String fileName = "application.properties";
+            input = WebRequestTrackingFilter.class.getClassLoader().getResourceAsStream(fileName);
+            if (input == null) {
+                return null;
+            }
+
+            properties.load(input);
+            name = properties.getProperty("spring.application.name");
+        }
+        catch (IOException ex) {
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception in loading properties file: '%s'",ex.getMessage());
+        }
+        finally {
+            if (input != null) {
+                try {
+                    input.close();
+                }
+                catch (IOException e) {
+                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Error while closing properties file '%s'",e.getMessage());
+                }
+            }
+        }
         return name;
     }
 

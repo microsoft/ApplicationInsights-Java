@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -82,45 +83,9 @@ public class WebRequestTrackingFilterTests {
 
     }
 
-    /* For parametrized constructor initialization test */
-    @Test
-    public void testParametrizedFilterInitializedSuccessfullyFromConfiguration() throws ServletException {
-        Filter filter = createParametrizedInitializedFilter("My-App");
-        WebModulesContainer container = ServletUtils.getWebModuleContainer(filter);
-
-        Assert.assertNotNull("Container shouldn't be null", container);
-        Assert.assertTrue("Modules container shouldn't be empty", container.getModulesCount() > 0);
-    }
-
     @Test
     public void testFiltersChainWhenExceptionIsThrownOnModulesInvocation() throws Exception {
         Filter filter = createInitializedFilter();
-
-        // mocking
-        WebModulesContainer containerMock = ServletUtils.setMockWebModulesContainer(filter);
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                throw new Exception("FATAL!");
-            }
-        }).when(containerMock).invokeOnBeginRequest(any(ServletRequest.class), any(ServletResponse.class));
-
-        FilterChain chain = mock(FilterChain.class);
-
-        ServletRequest request = ServletUtils.generateDummyServletRequest();
-
-        // execute
-        filter.doFilter(request, ServletUtils.generateDummyServletResponse(), chain);
-
-        // validate
-        verify(chain).doFilter(any(ServletRequest.class), any(ServletResponse.class));
-    }
-
-
-    /* For Parametrized Name setting */
-    @Test
-    public void testParametrizedFiltersChainWhenExceptionIsThrownOnModulesInvocation() throws Exception {
-        Filter filter = createParametrizedInitializedFilter("My-App");
 
         // mocking
         WebModulesContainer containerMock = ServletUtils.setMockWebModulesContainer(filter);
@@ -146,10 +111,6 @@ public class WebRequestTrackingFilterTests {
     public void testUnhandledRuntimeExceptionWithTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
         testException(createdData, new java.lang.IllegalArgumentException());
-
-        //For parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithTelemetryClient();
-        testException(createdDataParametrized, new java.lang.IllegalArgumentException());
     }
 
 
@@ -157,82 +118,48 @@ public class WebRequestTrackingFilterTests {
     public void testUnhandledRuntimeExceptionWithoutTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithoutTelemetryClient();
         testException(createdData, new RuntimeException());
-
-        //For Parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithoutTelemetryClient();
-        testException(createdDataParametrized, new RuntimeException());
-
     }
 
     @Test
     public void testUnhandledRuntimeExceptionWithTelemetryClientThatThrows() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClientThatThrows();
         testException(createdData, new RuntimeException());
-
-        //For Parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithTelemetryClientThatThrows();
-        testException(createdDataParametrized, new RuntimeException());
     }
 
     @Test
     public void testUnhandledServletExceptionWithTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
         testException(createdData, new ServletException());
-
-        //For parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithTelemetryClient();
-        testException(createdDataParametrized, new ServletException());
     }
 
     @Test
     public void testUnhandledServletExceptionWithoutTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithoutTelemetryClient();
         testException(createdData, new ServletException());
-
-        //For Parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithoutTelemetryClient();
-        testException(createdDataParametrized, new ServletException());
     }
 
     @Test
     public void testUnhandledServletExceptionWithTelemetryClientThatThrows() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClientThatThrows();
         testException(createdData, new ServletException());
-
-        //For Parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithTelemetryClientThatThrows();
-        testException(createdDataParametrized, new ServletException());
-
     }
 
     @Test
     public void testUnhandledIOExceptionWithTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
         testException(createdData, new IOException());
-
-        //For parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithTelemetryClient();
-        testException(createdDataParametrized, new IOException());
     }
 
     @Test
     public void testUnhandledIOExceptionWithoutTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithoutTelemetryClient();
         testException(createdData, new IOException());
-
-        //For Parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithoutTelemetryClient();
-        testException(createdDataParametrized, new IOException());
     }
 
     @Test
     public void testUnhandledIOExceptionWithTelemetryClientThatThrows() throws IllegalAccessException, NoSuchFieldException, ServletException {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClientThatThrows();
         testException(createdData, new IOException());
-
-        //For Parametrized
-        FilterAndTelemetryClientMock createdDataParametrized = createParametrizedInitializedFilterWithTelemetryClientThatThrows();
-        testException(createdDataParametrized, new IOException());
     }
 
     // region Private methods
@@ -266,19 +193,7 @@ public class WebRequestTrackingFilterTests {
         return filter;
     }
 
-    private Filter createParametrizedInitializedFilter(String appName) throws ServletException {
-        Filter filter = new WebRequestTrackingFilter(appName);
-
-        filter.init(null);
-        return filter;
-    }
-
     private FilterAndTelemetryClientMock createInitializedFilterWithTelemetryClientThatThrows() throws ServletException, NoSuchFieldException, IllegalAccessException {
-        return createInitializedFilterWithMockTelemetryClient(true, true);
-    }
-
-    //For Parametrized name initialization
-    private FilterAndTelemetryClientMock createParametrizedInitializedFilterWithTelemetryClientThatThrows() throws ServletException, NoSuchFieldException, IllegalAccessException {
         return createInitializedFilterWithMockTelemetryClient(true, true);
     }
 
@@ -286,19 +201,8 @@ public class WebRequestTrackingFilterTests {
         return createInitializedFilterWithMockTelemetryClient(true, false);
     }
 
-    //For parametrized name initialization
-    private FilterAndTelemetryClientMock createParametrizedInitializedFilterWithTelemetryClient() throws ServletException, NoSuchFieldException, IllegalAccessException {
-        return createInitializedParametrizedFilterWithMockTelemetryClient(true, false);
-    }
-
-
     private FilterAndTelemetryClientMock createInitializedFilterWithoutTelemetryClient() throws ServletException, NoSuchFieldException, IllegalAccessException {
         return createInitializedFilterWithMockTelemetryClient(false, false);
-    }
-
-    //For parametrized name initialization
-    private FilterAndTelemetryClientMock createParametrizedInitializedFilterWithoutTelemetryClient() throws ServletException, NoSuchFieldException, IllegalAccessException {
-        return createInitializedParametrizedFilterWithMockTelemetryClient(false, false);
     }
 
     private FilterAndTelemetryClientMock createInitializedFilterWithMockTelemetryClient(boolean withTelemetryClient, boolean clientThrows) throws ServletException, NoSuchFieldException, IllegalAccessException {
@@ -320,27 +224,6 @@ public class WebRequestTrackingFilterTests {
         return new FilterAndTelemetryClientMock(filter, mockTelemetryClient);
     }
 
-
-    /*For Parametrized constructor testing*/
-    private FilterAndTelemetryClientMock createInitializedParametrizedFilterWithMockTelemetryClient(boolean withTelemetryClient, boolean clientThrows) throws ServletException, NoSuchFieldException, IllegalAccessException {
-        Filter filter = createParametrizedInitializedFilter("My-App");
-
-
-        Field field = WebRequestTrackingFilter.class.getDeclaredField("telemetryClient");
-        field.setAccessible(true);
-
-        StubTelemetryClient mockTelemetryClient = null;
-        if (withTelemetryClient) {
-            mockTelemetryClient = new StubTelemetryClient();
-            if (clientThrows) {
-                mockTelemetryClient.shouldThrow = true;
-            }
-        }
-        field.set(filter, mockTelemetryClient);
-
-        return new FilterAndTelemetryClientMock(filter, mockTelemetryClient);
-    }
     // endregion Private methods
-
 
 }
