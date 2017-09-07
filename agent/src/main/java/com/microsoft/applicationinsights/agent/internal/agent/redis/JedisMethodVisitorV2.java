@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.redis;
 
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
 
@@ -29,8 +28,6 @@ import org.objectweb.asm.MethodVisitor;
 
 /**
  * The class is responsible for instrumenting Jedis client methods.
- *
- * Created by guslima on 9/6/2017.
  */
 final class JedisMethodVisitorV2 extends DefaultMethodVisitor {
     private final static String ON_ENTER_METHOD_NAME = "jedisMethodStarted";
@@ -47,13 +44,11 @@ final class JedisMethodVisitorV2 extends DefaultMethodVisitor {
 
     @Override
     protected String getOnEnterMethodName() {
-        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "getOnEnterMethodName");
         return ON_ENTER_METHOD_NAME;
     }
 
     @Override
     protected String getOnEnterMethodSignature() {
-        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "getOnEnterMethodSig");
         return ON_ENTER_METHOD_SIGNATURE;
     }
 

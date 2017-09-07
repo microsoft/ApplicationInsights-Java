@@ -176,6 +176,18 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     @Override
+    public void jedisMethodStarted(String name) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation != null) {
+                implementation.jedisMethodStarted(name);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    @Override
     public void methodStarted(String name) {
         try {
             AgentNotificationsHandler implementation = getImplementation();

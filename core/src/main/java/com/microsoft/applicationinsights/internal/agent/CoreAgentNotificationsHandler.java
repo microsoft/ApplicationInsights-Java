@@ -156,6 +156,16 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
+    public void jedisMethodStarted(String name) {
+        int index = name.lastIndexOf('#');
+        if (index != -1) {            
+            name = name.substring(0, index);
+        }
+
+        startMethod(InstrumentedClassType.Redis.toString(), name, new String[]{});
+    }
+
+    @Override
     public void methodStarted(String name) {
         int index = name.lastIndexOf('#');
         String classType;

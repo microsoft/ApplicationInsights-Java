@@ -86,11 +86,11 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
     protected void byteCodeForMethodExit(int opcode) {
 
         Object[] args = null;
-        String methodSignature = FINISH_METHOD_DEFAULT_SIGNATURE;
+        String methodSignature = getOnExitMethodDefaultSignature();
         switch (translateExitCode(opcode)) {
             case EXIT_WITH_EXCEPTION:
                 args = new Object[] { getMethodName(), duplicateTopStackToTempVariable(Type.getType(Throwable.class)) };
-                methodSignature = FINISH_METHOD_EXCEPTION_SIGNATURE;
+                methodSignature = getOnExitMethodExceptionSignature();
                 break;
 
             case EXIT_WITH_RETURN_VALUE:
@@ -103,7 +103,7 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
         }
 
         if (args != null) {
-            activateEnumMethod(ImplementationsCoordinator.class, FINISH_DETECT_METHOD_NAME, methodSignature, args);
+            activateEnumMethod(ImplementationsCoordinator.class, getOnExitMethodName(), methodSignature, args);
         }
     }
 
@@ -143,8 +143,28 @@ public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
         activateEnumMethod(
                 ImplementationsCoordinator.class,
-                START_DETECT_METHOD_NAME,
-                START_DETECT_METHOD_SIGNATURE,
+                getOnEnterMethodName(),
+                getOnEnterMethodSignature(),
                 getMethodName());
+    }
+
+    protected String getOnEnterMethodName() {
+        return START_DETECT_METHOD_NAME;
+    } 
+
+    protected String getOnEnterMethodSignature() {
+        return START_DETECT_METHOD_SIGNATURE;
+    }
+
+    protected String getOnExitMethodName() {
+        return FINISH_DETECT_METHOD_NAME;
+    }
+
+    protected String getOnExitMethodDefaultSignature() {
+        return FINISH_METHOD_DEFAULT_SIGNATURE;
+    }
+
+    protected String getOnExitMethodExceptionSignature() {
+        return FINISH_METHOD_EXCEPTION_SIGNATURE;
     }
 }
