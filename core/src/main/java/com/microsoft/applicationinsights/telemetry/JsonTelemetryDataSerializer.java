@@ -29,6 +29,7 @@ import java.util.*;
 
 import com.google.common.base.Strings;
 
+import com.microsoft.applicationinsights.common.SanitizationUtils;
 import com.microsoft.applicationinsights.internal.schemav2.*;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
@@ -273,8 +274,9 @@ public final class JsonTelemetryDataSerializer {
             {
                 out.write(String.valueOf(item));
             } else {
+                String sanitizedItem = SanitizationUtils.sanitizeStringForJSON(String.valueOf(item));
                 out.write(JSON_COMMA);
-                out.write(String.valueOf(item));
+                out.write(sanitizedItem);
                 out.write(JSON_COMMA);
             }
         }
