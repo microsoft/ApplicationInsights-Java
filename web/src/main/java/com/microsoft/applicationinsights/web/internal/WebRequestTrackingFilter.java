@@ -213,14 +213,6 @@ public final class WebRequestTrackingFilter implements Filter {
     public WebRequestTrackingFilter() {
     }
 
-    /**
-     * Parameterized constructor, used to set Application name explicitly
-     * @param applicationName
-     */
-    public WebRequestTrackingFilter(String applicationName) {
-        this.applicationName = applicationName;
-    }
-
     private synchronized void initialize(FilterConfig filterConfig) {
         try {
 
