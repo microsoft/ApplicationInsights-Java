@@ -183,7 +183,6 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
                 implementation.jedisMethodStarted(name);
             }
         } catch (Throwable t) {
-            t.printStackTrace();
         }
     }
 
