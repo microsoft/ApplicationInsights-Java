@@ -12,7 +12,7 @@ public class SanitizationUtilsTests {
         Assert.assertEquals(result, "{\\\"entityType\\\":\\\"CONTACTNAME\\\",\\\"contactField\\\":\\\"\\\",\\\"query\\\":\\\"zuck\\\",\\\"candidates\\\":[{\\\"id\\\":\\\"2\\\",\\\"name\\\":\\\"Andrew Zuck\\\",\\\"aliases\\\":[],\\\"phoneNumbers\\\":[{\\\"type\\\":\\\"MOBILENUMBER\\\",\\\"number\\\":\\\"+1 (555) 222-2222\\\"}],\\\"emailAddresses\\\"" +
                 ":[],\\\"streetAddresses\\\":[]}],\\\"scores\\\":{\\\"2\\\":2.327993297520463}}");
 
-        String resutl1 = SanitizationUtils.sanitizeStringForJSON("\'\f\b\f\n\n\t/\\");
-        Assert.assertEquals(resutl1, "\\\\\\'\\\\f\\\\b\\\\f\\\\n\\\\r\\\\t\\/\\\\\n");
+        String resutl1 = SanitizationUtils.sanitizeStringForJSON("\\'\\f\\b\\f\\n\\r\\t/\\");
+        Assert.assertEquals(resutl1, "\\\\\\'\\\\f\\\\b\\\\f\\\\n\\\\r\\\\t\\/\\\\");
     }
 }
