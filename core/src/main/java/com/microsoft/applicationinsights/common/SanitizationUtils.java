@@ -24,6 +24,9 @@ public final class SanitizationUtils {
             if( curr == '\"' ){
                 result.append("\\\"");
             }
+            else if (curr == '\'') {
+                result.append("\\\'");
+            }
             else if(curr == '\\'){
                 result.append("\\\\");
             }
