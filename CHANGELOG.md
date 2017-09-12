@@ -5,6 +5,8 @@
 - Method `sanitizeStringForJSON` takes string input and converts it to JSON friendly string.
 - Class `com.microsoft.applicationinsights.common.SanitizationUtils` has methods to sanitize string for JSON.
 - Fixed Request Telemetry Sending bug with new schema.
+- Fixed reliability issue with Jedis client dependency collector
+- Fixed Request Telemetry Sending bug with new schema
 - Schema updated to the latest version. Changes in internal namespace `core/src/main/java/com/microsoft/applicationinsights/internal/schemav2`.
 - Class `SendableData` in internal namespace deleted.
 - Class `com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry` takes generic class qualifier `Domain` instead of `SendableData`.
