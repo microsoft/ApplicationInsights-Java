@@ -97,6 +97,12 @@ public interface AgentNotificationsHandler {
      */
     void preparedStatementExecuteBatchMethodStarted(String classAndMethodNames, PreparedStatement statement, String sqlStatement, int batchCounter);
 
+     /**
+     * Called before methods in the Jedis client class are executed.
+     * @param classAndMethodNames The name of the class and method separated by '.'
+     */
+    void jedisMethodStarted(String classAndMethodNames);
+
     /**
      * A 'regular' method enter. Non HTTP/SQL method
      * @param classAndMethodNames The name of the class and method separated by '.'
