@@ -27,5 +27,6 @@ package com.microsoft.applicationinsights.agent.internal.coresync;
 public enum InstrumentedClassType {
     SQL,
     HTTP,
-    OTHER
+    OTHER,
+    Redis
 }

@@ -30,9 +30,12 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+
 /**
  * Created by gupele on 8/6/2015.
+ * @deprecated Replaced with JedisMethodVisitorV2
  */
+@Deprecated 
 final class JedisMethodVisitor extends DefaultMethodVisitor {
     private final static String FINISH_DETECT_METHOD_NAME = "methodFinished";
     private final static String FINISH_METHOD_DEFAULT_SIGNATURE = "(Ljava/lang/String;J[Ljava/lang/Object;Ljava/lang/Throwable;)V";

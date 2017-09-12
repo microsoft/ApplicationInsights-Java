@@ -46,13 +46,13 @@ public final class JedisClassDataProvider {
     public void add() {
         try {
             ClassInstrumentationData data =
-                    new ClassInstrumentationData(JEDIS_CLASS_NAME, InstrumentedClassType.OTHER)
+                    new ClassInstrumentationData(JEDIS_CLASS_NAME, InstrumentedClassType.Redis)
                             .setReportCaughtExceptions(false)
                             .setReportExecutionTime(true);
             MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
                 @Override
                 public MethodVisitor create(MethodInstrumentationDecision decision, int access, String desc, String owner, String methodName, MethodVisitor methodVisitor, ClassToMethodTransformationData additionalData) {
-                    return new JedisMethodVisitor(access, desc, JEDIS_CLASS_NAME, methodName, methodVisitor, additionalData);
+                    return new JedisMethodVisitorV2(access, desc, JEDIS_CLASS_NAME, methodName, methodVisitor, additionalData);
                 }
             };
             data.addAllMethods(false, true, methodVisitorFactory);

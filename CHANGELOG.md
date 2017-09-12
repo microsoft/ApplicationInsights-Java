@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Version 1.0.10
+- Fixed reliability issue with Jedis client dependency collector
 - Fixed Request Telemetry Sending bug with new schema
 - Schema updated to the latest version. Changes in internal namespace `core/src/main/java/com/microsoft/applicationinsights/internal/schemav2`.
 - Class `SendableData` in internal namespace deleted.
