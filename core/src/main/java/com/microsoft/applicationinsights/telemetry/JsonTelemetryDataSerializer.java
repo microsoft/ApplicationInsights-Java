@@ -276,7 +276,7 @@ public final class JsonTelemetryDataSerializer {
             } else {
                 String sanitizedItem = SanitizationUtils.sanitizeStringForJSON(String.valueOf(item));
                 out.write(JSON_COMMA);
-                out.write(sanitizedItem);
+                out.write(truncateValueToMaxLength(sanitizedItem));
                 out.write(JSON_COMMA);
             }
         }
@@ -297,9 +297,10 @@ public final class JsonTelemetryDataSerializer {
     }
 
     private void writeName(String name) throws IOException {
+        String sanitizedName = SanitizationUtils.sanitizeStringForJSON(name);
         out.write(separator);
         out.write(JSON_COMMA);
-        out.write(name);
+        out.write(truncateKeyToMaxLength(sanitizedName));
         out.write(JSON_COMMA);
         out.write(JSON_NAME_VALUE_SEPARATOR);
     }
@@ -348,5 +349,19 @@ public final class JsonTelemetryDataSerializer {
                     break;
             }
         }
+    }
+
+    private String truncateValueToMaxLength(String value) {
+        if (value.length() > 8192) {
+            return value.substring(0, 8192);
+        }
+        return value;
+    }
+
+    private String truncateKeyToMaxLength(String key) {
+        if (key.length() > 150) {
+            return key.substring(0, 150);
+        }
+        return key;
     }
 }

@@ -48,8 +48,12 @@ public final class SanitizationUtils {
             else if(curr == '\t'){
                 result.append("\\t");
             }
-            else {
+            else if (!Character.isISOControl(curr)){
                 result.append(curr);
+            }
+            else {
+                result.append("\\u");
+                result.append((String.format( "%04x", Integer.valueOf(curr))));
             }
         }
         return result.toString();
