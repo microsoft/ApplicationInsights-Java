@@ -21,17 +21,15 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.*;
-
-import com.google.common.base.Strings;
-
-import com.microsoft.applicationinsights.common.SanitizationUtils;
-import com.microsoft.applicationinsights.internal.schemav2.*;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
  * This class knows how to transform data that is relevant to {@link Telemetry} instances into JSON.
@@ -274,9 +272,10 @@ public final class JsonTelemetryDataSerializer {
             {
                 out.write(String.valueOf(item));
             } else {
-                String sanitizedItem = SanitizationUtils.sanitizeStringForJSON(String.valueOf(item));
+                String truncatedName = truncate(String.valueOf(item), 8192);
+                String sanitizedItem = SanitizationUtils.sanitizeStringForJSON(truncatedName, false);
                 out.write(JSON_COMMA);
-                out.write(truncateValueToMaxLength(sanitizedItem));
+                out.write(sanitizedItem);
                 out.write(JSON_COMMA);
             }
         }
@@ -297,10 +296,11 @@ public final class JsonTelemetryDataSerializer {
     }
 
     private void writeName(String name) throws IOException {
-        String sanitizedName = SanitizationUtils.sanitizeStringForJSON(name);
+        String truncatedString = truncate(name, 150);
+        String sanitizedName = SanitizationUtils.sanitizeStringForJSON(truncatedString, true);
         out.write(separator);
         out.write(JSON_COMMA);
-        out.write(truncateKeyToMaxLength(sanitizedName));
+        out.write(sanitizedName);
         out.write(JSON_COMMA);
         out.write(JSON_NAME_VALUE_SEPARATOR);
     }
@@ -351,17 +351,11 @@ public final class JsonTelemetryDataSerializer {
         }
     }
 
-    private String truncateValueToMaxLength(String value) {
-        if (value.length() > 8192) {
-            return value.substring(0, 8192);
+    private String truncate(String value, int len) {
+        if (value.length() > len) {
+            return value.substring(0, len);
         }
         return value;
     }
 
-    private String truncateKeyToMaxLength(String key) {
-        if (key.length() > 150) {
-            return key.substring(0, 150);
-        }
-        return key;
-    }
 }

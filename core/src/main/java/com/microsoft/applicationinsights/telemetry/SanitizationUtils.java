@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.common;
+package com.microsoft.applicationinsights.telemetry;
 
 import java.text.StringCharacterIterator;
 
@@ -8,7 +8,7 @@ import java.text.StringCharacterIterator;
  * This class provides utility functions to sanitize strings
  * for various formats. Currently it supports JSON sanitization
  */
-public final class SanitizationUtils {
+ final class SanitizationUtils {
 
     /**
      * This method appends escape characters to input String to prevent
@@ -16,11 +16,14 @@ public final class SanitizationUtils {
      * @param text
      * @return Sanitized String suitable for JSON
      */
-    public static String sanitizeStringForJSON(String text) {
+     static String sanitizeStringForJSON(String text, boolean isKey) {
 
         final StringBuilder result = new StringBuilder();
         StringCharacterIterator iterator = new StringCharacterIterator(text);
-        for (char curr = iterator.current(); curr != iterator.DONE; curr = iterator.next()) {
+
+        // allowing delta for the characters to be appended
+        int maxAllowedLength = isKey ? 148 : 8190;
+        for (char curr = iterator.current(); curr != iterator.DONE && result.length() < maxAllowedLength; curr = iterator.next()) {
             if( curr == '\"' ){
                 result.append("\\\"");
             }
@@ -52,8 +55,13 @@ public final class SanitizationUtils {
                 result.append(curr);
             }
             else {
-                result.append("\\u");
-                result.append((String.format( "%04x", Integer.valueOf(curr))));
+                if (result.length() + 7 < 8192) { // needs 7 more character space to be appended
+                    result.append("\\u");
+                    result.append((String.format( "%04x", Integer.valueOf(curr))));
+                }
+                else {
+                    break;
+                }
             }
         }
         return result.toString();

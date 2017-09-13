@@ -1,9 +1,10 @@
 # CHANGELOG
 
 ## Version 1.0.10
-- Fix issue of sending custom event.
+- Fixed Exceeded property length leads to lost event.
+- Fixed issue of sending custom event.
 - Method `sanitizeStringForJSON` takes string input and converts it to JSON friendly string.
-- Class `com.microsoft.applicationinsights.common.SanitizationUtils` has methods to sanitize string for JSON.
+- Class `com.microsoft.applicationinsights.telemetry.SanitizationUtils` has methods to sanitize string for JSON.
 - Fixed Request Telemetry Sending bug with new schema.
 - Fixed reliability issue with Jedis client dependency collector
 - Fixed Request Telemetry Sending bug with new schema
