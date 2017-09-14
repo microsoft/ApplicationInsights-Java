@@ -1,6 +1,9 @@
 # CHANGELOG
 
 ## Version 1.0.10
+- Fixed issue #403 (Exceeding property length invalidates custom event)
+- Fixed issue #401 (Custom key and property sanitized)
+- Fixed Request Telemetry Sending bug with new schema.
 - Fixed reliability issue with Jedis client dependency collector
 - Fixed Request Telemetry Sending bug with new schema
 - Schema updated to the latest version. Changes in internal namespace `core/src/main/java/com/microsoft/applicationinsights/internal/schemav2`.
