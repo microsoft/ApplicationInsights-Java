@@ -135,6 +135,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
             HttpResponse response = null;
             HttpPost request = null;
+            boolean shouldBackoff = false;
             try {
                 request = createTransmissionPostRequest(transmission);
                 httpClient.enhanceRequest(request);
@@ -160,32 +161,32 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 }
             } catch (ConnectionPoolTimeoutException e) {
                 InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
+                shouldBackoff = true;
             } catch (SocketException e) {
                 InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
-                // backoff retry if no connection is found
-                if (e instanceof ConnectException) {
-                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
-                }
+                shouldBackoff = true;
             } catch (UnknownHostException e) {
                 InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
-                // backoff retry if host unknown
-                transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+                shouldBackoff = true;
             } catch (IOException ioe) {
                 InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
-                // backoff retry if no connection is found
-                if (ioe instanceof ConnectTimeoutException) {
-                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
-                }
+                shouldBackoff = true;
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
+                shouldBackoff = true;
             } catch (Throwable t) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
+                shouldBackoff = true;
             }
             finally {
                 if (request != null) {
                     request.releaseConnection();
                 }
                 httpClient.dispose(response);
+                // backoff before trying again
+                if (shouldBackoff) {
+                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+                }
             }
         }
 
