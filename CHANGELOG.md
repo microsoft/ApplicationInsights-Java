@@ -11,6 +11,7 @@
 - Obsolete methods of `RequestTelemetry`: `getHttpMethod`, `setHttpMethod`.
 - Add option to configure instrumentation key via `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable for consistency with other SDKs.
 - Fix the issue where `track(...)` of `TelemetryClient` class was overwriting the provided telemetry timestamp. 
+- Changed the policy on failed sent requests to delay retrying for 5 minutes instead of immediately retrying.
 
 ## Version 1.0.9
 - Fix the issue of infinite retry and connection drain on certificate error by updating the version of http client packaged with the SDK.
