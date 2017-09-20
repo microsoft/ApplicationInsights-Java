@@ -1,6 +1,10 @@
 # CHANGELOG
 
 ## Version 1.0.10
+- `track()` method of 'com.microsoft.applicationinsights.TelemetryClient' is now modified. No longer performing pre-sanitization
+- All Sanitization will now occur in `com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer` class. 
+- Method `sanitize` of interface `com.microsoft.applicationinsights.telemetry.Telemetry` is now obsolete.  
+- The auto generated schema classes now have writer method with limits according to endpoint.
 - Fixed issue #403 (Exceeding property length invalidates custom event)
 - Fixed issue #401 (Custom key and property sanitized)
 - Fixed Request Telemetry Sending bug with new schema.
