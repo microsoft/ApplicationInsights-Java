@@ -98,9 +98,9 @@ public final class PerformanceCounterData extends Domain {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
 
         writer.write("ver", ver);
-        writer.write("categoryName", categoryName);
-        writer.write("counterName", counterName);
-        writer.write("instanceName", instanceName);
+        writer.write("categoryName", categoryName, 1000, false);
+        writer.write("counterName", counterName, 1000, false);
+        writer.write("instanceName", instanceName, 1000, false);
         writer.write("value", value);
         writer.write("properties", properties);
     }

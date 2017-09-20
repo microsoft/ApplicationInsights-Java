@@ -31,6 +31,10 @@ import org.apache.http.annotation.Obsolete;
 
 /**
  * Created by gupele on 2/19/2015.
+ *
+ * Our end point does not accept this any more. The usage of this class and any
+ * of its associated methods is deprecated. Our end point no longer accepts
+ * SessionStateData
  */
 @Obsolete
 public final class SessionStateData extends Domain {
@@ -59,6 +63,6 @@ public final class SessionStateData extends Domain {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
 
         writer.write("ver", ver);
-        writer.write("state", state.toString());
+        writer.write("state", state.toString(), 1000, false);
     }
 }
