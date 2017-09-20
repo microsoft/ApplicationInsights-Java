@@ -32,10 +32,14 @@ import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Data contract class User.
+ * This class is now obsolete and will be removed in coming versions. Please
+ * avoid taking any dependencies on this class.
  */
+@Obsolete
 public class User
     implements JsonSerializable
 {
@@ -43,22 +47,17 @@ public class User
      * Backing field for property AccountId.
      */
     private String accountId;
-    
-    /**
-     * Backing field for property UserAgent.
-     */
-    private String userAgent;
-    
+
     /**
      * Backing field for property Id.
      */
     private String id;
-    
+
     /**
      * Backing field for property AuthUserId.
      */
     private String authUserId;
-    
+
     /**
      * Initializes a new instance of the User class.
      */
@@ -66,63 +65,49 @@ public class User
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the AccountId property.
      */
     public String getAccountId() {
         return this.accountId;
     }
-    
+
     /**
      * Sets the AccountId property.
      */
     public void setAccountId(String value) {
         this.accountId = value;
     }
-    
-    /**
-     * Gets the UserAgent property.
-     */
-    public String getUserAgent() {
-        return this.userAgent;
-    }
-    
-    /**
-     * Sets the UserAgent property.
-     */
-    public void setUserAgent(String value) {
-        this.userAgent = value;
-    }
-    
+
     /**
      * Gets the Id property.
      */
     public String getId() {
         return this.id;
     }
-    
+
     /**
      * Sets the Id property.
      */
     public void setId(String value) {
         this.id = value;
     }
-    
+
     /**
      * Gets the AuthUserId property.
      */
     public String getAuthUserId() {
         return this.authUserId;
     }
-    
+
     /**
      * Sets the AuthUserId property.
      */
     public void setAuthUserId(String value) {
         this.authUserId = value;
     }
-    
+
 
     /**
      * Adds all members of this class to a hashmap
@@ -133,9 +118,6 @@ public class User
         if (this.accountId != null) {
             map.put("accountId", this.accountId);
         }
-        if (this.userAgent != null) {
-            map.put("userAgent", this.userAgent);
-        }
         if (this.id != null) {
             map.put("id", this.id);
         }
@@ -143,7 +125,7 @@ public class User
             map.put("authUserId", this.authUserId);
         }
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -163,15 +145,14 @@ public class User
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
         writer.write("accountId", accountId);
-        writer.write("userAgent", userAgent);
         writer.write("id", id);
         writer.write("authUserId", authUserId);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

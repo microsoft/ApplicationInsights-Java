@@ -32,10 +32,14 @@ import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Data contract class Internal.
+ * This class is now obsolete and will be removed in coming versions. Please
+ * avoid taking any dependencies on this class.
  */
+@Obsolete
 public class Internal
     implements JsonSerializable
 {
