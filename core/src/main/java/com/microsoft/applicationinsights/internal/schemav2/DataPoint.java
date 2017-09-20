@@ -198,7 +198,7 @@ public class DataPoint
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
-        writer.write("name", name);
+        writer.write("name", name, 1024, true);
         
         writer.write("kind", kind);
         writer.write("value", value);

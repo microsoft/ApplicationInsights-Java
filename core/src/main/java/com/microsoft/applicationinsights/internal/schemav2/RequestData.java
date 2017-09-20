@@ -252,17 +252,17 @@ public class RequestData extends Domain
         super.serializeContent(writer);
         writer.write("ver", ver);
         
-        writer.write("id", id);
+        writer.write("id", id, 128, true);
         
         writer.write("duration", duration);
         
-        writer.write("responseCode", responseCode);
+        writer.write("responseCode", responseCode, 1024, true);
         
         writer.write("success", success);
         
-        writer.write("source", source);
-        writer.write("name", name);
-        writer.write("url", url);
+        writer.write("source", source, 1024, false);
+        writer.write("name", name, 1024, false);
+        writer.write("url", url, 2048, false);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

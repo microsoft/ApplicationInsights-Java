@@ -182,7 +182,7 @@ public class ExceptionData extends Domain
         writer.write("exceptions", exceptions);
         
         writer.write("severityLevel", severityLevel);
-        writer.write("problemId", problemId);
+        writer.write("problemId", problemId, 1024, false);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

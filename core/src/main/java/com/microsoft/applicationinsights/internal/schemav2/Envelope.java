@@ -140,7 +140,7 @@ public class Envelope
      * Sets the SampleRate property.
      */
     public void setSampleRate(double value) {
-            this.sampleRate = value;
+        this.sampleRate = value;
     }
     
     /**
@@ -221,14 +221,14 @@ public class Envelope
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
         writer.write("ver", ver);
-        writer.write("name", name);
+        writer.write("name", name, 1024, true);
         
-        writer.write("time", time);
+        writer.write("time", time, 64, true);
         
         if (this.sampleRate > 0.0d)
         writer.write("sampleRate", sampleRate);
-        writer.write("seq", seq);
-        writer.write("iKey", iKey);
+        writer.write("seq", seq, 64, false);
+        writer.write("iKey", iKey, 40, false);
         writer.write("tags", tags);
         writer.write("data", data);
     }

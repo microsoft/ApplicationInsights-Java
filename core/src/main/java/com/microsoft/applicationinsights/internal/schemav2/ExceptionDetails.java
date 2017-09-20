@@ -203,12 +203,12 @@ public class ExceptionDetails
     {
         writer.write("id", id);
         writer.write("outerId", outerId);
-        writer.write("typeName", typeName);
+        writer.write("typeName", typeName, 1024, true);
         
-        writer.write("message", message);
+        writer.write("message", message, 32768, true);
         
         writer.write("hasFullStack", hasFullStack);
-        writer.write("stack", stack);
+        writer.write("stack", stack, 32768, false);
         writer.write("parsedStack", parsedStack);
     }
     
