@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Telemetry type used to track metrics sent to Azure Application Insights.
@@ -176,6 +177,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         metric.setStdDev(value); updateKind();
     }
 
+    @Obsolete
     @Override
     protected void additionalSanitize() {
         metric.setName(Sanitizer.sanitizeName(metric.getName()));

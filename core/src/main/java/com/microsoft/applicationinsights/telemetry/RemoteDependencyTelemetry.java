@@ -310,6 +310,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     @Override
+    @Obsolete
     protected void additionalSanitize() {
         data.setName(Sanitizer.sanitizeName(data.getName()));
     }

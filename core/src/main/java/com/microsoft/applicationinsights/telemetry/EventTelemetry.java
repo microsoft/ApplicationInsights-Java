@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.schemav2.EventData;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Telemetry type used to track custom events in Azure Application Insights. 
@@ -102,6 +103,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
      * Sanitize name and metrics.
      */
     @Override
+    @Obsolete
     protected void additionalSanitize() {
         data.setName(Sanitizer.sanitizeName(data.getName()));
         Sanitizer.sanitizeMeasurements(this.getMetrics());

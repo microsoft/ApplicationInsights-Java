@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.http.annotation.Obsolete;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -125,6 +126,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      * Makes sure the data to send is sanitized from bad chars, proper length etc.
      */
     @Override
+    @Obsolete
     public void sanitize() {
         Sanitizer.sanitizeProperties(this.getProperties());
         additionalSanitize();
@@ -162,6 +164,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     /**
      * Concrete classes should implement this method
      */
+    @Obsolete
     protected abstract void additionalSanitize();
 
     /**

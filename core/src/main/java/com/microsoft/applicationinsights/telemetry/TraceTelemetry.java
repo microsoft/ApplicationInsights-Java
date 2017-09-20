@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Telemetry type used for log messages.
@@ -86,6 +87,7 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     }
 
     @Override
+    @Obsolete
     protected void additionalSanitize() {
         data.setMessage(Sanitizer.sanitizeMessage(data.getMessage()));
     }

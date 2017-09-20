@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import org.apache.http.annotation.Obsolete;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
@@ -76,6 +78,7 @@ public interface Telemetry extends JsonSerializable
     /**
      * Sanitizes the properties of the telemetry item based on DP constraints.
      */
+    @Obsolete
     void sanitize();
 
     /**
