@@ -202,7 +202,7 @@ public final class TelemetryClientTests {
         Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
 
         Mockito.verify(mockTelemetry, Mockito.times(1)).setTimestamp(any(Date.class));
-        Mockito.verify(mockTelemetry, Mockito.times(1)).sanitize();
+        //Mockito.verify(mockTelemetry, Mockito.times(1)).sanitize();
     }
 
     @Test

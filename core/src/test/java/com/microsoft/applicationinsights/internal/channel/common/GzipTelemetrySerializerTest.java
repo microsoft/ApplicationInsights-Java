@@ -114,7 +114,7 @@ public final class GzipTelemetrySerializerTest {
         @Override
         public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
             writer.write("ver", 1);
-            writer.write("telemetryName", telemetryName);
+            writer.write("telemetryName", telemetryName, 150, true);
             writer.write("properties", this.getProperties());
         }
 
