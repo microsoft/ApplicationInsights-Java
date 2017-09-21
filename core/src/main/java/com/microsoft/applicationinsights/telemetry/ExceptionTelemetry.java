@@ -140,7 +140,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         this.samplingPercentage = samplingPercentage;
     }
 
-    @Obsolete
+    @Deprecated
     @Override
     protected void additionalSanitize() {
         Sanitizer.sanitizeMeasurements(this.getMetrics());

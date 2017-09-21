@@ -104,12 +104,4 @@ public final class BaseTelemetryTest {
         assertEquals(telemetry.getTimestamp(), date);
     }
 
-//    @Test
-//    public void testSanitize() {
-//        StubTelemetry telemetry = new StubTelemetry("1");
-//
-//        telemetry.sanitize();
-//
-//        assertEquals(telemetry.numberOfCallsToAdditionalSanitize, 1);
-//    }
 }

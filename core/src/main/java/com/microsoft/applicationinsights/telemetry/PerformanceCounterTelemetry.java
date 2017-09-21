@@ -135,7 +135,7 @@ public final class PerformanceCounterTelemetry extends BaseTelemetry<Performance
     }
 
     @Override
-    @Obsolete
+    @Deprecated
     protected void additionalSanitize() {
 
     }

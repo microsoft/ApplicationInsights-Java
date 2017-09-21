@@ -258,9 +258,6 @@ public class JsonTelemetryDataSerializerTest {
         assertEquals(bac.l2, stubClass.l2);
         assertEquals(bac.list1, stubClass.list1);
         assertEquals(bac.m1, stubClass.m1);
-//        System.out.println(str);
     }
-
-
 
 }

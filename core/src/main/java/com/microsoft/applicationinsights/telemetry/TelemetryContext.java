@@ -167,11 +167,6 @@ public final class TelemetryContext {
      * @param instrumentationKey The instrumentation key
      */
     public void setInstrumentationKey(String instrumentationKey) {
-        //No longer checking for UUID
-//        if (!Sanitizer.isUUID(instrumentationKey)) {
-//            InternalLogger.INSTANCE.trace("Telemetry Configuration: illegal instrumentation key: %s", instrumentationKey);
-//        }
-
         this.instrumentationKey = instrumentationKey;
     }
 

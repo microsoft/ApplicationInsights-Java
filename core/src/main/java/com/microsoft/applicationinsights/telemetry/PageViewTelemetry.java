@@ -138,7 +138,7 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     }
 
     @Override
-    @Obsolete
+    @Deprecated
     protected void additionalSanitize() {
         data.setName(Sanitizer.sanitizeName(data.getName()));
         Sanitizer.sanitizeMeasurements(this.getMetrics());

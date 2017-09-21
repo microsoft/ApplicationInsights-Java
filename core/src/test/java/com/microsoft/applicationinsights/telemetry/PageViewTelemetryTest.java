@@ -31,8 +31,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class PageViewTelemetryTest {
-    private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
-
     @Test
     public void testEmptyCtor() {
         PageViewTelemetry telemetry = new PageViewTelemetry();

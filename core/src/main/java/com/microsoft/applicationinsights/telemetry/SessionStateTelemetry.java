@@ -77,7 +77,7 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
     }
 
     @Obsolete
-    @Override
+    @Deprecated
     protected void additionalSanitize() {
     }
 

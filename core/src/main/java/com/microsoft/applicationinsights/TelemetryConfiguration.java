@@ -186,10 +186,6 @@ public final class TelemetryConfiguration {
      * @throws IllegalArgumentException when the new value is null or empty
      */
     public void setInstrumentationKey(String key) {
-        //No longer checking for UUID
-//        if (!Sanitizer.isUUID(key)) {
-//            InternalLogger.INSTANCE.trace("Telemetry Configuration: instrumentation key '%s' is not in UUID format", key);
-//        }
 
         // A non null, non empty instrumentation key is a must
         if (Strings.isNullOrEmpty(key)) {

@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.telemetry;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import org.apache.http.annotation.Obsolete;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -180,7 +179,15 @@ public final class JsonTelemetryDataSerializer {
         separator = JSON_SEPARATOR;
     }
 
-    @Obsolete
+    /**
+     * This method is deprecated and is kept because there is still some dependency on it
+     * which will be removed in coming versions
+     * @deprecated
+     * @param name
+     * @param value
+     * @throws IOException
+     */
+    @Deprecated
     public void write(String name, String value) throws IOException {
         //This method is practically not used anywhere .Will be removed with all other
         //obsolete classes in next major release

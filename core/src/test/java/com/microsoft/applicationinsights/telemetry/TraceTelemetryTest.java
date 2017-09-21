@@ -49,14 +49,6 @@ public final class TraceTelemetryTest {
         assertEquals(telemetry.getMessage(), "MockMessage1");
     }
 
-//    @Test
-//    public void testSanitize() {
-//        TraceTelemetry telemetry = new TraceTelemetry(TelemetryTestsUtils.createString(Sanitizer.MAX_NAME_LENGTH));
-//
-//        telemetry.sanitize();
-//        assertEquals(telemetry.getMessage().length(), Sanitizer.MAX_NAME_LENGTH);
-//    }
-
     @Test
     public void testSetSeverityLevel() {
         testSeverityLevel(SeverityLevel.Error);

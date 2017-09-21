@@ -103,11 +103,4 @@ public final class MetricTelemetryTest {
         assertEquals(telemetry.getStandardDeviation(), new Double(1));
     }
 
-//    @Test
-//    public void testSanitizeLongName() throws Exception {
-//        MetricTelemetry telemetry = new MetricTelemetry(TelemetryTestsUtils.createString(Sanitizer.MAX_NAME_LENGTH), 120.1);
-//
-//        telemetry.sanitize();
-//        assertEquals(telemetry.getName().length(), Sanitizer.MAX_NAME_LENGTH);
-//    }
 }
