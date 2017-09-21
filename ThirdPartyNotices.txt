@@ -1,6 +1,9 @@
 ﻿THIRD-PARTY SOFTWARE NOTICES AND INFORMATION
 Do Not Translate or Localize
 
+Third Party Programs: The software may include third party programs that Microsoft, not the third party,licenses to you under this agreement.
+Notices, if any, for the third party programs are included for your information only.
+
 Microsoft Application Insights Java Software Development Kit consists of material from the project(s) listed below (collectively, "Distributed Code"). Microsoft Corporation ("Microsoft") is not the original author of some of the Distributed Code. The original copyright notices and licenses, under which Microsoft received such Distributed Code, are set out below.  This Distributed Code are licensed to you under their original license terms set forth below.  Microsoft reserves all other rights not expressly granted under these terms, whether by implication, estoppel or otherwise. 
 
 1.	Apache Commons-codec version 1.9 (http://commons.apache.org/proper/commons-codec/download_codec.cgi)
