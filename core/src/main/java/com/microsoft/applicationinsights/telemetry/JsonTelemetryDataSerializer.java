@@ -193,15 +193,22 @@ public final class JsonTelemetryDataSerializer {
         //obsolete classes in next major release
     }
 
-    public void write(String name, String value, int len, boolean isReq) throws IOException {
-        if (value == null && !isReq) {
+    public void write(String name, String value, int len) throws IOException {
+        if (value == null) {
             return;
         }
+        writeToJson(name, value, len);
+    }
 
+    public void writeRequired(String name, String value, int len) throws IOException{
         //If field is required and not present set default value
-        if (value == null && isReq) {
+        if (value == null) {
             value = "DEFAULT " + name;
         }
+        writeToJson(name, value, len);
+    }
+
+    private void writeToJson(String name, String value, int len) throws IOException {
 
         writeName(name);
         out.write(JSON_COMMA);

@@ -92,7 +92,7 @@ public class PageViewData extends EventData
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
         super.serializeContent(writer);
-        writer.write("url", url, 2048, false);
+        writer.write("url", url, 2048);
         writer.write("duration", duration);
     }
     

@@ -63,6 +63,6 @@ public final class SessionStateData extends Domain {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
 
         writer.write("ver", ver);
-        writer.write("state", state.toString(), 1000, false);
+        writer.write("state", state.toString(), 1000);
     }
 }

@@ -137,9 +137,7 @@ public class EventData extends Domain
     {
         super.serializeContent(writer);
         writer.write("ver", ver);
-        
-        writer.write("name", name, 512, true);
-        
+        writer.writeRequired("name", name, 512);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

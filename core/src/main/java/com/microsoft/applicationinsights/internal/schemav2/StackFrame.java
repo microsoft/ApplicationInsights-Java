@@ -162,10 +162,10 @@ public class StackFrame
     {
         writer.write("level", level);
         
-        writer.write("method", method, 1024, true);
+        writer.writeRequired("method", method, 1024);
         
-        writer.write("assembly", assembly, 1024, false);
-        writer.write("fileName", fileName, 1024, false);
+        writer.write("assembly", assembly, 1024);
+        writer.write("fileName", fileName, 1024);
         writer.write("line", line);
     }
     

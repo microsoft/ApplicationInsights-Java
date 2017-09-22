@@ -178,11 +178,9 @@ public class ExceptionData extends Domain
     {
         super.serializeContent(writer);
         writer.write("ver", ver);
-        
         writer.write("exceptions", exceptions);
-        
         writer.write("severityLevel", severityLevel);
-        writer.write("problemId", problemId, 1024, false);
+        writer.write("problemId", problemId, 1024);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

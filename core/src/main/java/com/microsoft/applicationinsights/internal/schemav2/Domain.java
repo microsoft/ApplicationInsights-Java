@@ -32,12 +32,10 @@ import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.google.common.base.Preconditions;
-import org.apache.http.annotation.Obsolete;
 
 /**
  * Data contract class Domain.
  */
-@Obsolete
 public class Domain
     implements JsonSerializable
 {

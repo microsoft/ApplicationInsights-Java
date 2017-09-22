@@ -270,17 +270,14 @@ public class RemoteDependencyData extends Domain
     {
         super.serializeContent(writer);
         writer.write("ver", ver);
-        
-        writer.write("name", name, 1024, true);
-        
-        writer.write("id", id, 128, false);
-        writer.write("resultCode", resultCode, 1024, false);
+        writer.writeRequired("name", name, 1024);
+        writer.write("id", id, 128);
+        writer.write("resultCode", resultCode, 1024);
         writer.write("duration", duration);
-        
         writer.write("success", success);
-        writer.write("data", data, 8192, false);
-        writer.write("type", type, 1024, false);
-        writer.write("target", target, 1024, false);
+        writer.write("data", data, 8192);
+        writer.write("type", type, 1024);
+        writer.write("target", target, 1024);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

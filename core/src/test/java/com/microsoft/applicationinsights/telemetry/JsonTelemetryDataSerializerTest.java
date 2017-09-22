@@ -43,8 +43,8 @@ public class JsonTelemetryDataSerializerTest {
 
         @Override
         public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
-            serializer.write("s1", s1, 100, true);
-            serializer.write("s2", s2, 15, false);
+            serializer.writeRequired("s1", s1, 100);
+            serializer.write("s2", s2, 15);
         }
 
         public String getS1() {
@@ -156,10 +156,10 @@ public class JsonTelemetryDataSerializerTest {
         public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
             serializer.write("i1", i1);
             serializer.write("i2", i2);
-            serializer.write("s1", s1, 10, true);
+            serializer.writeRequired("s1", s1, 10);
             serializer.write("l1", l1);
             serializer.write("l2", l2);
-            serializer.write("s2", s2, 15, false);
+            serializer.write("s2", s2, 15);
             serializer.write("m1", m1);
             serializer.write("list1", list1);
         }

@@ -134,9 +134,7 @@ public class MessageData extends Domain
     {
         super.serializeContent(writer);
         writer.write("ver", ver);
-        
-        writer.write("message", message, 32768, true);
-        
+        writer.writeRequired("message", message, 32768);
         writer.write("severityLevel", severityLevel);
         writer.write("properties", properties);
     }

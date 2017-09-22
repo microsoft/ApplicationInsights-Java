@@ -232,17 +232,12 @@ public class AvailabilityData extends Domain
     {
         super.serializeContent(writer);
         writer.write("ver", ver);
-        
-        writer.write("id", id, 64, true);
-        
-        writer.write("name", name, 1024, true);
-        
+        writer.writeRequired("id", id, 64);
+        writer.writeRequired("name", name, 1024);
         writer.write("duration", duration);
-        
         writer.write("success", success);
-        
-        writer.write("runLocation", runLocation, 1024, false);
-        writer.write("message", message, 8192, false);
+        writer.write("runLocation", runLocation, 1024);
+        writer.write("message", message, 8192);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

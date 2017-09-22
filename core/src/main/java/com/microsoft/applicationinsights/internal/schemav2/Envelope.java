@@ -221,14 +221,13 @@ public class Envelope
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
         writer.write("ver", ver);
-        writer.write("name", name, 1024, true);
-        
-        writer.write("time", time, 64, true);
-        
-        if (this.sampleRate > 0.0d)
-        writer.write("sampleRate", sampleRate);
-        writer.write("seq", seq, 64, false);
-        writer.write("iKey", iKey, 40, false);
+        writer.writeRequired("name", name, 1024);
+        writer.writeRequired("time", time, 64);
+        if (this.sampleRate > 0.0d) {
+            writer.write("sampleRate", sampleRate);
+        }
+        writer.write("seq", seq, 64);
+        writer.write("iKey", iKey, 40);
         writer.write("tags", tags);
         writer.write("data", data);
     }
