@@ -29,6 +29,12 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.lang.management.OperatingSystemMXBean;
+
+import javax.management.Attribute;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 
 /**
  * Created by gupele on 12/12/2016.
@@ -39,7 +45,7 @@ public final class CpuPerformanceCounterCalculator {
     private long prevUpTime, prevProcessCpuTime;
 
     public CpuPerformanceCounterCalculator() {
-        com.sun.management.OperatingSystemMXBean operatingSystemMXBean = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
         numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
     }
 
@@ -47,11 +53,9 @@ public final class CpuPerformanceCounterCalculator {
         double processCpuUsage;
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-            com.sun.management.OperatingSystemMXBean operatingSystemMXBean =
-                    (com.sun.management.OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
 
             long upTime = runtimeMXBean.getUptime();
-            long processCpuTime = operatingSystemMXBean.getProcessCpuTime();
+            long processCpuTime = getProcessCpuTime();
 
             if (prevUpTime > 0L && upTime > prevUpTime) {
                 long elapsedCpu = processCpuTime - prevProcessCpuTime;
@@ -67,5 +71,12 @@ public final class CpuPerformanceCounterCalculator {
         }
 
         return processCpuUsage;
+    }
+
+    private long getProcessCpuTime() throws Exception {
+        MBeanServer bsvr = ManagementFactory.getPlatformMBeanServer();
+        ObjectName oname = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
+        Attribute cpuTimeAttrib = (Attribute) bsvr.getAttribute(oname, "ProcessCpuTime");
+        return (Long)cpuTimeAttrib.getValue();
     }
 }
