@@ -234,6 +234,35 @@ public class JsonTelemetryDataSerializerTest {
         assertEquals(recoveryMap.get("s2"), "0x0021\t");
 
     }
+
+    @Test
+    public void testEmptyAndDefaultSanitization() throws IOException {
+        TestClassWithStrings testClassWithStrings = new TestClassWithStrings();
+        testClassWithStrings.setS1("");
+        StringWriter stringWriter = new StringWriter();
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        testClassWithStrings.serialize(tested);
+        tested.close();
+        String str = stringWriter.toString();
+        Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
+        assertEquals(recoveryMap.get("s1"), "DEFAULT s1");
+        assertEquals(recoveryMap.get("s2"), null);
+    }
+
+    @Test
+    public void testWriteNotRequiredMethodWithEmptyValue() throws IOException {
+        TestClassWithStrings testClassWithStrings = new TestClassWithStrings();
+        testClassWithStrings.setS2("");
+        StringWriter stringWriter = new StringWriter();
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        testClassWithStrings.serialize(tested);
+        tested.close();
+        String str = stringWriter.toString();
+        Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
+        assertEquals(recoveryMap.get("s1"), "DEFAULT s1");
+        assertEquals(recoveryMap.get("s2"), null);
+    }
+
     @Test
     public void test() throws IOException {
         StubClass stubClass = new StubClass();

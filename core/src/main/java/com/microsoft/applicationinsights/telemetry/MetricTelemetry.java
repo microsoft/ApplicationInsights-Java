@@ -21,14 +21,11 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
-
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
-
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.apache.http.annotation.Obsolete;
 
 /**
  * Telemetry type used to track metrics sent to Azure Application Insights.

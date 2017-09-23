@@ -21,21 +21,18 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.context.ComponentContext;
 import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
+import com.microsoft.applicationinsights.extensibility.context.InternalContext;
+import com.microsoft.applicationinsights.extensibility.context.LocationContext;
+import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
-import com.microsoft.applicationinsights.extensibility.context.OperationContext;
-import com.microsoft.applicationinsights.extensibility.context.LocationContext;
-import com.microsoft.applicationinsights.extensibility.context.InternalContext;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Represents a context for sending telemetry to the Application Insights service.

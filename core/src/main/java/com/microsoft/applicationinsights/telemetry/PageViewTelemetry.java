@@ -21,12 +21,11 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.net.URI;
-import java.util.concurrent.ConcurrentMap;
-
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.apache.http.annotation.Obsolete;
+
+import java.net.URI;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Telemetry type used to track page views.

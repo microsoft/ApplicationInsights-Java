@@ -21,14 +21,11 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.util.concurrent.ConcurrentMap;
-
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.EventData;
-
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.apache.http.annotation.Obsolete;
+
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Telemetry type used to track custom events in Azure Application Insights. 

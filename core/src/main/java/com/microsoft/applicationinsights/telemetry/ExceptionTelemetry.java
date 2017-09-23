@@ -96,19 +96,21 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     /**
+     * @deprecated
      * Gets the value indicated where the exception was handled.
      * @return The value indicating the exception
      */
-    @Obsolete
+    @Deprecated
     public ExceptionHandledAt getExceptionHandledAt() {
         return ExceptionHandledAt.Unhandled;
     }
 
     /**
+     * @deprecated
      * Sets the value indicated where the exception was handled.
      * @param value The value indicating the exception
      */
-    @Obsolete
+    @Deprecated
     public void setExceptionHandledAt(ExceptionHandledAt value) {
 
     }

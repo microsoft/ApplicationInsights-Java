@@ -21,20 +21,16 @@
 
 package com.microsoft.applicationinsights;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
-import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates the global telemetry configuration typically loaded from the ApplicationInsights.xml file.

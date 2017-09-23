@@ -21,19 +21,18 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
+import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-
-import com.google.common.base.Preconditions;
-import org.apache.http.annotation.Obsolete;
-
 /**
+ * @deprecated
  * Created by gupele on 3/1/2015.
  */
-@Obsolete
+@Deprecated
 public final class PerformanceCounterData extends Domain {
     /**
      * Envelope Name for this telemetry.

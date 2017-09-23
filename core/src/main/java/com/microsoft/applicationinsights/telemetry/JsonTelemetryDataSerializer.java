@@ -30,7 +30,11 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.StringCharacterIterator;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class knows how to transform data that is relevant to {@link Telemetry} instances into JSON.
@@ -194,7 +198,7 @@ public final class JsonTelemetryDataSerializer {
     }
 
     public void write(String name, String value, int len) throws IOException {
-        if (value == null) {
+        if (value == null || value.equals("")) {
             return;
         }
         writeToJson(name, value, len);
@@ -202,7 +206,7 @@ public final class JsonTelemetryDataSerializer {
 
     public void writeRequired(String name, String value, int len) throws IOException{
         //If field is required and not present set default value
-        if (value == null) {
+        if (value == null || value.equals("")) {
             value = "DEFAULT " + name;
         }
         writeToJson(name, value, len);

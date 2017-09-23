@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import org.apache.http.annotation.Obsolete;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
