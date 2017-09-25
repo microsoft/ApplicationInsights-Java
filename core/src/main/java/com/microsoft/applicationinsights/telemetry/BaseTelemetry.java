@@ -21,18 +21,17 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Superclass for all telemetry data classes.
@@ -122,9 +121,11 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     }
 
     /**
+     * @deprecated
      * Makes sure the data to send is sanitized from bad chars, proper length etc.
      */
     @Override
+    @Deprecated
     public void sanitize() {
         Sanitizer.sanitizeProperties(this.getProperties());
         additionalSanitize();
@@ -162,6 +163,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     /**
      * Concrete classes should implement this method
      */
+    @Deprecated
     protected abstract void additionalSanitize();
 
     /**

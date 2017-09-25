@@ -86,6 +86,7 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     }
 
     @Override
+    @Deprecated
     protected void additionalSanitize() {
         data.setMessage(Sanitizer.sanitizeMessage(data.getMessage()));
     }

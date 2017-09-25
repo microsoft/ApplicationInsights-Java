@@ -21,13 +21,11 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.util.concurrent.ConcurrentMap;
-
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.EventData;
-
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Telemetry type used to track custom events in Azure Application Insights. 
@@ -99,9 +97,11 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     }
 
     /**
+     * @deprecated
      * Sanitize name and metrics.
      */
     @Override
+    @Deprecated
     protected void additionalSanitize() {
         data.setName(Sanitizer.sanitizeName(data.getName()));
         Sanitizer.sanitizeMeasurements(this.getMetrics());

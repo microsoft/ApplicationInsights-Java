@@ -22,24 +22,33 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import java.net.URI;
+import java.text.StringCharacterIterator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import com.google.common.base.Strings;
+import org.apache.http.annotation.Obsolete;
 
 /**
  * Created by gupele on 1/7/2015.
+ *
+ * Most of the methods of this class are now obsolete except URL methods which will
+ * be moved soon.
  */
 public final class Sanitizer {
     public final static int MAX_MAP_NAME_LENGTH = 150;
-    public final static int MAX_VALUE_LENGTH = 1024;
+
+    // Schema V2 allows max length to be 8192
+    public final static int MAX_VALUE_LENGTH = 8192;
+
     public final static int MAX_NAME_LENGTH = 1024;
     public final static int MAX_MESSAGE_LENGTH = 32768;
     public final static int MAX_URL_LENGTH = 2048;
 
     private final static String INVALID_NAME_CHARACTERS = "[^0-9a-zA-Z-._()\\/ ]";
 
+    @Obsolete
     public static void sanitizeProperties(Map<String, String> map) {
         if (map != null) {
             HashMap<String, String> tempMap = new HashMap<String, String>(map.size());
@@ -55,6 +64,7 @@ public final class Sanitizer {
         }
     }
 
+    @Obsolete
     public static void sanitizeMeasurements(Map<String, Double> map) {
         if (map != null) {
             HashMap<String, Double> tempMap = new HashMap<String, Double>(map.size());
@@ -90,18 +100,24 @@ public final class Sanitizer {
         return null;
     }
 
+    @Obsolete
     public static String sanitizeValue(String value) {
-        return trimAndTruncate(value, MAX_VALUE_LENGTH);
+        String truncatedString = trimAndTruncate(value, MAX_VALUE_LENGTH);
+        String sanitizedString = sanitizeStringForJSON(truncatedString, MAX_VALUE_LENGTH);
+        return sanitizedString;
     }
 
+    @Obsolete
     public static String sanitizeName(String name) {
         return trimAndTruncate(name, MAX_NAME_LENGTH);
     }
 
+    @Obsolete
     public static String sanitizeMessage(String message) {
         return trimAndTruncate(message, MAX_MESSAGE_LENGTH);
     }
 
+    @Obsolete
     public static boolean isUUID(String possibleUUID) {
         try {
             UUID.fromString(possibleUUID);
@@ -126,15 +142,16 @@ public final class Sanitizer {
         return result;
     }
 
+    @Obsolete
     private static <V> String sanitizeKey(String key, Map<String, V> map) {
         String sanitizedKey = trimAndTruncate(key, MAX_MAP_NAME_LENGTH);
-
-        sanitizedKey = sanitizedKey.replaceAll(INVALID_NAME_CHARACTERS, "");
+        sanitizedKey = sanitizeStringForJSON(sanitizedKey, MAX_MAP_NAME_LENGTH);
         sanitizedKey = MakeKeyNonEmpty(sanitizedKey);
         sanitizedKey = MakeKeyUnique(sanitizedKey, map);
         return sanitizedKey;
     }
 
+    @Obsolete
     private static String trimAndTruncate(String value, int maxLength) {
         if (value == null) {
             return value;
@@ -148,10 +165,12 @@ public final class Sanitizer {
         return sanitized;
     }
 
+    @Obsolete
     private static String MakeKeyNonEmpty(String key) {
         return Strings.isNullOrEmpty(key) ? "(required property name is empty)" : key;
     }
 
+    @Obsolete
     private static <V> String MakeKeyUnique(String key, Map<String, V> map)
     {
         if (map.containsKey(key)) {
@@ -168,7 +187,57 @@ public final class Sanitizer {
         return key;
     }
 
+    @Obsolete
     private static String truncate(String value, int maxLength) {
         return value.length() > maxLength ? value.substring(0, maxLength) : value;
+    }
+
+    @Obsolete
+    private static String sanitizeStringForJSON(String text, int maxLength) {
+
+        final StringBuilder result = new StringBuilder();
+        StringCharacterIterator iterator = new StringCharacterIterator(text);
+        for (char curr = iterator.current(); curr != iterator.DONE && result.length() < maxLength - 2; curr = iterator.next()) {
+            if( curr == '\"' ){
+                result.append("\\\"");
+            }
+            else if (curr == '\'') {
+                result.append("\\\'");
+            }
+            else if(curr == '\\'){
+                result.append("\\\\");
+            }
+            else if(curr == '/'){
+                result.append("\\/");
+            }
+            else if(curr == '\b'){
+                result.append("\\b");
+            }
+            else if(curr == '\f'){
+                result.append("\\f");
+            }
+            else if(curr == '\n'){
+                result.append("\\n");
+            }
+            else if(curr == '\r'){
+                result.append("\\r");
+            }
+            else if(curr == '\t'){
+                result.append("\\t");
+            }
+            else if (!Character.isISOControl(curr)){
+                result.append(curr);
+            }
+            else {
+                if (result.length() + 7 < maxLength) { // needs 7 more character space to be appended
+                    result.append("\\u");
+                    result.append((String.format( "%04x", Integer.valueOf(curr))));
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        return result.toString();
     }
 }

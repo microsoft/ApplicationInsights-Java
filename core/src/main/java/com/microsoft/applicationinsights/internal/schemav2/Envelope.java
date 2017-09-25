@@ -22,16 +22,14 @@
  * Generated from Envelope.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
 import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Data contract class Envelope.
@@ -140,7 +138,7 @@ public class Envelope
      * Sets the SampleRate property.
      */
     public void setSampleRate(double value) {
-            this.sampleRate = value;
+        this.sampleRate = value;
     }
     
     /**
@@ -221,14 +219,13 @@ public class Envelope
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
         writer.write("ver", ver);
-        writer.write("name", name);
-        
-        writer.write("time", time);
-        
-        if (this.sampleRate > 0.0d)
-        writer.write("sampleRate", sampleRate);
-        writer.write("seq", seq);
-        writer.write("iKey", iKey);
+        writer.writeRequired("name", name, 1024);
+        writer.writeRequired("time", time, 64);
+        if (this.sampleRate > 0.0d) {
+            writer.write("sampleRate", sampleRate);
+        }
+        writer.write("seq", seq, 64);
+        writer.write("iKey", iKey, 40);
         writer.write("tags", tags);
         writer.write("data", data);
     }

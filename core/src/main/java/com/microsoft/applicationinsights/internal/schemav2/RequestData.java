@@ -22,16 +22,13 @@
  * Generated from RequestData.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.google.common.base.Preconditions;
+
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Data contract class RequestData.
@@ -251,18 +248,13 @@ public class RequestData extends Domain
     {
         super.serializeContent(writer);
         writer.write("ver", ver);
-        
-        writer.write("id", id);
-        
+        writer.writeRequired("id", id, 128);
         writer.write("duration", duration);
-        
-        writer.write("responseCode", responseCode);
-        
+        writer.writeRequired("responseCode", responseCode, 1024);
         writer.write("success", success);
-        
-        writer.write("source", source);
-        writer.write("name", name);
-        writer.write("url", url);
+        writer.write("source", source, 1024);
+        writer.write("name", name, 1024);
+        writer.write("url", url, 2048);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

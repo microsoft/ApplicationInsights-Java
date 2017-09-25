@@ -21,11 +21,11 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.net.URI;
-import java.util.concurrent.ConcurrentMap;
-
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+
+import java.net.URI;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Telemetry type used to track page views.
@@ -137,6 +137,7 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     }
 
     @Override
+    @Deprecated
     protected void additionalSanitize() {
         data.setName(Sanitizer.sanitizeName(data.getName()));
         Sanitizer.sanitizeMeasurements(this.getMetrics());

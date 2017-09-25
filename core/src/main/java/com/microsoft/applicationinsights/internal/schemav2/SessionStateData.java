@@ -21,18 +21,22 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import java.io.IOException;
-
+import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.SessionState;
-
-import com.google.common.base.Preconditions;
 import org.apache.http.annotation.Obsolete;
+
+import java.io.IOException;
 
 /**
  * Created by gupele on 2/19/2015.
+ *
+ *@deprecated
+ * Our end point does not accept this any more. The usage of this class and any
+ * of its associated methods is deprecated. Our end point no longer accepts
+ * SessionStateData
  */
-@Obsolete
+@Deprecated
 public final class SessionStateData extends Domain {
 
     private final int ver = 2;
@@ -59,6 +63,6 @@ public final class SessionStateData extends Domain {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
 
         writer.write("ver", ver);
-        writer.write("state", state.toString());
+        writer.write("state", state.toString(), 1000);
     }
 }

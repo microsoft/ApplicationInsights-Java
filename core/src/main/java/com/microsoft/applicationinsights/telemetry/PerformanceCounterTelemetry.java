@@ -21,10 +21,9 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.schemav2.PerformanceCounterData;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.schemav2.PerformanceCounterData;
 
 /**
  * The class that represents information about performance counters.
@@ -134,6 +133,7 @@ public final class PerformanceCounterTelemetry extends BaseTelemetry<Performance
     }
 
     @Override
+    @Deprecated
     protected void additionalSanitize() {
 
     }

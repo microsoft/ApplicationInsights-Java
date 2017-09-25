@@ -21,19 +21,18 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
+import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-
-import com.google.common.base.Preconditions;
-import org.apache.http.annotation.Obsolete;
-
 /**
+ * @deprecated
  * Created by gupele on 3/1/2015.
  */
-@Obsolete
+@Deprecated
 public final class PerformanceCounterData extends Domain {
     /**
      * Envelope Name for this telemetry.
@@ -98,9 +97,9 @@ public final class PerformanceCounterData extends Domain {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
 
         writer.write("ver", ver);
-        writer.write("categoryName", categoryName);
-        writer.write("counterName", counterName);
-        writer.write("instanceName", instanceName);
+        writer.write("categoryName", categoryName, 1000);
+        writer.write("counterName", counterName, 1000);
+        writer.write("instanceName", instanceName, 1000);
         writer.write("value", value);
         writer.write("properties", properties);
     }

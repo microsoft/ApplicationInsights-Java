@@ -69,7 +69,8 @@ public class WebSessionTrackingTelemetryModuleTests {
             SessionContext requestSessionContext = requestTelemetry.getContext().getSession();
 
             if (expectedSessionId == null) {
-                Assert.assertTrue(Sanitizer.isUUID(requestSessionContext.getId()));
+                //No longer testing for UUID
+                //Assert.assertTrue(Sanitizer.isUUID(requestSessionContext.getId()));
                 Assert.assertNotEquals(requestSessionContext.getId(), HttpHelper.getCookie());
             } else {
                 Assert.assertEquals(expectedSessionId, requestSessionContext.getId());

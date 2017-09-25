@@ -22,16 +22,14 @@
  * Generated from ExceptionData.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.Duration;
+
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.google.common.base.Preconditions;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Data contract class ExceptionData.
@@ -178,11 +176,9 @@ public class ExceptionData extends Domain
     {
         super.serializeContent(writer);
         writer.write("ver", ver);
-        
         writer.write("exceptions", exceptions);
-        
         writer.write("severityLevel", severityLevel);
-        writer.write("problemId", problemId);
+        writer.write("problemId", problemId, 1024);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

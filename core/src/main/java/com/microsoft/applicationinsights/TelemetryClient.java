@@ -416,12 +416,6 @@ public class TelemetryClient {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
         }
 
-        try {
-            telemetry.sanitize();
-        } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Exception while sanitizing telemetry: '%s'",t.getMessage());
-        }
-
         if (!activateProcessors(telemetry)) {
             return;
         }

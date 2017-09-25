@@ -53,6 +53,4 @@ public final class EventTelemetryTest {
         assertEquals(eventTelemetry.getTimestamp(), date);
     }
 
-    public void testSanitize() {
-    }
 }

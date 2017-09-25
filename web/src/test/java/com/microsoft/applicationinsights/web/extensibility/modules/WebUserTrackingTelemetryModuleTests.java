@@ -55,7 +55,8 @@ public class WebUserTrackingTelemetryModuleTests {
             UserContext requestUserContext = requestTelemetry.getContext().getUser();
 
             if (expectedUserId == null) {
-                Assert.assertTrue(Sanitizer.isUUID(requestUserContext.getId()));
+                //No longer testing for UUID
+                //Assert.assertTrue(Sanitizer.isUUID(requestUserContext.getId()));
                 Assert.assertNotEquals(requestUserContext.getId(), HttpHelper.getCookie());
             } else {
                 Assert.assertEquals(expectedUserId, requestUserContext.getId());
