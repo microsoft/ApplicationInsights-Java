@@ -49,6 +49,7 @@ public final class JsonTelemetryDataSerializer {
     private final static String JSON_COMMA = "\"";
     private final static String JSON_NAME_VALUE_SEPARATOR = ":";
     private final static String JSON_EMPTY_OBJECT = "{}";
+    private final static int DELTA = 2;
 
     private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
 
@@ -357,7 +358,7 @@ public final class JsonTelemetryDataSerializer {
 
         final StringBuilder result = new StringBuilder();
         StringCharacterIterator iterator = new StringCharacterIterator(text);
-        for (char curr = iterator.current(); curr != iterator.DONE && result.length() < maxLength - 2; curr = iterator.next()) {
+        for (char curr = iterator.current(); curr != iterator.DONE && result.length() < maxLength - DELTA; curr = iterator.next()) {
             if( curr == '\"' ){
                 result.append("\\\"");
             }
