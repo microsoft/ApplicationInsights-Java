@@ -31,7 +31,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.OperatingSystemMXBean;
 
-import javax.management.Attribute;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
