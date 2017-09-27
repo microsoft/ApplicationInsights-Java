@@ -76,7 +76,6 @@ public final class CpuPerformanceCounterCalculator {
     private long getProcessCpuTime() throws Exception {
         MBeanServer bsvr = ManagementFactory.getPlatformMBeanServer();
         ObjectName oname = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
-        Attribute cpuTimeAttrib = (Attribute) bsvr.getAttribute(oname, "ProcessCpuTime");
-        return (Long)cpuTimeAttrib.getValue();
+        return (Long)bsvr.getAttribute(oname, "ProcessCpuTime");
     }
 }
