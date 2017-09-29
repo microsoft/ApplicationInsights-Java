@@ -85,7 +85,7 @@ public enum InternalAgentLogger {
             } else {
                 loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
             logAlways(LoggingLevel.ERROR, "Failed to parse logging level, using OFF");
             loggingLevel = LoggingLevel.OFF;
         }
@@ -100,7 +100,7 @@ public enum InternalAgentLogger {
     public void error(String message, Object... args) {
         try {
             log(LoggingLevel.ERROR, message, args);
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
     }
 
@@ -113,7 +113,7 @@ public enum InternalAgentLogger {
     public void warn(String message, Object... args) {
         try {
             log(LoggingLevel.WARN, message, args);
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
     }
 
@@ -126,7 +126,7 @@ public enum InternalAgentLogger {
     public void info(String message, Object... args) {
         try {
             log(LoggingLevel.INFO, message, args);
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
     }
 
@@ -139,7 +139,7 @@ public enum InternalAgentLogger {
     public void trace(String message, Object... args) {
         try {
             log(LoggingLevel.TRACE, message, args);
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
     }
 

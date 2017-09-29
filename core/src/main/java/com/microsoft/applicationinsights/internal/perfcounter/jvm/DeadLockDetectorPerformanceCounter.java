@@ -118,6 +118,8 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
                     }
                 }
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
         sb.append(SEPERATOR);

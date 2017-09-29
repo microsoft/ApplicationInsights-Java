@@ -55,6 +55,8 @@ public final class AnnotationPackageScanner {
         final AnnotationDetector annotationDetector = new AnnotationDetector(reporter);
         try {
             annotationDetector.detect(packageToScan);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             InternalLogger.INSTANCE.error("Failed to scan packages '%s': exception: '%s'", packageToScan, t.getMessage());
         }

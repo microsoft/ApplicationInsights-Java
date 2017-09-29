@@ -223,6 +223,8 @@ public enum PerformanceCounterContainer implements Stoppable {
                         if (plugin != null) {
                             try {
                                 plugin.preCollection();
+                            } catch (ThreadDeath td) {
+                            	throw td;
                             } catch (Throwable t) {
                             }
                         }
@@ -238,6 +240,8 @@ public enum PerformanceCounterContainer implements Stoppable {
                         if (plugin != null) {
                             try {
                                 plugin.postCollection();
+                            } catch (ThreadDeath td) {
+                            	throw td;
                             } catch (Throwable t) {
                             }
                         }

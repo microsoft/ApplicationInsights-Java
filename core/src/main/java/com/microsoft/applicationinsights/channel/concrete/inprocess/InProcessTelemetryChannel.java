@@ -97,7 +97,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             if (!LocalStringsUtils.isNullOrEmpty(developerModeAsString)) {
                 developerMode = Boolean.valueOf(developerModeAsString);
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
             developerMode = false;
         }
         initialize(null,
@@ -226,6 +226,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
             telemetriesTransmitter.stop(timeout, timeUnit);
             stopped = true;
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }

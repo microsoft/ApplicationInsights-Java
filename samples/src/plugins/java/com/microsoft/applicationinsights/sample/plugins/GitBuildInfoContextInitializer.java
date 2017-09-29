@@ -81,7 +81,7 @@ public final class GitBuildInfoContextInitializer implements ContextInitializer 
             }
 
             hasBuildData = true;
-        } catch (Throwable t) {
+        } catch (Exception e) {
             hasBuildData = false;
         }
     }

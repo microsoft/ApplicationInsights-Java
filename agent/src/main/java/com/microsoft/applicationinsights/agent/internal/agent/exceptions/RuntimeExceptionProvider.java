@@ -57,6 +57,8 @@ public final class RuntimeExceptionProvider {
             data.addMethod("<init>", "", false, true, 0, methodVisitorFactory);
 
             classesToInstrument.put(RUNTIME_EXCEPTION_CLASS_NAME, data);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load instrumentation for Jedis: '%s':'%s'", t.getClass().getName(), t.getMessage());
         }

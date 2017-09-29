@@ -39,10 +39,10 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
     public ProcessCpuPerformanceCounter() {
         try {
             cpuPerformanceCounterCalculator = new CpuPerformanceCounterCalculator();
-        } catch (Throwable t) {
+        } catch (Exception e) {
             cpuPerformanceCounterCalculator = null;
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create ProcessCpuPerformanceCounter: %s", t.getMessage());
-            t.printStackTrace();
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create ProcessCpuPerformanceCounter: %s", e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("Failed to create ProcessCpuPerformanceCounter");
         }
     }

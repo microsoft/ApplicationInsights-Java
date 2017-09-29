@@ -54,6 +54,8 @@ public final class TelemetryProcessorCreator {
                         InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": method " + methodName + "failed, the class will not be used.");
                         return null;
                     }
+                } catch (ThreadDeath td) {
+                	throw td;
                 } catch (Throwable t) {
                     InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + methodName + ", exception: " + t.getMessage() + ", the class will not be used.");
                     return null;

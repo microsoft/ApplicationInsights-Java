@@ -52,7 +52,7 @@ final class TelemetrySamplerInitializer {
             if (!LocalStringsUtils.isNullOrEmpty(percentageAsString)) {
                 try {
                     percentage = Double.valueOf(percentageAsString);
-                } catch (Throwable t) {
+                } catch (Exception e) {
                     InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse %s", percentageAsString);
                 }
             }

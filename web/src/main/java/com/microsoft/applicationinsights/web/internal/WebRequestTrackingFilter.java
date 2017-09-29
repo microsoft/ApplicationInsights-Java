@@ -101,6 +101,8 @@ public final class WebRequestTrackingFilter implements Filter {
             for (ThreadLocalCleaner cleaner : cleaners) {
                 cleaner.clean();
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -111,7 +113,7 @@ public final class WebRequestTrackingFilter implements Filter {
             if (telemetryClient != null) {
                 telemetryClient.trackException(e);
             }
-        } catch (Throwable t) {
+        } catch (Exception ignoreMe) {
         }
         invokeSafeOnEndRequest(req, res, isRequestProcessedSuccessfully);
     }
@@ -225,6 +227,8 @@ public final class WebRequestTrackingFilter implements Filter {
             setKey(key);
 
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Successfully registered the filter '%s'", FILTER_NAME);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.getMessage());
         }
@@ -277,6 +281,8 @@ public final class WebRequestTrackingFilter implements Filter {
             } else {
                 name = contextPath.substring(1);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.getMessage());
         }

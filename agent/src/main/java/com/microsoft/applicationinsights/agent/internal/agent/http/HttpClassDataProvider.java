@@ -151,6 +151,8 @@ public final class HttpClassDataProvider {
                     REST_TEMPLATE_CLASS_NAME,
                     REST_TEMPLATE_METTHOD,
                     null);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.getMessage());
         }

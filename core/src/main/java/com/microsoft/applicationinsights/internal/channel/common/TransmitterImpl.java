@@ -163,15 +163,14 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
                         command.run();
                     } catch (Exception e) {
                         e.printStackTrace();
-                    } catch (Throwable t) {
                     } finally {
                     }
                 }
             }, value, timeUnit);
 
             return true;
-        } catch (Exception e) {
-            semaphore.release();
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             semaphore.release();
         }
@@ -195,15 +194,14 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
                         semaphore.release();
                         command.run();
                     } catch (Exception e) {
-                    } catch (Throwable t) {
                     } finally {
                     }
                 }
             });
 
             return true;
-        } catch (Exception e) {
-            semaphore.release();
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             semaphore.release();
         }

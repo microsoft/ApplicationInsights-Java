@@ -187,6 +187,8 @@ public class ApplicationInsightsWriter implements
                 MetricTelemetry metricTelemetry = createMetricTelemetry(valueList, i);
                 this.telemetryClient.trackMetric(metricTelemetry);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             String errorMessage =
                     "Failed to send events with the following error: '" + t + "'. This message will appear only once.";

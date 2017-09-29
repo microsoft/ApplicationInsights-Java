@@ -178,6 +178,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 }
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
+            } catch (ThreadDeath td) {
+            	throw td;
             } catch (Throwable t) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
             }

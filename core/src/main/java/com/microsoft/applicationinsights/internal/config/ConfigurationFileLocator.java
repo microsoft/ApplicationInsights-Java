@@ -108,6 +108,8 @@ public final class ConfigurationFileLocator {
                     configurationFile == null ? "NOT " : "");
 
             return configurationFile;
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             logException(t, "current class loader");
         }
@@ -134,6 +136,8 @@ public final class ConfigurationFileLocator {
             } else {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Can not access folder '%s'", jarFullPath);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             logException(t, "library location");
         }
@@ -174,6 +178,8 @@ public final class ConfigurationFileLocator {
                     checkedUrls.add(configurationPath);
                 }
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             logException(t, "class path");
         }

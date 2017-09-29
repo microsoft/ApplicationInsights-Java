@@ -92,6 +92,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.httpMethodFinished(identifier, method, uri, result, delta);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -103,6 +105,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.exceptionCaught(classAndMethodNames, throwable);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -114,6 +118,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.httpMethodStarted(classAndMethodName, url);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -125,6 +131,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.preparedStatementMethodStarted(classAndMethodName, statement, sqlStatement, args);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -136,6 +144,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.methodFinished(classAndMethodName, deltaInNS, args, throwable);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -148,6 +158,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.preparedStatementExecuteBatchMethodStarted(name, statement, sqlStatement, batchCounter);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -159,6 +171,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.sqlStatementExecuteQueryPossibleQueryPlan(name, statement, sqlStatement);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -170,6 +184,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.sqlStatementMethodStarted(name, statement, sqlStatement);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -182,6 +198,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.jedisMethodStarted(name);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -202,6 +220,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
                 }
                 implementation.methodStarted(name);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -213,6 +233,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.methodFinished(name, throwable);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -224,6 +246,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             if (implementation != null) {
                 implementation.methodFinished(name, thresholdInMS);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -243,6 +267,8 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
 
             implementation.exceptionThrown(e, decision.stackSize);
 
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }

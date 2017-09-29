@@ -53,6 +53,8 @@ public final class MetricTelemetryFilter implements TelemetryProcessor {
                 this.notNeeded.add(ready);
             }
             InternalLogger.INSTANCE.trace(String.format("MetricTelemetryFilter: set NotNeeded: %s", notNeeded));
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("MetricTelemetryFilter: failed to parse NotNeededNames: %s", allNotNeeded));
             throw t;

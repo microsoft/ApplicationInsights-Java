@@ -121,6 +121,8 @@ public enum QuickPulseDataCollector {
         CpuPerformanceCounterCalculator temp;
         try {
             temp = new CpuPerformanceCounterCalculator();
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             temp = null;
         }

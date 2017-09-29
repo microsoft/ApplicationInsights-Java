@@ -45,7 +45,7 @@ final class SamplingScoreGenerator {
             } else {
                 samplingScore = rand.nextDouble();
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to fetch sample number for telemetry, using default");
             samplingScore = rand.nextDouble();
         }

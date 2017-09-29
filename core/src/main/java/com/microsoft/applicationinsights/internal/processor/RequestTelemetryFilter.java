@@ -142,6 +142,8 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                 hasBlocked = !exactBadResponseCodes.isEmpty() || !ignoredResponseCodeRange.isEmpty();
             }
             InternalLogger.INSTANCE.trace(String.format("ResponseCodeFilter: successfully set non needed response codes: %s", notNeededResponseCodes));
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("RequestTelemetryFilter: failed to parse NotNeededResponseCodes: ", notNeededResponseCodes));
             throw t;

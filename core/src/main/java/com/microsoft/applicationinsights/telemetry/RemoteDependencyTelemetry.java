@@ -197,7 +197,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
         if (!LocalStringsUtils.isNullOrEmpty(type)) {
             try {
                 result = Enum.valueOf(DependencyKind.class, type);
-            } catch (Throwable t) {
+            } catch (Exception e) {
             }
         }
         return result;

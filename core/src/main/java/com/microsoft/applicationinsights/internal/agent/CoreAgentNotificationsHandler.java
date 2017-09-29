@@ -104,6 +104,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             if (throwable instanceof Exception) {
                 telemetryClient.trackException((Exception)throwable);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -248,6 +250,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             ExceptionTelemetry et = new ExceptionTelemetry(e, stackSize);
 
             telemetryClient.track(et);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
         if (methodData != null) {
@@ -271,7 +275,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                             url = metaData.getURL();
                         }
                     }
-                } catch (Throwable t) {
+                } catch (SQLException e) {
                     url = "jdbc:Unknown DB URL (failed to fetch from connection)";
                 }
             }
@@ -285,7 +289,9 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             startSqlMethod(InstrumentedClassType.SQL.toString(), name, sqlMetaData);
             ThreadData localData = threadDataThreadLocal.get();
 
-        } catch (Throwable e) {
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
         }
     }
 
@@ -428,6 +434,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                     ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
                     telemetryClient.track(exceptionTelemetry);
                 }
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable t) {
                 t.printStackTrace();
             }
@@ -456,7 +464,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             }
             sb.append(']');
             return sb;
-        } catch (Throwable t) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -493,7 +501,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                 }
                 explainSB.deleteCharAt(explainSB.length() - 1);
             }
-        } catch (Throwable t) {
+        } catch (Throwable t) { // FIXME can this be SQLException?
         } finally {
             if (rs != null) {
                 try {

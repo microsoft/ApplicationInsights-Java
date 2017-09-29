@@ -101,6 +101,8 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
                 if (!Strings.isNullOrEmpty(key)) {
                     keyToDisplayName.put(key, data.displayName);
                 }
+            } catch (ThreadDeath td) {
+            	throw td;
             } catch (Throwable t) {
             }
         }

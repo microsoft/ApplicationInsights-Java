@@ -53,6 +53,8 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
             } else {
                 InternalLogger.INSTANCE.error("Unknown OS, performance counters are not created.");
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
             InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.getMessage());
         }

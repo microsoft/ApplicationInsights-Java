@@ -111,7 +111,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                     boolean debugMode = Boolean.valueOf(debugModeAsString);
                     agentConfiguration.setDebugMode(debugMode);
                     InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Instrumentation debug mode set to '%s'", debugMode);
-                } catch (Throwable t) {
+                } catch (Exception e) {
                     InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to parse debug attribute '%s'", debugModeAsString);
                 }
             }
@@ -362,7 +362,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             if (!StringUtils.isNullOrEmpty(valueStr)) {
                 try {
                     thresholdInMS = Long.valueOf(valueStr);
-                } catch (Throwable t) {
+                } catch (Exception e) {
                     InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", THRESHOLD_ATTRIBUTE, methodElement.getTagName());
                 }
             }
