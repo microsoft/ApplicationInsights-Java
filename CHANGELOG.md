@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Version 1.0.11
+- Fixed issue #436 (TraceTelemetry with Severity is not shown in UI)
+
 ## Version 1.0.10
 - `track()` method of 'com.microsoft.applicationinsights.TelemetryClient' is now modified. No longer performing pre-sanitization
 - All Sanitization will now occur in `com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer` class. 
