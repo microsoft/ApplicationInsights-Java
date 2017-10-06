@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.telemetry;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -87,6 +89,7 @@ public class JsonTelemetryDataSerializerTest {
         private String s2;
         private Map<String, Integer> m1 = new HashMap<String, Integer>();
         private List<String> list1 = new ArrayList<String>();
+        private com.microsoft.applicationinsights.internal.schemav2.SeverityLevel severity;
 
         public int getI1() {
             return i1;
@@ -152,6 +155,10 @@ public class JsonTelemetryDataSerializerTest {
             this.list1 = list1;
         }
 
+        public void setSeverity(com.microsoft.applicationinsights.internal.schemav2.SeverityLevel severity) {
+            this.severity = severity;
+        }
+
         @Override
         public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
             serializer.write("i1", i1);
@@ -162,6 +169,7 @@ public class JsonTelemetryDataSerializerTest {
             serializer.write("s2", s2, 15);
             serializer.write("m1", m1);
             serializer.write("list1", list1);
+            serializer.write("severity", severity);
         }
 
         @Override
@@ -232,7 +240,6 @@ public class JsonTelemetryDataSerializerTest {
         Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
         assertEquals(recoveryMap.get("s1"), "\\'\\f\\b\\f\\n\\r\\t/\\");
         assertEquals(recoveryMap.get("s2"), "0x0021\t");
-
     }
 
     @Test
@@ -275,18 +282,27 @@ public class JsonTelemetryDataSerializerTest {
         stubClass.getM1().put("key1", 5);
         stubClass.getM1().put("key2", 6);
         stubClass.getM1().put("key3", 7);
+        stubClass.setSeverity(SeverityLevel.Critical);
         StringWriter stringWriter = new StringWriter();
         JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
         stubClass.serialize(tested);
         tested.close();
         String str = stringWriter.toString();
-        StubClass bac = new Gson().fromJson(str, StubClass.class);
+        System.out.println("serailized=\n"+str);
+
+        Gson gson = new Gson();
+        StubClass bac = gson.fromJson(str, StubClass.class);
         assertEquals(bac.i1, stubClass.i1);
         assertEquals(bac.i2, stubClass.i2);
         assertEquals(bac.l1, stubClass.l1);
         assertEquals(bac.l2, stubClass.l2);
         assertEquals(bac.list1, stubClass.list1);
         assertEquals(bac.m1, stubClass.m1);
+        assertEquals(bac.severity, stubClass.severity);
+        
+        // There's a bug in Gson where it does not respect setLeinient(false) to enable strict parsing/deserialization. There doesn't appear to be a workaround.
+        // this should verify that the Json is valid.
+        assertEquals(str, gson.toJson(bac));
     }
 
 }
