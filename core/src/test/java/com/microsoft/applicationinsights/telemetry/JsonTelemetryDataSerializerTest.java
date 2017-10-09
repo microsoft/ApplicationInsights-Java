@@ -288,7 +288,6 @@ public class JsonTelemetryDataSerializerTest {
         stubClass.serialize(tested);
         tested.close();
         String str = stringWriter.toString();
-        System.out.println("serailized=\n"+str);
 
         Gson gson = new Gson();
         StubClass bac = gson.fromJson(str, StubClass.class);
