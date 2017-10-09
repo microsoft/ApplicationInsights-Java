@@ -95,7 +95,9 @@ public final class JsonTelemetryDataSerializer {
     public void write(String name, com.microsoft.applicationinsights.internal.schemav2.SeverityLevel value) throws IOException {
         if (value != null) {
             writeName(name);
+            out.write(JSON_COMMA);
             out.write(String.valueOf(value));
+            out.write(JSON_COMMA);
             separator = JSON_SEPARATOR;
         }
     }
