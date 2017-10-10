@@ -157,11 +157,16 @@ task vscode(dependsOn: vscodeJavaconfigFile) {
 
 tasks.withType(Test) {
     testLogging {
+        afterSuite { desc, result -> 
+            if (!desc.parent) { // only print when the top-level test suite completes
+                logger.lifecycle("${desc.name} complete. Ran ${result.testCount} tests. ${result.failedTestCount} failed, ${result.skippedTestCount} skipped.")
+            }
+        }
+
         info {
             events  TestLogEvent.FAILED,
                     TestLogEvent.PASSED,
                     TestLogEvent.SKIPPED,
-                    TestLogEvent.STANDARD_OUT,
                     TestLogEvent.STANDARD_ERROR
 
             exceptionFormat TestExceptionFormat.FULL
@@ -169,11 +174,16 @@ tasks.withType(Test) {
             showCauses true
             showStackTraces true
         }
-        
+
         debug {
             events = info.events
             events << TestLogEvent.STARTED
+            events << TestLogEvent.STANDARD_OUT
+            
             exceptionFormat = info.exceptionFormat
+            showExceptions = info.showExceptions
+            showCauses = info.showCauses
+            showStackTraces = info.showStackTraces
         }
     }
 }
