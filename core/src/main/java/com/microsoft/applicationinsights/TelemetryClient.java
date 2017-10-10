@@ -273,7 +273,6 @@ public class TelemetryClient {
         }
 
         ExceptionTelemetry et = new ExceptionTelemetry(exception);
-        et.setExceptionHandledAt(ExceptionHandledAt.UserCode);
 
         if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, et.getContext().getProperties());

@@ -23,7 +23,10 @@ package com.microsoft.applicationinsights.telemetry;
 
 /**
  * This enumeration is used by ExceptionTelemetry to identify if and where exception was handled.
+ *
+ * This Enum is now deprecated.
  */
+@Deprecated
 public enum ExceptionHandledAt
 {
     /**
