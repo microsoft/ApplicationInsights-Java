@@ -22,6 +22,8 @@
 // region Shared java configuration
 
 import org.gradle.internal.os.OperatingSystem;
+import org.gradle.api.tasks.testing.logging.TestLogEvent;
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 
 apply plugin: 'java'
 
@@ -153,6 +155,28 @@ task vscode(dependsOn: vscodeJavaconfigFile) {
     group 'vscode'
 }
 
+tasks.withType(Test) {
+    testLogging {
+        info {
+            events  TestLogEvent.FAILED,
+                    TestLogEvent.PASSED,
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.STANDARD_OUT,
+                    TestLogEvent.STANDARD_ERROR
+
+            exceptionFormat TestExceptionFormat.FULL
+            showExceptions true
+            showCauses true
+            showStackTraces true
+        }
+        
+        debug {
+            events = info.events
+            events << TestLogEvent.STARTED
+            exceptionFormat = info.exceptionFormat
+        }
+    }
+}
 
 
 // endregion Shared java configuration
