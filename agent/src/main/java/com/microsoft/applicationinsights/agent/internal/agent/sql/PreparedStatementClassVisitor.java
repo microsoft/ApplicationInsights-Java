@@ -31,6 +31,7 @@ import org.objectweb.asm.MethodVisitor;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ByteCodeUtils;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 /**
  * Created by gupele on 8/3/2015.
@@ -96,7 +97,7 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
-
+        originalMV = new JSRInlinerAdapter(originalMV, access, name, desc, signature, exceptions);
         if (originalMV == null) {
             return originalMV;
         }

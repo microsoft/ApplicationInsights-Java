@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedCla
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -25,6 +25,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 /**
  * The class is responsible for identifying public methods on non-interface classes.
@@ -51,7 +52,7 @@ public class DefaultClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
-
+        originalMV = new JSRInlinerAdapter(originalMV, access, name, desc, signature, exceptions);
         if (isInterface || originalMV == null || ByteCodeUtils.isStaticInitializer(name) || ByteCodeUtils.isPrivate(access)) {
             return originalMV;
         }
