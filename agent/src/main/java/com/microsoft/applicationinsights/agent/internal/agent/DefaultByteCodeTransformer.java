@@ -54,13 +54,13 @@ final class DefaultByteCodeTransformer implements ByteCodeTransformer {
      * @return A new buffer containing the class with the changes or the original one if no change was done.
      */
     @Override
-    public byte[] transform(byte[] originalBuffer, String className) {
+    public byte[] transform(byte[] originalBuffer, String className, ClassLoader loader) {
         if (classInstrumentationData == null) {
             return originalBuffer;
         }
 
         ClassReader cr = new ClassReader(originalBuffer);
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassWriter cw = new OverRiddenClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
         ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
         cr.accept(dcv, ClassReader.SKIP_FRAMES);
 

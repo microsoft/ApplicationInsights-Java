@@ -153,6 +153,8 @@ public final class AgentImplementation {
         }
 
         String path = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        int index = path.lastIndexOf('/');
+        path = path.substring(0, index + 1);
         return URLDecoder.decode(path, "UTF-8");
     }
 
