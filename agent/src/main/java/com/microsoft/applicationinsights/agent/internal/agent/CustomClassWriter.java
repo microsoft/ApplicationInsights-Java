@@ -3,12 +3,12 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 
 import org.objectweb.asm.ClassWriter;
 
-public class OverRiddenClassWriter extends ClassWriter {
+public class CustomClassWriter extends ClassWriter {
 
 
     ClassLoader classLoader;
 
-    public OverRiddenClassWriter(int writerFlag, ClassLoader loader)
+    public CustomClassWriter(int writerFlag, ClassLoader loader)
     {
         super(writerFlag);
         this.classLoader = loader;

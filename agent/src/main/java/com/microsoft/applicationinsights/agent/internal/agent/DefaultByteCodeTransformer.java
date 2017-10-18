@@ -21,15 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 //import org.objectweb.asm.util.CheckClassAdapter;
 
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
  * The class coordinates the byte code transformation
@@ -60,7 +56,7 @@ final class DefaultByteCodeTransformer implements ByteCodeTransformer {
         }
 
         ClassReader cr = new ClassReader(originalBuffer);
-        ClassWriter cw = new OverRiddenClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
+        ClassWriter cw = new CustomClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
         ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
         cr.accept(dcv, ClassReader.SKIP_FRAMES);
 
