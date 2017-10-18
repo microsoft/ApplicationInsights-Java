@@ -55,14 +55,6 @@ public final class ExceptionTelemetryTest {
     }
 
     @Test
-    public void getAndSetExceptionHandledAtNotThrows() {
-        NullPointerException exception = new NullPointerException("mock");
-        ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
-        exceptionTelemetry.setExceptionHandledAt(ExceptionHandledAt.Platform);
-        exceptionTelemetry.getExceptionHandledAt();
-    }
-
-    @Test
     public void testExceptions() {
         Exception exception = new IOException("mocka", new IllegalArgumentException("mockb"));
         ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
