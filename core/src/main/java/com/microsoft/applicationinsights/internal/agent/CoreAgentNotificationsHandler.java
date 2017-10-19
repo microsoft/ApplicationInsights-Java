@@ -383,55 +383,61 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     private void sendSQLTelemetry(MethodData methodData, Throwable throwable) {
-        if (methodData.arguments != null && methodData.arguments.length >= 3 && methodData.arguments[1] != null) {
-            try {
-                String dependencyName = null;
-                if (methodData.arguments[0] != null) {
-                    dependencyName = methodData.arguments[0].toString();
-                }
-                String commandName = null;
-                if (methodData.arguments[1] == null) {
-                    return;
-                }
 
-                commandName = methodData.arguments[1].toString();
-                long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
-                Duration duration = new Duration(durationInMilliSeconds);
-
-                RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(
-                        dependencyName,
-                        commandName,
-                        duration,
-                        throwable == null);
-                telemetry.setDependencyKind(DependencyKind.SQL);
-
-                StringBuilder sb = null;
-                if (methodData.arguments.length > 3) {
-                    sb = formatAdditionalSqlArguments(methodData);
-                    if (sb != null) {
-                        telemetry.getContext().getProperties().put("Args", sb.toString());
-                    }
-                } else {
-                    if (durationInMilliSeconds > ImplementationsCoordinator.INSTANCE.getQueryPlanThresholdInMS()) {
-                        sb = fetchExplainQuery(commandName, methodData.arguments[2]);
-                        if (sb != null) {
-                            telemetry.getContext().getProperties().put("Query Plan", sb.toString());
-                        }
-                    }
-                }
-
-                InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
-
-                telemetryClient.track(telemetry);
-                if (throwable != null) {
-                    InternalLogger.INSTANCE.trace("Sending Sql exception");
-                    ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
-                    telemetryClient.track(exceptionTelemetry);
-                }
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
+        if (methodData.arguments == null || methodData.arguments.length == 0) {
+            InternalLogger.INSTANCE.error("sendSQLTelemetry: no arguments found.");
+            return;
         }
+  
+        try {
+            String dependencyName = "";
+            if (methodData.arguments[0] != null) {
+                dependencyName = methodData.arguments[0].toString();
+            }
+
+            String commandName = "";
+            if (methodData.arguments[1] != null) {
+                commandName = methodData.arguments[1].toString();
+            }
+  
+            
+            long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
+            Duration duration = new Duration(durationInMilliSeconds);
+  
+            RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(
+                    dependencyName,
+                    commandName,
+                    duration,
+                    throwable == null);
+            telemetry.setDependencyKind(DependencyKind.SQL);
+  
+            StringBuilder sb = null;
+            if (methodData.arguments.length > 3) {
+                sb = formatAdditionalSqlArguments(methodData);
+                if (sb != null) {
+                    telemetry.getContext().getProperties().put("Args", sb.toString());
+                }
+            } else {
+                if (durationInMilliSeconds > ImplementationsCoordinator.INSTANCE.getQueryPlanThresholdInMS()) {
+                    sb = fetchExplainQuery(commandName, methodData.arguments[2]);
+                    if (sb != null) {
+                        telemetry.getContext().getProperties().put("Query Plan", sb.toString());
+                    }
+                }
+            }
+  
+            InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
+  
+            telemetryClient.track(telemetry);
+            if (throwable != null) {
+                InternalLogger.INSTANCE.trace("Sending Sql exception");
+                ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
+                telemetryClient.track(exceptionTelemetry);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+  
     }
 
     private static long nanoToMilliseconds(long nanoSeconds) {
