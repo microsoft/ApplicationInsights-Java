@@ -396,7 +396,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             }
 
             String commandName = "";
-            if (methodData.arguments[1] != null) {
+            if (methodData.arguments.length > 1 && methodData.arguments[1] != null) {
                 commandName = methodData.arguments[1].toString();
             }
   
