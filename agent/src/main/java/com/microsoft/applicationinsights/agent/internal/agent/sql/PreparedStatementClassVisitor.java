@@ -21,17 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-import java.util.HashMap;
-
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-
 import com.microsoft.applicationinsights.agent.internal.agent.ByteCodeUtils;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
+
+import java.util.HashMap;
 
 /**
  * Created by gupele on 8/3/2015.
@@ -77,7 +76,6 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
         FieldVisitor fv = super.visitField(access, name, desc, signature, value);
         if (fv != null && shouldAdd) {
             shouldAdd = false;
-
             FieldVisitor fv1 = super.visitField(Opcodes.ACC_PROTECTED, SqlConstants.AI_SDK_SQL_STRING, "Ljava/lang/String;", null, null);
             if (fv1 != null) {
                 fv1.visitEnd();
