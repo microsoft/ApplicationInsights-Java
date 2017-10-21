@@ -26,11 +26,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public final class DefaultByteCodeTransformerTest {
-//    @Test
-//    public void noClassInstrumentationDataTest() {
-//        DefaultByteCodeTransformer tested = new DefaultByteCodeTransformer(null, false, ClassLoader);
-//        byte[] mockArray = new byte[1];
-//        byte[] result = tested.transform(mockArray, "mock");
-//        assertSame(result, mockArray);
-//    }
+    @Test
+    public void noClassInstrumentationDataTest() throws ClassNotFoundException {
+        DefaultByteCodeTransformer tested = new DefaultByteCodeTransformer(null, false);
+        byte[] mockArray = new byte[1];
+        byte[] result = tested.transform(mockArray, "mock", ClassLoader.getSystemClassLoader());
+        assertSame(result, mockArray);
+    }
 }

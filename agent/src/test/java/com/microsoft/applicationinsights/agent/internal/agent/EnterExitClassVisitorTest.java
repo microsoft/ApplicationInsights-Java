@@ -21,20 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-
-import org.junit.Test;
-
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-
-import org.mockito.Mockito;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-
 public final class EnterExitClassVisitorTest {
 //    @Test
 //    public void testVisitMethodForInterfaceClass() {
