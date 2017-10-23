@@ -28,9 +28,12 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -136,15 +139,17 @@ public final class AgentImplementation {
     }
 
     public static String getAgentJarLocation() throws UnsupportedEncodingException {
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         try {
-            ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
             if ((systemClassLoader instanceof URLClassLoader)) {
                 for (URL url : ((URLClassLoader)systemClassLoader).getURLs()) {
                     String urlPath = url.getPath();
-                    if (urlPath.indexOf(AGENT_JAR_PREFIX) != -1) {
-                        int index = urlPath.lastIndexOf('/');
-                        urlPath = urlPath.substring(0, index + 1);
-                        return urlPath;
+                    if (urlPath.charAt(0) == '/') {
+                        urlPath = urlPath.substring(1);
+                    }
+                    Path path = Paths.get(urlPath);
+                    if (path.getFileName().toString().startsWith(AGENT_JAR_PREFIX)) {
+                        return path.getParent().toString();
                     }
                 }
             }
@@ -152,10 +157,18 @@ public final class AgentImplementation {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
         }
 
-        String path = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        int index = path.lastIndexOf('/');
-        path = path.substring(0, index + 1);
-        return URLDecoder.decode(path, "UTF-8");
+        String stringPath = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        if (stringPath.charAt(0) == '/') {
+            stringPath = stringPath.substring(1);
+        }
+        Path path = Paths.get(stringPath);
+        if (path.getFileName().toString().startsWith(AGENT_JAR_PREFIX)) {
+            return path.getParent().toString();
+        }
+        else {
+            InternalAgentLogger.INSTANCE.error("Cannot find applicationinsights-agent jar, agent cannot be loaded");
+        }
+        return path.getParent().toString();
     }
 
     private static void SetNonWebAppModeIfAskedByConf(String sdkPath) throws Throwable {

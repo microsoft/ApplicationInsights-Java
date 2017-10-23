@@ -3,7 +3,15 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 
 import org.objectweb.asm.ClassWriter;
 
-public class CustomClassWriter extends ClassWriter {
+
+/**
+ * Created by Dhaval Doshi(dhdoshi)
+ *
+ * This class overwrites default class writer of ASM to use the ClassLoader
+ * provided by DefaultByteCode transformer (This loader essentially has all
+ * the required classes already loaded)
+ */
+class CustomClassWriter extends ClassWriter {
 
 
     ClassLoader classLoader;
@@ -14,6 +22,13 @@ public class CustomClassWriter extends ClassWriter {
         this.classLoader = loader;
     }
 
+    /**
+     * This method returns common super class for both the classes. If no super class
+     * is present it returns java/lang/Object class.
+     * @param className1
+     * @param className2
+     * @return The String for the common super class of both the classes
+     */
     protected String getCommonSuperClass(String className1, String className2)
     {
         Class class1;

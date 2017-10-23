@@ -40,8 +40,8 @@ if (java6JreDir) {
         bootClasspath += "$archivePath;"
     }
     tasks.withType(JavaCompile) {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = 1.7
+        targetCompatibility = 1.7
         options.bootClasspath = bootClasspath
     }
 } else {
