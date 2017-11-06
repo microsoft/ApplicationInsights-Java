@@ -30,19 +30,25 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.extensibility.context.OperationContext;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
+import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
 import static org.mockito.Mockito.when;
 
+import java.util.Hashtable;
 import java.util.List;
 
 /**
@@ -128,7 +134,6 @@ public class WebRequestTrackingTelemetryModuleTests {
         testRequestNameCalculationWithGivenQueryString("", ";jsessionid=D59C79DF9A2C81E931CD67659AC01D17");
     }
 
-
     @Test
     public void testUserAgentIsBeingSet() throws Exception {
         sendRequestAndGetResponseCookie(server.getPortNumber());
@@ -138,6 +143,74 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = items.get(0);
 
         Assert.assertEquals(HttpHelper.TEST_USER_AGENT, requestTelemetry.getContext().getUser().getUserAgent());
+    }
+
+    @Test
+    public void testCrossComponentCorrelationHeadersAreCaptured() {
+        
+        //setup: initialize a request context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String rootId = "guid";
+        String incomingId = "|guid.bcec871c_1.";
+        headers.put(TelemetryCorrelationManager.CORRELATION_HEADER_NAME, incomingId);
+        ServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        
+        //run
+        defaultModule.onBeginRequest(request, null);
+
+        // verify ID's are set as expected in request telemetry 
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertNotNull(requestTelemetry.getId());
+        Assert.assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
+        Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
+
+        //validate operation context ID's
+        OperationContext operation = requestTelemetry.getContext().getOperation();
+        Assert.assertEquals(rootId, operation.getId());
+        Assert.assertEquals(incomingId, operation.getParentId());
+    }
+
+    @Test
+    public void testTelemetryCreatedWithinRequestScopeIsRequestChild() {
+        
+        //setup: initialize a request context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        
+        String rootId = "guid";
+        String incomingId = "|guid.bcec871c_1.";
+        headers.put(TelemetryCorrelationManager.CORRELATION_HEADER_NAME, incomingId);
+
+        String correlationContext = "key1=value1, key2=value2";
+        headers.put(TelemetryCorrelationManager.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
+
+        ServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //run module
+        defaultModule.onBeginRequest(request, null);
+
+        //additional telemetry is manually tracked
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.trackException(new Exception());
+
+        List<ExceptionTelemetry> items = channel.getTelemetryItems(ExceptionTelemetry.class);
+        Assert.assertEquals(1, items.size());
+        ExceptionTelemetry exceptionTelemetry = items.get(0);
+
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+
+        //validate manually tracked telemetry is a child of the request telemetry
+        Assert.assertEquals("guid1", exceptionTelemetry.getContext().getOperation().getId());
+        Assert.assertEquals(requestTelemetry.getId(), exceptionTelemetry.getContext().getOperation().getParentId());
+        Assert.assertEquals("value1", exceptionTelemetry.getProperties().get("key1"));
+        Assert.assertEquals("value2", exceptionTelemetry.getProperties().get("key2"));
     }
 
     // endregion Tests
