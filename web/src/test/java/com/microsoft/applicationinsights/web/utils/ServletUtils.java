@@ -27,9 +27,11 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
+import java.util.Hashtable;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by yonisha on 2/3/2015.
@@ -72,6 +74,16 @@ public class ServletUtils {
 
     public static ServletResponse generateDummyServletResponse() {
         return mock(HttpServletResponse.class);
+    }
+
+    public static ServletRequest createServletRequestWithHeaders(Hashtable<String, String> headers) {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        for (String headerName : headers.keySet()) {
+            when(request.getHeader(headerName)).thenReturn(headers.get(headerName));
+        }
+
+        return request;
     }
 
     // region Private
