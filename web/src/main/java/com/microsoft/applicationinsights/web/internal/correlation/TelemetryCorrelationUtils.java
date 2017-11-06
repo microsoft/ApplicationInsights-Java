@@ -35,9 +35,10 @@ public class TelemetryCorrelationUtils {
 	}
 
 	public static boolean isHierarchicalId(String id) {
-		return false;
+		if (id == null || id.isEmpty()) {
+			return false;
+		}
+
+		return id.charAt(0) == '|';
 	}
-
-	
-
 }
