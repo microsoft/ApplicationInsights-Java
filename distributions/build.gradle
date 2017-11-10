@@ -33,9 +33,9 @@ jar.enabled = false
 shadowJar {
     classifier = ''
     dependencies {
-        exclude(dependency('org.ow2.asm:asm:5.0.3'))
-        exclude(dependency('org.ow2.asm:asm-commons:5.0.3'))
-        exclude(dependency('org.ow2.asm:asm-tree:5.0.3'))
+        exclude(dependency('org.ow2.asm:asm:5.2'))
+        exclude(dependency('org.ow2.asm:asm-commons:5.2'))
+        exclude(dependency('org.ow2.asm:asm-tree:5.2'))
     }
 }
 

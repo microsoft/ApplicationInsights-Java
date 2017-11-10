@@ -56,7 +56,7 @@ final class DefaultByteCodeTransformer implements ByteCodeTransformer {
         }
 
         ClassReader cr = new ClassReader(originalBuffer);
-        ClassWriter cw = new CustomClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
+        ClassWriter cw = new CustomClassWriterv2(ClassWriter.COMPUTE_FRAMES, loader);
         ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
         cr.accept(dcv, ClassReader.SKIP_FRAMES);
 
