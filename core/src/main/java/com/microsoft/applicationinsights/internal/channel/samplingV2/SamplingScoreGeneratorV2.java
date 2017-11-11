@@ -24,12 +24,8 @@ public class SamplingScoreGeneratorV2 {
 
         double samplingScore = 0.0;
 
-        if (!StringUtils.isNullOrEmpty(telemetry.getContext().getUser().getId())) {
-            samplingScore = (double) (getSamplingHashCode(telemetry.getContext().getUser().getId()) / Integer.MAX_VALUE);
-        }
-
-        else if (!StringUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
-            samplingScore = (double) (getSamplingHashCode(telemetry.getContext().getOperation().getId()) / Integer.MAX_VALUE);
+        if (!StringUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
+            samplingScore =  ((double) getSamplingHashCode(telemetry.getContext().getOperation().getId()) / Integer.MAX_VALUE);
         }
 
         else {
@@ -40,7 +36,7 @@ public class SamplingScoreGeneratorV2 {
         return samplingScore * 100;
     }
 
-    private static int getSamplingHashCode(String input) {
+     static int getSamplingHashCode(String input) {
         if (StringUtils.isNullOrEmpty(input)) {
             return 0;
         }

@@ -468,7 +468,7 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryCollectionList, itemsToSend, null, null, 10.0);
+        testNoSampling(client, telemetryCollectionList, itemsToSend, null, null, 50.0);
     }
 
     private List<Telemetry> getListOfTelemetry(String type, int count) {
