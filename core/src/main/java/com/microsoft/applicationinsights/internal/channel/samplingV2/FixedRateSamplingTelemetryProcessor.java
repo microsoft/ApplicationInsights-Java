@@ -6,25 +6,27 @@ import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.omg.CORBA.INTERNAL;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by Dhaval Doshi Oct 2017
  * This processor is used to Perform Sampling on User specified sampling rate
- *
+ * <p>
  * How to use in ApplicationInsights Configuration :
- *
+ * <p>
  * <BuiltInProcessors>
-     <Processor type = "FixedRateSamplingTelemetryProcessor">
-         <Add name = "SamplingPercentage" value = "50" />
-         <Add name = "ExcludedTypes" value="Trace" />
-        <Add name = "IncludedTypes" value="Trace;Request" />
-     </Processor>
- </BuiltInProcessors>
+ * <Processor type = "FixedRateSamplingTelemetryProcessor">
+ * <Add name = "SamplingPercentage" value = "50" />
+ * <Add name = "ExcludedTypes" value="Trace" />
+ * <Add name = "IncludedTypes" value="Trace;Request" />
+ * </Processor>
+ * </BuiltInProcessors>
  */
 @BuiltInProcessor("FixedRateSamplingTelemetryProcessor")
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {
@@ -39,11 +41,10 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     private static final String listSeparator = ";";
     private static Map<String, Class> allowedTypes;
 
-    private String excludedTypesString;
-    private Set<Class> excludedTypesHashSet;
+    private Set<Class> excludedTypes;
 
-    private String includedTypesString;
-    private Set<Class> includedTypesHashSet;
+    private Set<Class> includedTypes;
+
 
     /// All sampling percentage must be in a ratio of 100/N where N is a whole number (2, 3, 4, …). E.g. 50 for 1/2 or 33.33 for 1/3.
     /// Failure to follow this pattern can result in unexpected / incorrect computation of values in the portal.
@@ -55,8 +56,8 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      */
     public FixedRateSamplingTelemetryProcessor() {
         this.samplingPercentage = 100.00;
-        this.includedTypesHashSet = new HashSet<Class>();
-        this.excludedTypesHashSet = new HashSet<Class>();
+        this.includedTypes = new HashSet<Class>();
+        this.excludedTypes = new HashSet<Class>();
         try {
             this.allowedTypes = new HashMap<String, Class>() {{
                 put(dependencyTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry"));
@@ -76,8 +77,8 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      *
      * @return
      */
-    public Set<Class> getExcludedTypesHashSet() {
-        return excludedTypesHashSet;
+    public Set<Class> getExcludedTypes() {
+        return excludedTypes;
     }
 
     /**
@@ -85,47 +86,22 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      *
      * @return
      */
-    public Set<Class> getIncludedTypesHashSet() {
-        return includedTypesHashSet;
+    public Set<Class> getIncludedTypes() {
+        return includedTypes;
     }
 
-    /**
-     * This method takes a string of user specified excluded
-     * types and parses it to into set containing respective references
-     *
-     * @param value
-     */
-    public void setExcludedTypes(String value) {
-        this.excludedTypesString = value;
-        Set<Class> newExcludedTypesHashSet = new HashSet<Class>();
-        setIncludedOrExcludedTypes(value, newExcludedTypesHashSet);
-        excludedTypesHashSet = newExcludedTypesHashSet;
-    }
-
-    /**
-     * This method takes a string of user specified included
-     * types and parses it to into set containing respective references
-     *
-     * @param value
-     */
-    public void setIncludedTypes(String value) {
-        this.includedTypesString = value;
-        Set<Class> newIncludedTypesHashSet = new HashSet<Class>();
-        setIncludedOrExcludedTypes(value, newIncludedTypesHashSet);
-        includedTypesHashSet = newIncludedTypesHashSet;
-    }
 
     private void setIncludedOrExcludedTypes(String value, Set<Class> typeSet) {
+
         if (!StringUtils.isNullOrEmpty(value)) {
-            String[] splitList = value.split(listSeparator);
-            for (String item : splitList) {
-                item.trim();
-                if (!StringUtils.isNullOrEmpty(item) && allowedTypes.containsKey(item)) {
-                    typeSet.add(allowedTypes.get(item));
-                } else {
-                    InternalLogger.INSTANCE.error("item is either not allowed to sample or is empty");
-                }
+            value = value.trim();
+            if (!StringUtils.isNullOrEmpty(value) && allowedTypes.containsKey(value)) {
+                typeSet.add(allowedTypes.get(value));
+            } else {
+                InternalLogger.INSTANCE.error("Item is either not allowed to sample or is empty");
             }
+        } else {
+            InternalLogger.INSTANCE.error("Empty types cannot be considered");
         }
     }
 
@@ -191,14 +167,38 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      */
     private boolean isSamplingApplicable(Class item) {
 
-        if (excludedTypesHashSet.size() > 0 && excludedTypesHashSet.contains(item)) {
+        if (excludedTypes.size() > 0 && excludedTypes.contains(item)) {
             return false;
         }
 
-        if (includedTypesHashSet.size() > 0 && !includedTypesHashSet.contains(item)) {
+        if (includedTypes.size() > 0 && !includedTypes.contains(item)) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * This method is invoked during configuration to add one element to the
+     * excluded types set from the xml array list of excluded types
+     * @param value
+     */
+    public void addToExcludedType(String value) {
+
+        setIncludedOrExcludedTypes(value, excludedTypes);
+        InternalLogger.INSTANCE.trace(value + " added as excluded to sampling");
+
+    }
+
+    /**
+     * This method is invoked during configuration to add one element to the
+     * included types set from the xml array list of included types
+     * @param value
+     */
+    public void addToIncludedType(String value) {
+
+        setIncludedOrExcludedTypes(value, includedTypes);
+        InternalLogger.INSTANCE.trace(value + " added as included to sampling");
+
     }
 }

@@ -203,10 +203,11 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> dependencyTelemetry = getListOfTelemetry("com.microsoft.applicationinsights.telemetry.RequestTelemetry",100);
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
+        List<String> excludeTypes = new ArrayList<String>() {{add("Request");}};
         telemetryListCollection.add(dependencyTelemetry);
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryListCollection, itemsToSend, null, "Request", 10.0);
+        testNoSampling(client, telemetryListCollection, itemsToSend, null, excludeTypes, 10.0);
     }
 
     @Test
@@ -215,14 +216,15 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> dependencyTelemetry1 = getListOfTelemetry("com.microsoft.applicationinsights.telemetry.RequestTelemetry",100);
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
+        List<String> includeTypes = new ArrayList<String>() {{add("Request");}};
         telemetryListCollection.add(dependencyTelemetry);
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryListCollection, itemsToSend, "Request", null, 100.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 100.0);
         itemsToSend.clear();
         telemetryListCollection.clear();
         telemetryListCollection.add(dependencyTelemetry1);
-        testSampling(client, telemetryListCollection, itemsToSend, "Request", null, 10.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 10.0);
     }
 
     @Test
@@ -231,9 +233,10 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> excludeTypes = new ArrayList<String>() {{add("Dependency");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryListCollection, itemsToSend, null, "Dependency", 10.0);
+        testNoSampling(client, telemetryListCollection, itemsToSend, null, excludeTypes, 10.0);
     }
 
     @Test
@@ -243,13 +246,14 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> includeTypes = new ArrayList<String>() {{add("Dependency");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryListCollection, itemsToSend, "Dependency", null, 100.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 100.0);
         itemsToSend.clear();
         telemetryListCollection.clear();
         telemetryListCollection.add(dependencyTelemetry1);
-        testSampling(client, telemetryListCollection, itemsToSend, "Dependency", null, 10.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 10.0);
     }
 
     @Test
@@ -258,9 +262,10 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> excludeTypes = new ArrayList<String>() {{add("Event");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryListCollection, itemsToSend, null, "Event", 10.0);
+        testNoSampling(client, telemetryListCollection, itemsToSend, null, excludeTypes, 10.0);
     }
 
     @Test
@@ -270,13 +275,14 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> includeTypes = new ArrayList<String>() {{add("Event");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryListCollection, itemsToSend, "Event", null, 100.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 100.0);
         itemsToSend.clear();
         telemetryListCollection.clear();
         telemetryListCollection.add(dependencyTelemetry1);
-        testSampling(client, telemetryListCollection, itemsToSend, "Event", null, 10.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 10.0);
     }
 
     @Test
@@ -284,10 +290,11 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> dependencyTelemetry = getListOfTelemetry("com.microsoft.applicationinsights.telemetry.ExceptionTelemetry",100);
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
+        List<String> excludeTypes = new ArrayList<String>() {{add("Exception");}};
         telemetryListCollection.add(dependencyTelemetry);
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryListCollection, itemsToSend, null, "Exception", 10.0);
+        testNoSampling(client, telemetryListCollection, itemsToSend, null, excludeTypes, 10.0);
     }
 
     @Test
@@ -297,13 +304,14 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> includeTypes = new ArrayList<String>() {{add("Exception");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryListCollection, itemsToSend, "Exception", null, 100.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 100.0);
         itemsToSend.clear();
         telemetryListCollection.clear();
         telemetryListCollection.add(dependencyTelemetry1);
-        testSampling(client, telemetryListCollection, itemsToSend, "Exception", null, 10.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 10.0);
     }
 
     @Test
@@ -312,9 +320,10 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> excludeTypes = new ArrayList<String>() {{add("PageView");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryListCollection, itemsToSend, null, "PageView", 10.0);
+        testNoSampling(client, telemetryListCollection, itemsToSend, null, excludeTypes, 10.0);
     }
 
     @Test
@@ -324,13 +333,14 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> includeTypes = new ArrayList<String>() {{add("PageView");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryListCollection, itemsToSend, "PageView", null, 100.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 100.0);
         itemsToSend.clear();
         telemetryListCollection.clear();
         telemetryListCollection.add(dependencyTelemetry1);
-        testSampling(client, telemetryListCollection, itemsToSend, "PageView", null, 10.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 10.0);
     }
 
     @Test
@@ -339,9 +349,10 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> excludeTypes = new ArrayList<String>() {{add("Trace");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryListCollection, itemsToSend, null, "Trace", 10.0);
+        testNoSampling(client, telemetryListCollection, itemsToSend, null, excludeTypes, 10.0);
     }
 
     @Test
@@ -351,13 +362,14 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         List<List<Telemetry>> telemetryListCollection = new ArrayList<List<Telemetry>>();
         telemetryListCollection.add(dependencyTelemetry);
+        List<String> includeTypes = new ArrayList<String>() {{add("Trace");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryListCollection, itemsToSend, "Trace", null, 100.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 100.0);
         itemsToSend.clear();
         telemetryListCollection.clear();
         telemetryListCollection.add(dependencyTelemetry1);
-        testSampling(client, telemetryListCollection, itemsToSend, "Trace", null, 10.0);
+        testSampling(client, telemetryListCollection, itemsToSend, includeTypes, null, 10.0);
     }
 
     @Test
@@ -368,9 +380,10 @@ public class FixedRateSamplingTelemetryProcessorTest {
         telemetryCollectionList.add(dependencyTelemetry);
         telemetryCollectionList.add(dependencyTelemetry1);
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
+        List<String> excludeTypes = new ArrayList<String>() {{add("Trace"); add("Request");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryCollectionList, itemsToSend, null, "Trace;Request", 10.0);
+        testNoSampling(client, telemetryCollectionList, itemsToSend, null, excludeTypes, 10.0);
     }
 
     @Test
@@ -380,10 +393,11 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<List<Telemetry>> telemetryCollectionList = new ArrayList<List<Telemetry>>();
         telemetryCollectionList.add(dependencyTelemetry);
         telemetryCollectionList.add(dependencyTelemetry1);
+        List<String> includeTypes = new ArrayList<String>() {{add("Trace"); add("Request");}};
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryCollectionList, itemsToSend, "Trace;Request", null, 10.0);
+        testSampling(client, telemetryCollectionList, itemsToSend, includeTypes, null, 10.0);
     }
 
     @Test
@@ -394,9 +408,11 @@ public class FixedRateSamplingTelemetryProcessorTest {
         telemetryCollectionList.add(dependencyTelemetry);
         telemetryCollectionList.add(dependencyTelemetry1);
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
+        List<String> includeTypes = new ArrayList<String>() {{add("Exception"); add("Request");}};
+        List<String> excludeTypes = new ArrayList<String>() {{add("PageView"); add("Request");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryCollectionList, itemsToSend, "Exception;Request", "PageView;Request", 10.0);
+        testNoSampling(client, telemetryCollectionList, itemsToSend, includeTypes, excludeTypes, 10.0);
     }
 
     @Test
@@ -405,9 +421,10 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<List<Telemetry>> telemetryCollectionList = new ArrayList<List<Telemetry>>();
         telemetryCollectionList.add(dependencyTelemetry);
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
+        List<String> excludeTypes = new ArrayList<String>() {{add("aaa"); add("bbb");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryCollectionList, itemsToSend, null, "aaa;bbb", 10.0);
+        testSampling(client, telemetryCollectionList, itemsToSend, null, excludeTypes, 10.0);
     }
 
     @Test
@@ -416,31 +433,10 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<List<Telemetry>> telemetryCollectionList = new ArrayList<List<Telemetry>>();
         telemetryCollectionList.add(dependencyTelemetry);
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
+        List<String> includeTypes = new ArrayList<String>() {{add("aaa"); add("bbb");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryCollectionList, itemsToSend, "aaa;bbb", null, 10.0);
-    }
-
-    @Test
-    public void incorrectFormatDoesNotAffectCorrectExcludedType() {
-        List<Telemetry> dependencyTelemetry = getListOfTelemetry("com.microsoft.applicationinsights.telemetry.PageViewTelemetry",100);
-        List<List<Telemetry>> telemetryCollectionList = new ArrayList<List<Telemetry>>();
-        telemetryCollectionList.add(dependencyTelemetry);
-        List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
-        TelemetryConfiguration configuration = createConfiguration(itemsToSend);
-        TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryCollectionList, itemsToSend, null, ";;;dfd;;;;s;re;;;PageView;;;;", 10.0);
-    }
-
-    @Test
-    public void incorrectFormatDoesNotAffectCorrectIncludeType() {
-        List<Telemetry> dependencyTelemetry = getListOfTelemetry("com.microsoft.applicationinsights.telemetry.PageViewTelemetry",100);
-        List<List<Telemetry>> telemetryCollectionList = new ArrayList<List<Telemetry>>();
-        telemetryCollectionList.add(dependencyTelemetry);
-        List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
-        TelemetryConfiguration configuration = createConfiguration(itemsToSend);
-        TelemetryClient client = new TelemetryClient(configuration);
-        testNoSampling(client, telemetryCollectionList, itemsToSend, ";;;dfd;;;;s;re;;;Exception;;;;", null, 10.0);
+        testSampling(client, telemetryCollectionList, itemsToSend, includeTypes, null, 10.0);
     }
 
     @Test
@@ -449,9 +445,10 @@ public class FixedRateSamplingTelemetryProcessorTest {
         List<List<Telemetry>> telemetryCollectionList = new ArrayList<List<Telemetry>>();
         telemetryCollectionList.add(dependencyTelemetry);
         List<Telemetry> itemsToSend = new ArrayList<Telemetry>();
+        List<String> includeTypes = new ArrayList<String>() {{add("Request");}};
         TelemetryConfiguration configuration = createConfiguration(itemsToSend);
         TelemetryClient client = new TelemetryClient(configuration);
-        testSampling(client, telemetryCollectionList, itemsToSend, "Request", null, 100.0);
+        testSampling(client, telemetryCollectionList, itemsToSend, includeTypes, null, 100.0);
     }
 
     @Test
@@ -509,18 +506,28 @@ public class FixedRateSamplingTelemetryProcessorTest {
     }
 
     private void testSampling(TelemetryClient client , List<List<Telemetry>> dependencyTelemetry,
-                              List<Telemetry> itemsToSend, String includeTypes, String excludeTypes, double samplingRate) {
+                              List<Telemetry> itemsToSend, List<String> includeTypes, List<String> excludeTypes, double samplingRate) {
 
 
         FixedRateSamplingTelemetryProcessor processor = new FixedRateSamplingTelemetryProcessor();
         processor.setSamplingPercentage(String.valueOf(samplingRate));
-        if (!StringUtils.isNullOrEmpty(includeTypes)) {
-            processor.setIncludedTypes(includeTypes);
+        if (includeTypes != null) {
+            for (String includeType : includeTypes) {
+                if (!StringUtils.isNullOrEmpty(includeType)) {
+                    processor.addToIncludedType(includeType);
+                }
+            }
         }
 
-        if (!StringUtils.isNullOrEmpty(excludeTypes)) {
-            processor.setIncludedTypes(excludeTypes);
+        if (excludeTypes != null) {
+            for (String excludeType : excludeTypes) {
+                if (!StringUtils.isNullOrEmpty(excludeType)) {
+                    processor.addToExcludedType(excludeType);
+                }
+            }
         }
+
+
         int generatedCount = 0;
         for (int i = 0; i < dependencyTelemetry.get(0).size(); ++i) {
             for (int j = 0; j < dependencyTelemetry.size(); ++j) {
@@ -545,18 +552,27 @@ public class FixedRateSamplingTelemetryProcessorTest {
     }
 
     private void testNoSampling(TelemetryClient client , List<List<Telemetry>> dependencyTelemetry,
-                                List<Telemetry> itemsToSend, String includeTypes, String excludeTypes, double samplingRate) {
+                                List<Telemetry> itemsToSend, List<String> includeTypes, List<String> excludeTypes, double samplingRate) {
 
 
         FixedRateSamplingTelemetryProcessor processor = new FixedRateSamplingTelemetryProcessor();
         processor.setSamplingPercentage(String.valueOf(samplingRate));
-        if (!StringUtils.isNullOrEmpty(includeTypes)) {
-            processor.setIncludedTypes(includeTypes);
+        if (includeTypes != null) {
+            for (String includeType : includeTypes) {
+                if (!StringUtils.isNullOrEmpty(includeType)) {
+                    processor.addToIncludedType(includeType);
+                }
+            }
         }
 
-        if (!StringUtils.isNullOrEmpty(excludeTypes)) {
-            processor.setExcludedTypes(excludeTypes);
+        if (excludeTypes != null) {
+            for (String excludeType : excludeTypes) {
+                if (!StringUtils.isNullOrEmpty(excludeType)) {
+                    processor.addToExcludedType(excludeType);
+                }
+            }
         }
+
         int generatedCount = 0;
         for (int i = 0; i < dependencyTelemetry.get(0).size(); ++i) {
             for (int j = 0; j < dependencyTelemetry.size(); ++j) {

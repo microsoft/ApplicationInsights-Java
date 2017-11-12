@@ -22,8 +22,12 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by gupele on 8/7/2016.
@@ -115,6 +119,91 @@ public class TelemetryProcessorCreatorTest {
         param.setName("Property");
         param.setValue("value");
         element.getAdds().add(param);
+
+        TelemetryProcessor result = new TelemetryProcessorCreator().Create(element);
+
+        Assert.assertNull(result);
+    }
+
+    //This test tests correct initialization of included and excluded types in the processor
+    @Test
+    public void testProcessorWithIncludedExcludedTypes() {
+        TelemetryProcessorXmlElement element = new TelemetryProcessorXmlElement();
+        element.setType("com.microsoft.applicationinsights.internal.config.ValidProcessorWithIncludeExcludeType");
+        ParamIncludedTypeXmlElement paramIncludedTypeXmlElement = new ParamIncludedTypeXmlElement();
+        ParamExcludedTypeXmlElement paramExcludedTypeXmlElement = new ParamExcludedTypeXmlElement();
+        List<String> includedType = new ArrayList<String>() {{add("Trace"); add("Request");}};
+        List<String> excludedType = new ArrayList<String>() {{add("Exception");}};
+        paramIncludedTypeXmlElement.setIncludedType(includedType);
+        paramExcludedTypeXmlElement.setExcludedType(excludedType);
+        element.setIncludedTypes(paramIncludedTypeXmlElement);
+        element.setExcludedTypes(paramExcludedTypeXmlElement);
+
+        TelemetryProcessor result = new TelemetryProcessorCreator().Create(element);
+
+        Assert.assertTrue(result instanceof ValidProcessorWithIncludeExcludeType);
+
+    }
+
+    /*
+    This test is for situation when users config file looks like this :
+        <IncludedTypes>
+        </IncludedTypes>
+        i.e when there are no included types specified in the included types tag.
+     */
+    @Test
+    public void testProcessorWithNullIncludedType() {
+        TelemetryProcessorXmlElement element = new TelemetryProcessorXmlElement();
+        element.setType("com.microsoft.applicationinsights.internal.config.ValidProcessorWithIncludeExcludeType");
+        ParamIncludedTypeXmlElement paramIncludedTypeXmlElement = null;
+        element.setIncludedTypes(paramIncludedTypeXmlElement);
+
+        TelemetryProcessor result = new TelemetryProcessorCreator().Create(element);
+
+        Assert.assertTrue(result instanceof ValidProcessorWithIncludeExcludeType);
+    }
+
+
+    /*
+    This test is for situation when users config file looks like this :
+        <ExcludedTypes>
+        </ExcludedTypes>
+        i.e when there are no included types specified in the excluded types tag.
+     */
+    @Test
+    public void testProcessorWithNullExcludedTypes() {
+        TelemetryProcessorXmlElement element = new TelemetryProcessorXmlElement();
+        element.setType("com.microsoft.applicationinsights.internal.config.ValidProcessorWithIncludeExcludeType");
+        ParamExcludedTypeXmlElement paramExcludedTypeXmlElement = null;
+        element.setExcludedTypes(paramExcludedTypeXmlElement);
+        TelemetryProcessor result = new TelemetryProcessorCreator().Create(element);
+        Assert.assertTrue(result instanceof ValidProcessorWithIncludeExcludeType);
+    }
+
+    @Test
+    public void testProcessorThatThrowsOnIncludedTypes() {
+
+        TelemetryProcessorXmlElement element = new TelemetryProcessorXmlElement();
+        element.setType("com.microsoft.applicationinsights.internal.config.TestProcessorThatThrowsOnIncludedAndExcludedTypes");
+        ParamIncludedTypeXmlElement paramIncludedTypeXmlElement = new ParamIncludedTypeXmlElement();
+        List<String> includedType = new ArrayList<String>() {{add("Trace"); add("Request");}};
+        paramIncludedTypeXmlElement.setIncludedType(includedType);
+        element.setIncludedTypes(paramIncludedTypeXmlElement);
+
+        TelemetryProcessor result = new TelemetryProcessorCreator().Create(element);
+
+        Assert.assertNull(result);
+    }
+
+    @Test
+    public void testProcessorThatThrowsOnExcludedTypes() {
+
+        TelemetryProcessorXmlElement element = new TelemetryProcessorXmlElement();
+        element.setType("com.microsoft.applicationinsights.internal.config.TestProcessorThatThrowsOnIncludedAndExcludedTypes");
+        ParamExcludedTypeXmlElement paramExcludedTypeXmlElement = new ParamExcludedTypeXmlElement();
+        List<String> excludedType = new ArrayList<String>() {{add("Trace"); add("Request");}};
+        paramExcludedTypeXmlElement.setExcludedType(excludedType);
+        element.setExcludedTypes(paramExcludedTypeXmlElement);
 
         TelemetryProcessor result = new TelemetryProcessorCreator().Create(element);
 
