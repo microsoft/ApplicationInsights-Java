@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -40,6 +41,8 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
     private String sequence;
+    
+    private static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights";
 
     protected BaseTelemetry() {
     }
@@ -139,9 +142,12 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-
+    	
+    	String telemetryName = this.getTelemetryName(
+    			this.normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
+    	
         Envelope envelope = new Envelope();
-        envelope.setName(this.getEnvelopName());
+        envelope.setName(telemetryName);
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
@@ -184,4 +190,23 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     protected String getBaseTypeName() {
         throw new UnsupportedOperationException();
     }
+    
+    private String normalizeInstrumentationKey(String instrumentationKey){
+    	if (StringUtils.isNullOrEmpty(instrumentationKey)){
+    		return "";
+    	}
+    	else{
+    		return instrumentationKey.replace("-", "").toLowerCase() + ".";
+    	}
+    }
+    
+    private String getTelemetryName(String formattedInstrumentationKey, String envelopType){
+    	return String.format(
+    			"{0}{1}{2}",
+    			TELEMETRY_NAME_PREFIX,
+    			formattedInstrumentationKey,
+    			envelopType
+    			);
+    }
+    
 }
