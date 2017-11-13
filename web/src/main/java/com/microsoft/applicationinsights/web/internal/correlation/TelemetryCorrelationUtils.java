@@ -21,17 +21,78 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import javax.servlet.ServletRequest;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class TelemetryCorrelationUtils {
 
     public static final String CORRELATION_HEADER_NAME = "RequestId";
 	public static final String CORRELATION_CONTEXT_HEADER_NAME = "Correlation-Context";
+	public static final int REQUESTID_MAXLENGTH = 1024; 
 
 	private TelemetryCorrelationUtils() {}
 
-	public static void resolveCorrelation(ServletRequest request, RequestTelemetry requestTelemetry) {
+	public static void resolveCorrelation(HttpServletRequest request, RequestTelemetry requestTelemetry) {
+		
+		try {
+			if (request == null) {
+				InternalLogger.INSTANCE.error("Failed to resolve correlation. request is null.");
+				return;
+			}
+	
+			if (requestTelemetry == null) {
+				InternalLogger.INSTANCE.error("Failed to resolve correlation. requestTelemetry is null.");
+				return;
+			}
+
+			
+			String rootId = null;
+			String parentId = null;
+			String currentId = null;
+
+			String requestId = request.getHeader(CORRELATION_HEADER_NAME);
+
+			if (requestId == null || requestId.isEmpty()) {
+				// no incoming requestId, no parent.
+				rootId = generateRootId();
+				currentId = '|' + rootId + '.';
+				System.out.println("SHOULD NOT BE HERE");
+				if (requestId == null) {
+					System.out.println("NULL");
+				}
+			} else {
+				parentId = requestId;
+				rootId = extractRootId(parentId);
+				currentId = generateId(parentId);
+				System.out.println("CurrentID: " + currentId);
+			}
+
+			requestTelemetry.setId(currentId);
+			requestTelemetry.getContext().getOperation().setId(rootId);
+			requestTelemetry.getContext().getOperation().setParentId(parentId);
+
+		}
+		catch(Exception ex) {
+			InternalLogger.INSTANCE.error("Failed to resolve correlation. Exception information: " + ex);
+		}
+	}
+
+	private static String extractRootId(String parentId) {
+		// ported from .NET's System.Diagnostics.Activity.cs implementation:
+		// https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
+		
+		int rootEnd = parentId.indexOf('.');
+		if (rootEnd < 0) {
+			rootEnd = parentId.length();
+		}
+
+		int rootStart = parentId.charAt(0) == '|' ? 1 : 0;
+
+		return parentId.substring(rootStart, rootEnd);
 	}
 
 	public static boolean isHierarchicalId(String id) {
@@ -40,5 +101,67 @@ public class TelemetryCorrelationUtils {
 		}
 
 		return id.charAt(0) == '|';
+	}
+
+	private static String generateRootId() {
+		UUID guid = UUID.randomUUID();
+        long least = guid.getLeastSignificantBits();
+        long most = guid.getMostSignificantBits();
+
+        return Long.toHexString(most) + Long.toHexString(least);
+	}
+
+	private static String generateId(String parentId) {
+		String sanitizedParentId = sanitizeParentId(parentId);
+		String suffix = generateSuffix();
+
+		//handle overflow
+		if (sanitizedParentId.length() + suffix.length() > REQUESTID_MAXLENGTH) {
+			return shortenId(sanitizedParentId, suffix);
+		}
+
+		return sanitizedParentId + suffix + "_";
+	}
+
+	private static String shortenId(String parentId, String suffix) {
+		
+		// ported from .NET's System.Diagnostics.Activity.cs implementation:
+		// https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
+		int trimPosition = REQUESTID_MAXLENGTH - 9; // make room for suffix + delimiter
+		while (trimPosition > 1)
+		{
+			if (parentId.charAt(trimPosition - 1) == '.' || parentId.charAt(trimPosition - 1) == '_')
+				break;
+			trimPosition--;
+		}
+		
+		// parentId is not a valid requestId, so generate one.
+		if (trimPosition == 1) {
+			return "|" + generateRootId() + ".";
+		}
+		
+		return parentId.substring(0, trimPosition) + suffix + '#';
+	}
+
+	private static String sanitizeParentId(String parentId) {
+		
+		String result = parentId;
+		if (!isHierarchicalId(parentId)) {
+			result = "|" + result;
+		}
+
+		char lastChar = parentId.charAt(parentId.length() - 1);
+		if (lastChar != '.' && lastChar != '_') {
+			result = result + '.';
+		}
+		
+		return result;
+	}
+
+	private static String generateSuffix() {
+		// using ThreadLocalRandom instead of Random to avoid multi-threaded contention which would 
+		// result in poor performance.
+		int randomNumber = ThreadLocalRandom.current().nextInt();
+		return Integer.toHexString(randomNumber);
 	}
 }

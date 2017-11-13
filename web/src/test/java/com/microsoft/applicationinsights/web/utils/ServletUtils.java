@@ -76,12 +76,17 @@ public class ServletUtils {
         return mock(HttpServletResponse.class);
     }
 
-    public static ServletRequest createServletRequestWithHeaders(Hashtable<String, String> headers) {
+    public static HttpServletRequest createServletRequestWithHeaders(Hashtable<String, String> headers) {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         for (String headerName : headers.keySet()) {
             when(request.getHeader(headerName)).thenReturn(headers.get(headerName));
         }
+
+        when(request.getRequestURI()).thenReturn("/controller/action.action");
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getScheme()).thenReturn("http");
+        when(request.getHeader("Host")).thenReturn("contoso.com");
 
         return request;
     }

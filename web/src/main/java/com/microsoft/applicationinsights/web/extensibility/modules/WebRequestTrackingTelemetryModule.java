@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -90,6 +91,10 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             telemetry.setName(String.format("%s %s", method, rUriWithoutSessionId));
             telemetry.getContext().getUser().setUserAgent(userAgent);
             telemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
+
+            // Look for cross-component correlation headers and resolve correlation ID's
+            TelemetryCorrelationUtils.resolveCorrelation(request, telemetry);
+
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.error("Telemetry module " + moduleClassName + " onBeginRequest failed with exception: %s", e.getMessage());

@@ -41,7 +41,7 @@ import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationManager;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -156,9 +156,9 @@ public class WebRequestTrackingTelemetryModuleTests {
         Hashtable<String, String> headers = new Hashtable<String, String>();
         String rootId = "guid";
         String incomingId = "|guid.bcec871c_1.";
-        headers.put(TelemetryCorrelationManager.CORRELATION_HEADER_NAME, incomingId);
-        ServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
-        
+        headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
         //run
         defaultModule.onBeginRequest(request, null);
 
@@ -184,12 +184,11 @@ public class WebRequestTrackingTelemetryModuleTests {
         //mock a servlet request with cross-component correlation headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
         
-        String rootId = "guid";
         String incomingId = "|guid.bcec871c_1.";
-        headers.put(TelemetryCorrelationManager.CORRELATION_HEADER_NAME, incomingId);
+        headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
 
         String correlationContext = "key1=value1, key2=value2";
-        headers.put(TelemetryCorrelationManager.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
+        headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
 
         ServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
@@ -243,7 +242,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         when(request.getQueryString()).thenReturn(queryString);
 
         return request;
-    }
+    }   
 
     private ServletRequest createFaultyServletRequestMock() {
         ServletRequest request = mock(ServletRequest.class);
