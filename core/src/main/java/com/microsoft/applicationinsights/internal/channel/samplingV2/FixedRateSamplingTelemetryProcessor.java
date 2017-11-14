@@ -20,13 +20,22 @@ import java.util.Set;
  * <p>
  * How to use in ApplicationInsights Configuration :
  * <p>
- * <BuiltInProcessors>
- * <Processor type = "FixedRateSamplingTelemetryProcessor">
- * <Add name = "SamplingPercentage" value = "50" />
- * <Add name = "ExcludedTypes" value="Trace" />
- * <Add name = "IncludedTypes" value="Trace;Request" />
- * </Processor>
- * </BuiltInProcessors>
+* <TelemetryProcessors>
+    <BuiltInProcessors>
+        <Processor type = "FixedRateSamplingTelemetryProcessor">
+            <Add name = "SamplingPercentage" value = "50" />
+            <ExcludedTypes>
+                <excludedType>Request</excludedType>
+            </ExcludedTypes>
+            <IncludedTypes>
+                <includedType>Request</includedType>
+                <includedType>Trace</includedType>
+                <includedType>Dependency</includedType>
+                <includedType>Exception</includedType>
+            </IncludedTypes>
+        </Processor>
+    </BuiltInProcessors>
+</TelemetryProcessors>
  */
 @BuiltInProcessor("FixedRateSamplingTelemetryProcessor")
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {
@@ -38,7 +47,6 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     private static final String requestTelemetryName = "Request";
     private static final String traceTelemetryName = "Trace";
 
-    private static final String listSeparator = ";";
     private static Map<String, Class> allowedTypes;
 
     private Set<Class> excludedTypes;

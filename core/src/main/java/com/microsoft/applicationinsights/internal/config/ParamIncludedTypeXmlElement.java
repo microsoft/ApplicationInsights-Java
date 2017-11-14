@@ -3,7 +3,9 @@ package com.microsoft.applicationinsights.internal.config;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-//This class is used to bind the xml array list of <IncludeTypes>
+/**
+ * This class is used to bind the xml array list of <IncludeTypes>
+ */
 
 @XmlRootElement(name = "IncludedTypes")
 public class ParamIncludedTypeXmlElement {
