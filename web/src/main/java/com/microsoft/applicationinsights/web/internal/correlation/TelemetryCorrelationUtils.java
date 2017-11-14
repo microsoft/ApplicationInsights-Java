@@ -76,6 +76,18 @@ public class TelemetryCorrelationUtils {
 		}
 	}
 
+	public static String generateChildDependencyId(RequestTelemetry requestTelemetry) {
+		return null;
+	}
+
+	public static boolean isHierarchicalId(String id) {
+		if (id == null || id.isEmpty()) {
+			return false;
+		}
+
+		return id.charAt(0) == '|';
+	}
+
 	private static String extractRootId(String parentId) {
 		// ported from .NET's System.Diagnostics.Activity.cs implementation:
 		// https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
@@ -88,14 +100,6 @@ public class TelemetryCorrelationUtils {
 		int rootStart = parentId.charAt(0) == '|' ? 1 : 0;
 
 		return parentId.substring(rootStart, rootEnd);
-	}
-
-	public static boolean isHierarchicalId(String id) {
-		if (id == null || id.isEmpty()) {
-			return false;
-		}
-
-		return id.charAt(0) == '|';
 	}
 
 	private static String generateRootId() {
@@ -157,6 +161,6 @@ public class TelemetryCorrelationUtils {
 		// using ThreadLocalRandom instead of Random to avoid multi-threaded contention which would 
 		// result in poor performance.
 		int randomNumber = ThreadLocalRandom.current().nextInt();
-		return Integer.toHexString(randomNumber);
+		return String.format("%08x", randomNumber);
 	}
 }

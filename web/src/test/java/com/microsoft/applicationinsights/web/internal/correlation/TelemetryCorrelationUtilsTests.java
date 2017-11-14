@@ -381,5 +381,59 @@ public class TelemetryCorrelationUtilsTests {
         Assert.assertEquals(incomingId, operation.getParentId());
     }
 
+    @Test
+    public void testChildRequestDependencyIdGeneration() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingId = "|guid_1.";
+        headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
+        
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        //run
+        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        String childId = TelemetryCorrelationUtils.generateChildDependencyId(requestTelemetry);
+
+        //validate we have generated proper ID's
+        Assert.assertNotNull(childId);
+        Assert.assertEquals(requestTelemetry.getId().length() + 2, childId.length());
+        Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
+        Assert.assertTrue(childId.endsWith("."));
+    }
+
+    @Test
+    public void testChildRequestDependencyIdGenerationWithMultipleRequests() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingId = "|guid_1.";
+        headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
+        
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        //run
+        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        String childId = TelemetryCorrelationUtils.generateChildDependencyId(requestTelemetry);
+
+        //validate we have generated proper ID's
+        Assert.assertNotNull(childId);
+        Assert.assertEquals(requestTelemetry.getId().length() + 2, childId.length());
+        Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
+        Assert.assertTrue(childId.endsWith("."));
+
+        // generate second "request"
+        childId = TelemetryCorrelationUtils.generateChildDependencyId(requestTelemetry);
+        Assert.assertNotNull(childId);
+        Assert.assertEquals(requestTelemetry.getId().length() + 2, childId.length());
+        Assert.assertEquals(requestTelemetry.getId() + "2.", childId);
+        Assert.assertTrue(childId.endsWith("."));
+
+    }
+
 
 }
