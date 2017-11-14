@@ -154,7 +154,6 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //mock a servlet request with cross-component correlation headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
-        String rootId = "guid";
         String incomingId = "|guid.bcec871c_1.";
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
@@ -170,7 +169,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(rootId, operation.getId());
+        Assert.assertEquals("guid", operation.getId());
         Assert.assertEquals(incomingId, operation.getParentId());
     }
 
@@ -206,8 +205,9 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
 
         //validate manually tracked telemetry is a child of the request telemetry
-        Assert.assertEquals("guid1", exceptionTelemetry.getContext().getOperation().getId());
+        Assert.assertEquals("guid", exceptionTelemetry.getContext().getOperation().getId());
         Assert.assertEquals(requestTelemetry.getId(), exceptionTelemetry.getContext().getOperation().getParentId());
+        Assert.assertEquals(2, exceptionTelemetry.getProperties().size());
         Assert.assertEquals("value1", exceptionTelemetry.getProperties().get("key1"));
         Assert.assertEquals("value2", exceptionTelemetry.getProperties().get("key2"));
     }

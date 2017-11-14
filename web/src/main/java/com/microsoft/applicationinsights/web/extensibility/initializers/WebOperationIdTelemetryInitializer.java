@@ -22,6 +22,8 @@
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.extensibility.context.OperationContext;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -38,8 +40,17 @@ public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerB
     protected void onInitializeTelemetry(Telemetry telemetry) {
         RequestTelemetryContext telemetryContext = ThreadContext.getRequestTelemetryContext();
 
+        RequestTelemetry requestTelemetry = telemetryContext.getHttpRequestTelemetry();
+        OperationContext operation = requestTelemetry.getContext().getOperation();
+
+        // set operationId to the request telemetry's operation ID
         if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
-            telemetry.getContext().getOperation().setId(telemetryContext.getHttpRequestTelemetry().getId());
+            telemetry.getContext().getOperation().setId(operation.getId());
+        }
+
+        // set operation parentId to the request telemetry's ID
+        if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getParentId())) {
+            telemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
         }
     }
 }

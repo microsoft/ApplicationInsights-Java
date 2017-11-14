@@ -60,15 +60,10 @@ public class TelemetryCorrelationUtils {
 				// no incoming requestId, no parent.
 				rootId = generateRootId();
 				currentId = '|' + rootId + '.';
-				System.out.println("SHOULD NOT BE HERE");
-				if (requestId == null) {
-					System.out.println("NULL");
-				}
 			} else {
 				parentId = requestId;
 				rootId = extractRootId(parentId);
 				currentId = generateId(parentId);
-				System.out.println("CurrentID: " + currentId);
 			}
 
 			requestTelemetry.setId(currentId);
