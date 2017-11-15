@@ -37,7 +37,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_TYPE = "Metric";
+    private static final String ENVELOPE_NAME = "Metric";
 
 
     /**

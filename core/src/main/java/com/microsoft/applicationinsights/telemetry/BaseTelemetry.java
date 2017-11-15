@@ -42,7 +42,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private Date timestamp;
     private String sequence;
     
-    private static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights";
+    private final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
     protected BaseTelemetry() {
     }
@@ -200,11 +200,11 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     	}
     }
     
-    private String getTelemetryName(String formattedInstrumentationKey, String envelopType){
+    private String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
     	return String.format(
-    			"{0}{1}{2}",
+    			"%s%s%s",
     			TELEMETRY_NAME_PREFIX,
-    			formattedInstrumentationKey,
+    			normalizedInstrumentationKey,
     			envelopType
     			);
     }
