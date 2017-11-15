@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.extensibility.context.OperationContext;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
@@ -40,12 +40,25 @@ public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerB
     protected void onInitializeTelemetry(Telemetry telemetry) {
         RequestTelemetryContext telemetryContext = ThreadContext.getRequestTelemetryContext();
 
+        if (telemetryContext == null) {
+            InternalLogger.INSTANCE.error(
+                "Unexpected error. No telemetry context found. OperationContext will not be initialized.");
+                return;
+        }
+
         RequestTelemetry requestTelemetry = telemetryContext.getHttpRequestTelemetry();
-        OperationContext operation = requestTelemetry.getContext().getOperation();
+        String currentOperationId = requestTelemetry.getContext().getOperation().getId();
+
+        // if there's no current operation (e.g. telemetry being initialized outside of 
+        // request scope), just initialize operationId to the generic id currently in request
+        if (currentOperationId == null || currentOperationId.isEmpty()) {
+            telemetry.getContext().getOperation().setId(requestTelemetry.getId());
+            return;
+        }
 
         // set operationId to the request telemetry's operation ID
         if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
-            telemetry.getContext().getOperation().setId(operation.getId());
+            telemetry.getContext().getOperation().setId(currentOperationId);
         }
 
         // set operation parentId to the request telemetry's ID
