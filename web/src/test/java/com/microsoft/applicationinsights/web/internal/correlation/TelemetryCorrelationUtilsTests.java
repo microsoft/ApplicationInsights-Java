@@ -24,7 +24,10 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import org.junit.Assert;
 import org.junit.Test;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
@@ -391,11 +394,13 @@ public class TelemetryCorrelationUtilsTests {
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         
-        RequestTelemetry requestTelemetry = new RequestTelemetry();
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+        RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
         //run
         TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
-        String childId = TelemetryCorrelationUtils.generateChildDependencyId(requestTelemetry);
+        String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //validate we have generated proper ID's
         Assert.assertNotNull(childId);
@@ -414,25 +419,45 @@ public class TelemetryCorrelationUtilsTests {
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         
-        RequestTelemetry requestTelemetry = new RequestTelemetry();
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+        RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
         //run
         TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
-        String childId = TelemetryCorrelationUtils.generateChildDependencyId(requestTelemetry);
+        String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //validate we have generated proper ID's
         Assert.assertNotNull(childId);
-        Assert.assertEquals(requestTelemetry.getId().length() + 2, childId.length());
         Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
-        Assert.assertTrue(childId.endsWith("."));
 
-        // generate second "request"
-        childId = TelemetryCorrelationUtils.generateChildDependencyId(requestTelemetry);
+        // generate second child
+        childId = TelemetryCorrelationUtils.generateChildDependencyId();
         Assert.assertNotNull(childId);
-        Assert.assertEquals(requestTelemetry.getId().length() + 2, childId.length());
         Assert.assertEquals(requestTelemetry.getId() + "2.", childId);
-        Assert.assertTrue(childId.endsWith("."));
+    }
 
+    @Test
+    public void testChildRequestDependencyIdGenerationWithNonHierarchicalRequestId() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingId = "guid";
+        headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
+        
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+        RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
+
+        //run
+        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        String childId = TelemetryCorrelationUtils.generateChildDependencyId();
+
+        //Incoming ID is non-hierarchical, so we must not modidy outgoing (child) id
+        Assert.assertNotNull(childId);
+        Assert.assertEquals(incomingId, childId);
     }
 
 

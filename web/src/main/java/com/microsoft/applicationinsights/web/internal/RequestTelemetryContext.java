@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.http.HttpServletRequest;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -37,6 +38,7 @@ public class RequestTelemetryContext {
     private UserCookie userCookie;
     private boolean isNewSession = false;
     private HttpServletRequest servletRequest;
+    private AtomicInteger currentChildId = new AtomicInteger();
 
     /**
      * Constructs new RequestTelemetryContext object.
@@ -124,4 +126,11 @@ public class RequestTelemetryContext {
     public HttpServletRequest getHttpServletRequest() {
         return servletRequest;
     }
+
+	/**
+	 * @return the currentChildId
+	 */
+	public int incrementChildId() {
+		return this.currentChildId.addAndGet(1);
+	}
 }
