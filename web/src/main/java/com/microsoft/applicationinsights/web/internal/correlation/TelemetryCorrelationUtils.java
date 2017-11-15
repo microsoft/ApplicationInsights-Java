@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -76,7 +78,24 @@ public class TelemetryCorrelationUtils {
 		}
 	}
 
-	public static String generateChildDependencyId(RequestTelemetry requestTelemetry) {
+	public static String generateChildDependencyId() {
+		
+		try {
+			RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+			RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
+
+			// if parentId is non-hierarchical, it means the incoming requestId
+			// does not follow hierarchical convention, so we must not modify the children ID's.
+			if (!isHierarchicalId((requestTelemetry.getContext().getOperation().getParentId()))) {
+				return requestTelemetry.getContext().getOperation().getParentId();
+			}
+
+			return requestTelemetry.getId() + context.incrementChildId() + ".";
+		}
+		catch (Exception ex) {
+			InternalLogger.INSTANCE.error("Failed to generate child ID. Exception information: " + ex);
+		}
+
 		return null;
 	}
 
