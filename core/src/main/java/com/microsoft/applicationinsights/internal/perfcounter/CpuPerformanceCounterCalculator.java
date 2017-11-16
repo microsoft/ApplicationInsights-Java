@@ -43,6 +43,8 @@ public final class CpuPerformanceCounterCalculator {
 
     private long prevUpTime, prevProcessCpuTime;
 
+    private ObjectName osBean;
+
     public CpuPerformanceCounterCalculator() {
         OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
         numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
@@ -74,7 +76,9 @@ public final class CpuPerformanceCounterCalculator {
 
     private long getProcessCpuTime() throws Exception {
         MBeanServer bsvr = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
-        return (Long)bsvr.getAttribute(oname, "ProcessCpuTime");
+        if (osBean == null) {
+            osBean = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
+        }
+        return (Long)bsvr.getAttribute(osBean, "ProcessCpuTime");
     }
 }
