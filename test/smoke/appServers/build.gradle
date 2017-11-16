@@ -96,9 +96,7 @@ subprojects {
 task buildDockerImage {
 	dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
 	
-	exec {
-		commandLine 'docker', 'version'
-	}.assertNormalExitValue()
+	verifyDockerInstallation()
 
 	outputs.upToDateWhen { false }
 	doLast {
@@ -153,15 +151,19 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
 def verifyDockerInstallation() {
 	exec {
 		commandLine 'docker', 'version'
-		standardOutput = new ByteArrayOutputStream()
-		errorOutput = standardOutput
 	}.assertNormalExitValue()
 	if (!System.env.DOCKER_HOME) {
-		def defaultDockerDir = new File("/Program Files/Docker/Docker")
-		if (!(defaultDockerDir.exists() && new File(defaultDockerDir, "DockerCli.exe").exists())) {
+		def findDocker = exec {
+			commandLine 'where', 'docker' // this is windows only
+			standardOutput = new ByteArrayOutputStream()
+		}
+		
+		
+		def dockerDir = findDocker.execResult == 0 ? new File(findDocker.standardOutput.toString()) : new File("/Program Files/Docker/Docker")
+		if (!(dockerDir.exists() && new File(dockerDir, "DockerCli.exe").exists())) {
 			throw new GradleException("Either docker isn't installed or in non-default location. Please set environment variable DOCKER_HOME")
 		}
-		System.env.DOCKER_HOME = defaultDockerDir.absolutePath
+		System.env.DOCKER_HOME = dockerDir.absolutePath
 	}
 }
 
