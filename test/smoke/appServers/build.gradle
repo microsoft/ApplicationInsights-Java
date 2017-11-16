@@ -95,6 +95,9 @@ subprojects {
 
 task buildDockerImage {
 	dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
+	exec {
+		commandLine 'docker', 'version'
+	}.assertNormalExitValue()
 	doLast {
 		project.subprojects.each { sp ->
 			copy {
