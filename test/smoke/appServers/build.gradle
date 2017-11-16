@@ -162,8 +162,12 @@ def verifyDockerInstallation() {
 			commandLine 'where', 'docker' // this is windows only
 			standardOutput = whereIsIt
 		}
-		
-		def dockerDir = findDocker.exitValue == 0 ? new File(whereIsIt.toString()) : new File("/Program Files/Docker/Docker")
+		def dockerDir = new File("/Program Files/Docker/Docker")
+		if (findDocker.exitValue == 0) {
+			def foundItHere = whereIsIt.toString()
+			logger.lifecycle foundItHere
+			dockerDir = new File(foundItHere).getParentFile().getParentFile()
+		}
 		if (!(dockerDir.exists() && new File(dockerDir, "DockerCli.exe").exists())) {
 			throw new GradleException("Either docker isn't installed or in non-default location. Please set environment variable DOCKER_HOME")
 		}
