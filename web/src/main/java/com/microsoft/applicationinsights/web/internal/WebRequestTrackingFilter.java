@@ -227,7 +227,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
             String name = getName(context);
 
-            String key = registerWebApp(name);
+            String key = registerWebApp(appName);
             setKey(key);
 
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Successfully registered the filter '%s'", FILTER_NAME);

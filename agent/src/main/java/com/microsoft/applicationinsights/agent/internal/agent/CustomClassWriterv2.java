@@ -6,6 +6,11 @@ import org.objectweb.asm.Opcodes;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * This class overwrites default class writer of ASM to use the ClassLoader
+ * provided by DefaultByteCode transformer (This loader essentially has all
+ * the required classes already loaded)
+ */
 public class CustomClassWriterv2 extends org.objectweb.asm.ClassWriter {
 
     private ClassLoader classLoader;
@@ -15,6 +20,13 @@ public class CustomClassWriterv2 extends org.objectweb.asm.ClassWriter {
         this.classLoader = loader;
     }
 
+    /**
+     * This method returns common super class for both the classes without actually loading
+     * the class using forName(). If no super class is present it returns java/lang/Object class.
+     * @param type1
+     * @param type2
+     * @return The String for the common super class of both the classes
+     */
     @Override
     protected String getCommonSuperClass(final String type1, final String type2) {
         try {
@@ -66,6 +78,13 @@ public class CustomClassWriterv2 extends org.objectweb.asm.ClassWriter {
         }
     }
 
+    /**
+     * Determines parent class
+     * @param type
+     * @param info
+     * @return
+     * @throws IOException
+     */
     private StringBuilder typeAncestors(String type, ClassReader info) throws IOException {
         StringBuilder b = new StringBuilder();
         while (!"java/lang/Object".equals(type)) {
@@ -77,6 +96,14 @@ public class CustomClassWriterv2 extends org.objectweb.asm.ClassWriter {
     }
 
 
+    /**
+     * Determines common interface implementation
+     * @param type
+     * @param info
+     * @param itf
+     * @return
+     * @throws IOException
+     */
     private boolean typeImplements(String type, ClassReader info, String itf) throws IOException {
         while (!"java/lang/Object".equals(type)) {
             String[] itfs = info.getInterfaces();
@@ -96,10 +123,15 @@ public class CustomClassWriterv2 extends org.objectweb.asm.ClassWriter {
         return false;
     }
 
+    /**
+     * Generates ASM Classwriter from the Input Stream for detailed information
+     * @param type
+     * @return
+     * @throws IOException
+     */
     private ClassReader typeInfo(final String type) throws IOException {
-        try (InputStream is = classLoader.getResourceAsStream(type + ".class")) {
-            return new ClassReader(is);
-        }
+        InputStream is = classLoader.getResourceAsStream(type + ".class");
+        return new ClassReader(is);
     }
 }
 
