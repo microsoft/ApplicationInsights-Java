@@ -31,6 +31,15 @@ include 'samples'
 include 'test:performance'
 include 'test:webapps:bookstore-spring'
 
+// Projects for smokeTests
+include ':test:smoke'
+include ':test:smoke:appServers'
+include ':test:smoke:appServers:Tomcat.7'
+include ':test:smoke:testApps'
+include ':test:smoke:testApps:SimpleCalculator'
+include ':test:smoke:testApps:CoreServlet'
+include ':test:smoke:utils'
+
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
