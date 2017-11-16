@@ -48,6 +48,7 @@ public final class CpuPerformanceCounterCalculator {
     public CpuPerformanceCounterCalculator() {
         OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
         numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
+        
     }
 
     public double getProcessCpuUsage() {
