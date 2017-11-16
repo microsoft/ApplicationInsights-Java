@@ -43,6 +43,9 @@ task serverInfo {
     exec {
         commandLine 'cmd', '/c', 'set'
     }
+    exec {
+        commandLine 'cmd', '/c', 'dir', '\\Docker'
+    }
 }
 
 allprojects {
