@@ -1,0 +1,182 @@
+import org.apache.tools.ant.filters.ReplaceTokens;
+
+apply plugin: 'base'
+
+ext {
+	partialDockerfileExt = '.partial.dockerfile'
+	jreMasterList = file('jre.master.txt')
+}
+
+subprojects {
+	apply plugin: 'base'
+
+	ext {
+		appServerShortName = null // set in subproject build.gradle; FIXME this value could probably be harvested from somewhere
+		outputRoot = "$projectDir/build"
+		dockerfileOutputDir = "$outputRoot/dockerfiles"
+		resourcesOutputDir = "$outputRoot/resources"
+		stagingDir = "$outputRoot/tmp"
+	}
+
+	task generateDockerfiles { // FIXME needs to support both OS
+		description 'Generates Dockerfiles for building images'
+
+		if (!jreMasterList.exists()) {
+			throw new GradleException("Missing master jre list: jre.master.txt")
+		}
+		def jreWhitelist = file('jre.includes.txt')
+		def jreBlacklist = file('jre.excludes.txt')
+
+		def jresToUse = getConfigSet(jreMasterList, jreWhitelist, jreBlacklist)
+		logger.lifecycle "JREs to use for $project.name containers: $jresToUse"
+		
+		FileTree inputDockerfiles = fileTree(dir: projectDir, include: "*$partialDockerfileExt")
+		if (inputDockerfiles.files.size() > 1) {
+			// FIXME this needs different validation when we support mutiple OS or configurations
+			throw new GradleException("Expected only 1 *$partialDockerfileExt file in $projectDir.name")
+		}
+		inputs.files(inputDockerfiles)
+		outputs.dir(outputRoot)
+		outputs.files fileTree(dir: outputRoot)
+		outputs.upToDateWhen { false }
+
+		doLast {
+			def jresFile = file("$resourcesOutputDir/${appServerShortName}.jre.txt")
+			jresFile.getParentFile().mkdirs()
+			jresFile.createNewFile()
+
+			jresToUse.each { jreVersion -> 
+				copy {
+					from projectDir
+					into dockerfileOutputDir
+					include "*$partialDockerfileExt"
+					filter(ReplaceTokens, tokens: [JRE: jreVersion])
+					def sanitizedJreVersion = jreVersion.replace(':','_')
+					rename(/(.+\.)(partial)(\.dockerfile)/, "\$1$sanitizedJreVersion\$3")
+				}
+				jresFile << "$jreVersion\n"
+			}
+			// FIXME make generic to work for both linux and windows
+		}
+	}
+
+	task buildDockerImage {
+		description 'Builds Docker images'
+
+		dependsOn generateDockerfiles
+		inputs.files(fileTree(dir: dockerfileOutputDir, include: '*.dockerfile'))
+		// TODO write upToDateWhen predicate
+		// TODO should this have outputs?
+
+		doLast {
+			copy {
+				from "$projectDir/resources/linux"
+				into stagingDir
+			}
+			copy {
+				from dockerfileOutputDir
+				into stagingDir
+			}
+
+			fileTree(dir:stagingDir, include: '*.dockerfile').each { df ->
+				def tag = df.name.minus('.dockerfile').replace('.', '_')
+				exec {
+					workingDir df.getParentFile().absolutePath
+					commandLine 'docker', 'build', '-f', df.name, '-t', tag, '.'
+				}
+			}
+		}
+	}
+
+	clean {
+		delete outputRoot
+	}
+}
+
+task buildDockerImage {
+	dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
+	doLast {
+		project.subprojects.each { sp ->
+			copy {
+				from sp.ext.resourcesOutputDir
+				into sharedResourcesDir
+				include '**/*.*'
+			}
+		}
+	}
+}
+
+task prune(type: Exec) {
+	commandLine 'docker', 'container', 'prune', '-f'
+}
+
+def getConfigSet(File universeFile, File includesFile, File excludesFile) {
+	def hasWhitelist = includesFile.exists()
+	def hasBlacklist = excludesFile.exists()
+	if (hasWhitelist) {
+		logger.info "includes exist: $includesFile.absolutePath"
+	}
+	if (hasBlacklist) {
+		logger.info "excludes exist: $excludesFile.absolutePath"
+	}
+	def universalSet = universeFile.text.readLines().toSet()
+	logger.info "universalSet has ${universalSet.size()} elements: $universalSet"
+	
+	def includeSet = (hasWhitelist ? includesFile.text.readLines().toSet() : universalSet)
+	logger.info "includeSet has ${includeSet.size()} elements: $includeSet"
+	
+	def excludeSet = (hasBlacklist ? excludesFile.text.readLines() : []).toSet()
+	logger.info "excludeSet has ${excludeSet.size()} elements: $excludeSet"
+
+	// if the excludes file contains entries which do not exist in the master list, warn the user; this is likely a typo
+	def uniqueExcludes = excludeSet.minus(universalSet)
+	if (uniqueExcludes.size() > 0) {
+		logger.warn("$blacklistFile.name entries are not a subset of ${universeFile.name}: ${uniqueExcludes}. These entries are nops and can be removed.")
+	}
+	
+	// if the includes file contains entires which do not exist in the master list, warn the user; be aware that these will be included
+	def uniqueIncludes = includeSet.minus(universalSet)
+	if (uniqueIncludes.size() > 1) {
+		logger.warn("FYI: $includesFile.name has ${includeSubset.size()} entries not found in $universeFile.name: $includeSubset")
+	}
+
+	def resultantSet = includeSet.intersect(universalSet.minus(excludeSet)).plus(uniqueIncludes)
+	return resultantSet
+}
+
+def verifyDockerInstallation() {
+	exec {
+		commandLine 'docker', 'version'
+		standardOutput = new ByteArrayOutputStream()
+		errorOutput = standardOutput
+	}.assertNormalExitValue()
+	if (!System.env.DOCKER_HOME) {
+		def defaultDockerDir = new File("/Program Files/Docker/Docker")
+		if (!(defaultDockerDir.exists() && new File(defaultDockerDir, "DockerCli.exe").exists())) {
+			throw new GradleException("Either docker isn't installed or in non-default location. Please set environment variable DOCKER_HOME")
+		}
+		System.env.DOCKER_HOME = defaultDockerDir.absolutePath
+	}
+}
+
+def getCurrentDockerServerArch() {
+	verifyDockerInstallation()
+	def dockerVersionOutput = new ByteArrayOutputStream()
+	exec {
+		commandLine 'docker', 'version'
+		standardOutput = dockerVersionOutput
+		errorOutput = new ByteArrayOutputStream()
+	}.assertNormalExitValue()
+	String strOut = dockerVersionOutput.toString().trim()
+	def m = strOut =~ /(?ism).+?Server:.+?OS\/Arch:\s+(\w+?)\//
+	return m[0][1];
+}
+
+def switchDockerDaemon() {
+	verifyDockerInstallation()
+	println "Switching docker mode. Current mode = "+getCurrentDockerServerArch()
+	exec {
+		commandLine "$System.env.DOCKER_HOME/DockerCli.exe", '-SwitchDaemon'
+	}.assertNormalExitValue()
+	println "Mode switched. Current mode = "+getCurrentDockerServerArch()
+}

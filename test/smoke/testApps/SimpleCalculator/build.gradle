@@ -1,0 +1,43 @@
+// apply plugin: 'java-library'
+apply plugin: 'war'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    compile project(':core')
+    compile project(':web')
+
+    compile 'com.google.guava:guava:20.0'
+
+    providedRuntime 'mysql:mysql-connector-java:5.1.44'
+
+    smokeTestCompile 'junit:junit:4.12'
+    smokeTestCompile 'com.google.guava:guava:23.0'
+    smokeTestCompile 'org.apache.httpcomponents:httpclient:4.5.3'
+
+    // FIXME these are not necessary; they're a workaround for a VSCode intellisense bug (it doesn't work with only the smokeTest configuration)
+    testCompile 'junit:junit:4.12'
+    testCompile 'com.google.guava:guava:23.0'
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.3'
+}
+
+compileJava.sourceCompatibility = 1.6
+compileJava.targetCompatibility = 1.6
+compileSmokeTestJava.sourceCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName
+
+if (System.env.JDK6_HOME) {
+    compileJava.options.bootClasspath = System.getenv('JDK6_HOME')+'/jre/lib/rt.jar'
+}
+if (System.env.JDK8_HOME) {
+    def jdk8rt = System.getenv('JDK8_HOME')+'/jre/lib/rt.jar'
+    compileSmokeTestJava.options.bootClasspath = jdk8rt
+}
+
+defaultTasks 'build'

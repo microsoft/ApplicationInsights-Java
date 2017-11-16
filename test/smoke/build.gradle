@@ -1,0 +1,15 @@
+
+apply plugin: 'base'
+
+allprojects {
+	ext {
+		sharedOutputRoot = project(':test:smoke').projectDir.absolutePath+'/shared-tmp'
+		sharedResourcesDir = "$sharedOutputRoot/resources"
+	}
+}
+
+clean {
+	delete file(sharedOutputRoot)
+}
+
+defaultTasks 'build'
