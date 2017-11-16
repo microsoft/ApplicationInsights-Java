@@ -38,6 +38,17 @@ task clean {
     }
 }
 
+allprojects {
+    tasks.withType(JavaCompile) {
+        doFirst {
+            logger.info("sourceCompatibility = $sourceCompatibility")
+            logger.info("tatgetCompatibility = $targetCompatibility")
+            logger.info("options.bootClasspath = $options.bootClasspath")
+            logger.info("options.compilerArgs = $options.compilerArgs")
+        }
+    }
+}
+
 // endregion Root project script
 
 // region private methods
