@@ -84,9 +84,11 @@ public class TelemetryCorrelationUtils {
 			RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 			RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
+			String parentId = requestTelemetry.getContext().getOperation().getParentId();
+
 			// if parentId is non-hierarchical, it means the incoming requestId
 			// does not follow hierarchical convention, so we must not modify the children ID's.
-			if (!isHierarchicalId((requestTelemetry.getContext().getOperation().getParentId()))) {
+			if (parentId != null && parentId.length() > 0 && !isHierarchicalId((parentId))) {
 				return requestTelemetry.getContext().getOperation().getParentId();
 			}
 

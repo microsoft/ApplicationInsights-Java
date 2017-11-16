@@ -139,12 +139,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void httpMethodFinished(String identifier, String method, String uri, int result, long deltaInNS) {
+    public void httpMethodFinished(String identifier, String method, String correlationId, String uri, int result, long deltaInNS) {
         if (!LocalStringsUtils.isNullOrEmpty(uri) && (uri.startsWith("https://dc.services.visualstudio.com") || uri.startsWith("https://rt.services.visualstudio.com"))) {
             return;
         }
         long deltaInMS = nanoToMilliseconds(deltaInNS);
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(identifier, null, new Duration(deltaInMS), true);
+        telemetry.setId(correlationId);
         telemetry.setResultCode(Integer.toString(result));
         telemetry.setType("HTTP");
         telemetry.getContext().getProperties().put("URI", uri);

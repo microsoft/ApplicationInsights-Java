@@ -82,6 +82,20 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     /**
+     * Gets the dependency Id.
+     */
+    public String getId() {
+        return this.data.getId();
+    }
+    
+    /**
+     * Sets the dependency Id.
+     */
+    public void setId(String value) {
+        this.data.setId(value);
+    }
+
+    /**
      * Gets tne dependency name.
      * @return The dependency name.
      */

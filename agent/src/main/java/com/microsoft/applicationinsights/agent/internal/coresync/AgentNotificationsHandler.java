@@ -59,8 +59,9 @@ public interface AgentNotificationsHandler {
      * @param uri - The falled uri
      * @param result - The result
      * @param delta - Time it took to do the call
+     * @param childId - The correlation Id for the associated HTTP call
      */
-    void httpMethodFinished(String identifier, String method, String uri, int result, long delta);
+    void httpMethodFinished(String identifier, String method, String correlationId, String uri, int result, long delta);
 
     /**
      * Called when an java.sql.Statement concrete class is called

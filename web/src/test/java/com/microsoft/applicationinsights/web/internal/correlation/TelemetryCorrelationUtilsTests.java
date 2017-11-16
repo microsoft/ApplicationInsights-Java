@@ -404,9 +404,7 @@ public class TelemetryCorrelationUtilsTests {
 
         //validate we have generated proper ID's
         Assert.assertNotNull(childId);
-        Assert.assertEquals(requestTelemetry.getId().length() + 2, childId.length());
         Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
-        Assert.assertTrue(childId.endsWith("."));
     }
 
     @Test
@@ -460,5 +458,24 @@ public class TelemetryCorrelationUtilsTests {
         Assert.assertEquals(incomingId, childId);
     }
 
+    @Test
+    public void testChildRequestDependencyIdGenerationWithNoParentId() {
+        
+        //setup - make sure no RequestId is set (i.e. no parent)
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+        RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
+
+        //run
+        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        String childId = TelemetryCorrelationUtils.generateChildDependencyId();
+
+        //validate we have generated proper ID's
+        Assert.assertNotNull(childId);
+        Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
+    }
 
 }

@@ -33,7 +33,7 @@ import org.objectweb.asm.Type;
 public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
     private final static String FINISH_DETECT_METHOD_NAME = "httpMethodFinished";
-    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
+    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
 
     public HttpClientMethodVisitor(int access,
                                    String desc,
@@ -47,12 +47,24 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
     private int deltaInNS;
     private int methodLocal;
     private int uriLocal;
+    private int childIdLocal;
 
     @Override
     public void onMethodEnter() {
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
         deltaInNS = this.newLocal(Type.LONG_TYPE);
         mv.visitVarInsn(LSTORE, deltaInNS);
+
+        // generate child ID
+        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyId", "()Ljava/lang/String;", false);
+        childIdLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, childIdLocal);
+
+        // inject headers
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitLdcInsn("RequestId");
+        mv.visitVarInsn(ALOAD, childIdLocal);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
         mv.visitVarInsn(ALOAD, 2);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "getRequestLine", "()Lorg/apache/http/RequestLine;", true);
@@ -102,6 +114,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
                 mv.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");
                 mv.visitLdcInsn(getMethodName());
                 mv.visitVarInsn(ALOAD, methodLocal);
+                mv.visitVarInsn(ALOAD, childIdLocal);
                 mv.visitVarInsn(ALOAD, uriLocal);
                 mv.visitVarInsn(ILOAD, statusCodeLocal);
                 mv.visitVarInsn(LLOAD, deltaInNS);
