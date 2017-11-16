@@ -67,7 +67,7 @@ subprojects {
 		inputs.files(fileTree(dir: dockerfileOutputDir, include: '*.dockerfile'))
 		// TODO write upToDateWhen predicate
 		// TODO should this have outputs?
-
+		outputs.upToDateWhen { false }
 		doLast {
 			copy {
 				from "$projectDir/resources/linux"
@@ -95,9 +95,12 @@ subprojects {
 
 task buildDockerImage {
 	dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
+	
 	exec {
 		commandLine 'docker', 'version'
 	}.assertNormalExitValue()
+
+	outputs.upToDateWhen { false }
 	doLast {
 		project.subprojects.each { sp ->
 			copy {
