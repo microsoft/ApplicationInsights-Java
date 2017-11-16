@@ -41,7 +41,7 @@ task clean {
 // FIXME this is for testing the build server
 task serverInfo {
     exec {
-        commandLine 'set'
+        commandLine 'cmd', '/c', 'set'
     }
 }
 
