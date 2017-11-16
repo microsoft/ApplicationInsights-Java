@@ -40,5 +40,13 @@ public enum DataPointType
     DataPointType (int id) {
         this.id = id;
     }
+
+    public static DataPointType fromId(int id) {
+        switch(id) {
+            case 0: return Measurement;
+            case 1: return Aggregation;
+            default: throw new IllegalArgumentException("No DataPointType with id="+id);
+        }
+    }
     
 }
