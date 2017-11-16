@@ -44,7 +44,7 @@ task serverInfo {
         commandLine 'cmd', '/c', 'set'
     }
     exec {
-        commandLin 'cmd', '/c', 'dir', 'C:\\Program Files\\Docker'
+        commandLine 'cmd', '/c', 'dir', 'C:\\Program Files\\Docker'
     }
 }
 
