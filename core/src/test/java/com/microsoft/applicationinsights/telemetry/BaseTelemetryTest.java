@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.lang.reflect.*;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -143,6 +142,21 @@ public final class BaseTelemetryTest {
         assertTrue(index != -1);
     }
     
+    @Test
+    public void testTelemetryNameWithIkey_SpecialChar() throws IOException{
+    	StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
+    	telemetry.getContext().setInstrumentationKey("--. .--");
+    	telemetry.setTimestamp(new Date());
+    	
+        StringWriter writer = new StringWriter();
+        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
+        telemetry.serialize(jsonWriter);
+        jsonWriter.close();
+        String asJson = writer.toString();
+
+        int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.Stub\"");
+        assertTrue(index != -1);
+    }
     
     @Test
     public void testTelemetryNameWithIkey_Empty() throws IOException{

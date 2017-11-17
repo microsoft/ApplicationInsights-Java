@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -33,6 +32,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Superclass for all telemetry data classes.
@@ -192,7 +193,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     }
     
     private String normalizeInstrumentationKey(String instrumentationKey){
-    	if (StringUtils.isNullOrEmpty(instrumentationKey)){
+    	if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
     		return "";
     	}
     	else{
