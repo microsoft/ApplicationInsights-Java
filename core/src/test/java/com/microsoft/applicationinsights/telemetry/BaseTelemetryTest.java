@@ -128,15 +128,27 @@ public final class BaseTelemetryTest {
     
     
     @Test
-    public void testTelemetryNameFormatInSerialize() throws IOException{
-    	StubTelemetry telemetry = new StubTelemetry("1");
-    	// TelemetryContext context = new TelemetryContext();
-    	// context.setInstrumentationKey("AIF-00000000-1111-2222-3333-000000000000");
-    	ConcurrentHashMap<String, String> properties = new ConcurrentHashMap<String, String>();
-    	properties.put("instrumentationKey", "AIF-00000000-1111-2222-3333-000000000000");
-    	telemetry.initialize(properties);
+    public void testTelemetryNameWithIkey() throws IOException{
+    	StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
+    	telemetry.getContext().setInstrumentationKey("AIF-00000000-1111-2222-3333-000000000000");
+    	telemetry.setTimestamp(new Date());
+    	
+        StringWriter writer = new StringWriter();
+        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
+        telemetry.serialize(jsonWriter);
+        jsonWriter.close();
+        String asJson = writer.toString();
 
-    	/*
+        int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.aif00000000111122223333000000000000.Stub\"");
+        assertTrue(index != -1);
+    }
+    
+    
+    @Test
+    public void testTelemetryNameWithIkey_Empty() throws IOException{
+    	StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
+    	telemetry.setTimestamp(new Date());
+    	
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
@@ -145,9 +157,7 @@ public final class BaseTelemetryTest {
 
         int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.Stub\"");
         assertTrue(index != -1);
-        */
     }
-    
     
 
 }
