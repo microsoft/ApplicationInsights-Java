@@ -39,7 +39,6 @@ public class DefaultClassVisitor extends ClassVisitor {
 
     public DefaultClassVisitor(ClassInstrumentationData instrumentationData, ClassWriter classWriter) {
         super(Opcodes.ASM5, classWriter);
-
         this.instrumentationData = instrumentationData;
     }
 
@@ -53,7 +52,7 @@ public class DefaultClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
         originalMV = new JSRInlinerAdapter(originalMV, access, name, desc, signature, exceptions);
-        if (isInterface || originalMV == null || ByteCodeUtils.isStaticInitializer(name) || ByteCodeUtils.isPrivate(access)) {
+        if (isInterface || ByteCodeUtils.isStaticInitializer(name) || ByteCodeUtils.isPrivate(access)) {
             return originalMV;
         }
 

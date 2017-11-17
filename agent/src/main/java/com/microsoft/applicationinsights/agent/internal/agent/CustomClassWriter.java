@@ -11,11 +11,11 @@ import java.io.InputStream;
  * provided by DefaultByteCode transformer (This loader essentially has all
  * the required classes already loaded)
  */
-public class CustomClassWriterv2 extends org.objectweb.asm.ClassWriter {
+public class CustomClassWriter extends org.objectweb.asm.ClassWriter {
 
     private ClassLoader classLoader;
 
-    public CustomClassWriterv2(int writerFlag, ClassLoader loader) {
+    public CustomClassWriter(int writerFlag, ClassLoader loader) {
         super(writerFlag);
         this.classLoader = loader;
     }
@@ -74,6 +74,8 @@ public class CustomClassWriterv2 extends org.objectweb.asm.ClassWriter {
                 }
             }
         } catch (IOException e) {
+            //This throwing will not cause any harm because nonetheless code will fail
+            //if this method fails
             throw new RuntimeException(e.toString());
         }
     }

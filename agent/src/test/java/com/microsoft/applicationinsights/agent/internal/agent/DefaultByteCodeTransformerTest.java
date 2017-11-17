@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 public final class DefaultByteCodeTransformerTest {
     @Test
-    public void noClassInstrumentationDataTest() throws ClassNotFoundException {
+    public void noClassInstrumentationDataTest(){
         DefaultByteCodeTransformer tested = new DefaultByteCodeTransformer(null, false);
         byte[] mockArray = new byte[1];
         byte[] result = tested.transform(mockArray, "mock", ClassLoader.getSystemClassLoader());
