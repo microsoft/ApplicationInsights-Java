@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.internal.config;
 
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.omg.CORBA.INTERNAL;
 
 /**
  * The class will try to create the {@link TelemetryProcessor}
@@ -53,41 +52,55 @@ public final class TelemetryProcessorCreator {
 
         try {
             if (confClass.getExcludedTypes() != null) {
-                for (String paramExcluded : confClass.getExcludedTypes().getExcludedType()) {
-                    try {
-                        if (!ReflectionUtils.activateMethod(processor, "addToExcludedType" , paramExcluded, String.class)) {
-                            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": method " + "addToExcludedType" + "failed, the class will not be used.");
+                if (confClass.getExcludedTypes().getExcludedType() != null) {
+                    for (String paramExcluded : confClass.getExcludedTypes().getExcludedType()) {
+                        try {
+                            if (!ReflectionUtils.activateMethod(processor, "addToExcludedType" , paramExcluded, String.class)) {
+                                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": method " + "addToExcludedType" + "failed, the class will not be used.");
+                                return null;
+                            }
+                        }
+                        catch (Throwable t) {
+                            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + "methodName" + ", exception: " + t.getMessage() + ", the class will not be used.");
                             return null;
                         }
                     }
-                    catch (Throwable t) {
-                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + "methodName" + ", exception: " + t.getMessage() + ", the class will not be used.");
-                        return null;
-                    }
                 }
+                else {
+                    InternalLogger.INSTANCE.error("Empty list of Excluded Types");
+                }
+
             }
             else {
-                InternalLogger.INSTANCE.error("Empty list of Excluded Types");
+                InternalLogger.INSTANCE.info("Excluded types not specified falling back to default");
             }
 
             //If the <IncludedTypes> tag is not empty
 
+
             if (confClass.getIncludedTypes() != null) {
-                for (String paramIncluded : confClass.getIncludedTypes().getIncludedType()) {
-                    try {
-                        if (!ReflectionUtils.activateMethod(processor, "addToIncludedType" , paramIncluded, String.class)) {
-                            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": method " + "addToIncludeType" + "failed, the class will not be used.");
+
+                if (confClass.getIncludedTypes().getIncludedType() != null) {
+                    for (String paramIncluded : confClass.getIncludedTypes().getIncludedType()) {
+                        try {
+                            if (!ReflectionUtils.activateMethod(processor, "addToIncludedType" , paramIncluded, String.class)) {
+                                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": method " + "addToIncludeType" + "failed, the class will not be used.");
+                                return null;
+                            }
+                        }
+                        catch (Throwable t) {
+                            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + "methodName" + ", exception: " + t.getMessage() + ", the class will not be used.");
                             return null;
                         }
                     }
-                    catch (Throwable t) {
-                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + "methodName" + ", exception: " + t.getMessage() + ", the class will not be used.");
-                        return null;
-                    }
                 }
+                else {
+                    InternalLogger.INSTANCE.error("Empty list of Included Types");
+                }
+
             }
             else {
-                InternalLogger.INSTANCE.error("Empty list of Included Types");
+                InternalLogger.INSTANCE.info("Included types not specified falling back to default");
             }
 
             for (ParamXmlElement param : confClass.getAdds()){

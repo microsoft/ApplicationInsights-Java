@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.config;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class ParamExcludedTypeXmlElement {
         return excludedType;
     }
 
+    @XmlElement(name = "ExcludedType")
     public void setExcludedType(List<String> excludedType) {
         this.excludedType = excludedType;
     }

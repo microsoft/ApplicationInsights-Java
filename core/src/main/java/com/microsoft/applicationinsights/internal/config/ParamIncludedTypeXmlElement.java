@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.config;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class ParamIncludedTypeXmlElement {
         return includedType;
     }
 
+    @XmlElement(name = "IncludedType")
     public void setIncludedType(List<String> includedType) {
         this.includedType = includedType;
     }

@@ -6,12 +6,9 @@ import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.omg.CORBA.INTERNAL;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,13 +22,13 @@ import java.util.Set;
         <Processor type = "FixedRateSamplingTelemetryProcessor">
             <Add name = "SamplingPercentage" value = "50" />
             <ExcludedTypes>
-                <excludedType>Request</excludedType>
+                <ExcludedType>Request</ExcludedType>
             </ExcludedTypes>
             <IncludedTypes>
-                <includedType>Request</includedType>
-                <includedType>Trace</includedType>
-                <includedType>Dependency</includedType>
-                <includedType>Exception</includedType>
+                <IncludedType>Request</IncludedType>
+                <IncludedType>Trace</IncludedType>
+                <IncludedType>Dependency</IncludedType>
+                <IncludedType>Exception</IncludedType>
             </IncludedTypes>
         </Processor>
     </BuiltInProcessors>
@@ -53,9 +50,10 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
 
     private Set<Class> includedTypes;
 
-
-    /// All sampling percentage must be in a ratio of 100/N where N is a whole number (2, 3, 4, …). E.g. 50 for 1/2 or 33.33 for 1/3.
-    /// Failure to follow this pattern can result in unexpected / incorrect computation of values in the portal.
+    /**
+     *  All sampling percentage must be in a ratio of 100/N where N is a whole number (2, 3, 4, …). E.g. 50 for 1/2 or 33.33 for 1/3.
+     *  Failure to follow this pattern can result in unexpected / incorrect computation of values in the portal.
+     */
     private double samplingPercentage;
 
     /**
@@ -126,7 +124,13 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      * @param samplingPercentage
      */
     public void setSamplingPercentage(String samplingPercentage) {
-        this.samplingPercentage = Double.valueOf(samplingPercentage);
+        try {
+            this.samplingPercentage = Double.valueOf(samplingPercentage);
+        }
+        catch (NumberFormatException ex) {
+            this.samplingPercentage = 100.0;
+            InternalLogger.INSTANCE.error("Sampling rate specified in improper format, sampling rate is now set to 100.0 (default)");
+        }
     }
 
     /**
