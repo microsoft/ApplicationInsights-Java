@@ -38,16 +38,6 @@ task clean {
     }
 }
 
-// FIXME this is for testing the build server
-task serverInfo {
-    exec {
-        commandLine 'cmd', '/c', 'set'
-    }
-    exec {
-        commandLine 'cmd', '/c', 'dir', 'C:\\Program Files\\Docker'
-    }
-}
-
 allprojects {
     tasks.withType(JavaCompile) {
         doFirst {
