@@ -60,6 +60,10 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
 	@Override
 	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException {
 
+        if (instrumentationKey == null || instrumentationKey.isEmpty()) {
+            throw new IllegalArgumentException("instrumentationKey must be not null or empty");
+        }
+
         ProfileFetcherResult result = new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.PENDING);
         Future<HttpResponse> currentTask = this.tasks.get(instrumentationKey);
 
@@ -75,14 +79,16 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
         }
 
         // task is ready, we can call get() now.
-        HttpResponse response = currentTask.get();
-        
-        // get json payload out of response and extract appId.
+        try {
+            HttpResponse response = currentTask.get();
+            
+             // get json payload out of response and extract appId.
 
-        // remove task as we're done with it.
-        this.tasks.remove(instrumentationKey);
-
-		return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.FAILED);
+            return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.COMPLETE);
+		} finally {
+            // remove task as we're done with it.
+            this.tasks.remove(instrumentationKey);
+        }
     }
 
 	public void setHttpClient(HttpAsyncClient client) {

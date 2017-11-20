@@ -56,6 +56,14 @@ public class MockHttpAsyncClientWrapper {
         this.task.setFailureOn(fail);
     }
 
+    public void setTaskAsComplete() {
+        this.task.setIsDone(true);
+    }
+
+    public void setTaskAsPending() {
+        this.task.setIsDone(false);
+    }
+
     public HttpAsyncClient getClient() {
         return this.mockClient;
     }

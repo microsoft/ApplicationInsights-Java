@@ -30,15 +30,21 @@ import org.apache.http.HttpResponse;
 public class MockHttpTask implements Future<HttpResponse> {
 
     private HttpResponse response;
-    private boolean failureOn;
+	private boolean failureOn;
+	private boolean isDone;
 
     public MockHttpTask(HttpResponse response) {
         this.response = response;
-        this.failureOn = false;
+		this.failureOn = false;
+		this.isDone = false;
     }
 
     public void setFailureOn(boolean fail) {
         this.failureOn = fail;
+	}
+	
+	public void setIsDone(boolean isDone) {
+        this.isDone = isDone;
     }
 
 	@Override
@@ -53,7 +59,7 @@ public class MockHttpTask implements Future<HttpResponse> {
 
 	@Override
 	public boolean isDone() {
-		return true;
+		return this.isDone;
 	}
 
 	@Override

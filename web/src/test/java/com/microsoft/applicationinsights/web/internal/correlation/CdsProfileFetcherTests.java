@@ -37,15 +37,33 @@ public class CdsProfileFetcherTests {
         clientWrapper.setFailureOn(false);
         CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
 
-        // the first time we try to fetch the profile, we should get a "pending" task status
+        // the first time we try to fetch the profile, we might get a "pending" task status
         // since the profile fetcher uses asynchronous calls to retrieve the profile from CDS
+        // this is mimic'ed with clientWrapper.setTaskAsPending();
+        clientWrapper.setTaskAsPending();
         ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
         Assert.assertNull(result.getAppId());
 
-        // our mock http client returns immediately, so a second call to fetch should get us the
-        // result of that task started in the previous call.
+        // mimic task completion
+        clientWrapper.setTaskAsComplete();
         result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        Assert.assertEquals(ProfileFetcherResultTaskStatus.COMPLETE, result.getStatus());
+        Assert.assertEquals("AppId", result.getAppId());
+    }
+
+    @Test
+    public void testFetchApplicationIdWithTaskCompleteImmediately() throws InterruptedException, ExecutionException {
+
+        //setup
+        MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
+        clientWrapper.setAppId("AppId");
+        clientWrapper.setFailureOn(false);
+        clientWrapper.setTaskAsComplete();
+        CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
+
+        // task is completed right away
+        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.COMPLETE, result.getStatus());
         Assert.assertEquals("AppId", result.getAppId());
     }
@@ -70,8 +88,8 @@ public class CdsProfileFetcherTests {
         Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
         Assert.assertNull(result.getAppId());
 
-        // our mock http client returns immediately, so a second call to fetch should get us the
-        // result of that task started in the previous call.
+        // mimic task completion
+        clientWrapper.setTaskAsComplete();
         result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.COMPLETE, result.getStatus());
         Assert.assertEquals("AppId", result.getAppId());
@@ -88,7 +106,6 @@ public class CdsProfileFetcherTests {
         //setup - mimic timeout from the async http call
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
-        clientWrapper.setFailureOn(true);
         CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we should get a "pending" task status
@@ -97,8 +114,10 @@ public class CdsProfileFetcherTests {
         Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
         Assert.assertNull(result.getAppId());
 
-        // our mock http client has been instructed to fail
+        // instruct mock task to fail
+        clientWrapper.setFailureOn(true);
+        clientWrapper.setTaskAsComplete();
         result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
-        Assert.assertEquals(ProfileFetcherResultTaskStatus.FAILED, result.getStatus());
+        Assert.fail("Should not have reached here. Instead, an exception should have been thrown.");
     }
 }
