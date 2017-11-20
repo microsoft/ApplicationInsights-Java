@@ -31,6 +31,15 @@ apply from: "$buildScriptsDir/test.gradle"
 // region Root project script
 
 def rootProjectBuildFolder = "$rootDir/build"
+ext {
+    isBuildServer = (System.properties["isBuildServer"] ?: "false").toBoolean()
+    if (isBuildServer) {
+        logger.lifecycle "Building on SERVER"
+    }
+    else {
+        logger.lifecycle "Building on DESKTOP"
+    }
+}
 
 task clean {
     doLast {
