@@ -21,11 +21,15 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.nio.client.HttpAsyncClient;
 
@@ -34,6 +38,7 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
     INSTANCE;
 
     private HttpAsyncClient httpClient;
+    private String endpointAddress;
 
     // cache of tasks per ikey
     private final ConcurrentHashMap<String, Future<HttpResponse>> tasks;
@@ -46,6 +51,8 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
         this.httpClient = HttpAsyncClients.custom()
             .setDefaultRequestConfig(requestConfig)
             .build();
+        
+        ((CloseableHttpAsyncClient)this.httpClient).start();
 
         this.tasks = new ConcurrentHashMap<String, Future<HttpResponse>>();
     }
@@ -61,7 +68,7 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
             currentTask = createFetchTask(instrumentationKey);
             this.tasks.putIfAbsent(instrumentationKey, currentTask);
         }
-
+        
         // check if task is still pending
         if (!currentTask.isDone()) {
             return result;
@@ -69,8 +76,11 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
 
         // task is ready, we can call get() now.
         HttpResponse response = currentTask.get();
-
+        
         // get json payload out of response and extract appId.
+
+        // remove task as we're done with it.
+        this.tasks.remove(instrumentationKey);
 
 		return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.FAILED);
     }
@@ -79,7 +89,15 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
         this.httpClient = client;
     }
 
+    public void setEndpointAddress(String endpoint) throws MalformedURLException {
+        URL url = new URL(endpoint);
+        String urlStr = url.toString();
+        String profileQueryAddress = urlStr.substring(0, urlStr.length() - url.getFile().length()) + "/profile/?ikey=";
+        this.endpointAddress = profileQueryAddress;
+    }
+
     private Future<HttpResponse> createFetchTask(String instrumentationKey) {
-		return null;
+		HttpGet request = new HttpGet(this.endpointAddress + instrumentationKey);
+        return this.httpClient.execute(request, null);
 	}
 }
