@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal.correlation;
+package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
 import java.util.Locale;
 import org.apache.http.Header;

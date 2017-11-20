@@ -19,44 +19,66 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal.correlation;
+package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
-import org.apache.http.nio.client.HttpAsyncClient;
-import org.apache.http.client.methods.HttpUriRequest;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+public class MockHttpEntity implements HttpEntity {
 
-public class MockHttpAsyncClientWrapper {
+    private String content;
 
-    private final HttpAsyncClient mockClient;
-    private final MockHttpEntity entity;
-    private final MockHttpResponse response;
-    private final MockHttpTask task;
-
-    public MockHttpAsyncClientWrapper() {
-        
-        this.entity = new MockHttpEntity();
-        this.response = new MockHttpResponse();
-        this.response.setEntity(entity);
-
-        this.task = new MockHttpTask(this.response);
-
-        this.mockClient = mock(HttpAsyncClient.class);
-        
-        when(mockClient.execute(any(HttpUriRequest.class), any())).thenReturn(this.task);
+    public void setContent(String content) {
+        this.content = content;
     }
 
-    public void setAppId(String appId) {
-        this.entity.setContent(appId);
-    }
+	@Override
+	public boolean isRepeatable() {
+		return false;
+	}
 
-    public void setFailureOn(boolean fail) {
-        this.task.setFailureOn(fail);
-    }
+	@Override
+	public boolean isChunked() {
+		return false;
+	}
 
-    public HttpAsyncClient getClient() {
-        return this.mockClient;
-    }
+	@Override
+	public long getContentLength() {
+		return 0;
+	}
+
+	@Override
+	public Header getContentType() {
+		return null;
+	}
+
+	@Override
+	public Header getContentEncoding() {
+		return null;
+	}
+
+	@Override
+	public InputStream getContent() throws IOException, UnsupportedOperationException {
+        return new ByteArrayInputStream( this.content.getBytes() );
+	}
+
+	@Override
+	public void writeTo(OutputStream outstream) throws IOException {
+		
+	}
+
+	@Override
+	public boolean isStreaming() {
+		return false;
+	}
+
+	@Override
+	public void consumeContent() throws IOException {
+		
+	}
+
 }

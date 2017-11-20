@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.web.internal.correlation.mocks.*;
 import java.util.concurrent.ExecutionException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,6 +34,7 @@ public class CdsProfileFetcherTests {
         //setup
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
+        clientWrapper.setFailureOn(false);
         CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we should get a "pending" task status
@@ -55,6 +56,7 @@ public class CdsProfileFetcherTests {
         //setup
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
+        clientWrapper.setFailureOn(false);
         CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we should get a "pending" task status

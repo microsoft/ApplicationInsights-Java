@@ -19,7 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal.correlation;
+package com.microsoft.applicationinsights.web.internal.correlation.mocks;
+
+import com.microsoft.applicationinsights.web.internal.correlation.AppProfileFetcher;
+import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
+import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResult;
 
 public class MockProfileFetcher implements AppProfileFetcher {
     

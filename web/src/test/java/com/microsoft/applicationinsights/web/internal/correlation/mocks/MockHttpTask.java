@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal.correlation;
+package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -68,7 +68,9 @@ public class MockHttpTask implements Future<HttpResponse> {
     }
     
     private HttpResponse doGet() throws ExecutionException {
-        if (this.failureOn) {
+		System.out.println("Execute doGet: " + this.failureOn);
+		
+		if (this.failureOn) {
             throw new ExecutionException("Failure", null);
         }
 

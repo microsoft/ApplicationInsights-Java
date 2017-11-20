@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.web.internal.correlation.mocks.*;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -43,7 +43,7 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
-import com.microsoft.applicationinsights.web.internal.correlation.MockProfileFetcher;
+import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
