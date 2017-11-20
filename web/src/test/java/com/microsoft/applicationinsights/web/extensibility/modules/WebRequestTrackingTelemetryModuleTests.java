@@ -42,6 +42,8 @@ import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
+import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
+import com.microsoft.applicationinsights.web.internal.correlation.MockProfileFetcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -61,6 +63,7 @@ public class WebRequestTrackingTelemetryModuleTests {
     private static JettyTestServer server = new JettyTestServer();
     private static WebRequestTrackingTelemetryModule defaultModule;
     private static MockTelemetryChannel channel;
+    private static MockProfileFetcher mockProfileFetcher;
 
     // region Initialization
 
@@ -76,6 +79,11 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     @Before
     public void testInitialize() {
+
+        // initialize mock profile fetcher (for resolving ikeys to appIds)
+        mockProfileFetcher = new MockProfileFetcher();
+        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockProfileFetcher);
+
         defaultModule = new WebRequestTrackingTelemetryModule();
         defaultModule.initialize(TelemetryConfiguration.getActive());
 
@@ -210,6 +218,44 @@ public class WebRequestTrackingTelemetryModuleTests {
         Assert.assertEquals(2, exceptionTelemetry.getProperties().size());
         Assert.assertEquals("value1", exceptionTelemetry.getProperties().get("key1"));
         Assert.assertEquals("value2", exceptionTelemetry.getProperties().get("key2"));
+    }
+
+    @Test
+    public void testInstrumentationKeyIsResolvedDuringModuleInit() {
+        
+        // module is initialized during test init, so at this point we should 
+        // already have appId available in cache, which means calling resolver
+        // does not result in call to fetcher
+        String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
+
+        Assert.assertEquals(1, mockProfileFetcher.callCount());
+        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
+        Assert.assertEquals(1, mockProfileFetcher.callCount());
+    }
+
+    @Test
+    public void testInstrumentationKeyIsResolvedIfModifiedAtRuntime() {
+        
+        String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
+
+        // before request begins, appId should have been already cached during init
+        Assert.assertEquals(1, mockProfileFetcher.callCount());
+        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
+        Assert.assertEquals(1, mockProfileFetcher.callCount());
+
+        // request comes in
+        ServletRequest request = ServletUtils.generateDummyServletRequest();
+        defaultModule.onBeginRequest(request, null);
+
+        // mimic customer modifying ikey at runtime in request handler (e.g. controller)
+        TelemetryConfiguration.getActive().setInstrumentationKey("myOtherIkey");
+        
+        // request tracking module must detect change and resolve the new ikey
+        defaultModule.onEndRequest(request, null);
+        
+        ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
+        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
+        Assert.assertEquals(2, mockProfileFetcher.callCount());
     }
 
     // endregion Tests
