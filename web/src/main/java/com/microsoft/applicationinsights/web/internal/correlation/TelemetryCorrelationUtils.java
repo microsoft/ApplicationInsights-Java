@@ -34,6 +34,7 @@ public class TelemetryCorrelationUtils {
 
     public static final String CORRELATION_HEADER_NAME = "RequestId";
 	public static final String CORRELATION_CONTEXT_HEADER_NAME = "Correlation-Context";
+	public static final String REQUEST_CONTEXT_HEADER_NAME = "Request-Context";
 	public static final int REQUESTID_MAXLENGTH = 1024; 
 
 	private TelemetryCorrelationUtils() {}
