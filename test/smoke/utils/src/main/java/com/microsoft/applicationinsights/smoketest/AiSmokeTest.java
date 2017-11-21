@@ -96,10 +96,15 @@ public abstract class AiSmokeTest {
 			// NOTE this happens after @After :)
 			try {
 				String containerId = lastContainerId();
-				System.out.println("Test failure detected. Fetching container logs for "+containerId);
-				docker.printContainerLogs(containerId);
-				System.out.println("Fetching appserver logs");
+				System.out.println("Test failure detected.");
+				
+				System.out.println("\nFetching appserver logs");
 				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh", "50");
+				
+				System.out.println("\nFetching container logs for "+containerId);
+				docker.printContainerLogs(containerId);
+
+				System.out.println();
 			}
 			catch (Exception e) {
 				System.err.println("Error copying logs to stream");
