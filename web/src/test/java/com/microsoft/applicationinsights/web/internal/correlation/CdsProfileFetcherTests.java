@@ -101,7 +101,7 @@ public class CdsProfileFetcherTests {
     }
 
     @Test(expected = ExecutionException.class)
-    public void testFetchApplicationIdFailure() throws InterruptedException, ExecutionException {
+    public void testFetchApplicationIdFailureWithException() throws InterruptedException, ExecutionException {
 
         //setup - mimic timeout from the async http call
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
@@ -119,5 +119,30 @@ public class CdsProfileFetcherTests {
         clientWrapper.setTaskAsComplete();
         result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
         Assert.fail("Should not have reached here. Instead, an exception should have been thrown.");
+    }
+
+    @Test
+    public void testFetchApplicationIdFailureWithNon200StatusCode() throws InterruptedException, ExecutionException {
+
+        //setup
+        MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
+        clientWrapper.setAppId("AppId");
+        clientWrapper.setFailureOn(false);
+        CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
+
+        // the first time we try to fetch the profile, we might get a "pending" task status
+        // since the profile fetcher uses asynchronous calls to retrieve the profile from CDS
+        // this is mimic'ed with clientWrapper.setTaskAsPending();
+        clientWrapper.setTaskAsPending();
+        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
+        Assert.assertNull(result.getAppId());
+
+        // mimic task completion with 404 status code
+        clientWrapper.setTaskAsComplete();
+        clientWrapper.setStatusCode(404);
+        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        Assert.assertEquals(ProfileFetcherResultTaskStatus.FAILED, result.getStatus());
+        Assert.assertNull(result.getAppId());
     }
 }

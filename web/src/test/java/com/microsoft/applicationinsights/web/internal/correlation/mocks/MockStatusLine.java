@@ -21,54 +21,38 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
-import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.ProtocolVersion;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.StatusLine;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+public class MockStatusLine implements StatusLine {
 
-public class MockHttpAsyncClientWrapper {
+    private final ProtocolVersion version;
+    private final String reasonPhrase;
+    private int statusCode;
 
-    private final HttpAsyncClient mockClient;
-    private final MockHttpEntity entity;
-    private final MockHttpResponse response;
-    private final MockHttpTask task;
-
-    public MockHttpAsyncClientWrapper() {
-        
-        this.entity = new MockHttpEntity();
-        this.response = new MockHttpResponse(this.entity, 200);
-        
-        this.task = new MockHttpTask(this.response);
-
-        this.mockClient = mock(HttpAsyncClient.class);
-        
-        when(mockClient.execute(any(HttpUriRequest.class), any())).thenReturn(this.task);
+    public MockStatusLine(final ProtocolVersion protocolVersion, final int status, final String phrase) {
+        this.version = protocolVersion;
+        this.statusCode = status;
+        this.reasonPhrase = phrase;
     }
 
-    public void setAppId(String appId) {
-        this.entity.setContent(appId);
-    }
+	@Override
+	public ProtocolVersion getProtocolVersion() {
+		return this.version;
+	}
 
-    public void setFailureOn(boolean fail) {
-        this.task.setFailureOn(fail);
+	@Override
+	public int getStatusCode() {
+		return this.statusCode;
     }
-
-    public void setTaskAsComplete() {
-        this.task.setIsDone(true);
-    }
-
-    public void setTaskAsPending() {
-        this.task.setIsDone(false);
-    }
-
+    
     public void setStatusCode(int code) {
-        this.response.setStatusCode(code);
+        this.statusCode = code;
     }
 
-    public HttpAsyncClient getClient() {
-        return this.mockClient;
-    }
+	@Override
+	public String getReasonPhrase() {
+		return this.reasonPhrase;
+	}
+
 }

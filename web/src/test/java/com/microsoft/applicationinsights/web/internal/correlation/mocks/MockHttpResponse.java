@@ -32,7 +32,13 @@ import org.apache.http.params.HttpParams;
 
 public class MockHttpResponse implements HttpResponse {
 
-    private HttpEntity entity;
+	private HttpEntity entity;
+	private MockStatusLine statusLine;
+
+	public MockHttpResponse(HttpEntity entity, int statusCode) {
+		this.entity = entity;
+		this.statusLine = new MockStatusLine(new ProtocolVersion("http", 1, 1), statusCode, "reason");
+	}
 
 	@Override
 	public ProtocolVersion getProtocolVersion() {
@@ -121,7 +127,7 @@ public class MockHttpResponse implements HttpResponse {
 
 	@Override
 	public StatusLine getStatusLine() {
-		return null;
+		return this.statusLine;
 	}
 
 	@Override
@@ -141,7 +147,7 @@ public class MockHttpResponse implements HttpResponse {
 
 	@Override
 	public void setStatusCode(int code) throws IllegalStateException {
-		
+		this.statusLine.setStatusCode(code);
 	}
 
 	@Override
