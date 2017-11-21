@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import java.util.concurrent.ConcurrentHashMap;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 public enum InstrumentationKeyResolver {
     INSTANCE;
@@ -34,6 +35,43 @@ public enum InstrumentationKeyResolver {
     }
 
     public String resolveInstrumentationKey(String instrumentationKey) {
+        
+        try {
+            ProfileFetcherResult result = this.profileFetcher.fetchAppProfile(instrumentationKey);
+            String appId = processResult(result, instrumentationKey);
+            return appId;
+		} catch (Exception e) {
+            System.out.println("Exception resolving ikey: " + instrumentationKey + "=> Exception: " + e);
+            InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s => Exception: %s", instrumentationKey, e);
+		}
+
         return null;
+    }
+
+    private String processResult(ProfileFetcherResult result, String instrumentationKey) {
+        
+        String appId = null;
+        
+        switch (result.getStatus()) {
+            case PENDING:
+                InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - pending resolution of instrumentation key: %s", instrumentationKey);
+                System.out.println("PENDING ikey: " + instrumentationKey);
+                break;
+            case FAILED:
+                System.out.println("FAILED ikey: " + instrumentationKey);
+                InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s", instrumentationKey);
+                break;
+            case COMPLETE:
+                System.out.println("SUCCESS ikey: " + instrumentationKey);
+                InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - successfully resolved instrumentation key: %s", instrumentationKey);
+                appId = result.getAppId();
+                break;
+            default:
+                System.out.println("NOT SUPPOSED ikey: " + instrumentationKey);
+                InternalLogger.INSTANCE.error("InstrumentationKeyResolver - unexpected status. Instrumentation key: %s", instrumentationKey);
+                break;
+        }
+
+        return appId;
     }
 }

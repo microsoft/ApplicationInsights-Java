@@ -45,7 +45,41 @@ public class InstrumentationKeyResolverTests {
     }
 
     @Test
-    public void testFetcherNotCalledWithResolvedIkey() {
+    public void testResolveInstrumentationKeyWithPendingStatus() {
+
+        //setup
+        MockProfileFetcher mockFetcher = new MockProfileFetcher();
+        mockFetcher.setAppIdToReturn("appId");
+        mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
+        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
+
+        //run
+        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+
+        //validate
+        Assert.assertNull(appId);
+        Assert.assertEquals(1, mockFetcher.callCount());
+    }
+
+    @Test
+    public void testResolveInstrumentationKeyWithFailedStatus() {
+
+        //setup
+        MockProfileFetcher mockFetcher = new MockProfileFetcher();
+        mockFetcher.setAppIdToReturn("appId");
+        mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.FAILED);
+        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
+
+        //run
+        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+
+        //validate
+        Assert.assertNull(appId);
+        Assert.assertEquals(1, mockFetcher.callCount());
+    }
+
+    @Test
+    public void testIkeyResolvedFromCache() {
 
         //setup
         MockProfileFetcher mockFetcher = new MockProfileFetcher();

@@ -29,11 +29,12 @@ public class MockProfileFetcher implements AppProfileFetcher {
     
     private String appId;
     private int callCounter = 0;
+    private ProfileFetcherResultTaskStatus status = ProfileFetcherResultTaskStatus.COMPLETE;
 
 	@Override
 	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) {
         ++callCounter;
-        return new ProfileFetcherResult(this.appId, ProfileFetcherResultTaskStatus.COMPLETE);
+        return new ProfileFetcherResult(this.appId, this.status);
 	}
 
 	public void setAppIdToReturn(String appId) {
@@ -42,5 +43,9 @@ public class MockProfileFetcher implements AppProfileFetcher {
     
     public int callCount() {
         return this.callCounter;
+    }
+
+    public void setResultStatus(ProfileFetcherResultTaskStatus status) {
+        this.status = status;
     }
 }
