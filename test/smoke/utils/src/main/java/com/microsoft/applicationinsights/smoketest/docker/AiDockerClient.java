@@ -21,28 +21,36 @@ import com.google.common.io.CharStreams;
 public class AiDockerClient {
 	
 	public static String DEFAULT_WINDOWS_USER = "Administrator";
+	public static String DEFAULT_WINDOWS_SHELL = "cmd";
+
 	public static String DEFAULT_LINUX_USER = "root";
+	public static String DEFAULT_LINUX_SHELL = "bash";
 
 	private String currentUser;
+	private String shellExecutor;
 
-	public AiDockerClient() {
-		currentUser = "root";
-	}
+	public AiDockerClient(String user, String shellExecutor) {
+		Preconditions.checkNotNull(user, "user");
+		Preconditions.checkNotNull(shellExecutor, "shellExecutor");
 
-	public AiDockerClient(String user) {
 		this.currentUser = user;
+		this.shellExecutor = shellExecutor;
 	}
 
 	public String getCurrentUser() {
 		return this.currentUser;
 	}
 
+	public String getShellExecutor() {
+		return this.shellExecutor;
+	}
+
 	public static AiDockerClient createLinuxClient() {
-		return new AiDockerClient(DEFAULT_LINUX_USER);
+		return new AiDockerClient(DEFAULT_LINUX_USER, DEFAULT_LINUX_SHELL);
 	}
 
 	public static AiDockerClient createWindowsClient() {
-		return new AiDockerClient(DEFAULT_WINDOWS_USER);
+		return new AiDockerClient(DEFAULT_WINDOWS_USER, DEFAULT_WINDOWS_SHELL);
 	}
 
 	public String startContainer(String image, String portMapping) throws IOException, InterruptedException {
@@ -80,7 +88,7 @@ public class AiDockerClient {
 		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
 		// TODO chmod and chown; maybe
 		
-		execOnContainer(id, "bash", "./deploy.sh", appArchive.getName());
+		execOnContainer(id, getShellExecutor(), "./deploy.sh", appArchive.getName());
 	}
 
 	public void execOnContainer(String id, String cmd, String... args) throws IOException, InterruptedException {
@@ -121,17 +129,6 @@ public class AiDockerClient {
 		}
 	}
 
-	public void copyLogsToStream(String containerId, Appendable stdout, Appendable stderr) throws IOException, InterruptedException {
-		Preconditions.checkNotNull(containerId, "containerId");
-		Preconditions.checkNotNull(stdout, "stdout");
-		Preconditions.checkNotNull(stderr, "stderr");
-
-		Process p = new ProcessBuilder("docker", "container", "logs", containerId).start();
-		waitAndCheckCodeForProcess(p, 20, TimeUnit.SECONDS, "docker container logs");
-		CharStreams.copy(new InputStreamReader(p.getInputStream()), stdout);
-		CharStreams.copy(new InputStreamReader(p.getErrorStream()), stderr);
-	}
-
 	public void printContainerLogs(String containerId) throws IOException {
 		Preconditions.checkNotNull(containerId, "containerId");
 
@@ -145,8 +142,7 @@ public class AiDockerClient {
 
 	public void stopContainer(String id) throws IOException, InterruptedException {
 		Process p = new ProcessBuilder("docker", "container", "stop", id).start();
-		waitAndCheckCodeForProcess(p, 30, TimeUnit.SECONDS, 
-			String.format("stopping container %s", id));
+		waitAndCheckCodeForProcess(p, 30, TimeUnit.SECONDS, String.format("stopping container %s", id));
 	}
 
 	public boolean isContainerRunning(String id) throws IOException, InterruptedException {
