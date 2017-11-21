@@ -157,7 +157,7 @@ public class WebRequestTrackingTelemetryModuleTests {
     @Test
     public void testCrossComponentCorrelationHeadersAreCaptured() {
         
-        //setup: initialize a request context
+        //setup: initialize a request telemetry context
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
 
@@ -165,7 +165,12 @@ public class WebRequestTrackingTelemetryModuleTests {
         Hashtable<String, String> headers = new Hashtable<String, String>();
         String incomingId = "|guid.bcec871c_1.";
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
+        headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, values);
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, getRequestContextHeaderValue("id1"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
 
         //run
         defaultModule.onBeginRequest(request, null);
@@ -180,6 +185,15 @@ public class WebRequestTrackingTelemetryModuleTests {
         OperationContext operation = requestTelemetry.getContext().getOperation();
         Assert.assertEquals("guid", operation.getId());
         Assert.assertEquals(incomingId, operation.getParentId());
+
+        //validate context
+        //validateContext
+
+        //run onEnd
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        Assert.assertEquals("someAppId", requestTelemetry.getSource());
     }
 
     @Test
@@ -318,6 +332,10 @@ public class WebRequestTrackingTelemetryModuleTests {
         }).when(request).getScheme();
 
         return request;
+    }
+
+    private String getRequestContextHeaderValue(String appId) {
+        return String.format("appId=cid-v1:%s", appId);
     }
 
     // endregion Private methods
