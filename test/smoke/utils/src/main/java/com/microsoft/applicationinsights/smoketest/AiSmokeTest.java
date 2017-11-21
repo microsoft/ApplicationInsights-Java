@@ -116,7 +116,8 @@ public abstract class AiSmokeTest {
 	protected short extPort;
 	protected String currentImageName;
 
-	protected static final AiDockerClient docker = new AiDockerClient();
+	// TODO make this dependent on container mode
+	protected static final AiDockerClient docker = AiDockerClient.createLinuxClient();
 
 	private final Properties testProps = new Properties();
 	

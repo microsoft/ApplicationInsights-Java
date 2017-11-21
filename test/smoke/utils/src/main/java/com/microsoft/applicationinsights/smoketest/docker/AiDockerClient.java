@@ -19,6 +19,32 @@ import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 
 public class AiDockerClient {
+	
+	public static String DEFAULT_WINDOWS_USER = "Administrator";
+	public static String DEFAULT_LINUX_USER = "root";
+
+	private String currentUser;
+
+	public AiDockerClient() {
+		currentUser = "root";
+	}
+
+	public AiDockerClient(String user) {
+		this.currentUser = user;
+	}
+
+	public String getCurrentUser() {
+		return this.currentUser;
+	}
+
+	public static AiDockerClient createLinuxClient() {
+		return new AiDockerClient(DEFAULT_LINUX_USER);
+	}
+
+	public static AiDockerClient createWindowsClient() {
+		return new AiDockerClient(DEFAULT_WINDOWS_USER);
+	}
+
 	public String startContainer(String image, String portMapping) throws IOException, InterruptedException {
 		Preconditions.checkNotNull(image, "image");
 		Preconditions.checkNotNull(portMapping, "portMapping");
@@ -54,8 +80,7 @@ public class AiDockerClient {
 		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
 		// TODO chmod and chown; maybe
 		
-		p = new ProcessBuilder("docker", "container", "exec", "-d", id, "./deploy.sh", appArchive.getName()).start();
-		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("exec deploy script in container %s", id));
+		execOnContainer(id, "bash", "./deploy.sh", appArchive.getName());
 	}
 
 	public void execOnContainer(String id, String cmd, String... args) throws IOException, InterruptedException {
@@ -63,7 +88,7 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(cmd, "cmd");
 
 		List<String> cmdList = new ArrayList<>();
-		cmdList.addAll(Arrays.asList(new String[]{"docker", "container", "exec", "-d", id, cmd}));
+		cmdList.addAll(Arrays.asList(new String[]{"docker", "container", "exec", "-d", "-u", getCurrentUser(), id, cmd}));
 		if (args.length > 0) {
 			cmdList.addAll(Arrays.asList(args));
 		}
