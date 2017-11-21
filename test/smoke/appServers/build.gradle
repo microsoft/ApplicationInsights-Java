@@ -1,4 +1,5 @@
 import org.apache.tools.ant.filters.ReplaceTokens;
+import static org.apache.tools.ant.taskdefs.condition.Os.*;
 
 apply plugin: 'base'
 
@@ -96,11 +97,10 @@ subprojects {
 task buildDockerImage {
 	dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
 	
-	verifyDockerInstallation()
-
 	outputs.upToDateWhen { false }
 	doFirst {
-		switchDockerDaemon("linux")
+		// TODO should be configurable
+		// switchDockerDaemon("linux")
 	}
 
 	doLast {
@@ -156,23 +156,25 @@ def verifyDockerInstallation() {
 	exec {
 		commandLine 'docker', 'version'
 	}.assertNormalExitValue()
-	if (!System.env.DOCKER_HOME) {
-		def whereIsIt = new ByteArrayOutputStream()
-		def findDocker = exec {
-			commandLine 'where', 'docker' // this is windows only
-			standardOutput = whereIsIt
-		}
-		def dockerDir = new File("/Program Files/Docker/Docker")
-		if (findDocker.exitValue == 0) {
-			def foundItHere = whereIsIt.toString()
-			logger.lifecycle foundItHere
-			dockerDir = new File(foundItHere).getParentFile().getParentFile()
-		}
-		if (!(dockerDir.exists() && new File(dockerDir, "DockerCli.exe").exists())) {
-			throw new GradleException("Either docker isn't installed or in non-default location. Please set environment variable DOCKER_HOME")
-		}
-		System.env.DOCKER_HOME = dockerDir.absolutePath
-	}
+
+	// TODO make this block OS independent
+	// if (!System.env.DOCKER_HOME) {
+	// 	def whereIsIt = new ByteArrayOutputStream()
+	// 	def findDocker = exec {
+	// 		commandLine 'where', 'docker' // this is windows only
+	// 		standardOutput = whereIsIt
+	// 	}
+	// 	def dockerDir = new File("/Program Files/Docker/Docker")
+	// 	if (findDocker.exitValue == 0) {
+	// 		def foundItHere = whereIsIt.toString()
+	// 		logger.lifecycle foundItHere
+	// 		dockerDir = new File(foundItHere).getParentFile().getParentFile()
+	// 	}
+	// 	if (!(dockerDir.exists() && new File(dockerDir, "DockerCli.exe").exists())) {
+	// 		throw new GradleException("Either docker isn't installed or in non-default location. Please set environment variable DOCKER_HOME")
+	// 	}
+	// 	System.env.DOCKER_HOME = dockerDir.absolutePath
+	// }
 }
 
 def getCurrentDockerServerArch() {
@@ -189,6 +191,7 @@ def getCurrentDockerServerArch() {
 }
 
 def switchDockerDaemon(targetMode = null) {
+	// FIXME this should only be applicable for desktop builds
 	verifyDockerInstallation()
 	logger.lifecycle "Switching docker mode. Current mode = "+getCurrentDockerServerArch()
 	if (targetMode != null) {
