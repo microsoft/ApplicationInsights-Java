@@ -50,11 +50,11 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(id, "id");
 		Preconditions.checkNotNull(appArchive, "appArchive");
 		
-		Process p = new ProcessBuilder("docker", "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/home/pilot")).start();
+		Process p = new ProcessBuilder("docker", "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
 		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
-		// TODO chmod and chown
+		// TODO chmod and chown; maybe
 		
-		p = new ProcessBuilder("docker", "container", "exec", "-d", "-u", "pilot", id, "./deploy.sh", appArchive.getName()).start();
+		p = new ProcessBuilder("docker", "container", "exec", "-d", id, "./deploy.sh", appArchive.getName()).start();
 		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("exec deploy script in container %s", id));
 	}
 
@@ -63,7 +63,7 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(cmd, "cmd");
 
 		List<String> cmdList = new ArrayList<>();
-		cmdList.addAll(Arrays.asList(new String[]{"docker", "container", "exec", "-d", "-u", "pilot", id, cmd}));
+		cmdList.addAll(Arrays.asList(new String[]{"docker", "container", "exec", "-d", id, cmd}));
 		if (args.length > 0) {
 			cmdList.addAll(Arrays.asList(args));
 		}
