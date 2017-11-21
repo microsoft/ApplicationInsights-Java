@@ -86,7 +86,6 @@ public class AiDockerClient {
 		
 		Process p = new ProcessBuilder("docker", "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
 		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
-		// TODO chmod and chown; maybe
 		
 		execOnContainer(id, getShellExecutor(), "./deploy.sh", appArchive.getName());
 	}
