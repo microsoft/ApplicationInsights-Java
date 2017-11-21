@@ -20,3 +20,4 @@ BASEPATH=`basename $WARFILE .war`
 
 #wget --http-user=admin --http-password=admin "http://localhost:8080/manager/text/deploy?war=file:$WARFILE&path=/$BASEPATH" -O -
 cp $WARFILE $CATALINA_HOME/webapps
+ls -lFA $CATALINA_HOME/webapps
