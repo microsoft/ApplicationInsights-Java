@@ -87,6 +87,8 @@ public abstract class AiSmokeTest {
 	private final static short BASE_PORT_NUMBER = 28080;
 	private static short currentPortNumber = BASE_PORT_NUMBER;
 
+	private static final String TEST_CONFIG_FILENAME = "testInfo.properties";
+
 	@Rule
 	public TestWatcher theWatchman = new TestWatcher() {
 		@Override
@@ -216,7 +218,7 @@ public abstract class AiSmokeTest {
 	}
 
 	public void setupProperties() throws Exception {
-		testProps.load(new FileReader(new File(Resources.getResource("testInfo.Properties").toURI())));
+		testProps.load(new FileReader(new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI())));
 		currentImageName = String.format("%s_%s_%s", this.appServer, this.os, this.jreVersion);
 		extPort = currentPortNumber++;
 	}
