@@ -5,4 +5,11 @@ if [ -z "$CATALINA_HOME" ]; then
 	exit 1
 fi
 
-tail `ls -1td $CATALINA_HOME/logs/* | head -n1`
+NUM_LINES=25
+if [ ! -z "$1" ]; then
+	NUM_LINES=$1
+fi
+
+ls -1td $CATALINA_HOME/logs
+
+tail -n$NUM_LINES `ls -1td $CATALINA_HOME/logs/* | head -n1`
