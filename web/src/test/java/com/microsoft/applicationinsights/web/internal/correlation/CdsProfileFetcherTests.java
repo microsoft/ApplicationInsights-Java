@@ -22,14 +22,16 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.web.internal.correlation.mocks.*;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+import org.apache.http.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class CdsProfileFetcherTests {
     
     @Test
-    public void testFetchApplicationId() throws InterruptedException, ExecutionException {
+    public void testFetchApplicationId() throws InterruptedException, ExecutionException, ParseException, IOException {
 
         //setup
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
@@ -53,7 +55,7 @@ public class CdsProfileFetcherTests {
     }
 
     @Test
-    public void testFetchApplicationIdWithTaskCompleteImmediately() throws InterruptedException, ExecutionException {
+    public void testFetchApplicationIdWithTaskCompleteImmediately() throws InterruptedException, ExecutionException, ParseException, IOException {
 
         //setup
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
@@ -69,7 +71,7 @@ public class CdsProfileFetcherTests {
     }
 
     @Test
-    public void testFetchApplicationIdMultipleIkeys() throws InterruptedException, ExecutionException {
+    public void testFetchApplicationIdMultipleIkeys() throws InterruptedException, ExecutionException, ParseException, IOException {
 
         //setup
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
@@ -101,7 +103,7 @@ public class CdsProfileFetcherTests {
     }
 
     @Test(expected = ExecutionException.class)
-    public void testFetchApplicationIdFailureWithException() throws InterruptedException, ExecutionException {
+    public void testFetchApplicationIdFailureWithException() throws InterruptedException, ExecutionException, ParseException, IOException {
 
         //setup - mimic timeout from the async http call
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
@@ -122,7 +124,7 @@ public class CdsProfileFetcherTests {
     }
 
     @Test
-    public void testFetchApplicationIdFailureWithNon200StatusCode() throws InterruptedException, ExecutionException {
+    public void testFetchApplicationIdFailureWithNon200StatusCode() throws InterruptedException, ExecutionException, ParseException, IOException {
 
         //setup
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
@@ -145,4 +147,21 @@ public class CdsProfileFetcherTests {
         Assert.assertEquals(ProfileFetcherResultTaskStatus.FAILED, result.getStatus());
         Assert.assertNull(result.getAppId());
     }
+
+    /*@Test
+    public void testFetchApplicationIdAgainstRealService() throws InterruptedException, ExecutionException, ParseException, IOException {
+
+        CdsProfileFetcher.INSTANCE.setEndpointAddress("https://dc.services.visualstudio.com/v2/track");
+       
+        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("d3207117-0df4-4674-ad6e-a43d3eb5a2df");
+        System.out.println(result.getAppId());
+        System.out.println(result.getStatus());
+        
+        Thread.sleep(2000);
+        System.out.println("Wake up!");
+
+        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("d3207117-0df4-4674-ad6e-a43d3eb5a2df");
+        System.out.println(result.getAppId());
+        System.out.println(result.getStatus());
+    }*/
 }

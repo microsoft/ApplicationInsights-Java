@@ -21,7 +21,9 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+import org.apache.http.ParseException;
 
 /**
  * Retrieves the application profile from storage
@@ -33,6 +35,9 @@ import java.util.concurrent.ExecutionException;
       * @param instrumentationKey The instrumentation key for which to fetch the appId.
       * @throws ExecutionException
       * @throws InterruptedException
+      * @throws JSONException
+      * @throws IOException
+      * @throws ParseException
       */
-      ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException;
+      ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException;
  }

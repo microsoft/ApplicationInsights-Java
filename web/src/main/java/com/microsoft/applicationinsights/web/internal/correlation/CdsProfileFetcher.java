@@ -21,17 +21,20 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.nio.client.HttpAsyncClient;
+import org.apache.http.util.EntityUtils;
 
 public enum CdsProfileFetcher implements AppProfileFetcher {
 
@@ -39,6 +42,7 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
 
     private HttpAsyncClient httpClient;
     private String endpointAddress;
+    private static final String QUERY_PROFILE_APPID_ENDPOINT_FORMAT = "%s/api/profiles/%s/appId";
 
     // cache of tasks per ikey
     private final ConcurrentHashMap<String, Future<HttpResponse>> tasks;
@@ -58,7 +62,7 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
     }
 
 	@Override
-	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException {
+	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException {
 
         if (instrumentationKey == null || instrumentationKey.isEmpty()) {
             throw new IllegalArgumentException("instrumentationKey must be not null or empty");
@@ -81,11 +85,15 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
         // task is ready, we can call get() now.
         try {
             HttpResponse response = currentTask.get();
-            
-             // get json payload out of response and extract appId.
 
-            return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.COMPLETE);
-		} finally {
+            if (response.getStatusLine().getStatusCode() != 200) {
+                return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.FAILED);
+            }
+
+            String appId = EntityUtils.toString(response.getEntity());
+            return new ProfileFetcherResult(appId, ProfileFetcherResultTaskStatus.COMPLETE);
+
+        } finally {
             // remove task as we're done with it.
             this.tasks.remove(instrumentationKey);
         }
@@ -96,14 +104,15 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
     }
 
     public void setEndpointAddress(String endpoint) throws MalformedURLException {
+        // set endpoint address to the base address (e.g. https://dc.services.visualstudio.com)
+        // later we will append the profile/ikey segment
         URL url = new URL(endpoint);
         String urlStr = url.toString();
-        String profileQueryAddress = urlStr.substring(0, urlStr.length() - url.getFile().length()) + "/profile/?ikey=";
-        this.endpointAddress = profileQueryAddress;
+        this.endpointAddress = urlStr.substring(0, urlStr.length() - url.getFile().length());
     }
 
     private Future<HttpResponse> createFetchTask(String instrumentationKey) {
-		HttpGet request = new HttpGet(this.endpointAddress + instrumentationKey);
+		HttpGet request = new HttpGet(String.format(QUERY_PROFILE_APPID_ENDPOINT_FORMAT, this.endpointAddress, instrumentationKey));
         return this.httpClient.execute(request, null);
-	}
+    }
 }
