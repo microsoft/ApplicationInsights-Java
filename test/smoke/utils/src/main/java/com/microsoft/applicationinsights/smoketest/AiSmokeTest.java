@@ -104,7 +104,7 @@ public abstract class AiSmokeTest {
 				System.out.println("\nFetching container logs for "+containerId);
 				docker.printContainerLogs(containerId);
 
-				System.out.println();
+				System.out.println("\nFinished gathering logs.");
 			}
 			catch (Exception e) {
 				System.err.println("Error copying logs to stream");
