@@ -43,6 +43,7 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
+import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
 import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
 
 import static org.junit.Assert.assertEquals;
@@ -224,25 +225,30 @@ public class WebRequestTrackingTelemetryModuleTests {
     public void testInstrumentationKeyIsResolvedDuringModuleInit() {
         
         // module is initialized during test init, so at this point we should 
-        // already have appId available in cache, which means calling resolver
-        // does not result in call to fetcher
+        // already have a task in pending status. This means the fetcher has already
+    	// been called once.
+    	Assert.assertEquals(1, mockProfileFetcher.callCount());
         String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
 
-        Assert.assertEquals(1, mockProfileFetcher.callCount());
-        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
-        Assert.assertEquals(1, mockProfileFetcher.callCount());
+        //calling resolver now will actually retrieve the appId from the completed task 
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("someAppId");
+        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
+        Assert.assertEquals(2, mockProfileFetcher.callCount());
+        Assert.assertEquals("someAppId", appId);
+        
+        //calling it again should retrieve appId from cache (i.e. fetcher call count remains 2)
+        appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
+        Assert.assertEquals(2, mockProfileFetcher.callCount());
+        Assert.assertEquals("someAppId", appId);
     }
 
     @Test
     public void testInstrumentationKeyIsResolvedIfModifiedAtRuntime() {
         
-        String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
-
-        // before request begins, appId should have been already cached during init
+    	// before request begins, appId should have been already cached during init
         Assert.assertEquals(1, mockProfileFetcher.callCount());
-        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
-        Assert.assertEquals(1, mockProfileFetcher.callCount());
-
+        
         // request comes in
         ServletRequest request = ServletUtils.generateDummyServletRequest();
         defaultModule.onBeginRequest(request, null);
@@ -250,12 +256,24 @@ public class WebRequestTrackingTelemetryModuleTests {
         // mimic customer modifying ikey at runtime in request handler (e.g. controller)
         TelemetryConfiguration.getActive().setInstrumentationKey("myOtherIkey");
         
-        // request tracking module must detect change and resolve the new ikey
+        // module.onEndRequest must detect change and start resolving new ikey
         defaultModule.onEndRequest(request, null);
-        
-        ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
         Assert.assertEquals(2, mockProfileFetcher.callCount());
+        
+        //another request comes in
+        ServletRequest request2 = ServletUtils.generateDummyServletRequest();
+        defaultModule.onBeginRequest(request2, null);
+        
+        // module.onEndRequest will attempt to retrieve new appId from task if it is completed
+        mockProfileFetcher.setAppIdToReturn("myAppId");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        defaultModule.onEndRequest(request, null);
+        Assert.assertEquals(3, mockProfileFetcher.callCount());
+        
+        // at this point, the new appId should be available in the cache
+        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("myOtherIkey");
+        Assert.assertEquals(3, mockProfileFetcher.callCount());
+        Assert.assertEquals("myAppId", appId);
     }
 
     // endregion Tests

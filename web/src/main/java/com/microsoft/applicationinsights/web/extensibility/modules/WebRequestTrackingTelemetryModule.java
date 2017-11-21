@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 
 /**
@@ -145,6 +146,13 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
     public void initialize(TelemetryConfiguration configuration) {
         try {
             telemetryClient = new TelemetryClient(configuration);
+            
+            //kick-off resolving ikey to appId
+            String ikey = configuration.getInstrumentationKey();
+            if (ikey != null && ikey.length() > 0) {
+            	InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
+            }
+            
             isInitialized = true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
