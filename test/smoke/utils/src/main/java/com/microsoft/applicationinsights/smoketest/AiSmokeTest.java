@@ -98,6 +98,8 @@ public abstract class AiSmokeTest {
 				String containerId = lastContainerId();
 				System.out.println("Test failure detected. Fetching container logs for "+containerId);
 				docker.printContainerLogs(containerId);
+				System.out.println("Fetching appserver logs");
+				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
 			}
 			catch (Exception e) {
 				System.err.println("Error copying logs to stream");
