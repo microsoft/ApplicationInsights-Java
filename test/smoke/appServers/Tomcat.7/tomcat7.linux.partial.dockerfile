@@ -26,5 +26,3 @@ ADD ./tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml
 EXPOSE 8080
 
 CMD $CATALINA_HOME/bin/catalina.sh run
-
-
