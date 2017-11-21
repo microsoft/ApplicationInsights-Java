@@ -30,18 +30,40 @@ public enum InstrumentationKeyResolver {
     private AppProfileFetcher profileFetcher;
     private final ConcurrentHashMap<String, String> appIdCache = new ConcurrentHashMap<String, String>();
 
+    public void clearCache() {
+        this.appIdCache.clear();
+    }
+
     public void setProfileFetcher(AppProfileFetcher profileFetcher) {
         this.profileFetcher = profileFetcher;
     }
 
+    /**
+     * @param instrumentationKey The instrumentation key.
+     * @return The applicationId associated with the instrumentation key or null if it cannot be retrieved.
+     */
     public String resolveInstrumentationKey(String instrumentationKey) {
         
+    	 if (instrumentationKey == null || instrumentationKey.isEmpty()) {
+             throw new IllegalArgumentException("instrumentationKey must be not null or empty");
+         }
+    	
         try {
+            String appId = this.appIdCache.get(instrumentationKey);
+
+            if (appId != null) {
+                return appId;
+            }
+
             ProfileFetcherResult result = this.profileFetcher.fetchAppProfile(instrumentationKey);
-            String appId = processResult(result, instrumentationKey);
+            appId = processResult(result, instrumentationKey);
+            
+            if (appId != null) {
+            	this.appIdCache.putIfAbsent(instrumentationKey, appId);
+            }
+            
             return appId;
 		} catch (Exception e) {
-            System.out.println("Exception resolving ikey: " + instrumentationKey + "=> Exception: " + e);
             InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s => Exception: %s", instrumentationKey, e);
 		}
 
@@ -55,19 +77,15 @@ public enum InstrumentationKeyResolver {
         switch (result.getStatus()) {
             case PENDING:
                 InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - pending resolution of instrumentation key: %s", instrumentationKey);
-                System.out.println("PENDING ikey: " + instrumentationKey);
                 break;
             case FAILED:
-                System.out.println("FAILED ikey: " + instrumentationKey);
                 InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s", instrumentationKey);
                 break;
             case COMPLETE:
-                System.out.println("SUCCESS ikey: " + instrumentationKey);
                 InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - successfully resolved instrumentation key: %s", instrumentationKey);
                 appId = result.getAppId();
                 break;
             default:
-                System.out.println("NOT SUPPOSED ikey: " + instrumentationKey);
                 InternalLogger.INSTANCE.error("InstrumentationKeyResolver - unexpected status. Instrumentation key: %s", instrumentationKey);
                 break;
         }

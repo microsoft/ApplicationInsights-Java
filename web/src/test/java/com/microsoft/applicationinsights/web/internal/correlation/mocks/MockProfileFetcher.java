@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
+import java.util.concurrent.ExecutionException;
 import com.microsoft.applicationinsights.web.internal.correlation.AppProfileFetcher;
 import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
 import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResult;
@@ -29,12 +30,22 @@ public class MockProfileFetcher implements AppProfileFetcher {
     
     private String appId;
     private int callCounter = 0;
+    private boolean throwException = false;
     private ProfileFetcherResultTaskStatus status = ProfileFetcherResultTaskStatus.COMPLETE;
 
 	@Override
-	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) {
+	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws ExecutionException {
         ++callCounter;
+        
+        if (throwException) {
+        	throw new ExecutionException("No doughnuts for you.", null);
+        }
+        
         return new ProfileFetcherResult(this.appId, this.status);
+	}
+	
+	public void setExceptionOn(boolean throwException) {
+		this.throwException = throwException;
 	}
 
 	public void setAppIdToReturn(String appId) {
