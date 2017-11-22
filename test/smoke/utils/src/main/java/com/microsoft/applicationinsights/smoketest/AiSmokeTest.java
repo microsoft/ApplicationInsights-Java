@@ -250,6 +250,8 @@ public abstract class AiSmokeTest {
 		String containerId = docker.startContainer(currentImageName, extPort+":8080");
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
+		
+		TimeUnit.SECONDS.sleep(5);
 
 		// TODO add health check for appserver
 
