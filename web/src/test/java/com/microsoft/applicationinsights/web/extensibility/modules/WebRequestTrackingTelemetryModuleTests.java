@@ -42,6 +42,7 @@ import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsTests;
 import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
 import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
 import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
@@ -84,6 +85,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         // initialize mock profile fetcher (for resolving ikeys to appIds)
         mockProfileFetcher = new MockProfileFetcher();
         InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockProfileFetcher);
+        InstrumentationKeyResolver.INSTANCE.clearCache();
 
         defaultModule = new WebRequestTrackingTelemetryModule();
         defaultModule.initialize(TelemetryConfiguration.getActive());
@@ -166,7 +168,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         String incomingId = "|guid.bcec871c_1.";
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         //headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, values);
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, getRequestContextHeaderValue("id1", null));
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
         //configure mock appId fetcher to return different appId from what's on the request header
@@ -193,7 +195,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         defaultModule.onEndRequest(request, null);
 
         //validate source
-        Assert.assertEquals(getRequestSourceValue("id1", null), requestTelemetry.getSource());
+        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue("id1", null), requestTelemetry.getSource());
     }
 
     @Test
@@ -205,7 +207,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //mock a servlet request with cross-component correlation headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, getRequestContextHeaderValue("id1", null));
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
         //configure mock appId fetcher to return different appId from what's on the request header
@@ -217,7 +219,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //validate source
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertEquals(getRequestSourceValue("id1", null), requestTelemetry.getSource());
+        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue("id1", null), requestTelemetry.getSource());
     }
 
     @Test
@@ -229,7 +231,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //mock a servlet request with cross-component correlation headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, getRequestContextHeaderValue("id1", null));
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
         //configure mock appId fetcher to return the same appId from what's on the request header
@@ -253,7 +255,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //mock a servlet request with cross-component correlation headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, getRequestContextHeaderValue(null, "Front End"));
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue(null, "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
         //configure mock appId fetcher to return different appId from what's on the request header
@@ -265,7 +267,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //validate source
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertEquals(getRequestSourceValue(null, "Front End"), requestTelemetry.getSource());
+        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue(null, "Front End"), requestTelemetry.getSource());
     }
 
     @Test
@@ -277,7 +279,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //mock a servlet request with cross-component correlation headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, getRequestContextHeaderValue("id1", "Front End"));
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
         //configure mock appId fetcher to return different appId from what's on the request header
@@ -289,7 +291,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //validate source
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertEquals(getRequestSourceValue("id1", "Front End"), requestTelemetry.getSource());
+        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue("id1", "Front End"), requestTelemetry.getSource());
     }
 
     @Test
@@ -301,7 +303,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //mock a servlet request with cross-component correlation headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, getRequestContextHeaderValue("id1", "Front End"));
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
         //configure mock appId fetcher to return different appId from what's on the request header
@@ -452,30 +454,6 @@ public class WebRequestTrackingTelemetryModuleTests {
         }).when(request).getScheme();
 
         return request;
-    }
-
-    private String getRequestContextHeaderValue(String appId, String roleName) {
-        if (roleName == null) {
-            return String.format("appId=cid-v1:%s", appId);
-        }
-
-        if (appId == null) {
-            return String.format("roleName=%s", roleName);
-        }
-
-        return String.format("appId=cid-v1:%s, roleName=%s", appId, roleName);
-    }
-
-    private String getRequestSourceValue(String appId, String roleName) {
-        if (roleName == null) {
-            return String.format("cid-v1:%s", appId);
-        }
-
-        if (appId == null) {
-            return String.format("roleName:%s", roleName);
-        }
-
-        return String.format("cid-v1:%s | roleName:%s", appId, roleName);
     }
 
     // endregion Private methods

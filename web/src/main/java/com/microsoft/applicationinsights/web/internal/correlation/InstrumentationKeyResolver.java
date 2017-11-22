@@ -27,9 +27,10 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 public enum InstrumentationKeyResolver {
     INSTANCE;
 
+	private static final String CorrelationIdFormat = "cid-v1:%s";
     private AppProfileFetcher profileFetcher;
     private final ConcurrentHashMap<String, String> appIdCache = new ConcurrentHashMap<String, String>();
-
+      
     public void clearCache() {
         this.appIdCache.clear();
     }
@@ -83,7 +84,7 @@ public enum InstrumentationKeyResolver {
                 break;
             case COMPLETE:
                 InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - successfully resolved instrumentation key: %s", instrumentationKey);
-                appId = result.getAppId();
+                appId = String.format(CorrelationIdFormat, result.getAppId());
                 break;
             default:
                 InternalLogger.INSTANCE.error("InstrumentationKeyResolver - unexpected status. Instrumentation key: %s", instrumentationKey);

@@ -22,19 +22,32 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 
 
 public class TelemetryCorrelationUtilsTests {
+
+    private static MockProfileFetcher mockProfileFetcher;
     
+    @Before
+    public void testInitialize() {
+
+        // initialize mock profile fetcher (for resolving ikeys to appIds)
+        mockProfileFetcher = new MockProfileFetcher();
+        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockProfileFetcher);
+        InstrumentationKeyResolver.INSTANCE.clearCache();
+    }
+
     @Test
     public void testIsHierarchicalIdValidCase() {
 
@@ -476,6 +489,270 @@ public class TelemetryCorrelationUtilsTests {
         //validate we have generated proper ID's
         Assert.assertNotNull(childId);
         Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
+    }
+
+    @Test
+    public void testRequestContextIsResolved() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue("id1", null);
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        //validate we have populated the source as expected
+        Assert.assertEquals(getRequestSourceValue("id1", null), requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsNotResolvedWithPendingAppProfileFetch() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue("id1", null);
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        //validate source is not set as the task to retrieve appId was still pending.
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsNotResolvedWithFailedAppProfileFetch() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue("id1", null);
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.FAILED);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        //validate source is not set as the task to retrieve appId failed.
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsNotResolvedForSameApp() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue("id1", null);
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        //appId returned is the same as incoming one.
+        mockProfileFetcher.setAppIdToReturn("id1");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        //validate source is not set as the incoming request came from the same application.
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsNotResolvedIfNoHeaderPresent() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id1");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        //validate source is not set as the incoming request had no Request-Context header.
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsNotResolvedIfNoAppIdOrRoleName() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        //Request-Context is available but with no appId or roleName keys
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, "foo=bar");
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id1");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        //validate source is not set as the incoming request had no appId or roleName.
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsResolvedWithRoleNameOnly() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue(null, "Worker Role");
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        //validate we have populated the source as expected
+        Assert.assertEquals(getRequestSourceValue(null, "Worker Role"), requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsResolvedWithAppIdAndRoleName() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue("id1", "Worker Role");
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        //validate we have populated the source as expected
+        Assert.assertEquals(getRequestSourceValue("id1", "Worker Role"), requestTelemetry.getSource());
+    }
+
+
+    @Test
+    public void testRequestContextIsNotResolvedWithNullIkey() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue("id1", "Worker Role");
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, null);
+
+        //validate
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsNotResolvedWithNullRequest() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue("id1", "Worker Role");
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+   
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(null, requestTelemetry, "ike1");
+
+        //validate
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testRequestContextIsNotResolvedWithNullRequestTelemetry() {
+        
+        //setup
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String incomingRequestContextHeader = getRequestContextHeaderValue("id1", "Worker Role");
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, incomingRequestContextHeader);
+    
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        TelemetryCorrelationUtils.resolveRequestSource(request, null, "ike1");
+
+        //validate
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    public static String getRequestContextHeaderValue(String appId, String roleName) {
+        
+        if (appId == null && roleName == null) {
+            return "foo=bar";
+        }
+        
+        if (roleName == null) {
+            return String.format("appId=cid-v1:%s", appId);
+        }
+
+        if (appId == null) {
+            return String.format("roleName=%s", roleName);
+        }
+
+        return String.format("appId=cid-v1:%s, roleName=%s", appId, roleName);
+    }
+
+    public static String getRequestSourceValue(String appId, String roleName) {
+        
+        if (appId == null && roleName == null) {
+            return "someValue";
+        }
+        
+        if (roleName == null) {
+            return String.format("cid-v1:%s", appId);
+        }
+
+        if (appId == null) {
+            return String.format("roleName:%s", roleName);
+        }
+
+        return String.format("cid-v1:%s | roleName:%s", appId, roleName);
     }
 
 }

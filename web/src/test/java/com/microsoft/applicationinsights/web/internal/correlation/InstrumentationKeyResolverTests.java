@@ -38,15 +38,14 @@ public class InstrumentationKeyResolverTests {
 
         //setup
         MockProfileFetcher mockFetcher = new MockProfileFetcher();
-        mockFetcher.setAppIdToReturn("appId");
+        mockFetcher.setAppIdToReturn("id1");
         InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
 
         //run
         String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-
+        
         //validate
-        Assert.assertNotNull(appId);
-        Assert.assertEquals("appId", appId);
+        Assert.assertEquals("cid-v1:id1", appId);
         Assert.assertEquals(1, mockFetcher.callCount());
     }
 
@@ -69,7 +68,7 @@ public class InstrumentationKeyResolverTests {
         //mimic calling resolver again after some time
         mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
         appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        Assert.assertEquals("appId", appId);
+        Assert.assertEquals("cid-v1:appId", appId);
         //fetcher will be called again since the task was pending (i.e. not yet in the cache)
         Assert.assertEquals(2, mockFetcher.callCount());
     }
@@ -93,7 +92,7 @@ public class InstrumentationKeyResolverTests {
         //mimic calling resolver again after some time
         mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
         appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        Assert.assertEquals("appId", appId);
+        Assert.assertEquals("cid-v1:appId", appId);
         //fetcher will be called again since the previous attempt failed
         Assert.assertEquals(2, mockFetcher.callCount());
     }
@@ -126,7 +125,7 @@ public class InstrumentationKeyResolverTests {
         //mimic final call which returns the completed task
         mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
         appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        Assert.assertEquals("appId", appId);
+        Assert.assertEquals("cid-v1:appId", appId);
         Assert.assertEquals(3, mockFetcher.callCount());
     }
 

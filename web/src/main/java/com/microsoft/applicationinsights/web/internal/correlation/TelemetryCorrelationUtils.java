@@ -35,10 +35,17 @@ public class TelemetryCorrelationUtils {
     public static final String CORRELATION_HEADER_NAME = "RequestId";
 	public static final String CORRELATION_CONTEXT_HEADER_NAME = "Correlation-Context";
 	public static final String REQUEST_CONTEXT_HEADER_NAME = "Request-Context";
+	public static final String REQUEST_CONTEXT_HEADER_APPID_KEY = "appId";
+	public static final String REQUEST_CONTEXT_HEADER_ROLENAME_KEY = "roleName";
 	public static final int REQUESTID_MAXLENGTH = 1024; 
 
 	private TelemetryCorrelationUtils() {}
 
+	/**
+	 * Resolves correlation ID's by parsing well-known correlation headers.
+	 * @param request The servlet request.
+	 * @param requestTelemetry The request telemetry to be populated with correlation ID's.
+	 */
 	public static void resolveCorrelation(HttpServletRequest request, RequestTelemetry requestTelemetry) {
 		
 		try {
@@ -79,6 +86,11 @@ public class TelemetryCorrelationUtils {
 		}
 	}
 
+	/**
+	 * Generates a child Id for dependencies. Dependencies are children of requests and, therefore, their ID's 
+	 * reflect this. The generated ID is based on the current request scope (stored in TLS).
+	 * @return The child Id.
+	 */
 	public static String generateChildDependencyId() {
 		
 		try {
@@ -102,12 +114,106 @@ public class TelemetryCorrelationUtils {
 		return null;
 	}
 
+	/**
+	 * Resolves the source of a request based on request header information and the appId of the current
+	 * component, which is retrieved via a query to the AppInsights service.
+	 * @param request The servlet request.
+	 * @param requestTelemetry The request telemetry in which source will be populated.
+	 * @param instrumentationKey The instrumentation key for the current component.
+	 */
+	public static void resolveRequestSource(HttpServletRequest request, RequestTelemetry requestTelemetry, String instrumentationKey) {
+
+		try {
+			if (request == null) {
+				InternalLogger.INSTANCE.error("Failed to resolve correlation. request is null.");
+				return;
+			}
+	
+			if (requestTelemetry == null) {
+				InternalLogger.INSTANCE.error("Failed to resolve correlation. requestTelemetry is null.");
+				return;
+			}
+
+			if (requestTelemetry.getSource() != null) {
+				InternalLogger.INSTANCE.trace("Skip resolving request source as it is already initialized.");
+				return;
+			}
+
+			String requestContext = request.getHeader(REQUEST_CONTEXT_HEADER_NAME);
+			if (requestContext == null || requestContext.isEmpty()) {
+				System.out.println("No request-context found.");
+				return;
+			}
+
+			if (instrumentationKey == null || instrumentationKey.isEmpty()) {
+				System.out.println("IKEY is null or empty.");
+				return;
+			}
+			
+			String incomingAppId = getKeyValueHeaderValue(requestContext, REQUEST_CONTEXT_HEADER_APPID_KEY);
+			String roleName = getKeyValueHeaderValue(requestContext, REQUEST_CONTEXT_HEADER_ROLENAME_KEY);
+			
+			if (incomingAppId == null && roleName == null) {
+				return;
+			}
+			
+			String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
+			
+			//it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
+			//return and let the next request retry.
+			if (myAppId == null) {
+				InternalLogger.INSTANCE.trace("Skip resolving request source as the appId could not be resolved (e.g. task may be pending or failed)");
+				return;
+			}
+
+			String source = null;
+			if (incomingAppId != null && !incomingAppId.equals(myAppId)) {
+				source = incomingAppId;
+			}
+
+			if (roleName != null) {
+				if (source != null) {
+					source += " | roleName:" + roleName;
+				} else {
+					source = "roleName:" + roleName;
+				}
+			}
+			
+			requestTelemetry.setSource(source);
+		}
+		catch(Exception ex) {
+			InternalLogger.INSTANCE.error("Failed to resolve request source. Exception information: " + ex);
+		}
+	}
+
 	public static boolean isHierarchicalId(String id) {
 		if (id == null || id.isEmpty()) {
 			return false;
 		}
 
 		return id.charAt(0) == '|';
+	}
+
+	/**
+	 * Extracts the value of a "Key-Value" type of header. For example, for a header with value: "foo=bar, name=joe", 
+	 * we can extract "joe" with a call to this method passing the key "name". 
+	 * @param headerFullValue The entire header value.
+	 * @param key They key for which to extract the value
+	 * @return The extracted value
+	 */
+	private static String getKeyValueHeaderValue(String headerFullValue, String key) {
+		
+		String[] tokens = headerFullValue.split(",");
+
+		for (String token : tokens) {
+			String[] keyValuePair = token.trim().split("=");
+			if (keyValuePair.length == 2 && keyValuePair[0].trim().equals(key)) {
+				String value = keyValuePair[1].trim();
+				return (value.isEmpty()) ? null : value;  
+			}
+		}
+
+		return null;
 	}
 
 	private static String extractRootId(String parentId) {
