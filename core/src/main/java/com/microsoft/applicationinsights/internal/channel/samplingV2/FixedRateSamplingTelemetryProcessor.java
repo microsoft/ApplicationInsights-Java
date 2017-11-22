@@ -126,6 +126,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     public void setSamplingPercentage(String samplingPercentage) {
         try {
             this.samplingPercentage = Double.valueOf(samplingPercentage);
+            InternalLogger.INSTANCE.info("Sampling rate set to " + samplingPercentage);
         }
         catch (NumberFormatException ex) {
             this.samplingPercentage = 100.0;
