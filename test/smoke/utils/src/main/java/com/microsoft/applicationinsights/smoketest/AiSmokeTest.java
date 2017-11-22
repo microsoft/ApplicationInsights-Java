@@ -251,12 +251,13 @@ public abstract class AiSmokeTest {
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
 
-		System.out.println("Waiting for appserver to start...");
-		waitForApp(String.format("http://localhost:%d/", this.extPort), 30, TimeUnit.SECONDS);
-		System.out.println("App server is ready.");
-
 		ContainerInfo info = new ContainerInfo(containerId, currentImageName);
+		
 		try {
+			System.out.println("Waiting for appserver to start...");
+			waitForApp(String.format("http://localhost:%d/", this.extPort), 30, TimeUnit.SECONDS);
+			System.out.println("App server is ready.");
+			
 			warFileName = getProperty("ai.smoketest.testAppWarFile");
 			System.out.printf("Deploying test application: %s...%n", warFileName);
 			docker.copyAndDeployToContainer(containerId, new File(Resources.getResource(warFileName).toURI()));
