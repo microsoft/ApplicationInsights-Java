@@ -254,7 +254,7 @@ public abstract class AiSmokeTest {
 		ContainerInfo info = new ContainerInfo(containerId, currentImageName);
 		containerStack.push(info);
 		try {
-			String url = String.format("http://127.0.0.1:%s/", String.valueOf(this.extPort));
+			String url = String.format("http://localhost:%s/", String.valueOf(this.extPort));
 			System.out.printf("Waiting for appserver to start (%s)...%n", url);
 
 			waitForUrl(url, 90, TimeUnit.SECONDS, "app server");// TODO change to actual app server name
