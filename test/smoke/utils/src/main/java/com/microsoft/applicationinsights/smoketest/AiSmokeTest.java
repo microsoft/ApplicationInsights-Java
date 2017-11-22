@@ -257,7 +257,7 @@ public abstract class AiSmokeTest {
 			String url = String.format("http://localhost:%s/", String.valueOf(this.extPort));
 			System.out.printf("Waiting for appserver to start (%s)...%n", url);
 
-			waitForApp(url, 30, TimeUnit.SECONDS, "app server");// TODO change to actual app server name
+			waitForUrl(url, 90, TimeUnit.SECONDS, "app server");// TODO change to actual app server name
 			System.out.println("App server is ready.");
 		}
 		catch (Exception e) {
@@ -310,7 +310,7 @@ public abstract class AiSmokeTest {
 		return rval;
 	}
 
-	protected void waitForApp(String url, long timeout, TimeUnit timeoutUnit, String appName) throws InterruptedException {
+	protected void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName) throws InterruptedException {
 		String rval = null;
 		Stopwatch watch = Stopwatch.createStarted();
 		do {
@@ -332,6 +332,6 @@ public abstract class AiSmokeTest {
 				rval = null;
 			}
 		} while (rval == null);
-		assertFalse("Empty response. Test apps should return something non-empty for GET /<app-path>/", rval.isEmpty());
+		assertFalse(String.format("Empty response from '%s'. HealthCheck urls should return something non-empty", url), rval.isEmpty());
 	}
 }
