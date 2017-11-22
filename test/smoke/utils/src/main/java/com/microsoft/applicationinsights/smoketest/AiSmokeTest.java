@@ -254,10 +254,18 @@ public abstract class AiSmokeTest {
 		ContainerInfo info = new ContainerInfo(containerId, currentImageName);
 		containerStack.push(info);
 		try {
-			System.out.println("Waiting for appserver to start...");
-			waitForApp(String.format("http://localhost:%d/", this.extPort), 30, TimeUnit.SECONDS);
-			System.out.println("App server is ready.");
+			String url = String.format("http://localhost:%s/", String.valueOf(this.extPort));
+			System.out.printf("Waiting for appserver to start (%s)...%n", url);
 
+			waitForApp(url, 30, TimeUnit.SECONDS);
+			System.out.println("App server is ready.");
+		}
+		catch (Exception e) {
+			System.err.println("Error starting app server");
+			throw e;
+		}
+		
+		try {
 			warFileName = getProperty("ai.smoketest.testAppWarFile");
 			System.out.printf("Deploying test application: %s...%n", warFileName);
 			docker.copyAndDeployToContainer(containerId, new File(Resources.getResource(warFileName).toURI()));
@@ -265,8 +273,6 @@ public abstract class AiSmokeTest {
 		}
 		catch (Exception e) {
 			System.err.println("Error deploying test application.");
-			// FIXME this could be done using a "fire-and-forget" thread
-			// stopContainer(info);
 			throw e;
 		}
 		// TODO start application dependencies---container(s)
