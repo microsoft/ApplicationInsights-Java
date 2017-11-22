@@ -1,6 +1,12 @@
 # CHANGELOG
 
 ## Version 1.0.11
+- Introducing public method 'getIncludedTypes' and 'getExcludedTypes' in TelemetryProcessorXmlElement.
+- Introducing class 'com.microsoft.applicationinsights.internal.config.ParamIncludedTypeXmlElement'.
+- Introducing class 'com.microsoft.applicationinsights.internal.config.ParamExcludedTypeXmlElement'
+- Introducing class 'com.microsoft.applicationinsights.internal.channel.samplingV2.SamplingScoreGeneratorV2'
+- Introducing Telemetry Processor 'com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor'
+- Introducing FixedRate Sampling v2 Using Telemetry Processors
 - Fixed issue #436 (TraceTelemetry with Severity is not shown in UI). This fixes a regression issue with `TelemetryClient.trackTrace` and `TelemetryClient.trackException`.
 
 ## Version 1.0.10
