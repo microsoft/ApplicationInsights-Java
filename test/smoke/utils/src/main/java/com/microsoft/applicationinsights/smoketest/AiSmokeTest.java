@@ -257,7 +257,7 @@ public abstract class AiSmokeTest {
 			String url = String.format("http://localhost:%s/", String.valueOf(this.extPort));
 			System.out.printf("Waiting for appserver to start (%s)...%n", url);
 
-			waitForApp(url, 30, TimeUnit.SECONDS);
+			waitForApp(url, 30, TimeUnit.SECONDS, "app server");// TODO change to actual app server name
 			System.out.println("App server is ready.");
 		}
 		catch (Exception e) {
@@ -310,12 +310,12 @@ public abstract class AiSmokeTest {
 		return rval;
 	}
 
-	protected void waitForApp(String url, long timeout, TimeUnit timeoutUnit) throws InterruptedException {
+	protected void waitForApp(String url, long timeout, TimeUnit timeoutUnit, String appName) throws InterruptedException {
 		String rval = null;
 		Stopwatch watch = Stopwatch.createStarted();
 		do {
 			if (watch.elapsed(timeoutUnit) > timeout) {
-				throw new RuntimeException("Timeout reached waiting for test app to come online");
+				throw new RuntimeException(String.format("Timeout reached waiting for '%s' to come online", appName));
 			}
 
 			try {

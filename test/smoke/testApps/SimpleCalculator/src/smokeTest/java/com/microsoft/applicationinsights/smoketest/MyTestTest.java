@@ -18,8 +18,9 @@ public class MyTestTest extends AiSmokeTest {
 	@Test
 	public void doCalcSendsRequestDataAndMetricData() throws Exception {
 		System.out.println("Wait for app to finish deploying...");
-		String baseUrl = "http://localhost:"+extPort+"/"+warFileName.replace(".war", "");
-		waitForApp(baseUrl, 60, TimeUnit.SECONDS);
+		String appContext = warFileName.replace(".war", "");
+		String baseUrl = "http://localhost:" + extPort + "/" + appContext;
+		waitForApp(baseUrl, 60, TimeUnit.SECONDS, appContext);
 		System.out.println("Test app health check complete.");
 
 		String url = baseUrl+"/doCalc?leftOperand=1&rightOperand=2&operator=plus";
