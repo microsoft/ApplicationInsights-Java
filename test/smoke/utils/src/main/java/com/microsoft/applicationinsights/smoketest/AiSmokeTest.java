@@ -252,24 +252,23 @@ public abstract class AiSmokeTest {
 		System.out.println("Container started: "+containerId);
 
 		ContainerInfo info = new ContainerInfo(containerId, currentImageName);
-		
+		containerStack.push(info);
 		try {
 			System.out.println("Waiting for appserver to start...");
 			waitForApp(String.format("http://localhost:%d/", this.extPort), 30, TimeUnit.SECONDS);
 			System.out.println("App server is ready.");
-			
+
 			warFileName = getProperty("ai.smoketest.testAppWarFile");
 			System.out.printf("Deploying test application: %s...%n", warFileName);
 			docker.copyAndDeployToContainer(containerId, new File(Resources.getResource(warFileName).toURI()));
 			System.out.println("Test application deployed.");
 		}
 		catch (Exception e) {
-			System.err.println("Error deploying test application. stopping container");
+			System.err.println("Error deploying test application.");
 			// FIXME this could be done using a "fire-and-forget" thread
-			stopContainer(info);
+			// stopContainer(info);
 			throw e;
 		}
-		containerStack.push(info);
 		// TODO start application dependencies---container(s)
 	}
 
