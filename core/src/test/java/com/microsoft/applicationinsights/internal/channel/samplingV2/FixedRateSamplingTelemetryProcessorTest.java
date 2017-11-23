@@ -488,7 +488,7 @@ public class FixedRateSamplingTelemetryProcessorTest {
 
     }
 
-    private TelemetryConfiguration createConfiguration(List<Telemetry> itemsToSend) {
+    private TelemetryConfiguration createConfiguration(final List<Telemetry> itemsToSend) {
 
         TelemetryConfiguration configuration = new TelemetryConfiguration();
         configuration.setInstrumentationKey("00000000-0000-0000-0000-000000000000");
