@@ -22,23 +22,27 @@
 package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
+import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
-
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import com.microsoft.applicationinsights.web.utils.ServletUtils;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
 import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by yonisha on 2/3/2015.
@@ -76,6 +80,7 @@ public class WebRequestTrackingFilterTests {
 
         Assert.assertNotNull("Container shouldn't be null", container);
         Assert.assertTrue("Modules container shouldn't be empty", container.getModulesCount() > 0);
+
     }
 
     @Test
@@ -107,6 +112,7 @@ public class WebRequestTrackingFilterTests {
         FilterAndTelemetryClientMock createdData = createInitializedFilterWithTelemetryClient();
         testException(createdData, new java.lang.IllegalArgumentException());
     }
+
 
     @Test
     public void testUnhandledRuntimeExceptionWithoutTelemetryClient() throws IllegalAccessException, NoSuchFieldException, ServletException {
@@ -217,5 +223,7 @@ public class WebRequestTrackingFilterTests {
 
         return new FilterAndTelemetryClientMock(filter, mockTelemetryClient);
     }
+
     // endregion Private methods
+
 }
