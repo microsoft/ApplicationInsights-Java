@@ -84,6 +84,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         // initialize mock profile fetcher (for resolving ikeys to appIds)
         mockProfileFetcher = new MockProfileFetcher();
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
         InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockProfileFetcher);
         InstrumentationKeyResolver.INSTANCE.clearCache();
 
@@ -166,13 +167,15 @@ public class WebRequestTrackingTelemetryModuleTests {
         //mock a servlet request with cross-component correlation headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
         String incomingId = "|guid.bcec871c_1.";
+
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
-        //headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, values);
+        headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, "k=v, foo=bar");
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
         //configure mock appId fetcher to return different appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
         defaultModule.onBeginRequest(request, null);
@@ -187,135 +190,17 @@ public class WebRequestTrackingTelemetryModuleTests {
         OperationContext operation = requestTelemetry.getContext().getOperation();
         Assert.assertEquals("guid", operation.getId());
         Assert.assertEquals(incomingId, operation.getParentId());
-
-        //validate context
-        //validateContext
+        
+        //validate custom properties
+        Assert.assertEquals(2, requestTelemetry.getProperties().size());
+        Assert.assertEquals("v", requestTelemetry.getProperties().get("k"));
+        Assert.assertEquals("bar", requestTelemetry.getProperties().get("foo"));
 
         //run onEnd
         defaultModule.onEndRequest(request, null);
 
         //validate source
         Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue("id1", null), requestTelemetry.getSource());
-    }
-
-    @Test
-    public void testOnEndAddsSourceFieldForRequestWithRequestContext() {
-        
-        //setup: initialize a request telemetry context
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(context);
-
-        //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
-        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
-
-        //configure mock appId fetcher to return different appId from what's on the request header
-        mockProfileFetcher.setAppIdToReturn("id2");
-
-        //run
-        defaultModule.onBeginRequest(request, null);
-        defaultModule.onEndRequest(request, null);
-
-        //validate source
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue("id1", null), requestTelemetry.getSource());
-    }
-
-    @Test
-    public void testOnEndDoesNotAddSourceFieldForRequestFromSameComponent() {
-        
-        //setup: initialize a request telemetry context
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(context);
-
-        //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
-        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
-
-        //configure mock appId fetcher to return the same appId from what's on the request header
-        mockProfileFetcher.setAppIdToReturn("id1");
-
-        //run
-        defaultModule.onBeginRequest(request, null);
-        defaultModule.onEndRequest(request, null);
-
-        //validate source
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertNull(requestTelemetry.getSource());
-    }
-
-    @Test
-    public void testOnEndAddsSourceFieldForRequestWithRoleNameOnly() {
-        
-        //setup: initialize a request telemetry context
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(context);
-
-        //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue(null, "Front End"));
-        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
-
-        //configure mock appId fetcher to return different appId from what's on the request header
-        mockProfileFetcher.setAppIdToReturn("id2");
-
-        //run
-        defaultModule.onBeginRequest(request, null);
-        defaultModule.onEndRequest(request, null);
-
-        //validate source
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue(null, "Front End"), requestTelemetry.getSource());
-    }
-
-    @Test
-    public void testOnEndAddsSourceFieldForRequestWithRoleNameAndAppId() {
-        
-        //setup: initialize a request telemetry context
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(context);
-
-        //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
-        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
-
-        //configure mock appId fetcher to return different appId from what's on the request header
-        mockProfileFetcher.setAppIdToReturn("id2");
-
-        //run
-        defaultModule.onBeginRequest(request, null);
-        defaultModule.onEndRequest(request, null);
-
-        //validate source
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue("id1", "Front End"), requestTelemetry.getSource());
-    }
-
-    @Test
-    public void testOnEndDoesNotAddSourceFieldForRequestWithRoleNameAndAppIdForSameComponent() {
-        
-        //setup: initialize a request telemetry context
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(context);
-
-        //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
-        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
-        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
-
-        //configure mock appId fetcher to return different appId from what's on the request header
-        mockProfileFetcher.setAppIdToReturn("id1");
-
-        //run
-        defaultModule.onBeginRequest(request, null);
-        defaultModule.onEndRequest(request, null);
-
-        //validate source
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertNull(requestTelemetry.getSource());
     }
 
     @Test
@@ -358,6 +243,157 @@ public class WebRequestTrackingTelemetryModuleTests {
     }
 
     @Test
+    public void testOnEndAddsSourceFieldForRequestWithRequestContext() {
+        
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, null);
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue("id1", null), requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testOnEndDoesNotAddSourceFieldForRequestFromSameApp() {
+        
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //configure mock appId fetcher to return the same appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id1");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, null);
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testOnEndAddsSourceFieldForRequestWithRoleNameOnly() {
+        
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue(null, "Front End"));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, null);
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue(null, "Front End"), requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testOnEndAddsSourceFieldForRequestWithRoleNameAndAppId() {
+        
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, null);
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue("id1", "Front End"), requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testOnEndAddsSourceFieldForRequestWithRoleNameForSameApp() {
+        
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //configure mock appId fetcher to return the same appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id1");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, null);
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertEquals(TelemetryCorrelationUtilsTests.getRequestSourceValue(null, "Front End"), requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testOnEndDoesNotOverrideSourceField() {
+        
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        requestTelemetry.setSource("myAppId");
+
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, null);
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        Assert.assertEquals("myAppId", requestTelemetry.getSource());
+    }
+
+    @Test
     public void testInstrumentationKeyIsResolvedDuringModuleInit() {
         
         // module is initialized during test init, so at this point we should 
@@ -371,45 +407,75 @@ public class WebRequestTrackingTelemetryModuleTests {
         mockProfileFetcher.setAppIdToReturn("someAppId");
         String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
         Assert.assertEquals(2, mockProfileFetcher.callCount());
-        Assert.assertEquals("someAppId", appId);
+        Assert.assertEquals("cid-v1:someAppId", appId);
         
         //calling it again should retrieve appId from cache (i.e. fetcher call count remains 2)
         appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
         Assert.assertEquals(2, mockProfileFetcher.callCount());
-        Assert.assertEquals("someAppId", appId);
+        Assert.assertEquals("cid-v1:someAppId", appId);
     }
 
     @Test
     public void testInstrumentationKeyIsResolvedIfModifiedAtRuntime() {
         
-    	// before request begins, appId should have been already cached during init
+    	// before request begins, resolving has been kicked-off during init
         Assert.assertEquals(1, mockProfileFetcher.callCount());
         
-        // request comes in
-        ServletRequest request = ServletUtils.generateDummyServletRequest();
-        defaultModule.onBeginRequest(request, null);
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
 
+        //mock a servlet request with cross-component correlation headers
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        //run
+        defaultModule.onBeginRequest(request, null);
+        
         // mimic customer modifying ikey at runtime in request handler (e.g. controller)
         TelemetryConfiguration.getActive().setInstrumentationKey("myOtherIkey");
         
         // module.onEndRequest must detect change and start resolving new ikey
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
         defaultModule.onEndRequest(request, null);
         Assert.assertEquals(2, mockProfileFetcher.callCount());
-        
+
+        // at this point source won't be set yet because the ikey has changed and so a new resolve task has started
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertNull(requestTelemetry.getSource());
+
         //another request comes in
-        ServletRequest request2 = ServletUtils.generateDummyServletRequest();
+        RequestTelemetryContext context2 = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context2);
+        ServletRequest request2 = ServletUtils.createServletRequestWithHeaders(headers);
         defaultModule.onBeginRequest(request2, null);
         
         // module.onEndRequest will attempt to retrieve new appId from task if it is completed
-        mockProfileFetcher.setAppIdToReturn("myAppId");
+        mockProfileFetcher.setAppIdToReturn("id3");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
         defaultModule.onEndRequest(request, null);
         Assert.assertEquals(3, mockProfileFetcher.callCount());
+        RequestTelemetry requestTelemetry2 = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertEquals("cid-v1:id1", requestTelemetry2.getSource());
+
+
+        // at this point, the new appId should be available in the cache, so if another request
+        // comes in, it should retrieve it from cache
+        RequestTelemetryContext context3 = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context3);
+        ServletRequest request3 = ServletUtils.createServletRequestWithHeaders(headers);
+        defaultModule.onBeginRequest(request3, null);
         
-        // at this point, the new appId should be available in the cache
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("myOtherIkey");
+        // module.onEndRequest will attempt to retrieve new appId from task if it is completed
+        mockProfileFetcher.setAppIdToReturn("id3");
+        defaultModule.onEndRequest(request, null);
         Assert.assertEquals(3, mockProfileFetcher.callCount());
-        Assert.assertEquals("myAppId", appId);
+        RequestTelemetry requestTelemetry3 = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertEquals("cid-v1:id1", requestTelemetry3.getSource());
     }
 
     // endregion Tests

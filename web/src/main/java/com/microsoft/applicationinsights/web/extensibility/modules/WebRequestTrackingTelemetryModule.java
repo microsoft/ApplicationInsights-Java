@@ -130,6 +130,9 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             }
 
             telemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
+            
+            String instrumentationKey = this.telemetryClient.getContext().getInstrumentationKey();
+            TelemetryCorrelationUtils.resolveRequestSource((HttpServletRequest) req, telemetry, instrumentationKey);
 
             telemetryClient.track(telemetry);
         } catch (Exception e) {
@@ -152,7 +155,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             if (ikey != null && ikey.length() > 0) {
             	InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
             }
-            
+
             isInitialized = true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
