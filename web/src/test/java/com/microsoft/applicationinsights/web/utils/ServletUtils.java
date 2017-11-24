@@ -27,8 +27,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -77,6 +79,10 @@ public class ServletUtils {
     }
 
     public static HttpServletRequest createServletRequestWithHeaders(Hashtable<String, String> headers) {
+        return createServletRequestWithHeaders(headers, 0);
+    }
+
+    public static HttpServletRequest createServletRequestWithHeaders(Hashtable<String, String> headers, int correlationContextHeaderCount) {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         for (String headerName : headers.keySet()) {
@@ -87,6 +93,34 @@ public class ServletUtils {
         when(request.getMethod()).thenReturn("POST");
         when(request.getScheme()).thenReturn("http");
         when(request.getHeader("Host")).thenReturn("contoso.com");
+
+        when(request.getHeaders(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME)).thenReturn(
+            new Enumeration<String>() {
+
+                private int itemCount = correlationContextHeaderCount;
+                private String item1 = "key1=value1, key2=value2";
+                private String item2 = "key3=value3";
+
+				@Override
+				public boolean hasMoreElements() {
+                    return itemCount > 0;
+				}
+
+				@Override
+				public String nextElement() {
+					if (itemCount == 2) {
+                        itemCount--;
+                        return item2;
+                    } else if (itemCount == 1) {
+                        itemCount--;
+                        return item1;
+                    } else {
+                        return null;
+                    }
+				}
+
+            }
+        );
 
         return request;
     }

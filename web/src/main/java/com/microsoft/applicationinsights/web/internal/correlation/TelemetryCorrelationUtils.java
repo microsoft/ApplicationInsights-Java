@@ -25,6 +25,8 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -59,7 +61,6 @@ public class TelemetryCorrelationUtils {
 				return;
 			}
 
-			
 			String rootId = null;
 			String parentId = null;
 			String currentId = null;
@@ -80,6 +81,15 @@ public class TelemetryCorrelationUtils {
 			requestTelemetry.getContext().getOperation().setId(rootId);
 			requestTelemetry.getContext().getOperation().setParentId(parentId);
 
+			// resolve baggages (Correlation-Context)
+			@SuppressWarnings("unchecked")
+			Enumeration<String> baggages = request.getHeaders(CORRELATION_CONTEXT_HEADER_NAME);
+
+			while (baggages.hasMoreElements()) {
+				String baggage = baggages.nextElement();
+				HashMap<String, String> propertyBag = getPropertyBag(baggage);
+				requestTelemetry.getProperties().putAll(propertyBag);
+			}
 		}
 		catch(Exception ex) {
 			InternalLogger.INSTANCE.error("Failed to resolve correlation. Exception information: " + ex);
@@ -202,19 +212,27 @@ public class TelemetryCorrelationUtils {
 	 * @return The extracted value
 	 */
 	private static String getKeyValueHeaderValue(String headerFullValue, String key) {
-		
-		String[] tokens = headerFullValue.split(",");
+		HashMap<String, String> propertyBag = getPropertyBag(headerFullValue);
+		return propertyBag.get(key);
+	}
 
-		for (String token : tokens) {
-			String[] keyValuePair = token.trim().split("=");
-			if (keyValuePair.length == 2 && keyValuePair[0].trim().equals(key)) {
+	private static HashMap<String, String> getPropertyBag(String baggage) {
+		
+		HashMap<String, String> result = new HashMap<String, String>();
+
+		String[] pairs = baggage.split(",");
+		for (String pair : pairs) {
+			String[] keyValuePair = pair.trim().split("=");
+			if (keyValuePair.length == 2) {
+				String key = keyValuePair[0].trim();
 				String value = keyValuePair[1].trim();
-				return (value.isEmpty()) ? null : value;  
+				result.put(key, value); 
 			}
 		}
-
-		return null;
+		
+		return result;
 	}
+
 
 	private static String extractRootId(String parentId) {
 		// ported from .NET's System.Diagnostics.Activity.cs implementation:

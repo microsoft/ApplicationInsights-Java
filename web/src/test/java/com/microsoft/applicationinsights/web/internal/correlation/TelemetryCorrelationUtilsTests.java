@@ -271,12 +271,10 @@ public class TelemetryCorrelationUtilsTests {
         Hashtable<String, String> headers = new Hashtable<String, String>();
         String rootId = "9e74f0e5-efc4-41b5-86d1-3524a43bd891";
         String incomingId = "|9e74f0e5-efc4-41b5-86d1-3524a43bd891.bcec871c_1.";
-        String correlationContext = "key1=value1, key2=value2";
         
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
-        headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
         
-        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
@@ -285,7 +283,7 @@ public class TelemetryCorrelationUtilsTests {
         
         //validate 
         Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertEquals(incomingId.length() + 9, requestTelemetry.getId());
+        Assert.assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
 
         //validate operation context ID's
@@ -297,6 +295,40 @@ public class TelemetryCorrelationUtilsTests {
         Assert.assertEquals(2, requestTelemetry.getProperties().size());
         Assert.assertEquals("value1", requestTelemetry.getProperties().get("key1"));
         Assert.assertEquals("value2", requestTelemetry.getProperties().get("key2"));
+    }
+
+    @Test
+    public void testCorrelationContextPopulatedWithMultipleHeaders() {
+        //setup - empty RequestId
+        Hashtable<String, String> headers = new Hashtable<String, String>();
+        String rootId = "9e74f0e5-efc4-41b5-86d1-3524a43bd891";
+        String incomingId = "|9e74f0e5-efc4-41b5-86d1-3524a43bd891.bcec871c_1.";
+        
+        headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
+        
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 2);
+        
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        //run
+        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        
+        //validate 
+        Assert.assertNotNull(requestTelemetry.getId());
+        Assert.assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
+        Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
+
+        //validate operation context ID's
+        OperationContext operation = requestTelemetry.getContext().getOperation();
+        Assert.assertEquals(rootId, operation.getId());
+        Assert.assertEquals(incomingId, operation.getParentId());
+
+        //validate correlation context has been added as properties
+        Assert.assertEquals(3, requestTelemetry.getProperties().size());
+        Assert.assertEquals("value1", requestTelemetry.getProperties().get("key1"));
+        Assert.assertEquals("value2", requestTelemetry.getProperties().get("key2"));
+        Assert.assertEquals("value3", requestTelemetry.getProperties().get("key3"));
+        
     }
 
     @Test
