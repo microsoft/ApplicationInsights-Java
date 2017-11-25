@@ -91,13 +91,14 @@ public class TelemetryCorrelationUtils {
 				return;
 			}
 
-			HashMap<String, String> currentCorrelationContext = 
+			CorrelationContext currentCorrelationContext = 
 				ThreadContext.getRequestTelemetryContext().getCorrelationContext();
 
 			while (baggages.hasMoreElements()) {
 				String baggage = baggages.nextElement();
+				currentCorrelationContext.getHeaderValues().add(baggage);
 				HashMap<String, String> propertyBag = getPropertyBag(baggage);
-				currentCorrelationContext.putAll(propertyBag);
+				currentCorrelationContext.getMappings().putAll(propertyBag);
 				requestTelemetry.getProperties().putAll(propertyBag);
 			}
 		}

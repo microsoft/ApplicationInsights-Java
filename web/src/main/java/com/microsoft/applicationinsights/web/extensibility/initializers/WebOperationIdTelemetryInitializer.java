@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import java.util.HashMap;
 
 /**
  * Created by yonisha on 2/16/2015.
@@ -67,8 +68,9 @@ public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerB
         }
 
         // add correlation context to properties
-        for (String key : telemetryContext.getCorrelationContext().keySet()) {
-            telemetry.getProperties().putIfAbsent(key, telemetryContext.getCorrelationContext().get(key));
+        HashMap<String, String> correlationContextMap = telemetryContext.getCorrelationContext().getMappings();
+        for (String key : correlationContextMap.keySet()) {
+            telemetry.getProperties().putIfAbsent(key, correlationContextMap.get(key));
         }
     }
 }

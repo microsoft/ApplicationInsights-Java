@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
+import com.microsoft.applicationinsights.web.internal.correlation.CorrelationContext;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -39,7 +40,7 @@ public class RequestTelemetryContext {
     private UserCookie userCookie;
     private boolean isNewSession = false;
     private HttpServletRequest servletRequest;
-    private final HashMap<String, String> correlationContext;
+    private final CorrelationContext correlationContext;
     private final AtomicInteger currentChildId = new AtomicInteger();
 
     /**
@@ -59,14 +60,14 @@ public class RequestTelemetryContext {
         requestTelemetry = new RequestTelemetry();
         requestStartTimeTicks = ticks;
         this.servletRequest = servletRequest;
-        correlationContext = new HashMap<String, String>();
+        correlationContext = new CorrelationContext();
     }
 
     /**
      * Gets the correlation context associated with the request
      * @return The correlation context map.
      */
-    public HashMap<String, String> getCorrelationContext() {
+    public CorrelationContext getCorrelationContext() {
         return correlationContext;
     }
 
