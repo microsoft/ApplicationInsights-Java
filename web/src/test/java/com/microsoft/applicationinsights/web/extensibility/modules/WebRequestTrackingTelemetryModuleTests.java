@@ -169,9 +169,8 @@ public class WebRequestTrackingTelemetryModuleTests {
         String incomingId = "|guid.bcec871c_1.";
 
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
-        headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, "k=v, foo=bar");
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
-        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
 
         //configure mock appId fetcher to return different appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id2");
@@ -193,8 +192,8 @@ public class WebRequestTrackingTelemetryModuleTests {
         
         //validate custom properties
         Assert.assertEquals(2, requestTelemetry.getProperties().size());
-        Assert.assertEquals("v", requestTelemetry.getProperties().get("k"));
-        Assert.assertEquals("bar", requestTelemetry.getProperties().get("foo"));
+        Assert.assertEquals("value1", requestTelemetry.getProperties().get("key1"));
+        Assert.assertEquals("value2", requestTelemetry.getProperties().get("key2"));
 
         //run onEnd
         defaultModule.onEndRequest(request, null);
@@ -219,7 +218,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         String correlationContext = "key1=value1, key2=value2";
         headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
 
-        ServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        ServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
 
         //run module
         defaultModule.onBeginRequest(request, null);

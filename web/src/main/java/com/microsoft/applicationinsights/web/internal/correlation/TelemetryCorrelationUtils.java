@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -85,9 +86,18 @@ public class TelemetryCorrelationUtils {
 			@SuppressWarnings("unchecked")
 			Enumeration<String> baggages = request.getHeaders(CORRELATION_CONTEXT_HEADER_NAME);
 
+			if (baggages == null) {
+				InternalLogger.INSTANCE.warn("Could not access header information: " + CORRELATION_CONTEXT_HEADER_NAME);
+				return;
+			}
+
+			HashMap<String, String> currentCorrelationContext = 
+				ThreadContext.getRequestTelemetryContext().getCorrelationContext();
+
 			while (baggages.hasMoreElements()) {
 				String baggage = baggages.nextElement();
 				HashMap<String, String> propertyBag = getPropertyBag(baggage);
+				currentCorrelationContext.putAll(propertyBag);
 				requestTelemetry.getProperties().putAll(propertyBag);
 			}
 		}
@@ -151,12 +161,12 @@ public class TelemetryCorrelationUtils {
 
 			String requestContext = request.getHeader(REQUEST_CONTEXT_HEADER_NAME);
 			if (requestContext == null || requestContext.isEmpty()) {
-				System.out.println("No request-context found.");
+				InternalLogger.INSTANCE.info("Skip resolving request source as the following header was not found: " + REQUEST_CONTEXT_HEADER_NAME);
 				return;
 			}
 
 			if (instrumentationKey == null || instrumentationKey.isEmpty()) {
-				System.out.println("IKEY is null or empty.");
+				InternalLogger.INSTANCE.error("Failed to resolve correlation. InstrumentationKey is null or empty.");
 				return;
 			}
 			

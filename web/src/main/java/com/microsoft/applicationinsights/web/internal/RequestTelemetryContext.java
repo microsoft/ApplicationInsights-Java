@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,7 +39,8 @@ public class RequestTelemetryContext {
     private UserCookie userCookie;
     private boolean isNewSession = false;
     private HttpServletRequest servletRequest;
-    private AtomicInteger currentChildId = new AtomicInteger();
+    private final HashMap<String, String> correlationContext;
+    private final AtomicInteger currentChildId = new AtomicInteger();
 
     /**
      * Constructs new RequestTelemetryContext object.
@@ -57,6 +59,15 @@ public class RequestTelemetryContext {
         requestTelemetry = new RequestTelemetry();
         requestStartTimeTicks = ticks;
         this.servletRequest = servletRequest;
+        correlationContext = new HashMap<String, String>();
+    }
+
+    /**
+     * Gets the correlation context associated with the request
+     * @return The correlation context map.
+     */
+    public HashMap<String, String> getCorrelationContext() {
+        return correlationContext;
     }
 
     /**
