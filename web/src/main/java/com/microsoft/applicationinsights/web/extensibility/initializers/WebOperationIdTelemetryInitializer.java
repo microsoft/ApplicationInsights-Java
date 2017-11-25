@@ -65,5 +65,10 @@ public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerB
         if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getParentId())) {
             telemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
         }
+
+        // add correlation context to properties
+        for (String key : telemetryContext.getCorrelationContext().keySet()) {
+            telemetry.getProperties().putIfAbsent(key, telemetryContext.getCorrelationContext().get(key));
+        }
     }
 }

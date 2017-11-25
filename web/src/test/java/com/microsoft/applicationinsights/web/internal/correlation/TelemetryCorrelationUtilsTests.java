@@ -328,7 +328,6 @@ public class TelemetryCorrelationUtilsTests {
         Assert.assertEquals("value1", requestTelemetry.getProperties().get("key1"));
         Assert.assertEquals("value2", requestTelemetry.getProperties().get("key2"));
         Assert.assertEquals("value3", requestTelemetry.getProperties().get("key3"));
-        
     }
 
     @Test
