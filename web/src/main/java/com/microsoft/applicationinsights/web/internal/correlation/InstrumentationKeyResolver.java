@@ -29,8 +29,13 @@ public enum InstrumentationKeyResolver {
 
 	private static final String CorrelationIdFormat = "cid-v1:%s";
     private AppProfileFetcher profileFetcher;
-    private final ConcurrentHashMap<String, String> appIdCache = new ConcurrentHashMap<String, String>();
-      
+    private final ConcurrentHashMap<String, String> appIdCache;
+    
+    InstrumentationKeyResolver() {
+    	this.appIdCache = new ConcurrentHashMap<String, String>();
+    	this.profileFetcher = new CdsProfileFetcher();
+    }
+    
     public void clearCache() {
         this.appIdCache.clear();
     }

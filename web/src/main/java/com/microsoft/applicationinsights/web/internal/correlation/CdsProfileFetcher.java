@@ -36,18 +36,17 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.util.EntityUtils;
 
-public enum CdsProfileFetcher implements AppProfileFetcher {
+public class CdsProfileFetcher implements AppProfileFetcher {
 
-    INSTANCE;
-
-    private HttpAsyncClient httpClient;
+	private HttpAsyncClient httpClient;
     private String endpointAddress;
-    private static final String QUERY_PROFILE_APPID_ENDPOINT_FORMAT = "%s/api/profiles/%s/appId";
+    private static final String ProfileQueryEndpointAppIdFormat = "%s/api/profiles/%s/appId";
+    private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
 
     // cache of tasks per ikey
     private final ConcurrentHashMap<String, Future<HttpResponse>> tasks;
 
-    CdsProfileFetcher() {
+    public CdsProfileFetcher() {
         RequestConfig requestConfig = RequestConfig.custom()
             .setSocketTimeout(3000)
             .setConnectTimeout(3000).build();
@@ -59,6 +58,7 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
         ((CloseableHttpAsyncClient)this.httpClient).start();
 
         this.tasks = new ConcurrentHashMap<String, Future<HttpResponse>>();
+        this.endpointAddress = DefaultProfileQueryEndpointAddress;
     }
 
 	@Override
@@ -112,7 +112,7 @@ public enum CdsProfileFetcher implements AppProfileFetcher {
     }
 
     private Future<HttpResponse> createFetchTask(String instrumentationKey) {
-		HttpGet request = new HttpGet(String.format(QUERY_PROFILE_APPID_ENDPOINT_FORMAT, this.endpointAddress, instrumentationKey));
+		HttpGet request = new HttpGet(String.format(ProfileQueryEndpointAppIdFormat, this.endpointAddress, instrumentationKey));
         return this.httpClient.execute(request, null);
     }
 }

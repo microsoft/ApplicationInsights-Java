@@ -74,8 +74,6 @@ public class MockHttpTask implements Future<HttpResponse> {
     }
     
     private HttpResponse doGet() throws ExecutionException {
-		System.out.println("Execute doGet: " + this.failureOn);
-		
 		if (this.failureOn) {
             throw new ExecutionException("Failure", null);
         }

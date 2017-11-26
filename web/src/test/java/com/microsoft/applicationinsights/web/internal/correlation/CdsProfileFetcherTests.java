@@ -37,19 +37,21 @@ public class CdsProfileFetcherTests {
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
-        CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
+        
+        CdsProfileFetcher fetcher = new CdsProfileFetcher();
+        fetcher.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we might get a "pending" task status
         // since the profile fetcher uses asynchronous calls to retrieve the profile from CDS
         // this is mimic'ed with clientWrapper.setTaskAsPending();
         clientWrapper.setTaskAsPending();
-        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        ProfileFetcherResult result = fetcher.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
         Assert.assertNull(result.getAppId());
 
         // mimic task completion
         clientWrapper.setTaskAsComplete();
-        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        result = fetcher.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.COMPLETE, result.getStatus());
         Assert.assertEquals("AppId", result.getAppId());
     }
@@ -62,10 +64,12 @@ public class CdsProfileFetcherTests {
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
         clientWrapper.setTaskAsComplete();
-        CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
+        
+        CdsProfileFetcher fetcher = new CdsProfileFetcher();
+        fetcher.setHttpClient(clientWrapper.getClient());
 
         // task is completed right away
-        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        ProfileFetcherResult result = fetcher.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.COMPLETE, result.getStatus());
         Assert.assertEquals("AppId", result.getAppId());
     }
@@ -77,27 +81,29 @@ public class CdsProfileFetcherTests {
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
-        CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
+        
+        CdsProfileFetcher fetcher = new CdsProfileFetcher();
+        fetcher.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we should get a "pending" task status
         // since the profile fetcher uses asynchronous calls to retrieve the profile from CDS
-        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        ProfileFetcherResult result = fetcher.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
         Assert.assertNull(result.getAppId());
 
         // call for a second ikey, should also return "pending"
-        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey2");
+        result = fetcher.fetchAppProfile("ikey2");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
         Assert.assertNull(result.getAppId());
 
         // mimic task completion
         clientWrapper.setTaskAsComplete();
-        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        result = fetcher.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.COMPLETE, result.getStatus());
         Assert.assertEquals("AppId", result.getAppId());
 
         clientWrapper.setAppId("AppId2");
-        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey2");
+        result = fetcher.fetchAppProfile("ikey2");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.COMPLETE, result.getStatus());
         Assert.assertEquals("AppId2", result.getAppId());
     }
@@ -108,18 +114,20 @@ public class CdsProfileFetcherTests {
         //setup - mimic timeout from the async http call
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
-        CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
+        
+        CdsProfileFetcher fetcher = new CdsProfileFetcher();
+        fetcher.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we should get a "pending" task status
         // since the profile fetcher uses asynchronous calls to retrieve the profile from CDS
-        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        ProfileFetcherResult result = fetcher.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
         Assert.assertNull(result.getAppId());
 
         // instruct mock task to fail
         clientWrapper.setFailureOn(true);
         clientWrapper.setTaskAsComplete();
-        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        result = fetcher.fetchAppProfile("ikey");
         Assert.fail("Should not have reached here. Instead, an exception should have been thrown.");
     }
 
@@ -130,20 +138,22 @@ public class CdsProfileFetcherTests {
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
-        CdsProfileFetcher.INSTANCE.setHttpClient(clientWrapper.getClient());
+        
+        CdsProfileFetcher fetcher = new CdsProfileFetcher();
+        fetcher.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we might get a "pending" task status
         // since the profile fetcher uses asynchronous calls to retrieve the profile from CDS
         // this is mimic'ed with clientWrapper.setTaskAsPending();
         clientWrapper.setTaskAsPending();
-        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        ProfileFetcherResult result = fetcher.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
         Assert.assertNull(result.getAppId());
 
         // mimic task completion with 404 status code
         clientWrapper.setTaskAsComplete();
         clientWrapper.setStatusCode(404);
-        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("ikey");
+        result = fetcher.fetchAppProfile("ikey");
         Assert.assertEquals(ProfileFetcherResultTaskStatus.FAILED, result.getStatus());
         Assert.assertNull(result.getAppId());
     }
