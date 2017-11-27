@@ -24,14 +24,15 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public final class ClassInstrumentationDataTest {
     private final static String MOCK_CLASS_NAME = "ClassName";
-//    private final static String MOCK_METHOD = "Method";
-//    private final static String MOCK_SIGNATURE_1 = "Signature1";
-//    private final static String MOCK_SIGNATURE_2 = "Signature2";
-//    private final static String MOCK_SIGNATURE_3 = "Signature3";
+    private final static String MOCK_METHOD = "Method";
+    private final static String MOCK_SIGNATURE_1 = "Signature1";
+    private final static String MOCK_SIGNATURE_2 = "Signature2";
+    private final static String MOCK_SIGNATURE_3 = "Signature3";
 
     @Test
     public void testCtor() throws Exception {
@@ -45,12 +46,12 @@ public final class ClassInstrumentationDataTest {
         assertEquals(test.isReportExecutionTime(), false);
     }
 
-//    @Test
-//    public void testAddMethodOverridesBooleanValues() throws Exception {
-//        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
-//                .setReportCaughtExceptions(false)
-//                .setReportExecutionTime(false);
-//        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
+    @Test
+    public void testAddMethodOverridesBooleanValues() throws Exception {
+        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
+                .setReportCaughtExceptions(false)
+                .setReportExecutionTime(false);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
 
 //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 
@@ -61,15 +62,15 @@ public final class ClassInstrumentationDataTest {
 //        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
 //
 //        assertNull(decision);
-//    }
+    }
 
-//    @Test
-//    public void testAddMethodsWithDistinctSignatures() throws Exception {
-//        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
-//                .setReportCaughtExceptions(false)
-//                .setReportExecutionTime(false);
-//        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
-//        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
+    @Test
+    public void testAddMethodsWithDistinctSignatures() throws Exception {
+        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
+                .setReportCaughtExceptions(false)
+                .setReportExecutionTime(false);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
 
 //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 //
@@ -82,16 +83,16 @@ public final class ClassInstrumentationDataTest {
 //        assertNotNull(decision);
 //        assertEquals(decision.isReportCaughtExceptions(), false);
 //        assertEquals(decision.isReportExecutionTime(), true);
-//    }
+    }
 
-//    @Test
-//    public void testAddMethodsWithDistinctSignaturesAndOneWithNoSignature() throws Exception {
-//        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
-//                .setReportCaughtExceptions(true)
-//                .setReportExecutionTime(false);
-//        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
-//        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
-//        test.addMethod(MOCK_METHOD, null, false, true, 0);
+    @Test
+    public void testAddMethodsWithDistinctSignaturesAndOneWithNoSignature() throws Exception {
+        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
+                .setReportCaughtExceptions(true)
+                .setReportExecutionTime(false);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
+        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
+        test.addMethod(MOCK_METHOD, null, false, true, 0);
 
 //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
 //
@@ -110,5 +111,5 @@ public final class ClassInstrumentationDataTest {
 //        assertNotNull(decision);
 //        assertEquals(decision.isReportCaughtExceptions(), false);
 //        assertEquals(decision.isReportExecutionTime(), true);
-//    }
+    }
 }
