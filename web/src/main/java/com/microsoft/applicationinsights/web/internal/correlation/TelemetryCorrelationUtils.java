@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -97,6 +97,7 @@ public class TelemetryCorrelationUtils {
 			while (baggages.hasMoreElements()) {
 				String baggage = baggages.nextElement();
 				currentCorrelationContext.getHeaderValues().add(baggage);
+				currentCorrelationContext.append(baggage);
 				HashMap<String, String> propertyBag = getPropertyBag(baggage);
 				currentCorrelationContext.getMappings().putAll(propertyBag);
 				requestTelemetry.getProperties().putAll(propertyBag);
@@ -133,6 +134,33 @@ public class TelemetryCorrelationUtils {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Retrieves the currently stored correlation context from the request context.
+	 * @return The correlation context as a string.
+	 */
+	public static String retrieveCorrelationContext() {
+		CorrelationContext context = ThreadContext.getRequestTelemetryContext().getCorrelationContext();
+		return context.toString();
+	}
+
+	/**
+	 * Retrieves the appId (in correlation format) for the current active config's instrumentation key.
+	 */
+	public static String retrieveApplicationCorrelationId() {
+
+		String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
+		String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
+		
+		//it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
+		//return and let the reques retry.
+		if (appId == null) {
+			InternalLogger.INSTANCE.trace("Skip resolving request source as the appId could not be resolved (e.g. task may be pending or failed)");
+			return "";
+		}
+
+		return REQUEST_CONTEXT_HEADER_APPID_KEY + "=" + appId;
 	}
 
 	/**

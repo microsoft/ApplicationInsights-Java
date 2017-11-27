@@ -40,9 +40,15 @@ public class CorrelationContext {
      */
     private final HashMap<String, String> mappings; 
 
+    /**
+     * Stores the context as a string.
+     */
+    private final StringBuilder contextAsString;
+
     public CorrelationContext() {
         this.incomingHeaderValues = new ArrayList<String>();
         this.mappings = new HashMap<String, String>();
+        this.contextAsString = new StringBuilder();
     }
 
     public HashMap<String, String> getMappings() {
@@ -51,5 +57,17 @@ public class CorrelationContext {
 
     public ArrayList<String> getHeaderValues() {
         return this.incomingHeaderValues;
+    }
+
+    public void append(String content) {
+        if (this.contextAsString.length() > 0) {
+            this.contextAsString.append(",");
+        }
+        this.contextAsString.append(content);
+    }
+
+    @Override
+    public String toString() {
+        return this.contextAsString.toString();
     }
 }

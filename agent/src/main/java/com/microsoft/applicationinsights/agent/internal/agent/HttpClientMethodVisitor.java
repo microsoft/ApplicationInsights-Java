@@ -48,6 +48,8 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
     private int methodLocal;
     private int uriLocal;
     private int childIdLocal;
+    private int correlationContextLocal;
+    private int appCorrelationId;
 
     @Override
     public void onMethodEnter() {
@@ -59,6 +61,16 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyId", "()Ljava/lang/String;", false);
         childIdLocal = this.newLocal(Type.getType(Object.class));
         mv.visitVarInsn(ASTORE, childIdLocal);
+        
+        // retrieve correlation context
+        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveCorrelationContext", "()Ljava/lang/String;", false);
+        correlationContextLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, correlationContextLocal);
+        
+        // retrieve request context
+        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveApplicationCorrelationId", "()Ljava/lang/String;", false);
+        appCorrelationId = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, appCorrelationId);
 
         // inject headers
         mv.visitVarInsn(ALOAD, 2);
@@ -66,6 +78,16 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         mv.visitVarInsn(ALOAD, childIdLocal);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitLdcInsn("Correlation-Context");
+        mv.visitVarInsn(ALOAD, correlationContextLocal);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+        
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitLdcInsn("Request-Context");
+        mv.visitVarInsn(ALOAD, appCorrelationId);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+        
         mv.visitVarInsn(ALOAD, 2);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "getRequestLine", "()Lorg/apache/http/RequestLine;", true);
         int requestLineLocal = this.newLocal(Type.getType(Object.class));
