@@ -46,7 +46,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Request";
+    private static final String ENVELOPE_NAME = "Request";
 
 
     /**

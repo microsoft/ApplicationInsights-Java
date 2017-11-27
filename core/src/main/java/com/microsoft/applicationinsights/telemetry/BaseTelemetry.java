@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Superclass for all telemetry data classes.
  */
@@ -40,6 +42,8 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
     private String sequence;
+    
+    private final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
     protected BaseTelemetry() {
     }
@@ -139,9 +143,12 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-
+    	
+    	String telemetryName = this.getTelemetryName(
+    			this.normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
+    	
         Envelope envelope = new Envelope();
-        envelope.setName(this.getEnvelopName());
+        envelope.setName(telemetryName);
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
@@ -184,4 +191,23 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     protected String getBaseTypeName() {
         throw new UnsupportedOperationException();
     }
+    
+    private String normalizeInstrumentationKey(String instrumentationKey){
+    	if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
+    		return "";
+    	}
+    	else{
+    		return instrumentationKey.replace("-", "").toLowerCase() + ".";
+    	}
+    }
+    
+    private String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
+    	return String.format(
+    			"%s%s%s",
+    			TELEMETRY_NAME_PREFIX,
+    			normalizedInstrumentationKey,
+    			envelopType
+    			);
+    }
+    
 }

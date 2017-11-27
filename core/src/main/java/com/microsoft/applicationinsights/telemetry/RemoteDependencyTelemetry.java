@@ -39,7 +39,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.RemoteDependency";
+    private static final String ENVELOPE_NAME = "RemoteDependency";
 
 
     /**
