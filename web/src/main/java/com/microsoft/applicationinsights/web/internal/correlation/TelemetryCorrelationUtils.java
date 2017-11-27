@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public class TelemetryCorrelationUtils {
 
-    public static final String CORRELATION_HEADER_NAME = "RequestId";
+    public static final String CORRELATION_HEADER_NAME = "Request-Id";
 	public static final String CORRELATION_CONTEXT_HEADER_NAME = "Correlation-Context";
 	public static final String REQUEST_CONTEXT_HEADER_NAME = "Request-Context";
 	public static final String REQUEST_CONTEXT_HEADER_APPID_KEY = "appId";

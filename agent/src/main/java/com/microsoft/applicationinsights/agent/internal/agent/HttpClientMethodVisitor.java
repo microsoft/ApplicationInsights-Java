@@ -74,7 +74,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
         // inject headers
         mv.visitVarInsn(ALOAD, 2);
-        mv.visitLdcInsn("RequestId");
+        mv.visitLdcInsn("Request-Id");
         mv.visitVarInsn(ALOAD, childIdLocal);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
