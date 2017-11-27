@@ -24,7 +24,8 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public final class ClassInstrumentationDataTest {
     private final static String MOCK_CLASS_NAME = "ClassName";
