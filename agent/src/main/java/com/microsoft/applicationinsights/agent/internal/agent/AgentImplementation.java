@@ -151,7 +151,6 @@ public final class AgentImplementation {
                 }
             }
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR,"Unable to find the Agent Jar");
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
         }
 
