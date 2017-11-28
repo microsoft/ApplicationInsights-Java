@@ -144,7 +144,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
                 mv.visitVarInsn(ISTORE, headerValueLocal);
 
                 //generte target
-                mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateDependencyTarget", "(Ljava/lang/String;)Ljava/lang/String;", false);
+                mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyTarget", "(Ljava/lang/String;)Ljava/lang/String;", false);
                 int targetLocal = this.newLocal(Type.getType(Object.class));
                 mv.visitVarInsn(ASTORE, targetLocal);
 

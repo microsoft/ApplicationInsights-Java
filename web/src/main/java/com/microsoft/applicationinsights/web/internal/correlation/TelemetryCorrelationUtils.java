@@ -156,11 +156,33 @@ public class TelemetryCorrelationUtils {
 		//it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
 		//return and let the reques retry.
 		if (appId == null) {
-			InternalLogger.INSTANCE.trace("Skip resolving request source as the appId could not be resolved (e.g. task may be pending or failed)");
+			InternalLogger.INSTANCE.trace("Application correlation Id could not be retrieved (e.g. task may be pending or failed)");
 			return "";
 		}
 
 		return REQUEST_CONTEXT_HEADER_APPID_KEY + "=" + appId;
+	}
+
+	/**
+	 * Given a request-context, it generates a new dependency target, possibly including the appId found in 
+	 * the request-context.
+	 * @param requestContext - the request context header value
+	 * @return the dependency target
+	 */
+	public static String generateChildDependencyTarget(String requestContext) {
+		
+		String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
+		if (instrumentationKey == null || instrumentationKey.isEmpty()) {
+			InternalLogger.INSTANCE.error("Failed to generate target correlation. InstrumentationKey is null or empty.");
+			return "";
+		}
+
+		String target = generateSourceTargetCorrelation(instrumentationKey, requestContext);
+		if (target == null) {
+			return ""; // we want an empty string instead of null so it plays nicer with bytecode injection
+		}
+
+		return target;
 	}
 
 	/**
@@ -199,35 +221,7 @@ public class TelemetryCorrelationUtils {
 				return;
 			}
 			
-			String incomingAppId = getKeyValueHeaderValue(requestContext, REQUEST_CONTEXT_HEADER_APPID_KEY);
-			String roleName = getKeyValueHeaderValue(requestContext, REQUEST_CONTEXT_HEADER_ROLENAME_KEY);
-			
-			if (incomingAppId == null && roleName == null) {
-				return;
-			}
-			
-			String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
-			
-			//it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
-			//return and let the next request retry.
-			if (myAppId == null) {
-				InternalLogger.INSTANCE.trace("Skip resolving request source as the appId could not be resolved (e.g. task may be pending or failed)");
-				return;
-			}
-
-			String source = null;
-			if (incomingAppId != null && !incomingAppId.equals(myAppId)) {
-				source = incomingAppId;
-			}
-
-			if (roleName != null) {
-				if (source != null) {
-					source += " | roleName:" + roleName;
-				} else {
-					source = "roleName:" + roleName;
-				}
-			}
-			
+			String source = generateSourceTargetCorrelation(instrumentationKey, requestContext);
 			requestTelemetry.setSource(source);
 		}
 		catch(Exception ex) {
@@ -241,6 +235,43 @@ public class TelemetryCorrelationUtils {
 		}
 
 		return id.charAt(0) == '|';
+	}
+
+	/**
+	 * Extracts the appId/roleName out of requestContext and compares it with the current appId. It then
+	 * generates the appropriate source or target.
+	 */
+	private static String generateSourceTargetCorrelation(String instrumentationKey, String requestContext) {
+		String appId = getKeyValueHeaderValue(requestContext, REQUEST_CONTEXT_HEADER_APPID_KEY);
+		String roleName = getKeyValueHeaderValue(requestContext, REQUEST_CONTEXT_HEADER_ROLENAME_KEY);
+		
+		if (appId == null && roleName == null) {
+			return null;
+		}
+		
+		String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
+		
+		//it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
+		//return and let the next request retry.
+		if (myAppId == null) {
+			InternalLogger.INSTANCE.trace("Could not generate source/target correlation as the appId could not be resolved (e.g. task may be pending or failed)");
+			return null;
+		}
+
+		String result = null;
+		if (appId != null && !appId.equals(myAppId)) {
+			result = appId;
+		}
+
+		if (roleName != null) {
+			if (result != null) {
+				result += " | roleName:" + roleName;
+			} else {
+				result = "roleName:" + roleName;
+			}
+		}
+
+		return result;
 	}
 
 	/**
