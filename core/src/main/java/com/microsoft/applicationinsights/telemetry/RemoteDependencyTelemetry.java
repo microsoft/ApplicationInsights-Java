@@ -250,6 +250,20 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
         data.setType(value);
     }
 
+    /**
+     * Gets the target of this dependency.
+     */
+    public String getTarget() {
+        return data.getTarget();
+    }
+
+    /**
+     * Sets the target of this dependency.
+     */
+    public void setTarget(String value) {
+        data.setTarget(value);
+    }
+
     public void setResultCode(String value) {
         data.setResultCode(value);
     }
