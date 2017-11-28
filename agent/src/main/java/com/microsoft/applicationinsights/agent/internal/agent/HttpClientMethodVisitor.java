@@ -33,7 +33,7 @@ import org.objectweb.asm.Type;
 public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
     private final static String FINISH_DETECT_METHOD_NAME = "httpMethodFinished";
-    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
+    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
 
     public HttpClientMethodVisitor(int access,
                                    String desc,
@@ -133,11 +133,27 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
                 int statusCodeLocal = this.newLocal(Type.INT_TYPE);
                 mv.visitVarInsn(ISTORE, statusCodeLocal);
 
+                //get Request-Context from response
+                mv.visitVarInsn(ALOAD, resultOfMethod.tempVarIndex);
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/client/methods/CloseableHttpResponse", "getFirstHeader", "()Lorg/apache/http/Header;", true);
+                int headerLocal = this.newLocal(Type.getType(Object.class));
+                mv.visitVarInsn(ASTORE, headerLocal);
+                mv.visitVarInsn(ALOAD, headerLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/Header", "getValue", "()Ljava/lang/String;", true);
+                int headerValueLocal = this.newLocal(Type.INT_TYPE);
+                mv.visitVarInsn(ISTORE, headerValueLocal);
+
+                //generte target
+                mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateDependencyTarget", "(Ljava/lang/String;)Ljava/lang/String;", false);
+                int targetLocal = this.newLocal(Type.getType(Object.class));
+                mv.visitVarInsn(ASTORE, targetLocal);
+
                 mv.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");
                 mv.visitLdcInsn(getMethodName());
                 mv.visitVarInsn(ALOAD, methodLocal);
                 mv.visitVarInsn(ALOAD, childIdLocal);
                 mv.visitVarInsn(ALOAD, uriLocal);
+                mv.visitVarInsn(ALOAD, targetLocal);
                 mv.visitVarInsn(ILOAD, statusCodeLocal);
                 mv.visitVarInsn(LLOAD, deltaInNS);
                 mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_RETURN_SIGNATURE, false);
