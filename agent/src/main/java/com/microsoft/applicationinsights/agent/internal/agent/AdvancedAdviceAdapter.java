@@ -74,12 +74,16 @@ public abstract class AdvancedAdviceAdapter extends AdviceAdapter {
 
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
-        visitTryCatchBlock(startTryFinallyBlock, endTryFinallyBlock, endTryFinallyBlock, null);
-        mark(endTryFinallyBlock);
+        //Do not visit try catch if constructor injection
+        if (!methodName.endsWith("<init>")) {
+            visitTryCatchBlock(startTryFinallyBlock, endTryFinallyBlock, endTryFinallyBlock, null);
+            mark(endTryFinallyBlock);
 
-        byteCodeForMethodExit(Opcodes.ATHROW);
+            byteCodeForMethodExit(Opcodes.ATHROW);
 
-        mv.visitInsn(Opcodes.ATHROW);
+            mv.visitInsn(Opcodes.ATHROW);
+        }
+
         mv.visitMaxs(maxStack, maxLocals);
     }
 

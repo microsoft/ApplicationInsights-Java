@@ -58,6 +58,7 @@ public final class WebRequestTrackingFilter implements Filter {
     private String key;
     private boolean agentIsUp = false;
     private final LinkedList<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
+    private String appName;
 
     // endregion Members
 
@@ -94,9 +95,14 @@ public final class WebRequestTrackingFilter implements Filter {
         }
     }
 
+    public WebRequestTrackingFilter(String appName) {
+        this.appName = appName;
+    }
+
     private void cleanup() {
         try {
             ThreadContext.remove();
+
             setKeyOnTLS(null);
             for (ThreadLocalCleaner cleaner : cleaners) {
                 cleaner.clean();
@@ -221,7 +227,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
             String name = getName(context);
 
-            String key = registerWebApp(name);
+            String key = registerWebApp(appName);
             setKey(key);
 
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Successfully registered the filter '%s'", FILTER_NAME);
@@ -257,6 +263,9 @@ public final class WebRequestTrackingFilter implements Filter {
     }
 
     private String getName(ServletContext context) {
+        if (appName != null) {
+            return appName;
+        }
         String name = null;
         try {
             String contextPath = context.getContextPath();
@@ -280,7 +289,7 @@ public final class WebRequestTrackingFilter implements Filter {
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.getMessage());
         }
-
+        appName = name;
         return name;
     }
 

@@ -19,6 +19,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
@@ -42,6 +46,17 @@ dependencies {
     testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
     testCompile group: 'org.json', name:'json', version:'20090211'
     testCompile group: 'com.microsoft.azure', name: 'azure-storage', version: '2.1.0'
+}
+
+shadowJar {
+    classifier=''
+    relocate 'org.apache.http', 'com.microsoft.applicationinsights.web.dependencies.http'
+    relocate 'org.apache.commons', 'com.microsoft.applicationinsights.web.dependencies.apachecommons'
+}
+
+jar {
+    dependsOn shadowJar
+    enabled = false
 }
 
 // region Publishing properties

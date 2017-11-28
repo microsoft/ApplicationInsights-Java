@@ -21,14 +21,22 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-import java.util.*;
-
-import com.microsoft.applicationinsights.agent.internal.agent.*;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassVisitorFactory;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodVisitorFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by gupele on 8/3/2015.
@@ -243,7 +251,8 @@ public final class PreparedStatementClassDataProvider {
             @Override
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
                 HashSet<String> ctorSignatures = new HashSet<String>();
-                ctorSignatures.add("(Lcom/microsoft/sqlserver/jdbc/SQLServerConnection;Ljava/lang/String;II)V");
+                ctorSignatures.add("(Lcom/microsoft/sqlserver/jdbc/SQLServerConnection;Ljava/lang/String;" +
+                        "IILcom/microsoft/sqlserver/jdbc/SQLServerStatementColumnEncryptionSetting;)V");
                 final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
                 metaData1.sqlStringInCtor = 2;
                 return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);

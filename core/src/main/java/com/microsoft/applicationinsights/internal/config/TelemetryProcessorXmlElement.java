@@ -33,6 +33,27 @@ import java.util.ArrayList;
 public class TelemetryProcessorXmlElement {
     private String type;
     private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();
+    private ParamExcludedTypeXmlElement excludedTypes;
+    private ParamIncludedTypeXmlElement includedTypes;
+
+    public ParamExcludedTypeXmlElement getExcludedTypes() {
+        return excludedTypes;
+    }
+
+    @XmlElement(name = "ExcludedTypes")
+    public void setExcludedTypes(ParamExcludedTypeXmlElement excludedTypes) {
+        this.excludedTypes = excludedTypes;
+    }
+
+
+    public ParamIncludedTypeXmlElement getIncludedTypes() {
+        return includedTypes;
+    }
+
+    @XmlElement(name = "IncludedTypes")
+    public void setIncludedTypes(ParamIncludedTypeXmlElement includedTypes) {
+        this.includedTypes = includedTypes;
+    }
 
     public ArrayList<ParamXmlElement> getAdds() {
         return adds;
@@ -51,4 +72,6 @@ public class TelemetryProcessorXmlElement {
     public void setType(String type){
         this.type = type;
     }
+
+
 }
