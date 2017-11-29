@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -45,7 +46,7 @@ public class TelemetryCorrelationUtils {
 	private TelemetryCorrelationUtils() {}
 
 	/**
-	 * Resolves correlation ID's by parsing well-known correlation headers.
+	 * Resolves correlation ID's by parsing well-known correlation headers in the request.
 	 * @param request The servlet request.
 	 * @param requestTelemetry The request telemetry to be populated with correlation ID's.
 	 */
@@ -98,7 +99,7 @@ public class TelemetryCorrelationUtils {
 				String baggage = baggages.nextElement();
 				currentCorrelationContext.getHeaderValues().add(baggage);
 				currentCorrelationContext.append(baggage);
-				HashMap<String, String> propertyBag = getPropertyBag(baggage);
+			    Map<String, String> propertyBag = getPropertyBag(baggage);
 				currentCorrelationContext.getMappings().putAll(propertyBag);
 				requestTelemetry.getProperties().putAll(propertyBag);
 			}
@@ -287,13 +288,12 @@ public class TelemetryCorrelationUtils {
 	 * @return The extracted value
 	 */
 	private static String getKeyValueHeaderValue(String headerFullValue, String key) {
-		HashMap<String, String> propertyBag = getPropertyBag(headerFullValue);
-		return propertyBag.get(key);
+		return getPropertyBag(headerFullValue).get(key);
 	}
 
-	private static HashMap<String, String> getPropertyBag(String baggage) {
+	private static Map<String, String> getPropertyBag(String baggage) {
 		
-		HashMap<String, String> result = new HashMap<String, String>();
+		Map<String, String> result = new HashMap<String, String>();
 
 		String[] pairs = baggage.split(",");
 		for (String pair : pairs) {

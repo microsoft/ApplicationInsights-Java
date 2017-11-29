@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 public enum InstrumentationKeyResolver {
@@ -29,7 +30,7 @@ public enum InstrumentationKeyResolver {
 
 	private static final String CorrelationIdFormat = "cid-v1:%s";
     private AppProfileFetcher profileFetcher;
-    private final ConcurrentHashMap<String, String> appIdCache;
+    private final ConcurrentMap<String, String> appIdCache;
     
     InstrumentationKeyResolver() {
     	this.appIdCache = new ConcurrentHashMap<String, String>();
