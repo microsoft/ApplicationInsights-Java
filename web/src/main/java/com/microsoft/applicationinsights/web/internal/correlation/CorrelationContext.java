@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class responsible to store the correlation context information.
@@ -32,13 +34,13 @@ public class CorrelationContext {
     /**
      * Stores the contents of Correlation-Context headers found in the incoming request.
      */
-    private final ArrayList<String> incomingHeaderValues;
+    private final List<String> incomingHeaderValues;
 
 
     /**
      * Stores the correlation context as mappings.
      */
-    private final HashMap<String, String> mappings; 
+    private final Map<String, String> mappings; 
 
     /**
      * Stores the context as a string.
@@ -51,14 +53,23 @@ public class CorrelationContext {
         this.contextAsString = new StringBuilder();
     }
 
-    public HashMap<String, String> getMappings() {
+    /**
+     * Gets the correlation context key-value pairs.
+     */
+    public Map<String, String> getMappings() {
         return this.mappings;
     }
 
-    public ArrayList<String> getHeaderValues() {
+    /**
+     * Gets the correlation context headers for the request context.
+     */
+    public List<String> getHeaderValues() {
         return this.incomingHeaderValues;
     }
 
+    /**
+     * Appends content to the correlation context.
+     */
     public void append(String content) {
         if (this.contextAsString.length() > 0) {
             this.contextAsString.append(",");
@@ -66,6 +77,9 @@ public class CorrelationContext {
         this.contextAsString.append(content);
     }
 
+    /**
+     * Returns a single string for the whole correlation context.
+     */
     @Override
     public String toString() {
         return this.contextAsString.toString();

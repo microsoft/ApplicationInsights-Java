@@ -90,6 +90,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     
     /**
      * Sets the dependency Id.
+     * @param value The value for the Id.
      */
     public void setId(String value) {
         this.data.setId(value);
@@ -259,6 +260,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
 
     /**
      * Sets the target of this dependency.
+     * @param value The value for the Target property.
      */
     public void setTarget(String value) {
         data.setTarget(value);

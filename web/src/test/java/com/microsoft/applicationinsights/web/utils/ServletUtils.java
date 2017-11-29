@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.Map;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 
@@ -78,11 +78,11 @@ public class ServletUtils {
         return mock(HttpServletResponse.class);
     }
 
-    public static HttpServletRequest createServletRequestWithHeaders(Hashtable<String, String> headers) {
+    public static HttpServletRequest createServletRequestWithHeaders(Map<String, String> headers) {
         return createServletRequestWithHeaders(headers, 0);
     }
 
-    public static HttpServletRequest createServletRequestWithHeaders(Hashtable<String, String> headers, int correlationContextHeaderCount) {
+    public static HttpServletRequest createServletRequestWithHeaders(Map<String, String> headers, int correlationContextHeaderCount) {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         for (String headerName : headers.keySet()) {

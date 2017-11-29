@@ -52,7 +52,8 @@ import static org.mockito.Mockito.mock;
 import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
 import static org.mockito.Mockito.when;
 
-import java.util.Hashtable;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -165,7 +166,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         String incomingId = "|guid.bcec871c_1.";
 
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
@@ -210,7 +211,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         
         String incomingId = "|guid.bcec871c_1.";
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
@@ -249,7 +250,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
@@ -274,7 +275,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
@@ -299,7 +300,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue(null, "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
@@ -324,7 +325,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
@@ -349,7 +350,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
@@ -376,7 +377,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         requestTelemetry.setSource("myAppId");
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 
@@ -425,7 +426,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context);
 
         //mock a servlet request with cross-component correlation headers
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
 

@@ -154,7 +154,7 @@ public class TelemetryCorrelationUtils {
 		String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
 		
 		//it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
-		//return and let the reques retry.
+		//return and let the next request resolve the ikey.
 		if (appId == null) {
 			InternalLogger.INSTANCE.trace("Application correlation Id could not be retrieved (e.g. task may be pending or failed)");
 			return "";
@@ -257,7 +257,7 @@ public class TelemetryCorrelationUtils {
 		String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
 		
 		//it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
-		//return and let the next request retry.
+		//return and let the next request resolve the ikey.
 		if (myAppId == null) {
 			InternalLogger.INSTANCE.trace("Could not generate source/target correlation as the appId could not be resolved (e.g. task may be pending or failed)");
 			return null;

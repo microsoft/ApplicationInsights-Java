@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.http.HttpServletRequest;
 

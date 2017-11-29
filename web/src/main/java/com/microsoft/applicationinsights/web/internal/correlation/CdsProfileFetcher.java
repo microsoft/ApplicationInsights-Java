@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.apache.http.HttpResponse;
@@ -44,12 +45,14 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
 
     // cache of tasks per ikey
-    private final ConcurrentHashMap<String, Future<HttpResponse>> tasks;
+    private final ConcurrentMap<String, Future<HttpResponse>> tasks;
 
     public CdsProfileFetcher() {
         RequestConfig requestConfig = RequestConfig.custom()
-            .setSocketTimeout(3000)
-            .setConnectTimeout(3000).build();
+            .setSocketTimeout(5000)
+            .setConnectTimeout(5000)
+            .setConnectionRequestTimeout(5000)
+            .build();
 
         this.httpClient = HttpAsyncClients.custom()
             .setDefaultRequestConfig(requestConfig)
