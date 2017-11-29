@@ -67,7 +67,7 @@ public class AiDockerClient {
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
 
-		Process p = buildProcess("docker", "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, image).start();
+		Process p = buildProcess("docker", "run", "--rm", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, image).start();
 		if (!p.waitFor(3, TimeUnit.SECONDS)) {
 			p.destroyForcibly();
 			flushStdout(p);
