@@ -151,12 +151,12 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         telemetry.getContext().getProperties().put("URI", uri);
         telemetry.getContext().getProperties().put("Method", method);
         
-        if (target.endsWith("|")) {
-            target = target.substring(0, target.length() - 1).trim();
-        }
-
         if (target != null && !target.isEmpty()) {
-            telemetry.setTarget(target);
+            if (telemetry.getTarget() == null) {
+                telemetry.setTarget(target);
+            } else {
+                telemetry.setTarget(telemetry.getTarget() + " | " + target);
+            }
         }
        
         InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, deltaInMS);

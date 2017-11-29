@@ -170,7 +170,12 @@ public class TelemetryCorrelationUtils {
 	 * @return the dependency target
 	 */
 	public static String generateChildDependencyTarget(String requestContext) {
-		
+
+		if (requestContext == null || requestContext.isEmpty()) {
+			InternalLogger.INSTANCE.trace("generateChildDependencyTarget: won't continue as requestContext is null or empty.");
+			return "";	
+		}
+
 		String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
 		if (instrumentationKey == null || instrumentationKey.isEmpty()) {
 			InternalLogger.INSTANCE.error("Failed to generate target correlation. InstrumentationKey is null or empty.");
