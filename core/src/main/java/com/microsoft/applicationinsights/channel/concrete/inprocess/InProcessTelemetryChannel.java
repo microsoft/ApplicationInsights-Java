@@ -26,6 +26,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
@@ -89,6 +90,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     private TelemetryBuffer telemetryBuffer;
     private TelemetrySampler telemetrySampler;
+
+    private static AtomicLong itemsSent = new AtomicLong(0);
 
     public InProcessTelemetryChannel() {
         boolean developerMode = false;
@@ -204,6 +207,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             String asJson = writer.toString();
             telemetryBuffer.add(asJson);
             telemetry.reset();
+            if (itemsSent.incrementAndGet() % 10000 == 0)
+                InternalLogger.INSTANCE.info("items sent till now " + itemsSent.get());
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
             return;

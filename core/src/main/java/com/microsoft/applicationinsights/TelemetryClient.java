@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -58,6 +59,7 @@ public class TelemetryClient {
     private static final Object TELEMETRY_STOP_HOOK_LOCK = new Object();
     private static final Object TELEMETRY_CONTEXT_LOCK = new Object();
 
+    private static AtomicLong generateCounter = new AtomicLong(0);
     /**
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
      * @param configuration The configuration this instance will work with.
@@ -385,6 +387,11 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void track(Telemetry telemetry) {
+
+        if (generateCounter.incrementAndGet() % 10000 == 0) {
+            InternalLogger.INSTANCE.info("Total events generated till now "+ generateCounter.get());
+        }
+
         if (telemetry == null) {
             throw new IllegalArgumentException("telemetry item cannot be null");
         }
