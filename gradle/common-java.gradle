@@ -32,7 +32,7 @@ if (java7JreDir) {
     def requiredJavaBootArchives = ["rt.jar", "jsse.jar"]
     def bootClasspath = ""
     requiredJavaBootArchives.each { a ->
-        def archivePath = new File(java7JreDir, "lib/$a")
+        def archivePath = new File(java7JreDir, "jre/lib/$a")
         if (!archivePath.exists()) {
             throw new ProjectConfigurationException("Archive $archivePath required for building in Java 7 could not be found.", null)
         }
