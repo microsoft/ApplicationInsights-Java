@@ -24,10 +24,17 @@ plugins {
 
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
-if (System.env."windir" != null) {
-    apply from: "native.gradle"
+
+boolean skipWinNative = (System.properties['skipWinNative'] ?: 'false').toBoolean()
+
+if (skipWinNative) {
+    logger.lifecycle 'Windows native components will not be built: skipWinNative=true'
 } else {
-    logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
+    if (System.env."windir") {
+        apply from: "native.gradle"
+    } else {
+        logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
+    }
 }
 
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
