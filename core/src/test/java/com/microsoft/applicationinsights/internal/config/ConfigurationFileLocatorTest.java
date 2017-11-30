@@ -56,10 +56,30 @@ public final class ConfigurationFileLocatorTest {
     }
 
     @Test
+    public void testGetConfigurationFileWhereDirIsFromProperty() throws Exception {
+        System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "src/test/resources");
+
+        InputStream resourceFile = new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
+        verifyFile(resourceFile);
+    }
+
+    @Test
+    public void testNoConfigurationFoundWhereDirPropertySetWrong() throws Exception {
+        System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "this-directory-does-not-exist");
+
+        InputStream resourceFile = new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
+        System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
+
+        assertNull(resourceFile);
+    }
+
+    @Test
     public void testGetConfigurationFileWhereFileIsResource() throws Exception {
         String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
 
         InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
+        System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
+
         verifyFile(resourceFile);
     }
 
