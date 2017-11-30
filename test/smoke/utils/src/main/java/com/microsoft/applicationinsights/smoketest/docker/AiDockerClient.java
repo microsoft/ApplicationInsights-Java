@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jetty.util.ArrayUtil;
 import org.junit.Assert;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -26,8 +25,12 @@ public class AiDockerClient {
 	public static String DEFAULT_LINUX_USER = "root";
 	public static String DEFAULT_LINUX_SHELL = "bash";
 
+	public static final String DOCKER_EXE_ENV_VAR = "DOCKER_EXE";
+
 	private String currentUser;
 	private String shellExecutor;
+
+	private String dockerExePath;
 
 	public AiDockerClient(String user, String shellExecutor) {
 		Preconditions.checkNotNull(user, "user");
@@ -35,6 +38,17 @@ public class AiDockerClient {
 
 		this.currentUser = user;
 		this.shellExecutor = shellExecutor;
+
+		// TODO also check a property
+		String dockerPath = System.getenv(DOCKER_EXE_ENV_VAR);
+		if (Strings.isNullOrEmpty(dockerPath)) {
+			throw new RuntimeException(DOCKER_EXE_ENV_VAR+" not set");
+		}
+		File de = new File(dockerPath);
+		if (!de.exists()) {
+			throw new RuntimeException(String.format("Could not find docker: %s=%s", DOCKER_EXE_ENV_VAR, dockerPath));
+		}
+		this.dockerExePath = de.getAbsolutePath();
 	}
 
 	public String getCurrentUser() {
@@ -67,7 +81,7 @@ public class AiDockerClient {
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
 
-		Process p = buildProcess("docker", "run", "--rm", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, image).start();
+		Process p = buildProcess(dockerExePath, "run", "--rm", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, image).start();
 		if (!p.waitFor(3, TimeUnit.SECONDS)) {
 			p.destroyForcibly();
 			flushStdout(p);
@@ -96,7 +110,7 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(id, "id");
 		Preconditions.checkNotNull(appArchive, "appArchive");
 		
-		Process p = buildProcess("docker", "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
+		Process p = buildProcess(dockerExePath, "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
 		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
 		
 		execOnContainer(id, getShellExecutor(), "./deploy.sh", appArchive.getName());
@@ -107,7 +121,7 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(cmd, "cmd");
 
 		List<String> cmdList = new ArrayList<>();
-		cmdList.addAll(Arrays.asList(new String[]{"docker", "container", "exec", "-d", "-u", getCurrentUser(), id, cmd}));
+		cmdList.addAll(Arrays.asList(new String[]{dockerExePath, "container", "exec", "-d", id, cmd}));
 		if (args.length > 0) {
 			cmdList.addAll(Arrays.asList(args));
 		}
@@ -142,17 +156,17 @@ public class AiDockerClient {
 	public void printContainerLogs(String containerId) throws IOException {
 		Preconditions.checkNotNull(containerId, "containerId");
 
-		Process p = buildProcess("docker", "container", "logs", containerId).start();
+		Process p = buildProcess(dockerExePath, "container", "logs", containerId).start();
 		flushStdout(p);
 	}
 
 	public void stopContainer(String id) throws IOException, InterruptedException {
-		Process p = buildProcess("docker", "container", "stop", id).start();
+		Process p = buildProcess(dockerExePath, "container", "stop", id).start();
 		waitAndCheckCodeForProcess(p, 30, TimeUnit.SECONDS, String.format("stopping container %s", id));
 	}
 
 	public boolean isContainerRunning(String id) throws IOException, InterruptedException {
-		Process p = new ProcessBuilder("docker", "inspect", "-f", "{{.State.Running}}", id).start();
+		Process p = new ProcessBuilder(dockerExePath, "inspect", "-f", "{{.State.Running}}", id).start();
 		waitAndCheckCodeForProcess(p, 1, TimeUnit.SECONDS, String.format("checking if container is running: %s", id));
 		
 		StringWriter sw = new StringWriter();

@@ -6,6 +6,8 @@ apply plugin: 'base'
 ext {
 	partialDockerfileExt = '.partial.dockerfile'
 	jreMasterList = file('jre.master.txt')
+	dockerExe = findDockerExe()
+	dockerCliExe = findDockerCliExe()
 }
 
 subprojects {
@@ -83,7 +85,7 @@ subprojects {
 				def tag = df.name.minus('.dockerfile').replace('.', '_')
 				exec {
 					workingDir df.getParentFile().absolutePath
-					commandLine 'docker', 'build', '-f', df.name, '-t', tag, '.'
+					commandLine dockerExe, 'build', '-f', df.name, '-t', tag, '.'
 				}
 			}
 		}
@@ -115,7 +117,7 @@ task buildDockerImage {
 }
 
 task prune(type: Exec) {
-	commandLine 'docker', 'container', 'prune', '-f'
+	commandLine dockerExe, 'container', 'prune', '-f'
 }
 
 def getConfigSet(File universeFile, File includesFile, File excludesFile) {
@@ -152,36 +154,32 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
 	return resultantSet
 }
 
+def findDockerExe() {
+	if (System.env.DOCKER_EXE) {
+		return System.env.DOCKER_EXE
+	}
+	throw new GradleException("Please set environment variable DOCKER_EXE to the absolute path of the docker executable")
+	// TODO try to find docker
+}
+
+def findDockerCliExe() {
+	if (!System.env.DOCKER_CLI_EXE) {
+		logger.info 'DOCKER_CLI_EXE not set'
+	}
+	return System.env.DOCKER_CLI_EXE
+}
+
 def verifyDockerInstallation() {
 	exec {
-		commandLine 'docker', 'version'
-	}.assertNormalExitValue()
-
-	// TODO make this block OS independent
-	// if (!System.env.DOCKER_HOME) {
-	// 	def whereIsIt = new ByteArrayOutputStream()
-	// 	def findDocker = exec {
-	// 		commandLine 'where', 'docker' // this is windows only
-	// 		standardOutput = whereIsIt
-	// 	}
-	// 	def dockerDir = new File("/Program Files/Docker/Docker")
-	// 	if (findDocker.exitValue == 0) {
-	// 		def foundItHere = whereIsIt.toString()
-	// 		logger.lifecycle foundItHere
-	// 		dockerDir = new File(foundItHere).getParentFile().getParentFile()
-	// 	}
-	// 	if (!(dockerDir.exists() && new File(dockerDir, "DockerCli.exe").exists())) {
-	// 		throw new GradleException("Either docker isn't installed or in non-default location. Please set environment variable DOCKER_HOME")
-	// 	}
-	// 	System.env.DOCKER_HOME = dockerDir.absolutePath
-	// }
+		commandLine dockerExe, 'version'
+	}
 }
 
 def getCurrentDockerServerArch() {
 	verifyDockerInstallation()
 	def dockerVersionOutput = new ByteArrayOutputStream()
 	exec {
-		commandLine 'docker', 'version'
+		commandLine dockerExe, 'version'
 		standardOutput = dockerVersionOutput
 		errorOutput = new ByteArrayOutputStream()
 	}.assertNormalExitValue()
@@ -203,7 +201,7 @@ def switchDockerDaemon(targetMode = null) {
 		}
 	}
 	exec {
-		commandLine "$System.env.DOCKER_HOME/DockerCli.exe", '-SwitchDaemon'
+		commandLine dockerCliExe, '-SwitchDaemon'
 	}.assertNormalExitValue()
 	logger.lifecycle "Mode switched. Current mode = "+getCurrentDockerServerArch()
 }
