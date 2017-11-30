@@ -1,4 +1,3 @@
-
 FROM @JRE@
 
 USER root
