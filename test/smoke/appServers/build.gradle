@@ -85,7 +85,8 @@ subprojects {
 				def tag = df.name.minus('.dockerfile').replace('.', '_')
 				exec {
 					workingDir df.getParentFile().absolutePath
-					commandLine dockerExe, 'build', '-f', df.name, '-t', tag, '.'
+					executable dockerExe
+					args 'build', '-f', df.name, '-t', tag, '.'
 				}
 			}
 		}
@@ -117,7 +118,8 @@ task buildDockerImage {
 }
 
 task prune(type: Exec) {
-	commandLine dockerExe, 'container', 'prune', '-f'
+	executable dockerExe
+	args 'container', 'prune', '-f'
 }
 
 def getConfigSet(File universeFile, File includesFile, File excludesFile) {
@@ -171,7 +173,8 @@ def findDockerCliExe() {
 
 def verifyDockerInstallation() {
 	exec {
-		commandLine dockerExe, 'version'
+		executable dockerExe
+		args 'version'
 	}
 }
 
@@ -179,7 +182,8 @@ def getCurrentDockerServerArch() {
 	verifyDockerInstallation()
 	def dockerVersionOutput = new ByteArrayOutputStream()
 	exec {
-		commandLine dockerExe, 'version'
+		executable dockerExe
+		args 'version'
 		standardOutput = dockerVersionOutput
 		errorOutput = new ByteArrayOutputStream()
 	}.assertNormalExitValue()
@@ -201,7 +205,8 @@ def switchDockerDaemon(targetMode = null) {
 		}
 	}
 	exec {
-		commandLine dockerCliExe, '-SwitchDaemon'
+		executable dockerCliExe
+		args '-SwitchDaemon'
 	}.assertNormalExitValue()
 	logger.lifecycle "Mode switched. Current mode = "+getCurrentDockerServerArch()
 }
