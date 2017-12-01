@@ -26,11 +26,10 @@ apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
 boolean skipWinNative = (System.properties['skipWinNative'] ?: 'false').toBoolean()
-
 if (skipWinNative) {
-    logger.lifecycle 'Windows native components will not be built: skipWinNative=true'
+    logger.warn 'Windows native components will not be built: skipWinNative=true'
 } else {
-    if (System.env."windir") {
+    if (System.env.WINDIR) {
         apply from: "native.gradle"
     } else {
         logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
