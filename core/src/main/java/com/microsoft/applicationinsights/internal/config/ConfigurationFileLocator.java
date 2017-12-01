@@ -43,7 +43,7 @@ import com.google.common.base.Strings;
 public final class ConfigurationFileLocator {
 
     /** name of property containing path to directory with configuration file */
-    public static final String CONFIG_DIR_PROPERTY = "insights.configurationDirectory";
+    public static final String CONFIG_DIR_PROPERTY = "applicationinsights.configurationDirectory";
 
     private final String configurationFileName;
 

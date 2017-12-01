@@ -17,7 +17,7 @@
 - Introducing FixedRate Sampling v2 Using Telemetry Processors
 - Fixed issue #436 (TraceTelemetry with Severity is not shown in UI). This fixes a regression issue with `TelemetryClient.trackTrace` and `TelemetryClient.trackException`.
 - Compilation now targets Java 1.7. Java 1.6 is no longer supported.
-- Adding system property `insights.configurationDirectory` to allow to explicitly set directory containing the config file.
+- Adding system property `applicationinsights.configurationDirectory` to allow to explicitly set directory containing the config file.
 
 ## Version 1.0.10
 - `track()` method of 'com.microsoft.applicationinsights.TelemetryClient' is now modified. No longer performing pre-sanitization
