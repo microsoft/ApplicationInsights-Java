@@ -81,7 +81,7 @@ public class AiDockerClient {
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
 
-		Process p = buildProcess(dockerExePath, "run", "--rm", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, image).start();
+		Process p = buildProcess(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, image).start();
 		if (!p.waitFor(3, TimeUnit.SECONDS)) {
 			p.destroyForcibly();
 			flushStdout(p);
@@ -110,6 +110,7 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(id, "id");
 		Preconditions.checkNotNull(appArchive, "appArchive");
 		
+		// FIXME docker-stage should be configurable
 		Process p = buildProcess(dockerExePath, "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
 		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
 		
@@ -121,7 +122,7 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(cmd, "cmd");
 
 		List<String> cmdList = new ArrayList<>();
-		cmdList.addAll(Arrays.asList(new String[]{dockerExePath, "container", "exec", "-d", id, cmd}));
+		cmdList.addAll(Arrays.asList(new String[]{dockerExePath, "container", "exec", id, cmd}));
 		if (args.length > 0) {
 			cmdList.addAll(Arrays.asList(args));
 		}
