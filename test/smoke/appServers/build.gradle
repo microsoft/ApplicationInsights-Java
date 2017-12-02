@@ -123,27 +123,27 @@ task prune(type: Exec) {
 }
 
 def getConfigSet(File universeFile, File includesFile, File excludesFile) {
-	def hasWhitelist = includesFile.exists()
-	def hasBlacklist = excludesFile.exists()
-	if (hasWhitelist) {
+	def hasIncludes = includesFile.exists()
+	def hasExcludes = excludesFile.exists()
+	if (hasIncludes) {
 		logger.info "includes exist: $includesFile.absolutePath"
 	}
-	if (hasBlacklist) {
+	if (hasExcludes) {
 		logger.info "excludes exist: $excludesFile.absolutePath"
 	}
 	def universalSet = universeFile.text.readLines().toSet()
 	logger.info "universalSet has ${universalSet.size()} elements: $universalSet"
 	
-	def includeSet = (hasWhitelist ? includesFile.text.readLines().toSet() : universalSet)
+	def includeSet = (hasIncludes ? includesFile.text.readLines().toSet() : universalSet)
 	logger.info "includeSet has ${includeSet.size()} elements: $includeSet"
 	
-	def excludeSet = (hasBlacklist ? excludesFile.text.readLines() : []).toSet()
+	def excludeSet = (hasExcludes ? excludesFile.text.readLines() : []).toSet()
 	logger.info "excludeSet has ${excludeSet.size()} elements: $excludeSet"
 
 	// if the excludes file contains entries which do not exist in the master list, warn the user; this is likely a typo
 	def uniqueExcludes = excludeSet.minus(universalSet)
 	if (uniqueExcludes.size() > 0) {
-		logger.warn("$blacklistFile.name entries are not a subset of ${universeFile.name}: ${uniqueExcludes}. These entries are nops and can be removed.")
+		logger.warn("$excludesFile.name entries are not a subset of ${universeFile.name}: ${uniqueExcludes}. These entries are nops and can be removed.")
 	}
 	
 	// if the includes file contains entires which do not exist in the master list, warn the user; be aware that these will be included
