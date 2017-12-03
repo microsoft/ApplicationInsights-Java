@@ -83,25 +83,8 @@ public class TelemetryCorrelationUtils {
 			requestTelemetry.getContext().getOperation().setId(rootId);
 			requestTelemetry.getContext().getOperation().setParentId(parentId);
 
-			// resolve baggages (Correlation-Context)
-			@SuppressWarnings("unchecked")
-			Enumeration<String> baggages = request.getHeaders(CORRELATION_CONTEXT_HEADER_NAME);
-
-			if (baggages == null) {
-				InternalLogger.INSTANCE.warn("Could not access header information: " + CORRELATION_CONTEXT_HEADER_NAME);
-				return;
-			}
-
-			CorrelationContext currentCorrelationContext = 
-				ThreadContext.getRequestTelemetryContext().getCorrelationContext();
-
-			while (baggages.hasMoreElements()) {
-				String baggage = baggages.nextElement();
-				currentCorrelationContext.append(baggage);
-			    Map<String, String> propertyBag = getPropertyBag(baggage);
-				currentCorrelationContext.getMappings().putAll(propertyBag);
-				requestTelemetry.getProperties().putAll(propertyBag);
-			}
+			// let us resolve the context now.
+			resolveCorrelationContext(request, requestTelemetry);
 		}
 		catch(Exception ex) {
 			InternalLogger.INSTANCE.error("Failed to resolve correlation. Exception information: " + ex);
@@ -240,6 +223,35 @@ public class TelemetryCorrelationUtils {
 		}
 
 		return id.charAt(0) == '|';
+	}
+
+	/**
+	 * Extracts the correlation context information from the request headers and populates the request telemetry's
+	 * properties accordingly. It also saves the context in TLS for future use.
+	 * @param request The incoming request.
+	 * @param requestTelemetry The request telemetry item.
+	 */
+	private static void resolveCorrelationContext(HttpServletRequest request, RequestTelemetry requestTelemetry) {
+		
+		// resolve baggages (Correlation-Context)
+		@SuppressWarnings("unchecked")
+		Enumeration<String> baggages = request.getHeaders(CORRELATION_CONTEXT_HEADER_NAME);
+
+		if (baggages == null) {
+			InternalLogger.INSTANCE.warn("Could not access header information: " + CORRELATION_CONTEXT_HEADER_NAME);
+			return;
+		}
+
+		CorrelationContext currentCorrelationContext = 
+			ThreadContext.getRequestTelemetryContext().getCorrelationContext();
+
+		while (baggages.hasMoreElements()) {
+			String baggage = baggages.nextElement();
+			currentCorrelationContext.append(baggage);
+			Map<String, String> propertyBag = getPropertyBag(baggage);
+			currentCorrelationContext.getMappings().putAll(propertyBag);
+			requestTelemetry.getProperties().putAll(propertyBag);
+		}
 	}
 
 	/**
