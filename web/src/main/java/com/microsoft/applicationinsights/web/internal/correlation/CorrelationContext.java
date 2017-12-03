@@ -59,14 +59,7 @@ public class CorrelationContext {
     public Map<String, String> getMappings() {
         return this.mappings;
     }
-
-    /**
-     * Gets the correlation context headers for the request context.
-     */
-    public List<String> getHeaderValues() {
-        return this.incomingHeaderValues;
-    }
-
+    
     /**
      * Appends content to the correlation context.
      */

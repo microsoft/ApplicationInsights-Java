@@ -97,7 +97,6 @@ public class TelemetryCorrelationUtils {
 
 			while (baggages.hasMoreElements()) {
 				String baggage = baggages.nextElement();
-				currentCorrelationContext.getHeaderValues().add(baggage);
 				currentCorrelationContext.append(baggage);
 			    Map<String, String> propertyBag = getPropertyBag(baggage);
 				currentCorrelationContext.getMappings().putAll(propertyBag);
@@ -165,9 +164,9 @@ public class TelemetryCorrelationUtils {
 	}
 
 	/**
-	 * Given a request-context, it generates a new dependency target, possibly including the appId found in 
-	 * the request-context.
-	 * @param requestContext - the request context header value
+	 * Given a request context, it generates a new dependency target, possibly including the appId found in 
+	 * the given Request-Context.
+	 * @param requestContext - the Request-Context header value
 	 * @return the dependency target
 	 */
 	public static String generateChildDependencyTarget(String requestContext) {
