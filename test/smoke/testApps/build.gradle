@@ -26,6 +26,7 @@ subprojects {
 
 	dependencies {
 		smokeTestCompile project(':test:smoke:utils')
+		smokeTestCompile 'junit:junit:4.12'
 		testCompile project(':test:smoke:utils') // not necessary; vs code bug workaround
 	}
 
