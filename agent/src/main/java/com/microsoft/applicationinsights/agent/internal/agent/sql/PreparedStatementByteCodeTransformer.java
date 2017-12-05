@@ -37,7 +37,7 @@ public final class PreparedStatementByteCodeTransformer implements ByteCodeTrans
     }
 
     @Override
-    public byte[] transform(byte[] originalBuffer, String className) {
+    public byte[] transform(byte[] originalBuffer, String className, ClassLoader loader) {
         if (classInstrumentationData == null) {
             return originalBuffer;
         }

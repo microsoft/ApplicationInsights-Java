@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationRequest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

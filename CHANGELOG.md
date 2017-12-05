@@ -1,7 +1,23 @@
 # CHANGELOG
 
 ## Version 1.0.11
+- Updating various dependencies to latest version
+- Introducing public class CustomClassWriter in Agent to enable finding common super classes used for Agent instrumentation without loading it
+- Introducing Parametrized constructor in WebRequestTrackingFilter to ensure name binding
+- Fixed Issue #428 (Agent cannot capture oracle dependencies)
+- Fixed Issue #418 (Java.lang.verify error caused while capturing sql dependencies in JDK 1.8)
+- Fixed Issue #286, #277 (Issues in capturing preparedStatement calls)
+- Fixed Issue #365 (Relocate all web jars)
+- Fixed Issue #276 (Instrumentation issues with HTTP Client)
+- Introducing public method 'getIncludedTypes' and 'getExcludedTypes' in TelemetryProcessorXmlElement.
+- Introducing class 'com.microsoft.applicationinsights.internal.config.ParamIncludedTypeXmlElement'.
+- Introducing class 'com.microsoft.applicationinsights.internal.config.ParamExcludedTypeXmlElement'
+- Introducing class 'com.microsoft.applicationinsights.internal.channel.samplingV2.SamplingScoreGeneratorV2'
+- Introducing Telemetry Processor 'com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor'
+- Introducing FixedRate Sampling v2 Using Telemetry Processors
 - Fixed issue #436 (TraceTelemetry with Severity is not shown in UI). This fixes a regression issue with `TelemetryClient.trackTrace` and `TelemetryClient.trackException`.
+- Compilation now targets Java 1.7. Java 1.6 is no longer supported.
+- Adding system property `applicationinsights.configurationDirectory` to allow to explicitly set directory containing the config file.
 
 ## Version 1.0.10
 - `track()` method of 'com.microsoft.applicationinsights.TelemetryClient' is now modified. No longer performing pre-sanitization

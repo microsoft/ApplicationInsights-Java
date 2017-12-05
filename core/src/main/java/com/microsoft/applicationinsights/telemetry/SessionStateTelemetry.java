@@ -34,7 +34,7 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.SessionState";
+    private static final String ENVELOPE_NAME = "SessionState";
 
 
     /**
