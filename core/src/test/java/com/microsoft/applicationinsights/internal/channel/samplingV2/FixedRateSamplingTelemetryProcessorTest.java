@@ -3,13 +3,13 @@ package com.microsoft.applicationinsights.internal.channel.samplingV2;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TestFramework.StubTelemetryChannel;
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -513,7 +513,7 @@ public class FixedRateSamplingTelemetryProcessorTest {
         processor.setSamplingPercentage(String.valueOf(samplingRate));
         if (includeTypes != null) {
             for (String includeType : includeTypes) {
-                if (!StringUtils.isNullOrEmpty(includeType)) {
+                if (!StringUtils.isEmpty(includeType)) {
                     processor.addToIncludedType(includeType);
                 }
             }
@@ -521,7 +521,7 @@ public class FixedRateSamplingTelemetryProcessorTest {
 
         if (excludeTypes != null) {
             for (String excludeType : excludeTypes) {
-                if (!StringUtils.isNullOrEmpty(excludeType)) {
+                if (!StringUtils.isEmpty(excludeType)) {
                     processor.addToExcludedType(excludeType);
                 }
             }
@@ -559,7 +559,7 @@ public class FixedRateSamplingTelemetryProcessorTest {
         processor.setSamplingPercentage(String.valueOf(samplingRate));
         if (includeTypes != null) {
             for (String includeType : includeTypes) {
-                if (!StringUtils.isNullOrEmpty(includeType)) {
+                if (!StringUtils.isEmpty(includeType)) {
                     processor.addToIncludedType(includeType);
                 }
             }
@@ -567,7 +567,7 @@ public class FixedRateSamplingTelemetryProcessorTest {
 
         if (excludeTypes != null) {
             for (String excludeType : excludeTypes) {
-                if (!StringUtils.isNullOrEmpty(excludeType)) {
+                if (!StringUtils.isEmpty(excludeType)) {
                     processor.addToExcludedType(excludeType);
                 }
             }

@@ -1,9 +1,9 @@
 package com.microsoft.applicationinsights.internal.channel.samplingV2;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import java.util.Random;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by Dhaval Doshi Oct 2017
@@ -24,7 +24,7 @@ public class SamplingScoreGeneratorV2 {
 
         double samplingScore = 0.0;
 
-        if (!StringUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
+        if (!StringUtils.isEmpty(telemetry.getContext().getOperation().getId())) {
             samplingScore =  ((double) getSamplingHashCode(telemetry.getContext().getOperation().getId()) / Integer.MAX_VALUE);
         }
 
@@ -37,7 +37,7 @@ public class SamplingScoreGeneratorV2 {
     }
 
      static int getSamplingHashCode(String input) {
-        if (StringUtils.isNullOrEmpty(input)) {
+        if (StringUtils.isEmpty(input)) {
             return 0;
         }
 
