@@ -94,21 +94,29 @@ public abstract class AiSmokeTest {
 		@Override
 		protected void failed(Throwable t, Description description) {
 			// NOTE this happens after @After :)
+			String containerId = lastContainerId();
+			System.out.println("Test failure detected.");
+			
+			System.out.println("\nFetching appserver logs");
 			try {
-				String containerId = lastContainerId();
-				System.out.println("Test failure detected.");
-				
-				System.out.println("\nFetching appserver logs");
-				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh", "50");
-				
+				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
+			}
+			catch (Exception e) {
+				System.err.println("Error executing tailLastLog.sh");
+				e.printStackTrace();
+			}
+			
+			try {
 				System.out.println("\nFetching container logs for "+containerId);
 				docker.printContainerLogs(containerId);
 
-				System.out.println("\nFinished gathering logs.");
 			}
 			catch (Exception e) {
 				System.err.println("Error copying logs to stream");
 				e.printStackTrace();
+			}
+			finally {
+				System.out.println("\nFinished gathering logs.");
 			}
 		}
 	};
