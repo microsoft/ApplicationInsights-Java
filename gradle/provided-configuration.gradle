@@ -19,21 +19,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-// Adding the "provided" configuration
-
-ext {
-    PROVIDED_CONFIGURATION_NAME = "provided"
-}
-
+// Defines the "provided" configuration for dependencies that the client is responsible for including on the classpath
 configurations {
-    provided {
-        // Remove the provided dependencies from the default configuration so
-        // these dependencies won't be derived by projects that has a dependency on
-        // the project using the provided scope
-        dependencies.all { dep ->
-            configurations.default.exclude group: dep.group, module: dep.name
-        }
-    }
-    compile.extendsFrom provided
+    provided
 }
 
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+        runtimeClasspath += configurations.provided
+    }
+    test {
+        compileClasspath += configurations.provided
+        runtimeClasspath += configurations.provided
+    }
+}
