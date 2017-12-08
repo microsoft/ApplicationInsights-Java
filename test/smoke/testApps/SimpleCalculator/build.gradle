@@ -1,17 +1,12 @@
 // apply plugin: 'java-library'
 apply plugin: 'war'
 
-repositories {
-    jcenter()
-}
-
 dependencies {
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
-
     compile project(':core')
     compile project(':web')
-
     compile 'com.google.guava:guava:20.0'
+    
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 
     providedRuntime 'mysql:mysql-connector-java:5.1.44'
 
@@ -24,17 +19,7 @@ dependencies {
 compileJava.sourceCompatibility = 1.7
 compileJava.targetCompatibility = 1.7
 compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
 
-// FIXME this should be in the parent build file
 ext.testAppArtifactDir = war.destinationDir
 ext.testAppArtifactFilename = war.archiveName
-
-// FIXME updated these to use the JRE specifications
-if (System.env.JDK6_HOME) {
-    compileJava.options.bootClasspath = System.getenv('JDK6_HOME')+'/jre/lib/rt.jar'
-}
-if (System.env.JDK8_HOME) {
-    compileSmokeTestJava.options.bootClasspath = System.getenv('JDK8_HOME')+'/jre/lib/rt.jar'
-}
-
-defaultTasks 'build'
