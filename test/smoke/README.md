@@ -1,7 +1,8 @@
 # ApplicationInsights-Java Smoke Tests
 
 ## Prerequisites
-TODO
+* Windows 10
+* [Docker for Windows][windock]
 
 ## Overview
 The goal for the smoke tests is to exercise and validate the ApplicationInsights Java SDK in each supported environment. The test matrix has dimensions for OS, Application Servers and JREs. A custom task in the gradle build script is used for generating the application environments (using Docker), building the test applications and running the tests against the applications in each environment.
@@ -35,6 +36,8 @@ The `smokeTest` task performs the following in order:
 4. Build the docker images from dockerfiles (depends on dockerfile generation; the `buildDockerImages` task)
 5. Compile test code
 6. Runs the tests
+
+// TODO path to reports
 
 # How to...
 ## Configure supported JREs for application servers
@@ -72,6 +75,8 @@ This file can include JREs which are not found in the master file.
 	include ':test:smoke:testApps:MyTestApp'
 	```
 
+Note: your test application should have a "health check" endpoint at the root. For example, if your application is deployed with the root context `/MyApp` then `/MyApp/` should return a 200 response with a non-empty body when the application is healthy. This is used to determine when the application is successfully deployed. The body content is arbitrary, but must be non-empty.
+
 ### Add a test case/class
 In the current system, test cases are coupled with the test application. So, you must have created a test application in the previous section to create a test case.
 
@@ -82,6 +87,7 @@ In the current system, test cases are coupled with the test application. So, you
 	* You must explicitly specify the shortnames of the application servers where the test application should be deployed; one per line.
 	* The application server shortnames can be found in `build.gradle` in their respective directories.
 3. Create a smoke test class. This is a JUnit test which inherits from `AiSmokeTest` found in `/utils`.
+// TODO metion that junit and utils is already a dependency
 4. Specify any additional dependencies using the configuration `smokeTestCompile`, e.g.:
 	```gradle
 	dependencies {
@@ -97,12 +103,14 @@ TODO
 
 # Future Plans
 * Run smoke tests against provided SDK JARs
+* Addional containers for test application dependencies, e.g. backend database.
+* Smoke test properties, e.g. configurable port for fake ingestion.
 * Start up a application server for manual testing
 * Build a docker image to be use as a base image for an application server.
 * Decouple tests from test applications (common schema? dynamic resources created by the test?).
 * Detect if the smokeTests are being run on a linux machine and only run the Linux tests. Same for Windows.
 * Add ability to vary the Linux OS?
-* Addional containers for test application dependencies, e.g. backend database.
+* gradles tasks for creating a new test application, new environment; maybe automating other things e.g. 'add jre'
 
 # References
 * [Docker for Windows][windock]
