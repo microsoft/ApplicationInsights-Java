@@ -19,7 +19,7 @@ public class MyTestTest extends AiSmokeTest {
 	public void doCalcSendsRequestDataAndMetricData() throws Exception {
 		System.out.println("Wait for app to finish deploying...");
 		String appContext = warFileName.replace(".war", "");
-		String baseUrl = "http://localhost:" + extPort + "/" + appContext;
+		String baseUrl = "http://localhost:" + appServerPort + "/" + appContext;
 		waitForUrl(baseUrl, 60, TimeUnit.SECONDS, appContext);
 		System.out.println("Test app health check complete.");
 
@@ -57,7 +57,6 @@ public class MyTestTest extends AiSmokeTest {
 		assertEquals("TimeToRespond", dp.getName());
 		assertEquals(Integer.valueOf(1),  dp.getCount());
 
-		// since this is a measurement and not aggregation...
 		assertNull(dp.getMin());
 		assertNull(dp.getMax());
 		assertNull(dp.getStdDev());

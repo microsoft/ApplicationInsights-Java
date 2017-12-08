@@ -38,10 +38,12 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import static org.junit.Assert.*;
-
+/**
+ * This is the base class for smoke tests.
+ */
 @RunWith(Parameterized.class)
 public abstract class AiSmokeTest {
-	
+
 	@Parameters(name = "{index}: {0}, {1}, {2}")
 	public static Collection<Object[]> data() throws MalformedURLException, IOException {
 		List<String> appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
@@ -67,27 +69,23 @@ public abstract class AiSmokeTest {
 		return Lists.transform(rval, new Function<String, String>() {
 			@Override
 			public String apply(String input) {
+				// FIXME some may have '/'. update to use regex
 				return input.replace(':', '_');
 			}
 		});
 	}
-
 	
+	@Parameter(0) public String appServer;
 	
-	@Parameter(0)
-	public String appServer;
+	@Parameter(1) public String os;
 	
-	@Parameter(1)
-	public String os;
-	
-	@Parameter(2)
-	public String jreVersion;
-	// TODO application to deploy?
+	@Parameter(2) public String jreVersion;
 
 	private final static short BASE_PORT_NUMBER = 28080;
-	private static short currentPortNumber = BASE_PORT_NUMBER;
-
 	private static final String TEST_CONFIG_FILENAME = "testInfo.properties";
+	
+	protected static short currentPortNumber = BASE_PORT_NUMBER;
+	
 
 	@Rule
 	public TestWatcher theWatchman = new TestWatcher() {
@@ -121,18 +119,15 @@ public abstract class AiSmokeTest {
 		}
 	};
 	
-	protected static Stack<ContainerInfo> containerStack = new Stack<>(); // FIXME make this a stack of container ids; push when start, pop to stop
+	protected static Stack<ContainerInfo> containerStack = new Stack<>();
 	protected static String lastContainerId() {
 		return containerStack.peek().getContainerId();
 	}
 	
 	protected String warFileName;
 	
-	protected short extPort;
+	protected short appServerPort;
 	protected String currentImageName;
-
-	// TODO make this dependent on container mode
-	protected static final AiDockerClient docker = AiDockerClient.createLinuxClient();
 
 	private final Properties testProps = new Properties();
 	
@@ -177,7 +172,7 @@ public abstract class AiSmokeTest {
 		destroyAllContainers.run();
 	}
 
-	protected static Runnable destroyAllContainers = new Runnable() {
+	protected static final Runnable destroyAllContainers = new Runnable() {
 		@Override
 		public void run() {
 			synchronized (containerStack) {
@@ -222,30 +217,30 @@ public abstract class AiSmokeTest {
 		System.out.println("Preparing test...");
 		checkParams();
 		setupProperties();
-		startMockedEndpoint();
+		startMockedIngestion();
 		startDocker();
 		System.out.println("Test preperation complete");
 	}
 
-	public void checkParams() {
+	protected void checkParams() {
 		assertNotNull("appServer", this.appServer);
 		assertNotNull("os", this.os);
 		assertNotNull("jreVersion", this.jreVersion);
 	}
 
-	public void setupProperties() throws Exception {
+	protected void setupProperties() throws Exception {
 		testProps.load(new FileReader(new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI())));
 		currentImageName = String.format("%s_%s_%s", this.appServer, this.os, this.jreVersion);
-		extPort = currentPortNumber++;
+		appServerPort = currentPortNumber++;
 	}
 
-	public void startMockedEndpoint() throws Exception {
+	protected void startMockedIngestion() throws Exception {
 		mockedIngestion.startServer();
 		TimeUnit.SECONDS.sleep(2);
-		checkEndpointHealth();
+		checkMockedIngestionHealth();
 	}
 
-	private void checkEndpointHealth() throws Exception {
+	protected void checkMockedIngestionHealth() throws Exception {
 		// TODO make the port configurable
 		String ok = HttpHelper.get("http://localhost:60606/");
 		assertEquals(MockedAppInsightsIngestion.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
@@ -253,16 +248,16 @@ public abstract class AiSmokeTest {
 		assertEquals(MockedAppInsightsIngestion.PONG, postResponse);
 	}
 
-	public void startDocker() throws Exception {		
+	protected void startDocker() throws Exception {		
 		System.out.printf("Starting container: %s%n", currentImageName);
-		String containerId = docker.startContainer(currentImageName, extPort+":8080");
+		String containerId = docker.startContainer(currentImageName, appServerPort+":8080");
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
 
 		ContainerInfo info = new ContainerInfo(containerId, currentImageName);
 		containerStack.push(info);
 		try {
-			String url = String.format("http://localhost:%s/", String.valueOf(this.extPort));
+			String url = String.format("http://localhost:%s/", String.valueOf(this.appServerPort));
 			System.out.printf("Waiting for appserver to start (%s)...%n", url);
 
 			waitForUrl(url, 90, TimeUnit.SECONDS, "app server");// TODO change to actual app server name
@@ -293,7 +288,7 @@ public abstract class AiSmokeTest {
 		System.out.println("Test resources cleaned.");
 	}
 
-	public static void stopContainer(ContainerInfo info) throws Exception {	
+	protected static void stopContainer(ContainerInfo info) throws Exception {	
 		System.out.printf("Stopping container: %s%n", info);
 		Stopwatch killTimer = Stopwatch.createUnstarted();
 		try {
@@ -307,7 +302,7 @@ public abstract class AiSmokeTest {
 		}
 	}
 
-	public void resetMockedIngestion() throws Exception {
+	protected void resetMockedIngestion() throws Exception {
 		mockedIngestion.stopServer();
 		mockedIngestion.resetData();
 	}
@@ -342,4 +337,13 @@ public abstract class AiSmokeTest {
 		} while (rval == null);
 		assertFalse(String.format("Empty response from '%s'. HealthCheck urls should return something non-empty", url), rval.isEmpty());
 	}
+
+	// TODO make this dependent on container mode
+	private static final AiDockerClient docker = AiDockerClient.createLinuxClient();
+
+	// ***** below here is clean ***** FIXME remove this
+
+	// framework methods
+
+	
 }
