@@ -94,6 +94,12 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             }
 
             String appId = EntityUtils.toString(response.getEntity());
+
+            //check for case when breeze returns invalid value
+            if (appId == null || appId.isEmpty()) {
+                return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.FAILED);
+            }
+
             return new ProfileFetcherResult(appId, ProfileFetcherResultTaskStatus.COMPLETE);
 
         } finally {
