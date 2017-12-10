@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcher
 
 public class MockProfileFetcher implements AppProfileFetcher {
     
-    private String appId;
+    private String appId = "defaultId";
     private int callCounter = 0;
     private boolean throwException = false;
     private ProfileFetcherResultTaskStatus status = ProfileFetcherResultTaskStatus.COMPLETE;
@@ -40,7 +40,7 @@ public class MockProfileFetcher implements AppProfileFetcher {
         if (throwException) {
         	throw new ExecutionException("No doughnuts for you.", null);
         }
-        
+
         return new ProfileFetcherResult(this.appId, this.status);
 	}
 	

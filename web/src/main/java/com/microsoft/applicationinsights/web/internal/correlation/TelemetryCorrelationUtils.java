@@ -33,6 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class TelemetryCorrelationUtils {
 
@@ -50,11 +51,16 @@ public class TelemetryCorrelationUtils {
 	 * @param request The servlet request.
 	 * @param requestTelemetry The request telemetry to be populated with correlation ID's.
 	 */
-	public static void resolveCorrelation(HttpServletRequest request, RequestTelemetry requestTelemetry) {
-		
+	public static void resolveCorrelation(HttpServletRequest request, HttpServletResponse response, RequestTelemetry requestTelemetry) {
+
 		try {
 			if (request == null) {
 				InternalLogger.INSTANCE.error("Failed to resolve correlation. request is null.");
+				return;
+			}
+
+			if (response == null) {
+				InternalLogger.INSTANCE.error("Failed to resolve correlation. response is null.");
 				return;
 			}
 	
@@ -85,6 +91,9 @@ public class TelemetryCorrelationUtils {
 
 			// let us resolve the context now.
 			resolveCorrelationContext(request, requestTelemetry);
+
+			//add the target appId for the response header
+			addTargetAppIdForResponseHeader(response);
 		}
 		catch(Exception ex) {
 			InternalLogger.INSTANCE.error("Failed to resolve correlation. Exception information: " + ex);
@@ -255,6 +264,24 @@ public class TelemetryCorrelationUtils {
 	}
 
 	/**
+	 * Adds a response header for the Request-Context.
+	 * @param response The servlet's response.
+	 */
+	private static void addTargetAppIdForResponseHeader(HttpServletResponse response) {
+		
+		if (response.containsHeader(REQUEST_CONTEXT_HEADER_NAME)) {
+			return;
+		}
+
+		String appId = retrieveApplicationCorrelationId();
+		if (appId == null || appId.isEmpty()) {
+			return;
+		}
+
+		response.addHeader(REQUEST_CONTEXT_HEADER_NAME, appId);
+	}
+
+	/**
 	 * Extracts the appId/roleName out of requestContext and compares it with the current appId. It then
 	 * generates the appropriate source or target.
 	 */
@@ -336,10 +363,10 @@ public class TelemetryCorrelationUtils {
 
 	private static String generateRootId() {
 		UUID guid = UUID.randomUUID();
-        long least = guid.getLeastSignificantBits();
-        long most = guid.getMostSignificantBits();
+		long least = guid.getLeastSignificantBits();
+    	long most = guid.getMostSignificantBits();
 
-        return Long.toHexString(most) + Long.toHexString(least);
+		return Long.toHexString(most) + Long.toHexString(least);
 	}
 
 	private static String generateId(String parentId) {

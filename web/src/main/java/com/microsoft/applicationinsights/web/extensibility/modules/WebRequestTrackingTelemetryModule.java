@@ -25,6 +25,7 @@ import java.util.Date;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.common.CommonUtils;
 //import org.apache.http.HttpStatus;
 import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
@@ -94,7 +95,8 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             telemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
 
             // Look for cross-component correlation headers and resolve correlation ID's
-            TelemetryCorrelationUtils.resolveCorrelation(request, telemetry);
+            HttpServletResponse response = (HttpServletResponse) res;
+            TelemetryCorrelationUtils.resolveCorrelation(request, response, telemetry);
 
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();

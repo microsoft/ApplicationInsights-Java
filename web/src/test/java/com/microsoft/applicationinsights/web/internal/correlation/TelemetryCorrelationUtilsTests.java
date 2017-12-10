@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProf
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 
 public class TelemetryCorrelationUtilsTests {
@@ -98,11 +99,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's
         Assert.assertNotNull(requestTelemetry.getId());
@@ -122,11 +124,12 @@ public class TelemetryCorrelationUtilsTests {
         //setup - no headers
         Hashtable<String, String> headers = new Hashtable<String, String>();
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate operation context ID's - there is no parent, so parentId should be null, rootId
         // is newly generated and request.Id is based on new rootId
@@ -145,11 +148,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, "");
 
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate operation context ID's - there is no parent, so parentId should be null, rootId
         // is newly generated and request.Id is based on new rootId
@@ -168,11 +172,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, "guid");
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's 
         Assert.assertNotNull(requestTelemetry.getId());
@@ -194,11 +199,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, "guid.guid2.guid3");
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's 
         Assert.assertNotNull(requestTelemetry.getId());
@@ -220,11 +226,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, "guid.guid2_");
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's 
         Assert.assertNotNull(requestTelemetry.getId());
@@ -246,11 +253,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, "guid.");
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's 
         Assert.assertNotNull(requestTelemetry.getId());
@@ -275,11 +283,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
         
         //validate 
         Assert.assertNotNull(requestTelemetry.getId());
@@ -307,11 +316,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 2);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
         
         //validate 
         Assert.assertNotNull(requestTelemetry.getId());
@@ -339,11 +349,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate no extra properties have been populated
         Assert.assertEquals(0, requestTelemetry.getProperties().size());
@@ -368,11 +379,12 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate 
         Assert.assertNotNull(requestTelemetry.getId());
@@ -407,18 +419,21 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate 
         Assert.assertNotNull(requestTelemetry.getId());
         Assert.assertTrue(TelemetryCorrelationUtils.isHierarchicalId(requestTelemetry.getId()));
         
         //derivedId should be a new one since incoming was not valid: "|guid."
-        Assert.assertEquals(34, requestTelemetry.getId().length());
+        if (requestTelemetry.getId().length() != 34 && requestTelemetry.getId().length() != 33 ) {
+            Assert.fail("New id is expected to have 33 or 34 chars.");
+        }
         Assert.assertTrue(requestTelemetry.getId().startsWith("|"));
         Assert.assertTrue(requestTelemetry.getId().endsWith("."));
 
@@ -437,13 +452,14 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
         String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //validate we have generated proper ID's
@@ -460,13 +476,14 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
         String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //validate we have generated proper ID's
@@ -488,13 +505,14 @@ public class TelemetryCorrelationUtilsTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
         String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //Incoming ID is non-hierarchical, so we must not modidy outgoing (child) id
@@ -508,13 +526,14 @@ public class TelemetryCorrelationUtilsTests {
         //setup - make sure no RequestId is set (i.e. no parent)
         Hashtable<String, String> headers = new Hashtable<String, String>();
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
         
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
         //run
-        TelemetryCorrelationUtils.resolveCorrelation(request, requestTelemetry);
+        TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
         String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //validate we have generated proper ID's

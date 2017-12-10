@@ -26,6 +26,7 @@ import org.eclipse.jetty.http.HttpMethods;
 import org.junit.*;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -49,7 +50,6 @@ import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProf
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -106,7 +106,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     @Test
     public void testHttpRequestTrackedSuccessfully() throws Exception {
-        sendRequestAndGetResponseCookie(server.getPortNumber());
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber());
 
         List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
         assertEquals(1, items.size());
@@ -118,6 +118,21 @@ public class WebRequestTrackingTelemetryModuleTests {
         assertEquals("http://localhost:" + server.getPortNumber() + "/", requestTelemetry.getUrl().toString());
     }
 
+    @Test
+    public void testResponseHeaderIsSetForRequestContext() throws Exception {
+        
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("myId");
+
+        Map<String, List<String>> headers = HttpHelper.sendRequestAndGetHeaders(server.getPortNumber());
+        List<String> requestContextValues = headers.get(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME);
+        Assert.assertNotNull(requestContextValues);
+        Assert.assertTrue(requestContextValues.size() == 1);
+
+        String requestContext = requestContextValues.get(0);
+        Assert.assertEquals("appId=cid-v1:myId", requestContext);
+    }
+   
     @Test
     public void testOnBeginRequestCatchAllExceptions() {
         ServletRequest request = createFaultyServletRequestMock();
@@ -149,7 +164,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     @Test
     public void testUserAgentIsBeingSet() throws Exception {
-        sendRequestAndGetResponseCookie(server.getPortNumber());
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber());
 
         List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
         assertEquals(1, items.size());
@@ -172,13 +187,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //configure mock appId fetcher to return different appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id2");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
 
         // verify ID's are set as expected in request telemetry 
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
@@ -220,9 +236,10 @@ public class WebRequestTrackingTelemetryModuleTests {
         headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
 
         ServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //run module
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
 
         //additional telemetry is manually tracked
         TelemetryClient telemetryClient = new TelemetryClient();
@@ -253,13 +270,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //configure mock appId fetcher to return different appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id2");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
         defaultModule.onEndRequest(request, null);
 
         //validate source
@@ -278,13 +296,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //configure mock appId fetcher to return the same appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id1");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
         defaultModule.onEndRequest(request, null);
 
         //validate source
@@ -303,13 +322,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue(null, "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //configure mock appId fetcher to return different appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id2");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
         defaultModule.onEndRequest(request, null);
 
         //validate source
@@ -328,13 +348,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //configure mock appId fetcher to return different appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id2");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
         defaultModule.onEndRequest(request, null);
 
         //validate source
@@ -353,13 +374,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //configure mock appId fetcher to return the same appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id1");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
         defaultModule.onEndRequest(request, null);
 
         //validate source
@@ -380,13 +402,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", "Front End"));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //configure mock appId fetcher to return different appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id2");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
         defaultModule.onEndRequest(request, null);
 
         //validate source
@@ -429,20 +452,28 @@ public class WebRequestTrackingTelemetryModuleTests {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //configure mock appId fetcher to return different appId from what's on the request header
         mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
 
         //run
-        defaultModule.onBeginRequest(request, null);
+        defaultModule.onBeginRequest(request, response);
         
+        //onBegin must have called fetcher
+        Assert.assertEquals(2, mockProfileFetcher.callCount());
+
         // mimic customer modifying ikey at runtime in request handler (e.g. controller)
         TelemetryConfiguration.getActive().setInstrumentationKey("myOtherIkey");
         
         // module.onEndRequest must detect change and start resolving new ikey
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
+        mockProfileFetcher.setAppIdToReturn("id3");
         defaultModule.onEndRequest(request, null);
-        Assert.assertEquals(2, mockProfileFetcher.callCount());
+        
+        //the ikey is new, which means its appId ("id3") is not in cache, so again we call the fetcher
+        Assert.assertEquals(3, mockProfileFetcher.callCount());
 
         // at this point source won't be set yet because the ikey has changed and so a new resolve task has started
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
@@ -452,28 +483,30 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetryContext context2 = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context2);
         ServletRequest request2 = ServletUtils.createServletRequestWithHeaders(headers);
-        defaultModule.onBeginRequest(request2, null);
         
-        // module.onEndRequest will attempt to retrieve new appId from task if it is completed
-        mockProfileFetcher.setAppIdToReturn("id3");
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        
+        defaultModule.onBeginRequest(request2, response);
+
+        // at this point, the new appId should be available in the cache
+        Assert.assertEquals(4, mockProfileFetcher.callCount());
+        
         defaultModule.onEndRequest(request, null);
-        Assert.assertEquals(3, mockProfileFetcher.callCount());
+        Assert.assertEquals(4, mockProfileFetcher.callCount());
+
         RequestTelemetry requestTelemetry2 = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals("cid-v1:id1", requestTelemetry2.getSource());
 
-
-        // at this point, the new appId should be available in the cache, so if another request
-        // comes in, it should retrieve it from cache
+        // if another request comes in, it should retrieve appId from cache
         RequestTelemetryContext context3 = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context3);
         ServletRequest request3 = ServletUtils.createServletRequestWithHeaders(headers);
-        defaultModule.onBeginRequest(request3, null);
+        defaultModule.onBeginRequest(request3, response);
+        Assert.assertEquals(4, mockProfileFetcher.callCount());
         
         // module.onEndRequest will attempt to retrieve new appId from task if it is completed
-        mockProfileFetcher.setAppIdToReturn("id3");
         defaultModule.onEndRequest(request, null);
-        Assert.assertEquals(3, mockProfileFetcher.callCount());
+        Assert.assertEquals(4, mockProfileFetcher.callCount());
         RequestTelemetry requestTelemetry3 = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals("cid-v1:id1", requestTelemetry3.getSource());
     }

@@ -21,21 +21,13 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Class responsible to store the correlation context information.
  */
 public class CorrelationContext {
-
-    /**
-     * Stores the contents of Correlation-Context headers found in the incoming request.
-     */
-    private final List<String> incomingHeaderValues;
-
 
     /**
      * Stores the correlation context as mappings.
@@ -48,7 +40,6 @@ public class CorrelationContext {
     private final StringBuilder contextAsString;
 
     public CorrelationContext() {
-        this.incomingHeaderValues = new ArrayList<String>();
         this.mappings = new HashMap<String, String>();
         this.contextAsString = new StringBuilder();
     }
