@@ -18,6 +18,8 @@
 - Fixed issue #436 (TraceTelemetry with Severity is not shown in UI). This fixes a regression issue with `TelemetryClient.trackTrace` and `TelemetryClient.trackException`.
 - Introducing support for [cross-component correlation](https://docs.microsoft.com/en-us/azure/application-insights/application-insights-correlation). Addresses issue [#457](https://github.com/Microsoft/ApplicationInsights-Java/issues/457). 
 - Changed signature of com.microsoft.applicationinsights.internal.agent.CoreAgentNotificationHandler.httpMethodFinished. It now includes correlation information.
+- Compilation now targets Java 1.7. Java 1.6 is no longer supported.
+- Adding system property `applicationinsights.configurationDirectory` to allow to explicitly set directory containing the config file.
 
 ## Version 1.0.10
 - `track()` method of 'com.microsoft.applicationinsights.TelemetryClient' is now modified. No longer performing pre-sanitization

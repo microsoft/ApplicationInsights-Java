@@ -19,12 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
-if (System.env."windir" != null) {
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+if (Os.isFamily(Os.FAMILY_WINDOWS)) {
     apply from: "native.gradle"
 } else {
     logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
@@ -36,14 +39,14 @@ archivesBaseName = 'applicationinsights-core'
 
 dependencies {
     provided (project(':agent')) { transitive = false }
-    compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.4'])
-    compile ([group: 'commons-io', name: 'commons-io', version: '2.4' ])
-    compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.1']) 
+    compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
+    compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])
+    compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
     compile ([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'])
-    compile ([group: 'com.google.guava', name: 'guava', version: '12.0.1'])
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
-    testCompile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
+    compile ([group: 'com.google.guava', name: 'guava', version: '20.0'])
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+    testCompile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
 }
 
 shadowJar {

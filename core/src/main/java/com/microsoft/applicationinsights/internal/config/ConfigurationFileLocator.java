@@ -41,6 +41,10 @@ import com.google.common.base.Strings;
  * Created by gupele on 5/25/2015.
  */
 public final class ConfigurationFileLocator {
+
+    /** name of property containing path to directory with configuration file */
+    public static final String CONFIG_DIR_PROPERTY = "applicationinsights.configurationDirectory";
+
     private final String configurationFileName;
 
     public ConfigurationFileLocator(String configurationFileName) {
@@ -49,22 +53,34 @@ public final class ConfigurationFileLocator {
     }
 
     public InputStream getConfigurationFile() {
-        InputStream inputStream = ConfigurationFileLocator.class.getClassLoader().getResourceAsStream(configurationFileName);
-        if (inputStream != null) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Configuration file has been successfully found as resource");
-            return inputStream;
-        }
 
-        // Trying to load configuration as a resource.
-        String configurationFile = getConfigurationFromCurrentClassLoader();
+        String configurationFile;
+        InputStream inputStream;
 
-        // If not found as a resource, trying to load from the executing jar directory
-        if (configurationFile == null) {
-            configurationFile = getConfigurationFromLibraryLocation();
+        // first try to get from dir defined explicitly in system property insights.configurationFile
+        String configDirFromProperty = System.getProperty(CONFIG_DIR_PROPERTY);
+        if (configDirFromProperty != null) {
+            configurationFile = getConfigurationAbsolutePath(configDirFromProperty);
+        } else {
 
-            // If still not found try to get it from the class path
+            inputStream = ConfigurationFileLocator.class.getClassLoader().getResourceAsStream(configurationFileName);
+            if (inputStream != null) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO,
+                                                  "Configuration file has been successfully found as resource");
+                return inputStream;
+            }
+
+            // Trying to load configuration as a resource.
+            configurationFile = getConfigurationFromCurrentClassLoader();
+
+            // If not found as a resource, trying to load from the executing jar directory
             if (configurationFile == null) {
-                configurationFile = getConfFromClassPath();
+                configurationFile = getConfigurationFromLibraryLocation();
+
+                // If still not found try to get it from the class path
+                if (configurationFile == null) {
+                    configurationFile = getConfFromClassPath();
+                }
             }
         }
 
