@@ -212,7 +212,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             telemetryBuffer.add(asJson);
             telemetry.reset();
             if (itemsSent.incrementAndGet() % 10000 == 0) {
-                InternalLogger.INSTANCE.info("items sent till now " + itemsSent.get());
+                InternalLogger.INSTANCE.info("items sent till now %d", itemsSent.get());
             }
 
         } catch (IOException e) {
