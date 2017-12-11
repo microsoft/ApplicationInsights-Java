@@ -67,57 +67,6 @@ public final class OkHttpMethodVisitor extends AbstractHttpMethodVisitor {
         mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URL", "toString", "()Ljava/lang/String;", false);
         mv.visitVarInsn(ASTORE, stringLocalIndex);
 
-        // generate child ID
-        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyId", "()Ljava/lang/String;", false);
-        int childIdLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, childIdLocal);
-
-        // retrieve correlation context
-        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveCorrelationContext", "()Ljava/lang/String;", false);
-        int correlationContextLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, correlationContextLocal);
-        
-        // retrieve request context
-        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveApplicationCorrelationId", "()Ljava/lang/String;", false);
-        int appCorrelationId = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, appCorrelationId);
-
-        // this.originalRequest
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, "com/squareup/okhttp/Call", fieldName, "Lcom/squareup/okhttp/Request;");
-
-        // get a new request builder
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/squareup/okhttp/Request", "newBuilder", "()Lcom/squareup/okhttp/Request$Builder;", false);
-        int reqBuilderLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, reqBuilderLocal);
-
-        // add headers
-        mv.visitVarInsn(ALOAD, reqBuilderLocal);
-        mv.visitLdcInsn("Request-Id");
-        mv.visitVarInsn(ALOAD, childIdLocal);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/squareup/okhttp/Request$Builder", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/okhttp/Request$Builder;", false);
-
-        mv.visitVarInsn(ALOAD, reqBuilderLocal);
-        mv.visitLdcInsn("Correlation-Context");
-        mv.visitVarInsn(ALOAD, correlationContextLocal);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/squareup/okhttp/Request$Builder", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/okhttp/Request$Builder;", false);
-
-        mv.visitVarInsn(ALOAD, reqBuilderLocal);
-        mv.visitLdcInsn("Request-Context");
-        mv.visitVarInsn(ALOAD, appCorrelationId);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/squareup/okhttp/Request$Builder", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/okhttp/Request$Builder;", false);
-
-        // build new request
-        mv.visitVarInsn(ALOAD, reqBuilderLocal);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/squareup/okhttp/Request$Builder", "build", "()Lcom/squareup/okhttp/Request;", false);
-        int newRequestLocal = this.newLocal(Type.getType(Object.class)); 
-        mv.visitVarInsn(ASTORE, newRequestLocal);
-
-        // re-assign original request to new one
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, newRequestLocal);
-        mv.visitFieldInsn(PUTFIELD, "com/squareup/okhttp/Call", fieldName, "Lcom/squareup/okhttp/Request;");
-
         super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
 
         mv.visitLdcInsn(getMethodName());
