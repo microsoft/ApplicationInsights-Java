@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Version 1.0.11
+## Version 2.0.0-BETA
 - Updating various dependencies to latest version
 - Introducing public class CustomClassWriter in Agent to enable finding common super classes used for Agent instrumentation without loading it
 - Introducing Parametrized constructor in WebRequestTrackingFilter to ensure name binding
