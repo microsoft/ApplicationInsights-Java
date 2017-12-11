@@ -46,22 +46,22 @@ import com.google.common.base.Preconditions;
 
 /**
  * An implementation of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
- *
+ * <p>
  * The channel holds two main entities:
- *
+ * <p>
  * A buffer for incoming {@link com.microsoft.applicationinsights.telemetry.Telemetry} instances
  * A transmitter
- *
+ * <p>
  * The buffer is stores incoming telemetry instances. Every new buffer starts a timer.
  * When the timer expires, or when the buffer is 'full' (whichever happens first), the
  * transmitter will pick up that buffer and will handle its sending to the server. For example,
  * a transmitter will be responsible for compressing, sending and activate a policy in case of failures.
- *
+ * <p>
  * The model here is:
- *
+ * <p>
  * Use application threads to populate the buffer
  * Use channel's threads to send buffers to the server
- *
+ * <p>
  * Created by gupele on 12/17/2014.
  */
 public final class InProcessTelemetryChannel implements TelemetryChannel {
@@ -114,25 +114,27 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     /**
      * Ctor
-     * @param endpointAddress Must be empty string or a valid uri, else an exception will be thrown
-     * @param developerMode True will behave in a 'non-production' mode to ease the debugging
+     *
+     * @param endpointAddress            Must be empty string or a valid uri, else an exception will be thrown
+     * @param developerMode              True will behave in a 'non-production' mode to ease the debugging
      * @param maxTelemetryBufferCapacity Max number of Telemetries we keep in the buffer, when reached we will send the buffer
-     *                          Note, value should be between TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS and TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS inclusive
-     * @param sendIntervalInMillis The maximum number of milliseconds to wait before we send the buffer
-     *                          Note, value should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
+     *                                   Note, value should be between TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS and TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS inclusive
+     * @param sendIntervalInMillis       The maximum number of milliseconds to wait before we send the buffer
+     *                                   Note, value should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
      */
     public InProcessTelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
         initialize(endpointAddress,
-                   null,
-                   developerMode,
-                   createDefaultMaxTelemetryBufferCapacityEnforcer(maxTelemetryBufferCapacity),
-                   createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis),
-                   true);
+                null,
+                developerMode,
+                createDefaultMaxTelemetryBufferCapacityEnforcer(maxTelemetryBufferCapacity),
+                createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis),
+                true);
     }
 
     /**
      * This Ctor will query the 'namesAndValues' map for data to initialize itself
      * It will ignore data that is not of its interest, this Ctor is useful for building an instance from configuration
+     *
      * @param namesAndValues - The data passed as name and value pairs
      */
     public InProcessTelemetryChannel(Map<String, String> namesAndValues) {
@@ -161,7 +163,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     }
 
     /**
-     *  Gets value indicating whether this channel is in developer mode.
+     * Gets value indicating whether this channel is in developer mode.
      */
     @Override
     public boolean isDeveloperMode() {
@@ -170,6 +172,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     /**
      * Sets value indicating whether this channel is in developer mode.
+     *
      * @param developerMode True or false
      */
     @Override
@@ -183,7 +186,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     }
 
     /**
-     *  Sends a Telemetry instance through the channel.
+     * Sends a Telemetry instance through the channel.
      */
     @Override
     public void send(Telemetry telemetry) {
@@ -208,8 +211,10 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             String asJson = writer.toString();
             telemetryBuffer.add(asJson);
             telemetry.reset();
-            if (itemsSent.incrementAndGet() % 10000 == 0)
+            if (itemsSent.incrementAndGet() % 10000 == 0) {
                 InternalLogger.INSTANCE.info("items sent till now " + itemsSent.get());
+            }
+
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
             return;
@@ -249,6 +254,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     /**
      * Sets an optional Sampler that can sample out telemetries
      * Currently, we don't allow to replace a valid telemtry sampler.
+     *
      * @param telemetrySampler - The sampler
      */
     @Override
@@ -260,6 +266,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     /**
      * Sets the buffer size
+     *
      * @param maxTelemetriesInBatch should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY
      *                              and MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
      *                              if the number is lower than the minimum then the minimum will be used
@@ -271,6 +278,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     /**
      * Sets the time tow wait before flushing the internal buffer
+     *
      * @param transmitBufferTimeoutInSeconds should be between MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS
      *                                       and MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS inclusive
      *                                       if the number is lower than the minimum then the minimum will be used
@@ -305,6 +313,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     /**
      * The method will throw IllegalArgumentException if the endpointAddress is not a valid uri
      * Please note that a null or empty string is valid as far as the class is concerned and thus considered valid
+     *
      * @param endpointAddress
      */
     private void makeSureEndpointAddressIsValid(String endpointAddress) {

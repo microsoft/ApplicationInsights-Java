@@ -173,11 +173,11 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
             return true;
         } catch (Exception e) {
             semaphore.release();
-            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed ", telemetriesFetcher.fetch().size());
+            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetriesFetcher.fetch().size());
             e.printStackTrace();
         } catch (Throwable t) {
             semaphore.release();
-            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed ", telemetriesFetcher.fetch().size());
+            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetriesFetcher.fetch().size());
             t.printStackTrace();
         }
 
@@ -200,7 +200,11 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
                         semaphore.release();
                         command.run();
                     } catch (Exception e) {
+                        InternalLogger.INSTANCE.error("exception in runnable sendNow()");
+                        e.printStackTrace();
                     } catch (Throwable t) {
+                        InternalLogger.INSTANCE.error("exception while executing thread in sendNow()");
+                        t.printStackTrace();
                     } finally {
                     }
                 }
@@ -209,11 +213,11 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
             return true;
         } catch (Exception e) {
             semaphore.release();
-            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed ", telemetries.size());
+            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetries.size());
             e.printStackTrace();
         } catch (Throwable t) {
             semaphore.release();
-            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed ", telemetries.size());
+            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetries.size());
             t.printStackTrace();
         }
 
