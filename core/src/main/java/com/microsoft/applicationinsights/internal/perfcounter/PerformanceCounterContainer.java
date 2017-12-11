@@ -224,6 +224,8 @@ public enum PerformanceCounterContainer implements Stoppable {
                             try {
                                 plugin.preCollection();
                             } catch (Throwable t) {
+                                InternalLogger.INSTANCE.error("Error in thread scheduled for PerformanceCounterContainer");
+                                t.printStackTrace();
                             }
                         }
 
@@ -239,6 +241,8 @@ public enum PerformanceCounterContainer implements Stoppable {
                             try {
                                 plugin.postCollection();
                             } catch (Throwable t) {
+                                InternalLogger.INSTANCE.error("Error while executing post collection");
+                                t.printStackTrace();
                             }
                         }
                     }

@@ -110,6 +110,8 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                         setDisplayName(category + " " + counter);
                 pcs.put(key, data);
             } catch (Throwable e) {
+                InternalLogger.INSTANCE.error("Exception while registering windows performance counter as PC");
+                e.printStackTrace();
             }
         }
     }

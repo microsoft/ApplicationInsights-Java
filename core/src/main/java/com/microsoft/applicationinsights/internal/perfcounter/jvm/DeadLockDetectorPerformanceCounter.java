@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import static java.lang.Math.min;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
@@ -119,6 +120,8 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
                 }
             }
         } catch (Throwable t) {
+            InternalLogger.INSTANCE.error("Error while setting the Thread Info");
+            t.printStackTrace();
         }
         sb.append(SEPERATOR);
     }

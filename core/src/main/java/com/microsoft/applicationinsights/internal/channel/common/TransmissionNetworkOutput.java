@@ -21,11 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
+import org.apache.http.entity.ByteArrayEntity;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
@@ -34,22 +46,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-
-import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.entity.ByteArrayEntity;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 /**
  * The class is responsible for the actual sending of {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
@@ -185,6 +181,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 httpClient.dispose(response);
                 // backoff before trying again
                 if (shouldBackoff) {
+                    InternalLogger.INSTANCE.trace("Backing off for 300 seconds");
                     transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
                 }
             }

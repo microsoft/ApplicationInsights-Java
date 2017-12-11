@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 import com.google.common.base.Optional;
@@ -172,8 +173,12 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
             return true;
         } catch (Exception e) {
             semaphore.release();
+            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed ", telemetriesFetcher.fetch().size());
+            e.printStackTrace();
         } catch (Throwable t) {
             semaphore.release();
+            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed ", telemetriesFetcher.fetch().size());
+            t.printStackTrace();
         }
 
         return true;
@@ -204,8 +209,12 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
             return true;
         } catch (Exception e) {
             semaphore.release();
+            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed ", telemetries.size());
+            e.printStackTrace();
         } catch (Throwable t) {
             semaphore.release();
+            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed ", telemetries.size());
+            t.printStackTrace();
         }
 
         return false;

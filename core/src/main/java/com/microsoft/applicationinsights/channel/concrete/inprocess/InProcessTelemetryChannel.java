@@ -102,6 +102,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             }
         } catch (Throwable t) {
             developerMode = false;
+            InternalLogger.INSTANCE.error("DEVELOPER_MODE_SYSTEM_PROPERTY_NAME is either null or empty");
         }
         initialize(null,
                 null,
@@ -232,6 +233,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             telemetriesTransmitter.stop(timeout, timeUnit);
             stopped = true;
         } catch (Throwable t) {
+            InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
+            t.printStackTrace();
         }
     }
 

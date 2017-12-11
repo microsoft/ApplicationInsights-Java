@@ -27,6 +27,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
+
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 
 import static org.mockito.Mockito.mock;
@@ -48,6 +50,7 @@ public class ServletUtils {
             field.set(filter, container);
         } catch (Exception e) {
             container = null;
+            e.printStackTrace();
         }
 
         return container;
@@ -60,7 +63,11 @@ public class ServletUtils {
             Field field = getFilterWebModulesContainersField(filter);
             container = (WebModulesContainer)field.get(filter);
         } catch (NoSuchFieldException e) {
+            InternalLogger.INSTANCE.error("NoSuchFieldException while executing getWebModuleContainer");
+            e.printStackTrace();
         } catch (IllegalAccessException e) {
+            InternalLogger.INSTANCE.error("IllegalAccessException generated while accessing getModuleWebContainer");
+            e.printStackTrace();
         }
 
         return container;

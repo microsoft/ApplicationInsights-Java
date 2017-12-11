@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 
 /**
@@ -83,6 +84,8 @@ public final class GitBuildInfoContextInitializer implements ContextInitializer 
             hasBuildData = true;
         } catch (Throwable t) {
             hasBuildData = false;
+            InternalLogger.INSTANCE.error("Error while initializaing GitBuildInfoContextInitializer");
+            t.printStackTrace();
         }
     }
 

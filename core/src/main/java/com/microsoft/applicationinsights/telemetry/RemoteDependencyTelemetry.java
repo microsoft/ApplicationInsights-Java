@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -205,6 +206,8 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
             try {
                 result = Enum.valueOf(DependencyKind.class, type);
             } catch (Throwable t) {
+                InternalLogger.INSTANCE.error("Exception while getting dependency kind: Type is empty");
+                t.printStackTrace();
             }
         }
         return result;

@@ -59,6 +59,8 @@ public class DockerContextPoller extends Thread {
 
                     continue;
                 } catch (InterruptedException e) {
+                    InternalLogger.INSTANCE.error("Error while executing docker context poller");
+                    e.printStackTrace();
                 }
             }
         }

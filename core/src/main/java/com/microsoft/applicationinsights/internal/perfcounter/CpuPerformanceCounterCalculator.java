@@ -70,6 +70,8 @@ public final class CpuPerformanceCounterCalculator {
             prevProcessCpuTime = processCpuTime;
         } catch (Exception e) {
             processCpuUsage = Constants.DEFAULT_DOUBLE_VALUE;
+            InternalLogger.INSTANCE.error("Error in getProcessCPUUsage");
+            e.printStackTrace();
         }
 
         return processCpuUsage;
