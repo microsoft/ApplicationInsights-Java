@@ -16,6 +16,8 @@
 - Introducing Telemetry Processor 'com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor'
 - Introducing FixedRate Sampling v2 Using Telemetry Processors
 - Fixed issue #436 (TraceTelemetry with Severity is not shown in UI). This fixes a regression issue with `TelemetryClient.trackTrace` and `TelemetryClient.trackException`.
+- Introducing support for [cross-component correlation](https://docs.microsoft.com/en-us/azure/application-insights/application-insights-correlation). Addresses issue [#457](https://github.com/Microsoft/ApplicationInsights-Java/issues/457). 
+- Changed signature of com.microsoft.applicationinsights.internal.agent.CoreAgentNotificationHandler.httpMethodFinished. It now includes correlation information.
 - Compilation now targets Java 1.7. Java 1.6 is no longer supported.
 - Adding system property `applicationinsights.configurationDirectory` to allow to explicitly set directory containing the config file.
 
