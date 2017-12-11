@@ -33,6 +33,7 @@ dependencies {
     compile (project(':core')) { transitive = false }
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
     compile ([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'])
+    compile ([group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.3'])
     provided 'com.opensymphony:xwork:2.0.4' // Struts 2
     provided 'org.springframework:spring-webmvc:3.1.0.RELEASE'
     provided group: 'javax.servlet', name: 'servlet-api', version: '2.5'

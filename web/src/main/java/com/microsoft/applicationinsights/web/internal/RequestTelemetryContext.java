@@ -21,11 +21,13 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.http.HttpServletRequest;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
+import com.microsoft.applicationinsights.web.internal.correlation.CorrelationContext;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -37,6 +39,8 @@ public class RequestTelemetryContext {
     private UserCookie userCookie;
     private boolean isNewSession = false;
     private HttpServletRequest servletRequest;
+    private final CorrelationContext correlationContext;
+    private final AtomicInteger currentChildId = new AtomicInteger();
 
     /**
      * Constructs new RequestTelemetryContext object.
@@ -55,6 +59,15 @@ public class RequestTelemetryContext {
         requestTelemetry = new RequestTelemetry();
         requestStartTimeTicks = ticks;
         this.servletRequest = servletRequest;
+        correlationContext = new CorrelationContext();
+    }
+
+    /**
+     * Gets the correlation context associated with the request
+     * @return The correlation context map.
+     */
+    public CorrelationContext getCorrelationContext() {
+        return correlationContext;
     }
 
     /**
@@ -124,4 +137,11 @@ public class RequestTelemetryContext {
     public HttpServletRequest getHttpServletRequest() {
         return servletRequest;
     }
+
+	/**
+	 * @return the currentChildId
+	 */
+	public int incrementChildId() {
+		return this.currentChildId.addAndGet(1);
+	}
 }
