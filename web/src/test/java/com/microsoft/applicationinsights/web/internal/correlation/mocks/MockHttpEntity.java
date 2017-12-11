@@ -19,36 +19,66 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
-}
+package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
-apply from: "$buildScriptsDir/common-java.gradle"
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 
-shadowJar {
-    classifier = ''
-    relocate 'org.objectweb.asm', 'com.microsoft.applicationinsights.agent.dependencies.asm'
-}
-archivesBaseName = 'applicationinsights-agent'
+public class MockHttpEntity implements HttpEntity {
 
-jar {
-    dependsOn shadowJar
-    enabled = false
-    manifest {
-        attributes("Agent-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                   "Premain-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                    "Can-Redefine-Classes": "true",
-                    "Can-Retransform-Classes": "true",
-                    "agent-sdk-version":project.version
-        )
+    private String content;
+
+    public void setContent(String content) {
+        this.content = content;
     }
-}
 
-dependencies {
-    compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.2'
-    compile group: 'org.ow2.asm', name: 'asm-all', version: '5.2'
-    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-}
+	@Override
+	public boolean isRepeatable() {
+		return false;
+	}
 
+	@Override
+	public boolean isChunked() {
+		return false;
+	}
+
+	@Override
+	public long getContentLength() {
+		return 0;
+	}
+
+	@Override
+	public Header getContentType() {
+		return null;
+	}
+
+	@Override
+	public Header getContentEncoding() {
+		return null;
+	}
+
+	@Override
+	public InputStream getContent() throws IOException, UnsupportedOperationException {
+        return new ByteArrayInputStream( this.content.getBytes() );
+	}
+
+	@Override
+	public void writeTo(OutputStream outstream) throws IOException {
+		
+	}
+
+	@Override
+	public boolean isStreaming() {
+		return false;
+	}
+
+	@Override
+	public void consumeContent() throws IOException {
+		
+	}
+
+}

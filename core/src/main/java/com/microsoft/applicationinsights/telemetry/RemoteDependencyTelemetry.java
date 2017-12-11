@@ -83,6 +83,21 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     /**
+     * Gets the dependency Id.
+     */
+    public String getId() {
+        return this.data.getId();
+    }
+    
+    /**
+     * Sets the dependency Id.
+     * @param value The value for the Id.
+     */
+    public void setId(String value) {
+        this.data.setId(value);
+    }
+
+    /**
      * Gets tne dependency name.
      * @return The dependency name.
      */
@@ -237,6 +252,21 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      */
     public void setType(String value) {
         data.setType(value);
+    }
+
+    /**
+     * Gets the target of this dependency.
+     */
+    public String getTarget() {
+        return data.getTarget();
+    }
+
+    /**
+     * Sets the target of this dependency.
+     * @param value The value for the Target property.
+     */
+    public void setTarget(String value) {
+        data.setTarget(value);
     }
 
     public void setResultCode(String value) {

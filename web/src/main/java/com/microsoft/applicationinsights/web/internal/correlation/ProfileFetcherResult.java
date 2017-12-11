@@ -19,36 +19,22 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
-}
+package com.microsoft.applicationinsights.web.internal.correlation;
 
-apply from: "$buildScriptsDir/common-java.gradle"
+public class ProfileFetcherResult {
+    private final String appId;
+    private final ProfileFetcherResultTaskStatus taskStatus; 
 
-shadowJar {
-    classifier = ''
-    relocate 'org.objectweb.asm', 'com.microsoft.applicationinsights.agent.dependencies.asm'
-}
-archivesBaseName = 'applicationinsights-agent'
+    public ProfileFetcherResult(String appId, ProfileFetcherResultTaskStatus taskStatus) {
+        this.appId = appId;
+        this.taskStatus = taskStatus;
+    }
 
-jar {
-    dependsOn shadowJar
-    enabled = false
-    manifest {
-        attributes("Agent-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                   "Premain-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                    "Can-Redefine-Classes": "true",
-                    "Can-Retransform-Classes": "true",
-                    "agent-sdk-version":project.version
-        )
+    public String getAppId() {
+        return this.appId;
+    }
+
+    public ProfileFetcherResultTaskStatus getStatus() {
+        return this.taskStatus;
     }
 }
-
-dependencies {
-    compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.2'
-    compile group: 'org.ow2.asm', name: 'asm-all', version: '5.2'
-    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-}
-

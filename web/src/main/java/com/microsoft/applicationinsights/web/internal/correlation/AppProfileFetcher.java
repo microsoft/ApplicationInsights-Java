@@ -19,36 +19,25 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
-}
+package com.microsoft.applicationinsights.web.internal.correlation;
 
-apply from: "$buildScriptsDir/common-java.gradle"
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import org.apache.http.ParseException;
 
-shadowJar {
-    classifier = ''
-    relocate 'org.objectweb.asm', 'com.microsoft.applicationinsights.agent.dependencies.asm'
-}
-archivesBaseName = 'applicationinsights-agent'
-
-jar {
-    dependsOn shadowJar
-    enabled = false
-    manifest {
-        attributes("Agent-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                   "Premain-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                    "Can-Redefine-Classes": "true",
-                    "Can-Retransform-Classes": "true",
-                    "agent-sdk-version":project.version
-        )
-    }
-}
-
-dependencies {
-    compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.2'
-    compile group: 'org.ow2.asm', name: 'asm-all', version: '5.2'
-    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-}
-
+/**
+ * Retrieves the application profile from storage
+ */
+ public interface AppProfileFetcher {
+     /**
+      * Fetches the application profile and returns the appId corresponding to the
+      * instrumentation key provided.
+      * @param instrumentationKey The instrumentation key for which to fetch the appId.
+      * @throws ExecutionException
+      * @throws InterruptedException
+      * @throws JSONException
+      * @throws IOException
+      * @throws ParseException
+      */
+      ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException;
+ }

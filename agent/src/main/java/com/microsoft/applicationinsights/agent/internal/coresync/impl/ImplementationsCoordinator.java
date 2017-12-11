@@ -86,11 +86,11 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     @Override
-    public void httpMethodFinished(String identifier, String method, String uri, int result, long delta) {
+    public void httpMethodFinished(String identifier, String method, String correlationId, String uri, String target, int result, long delta) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
             if (implementation != null) {
-                implementation.httpMethodFinished(identifier, method, uri, result, delta);
+                implementation.httpMethodFinished(identifier, method, correlationId, uri, target, result, delta);
             }
         } catch (Throwable t) {
         }

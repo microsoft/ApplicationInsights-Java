@@ -19,36 +19,40 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
-}
+package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
-apply from: "$buildScriptsDir/common-java.gradle"
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
 
-shadowJar {
-    classifier = ''
-    relocate 'org.objectweb.asm', 'com.microsoft.applicationinsights.agent.dependencies.asm'
-}
-archivesBaseName = 'applicationinsights-agent'
+public class MockStatusLine implements StatusLine {
 
-jar {
-    dependsOn shadowJar
-    enabled = false
-    manifest {
-        attributes("Agent-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                   "Premain-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                    "Can-Redefine-Classes": "true",
-                    "Can-Retransform-Classes": "true",
-                    "agent-sdk-version":project.version
-        )
+    private final ProtocolVersion version;
+    private final String reasonPhrase;
+    private int statusCode;
+
+    public MockStatusLine(final ProtocolVersion protocolVersion, final int status, final String phrase) {
+        this.version = protocolVersion;
+        this.statusCode = status;
+        this.reasonPhrase = phrase;
     }
-}
 
-dependencies {
-    compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.2'
-    compile group: 'org.ow2.asm', name: 'asm-all', version: '5.2'
-    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-}
+	@Override
+	public ProtocolVersion getProtocolVersion() {
+		return this.version;
+	}
 
+	@Override
+	public int getStatusCode() {
+		return this.statusCode;
+    }
+    
+    public void setStatusCode(int code) {
+        this.statusCode = code;
+    }
+
+	@Override
+	public String getReasonPhrase() {
+		return this.reasonPhrase;
+	}
+
+}
