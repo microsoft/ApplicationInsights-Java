@@ -70,7 +70,9 @@ public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerB
         // add correlation context to properties
         Map<String, String> correlationContextMap = telemetryContext.getCorrelationContext().getMappings();
         for (String key : correlationContextMap.keySet()) {
-            telemetry.getProperties().putIfAbsent(key, correlationContextMap.get(key));
+            if (telemetry.getProperties().get(key) == null) {
+                telemetry.getProperties().put(key, correlationContextMap.get(key));
+            }
         }
     }
 }

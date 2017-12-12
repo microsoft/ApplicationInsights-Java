@@ -22,8 +22,10 @@
 package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
 import org.apache.http.nio.client.HttpAsyncClient;
+import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.concurrent.FutureCallback;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
@@ -45,7 +47,7 @@ public class MockHttpAsyncClientWrapper {
 
         this.mockClient = mock(HttpAsyncClient.class);
         
-        when(mockClient.execute(any(HttpUriRequest.class), any())).thenReturn(this.task);
+        when(mockClient.execute(any(HttpUriRequest.class), any(FutureCallback.class))).thenReturn(this.task);
     }
 
     public void setAppId(String appId) {
