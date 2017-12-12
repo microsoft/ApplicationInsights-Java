@@ -82,7 +82,7 @@ public class ServletUtils {
         return createServletRequestWithHeaders(headers, 0);
     }
 
-    public static HttpServletRequest createServletRequestWithHeaders(Map<String, String> headers, int correlationContextHeaderCount) {
+    public static HttpServletRequest createServletRequestWithHeaders(Map<String, String> headers, final int correlationContextHeaderCount) {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         for (String headerName : headers.keySet()) {
