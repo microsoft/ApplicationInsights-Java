@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.channel.samplingV2;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -11,6 +10,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This processor is used to Perform Sampling on User specified sampling rate
@@ -99,9 +100,9 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
 
     private void setIncludedOrExcludedTypes(String value, Set<Class> typeSet) {
 
-        if (!StringUtils.isNullOrEmpty(value)) {
+        if (!StringUtils.isEmpty(value)) {
             value = value.trim();
-            if (!StringUtils.isNullOrEmpty(value) && allowedTypes.containsKey(value)) {
+            if (!StringUtils.isEmpty(value) && allowedTypes.containsKey(value)) {
                 typeSet.add(allowedTypes.get(value));
             } else {
                 InternalLogger.INSTANCE.error("Item is either not allowed to sample or is empty");
