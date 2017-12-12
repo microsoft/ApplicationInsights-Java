@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
 import org.apache.http.nio.client.HttpAsyncClient;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.concurrent.FutureCallback;
 
