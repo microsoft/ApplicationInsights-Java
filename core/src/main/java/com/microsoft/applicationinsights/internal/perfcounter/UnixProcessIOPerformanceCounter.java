@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class knows how to supply the io usage of the current process under the Unix OS.
@@ -98,12 +99,14 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;
             logError("Error while parsing file: '%s'", getId(), e.getMessage());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
                     logError("Error while closing file : '%s'", e.getMessage());
+                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 }
             }
         }

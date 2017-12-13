@@ -21,6 +21,11 @@
 
 package com.microsoft.applicationinsights.web.utils;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -29,8 +34,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.Enumeration;
 import java.util.Map;
-import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
-import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,6 +55,7 @@ public class ServletUtils {
             field.set(filter, container);
         } catch (Exception e) {
             container = null;
+            e.printStackTrace();
         }
 
         return container;
@@ -64,7 +68,11 @@ public class ServletUtils {
             Field field = getFilterWebModulesContainersField(filter);
             container = (WebModulesContainer)field.get(filter);
         } catch (NoSuchFieldException e) {
+            InternalLogger.INSTANCE.error("NoSuchFieldException while executing getWebModuleContainer");
+            InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
         } catch (IllegalAccessException e) {
+            InternalLogger.INSTANCE.error("IllegalAccessException generated while accessing getModuleWebContainer");
+            InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
         }
 
         return container;

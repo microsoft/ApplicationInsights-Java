@@ -26,6 +26,8 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,6 +99,7 @@ public class TelemetryCorrelationUtils {
 		}
 		catch(Exception ex) {
 			InternalLogger.INSTANCE.error("Failed to resolve correlation. Exception information: " + ex);
+			InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
 		}
 	}
 
@@ -123,6 +126,7 @@ public class TelemetryCorrelationUtils {
 		}
 		catch (Exception ex) {
 			InternalLogger.INSTANCE.error("Failed to generate child ID. Exception information: " + ex);
+			InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
 		}
 
 		return null;
@@ -223,6 +227,7 @@ public class TelemetryCorrelationUtils {
 		}
 		catch(Exception ex) {
 			InternalLogger.INSTANCE.error("Failed to resolve request source. Exception information: " + ex);
+			InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
 		}
 	}
 

@@ -21,18 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.OperatingSystemMXBean;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.RuntimeMXBean;
 
 
 /**
@@ -48,7 +44,7 @@ public final class CpuPerformanceCounterCalculator {
     public CpuPerformanceCounterCalculator() {
         OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
         numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
-        
+
     }
 
     public double getProcessCpuUsage() {
@@ -70,6 +66,8 @@ public final class CpuPerformanceCounterCalculator {
             prevProcessCpuTime = processCpuTime;
         } catch (Exception e) {
             processCpuUsage = Constants.DEFAULT_DOUBLE_VALUE;
+            InternalLogger.INSTANCE.error("Error in getProcessCPUUsage");
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
         return processCpuUsage;
@@ -80,6 +78,6 @@ public final class CpuPerformanceCounterCalculator {
         if (osBean == null) {
             osBean = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
         }
-        return (Long)bsvr.getAttribute(osBean, "ProcessCpuTime");
+        return (Long) bsvr.getAttribute(osBean, "ProcessCpuTime");
     }
 }

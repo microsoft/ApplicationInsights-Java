@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Built-in Windows performance counters that are sent as {@link com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry}
@@ -78,6 +79,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                 }
             } catch (Throwable e) {
                 InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.getMessage());
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }
     }
@@ -110,6 +112,8 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                         setDisplayName(category + " " + counter);
                 pcs.put(key, data);
             } catch (Throwable e) {
+                InternalLogger.INSTANCE.error("Exception while registering windows performance counter as PC");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }
     }

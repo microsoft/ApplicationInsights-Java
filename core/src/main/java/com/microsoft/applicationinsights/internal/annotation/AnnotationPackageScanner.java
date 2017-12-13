@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.annotation;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import eu.infomas.annotation.AnnotationDetector;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public final class AnnotationPackageScanner {
             annotationDetector.detect(packageToScan);
         } catch (Throwable t) {
             InternalLogger.INSTANCE.error("Failed to scan packages '%s': exception: '%s'", packageToScan, t.getMessage());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
         }
 
         return performanceModuleNames;
