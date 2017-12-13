@@ -181,7 +181,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 httpClient.dispose(response);
                 // backoff before trying again
                 if (shouldBackoff) {
-                    InternalLogger.INSTANCE.trace("Backing off for 300 seconds");
+                    InternalLogger.INSTANCE.trace("Backing off for %s seconds", DEFAULT_BACKOFF_TIME_SECONDS);
                     transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
                 }
             }

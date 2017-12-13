@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.web.utils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
@@ -68,10 +69,10 @@ public class ServletUtils {
             container = (WebModulesContainer)field.get(filter);
         } catch (NoSuchFieldException e) {
             InternalLogger.INSTANCE.error("NoSuchFieldException while executing getWebModuleContainer");
-            e.printStackTrace();
+            InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
         } catch (IllegalAccessException e) {
             InternalLogger.INSTANCE.error("IllegalAccessException generated while accessing getModuleWebContainer");
-            e.printStackTrace();
+            InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
         }
 
         return container;

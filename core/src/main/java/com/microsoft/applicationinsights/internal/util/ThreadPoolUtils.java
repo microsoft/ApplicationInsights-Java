@@ -59,8 +59,6 @@ public final class ThreadPoolUtils {
         } catch (InterruptedException ie) {
             threadPool.shutdownNow();
             Thread.currentThread().interrupt();
-            InternalLogger.INSTANCE.error("Interrupted exception occured while closing the thread");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ie));
         }
     }
 }

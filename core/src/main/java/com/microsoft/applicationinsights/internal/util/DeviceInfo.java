@@ -79,8 +79,8 @@ public class DeviceInfo
             return (String)Locale.class.getMethod(languageTagMethodName).invoke(defaultLocale);
         } catch (Exception e) {
             // Just log - we'll handle it in the fallback path below
-            InternalLogger.INSTANCE.trace("Method '%s' could not be found in Locale class - moving to fallback path.", languageTagMethodName);
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.trace("Method '%s' could not be found in Locale class - moving to fallback path. Stack trace generated is %s",
+                    languageTagMethodName, ExceptionUtils.getStackTrace(e));
         }
 
         final String localeFileName = "locales.properties";
