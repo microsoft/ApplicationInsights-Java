@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Telemetry sent to Azure Application Insights about dependencies - that is, calls from
@@ -222,7 +223,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
                 result = Enum.valueOf(DependencyKind.class, type);
             } catch (Throwable t) {
                 InternalLogger.INSTANCE.error("Exception while getting dependency kind: Type is empty");
-                t.printStackTrace();
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
             }
         }
         return result;

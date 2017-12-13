@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.perfcounter;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 3/16/2015.
@@ -67,7 +68,7 @@ final class UnixProcessIOtParser {
                 return true;
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Error in parsing value of UnixProcess counter");
-                e.printStackTrace();
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }
 

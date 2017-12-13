@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.management.OperatingSystemMXBean;
 import java.net.InetAddress;
@@ -65,6 +66,7 @@ public class DeviceInfo
         catch (UnknownHostException e)
         {
             InternalLogger.INSTANCE.error("Failed to get canonical host name, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
         return null;
     }
@@ -78,6 +80,7 @@ public class DeviceInfo
         } catch (Exception e) {
             // Just log - we'll handle it in the fallback path below
             InternalLogger.INSTANCE.trace("Method '%s' could not be found in Locale class - moving to fallback path.", languageTagMethodName);
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
         final String localeFileName = "locales.properties";
@@ -86,6 +89,7 @@ public class DeviceInfo
             localesMap = PropertyHelper.getProperties(localeFileName);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Could not find locale mapping file '%s'", localeFileName);
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
         String localeString = defaultLocale.toString();

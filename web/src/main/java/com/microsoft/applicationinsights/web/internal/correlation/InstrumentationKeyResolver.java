@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public enum InstrumentationKeyResolver {
     INSTANCE;
@@ -72,6 +73,7 @@ public enum InstrumentationKeyResolver {
             return appId;
 		} catch (Exception e) {
             InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s => Exception: %s", instrumentationKey, e);
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
 		}
 
         return null;

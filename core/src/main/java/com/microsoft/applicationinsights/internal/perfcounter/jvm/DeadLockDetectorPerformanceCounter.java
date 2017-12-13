@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class uses the JVM ThreadMXBean to detect threads dead locks
@@ -121,7 +122,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             }
         } catch (Throwable t) {
             InternalLogger.INSTANCE.error("Error while setting the Thread Info");
-            t.printStackTrace();
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
         }
         sb.append(SEPERATOR);
     }

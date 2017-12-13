@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 12/22/2014.
@@ -58,6 +59,8 @@ public final class ThreadPoolUtils {
         } catch (InterruptedException ie) {
             threadPool.shutdownNow();
             Thread.currentThread().interrupt();
+            InternalLogger.INSTANCE.error("Interrupted exception occured while closing the thread");
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ie));
         }
     }
 }

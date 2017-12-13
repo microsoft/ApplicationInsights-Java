@@ -6,6 +6,7 @@ import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,6 +76,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
             }};
         } catch (ClassNotFoundException e) {
             InternalLogger.INSTANCE.trace("Unable to locate telemetry classes");
+            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -131,6 +133,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
         catch (NumberFormatException ex) {
             this.samplingPercentage = 100.0;
             InternalLogger.INSTANCE.error("Sampling rate specified in improper format, sampling rate is now set to 100.0 (default)");
+            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(ex));
         }
     }
 

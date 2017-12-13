@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.Map;
@@ -43,6 +44,7 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * An implementation of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
@@ -103,6 +105,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         } catch (Throwable t) {
             developerMode = false;
             InternalLogger.INSTANCE.error("DEVELOPER_MODE_SYSTEM_PROPERTY_NAME is either null or empty");
+            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
         }
         initialize(null,
                 null,
@@ -217,6 +220,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
+            InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
             return;
         }
 
@@ -239,7 +243,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             stopped = true;
         } catch (Throwable t) {
             InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
-            t.printStackTrace();
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
         }
     }
 

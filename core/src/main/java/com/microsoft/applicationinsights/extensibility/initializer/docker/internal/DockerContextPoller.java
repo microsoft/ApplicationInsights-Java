@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.extensibility.initializer.docker.inter
 
 import java.io.File;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by yonisha on 7/29/2015.
@@ -60,7 +61,7 @@ public class DockerContextPoller extends Thread {
                     continue;
                 } catch (InterruptedException e) {
                     InternalLogger.INSTANCE.error("Error while executing docker context poller");
-                    e.printStackTrace();
+                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 }
             }
         }
@@ -71,6 +72,7 @@ public class DockerContextPoller extends Thread {
             InternalLogger.INSTANCE.info("Docker context file has been deserialized successfully");
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Docker context file failed to be parsed with error: " + e.getMessage());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
         InternalLogger.INSTANCE.info("Docker context poller finished polling for context file.");

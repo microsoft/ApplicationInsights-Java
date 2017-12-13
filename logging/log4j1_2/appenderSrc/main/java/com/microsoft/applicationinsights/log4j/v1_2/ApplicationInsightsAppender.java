@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.log4j.v1_2.internal.ApplicationInsightsLogEvent;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class ApplicationInsightsAppender extends AppenderSkeleton {
 
@@ -72,6 +73,7 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             // TODO: Assert.Debug/warning on exception?
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
     }
 
