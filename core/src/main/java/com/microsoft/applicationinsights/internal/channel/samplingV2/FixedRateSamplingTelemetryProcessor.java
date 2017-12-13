@@ -75,8 +75,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
                 put(traceTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.TraceTelemetry"));
             }};
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.trace("Unable to locate telemetry classes");
-            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.trace("Unable to locate telemetry classes. stack trace is %s", ExceptionUtils.getStackTrace(e));
         }
     }
 

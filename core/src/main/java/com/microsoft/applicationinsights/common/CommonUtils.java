@@ -44,8 +44,7 @@ public class CommonUtils {
         }
         catch (UnknownHostException ex) {
             // optional parameter. do nothing if unresolvable
-            InternalLogger.INSTANCE.trace("Unresolvable host error");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
+            InternalLogger.INSTANCE.trace("Unresolvable host error. Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
             return null;
         }
     }
