@@ -23,7 +23,6 @@ ENV CATALINA_BASE /opt/apache-tomcat-7.0.82
 
 ADD ./deploy.sh /root/docker-stage/deploy.sh
 ADD ./tailLastLog.sh /root/docker-stage/tailLastLog.sh
-ADD ./tomcat-users.xml ${CATALINA_HOME}/conf/tomcat-users.xml
 
 EXPOSE 8080
 

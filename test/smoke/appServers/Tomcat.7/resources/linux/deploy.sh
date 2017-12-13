@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -z "$CATALINA_HOME" ]; then
 	echo "\$CATALINA_HOME not set" >&2
@@ -18,5 +18,4 @@ fi
 WARFILE=`readlink -f $1`
 BASEPATH=`basename $WARFILE .war`
 
-#wget --http-user=admin --http-password=admin "http://localhost:8080/manager/text/deploy?war=file:$WARFILE&path=/$BASEPATH" -O -
 cp $WARFILE $CATALINA_HOME/webapps
