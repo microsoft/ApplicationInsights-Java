@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class serves as the container of all {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
@@ -225,7 +226,7 @@ public enum PerformanceCounterContainer implements Stoppable {
                                 plugin.preCollection();
                             } catch (Throwable t) {
                                 InternalLogger.INSTANCE.error("Error in thread scheduled for PerformanceCounterContainer");
-                                t.printStackTrace();
+                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                             }
                         }
 
@@ -234,6 +235,7 @@ public enum PerformanceCounterContainer implements Stoppable {
                                 performanceCounter.report(telemetryClient);
                             } catch (Throwable e) {
                                 InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': '%s'", performanceCounter.getId(), e.getMessage());
+                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                             }
                         }
 
@@ -242,7 +244,7 @@ public enum PerformanceCounterContainer implements Stoppable {
                                 plugin.postCollection();
                             } catch (Throwable t) {
                                 InternalLogger.INSTANCE.error("Error while executing post collection");
-                                t.printStackTrace();
+                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                             }
                         }
                     }
