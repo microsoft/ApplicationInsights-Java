@@ -113,13 +113,17 @@ public final class JsonTelemetryDataSerializer {
     }
 
     public void write(String name, double value) throws IOException {
+        if (!Double.isFinite(value)) {
+            return;
+        }
+
         writeName(name);
         out.write(String.valueOf(value));
         separator = JSON_SEPARATOR;
     }
 
     public void write(String name, Double value) throws IOException {
-        if (value == null) {
+        if ((value == null) || !Double.isFinite(value)) {
             return;
         }
 
