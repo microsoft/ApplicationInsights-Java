@@ -113,22 +113,18 @@ public final class JsonTelemetryDataSerializer {
     }
 
     public void write(String name, double value) throws IOException {
-        if (!Double.isFinite(value)) {
-            return;
-        }
-
         writeName(name);
-        out.write(String.valueOf(value));
+        out.write(Double.isNaN(value) || Double.isInfinite(value) ? "0.0" : String.valueOf(value));
         separator = JSON_SEPARATOR;
     }
 
     public void write(String name, Double value) throws IOException {
-        if ((value == null) || !Double.isFinite(value)) {
+        if (value == null) {
             return;
         }
 
         writeName(name);
-        out.write(String.valueOf(value));
+        out.write(Double.isNaN(value) || Double.isInfinite(value) ? "0.0" : String.valueOf(value));
         separator = JSON_SEPARATOR;
     }
 

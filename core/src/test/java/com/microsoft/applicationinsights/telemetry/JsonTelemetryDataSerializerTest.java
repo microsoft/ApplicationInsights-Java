@@ -374,9 +374,9 @@ public class JsonTelemetryDataSerializerTest {
         Gson gson = new Gson();
         StubClass bac = gson.fromJson(str, StubClass.class);
         assertEquals(bac.f1, 0, 0.001);
-        assertEquals(bac.f2, null);
+        assertEquals(bac.f2, 0, 0.001);
         assertEquals(bac.d1, 0, 0.001);
-        assertEquals(bac.d2, null);
+        assertEquals(bac.d2, 0, 0.001);
     }
 
     @Test
@@ -398,8 +398,8 @@ public class JsonTelemetryDataSerializerTest {
         Gson gson = new Gson();
         StubClass bac = gson.fromJson(str, StubClass.class);
         assertEquals(bac.f1, 0, 0.001);
-        assertEquals(bac.f2, null);
+        assertEquals(bac.f2, 0, 0.001);
         assertEquals(bac.d1, 0, 0.001);
-        assertEquals(bac.d2, null);
+        assertEquals(bac.d2, 0, 0.001);
     }
 }
