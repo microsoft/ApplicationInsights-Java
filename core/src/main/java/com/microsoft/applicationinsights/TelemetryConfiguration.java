@@ -63,7 +63,7 @@ public final class TelemetryConfiguration {
      * @return The 'Active' instance
      */
     public static TelemetryConfiguration getActive() {
-        if (!initialized) {
+        if (!initialized && active == null) {
             synchronized (s_lock) {
                 if (!initialized) {
                     active = new TelemetryConfiguration();
