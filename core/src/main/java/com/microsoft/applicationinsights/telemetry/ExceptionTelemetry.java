@@ -50,6 +50,13 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
      */
     private static final String BASE_TYPE = "ExceptionData";
 
+    /**
+     * Maximum allowed length of parsed stack
+     */
+    private static final int MAX_PARSED_STACK_LENGTH = 32768;
+
+    private static final int MAX_EXCEPTION_COUNT_TO_SAVE = 10;
+
 
     private ExceptionTelemetry() {
         super();
@@ -155,8 +162,21 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     private void updateException(Throwable throwable, int stackSize) {
-        ArrayList<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
+
+        List<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
         convertExceptionTree(throwable, null, exceptions, stackSize);
+
+        //Trim if total exceptions exceed max permissible limit, add custom exception to indicate the same
+        if (exceptions.size() > MAX_EXCEPTION_COUNT_TO_SAVE) {
+            Exception e = new Exception(String.format("number of inner exception was %d which was larger than %d", exceptions.size(),
+                    MAX_EXCEPTION_COUNT_TO_SAVE));
+
+            //keep first N (MAX_PARSED_STACK_LENGTH) exceptions
+            exceptions.subList(0, MAX_PARSED_STACK_LENGTH);
+
+            //we add our new exception and parent it to root exception (first in the list)
+            exceptions.add(createWithStackInfo(e, exceptions.get(0)));
+        }
 
         data.setExceptions(exceptions);
     }
@@ -183,6 +203,97 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
             throw new IllegalArgumentException("exception cannot be null");
         }
 
+        ExceptionDetails exceptionDetails = getExceptionDetailsWithoutParsedStack(exception, parentExceptionDetails);
+
+        StackTraceElement[] trace = exception.getStackTrace();
+
+        if (trace != null && trace.length > 0) {
+
+            List<StackFrame> stack = exceptionDetails.getParsedStack();
+            exceptionDetails.setHasFullStack(true);
+
+            int stackLength = 0;
+            // We need to present the stack trace in reverse order.
+
+            for (int idx = 0; idx < trace.length; idx++) {
+                StackTraceElement elem = trace[idx];
+
+                if (elem.isNativeMethod()) {
+                    continue;
+                }
+
+                StackFrame frame = getStackFrame(elem, idx);
+                stackLength += getStackFrameLength(frame);
+
+                if (stackLength > MAX_PARSED_STACK_LENGTH) {
+
+                    //Stack is truncated
+                    exceptionDetails.setHasFullStack(false);
+                    break;
+                }
+
+                stack.add(frame);
+            }
+
+        }
+
+        return exceptionDetails;
+    }
+
+
+    /**
+     * Converts the java.lang.StackTraceElement instance into ApplicationInsights StackFrame object
+     * @param element
+     * @param indx
+     * @return
+     */
+    private static StackFrame getStackFrame(StackTraceElement element, int indx) {
+
+        StackFrame convertedFrame = new StackFrame();
+        String className = element.getClassName();
+        convertedFrame.setLevel(indx);
+        convertedFrame.setFileName(element.getFileName());
+        int lineNumber = element.getLineNumber();
+
+        //Negative line number indicates it is not available
+        if (lineNumber >= 0) {
+            convertedFrame.setLine(lineNumber);
+        }
+
+        String methodName = element.getMethodName();
+
+        if (!Strings.isNullOrEmpty(className)) {
+            convertedFrame.setMethod(className + "." + methodName);
+        }
+        else {
+            convertedFrame.setMethod(methodName);
+        }
+        return convertedFrame;
+
+    }
+
+    /**
+     * returns the character length of the StackFrame, assembly is not taken into account as it is not set in java
+     * @param stackFrame
+     * @return
+     */
+    private static int getStackFrameLength(StackFrame stackFrame) {
+
+        int len = (stackFrame.getMethod() == null ? 0 : stackFrame.getMethod().length())
+                    + (stackFrame.getFileName() == null ? 0 : stackFrame.getFileName().length());
+        return len;
+    }
+
+
+    /**
+     * Creates a barebone ExceptionDetails object with basic information. Doesn't contain the ParsedStack of the
+     * exception.
+     * @param exception
+     * @param parentExceptionDetails
+     * @return
+     */
+    private static ExceptionDetails getExceptionDetailsWithoutParsedStack(Throwable exception, ExceptionDetails parentExceptionDetails) {
+
         ExceptionDetails exceptionDetails = new ExceptionDetails();
         exceptionDetails.setId(exception.hashCode());
         exceptionDetails.setTypeName(exception.getClass().getName());
@@ -196,43 +307,9 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         if (parentExceptionDetails != null) {
             exceptionDetails.setOuterId(parentExceptionDetails.getId());
         }
-
-        StackTraceElement[] trace = exception.getStackTrace();
-
-        if (trace != null && trace.length > 0) {
-            List<StackFrame> stack = exceptionDetails.getParsedStack();
-
-            // We need to present the stack trace in reverse order.
-
-            for (int idx = 0; idx < trace.length; idx++) {
-                StackTraceElement elem = trace[idx];
-
-                if (elem.isNativeMethod()) {
-                    continue;
-                }
-
-                String className = elem.getClassName();
-
-                StackFrame frame = new StackFrame();
-                frame.setLevel(idx);
-                frame.setFileName(elem.getFileName());
-                frame.setLine(elem.getLineNumber());
-
-                if (!Strings.isNullOrEmpty(className)) {
-                    frame.setMethod(elem.getClassName() + "." + elem.getMethodName());
-                }
-                else {
-                    frame.setMethod(elem.getMethodName());
-                }
-
-                stack.add(frame);
-            }
-
-            exceptionDetails.setHasFullStack(true); // TODO: sanitize and trim exception stack trace.
-        }
-
         return exceptionDetails;
     }
+
     @Override
     public String getEnvelopName() {
         return ENVELOPE_NAME;
