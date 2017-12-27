@@ -27,7 +27,7 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
@@ -55,6 +55,9 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
      */
     private static final int MAX_PARSED_STACK_LENGTH = 32768;
 
+    /**
+     * Maximum number of allowed nested exceptions
+     */
     private static final int MAX_EXCEPTION_COUNT_TO_SAVE = 10;
 
 
@@ -163,7 +166,8 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
 
     private void updateException(Throwable throwable, int stackSize) {
 
-        List<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
+        //using LinkedList for efficiency in inserting at start
+        List<ExceptionDetails> exceptions = new LinkedList<>();
         convertExceptionTree(throwable, null, exceptions, stackSize);
 
         //Trim if total exceptions exceed max permissible limit, add custom exception to indicate the same
@@ -172,10 +176,10 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
                     MAX_EXCEPTION_COUNT_TO_SAVE));
 
             //keep first N (MAX_PARSED_STACK_LENGTH) exceptions
-            exceptions.subList(0, MAX_PARSED_STACK_LENGTH);
+            exceptions = exceptions.subList(0, MAX_EXCEPTION_COUNT_TO_SAVE);
 
             //we add our new exception and parent it to root exception (first in the list)
-            exceptions.add(createWithStackInfo(e, exceptions.get(0)));
+            exceptions.add(0, createWithStackInfo(e, exceptions.get(0)));
         }
 
         data.setExceptions(exceptions);
@@ -286,7 +290,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
 
 
     /**
-     * Creates a barebone ExceptionDetails object with basic information. Doesn't contain the ParsedStack of the
+     * Creates a bare-bone ExceptionDetails object with basic information. Doesn't contain the ParsedStack of the
      * exception.
      * @param exception
      * @param parentExceptionDetails
