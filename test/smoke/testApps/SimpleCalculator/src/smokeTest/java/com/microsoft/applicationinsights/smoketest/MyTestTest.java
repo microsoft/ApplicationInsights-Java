@@ -61,4 +61,5 @@ public class MyTestTest extends AiSmokeTest {
 		assertNull(dp.getMax());
 		assertNull(dp.getStdDev());
 	}
+	
 }
