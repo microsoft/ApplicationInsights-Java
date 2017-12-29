@@ -1,0 +1,25 @@
+// apply plugin: 'java-library'
+apply plugin: 'war'
+
+dependencies {
+    compile project(':core')
+    compile project(':web')
+    compile 'com.google.guava:guava:20.0'
+    
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    providedRuntime 'mysql:mysql-connector-java:5.1.44'
+
+    smokeTestCompile 'com.google.guava:guava:23.0'
+
+    // FIXME these are not necessary; they're a workaround for a VSCode intellisense bug (it doesn't work with only the smokeTest configuration)
+    testCompile 'com.google.guava:guava:23.0'
+}
+
+compileJava.sourceCompatibility = 1.7
+compileJava.targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName
