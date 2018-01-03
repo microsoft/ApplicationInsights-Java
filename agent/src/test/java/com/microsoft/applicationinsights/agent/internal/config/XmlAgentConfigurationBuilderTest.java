@@ -99,7 +99,7 @@ public final class XmlAgentConfigurationBuilderTest {
         if (folder.exists()) {
             try {
                 FileUtils.deleteDirectory(folder);
-            } catch (IOException e) {
+            } catch (Exception e) {
             }
         }
         if (!folder.exists()) {
