@@ -86,7 +86,7 @@ final class XmlParserUtils {
         try {
             String strValue = element.getAttribute(attributeName);
             if (!StringUtils.isNullOrEmpty(strValue)) {
-                long value = Long.valueOf(strValue); // FIXME
+                long value = Long.valueOf(strValue);
                 return value;
             }
             return defaultValue;
