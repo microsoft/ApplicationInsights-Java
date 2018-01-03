@@ -163,8 +163,9 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
                     try {
                         semaphore.release();
                         command.run();
-                    } catch (Exception e) {
-                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t) {
                         InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                     } finally {
                     }
@@ -174,8 +175,6 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
             return true;
         } catch (ThreadDeath td) {
         	throw td;
-            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetriesFetcher.fetch().size());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         } catch (Throwable t) {
             semaphore.release();
             InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetriesFetcher.fetch().size());
@@ -200,10 +199,11 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
                     try {
                         semaphore.release();
                         command.run();
-                    } catch (Exception e) {
-                        InternalLogger.INSTANCE.error("exception in runnable sendNow()");
-                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    } catch (ThreadDeath td) {
+                        throw td;
                     } catch (Throwable t) {
+                        InternalLogger.INSTANCE.error("exception in runnable sendNow()");
+                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                     } finally {
                     }
                 }
@@ -212,8 +212,6 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
             return true;
         } catch (ThreadDeath td) {
         	throw td;
-            InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetries.size());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         } catch (Throwable t) {
             semaphore.release();
             InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetries.size());
