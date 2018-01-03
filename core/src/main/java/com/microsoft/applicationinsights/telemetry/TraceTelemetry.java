@@ -34,7 +34,7 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Message";
+    private static final String ENVELOPE_NAME = "Message";
 
 
     /**
@@ -86,6 +86,7 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     }
 
     @Override
+    @Deprecated
     protected void additionalSanitize() {
         data.setMessage(Sanitizer.sanitizeMessage(data.getMessage()));
     }

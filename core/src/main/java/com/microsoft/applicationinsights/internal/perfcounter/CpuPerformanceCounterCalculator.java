@@ -21,14 +21,15 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
+
 
 /**
  * Created by gupele on 12/12/2016.
@@ -38,20 +39,21 @@ public final class CpuPerformanceCounterCalculator {
 
     private long prevUpTime, prevProcessCpuTime;
 
+    private ObjectName osBean;
+
     public CpuPerformanceCounterCalculator() {
-        com.sun.management.OperatingSystemMXBean operatingSystemMXBean = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
         numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
+
     }
 
     public double getProcessCpuUsage() {
         double processCpuUsage;
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-            com.sun.management.OperatingSystemMXBean operatingSystemMXBean =
-                    (com.sun.management.OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
 
             long upTime = runtimeMXBean.getUptime();
-            long processCpuTime = operatingSystemMXBean.getProcessCpuTime();
+            long processCpuTime = getProcessCpuTime();
 
             if (prevUpTime > 0L && upTime > prevUpTime) {
                 long elapsedCpu = processCpuTime - prevProcessCpuTime;
@@ -64,8 +66,18 @@ public final class CpuPerformanceCounterCalculator {
             prevProcessCpuTime = processCpuTime;
         } catch (Exception e) {
             processCpuUsage = Constants.DEFAULT_DOUBLE_VALUE;
+            InternalLogger.INSTANCE.error("Error in getProcessCPUUsage");
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
         return processCpuUsage;
+    }
+
+    private long getProcessCpuTime() throws Exception {
+        MBeanServer bsvr = ManagementFactory.getPlatformMBeanServer();
+        if (osBean == null) {
+            osBean = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
+        }
+        return (Long) bsvr.getAttribute(osBean, "ProcessCpuTime");
     }
 }

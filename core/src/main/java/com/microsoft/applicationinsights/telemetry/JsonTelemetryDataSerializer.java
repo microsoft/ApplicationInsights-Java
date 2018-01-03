@@ -21,16 +21,20 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.*;
-
-import com.google.common.base.Strings;
-
-import com.microsoft.applicationinsights.internal.schemav2.*;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import java.text.StringCharacterIterator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class knows how to transform data that is relevant to {@link Telemetry} instances into JSON.
@@ -45,6 +49,7 @@ public final class JsonTelemetryDataSerializer {
     private final static String JSON_COMMA = "\"";
     private final static String JSON_NAME_VALUE_SEPARATOR = ":";
     private final static String JSON_EMPTY_OBJECT = "{}";
+    private final static int DELTA = 2;
 
     private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
 
@@ -90,7 +95,9 @@ public final class JsonTelemetryDataSerializer {
     public void write(String name, com.microsoft.applicationinsights.internal.schemav2.SeverityLevel value) throws IOException {
         if (value != null) {
             writeName(name);
+            out.write(JSON_COMMA);
             out.write(String.valueOf(value));
+            out.write(JSON_COMMA);
             separator = JSON_SEPARATOR;
         }
     }
@@ -107,7 +114,7 @@ public final class JsonTelemetryDataSerializer {
 
     public void write(String name, double value) throws IOException {
         writeName(name);
-        out.write(String.valueOf(value));
+        out.write(Double.isNaN(value) || Double.isInfinite(value) ? "0.0" : String.valueOf(value));
         separator = JSON_SEPARATOR;
     }
 
@@ -117,7 +124,7 @@ public final class JsonTelemetryDataSerializer {
         }
 
         writeName(name);
-        out.write(String.valueOf(value));
+        out.write(Double.isNaN(value) || Double.isInfinite(value) ? "0.0" : String.valueOf(value));
         separator = JSON_SEPARATOR;
     }
 
@@ -179,14 +186,41 @@ public final class JsonTelemetryDataSerializer {
         separator = JSON_SEPARATOR;
     }
 
+    /**
+     * This method is deprecated and is kept because there is still some dependency on it
+     * which will be removed in coming versions
+     * @deprecated
+     * @param name
+     * @param value
+     * @throws IOException
+     */
+    @Deprecated
     public void write(String name, String value) throws IOException {
-        if (value == null) {
+        //This method is practically not used anywhere .Will be removed with all other
+        //obsolete classes in next major release
+    }
+
+    public void write(String name, String value, int len) throws IOException {
+        if (value == null || value.equals("")) {
             return;
         }
+        writeToJson(name, value, len);
+    }
+
+    public void writeRequired(String name, String value, int len) throws IOException{
+        //If field is required and not present set default value
+        if (value == null || value.equals("")) {
+            value = "DEFAULT " + name;
+        }
+        writeToJson(name, value, len);
+    }
+
+    private void writeToJson(String name, String value, int len) throws IOException {
 
         writeName(name);
         out.write(JSON_COMMA);
-        writeEscapedString(value);
+        String sanitizedValue = sanitizeStringForJSON(value, len);
+        out.write(sanitizedValue);
         out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
@@ -208,6 +242,7 @@ public final class JsonTelemetryDataSerializer {
     }
 
     public <T> void write(String name, Map<String, T> map) throws IOException {
+
         if (map == null) {
             return;
         }
@@ -221,7 +256,7 @@ public final class JsonTelemetryDataSerializer {
 
                 separator = "";
                 for (Map.Entry<String, T> entry : map.entrySet()) {
-                    writeName(entry.getKey());
+                    writeName(sanitizeKey(entry.getKey()));
                     write(entry.getValue());
                     separator = JSON_SEPARATOR;
                 }
@@ -232,6 +267,7 @@ public final class JsonTelemetryDataSerializer {
             separator = JSON_SEPARATOR;
         }
     }
+
 
     public <T> void write(String name, List<T> list) throws IOException {
         if (list == null) {
@@ -273,8 +309,10 @@ public final class JsonTelemetryDataSerializer {
             {
                 out.write(String.valueOf(item));
             } else {
+                String truncatedName = truncate(String.valueOf(item), 8192);
+                String sanitizedItem = sanitizeStringForJSON(truncatedName, 8192);
                 out.write(JSON_COMMA);
-                out.write(String.valueOf(item));
+                out.write(sanitizedItem);
                 out.write(JSON_COMMA);
             }
         }
@@ -295,6 +333,7 @@ public final class JsonTelemetryDataSerializer {
     }
 
     private void writeName(String name) throws IOException {
+
         out.write(separator);
         out.write(JSON_COMMA);
         out.write(name);
@@ -317,34 +356,80 @@ public final class JsonTelemetryDataSerializer {
         return ret;
     }
 
-    protected void writeEscapedString(String value) throws IOException {
-        for (char c : value.toCharArray()) {
-            switch (c) {
-                case '\\':
-                    out.write("\\\\");
+    private String sanitizeStringForJSON(String text, int maxLength) {
+
+        final StringBuilder result = new StringBuilder();
+        StringCharacterIterator iterator = new StringCharacterIterator(text);
+        for (char curr = iterator.current(); curr != iterator.DONE && result.length() < maxLength - DELTA; curr = iterator.next()) {
+            if( curr == '\"' ){
+                result.append("\\\"");
+            }
+            else if(curr == '\\'){
+                result.append("\\\\");
+            }
+            else if(curr == '/'){
+                result.append("\\/");
+            }
+            else if(curr == '\b'){
+                result.append("\\b");
+            }
+            else if(curr == '\f'){
+                result.append("\\f");
+            }
+            else if(curr == '\n'){
+                result.append("\\n");
+            }
+            else if(curr == '\r'){
+                result.append("\\r");
+            }
+            else if(curr == '\t'){
+                result.append("\\t");
+            }
+            else if (!Character.isISOControl(curr)){
+                result.append(curr);
+            }
+            else {
+                if (result.length() + 7 < maxLength) { // needs 7 more character space to be appended
+                    result.append("\\u");
+                    result.append((String.format( "%04x", Integer.valueOf(curr))));
+                }
+                else {
                     break;
-                case '"':
-                    out.write("\\\"");
-                    break;
-                case '\n':
-                    out.write("\\n");
-                    break;
-                case '\b':
-                    out.write("\\b");
-                    break;
-                case '\f':
-                    out.write("\\f");
-                    break;
-                case '\r':
-                    out.write("\\r");
-                    break;
-                case '\t':
-                    out.write("\\t");
-                    break;
-                default:
-                    out.write(c);
-                    break;
+                }
             }
         }
+        return result.toString();
     }
+
+    private String sanitizeKey(String key) {
+        String sanitizedKey = trimAndTruncate(key, 150);
+        sanitizedKey = sanitizeStringForJSON(sanitizedKey, 150);
+        sanitizedKey = MakeKeyNonEmpty(sanitizedKey);
+        return sanitizedKey;
+    }
+
+    private static String trimAndTruncate(String value, int maxLength) {
+        if (value == null) {
+            return value;
+        }
+
+        String sanitized = value.trim();
+        if (sanitized.length() > maxLength) {
+            sanitized = sanitized.substring(0, maxLength);
+        }
+
+        return sanitized;
+    }
+
+    private String MakeKeyNonEmpty(String key) {
+        return Strings.isNullOrEmpty(key) ? "(required property name is empty)" : key;
+    }
+
+    private String truncate(String value, int len) {
+        if (value.length() > len) {
+            return value.substring(0, len);
+        }
+        return value;
+    }
+
 }

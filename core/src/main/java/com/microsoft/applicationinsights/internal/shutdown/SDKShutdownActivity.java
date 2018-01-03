@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class is responsible for all shutdown activities done in the SDK.
@@ -104,6 +105,7 @@ public enum SDKShutdownActivity {
                 	throw td;
                 } catch (Throwable t) {
                     InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.getMessage());
+                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                 }
             }
         }
@@ -118,6 +120,7 @@ public enum SDKShutdownActivity {
                 	throw td;
                 } catch (Throwable t) {
                     InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.getMessage());
+                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                 }
             }
         }
@@ -141,6 +144,8 @@ public enum SDKShutdownActivity {
                         shutdownThread = new SDKShutdownThread();
                         Runtime.getRuntime().addShutdownHook(shutdownThread);
                     } catch (Exception e) {
+                        InternalLogger.INSTANCE.error("Error while adding shutdown hook in getShutDownThread call");
+                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                     }
                 }
             }

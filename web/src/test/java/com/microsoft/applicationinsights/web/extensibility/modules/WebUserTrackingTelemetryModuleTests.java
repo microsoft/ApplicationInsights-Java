@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.web.extensibility.modules;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -55,7 +54,8 @@ public class WebUserTrackingTelemetryModuleTests {
             UserContext requestUserContext = requestTelemetry.getContext().getUser();
 
             if (expectedUserId == null) {
-                Assert.assertTrue(Sanitizer.isUUID(requestUserContext.getId()));
+                //No longer testing for UUID
+                //Assert.assertTrue(Sanitizer.isUUID(requestUserContext.getId()));
                 Assert.assertNotEquals(requestUserContext.getId(), HttpHelper.getCookie());
             } else {
                 Assert.assertEquals(expectedUserId, requestUserContext.getId());

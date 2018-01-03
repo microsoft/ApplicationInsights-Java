@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.internal.util;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 5/10/2015.
@@ -119,6 +120,7 @@ public final class LimitsEnforcer {
                 value = Integer.parseInt(valueAsString);
             } catch (NumberFormatException e) {
                 InternalLogger.INSTANCE.warn("'%s': bad format for value '%s'", propertyName, valueAsString);
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }
 

@@ -22,16 +22,13 @@
  * Generated from RemoteDependencyData.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.google.common.base.Preconditions;
+
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Data contract class RemoteDependencyData.
@@ -270,17 +267,14 @@ public class RemoteDependencyData extends Domain
     {
         super.serializeContent(writer);
         writer.write("ver", ver);
-        
-        writer.write("name", name);
-        
-        writer.write("id", id);
-        writer.write("resultCode", resultCode);
+        writer.writeRequired("name", name, 1024);
+        writer.write("id", id, 128);
+        writer.write("resultCode", resultCode, 1024);
         writer.write("duration", duration);
-        
         writer.write("success", success);
-        writer.write("data", data);
-        writer.write("type", type);
-        writer.write("target", target);
+        writer.write("data", data, 8192);
+        writer.write("type", type, 1024);
+        writer.write("target", target, 1024);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

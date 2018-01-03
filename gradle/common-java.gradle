@@ -22,28 +22,36 @@
 // region Shared java configuration
 
 import org.gradle.internal.os.OperatingSystem;
+import org.gradle.api.tasks.testing.logging.TestLogEvent;
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 
 apply plugin: 'java'
 
-def java6JreDir = System.env.'JAVA_JRE_6'
-if (java6JreDir) {
-    def requiredJava6Archives = ["rt.jar", "jsse.jar"]
+tasks.withType(JavaCompile) {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
+// setting this variable is highly recommended
+def java7JreDir = System.env.'JAVA_JRE_7'
+if (java7JreDir) {
+    def requiredJavaBootArchives = ["rt.jar", "jsse.jar"]
     def bootClasspath = ""
-    requiredJava6Archives.each { a ->
-        def archivePath = new File(java6JreDir, "lib/$a")
+    requiredJavaBootArchives.each { a ->
+        def archivePath = new File(java7JreDir, "lib/$a")
         if (!archivePath.exists()) {
-            throw new ProjectConfigurationException("Archive $archivePath required for building in Java 6 could not be found.", null)
+            throw new ProjectConfigurationException("Archive $archivePath required for building in Java 7 could not be found.", null)
         }
         logger.info "Archive '$archivePath' added to boot class path"
         bootClasspath += "$archivePath;"
     }
     tasks.withType(JavaCompile) {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
         options.bootClasspath = bootClasspath
     }
 } else {
-    logger.warn "Environment variable 'JAVA_JRE_6' is not defined - falling back to use machine default Java SDK"
+    // FIXME this warning only makes sense if the JDK version being used is > 1.7.
+    // FIXME if this warning makes sense, it should be fatal if this is intended for release
+    logger.warn "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
 }
 
 if (hasProperty("JDKToUse")) {
@@ -61,6 +69,7 @@ if (hasProperty("JDKToUse")) {
     tasks.withType(AbstractCompile) {
         options.with {
             fork = true
+            // FIXME forkOptions.executable is deprecated
             forkOptions.executable = javaExecutables.javac
         }
     }
@@ -153,6 +162,38 @@ task vscode(dependsOn: vscodeJavaconfigFile) {
     group 'vscode'
 }
 
+tasks.withType(Test) {
+    testLogging {
+        afterSuite { desc, result -> 
+            if (!desc.parent) { // only print when the top-level test suite completes
+                logger.lifecycle("${desc.name} complete. Ran ${result.testCount} tests. ${result.failedTestCount} failed, ${result.skippedTestCount} skipped.")
+            }
+        }
+
+        info {
+            events  TestLogEvent.FAILED,
+                    TestLogEvent.PASSED,
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.STANDARD_ERROR
+
+            exceptionFormat TestExceptionFormat.FULL
+            showExceptions true
+            showCauses true
+            showStackTraces true
+        }
+
+        debug {
+            events = info.events
+            events << TestLogEvent.STARTED
+            events << TestLogEvent.STANDARD_OUT
+            
+            exceptionFormat = info.exceptionFormat
+            showExceptions = info.showExceptions
+            showCauses = info.showCauses
+            showStackTraces = info.showStackTraces
+        }
+    }
+}
 
 
 // endregion Shared java configuration

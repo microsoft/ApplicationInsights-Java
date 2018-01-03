@@ -21,14 +21,14 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.apache.http.annotation.Obsolete;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Telemetry sent to Azure Application Insights about dependencies - that is, calls from
@@ -41,7 +41,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.RemoteDependency";
+    private static final String ENVELOPE_NAME = "RemoteDependency";
 
 
     /**
@@ -84,6 +84,21 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     /**
+     * Gets the dependency Id.
+     */
+    public String getId() {
+        return this.data.getId();
+    }
+    
+    /**
+     * Sets the dependency Id.
+     * @param value The value for the Id.
+     */
+    public void setId(String value) {
+        this.data.setId(value);
+    }
+
+    /**
      * Gets tne dependency name.
      * @return The dependency name.
      */
@@ -116,98 +131,110 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     public void setCommandName(String commandName) { this.data.setData(commandName); }
 
     /**
+     * @deprecated
      * Gets the Count property.
      * @return Count property.
      */
-    @Obsolete
+    @Deprecated
     public Integer getCount() {
         return null;
     }
 
     /**
+     * @deprecated
      * Sets the Count property.
      * @param value Count property.
      */
-    @Obsolete
+    @Deprecated
     public void setCount(Integer value) {
         //do nothing as this property is no longer in use
     }
 
     /**
+     * @deprecated
      * Gets the Min property.
      * @return Min property.
      */
-    @Obsolete
+    @Deprecated
     public Double getMin() {
         return null;
     }
 
     /**
+     * @deprecated
      * Sets the Min property.
      * @param value Min property.
      */
-    @Obsolete
+    @Deprecated
     public void setMin(Double value) {
 
     }
 
     /**
+     * @deprecated
      * Gets the Max property.
      * @return Max property.
      */
-    @Obsolete
+    @Deprecated
     public Double getMax() {
         return null;
     }
 
     /**
+     * @deprecated
      * Sets the Max property.
      * @param value Max property.
      */
-    @Obsolete
+    @Deprecated
     public void setMax(Double value) {
 
     }
 
     /**
+     * @deprecated
      * Gets the Standard Deviation property.
      * @return Standard Deviation property.
      */
-    @Obsolete
+    @Deprecated
     public Double getStdDev() {
         return null;
     }
 
     /**
+     * @deprecated
      * Sets the StdDev property.
      * @param value Standard Deviation property.
      */
-    @Obsolete
+    @Deprecated
     public void setStdDev(Double value) {
     }
 
     /**
+     * @deprecated
      * Gets the Dependency Kind property.
      * @return Dependency Kind property.
      */
-    @Obsolete
+    @Deprecated
     public DependencyKind getDependencyKind() {
         DependencyKind result = DependencyKind.Other;
         String type = data.getType();
         if (!LocalStringsUtils.isNullOrEmpty(type)) {
             try {
                 result = Enum.valueOf(DependencyKind.class, type);
-            } catch (Exception e) {
+            } catch (Throwable t) {
+                InternalLogger.INSTANCE.error("Exception while getting dependency kind: Type is empty");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
             }
         }
         return result;
     }
 
     /**
+     * @deprecated
      * Sets the Dependency Kind property.
      * @param value Dependency Kind property.
      */
-    @Obsolete
+    @Deprecated
     public void setDependencyKind(DependencyKind value) {
         data.setType(value.toString());
     }
@@ -226,6 +253,21 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      */
     public void setType(String value) {
         data.setType(value);
+    }
+
+    /**
+     * Gets the target of this dependency.
+     */
+    public String getTarget() {
+        return data.getTarget();
+    }
+
+    /**
+     * Sets the target of this dependency.
+     * @param value The value for the Target property.
+     */
+    public void setTarget(String value) {
+        data.setTarget(value);
     }
 
     public void setResultCode(String value) {
@@ -249,37 +291,41 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     /**
+     * @deprecated
      * Gets the Async property.
      * @return True if async.
      */
-    @Obsolete
+    @Deprecated
     public Boolean getAsync() {
         return false;
     }
 
     /**
+     * @deprecated
      * Sets the Async property.
      * @param value True if async.
      */
-    @Obsolete
+    @Deprecated
     public void setAsync(Boolean value) {
 
     }
 
     /**
+     * @deprecated
      * Gets the Dependency Source property.
      * @return Dependency Source property.
      */
-    @Obsolete
+    @Deprecated
     public DependencySourceType getDependencySource() {
         return DependencySourceType.Undefined;
     }
 
     /**
+     * @deprecated
      * Sets the Dependency Source property.
      * @param value Dependency Source property.
      */
-    @Obsolete
+    @Deprecated
     public void setDependencySource(DependencySourceType value) {
     }
 
@@ -310,6 +356,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     @Override
+    @Deprecated
     protected void additionalSanitize() {
         data.setName(Sanitizer.sanitizeName(data.getName()));
     }

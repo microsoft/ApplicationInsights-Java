@@ -21,11 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
+import org.apache.http.entity.ByteArrayEntity;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
@@ -34,22 +46,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-
-import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.entity.ByteArrayEntity;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 /**
  * The class is responsible for the actual sending of {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
@@ -135,6 +131,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
             HttpResponse response = null;
             HttpPost request = null;
+            boolean shouldBackoff = false;
             try {
                 request = createTransmissionPostRequest(transmission);
                 httpClient.enhanceRequest(request);
@@ -160,35 +157,36 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 }
             } catch (ConnectionPoolTimeoutException e) {
                 InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
+                shouldBackoff = true;
             } catch (SocketException e) {
                 InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
-                // backoff retry if no connection is found
-                if (e instanceof ConnectException) {
-                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
-                }
+                shouldBackoff = true;
             } catch (UnknownHostException e) {
                 InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
-                // backoff retry if host unknown
-                transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+                shouldBackoff = true;
             } catch (IOException ioe) {
                 InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
-                // backoff retry if no connection is found
-                if (ioe instanceof ConnectTimeoutException) {
-                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
-                }
+                shouldBackoff = true;
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
+                shouldBackoff = true;
             } catch (ThreadDeath td) {
             	throw td;
             } catch (Throwable t) {
                 InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
+                shouldBackoff = true;
             }
             finally {
                 if (request != null) {
                     request.releaseConnection();
                 }
                 httpClient.dispose(response);
+                // backoff before trying again
+                if (shouldBackoff) {
+                    InternalLogger.INSTANCE.trace("Backing off for %s seconds", DEFAULT_BACKOFF_TIME_SECONDS);
+                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
             }
+        }
         }
 
         return true;

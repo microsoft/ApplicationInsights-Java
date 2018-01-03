@@ -21,11 +21,11 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.net.URI;
-import java.util.concurrent.ConcurrentMap;
-
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+
+import java.net.URI;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Telemetry type used to track page views.
@@ -40,13 +40,13 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.PerformanceCounter";
+    private static final String ENVELOPE_NAME = "PageView";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "PerformanceCounterData";
+    private static final String BASE_TYPE = "PageViewData";
 
     /**
      * Default Ctor
@@ -137,6 +137,7 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     }
 
     @Override
+    @Deprecated
     protected void additionalSanitize() {
         data.setName(Sanitizer.sanitizeName(data.getName()));
         Sanitizer.sanitizeMeasurements(this.getMetrics());

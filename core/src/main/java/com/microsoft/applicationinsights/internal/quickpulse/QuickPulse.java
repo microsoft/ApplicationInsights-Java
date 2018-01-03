@@ -25,8 +25,10 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.methods.HttpPost;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -108,17 +110,21 @@ public enum QuickPulse implements Stoppable {
             coordinator.stop();
             quickPulseDataSender.stop();
         } catch (Throwable e) {
+            InternalLogger.INSTANCE.error("Error while executing stop QuickPulse");
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
         thread.interrupt();
         try {
             thread.join();
         } catch (InterruptedException e) {
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
         senderThread.interrupt();
         try {
             senderThread.join();
         } catch (InterruptedException e) {
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
         initialized = false;

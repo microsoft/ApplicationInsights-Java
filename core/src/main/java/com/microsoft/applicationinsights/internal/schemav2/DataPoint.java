@@ -22,16 +22,12 @@
  * Generated from DataPoint.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
 import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
+import java.io.IOException;
 
 /**
  * Data contract class DataPoint.
@@ -198,11 +194,9 @@ public class DataPoint
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
-        writer.write("name", name);
-        
+        writer.writeRequired("name", name, 1024);
         writer.write("kind", kind);
         writer.write("value", value);
-        
         writer.write("count", count);
         writer.write("min", min);
         writer.write("max", max);

@@ -21,20 +21,16 @@
 
 package com.microsoft.applicationinsights;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
-import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates the global telemetry configuration typically loaded from the ApplicationInsights.xml file.
@@ -46,8 +42,7 @@ public final class TelemetryConfiguration {
 
     // Synchronization for instance initialization
     private final static Object s_lock = new Object();
-    private static volatile boolean initialized = false;
-    private static TelemetryConfiguration active;
+    private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
 
@@ -67,12 +62,11 @@ public final class TelemetryConfiguration {
      * @return The 'Active' instance
      */
     public static TelemetryConfiguration getActive() {
-        if (!initialized) {
+        if (active == null) {
             synchronized (s_lock) {
-                if (!initialized) {
+                if (active == null) {
                     active = new TelemetryConfiguration();
                     TelemetryConfigurationFactory.INSTANCE.initialize(active);
-                    initialized = true;
                 }
             }
         }
@@ -186,9 +180,6 @@ public final class TelemetryConfiguration {
      * @throws IllegalArgumentException when the new value is null or empty
      */
     public void setInstrumentationKey(String key) {
-        if (!Sanitizer.isUUID(key)) {
-            InternalLogger.INSTANCE.trace("Telemetry Configuration: instrumentation key '%s' is not in UUID format", key);
-        }
 
         // A non null, non empty instrumentation key is a must
         if (Strings.isNullOrEmpty(key)) {

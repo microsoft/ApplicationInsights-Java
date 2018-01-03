@@ -21,17 +21,15 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
-
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
-
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.apache.http.annotation.Obsolete;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Telemetry type used to track exceptions sent to Azure Application Insights.
@@ -44,7 +42,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Exception";
+    private static final String ENVELOPE_NAME = "Exception";
 
 
     /**
@@ -57,7 +55,6 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         super();
         data = new ExceptionData();
         initialize(data.getProperties());
-        setExceptionHandledAt(ExceptionHandledAt.Unhandled);
     }
 
     /**
@@ -96,19 +93,21 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     /**
+     * @deprecated
      * Gets the value indicated where the exception was handled.
      * @return The value indicating the exception
      */
-    @Obsolete
+    @Deprecated
     public ExceptionHandledAt getExceptionHandledAt() {
         return ExceptionHandledAt.Unhandled;
     }
 
     /**
+     * @deprecated
      * Sets the value indicated where the exception was handled.
      * @param value The value indicating the exception
      */
-    @Obsolete
+    @Deprecated
     public void setExceptionHandledAt(ExceptionHandledAt value) {
 
     }
@@ -140,6 +139,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         this.samplingPercentage = samplingPercentage;
     }
 
+    @Deprecated
     @Override
     protected void additionalSanitize() {
         Sanitizer.sanitizeMeasurements(this.getMetrics());

@@ -21,12 +21,10 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
-
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
-
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
@@ -39,7 +37,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Metric";
+    private static final String ENVELOPE_NAME = "Metric";
 
 
     /**
@@ -176,6 +174,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         metric.setStdDev(value); updateKind();
     }
 
+    @Deprecated
     @Override
     protected void additionalSanitize() {
         metric.setName(Sanitizer.sanitizeName(metric.getName()));

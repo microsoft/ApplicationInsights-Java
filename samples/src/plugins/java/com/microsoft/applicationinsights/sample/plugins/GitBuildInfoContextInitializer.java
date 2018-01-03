@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * An initializer to fetch Git data from a properties file
@@ -83,6 +85,8 @@ public final class GitBuildInfoContextInitializer implements ContextInitializer 
             hasBuildData = true;
         } catch (Exception e) {
             hasBuildData = false;
+            InternalLogger.INSTANCE.error("Error while initializaing GitBuildInfoContextInitializer");
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
         }
     }
 

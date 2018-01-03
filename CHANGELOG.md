@@ -1,6 +1,34 @@
 # CHANGELOG
 
+## Version 2.0.0-BETA
+- Updating various dependencies to latest version
+- Introducing public class CustomClassWriter in Agent to enable finding common super classes used for Agent instrumentation without loading it
+- Introducing Parametrized constructor in WebRequestTrackingFilter to ensure name binding
+- Fixed Issue #428 (Agent cannot capture oracle dependencies)
+- Fixed Issue #418 (Java.lang.verify error caused while capturing sql dependencies in JDK 1.8)
+- Fixed Issue #286, #277 (Issues in capturing preparedStatement calls)
+- Fixed Issue #365 (Relocate all web jars)
+- Fixed Issue #276 (Instrumentation issues with HTTP Client)
+- Introducing public method 'getIncludedTypes' and 'getExcludedTypes' in TelemetryProcessorXmlElement.
+- Introducing class 'com.microsoft.applicationinsights.internal.config.ParamIncludedTypeXmlElement'.
+- Introducing class 'com.microsoft.applicationinsights.internal.config.ParamExcludedTypeXmlElement'
+- Introducing class 'com.microsoft.applicationinsights.internal.channel.samplingV2.SamplingScoreGeneratorV2'
+- Introducing Telemetry Processor 'com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor'
+- Introducing FixedRate Sampling v2 Using Telemetry Processors
+- Fixed issue #436 (TraceTelemetry with Severity is not shown in UI). This fixes a regression issue with `TelemetryClient.trackTrace` and `TelemetryClient.trackException`.
+- Introducing support for [cross-component correlation](https://docs.microsoft.com/en-us/azure/application-insights/application-insights-correlation). Addresses issue [#457](https://github.com/Microsoft/ApplicationInsights-Java/issues/457). 
+- Changed signature of com.microsoft.applicationinsights.internal.agent.CoreAgentNotificationHandler.httpMethodFinished. It now includes correlation information.
+- Compilation now targets Java 1.7. Java 1.6 is no longer supported.
+- Adding system property `applicationinsights.configurationDirectory` to allow to explicitly set directory containing the config file.
+
 ## Version 1.0.10
+- `track()` method of 'com.microsoft.applicationinsights.TelemetryClient' is now modified. No longer performing pre-sanitization
+- All Sanitization will now occur in `com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer` class. 
+- Method `sanitize` of interface `com.microsoft.applicationinsights.telemetry.Telemetry` is now obsolete.  
+- The auto generated schema classes now have writer method with limits according to endpoint.
+- Fixed issue #403 (Exceeding property length invalidates custom event)
+- Fixed issue #401 (Custom key and property sanitized)
+- Fixed Request Telemetry Sending bug with new schema.
 - Fixed reliability issue with Jedis client dependency collector
 - Fixed Request Telemetry Sending bug with new schema
 - Schema updated to the latest version. Changes in internal namespace `core/src/main/java/com/microsoft/applicationinsights/internal/schemav2`.
@@ -12,6 +40,7 @@
 - Obsolete methods of `RequestTelemetry`: `getHttpMethod`, `setHttpMethod`.
 - Add option to configure instrumentation key via `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable for consistency with other SDKs.
 - Fix the issue where `track(...)` of `TelemetryClient` class was overwriting the provided telemetry timestamp. 
+- Changed the policy on failed sent requests to delay retrying for 5 minutes instead of immediately retrying.
 
 ## Version 1.0.9
 - Fix the issue of infinite retry and connection drain on certificate error by updating the version of http client packaged with the SDK.

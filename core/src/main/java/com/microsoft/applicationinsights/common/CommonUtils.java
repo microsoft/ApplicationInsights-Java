@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.common;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -41,6 +44,7 @@ public class CommonUtils {
         }
         catch (UnknownHostException ex) {
             // optional parameter. do nothing if unresolvable
+            InternalLogger.INSTANCE.trace("Unresolvable host error. Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
             return null;
         }
     }

@@ -21,27 +21,24 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
-import com.microsoft.applicationinsights.agent.internal.agent.jmx.JmxConnectorLoader;
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
 import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.instrument.Instrumentation;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLDecoder;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Created by gupele on 5/6/2015.
@@ -116,11 +113,13 @@ public final class AgentImplementation {
         for (File file : agentFolder.listFiles()) {
             if (file.getName().indexOf(AGENT_JAR_PREFIX) != -1) {
                 agentJarName = file.getName();
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar name is " + agentJarName);
                 break;
             }
         }
 
         if (agentJarName == null) {
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR,"Agent Jar Name is null....Throwing runtime exception");
             throw new RuntimeException("Could not find agent jar");
         }
 
@@ -136,24 +135,27 @@ public final class AgentImplementation {
     }
 
     public static String getAgentJarLocation() throws UnsupportedEncodingException {
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         try {
-            ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
             if ((systemClassLoader instanceof URLClassLoader)) {
                 for (URL url : ((URLClassLoader)systemClassLoader).getURLs()) {
                     String urlPath = url.getPath();
+
                     if (urlPath.indexOf(AGENT_JAR_PREFIX) != -1) {
+                        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar found at " + urlPath);
                         int index = urlPath.lastIndexOf('/');
                         urlPath = urlPath.substring(0, index + 1);
                         return urlPath;
                     }
+
                 }
             }
         } catch (Throwable throwable) {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
         }
 
-        String path = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        return URLDecoder.decode(path, "UTF-8");
+        String stringPath = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        return URLDecoder.decode(stringPath, "UTF-8");
     }
 
     private static void SetNonWebAppModeIfAskedByConf(String sdkPath) throws Throwable {

@@ -22,16 +22,14 @@
  * Generated from ExceptionDetails.bond (https://github.com/Microsoft/bond)
 */
 package com.microsoft.applicationinsights.internal.schemav2;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
 import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.telemetry.JsonSerializable;
+import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Data contract class ExceptionDetails.
@@ -203,12 +201,10 @@ public class ExceptionDetails
     {
         writer.write("id", id);
         writer.write("outerId", outerId);
-        writer.write("typeName", typeName);
-        
-        writer.write("message", message);
-        
+        writer.writeRequired("typeName", typeName, 1024);
+        writer.writeRequired("message", message, 32768);
         writer.write("hasFullStack", hasFullStack);
-        writer.write("stack", stack);
+        writer.write("stack", stack, 32768);
         writer.write("parsedStack", parsedStack);
     }
     

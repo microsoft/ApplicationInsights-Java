@@ -21,18 +21,16 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.schemav2.RequestData;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.http.HttpStatus;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.concurrent.ConcurrentMap;
-
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.apache.http.HttpStatus;
-import org.apache.http.annotation.Obsolete;
 
 /**
  * Encapsulates information about a web request handled by the application.
@@ -48,7 +46,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Microsoft.ApplicationInsights.Request";
+    private static final String ENVELOPE_NAME = "Request";
 
 
     /**
@@ -181,6 +179,21 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     }
 
     /**
+     * Gets the source for the request telemetry object. This often is an ID identifying the caller.
+     */
+    public String getSource() {
+        return data.getSource();
+    }
+
+    /**
+     * Sets the source for the request telemetry object. This often is an ID identifying the caller.
+     * @param value The value of the Source property.
+     */
+    public void setSource(String value) {
+        data.setSource(value);
+    }
+
+    /**
      * Gets a value indicating whether application handled the request successfully.
      * @return Success indication
      */
@@ -244,19 +257,21 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     }
 
     /**
+     * @deprecated
      * Gets the HTTP method of the request.
      * @return The HTTP method
      */
-    @Obsolete
+    @Deprecated
     public String getHttpMethod() {
         return httpMethod;
     }
 
     /**
+     * @deprecated
      * Sets the HTTP method of the request.
      * @param httpMethod The HTTP method
      */
-    @Obsolete
+    @Deprecated
     public void setHttpMethod(String httpMethod) {
         this.httpMethod = httpMethod;
     }
@@ -272,6 +287,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     }
 
     @Override
+    @Deprecated
     protected void additionalSanitize() {
         data.setName(Sanitizer.sanitizeName(data.getName()));
         data.setId(Sanitizer.sanitizeName(data.getId()));

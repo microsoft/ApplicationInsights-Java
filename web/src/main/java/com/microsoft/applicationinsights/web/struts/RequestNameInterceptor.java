@@ -27,6 +27,7 @@ import com.opensymphony.xwork2.interceptor.Interceptor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by yonisha on 3/10/2015.
@@ -91,6 +92,7 @@ public class RequestNameInterceptor implements Interceptor {
                     "Failed to invoke interceptor '%s' with exception: %s.",
                     this.getClass().getSimpleName(),
                     e.getMessage());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
     }
 

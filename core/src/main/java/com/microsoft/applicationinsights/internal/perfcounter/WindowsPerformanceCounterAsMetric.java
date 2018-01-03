@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Performance counters that are sent as {@link com.microsoft.applicationinsights.telemetry.MetricTelemetry}
@@ -86,6 +87,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
                 }
             } catch (Throwable e) {
                 InternalLogger.INSTANCE.error("Failed to send metric performance counter for '%s': '%s'", entry.getValue(), e.getMessage());
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }
     }
@@ -104,6 +106,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
             } catch (ThreadDeath td) {
             	throw td;
             } catch (Throwable t) {
+                InternalLogger.INSTANCE.trace("error registering %s, Stack trace generated is %s", data.displayName, ExceptionUtils.getStackTrace(t));
             }
         }
     }

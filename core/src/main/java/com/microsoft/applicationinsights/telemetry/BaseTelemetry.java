@@ -21,18 +21,19 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Superclass for all telemetry data classes.
@@ -41,6 +42,8 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
     private String sequence;
+    
+    private final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
     protected BaseTelemetry() {
     }
@@ -122,9 +125,11 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     }
 
     /**
+     * @deprecated
      * Makes sure the data to send is sanitized from bad chars, proper length etc.
      */
     @Override
+    @Deprecated
     public void sanitize() {
         Sanitizer.sanitizeProperties(this.getProperties());
         additionalSanitize();
@@ -138,9 +143,12 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-
+    	
+    	String telemetryName = this.getTelemetryName(
+    			this.normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
+    	
         Envelope envelope = new Envelope();
-        envelope.setName(this.getEnvelopName());
+        envelope.setName(telemetryName);
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
@@ -162,6 +170,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     /**
      * Concrete classes should implement this method
      */
+    @Deprecated
     protected abstract void additionalSanitize();
 
     /**
@@ -182,4 +191,23 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     protected String getBaseTypeName() {
         throw new UnsupportedOperationException();
     }
+    
+    private String normalizeInstrumentationKey(String instrumentationKey){
+    	if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
+    		return "";
+    	}
+    	else{
+    		return instrumentationKey.replace("-", "").toLowerCase() + ".";
+    	}
+    }
+    
+    private String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
+    	return String.format(
+    			"%s%s%s",
+    			TELEMETRY_NAME_PREFIX,
+    			normalizedInstrumentationKey,
+    			envelopType
+    			);
+    }
+    
 }
