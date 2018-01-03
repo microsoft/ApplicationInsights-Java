@@ -67,7 +67,7 @@ final class XmlParserUtils {
         try {
             String strValue = element.getAttribute(ENABLED_ATTRIBUTE);
             if (!StringUtils.isNullOrEmpty(strValue)) {
-                boolean value = Boolean.valueOf(strValue); // FIXME this never throws
+                boolean value = Boolean.valueOf(strValue);
                 return value;
             }
             return defaultValue;
@@ -90,7 +90,7 @@ final class XmlParserUtils {
                 return value;
             }
             return defaultValue;
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
         }
 
@@ -103,7 +103,11 @@ final class XmlParserUtils {
         }
 
         try {
-            String strValue = element.getFirstChild().getTextContent();
+            Node node = element.getFirstChild();
+            if (node == null) {
+                return null;
+            }
+            String strValue = node.getTextContent();
             if (!StringUtils.isNullOrEmpty(strValue)) {
                 Long value = Long.valueOf(strValue);
                 return value;
