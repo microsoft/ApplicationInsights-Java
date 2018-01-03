@@ -403,11 +403,11 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             return;
         }
   
-            try {
+        try {
             String dependencyName = "";
-                if (methodData.arguments[0] != null) {
-                    dependencyName = methodData.arguments[0].toString();
-                }
+            if (methodData.arguments[0] != null) {
+                dependencyName = methodData.arguments[0].toString();
+            }   
 
             String commandName = "";
             if (methodData.arguments.length > 1 && methodData.arguments[1] != null) {
@@ -415,46 +415,46 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             }
   
             
-                long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
-                Duration duration = new Duration(durationInMilliSeconds);
-  
-                RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(
-                        dependencyName,
-                        commandName,
-                        duration,
-                        throwable == null);
-                telemetry.setDependencyKind(DependencyKind.SQL);
-  
-                StringBuilder sb = null;
-                if (methodData.arguments.length > 3) {
-                    sb = formatAdditionalSqlArguments(methodData);
+            long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
+            Duration duration = new Duration(durationInMilliSeconds);
+
+            RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(
+                    dependencyName,
+                    commandName,
+                    duration,
+                    throwable == null);
+            telemetry.setDependencyKind(DependencyKind.SQL);
+
+            StringBuilder sb = null;
+            if (methodData.arguments.length > 3) {
+                sb = formatAdditionalSqlArguments(methodData);
+                if (sb != null) {
+                    telemetry.getContext().getProperties().put("Args", sb.toString());
+                }
+            } else {
+                if (durationInMilliSeconds > ImplementationsCoordinator.INSTANCE.getQueryPlanThresholdInMS()) {
+                    sb = fetchExplainQuery(commandName, methodData.arguments[2]);
                     if (sb != null) {
-                        telemetry.getContext().getProperties().put("Args", sb.toString());
-                    }
-                } else {
-                    if (durationInMilliSeconds > ImplementationsCoordinator.INSTANCE.getQueryPlanThresholdInMS()) {
-                        sb = fetchExplainQuery(commandName, methodData.arguments[2]);
-                        if (sb != null) {
-                            telemetry.getContext().getProperties().put("Query Plan", sb.toString());
-                        }
+                        telemetry.getContext().getProperties().put("Query Plan", sb.toString());
                     }
                 }
-  
-                InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
-  
-                telemetryClient.track(telemetry);
-                if (throwable != null) {
-                    InternalLogger.INSTANCE.trace("Sending Sql exception");
-                    ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
-                    telemetryClient.track(exceptionTelemetry);
-                }
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t) {
-                t.printStackTrace();
             }
-  
+
+            InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
+
+            telemetryClient.track(telemetry);
+            if (throwable != null) {
+                InternalLogger.INSTANCE.trace("Sending Sql exception");
+                ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
+                telemetryClient.track(exceptionTelemetry);
+            }
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
+
+    }
 
     private static long nanoToMilliseconds(long nanoSeconds) {
         return nanoSeconds / 1000000;
