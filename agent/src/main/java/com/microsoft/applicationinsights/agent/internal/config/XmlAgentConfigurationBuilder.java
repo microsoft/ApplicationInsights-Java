@@ -362,7 +362,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             if (!StringUtils.isNullOrEmpty(valueStr)) {
                 try {
                     thresholdInMS = Long.valueOf(valueStr);
-                } catch (NumberFormatException e) {
+                } catch (Exception e) {
                     InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", THRESHOLD_ATTRIBUTE, methodElement.getTagName());
                 }
             }
