@@ -56,7 +56,7 @@ public class SimpleCalculatorServlet extends HttpServlet {
 		Map<String, Double> metrics = new ConcurrentHashMap<String, Double>();
 		metrics.put("score", Double.valueOf(200));
 
-		new TelemetryClient().trackEvent("EventDataTest2", properties, metrics);
+		new TelemetryClient().trackEvent("EventDataPropertyTest", properties, metrics);
 	}
 	
 	/**

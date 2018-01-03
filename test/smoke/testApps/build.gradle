@@ -3,6 +3,13 @@ apply plugin: 'base'
 subprojects {
 	apply plugin: 'java'
 
+	ext {
+		// FIXME FEATURE use jars that we provide
+		aiAgentJar = project(':agent')
+		aiCoreJar = project(':core')
+		aiWebJar =  project(':web')
+	}
+
 	repositories {
 		jcenter()
 		mavenCentral()

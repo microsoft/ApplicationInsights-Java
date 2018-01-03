@@ -49,7 +49,7 @@ public class SimpleEventDataTest extends AiSmokeTest {
 		Data<EventData> dHolder2 = (Data<EventData>) mEnvelope2.getData();
 		EventData d2 = dHolder2.getBaseData();
 		
-		assertEquals("EventDataTest2", d2.getName());
+		assertEquals("EventDataPropertyTest", d2.getName());
 		assertEquals(String.valueOf(100), d2.getProperties().get("price"));
 		assertEquals(Double.valueOf(200), d2.getMeasurements().get("score"));
 	}
