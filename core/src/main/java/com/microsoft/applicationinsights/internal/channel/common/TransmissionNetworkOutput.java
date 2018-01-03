@@ -185,8 +185,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 if (shouldBackoff) {
                     InternalLogger.INSTANCE.trace("Backing off for %s seconds", DEFAULT_BACKOFF_TIME_SECONDS);
                     transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+                }
             }
-        }
         }
 
         return true;
