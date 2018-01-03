@@ -1,9 +1,8 @@
-// apply plugin: 'java-library'
 apply plugin: 'war'
 
 dependencies {
-    compile project(':core')
-    compile project(':web')
+    compile aiCoreJar
+    compile aiWebJar
     compile 'com.google.guava:guava:20.0'
     
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
