@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 2.0.1-BETA
+- Enhanced Log4j2 appender to support basic parameters including Filters, Layouts and includeException. (#348)
+- Fixed performance issue on SDK startup.
+- Fixed PageView telemetry data not being reported. 
+
 ## Version 2.0.0-BETA
 - Updating various dependencies to latest version
 - Introducing public class CustomClassWriter in Agent to enable finding common super classes used for Agent instrumentation without loading it
