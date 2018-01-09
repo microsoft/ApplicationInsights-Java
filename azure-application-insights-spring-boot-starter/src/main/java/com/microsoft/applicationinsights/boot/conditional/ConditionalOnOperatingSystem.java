@@ -19,20 +19,26 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+package com.microsoft.applicationinsights.boot.conditional;
 
-include 'agent'
-include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'azure-application-insights-spring-boot-starter'
-include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+import org.springframework.context.annotation.Conditional;
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Conditional(OnOperationSystemCondition.class)
+public @interface ConditionalOnOperatingSystem {
+
+    /**
+     * The {@link OperatingSystem operating system} that must be active.
+     * @return the expected operating system
+     */
+    OperatingSystem value();
+
 }
-
