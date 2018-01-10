@@ -61,24 +61,3 @@ allprojects {
 
 // endregion Root project script
 
-// region private methods
-
-// calculate sdk version based on system properties
-def calcProjectVersion() {
-    def projectVersion = version;
-    def userProvidedVersion = System.properties["version"]
-    if (userProvidedVersion != null && userProvidedVersion.trim() != "") {
-        projectVersion = userProvidedVersion.trim()
-        logger.info "User provided a version; version updated to $projectVersion"
-    }
-
-    boolean isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
-    if (!isRelease) {
-        projectVersion = projectVersion + "-SNAPSHOT"
-        logger.info "This is NOT a release version; version updated to $projectVersion"
-    }
-    projectVersion
-}
-
-// endregion private methods
-
