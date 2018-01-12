@@ -82,7 +82,7 @@ public class AiDockerClient {
 		String localIp = InetAddress.getLocalHost().getHostAddress();
 
 		Process p = buildProcess(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, image).start();
-		if (!p.waitFor(3, TimeUnit.SECONDS)) {
+		if (!p.waitFor(10, TimeUnit.SECONDS)) {
 			p.destroyForcibly();
 			flushStdout(p);
 			throw new RuntimeException("Could not start container: timeout reached");

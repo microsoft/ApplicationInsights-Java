@@ -3,6 +3,10 @@
 ## Prerequisites
 * Windows 10
 * [Docker for Windows][windock]
+* Set environment variables:
+	* **DOCKER_EXE** This should point to docker.exe, e.g. C:\Program Files\Docker\Docker\resources\bin\docker.exe
+	* **DOCKER_CLI_EXE** This should point to DockerCli.exe, e.g. C:\Program Files\Docker\Docker\DockerCli.exe
+
 
 ## Overview
 The goal for the smoke tests is to exercise and validate the ApplicationInsights Java SDK in each supported environment. The test matrix has dimensions for OS, Application Servers and JREs. A custom task in the gradle build script is used for generating the application environments (using Docker), building the test applications and running the tests against the applications in each environment.
