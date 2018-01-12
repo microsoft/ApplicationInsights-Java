@@ -56,7 +56,13 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.getMessage());
+            try {
+                InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return Collections.emptyList();
@@ -101,15 +107,31 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
                 performanceCounters.add(pcWindowsMetric);
                 windowsPCsData = null;
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.getMessage());
+            try {
+                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         try {
             WindowsPerformanceCounterAsPC pcWindowsPCs = new WindowsPerformanceCounterAsPC();
             performanceCounters.add(pcWindowsPCs);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.getMessage());
+            try {
+                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return performanceCounters;

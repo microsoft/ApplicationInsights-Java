@@ -199,13 +199,21 @@ public final class WebRequestTrackingFilter implements Filter {
         if (agentIsUp) {
             try {
                 AgentTLS.setTLSKey(key);
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable e) {
-                if (e instanceof ClassNotFoundException ||
-                        e instanceof NoClassDefFoundError) {
+                try {
+                    if (e instanceof ClassNotFoundException ||
+                            e instanceof NoClassDefFoundError) {
 
-                    // This means that the Agent is not present and therefore we will stop trying
-                    agentIsUp = false;
-                    InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'", e.getMessage());
+                        // This means that the Agent is not present and therefore we will stop trying
+                        agentIsUp = false;
+                        InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'", e.getMessage());
+                    }
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
                 }
             }
         }
@@ -220,9 +228,17 @@ public final class WebRequestTrackingFilter implements Filter {
             //if agent is not installed (jar not loaded), can skip the entire registration process
             try {
                 AgentConnector test = AgentConnector.INSTANCE;
+            } catch (ThreadDeath td) {
+                throw td;
             } catch(Throwable t) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Agent was not found. Skipping the agent registration");
-                return;
+                try {
+                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Agent was not found. Skipping the agent registration");
+                    return;
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
 
             ServletContext context = filterConfig.getServletContext();
@@ -236,7 +252,13 @@ public final class WebRequestTrackingFilter implements Filter {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.getMessage());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
@@ -293,7 +315,13 @@ public final class WebRequestTrackingFilter implements Filter {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.getMessage());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
         appName = name;
         return name;
@@ -310,10 +338,18 @@ public final class WebRequestTrackingFilter implements Filter {
             AgentTLS.getTLSKey();
             agentIsUp = true;
             this.key = key;
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            agentIsUp = false;
-            this.key = null;
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "setKey: Failed to find AgentTLS");
+            try {
+                agentIsUp = false;
+                this.key = null;
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "setKey: Failed to find AgentTLS");
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 }

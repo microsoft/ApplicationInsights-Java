@@ -114,8 +114,15 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("PageViewTelemetryFilter: failed to parse NotNeededNames: %s", notNeededNames));
-            throw t;
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("PageViewTelemetryFilter: failed to parse NotNeededNames: %s", notNeededNames));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
         }
     }
 
@@ -134,8 +141,15 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "PageViewTelemetryFilter: failed to parse NotNeededUrls: " + notNeededUrls);
-            throw t;
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "PageViewTelemetryFilter: failed to parse NotNeededUrls: " + notNeededUrls);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
         }
     }
 }

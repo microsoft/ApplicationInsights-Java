@@ -75,12 +75,20 @@ public final class JniPCConnector {
             }
 
             loadNativeLibrary();
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error(
-                "Failed to load native dll, Windows performance counters will not be used. " +
-                "Please make sure that Visual C++ Redistributable is properly installed: %s.", e.getMessage());
+            try {
+                InternalLogger.INSTANCE.error(
+                    "Failed to load native dll, Windows performance counters will not be used. " +
+                    "Please make sure that Visual C++ Redistributable is properly installed: %s.", e.getMessage());
 
-            return false;
+                return false;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return true;

@@ -59,10 +59,17 @@ public final class TelemetryProcessorCreator {
                                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": method " + "addToExcludedType" + "failed, the class will not be used.");
                                 return null;
                             }
-                        }
-                        catch (Throwable t) {
-                            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + "methodName" + ", exception: " + t.getMessage() + ", the class will not be used.");
-                            return null;
+                        } catch (ThreadDeath td) {
+                            throw td;
+                        } catch (Throwable t) {
+                            try {
+                                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + "methodName" + ", exception: " + t.getMessage() + ", the class will not be used.");
+                                return null;
+                            } catch (ThreadDeath td) {
+                                throw td;
+                            } catch (Throwable t2) {
+                                // chomp
+                            }
                         }
                     }
                 }
@@ -87,10 +94,17 @@ public final class TelemetryProcessorCreator {
                                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": method " + "addToIncludeType" + "failed, the class will not be used.");
                                 return null;
                             }
-                        }
-                        catch (Throwable t) {
-                            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + "methodName" + ", exception: " + t.getMessage() + ", the class will not be used.");
-                            return null;
+                        } catch (ThreadDeath td) {
+                            throw td;
+                        } catch (Throwable t) {
+                            try {
+                                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + "methodName" + ", exception: " + t.getMessage() + ", the class will not be used.");
+                                return null;
+                            } catch (ThreadDeath td) {
+                                throw td;
+                            } catch (Throwable t2) {
+                                // chomp
+                            }
                         }
                     }
                 }
@@ -113,13 +127,27 @@ public final class TelemetryProcessorCreator {
                 } catch (ThreadDeath td) {
                 	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + methodName + ", exception: " + t.getMessage() + ", the class will not be used.");
-                    return null;
+                    try {
+                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": failed to activate method " + methodName + ", exception: " + t.getMessage() + ", the class will not be used.");
+                        return null;
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": unexpected exception while creating processor " + confClass.getType() + ", exception: " + throwable.getMessage() + ", the class will not be used.");
-            return null;
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, confClass.getType() + ": unexpected exception while creating processor " + confClass.getType() + ", exception: " + throwable.getMessage() + ", the class will not be used.");
+                return null;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return processor;

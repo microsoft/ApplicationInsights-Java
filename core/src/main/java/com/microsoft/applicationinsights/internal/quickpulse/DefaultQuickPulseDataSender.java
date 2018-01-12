@@ -88,8 +88,14 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            stopped = true;
-            quickPulseStatus = QuickPulseStatus.ERROR;
+            try {
+                stopped = true;
+                quickPulseStatus = QuickPulseStatus.ERROR;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

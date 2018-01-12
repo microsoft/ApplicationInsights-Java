@@ -58,7 +58,13 @@ public final class JmxConnectorLoader {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.getMessage());
+            try {
+                InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 		
 		return false;

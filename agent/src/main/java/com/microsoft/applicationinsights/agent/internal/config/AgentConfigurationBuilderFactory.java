@@ -42,7 +42,13 @@ public class AgentConfigurationBuilderFactory {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'" + t.getMessage());
+            try {
+                InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'" + t.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return null;

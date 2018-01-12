@@ -147,10 +147,18 @@ public class ApplicationInsightsWriter implements
             this.telemetryClient = new TelemetryClient(this.telemetryConfiguration);
 
             logger.logInfo("Initialization completed.");
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e ) {
-            logger.logError("Initialization failed, plugin will be disabled:\n" + e.toString());
+            try {
+                logger.logError("Initialization failed, plugin will be disabled:\n" + e.toString());
 
-            return INITIALIZATION_PHASE_ERROR_CODE;
+                return INITIALIZATION_PHASE_ERROR_CODE;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return SUCCESS_CODE;
@@ -190,17 +198,23 @@ public class ApplicationInsightsWriter implements
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            String errorMessage =
-                    "Failed to send events with the following error: '" + t + "'. This message will appear only once.";
-            logger.logDebug(errorMessage);
+            try {
+                String errorMessage =
+                        "Failed to send events with the following error: '" + t + "'. This message will appear only once.";
+                logger.logDebug(errorMessage);
 
-            // We'll log errors only once in order to avoid spamming CollectD log, in case of a permanent error.
-            if (logWriteError) {
-                logger.logError(errorMessage);
-                logWriteError = false;
+                // We'll log errors only once in order to avoid spamming CollectD log, in case of a permanent error.
+                if (logWriteError) {
+                    logger.logError(errorMessage);
+                    logWriteError = false;
+                }
+
+                return WRITE_PHASE_ERROR_CODE;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
             }
-
-            return WRITE_PHASE_ERROR_CODE;
         }
 
         return SUCCESS_CODE;

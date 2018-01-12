@@ -60,7 +60,13 @@ public final class RuntimeExceptionProvider {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load instrumentation for Jedis: '%s':'%s'", t.getClass().getName(), t.getMessage());
+            try {
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load instrumentation for Jedis: '%s':'%s'", t.getClass().getName(), t.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 }

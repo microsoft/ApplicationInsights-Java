@@ -106,9 +106,18 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
         try {
             this.minimumDurationInMS = Long.valueOf(minimumDurationInMS);
             InternalLogger.INSTANCE.trace("RequestTelemetryFilter: successfully set MinimumDurationInMS " + this.minimumDurationInMS);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "RequestTelemetryFilter: failed to set minimum duration " + minimumDurationInMS);
-            throw e;
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "RequestTelemetryFilter: failed to set minimum duration " + minimumDurationInMS);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw e;
+            }
         }
     }
 
@@ -145,8 +154,15 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("RequestTelemetryFilter: failed to parse NotNeededResponseCodes: ", notNeededResponseCodes));
-            throw t;
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("RequestTelemetryFilter: failed to parse NotNeededResponseCodes: ", notNeededResponseCodes));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
         }
     }
 }

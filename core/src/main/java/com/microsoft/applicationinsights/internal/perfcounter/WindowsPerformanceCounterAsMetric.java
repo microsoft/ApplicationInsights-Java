@@ -85,9 +85,17 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
                     send(telemetryClient, value, entry.getValue());
                     InternalLogger.INSTANCE.trace("Sent metric performance counter for '%s': '%s'", entry.getValue(), value);
                 }
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed to send metric performance counter for '%s': '%s'", entry.getValue(), e.getMessage());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                try {
+                    InternalLogger.INSTANCE.error("Failed to send metric performance counter for '%s': '%s'", entry.getValue(), e.getMessage());
+                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
         }
     }
@@ -106,7 +114,13 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
             } catch (ThreadDeath td) {
             	throw td;
             } catch (Throwable t) {
-                InternalLogger.INSTANCE.trace("error registering %s, Stack trace generated is %s", data.displayName, ExceptionUtils.getStackTrace(t));
+                try {
+                    InternalLogger.INSTANCE.trace("error registering %s, Stack trace generated is %s", data.displayName, ExceptionUtils.getStackTrace(t));
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
         }
     }

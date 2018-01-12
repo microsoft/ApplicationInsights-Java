@@ -284,7 +284,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                         }
                     }
                 } catch (Throwable t) {
-                    url = "jdbc:Unknown DB URL (failed to fetch from connection)";
+                    try { // can assignment actually throw here?
+                        url = "jdbc:Unknown DB URL (failed to fetch from connection)";
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
 
@@ -451,7 +457,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
-            t.printStackTrace();
+            try {
+                t.printStackTrace();
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
     }

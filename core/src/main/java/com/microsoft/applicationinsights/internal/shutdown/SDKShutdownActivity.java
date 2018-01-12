@@ -88,6 +88,7 @@ public enum SDKShutdownActivity {
             } catch (ThreadDeath td) {
             	throw td;
             } catch (Throwable t) {
+                // chomp
             }
         }
 
@@ -104,8 +105,14 @@ public enum SDKShutdownActivity {
                 } catch (ThreadDeath td) {
                 	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.getMessage());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    try {
+                        InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.getMessage());
+                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
         }
@@ -119,8 +126,14 @@ public enum SDKShutdownActivity {
                 } catch (ThreadDeath td) {
                 	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.getMessage());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    try {
+                        InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.getMessage());
+                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
         }

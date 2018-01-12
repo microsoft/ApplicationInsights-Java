@@ -145,9 +145,17 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
             agentConfiguration.setRequestedClassesToInstrument(classesToInstrument);
             return agentConfiguration;
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalAgentLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'" + e.getMessage());
-            return null;
+            try {
+                InternalAgentLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'" + e.getMessage());
+                return null;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

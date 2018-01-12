@@ -57,9 +57,16 @@ public final class MetricTelemetryFilter implements TelemetryProcessor {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("MetricTelemetryFilter: failed to parse NotNeededNames: %s", allNotNeeded));
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-            throw t;
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("MetricTelemetryFilter: failed to parse NotNeededNames: %s", allNotNeeded));
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
         }
     }
 

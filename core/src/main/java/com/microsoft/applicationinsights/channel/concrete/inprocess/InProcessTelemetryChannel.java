@@ -244,8 +244,14 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            try {
+                InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

@@ -80,8 +80,14 @@ public enum AgentConnector {
                 } catch (ThreadDeath td) {
                 	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
-                    agentKey = null;
+                    try {
+                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
+                        agentKey = null;
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
 
                 registrationType = RegistrationType.WEB;
@@ -115,8 +121,14 @@ public enum AgentConnector {
                 } catch (ThreadDeath td) {
                 	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
-                    return false;
+                    try {
+                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
+                        return false;
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
                 ImplementationsCoordinator.INSTANCE.registerSelf(coreDataAgent);
 

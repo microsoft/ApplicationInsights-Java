@@ -227,17 +227,31 @@ public enum PerformanceCounterContainer implements Stoppable {
                             } catch (ThreadDeath td) {
                             	throw td;
                             } catch (Throwable t) {
-                                InternalLogger.INSTANCE.error("Error in thread scheduled for PerformanceCounterContainer");
-                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                                try {
+                                    InternalLogger.INSTANCE.error("Error in thread scheduled for PerformanceCounterContainer");
+                                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                                } catch (ThreadDeath td) {
+                                    throw td;
+                                } catch (Throwable t2) {
+                                    // chomp
+                                }
                             }
                         }
 
                         for (PerformanceCounter performanceCounter : performanceCounters.values()) {
                             try {
                                 performanceCounter.report(telemetryClient);
+                            } catch (ThreadDeath td) {
+                                throw td;
                             } catch (Throwable e) {
-                                InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': '%s'", performanceCounter.getId(), e.getMessage());
-                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                                try {
+                                    InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': '%s'", performanceCounter.getId(), e.getMessage());
+                                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                                } catch (ThreadDeath td) {
+                                    throw td;
+                                } catch (Throwable t2) {
+                                    // chomp
+                                }
                             }
                         }
 
@@ -247,8 +261,14 @@ public enum PerformanceCounterContainer implements Stoppable {
                             } catch (ThreadDeath td) {
                             	throw td;
                             } catch (Throwable t) {
-                                InternalLogger.INSTANCE.error("Error while executing post collection");
-                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                                try {
+                                    InternalLogger.INSTANCE.error("Error while executing post collection");
+                                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                                } catch (ThreadDeath td) {
+                                    throw td;
+                                } catch (Throwable t2) {
+                                    // chomp
+                                }
                             }
                         }
                     }

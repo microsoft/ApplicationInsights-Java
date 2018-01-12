@@ -173,8 +173,14 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             } catch (ThreadDeath td) {
             	throw td;
             } catch (Throwable t) {
-                InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
-                shouldBackoff = true;
+                try {
+                    InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
+                    shouldBackoff = true;
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
             finally {
                 if (request != null) {
@@ -210,8 +216,16 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             Date now = Calendar.getInstance().getTime();
             long retryAfterAsSeconds = (date.getTime() - convertToDateToGmt(now).getTime())/1000;
             transmissionPolicyManager.suspendInSeconds(suspensionPolicy, retryAfterAsSeconds);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Throttled but failed to block transmission, exception: %s", e.getMessage());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Throttled but failed to block transmission, exception: %s", e.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

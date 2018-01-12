@@ -85,6 +85,8 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
                 public void run() {
                     try {
                         actualOutput.send(transmission);
+                    } catch (ThreadDeath td) {
+                        throw td;
                     } catch (Throwable throwable) {
                         // Avoid un-expected exit of thread
                     }

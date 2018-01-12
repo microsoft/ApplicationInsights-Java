@@ -147,7 +147,13 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
-            t.printStackTrace();
+            try {
+                t.printStackTrace();
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
@@ -301,9 +307,17 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             notificationHandlersData.put(implementationName, new RegistrationData(classLoader, handler, implementationName));
 
             return implementationName;
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
-            return null;
+            try {
+                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
+                return null;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
@@ -315,8 +329,16 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
 
             mainHandler = handler;
             InternalAgentLogger.INSTANCE.trace("Setting main handler");
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
+            try {
+                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

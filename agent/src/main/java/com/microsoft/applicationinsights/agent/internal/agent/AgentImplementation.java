@@ -59,10 +59,18 @@ public final class AgentImplementation {
             agentJarLocation = getAgentJarLocation();
             appendJarsToBootstrapClassLoader(inst);
             initializeCodeInjector(inst);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
-			throwable.printStackTrace();
-            System.exit(-1);
+            try {
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
+                throwable.printStackTrace();
+                System.exit(-1);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                // chomp
+            }
         }
     }
 
@@ -138,11 +146,11 @@ public final class AgentImplementation {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         try {
             if ((systemClassLoader instanceof URLClassLoader)) {
-                for (URL url : ((URLClassLoader)systemClassLoader).getURLs()) {
+                for (URL url : ((URLClassLoader) systemClassLoader).getURLs()) {
                     String urlPath = url.getPath();
 
                     if (urlPath.indexOf(AGENT_JAR_PREFIX) != -1) {
-                        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar found at " + urlPath);
+                        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent jar found at " + urlPath);
                         int index = urlPath.lastIndexOf('/');
                         urlPath = urlPath.substring(0, index + 1);
                         return urlPath;
@@ -150,6 +158,8 @@ public final class AgentImplementation {
 
                 }
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
         }
