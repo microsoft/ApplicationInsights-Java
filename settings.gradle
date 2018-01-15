@@ -38,6 +38,7 @@ include ':test:smoke:appServers:Tomcat.7'
 include ':test:smoke:testApps'
 include ':test:smoke:testApps:SimpleCalculator'
 include ':test:smoke:testApps:SimpleEventData'
+include ':test:smoke:testApps:SimpleTraceData'
 include ':test:smoke:utils'
 
 if (System.env.'COLLECTD_HOME') {
