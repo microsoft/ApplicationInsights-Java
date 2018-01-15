@@ -25,6 +25,7 @@
 - Changed signature of com.microsoft.applicationinsights.internal.agent.CoreAgentNotificationHandler.httpMethodFinished. It now includes correlation information.
 - Compilation now targets Java 1.7. Java 1.6 is no longer supported.
 - Adding system property `applicationinsights.configurationDirectory` to allow to explicitly set directory containing the config file.
+- Fixed Issue #526 (NPE in MapUtil.copy())
 
 ## Version 1.0.10
 - `track()` method of 'com.microsoft.applicationinsights.TelemetryClient' is now modified. No longer performing pre-sanitization
