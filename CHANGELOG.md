@@ -4,6 +4,7 @@
 - Enhanced Log4j2 appender to support basic parameters including Filters, Layouts and includeException. (#348)
 - Fixed performance issue on SDK startup.
 - Fixed PageView telemetry data not being reported. 
+- Fixed Issue #526 (NPE in MapUtil.copy())
 
 ## Version 2.0.0-BETA
 - Updating various dependencies to latest version
