@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Version 2.0.1-BETA
+## Version 2.0.1
 - Enhanced Log4j2 appender to support basic parameters including Filters, Layouts and includeException. (#348)
 - Fixed performance issue on SDK startup.
 - Fixed PageView telemetry data not being reported. 
