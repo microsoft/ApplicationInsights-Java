@@ -223,7 +223,7 @@ public abstract class AiSmokeTest {
 		startMockedIngestion();
 		startDocker();
 		System.out.println("Test preperation complete");
-		doCalcSendsRequestDataAndEventData();
+		doCalcSendsData();
 	}
 
 	protected void checkParams() {
@@ -285,7 +285,7 @@ public abstract class AiSmokeTest {
 		// TODO start application dependencies---container(s)
 	}
 
-	protected void doCalcSendsRequestDataAndEventData() throws Exception {
+	protected void doCalcSendsData() throws Exception {
 		System.out.println("Wait for app to finish deploying...");
 		String appContext = warFileName.replace(".war", "");
 		String baseUrl = "http://localhost:" + appServerPort + "/" + appContext;
@@ -370,7 +370,7 @@ public abstract class AiSmokeTest {
 
 	// framework methods
 
-	public <T extends Domain> T getTelemetryTypeData(int index, String data){		
+	protected <T extends Domain> T getTelemetryTypeData(int index, String data){		
         Envelope mEnvelope = mockedIngestion.getItemsByType(data).get(index);
         Data<T> dHolder = (Data<T>) mEnvelope.getData();
         return dHolder.getBaseData();
