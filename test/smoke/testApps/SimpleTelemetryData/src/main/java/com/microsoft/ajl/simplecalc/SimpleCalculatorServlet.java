@@ -3,6 +3,9 @@ package com.microsoft.ajl.simplecalc;
 import com.microsoft.ajl.simplecalc.model.BinaryCalculation;
 import com.microsoft.ajl.simplecalc.model.BinaryOperator;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,9 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.microsoft.ajl.simplecalc.ParameterConstants.*;
 
@@ -24,7 +28,8 @@ import static com.microsoft.ajl.simplecalc.ParameterConstants.*;
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/doCalc" })
 public class SimpleCalculatorServlet extends HttpServlet {
 	private static final long serialVersionUID = -633683109556605395L;
-
+	private TelemetryClient client = new TelemetryClient();
+	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -48,38 +53,19 @@ public class SimpleCalculatorServlet extends HttpServlet {
 		
 		response.setContentType("text/html;charset=UTF-8");
 		renderHtml(bc, response.getWriter());
-		
-		GenerateTrackEventData("EventDataTest", null, null);
-		Map<String, String> eventProperties = GenerateProperties("price", String.valueOf(100));
-		Map<String, Double> eventMetrics = GenerateMetrics("score", Double.valueOf(200));
-		GenerateTrackEventData("EventDataPropertyTest", eventProperties, eventMetrics);
 
-		Map<String, String> traceProperties = GenerateProperties("key", "Test");
-		GenerateTrackTraceData("This is first trace message.", null, null);
-		GenerateTrackTraceData("This is second trace message.", SeverityLevel.Error, null);
-		GenerateTrackTraceData("This is third trace message.", SeverityLevel.Information, traceProperties);
-	}
+		Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }}; 
+		Map<String, Double> metrics = new HashMap<String, Double>() {{ put("key", 1d); }};		
 
-	private Map<String, String> GenerateProperties(String key, String value) {
-		Map<String, String> properties = new ConcurrentHashMap<>();
-		properties.put(key, value);
-		return properties;
-	}
+		//Event
+		client.trackEvent("EventDataTest");
+		client.trackEvent("EventDataPropertyTest", properties, metrics);
 
-	private Map<String, Double> GenerateMetrics(String key, Double value) {
-		Map<String, Double> metrics = new ConcurrentHashMap<>();
-		metrics.put(key, value);
-		return metrics;
+		//Trace
+		client.trackTrace("This is first trace message.");
+		client.trackTrace("This is second trace message.", SeverityLevel.Error, null);
+		client.trackTrace("This is third trace message.", SeverityLevel.Information, properties);
 	}
-
-	private void GenerateTrackEventData(String name, Map<String, String> properties, Map<String, Double> metrics) {
-		new TelemetryClient().trackEvent(name, properties, metrics);
-	}
-	
-	private void GenerateTrackTraceData(String message, SeverityLevel level, Map<String, String> properties){
-		new TelemetryClient().trackTrace(message, level, properties);
-	}
-
 
 	/**
 	 * @param parameterMap

@@ -9,6 +9,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 
 import java.io.File;
@@ -220,25 +223,7 @@ public abstract class AiSmokeTest {
 		startMockedIngestion();
 		startDocker();
 		System.out.println("Test preperation complete");
-
-		System.out.println("Wait for app to finish deploying...");
-		String appContext = warFileName.replace(".war", "");
-		String baseUrl = "http://localhost:" + appServerPort + "/" + appContext;
-		waitForUrl(baseUrl, 60, TimeUnit.SECONDS, appContext);
-		System.out.println("Test app health check complete.");
-
-		String url = baseUrl+"/doCalc?leftOperand=1&rightOperand=2&operator=plus";
-		String content = HttpHelper.get(url);
-
-		assertNotNull(content);
-		assertTrue(content.length() > 0);
-		
-		System.out.println("Waiting 10s for telemetry...");
-		TimeUnit.SECONDS.sleep(10);
-		System.out.println("Finished waiting for telemetry. Starting validation...");
-
-		assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
-		assertTrue("mocked ingestion has 0 items", mockedIngestion.getItemCount() > 0);
+		doCalcSendsRequestDataAndEventData();
 	}
 
 	protected void checkParams() {
@@ -298,6 +283,27 @@ public abstract class AiSmokeTest {
 			throw e;
 		}
 		// TODO start application dependencies---container(s)
+	}
+
+	protected void doCalcSendsRequestDataAndEventData() throws Exception {
+		System.out.println("Wait for app to finish deploying...");
+		String appContext = warFileName.replace(".war", "");
+		String baseUrl = "http://localhost:" + appServerPort + "/" + appContext;
+		waitForUrl(baseUrl, 60, TimeUnit.SECONDS, appContext);
+		System.out.println("Test app health check complete.");
+
+		String url = baseUrl+"/doCalc?leftOperand=1&rightOperand=2&operator=plus";
+		String content = HttpHelper.get(url);
+
+		assertNotNull(content);
+		assertTrue(content.length() > 0);
+		
+		System.out.println("Waiting 10s for telemetry...");
+		TimeUnit.SECONDS.sleep(10);
+		System.out.println("Finished waiting for telemetry. Starting validation...");
+
+		assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
+		assertTrue("mocked ingestion has 0 items", mockedIngestion.getItemCount() > 0);	
 	}
 
 	@After
@@ -364,5 +370,9 @@ public abstract class AiSmokeTest {
 
 	// framework methods
 
-	
+	public <T extends Domain> T getTelemetryTypeData(int index, String data){		
+        Envelope mEnvelope = mockedIngestion.getItemsByType(data).get(index);
+        Data<T> dHolder = (Data<T>) mEnvelope.getData();
+        return dHolder.getBaseData();
+    }
 }

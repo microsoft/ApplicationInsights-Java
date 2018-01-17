@@ -11,25 +11,28 @@ import static org.junit.Assert.*;
 public class SimpleTrackEventDataTest extends AiSmokeTest {
 	@Test
 	public void testTrackEventWithName(){
-		EventData d = GetEventData(0);
+		EventData d = getTelemetryTypeData(0, "EventData");
 		final String name = "EventDataTest";
 		assertEquals(name, d.getName());
 	}
 
 	@Test
 	public void testTrackEventWithPropertiesAndMetrics(){
-		EventData d = GetEventData(1);
+		EventData d = getTelemetryTypeData(1, "EventData");
+
 		final String name = "EventDataPropertyTest";
+		final String expectedProperties = "value";
+		final Double expectedMetrice = 1d;
+		
 		assertEquals(name, d.getName());
-		assertEquals(String.valueOf(100), d.getProperties().get("price"));
-		assertEquals(Double.valueOf(200), d.getMeasurements().get("score"));
+		assertEquals(expectedProperties, d.getProperties().get("key"));
+		assertEquals(expectedMetrice, d.getMeasurements().get("key"));
 	}	
 
-	private EventData GetEventData(int index) {
-		Envelope mEnvelope = mockedIngestion.getItemsByType("EventData").get(index);
-		Data<EventData> dHolder = (Data<EventData>) mEnvelope.getData();
-		EventData d = dHolder.getBaseData();
-		return d;
-	}
-
+	@Test
+    public void testTrackEventCount(){
+        int actualItems = mockedIngestion.getCountForType("EventData");
+		int expectedItems = 2;
+        assertEquals(String.format("There were %d extra EventData received.", actualItems - expectedItems) , expectedItems, actualItems);
+    }
 }

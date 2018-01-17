@@ -12,14 +12,14 @@ import static org.junit.Assert.*;
 public class SimpleTrackTraceDataTest extends AiSmokeTest {
 	@Test
 	public void testTrackTraceWithName(){
-		MessageData d = GetTraceData(0);
+		MessageData d = getTelemetryTypeData(0, "MessageData");
 		final String expectedMessage = "This is first trace message.";
 		assertEquals(expectedMessage, d.getMessage());
 	}
 
 	@Test
 	public void testTrackTraceWithSeverityLevel(){
-		MessageData d = GetTraceData(1);
+		MessageData d = getTelemetryTypeData(1, "MessageData");
 		final String expectedMessage = "This is second trace message.";		
 		assertEquals(expectedMessage, d.getMessage());
 		assertEquals(SeverityLevel.Error, d.getSeverityLevel());
@@ -27,18 +27,19 @@ public class SimpleTrackTraceDataTest extends AiSmokeTest {
 
 	@Test
 	public void testTrackTraceWithProperties(){
-		MessageData d = GetTraceData(2);
+		MessageData d = getTelemetryTypeData(2, "MessageData");
 		final String expectedMessage = "This is third trace message.";
-		final String expectedValue = "Test";
+		final String expectedValue = "value";
 		assertEquals(expectedMessage, d.getMessage());
 		assertEquals(SeverityLevel.Information, d.getSeverityLevel());
 		assertEquals(expectedValue, d.getProperties().get("key"));
 	}
 
-	private MessageData GetTraceData(int index) {
-		Envelope mEnvelope = mockedIngestion.getItemsByType("MessageData").get(index);
-		Data<MessageData> dHolder = (Data<MessageData>) mEnvelope.getData();
-		MessageData d = dHolder.getBaseData();
-		return d;
-	}
+	@Test
+    public void testTrackTraceCount(){
+        int actualItems = mockedIngestion.getCountForType("MessageData");
+		int expectedItems = 3;
+        assertEquals(String.format("There were %d extra MessageData received.", actualItems - expectedItems) , expectedItems, actualItems);
+    }
+
 }
