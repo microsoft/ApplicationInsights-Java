@@ -86,17 +86,18 @@ public class JsonHelper {
 		@Override
 		public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
 				throws JsonParseException {
-			String value = json.getAsString();
-			String[] parts = value.split("[:.]"); // [days,] hours, minutes, seconds.milliseconds
+			final String value = json.getAsString();
+			final int firstDot = value.indexOf('.');
+			final boolean hasDays = firstDot > -1 && firstDot < value.indexOf(':');
+
+			final String[] parts = value.split("[:.]"); // [days.]hours:minutes:seconds[.milliseconds]
+
+			final long[] conversionFactor = new long[]{86400000, 3600000, 60000, 1000, 1};
+			int conversionIndex = hasDays ? 0 : 1;
 			long duration = 0;
-			long[] conversionFactor = new long[]{86400000, 3600000, 60000, 1000, 1};
-			int conversionShift = 0;
-			if (parts.length == 0) {
-				conversionShift = 1;
-			}
-			
 			for (int i = 0; i < parts.length; i++) {
-				duration += Long.parseLong(parts[i]) * conversionFactor[i + conversionShift];
+				String part = (conversionIndex == conversionFactor.length-1) ? parts[i].substring(0,3) : parts[i];
+				duration += Long.parseLong(part) * conversionFactor[conversionIndex++];
 			}
 
 			return new Duration(duration);
