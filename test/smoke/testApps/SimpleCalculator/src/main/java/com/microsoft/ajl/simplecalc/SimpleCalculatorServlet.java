@@ -103,7 +103,7 @@ public class SimpleCalculatorServlet extends HttpServlet {
 				calc.getOperatorSymbol(), 
 				calc.getRightOperandFormatted(), 
 				calc.resultFormatted());
-		writer.println("<p><a href=\"/SimpleCalculator/\">Do Another Calculation</a></p>");
+		writer.println("<p><a href=\".\">Do Another Calculation</a></p>");
 		writer.println("</body></html>");
 	}
 
