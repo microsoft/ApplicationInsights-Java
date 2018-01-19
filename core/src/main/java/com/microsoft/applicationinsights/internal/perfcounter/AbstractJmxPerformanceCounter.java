@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.jmx.JmxDataFetcher;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class is a base class for JMX performance counters.
@@ -79,15 +80,18 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                         send(telemetryClient, displayAndValues.getKey(), value);
                     } catch (Exception e) {
                         InternalLogger.INSTANCE.error("Error while sending JMX data: '%s'", e.getMessage());
+                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                     }
                 }
             }
         } catch (Exception e) {
             if (firstTime) {
                 InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s', The PC will be ignored", e.getMessage());
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 relevant = false;
             } else {
                 InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s'", e.getMessage());
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         } finally {
             firstTime = false;

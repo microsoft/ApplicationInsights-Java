@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by yonisha on 2/3/2015.
@@ -59,6 +60,7 @@ public class WebModulesContainer {
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error(
                         "Web module " + module.getClass().getSimpleName() + " failed on BeginRequest with exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }
     }
@@ -75,6 +77,7 @@ public class WebModulesContainer {
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error(
                         "Web module " + module.getClass().getSimpleName() + " failed on EndRequest with exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }
     }

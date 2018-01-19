@@ -27,6 +27,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +48,12 @@ public class HttpHelper {
     public static final String TEST_USER_AGENT = "Mozilla/5.0 (Windows NT 6.4; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko";
 
     public static CookiesContainer sendRequestAndGetResponseCookie(int portNumber, String... requestFormattedCookies) throws Exception {
+        List<String> responseCookies = sendRequestAndGetHeaders(portNumber, requestFormattedCookies).get("Set-Cookie");
+        CookiesContainer cookiesContainer = getCookiesContainer(responseCookies);
+        return cookiesContainer;
+    }
+
+    public static Map<String, List<String>> sendRequestAndGetHeaders(int portNumber, String... requestFormattedCookies) throws Exception {
         HttpURLConnection con = (HttpURLConnection) (new URL("http://localhost:" + portNumber)).openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", TEST_USER_AGENT);
@@ -57,11 +64,7 @@ public class HttpHelper {
 
         con.getResponseCode();
 
-        List<String> responseCookies = con.getHeaderFields().get("Set-Cookie");
-
-        CookiesContainer cookiesContainer = getCookiesContainer(responseCookies);
-
-        return cookiesContainer;
+        return con.getHeaderFields();
     }
 
     public static String getCookie() {
