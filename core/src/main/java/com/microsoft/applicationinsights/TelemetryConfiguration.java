@@ -42,8 +42,7 @@ public final class TelemetryConfiguration {
 
     // Synchronization for instance initialization
     private final static Object s_lock = new Object();
-    private static volatile boolean initialized = false;
-    private static TelemetryConfiguration active;
+    private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
 
@@ -63,12 +62,11 @@ public final class TelemetryConfiguration {
      * @return The 'Active' instance
      */
     public static TelemetryConfiguration getActive() {
-        if (!initialized) {
+        if (active == null) {
             synchronized (s_lock) {
-                if (!initialized) {
+                if (active == null) {
                     active = new TelemetryConfiguration();
                     TelemetryConfigurationFactory.INSTANCE.initialize(active);
-                    initialized = true;
                 }
             }
         }

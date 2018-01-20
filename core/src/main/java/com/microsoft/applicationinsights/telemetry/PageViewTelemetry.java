@@ -40,13 +40,13 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "PerformanceCounter";
+    private static final String ENVELOPE_NAME = "PageView";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "PerformanceCounterData";
+    private static final String BASE_TYPE = "PageViewData";
 
     /**
      * Default Ctor
