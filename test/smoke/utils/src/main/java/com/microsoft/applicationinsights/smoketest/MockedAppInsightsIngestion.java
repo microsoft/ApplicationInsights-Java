@@ -62,7 +62,7 @@ import com.microsoft.applicationinsights.internal.schemav2.SessionStateData;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
 public class MockedAppInsightsIngestion implements AutoCloseable {
-	private static final int DEFAULT_PORT = 60606;
+	public static final int DEFAULT_PORT = 60606;
 	private final Server server;
 
 	// FIXME deserialize to object instead of string
@@ -80,6 +80,10 @@ public class MockedAppInsightsIngestion implements AutoCloseable {
 
 		handler.addServletWithMapping(new ServletHolder(new MockedAppInsightsIngestionServlet()), "/*");
 		// TODO add another mapping for /api/profiles? as seen in node.js sdk functional tests.
+	}
+
+	public int getPort() {
+		return DEFAULT_PORT; // TODO this could be configurable
 	}
 
 	public void startServer() throws Exception {

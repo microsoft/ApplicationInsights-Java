@@ -13,26 +13,8 @@ import static org.junit.Assert.*;
 public class SimpleEventDataTest extends AiSmokeTest {
 
 	@Test
+	@TargetUri("/doCalc?leftOperand=1&rightOperand=2&operator=plus")
 	public void doCalcSendsRequestDataAndEventData() throws Exception {
-		System.out.println("Wait for app to finish deploying...");
-		String appContext = warFileName.replace(".war", "");
-		String baseUrl = "http://localhost:" + appServerPort + "/" + appContext;
-		waitForUrl(baseUrl, 120, TimeUnit.SECONDS, appContext);
-		System.out.println("Test app health check complete.");
-
-		String url = baseUrl+"/doCalc?leftOperand=1&rightOperand=2&operator=plus";
-		String content = HttpHelper.get(url);
-
-		assertNotNull(content);
-		assertTrue(content.length() > 0);
-		
-		System.out.println("Waiting 10s for telemetry...");
-		TimeUnit.SECONDS.sleep(10);
-		System.out.println("Finished waiting for telemetry. Starting validation...");
-
-		assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
-		assertTrue("mocked ingestion has 0 items", mockedIngestion.getItemCount() > 0);
-		
 		assertEquals(2, mockedIngestion.getCountForType("RequestData"));
 		assertEquals(2, mockedIngestion.getCountForType("EventData"));
 		int totalItems = mockedIngestion.getItemCount();
