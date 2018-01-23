@@ -8,6 +8,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 
 import java.io.File;
@@ -25,7 +26,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
-import org.eclipse.jetty.http.HttpMethod;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -403,6 +403,10 @@ public abstract class AiSmokeTest {
 			}
 		} while (rval == null);
 		assertFalse(String.format("Empty response from '%s'. HealthCheck urls should return something non-empty", url), rval.isEmpty());
+	}
+
+	protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
+		return mockedIngestion.getBaseDataForType(index, type);
 	}
 	//endregion
 }
