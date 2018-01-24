@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.web.javaee;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -57,6 +59,7 @@ public class RequestNameInterceptor {
                     "Failed to invoke interceptor '%s' with exception: %s.",
                     this.getClass().getSimpleName(),
                     e.getMessage());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
     }
 }

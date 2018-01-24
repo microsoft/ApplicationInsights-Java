@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## Version 1.0.11
+## Version 2.0.1
+- Enhanced Log4j2 appender to support basic parameters including Filters, Layouts and includeException. (#348)
+- Fixed performance issue on SDK startup.
+- Fixed PageView telemetry data not being reported. 
+
+## Version 2.0.0-BETA
 - Updating various dependencies to latest version
 - Introducing public class CustomClassWriter in Agent to enable finding common super classes used for Agent instrumentation without loading it
 - Introducing Parametrized constructor in WebRequestTrackingFilter to ensure name binding
@@ -16,6 +21,8 @@
 - Introducing Telemetry Processor 'com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor'
 - Introducing FixedRate Sampling v2 Using Telemetry Processors
 - Fixed issue #436 (TraceTelemetry with Severity is not shown in UI). This fixes a regression issue with `TelemetryClient.trackTrace` and `TelemetryClient.trackException`.
+- Introducing support for [cross-component correlation](https://docs.microsoft.com/en-us/azure/application-insights/application-insights-correlation). Addresses issue [#457](https://github.com/Microsoft/ApplicationInsights-Java/issues/457). 
+- Changed signature of com.microsoft.applicationinsights.internal.agent.CoreAgentNotificationHandler.httpMethodFinished. It now includes correlation information.
 - Compilation now targets Java 1.7. Java 1.6 is no longer supported.
 - Adding system property `applicationinsights.configurationDirectory` to allow to explicitly set directory containing the config file.
 

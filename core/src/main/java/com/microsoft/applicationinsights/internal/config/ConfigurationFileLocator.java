@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 5/25/2015.
@@ -90,6 +91,7 @@ public final class ConfigurationFileLocator {
                 return new FileInputStream(configurationFile);
             } catch (FileNotFoundException e) {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Configuration file '%s' could not be opened for reading", configurationFile);
+                InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(e));
             }
         } else {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Configuration file '%s' could not be found", configurationFileName);
@@ -126,6 +128,7 @@ public final class ConfigurationFileLocator {
             return configurationFile;
         } catch (Throwable t) {
             logException(t, "current class loader");
+            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
         }
 
         return null;
@@ -152,6 +155,7 @@ public final class ConfigurationFileLocator {
             }
         } catch (Throwable t) {
             logException(t, "library location");
+            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
         }
         return null;
     }
@@ -192,6 +196,7 @@ public final class ConfigurationFileLocator {
             }
         } catch (Throwable t) {
             logException(t, "class path");
+            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
         }
         return null;
     }
@@ -215,6 +220,7 @@ public final class ConfigurationFileLocator {
             uri = url.toURI();
         } catch (URISyntaxException e) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Failed to convert URL '%s' to URI ", url);
+            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(e));
             return null;
         }
 

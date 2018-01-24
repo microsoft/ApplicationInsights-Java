@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class can filter out MetricTelemetries with configurable names
@@ -55,6 +56,7 @@ public final class MetricTelemetryFilter implements TelemetryProcessor {
             InternalLogger.INSTANCE.trace(String.format("MetricTelemetryFilter: set NotNeeded: %s", notNeeded));
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("MetricTelemetryFilter: failed to parse NotNeededNames: %s", allNotNeeded));
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
             throw t;
         }
     }

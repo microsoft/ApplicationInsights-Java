@@ -25,6 +25,7 @@ import java.util.Date;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.common.CommonUtils;
 //import org.apache.http.HttpStatus;
 import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
@@ -36,6 +37,8 @@ import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -90,6 +93,11 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             telemetry.setName(String.format("%s %s", method, rUriWithoutSessionId));
             telemetry.getContext().getUser().setUserAgent(userAgent);
             telemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
+
+            // Look for cross-component correlation headers and resolve correlation ID's
+            HttpServletResponse response = (HttpServletResponse) res;
+            TelemetryCorrelationUtils.resolveCorrelation(request, response, telemetry);
+
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.error("Telemetry module " + moduleClassName + " onBeginRequest failed with exception: %s", e.getMessage());
@@ -124,6 +132,9 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             }
 
             telemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
+            
+            String instrumentationKey = this.telemetryClient.getContext().getInstrumentationKey();
+            TelemetryCorrelationUtils.resolveRequestSource((HttpServletRequest) req, telemetry, instrumentationKey);
 
             telemetryClient.track(telemetry);
         } catch (Exception e) {
@@ -140,6 +151,13 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
     public void initialize(TelemetryConfiguration configuration) {
         try {
             telemetryClient = new TelemetryClient(configuration);
+            
+            //kick-off resolving ikey to appId
+            String ikey = configuration.getInstrumentationKey();
+            if (ikey != null && ikey.length() > 0) {
+            	InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
+            }
+
             isInitialized = true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(

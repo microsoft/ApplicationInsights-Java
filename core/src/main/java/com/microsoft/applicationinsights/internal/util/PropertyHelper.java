@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,6 +68,7 @@ public final class PropertyHelper {
             return getProperties(SDK_VERSION_FILE_NAME);
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Could not find sdk version file '%s'", SDK_VERSION_FILE_NAME);
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
         return null;

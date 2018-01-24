@@ -114,7 +114,7 @@ public final class JsonTelemetryDataSerializer {
 
     public void write(String name, double value) throws IOException {
         writeName(name);
-        out.write(String.valueOf(value));
+        out.write(Double.isNaN(value) || Double.isInfinite(value) ? "0.0" : String.valueOf(value));
         separator = JSON_SEPARATOR;
     }
 
@@ -124,7 +124,7 @@ public final class JsonTelemetryDataSerializer {
         }
 
         writeName(name);
-        out.write(String.valueOf(value));
+        out.write(Double.isNaN(value) || Double.isInfinite(value) ? "0.0" : String.valueOf(value));
         separator = JSON_SEPARATOR;
     }
 

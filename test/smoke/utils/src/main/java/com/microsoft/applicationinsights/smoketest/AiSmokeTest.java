@@ -2,16 +2,13 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
-import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 
 import java.io.File;
@@ -28,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -40,6 +38,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import javax.transaction.NotSupportedException;
+
 import static org.junit.Assert.*;
 /**
  * This is the base class for smoke tests.
@@ -47,8 +47,9 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public abstract class AiSmokeTest {
 
+	//region: parameterization
 	@Parameters(name = "{index}: {0}, {1}, {2}")
-	public static Collection<Object[]> data() throws MalformedURLException, IOException {
+	public static Collection<Object[]> parameterGenerator() throws MalformedURLException, IOException {
 		List<String> appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
 		String os = System.getProperty("applicationinsights.smoketest.os", "linux");
 		Multimap<String, String> appServers2jres = HashMultimap.create();
@@ -79,101 +80,16 @@ public abstract class AiSmokeTest {
 	}
 	
 	@Parameter(0) public String appServer;
-	
 	@Parameter(1) public String os;
-	
 	@Parameter(2) public String jreVersion;
+	//endregion
 
-	private final static short BASE_PORT_NUMBER = 28080;
+	//region: container fields
+	private static final short BASE_PORT_NUMBER = 28080;
 	private static final String TEST_CONFIG_FILENAME = "testInfo.properties";
-	
-	protected static short currentPortNumber = BASE_PORT_NUMBER;
-	
 
-	@Rule
-	public TestWatcher theWatchman = new TestWatcher() {
-		@Override
-		protected void failed(Throwable t, Description description) {
-			// NOTE this happens after @After :)
-			String containerId = lastContainerId();
-			System.out.println("Test failure detected.");
-			
-			System.out.println("\nFetching appserver logs");
-			try {
-				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
-			}
-			catch (Exception e) {
-				System.err.println("Error executing tailLastLog.sh");
-				e.printStackTrace();
-			}
-			
-			try {
-				System.out.println("\nFetching container logs for "+containerId);
-				docker.printContainerLogs(containerId);
-
-			}
-			catch (Exception e) {
-				System.err.println("Error copying logs to stream");
-				e.printStackTrace();
-			}
-			finally {
-				System.out.println("\nFinished gathering logs.");
-			}
-		}
-	};
-	
-	protected static Stack<ContainerInfo> containerStack = new Stack<>();
-	protected static String lastContainerId() {
-		return containerStack.peek().getContainerId();
-	}
-	
-	protected String warFileName;
-	
-	protected short appServerPort;
-	protected String currentImageName;
-
-	private final Properties testProps = new Properties();
-	
-	protected final MockedAppInsightsIngestion mockedIngestion = new MockedAppInsightsIngestion();
-
-	protected class ContainerInfo {
-		private final String containerId;
-		private final String imageName;
-		public ContainerInfo(String containerId, String imageName) {
-			this.containerId = containerId;
-			this.imageName = imageName;
-		}
-		/**
-		 * @return the containerId
-		 */
-		public String getContainerId() {
-			return containerId;
-		}
-		/**
-		 * @return the imageName
-		 */
-		public String getImageName() {
-			return imageName;
-		}
-		@Override
-		public String toString() {
-			return MoreObjects.toStringHelper(ContainerInfo.class)
-				.add("id", getContainerId())
-				.add("image", getImageName())
-				.toString();
-		}
-	}
-
-	@BeforeClass
-	public static void configureShutdownHook() {
-		// NOTE the JUnit runner (or gradle) forces this to happen. The syncronized block and check for empty should avoid any issues
-		Runtime.getRuntime().addShutdownHook(new Thread(destroyAllContainers));
-	}
-
-	@AfterClass
-	public static void tearDownContainers() {
-		destroyAllContainers.run();
-	}
+	// TODO make this dependent on container mode
+	private static final AiDockerClient docker = AiDockerClient.createLinuxClient();
 
 	protected static final Runnable destroyAllContainers = new Runnable() {
 		@Override
@@ -214,22 +130,173 @@ public abstract class AiSmokeTest {
 		}
 	};
 
+	protected static void stopContainer(ContainerInfo info) throws Exception {
+		System.out.printf("Stopping container: %s%n", info);
+		Stopwatch killTimer = Stopwatch.createUnstarted();
+		try {
+			killTimer.start();
+			docker.stopContainer(info.getContainerId());
+			System.out.printf("Container stopped (%s) in %dms%n", info, killTimer.elapsed(TimeUnit.MILLISECONDS));
+		}
+		catch (Exception e) {
+			System.err.printf("Error stopping container (in %dms): %s%n", killTimer.elapsed(TimeUnit.MILLISECONDS), info);
+			throw e;
+		}
+	}
+
+	protected static Stack<ContainerInfo> containerStack = new Stack<>();
+	protected static short currentPortNumber = BASE_PORT_NUMBER;
+
+	protected String currentImageName;
+	//endregion
+
+	//region: application fields
+	protected String warFileName;
+
+	protected short appServerPort;
+
+	protected String targetUri;
+	protected String httpMethod;
+	protected boolean expectSomeTelemetry = true;
+	//endregion
+
+	//region: options
+	public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
+	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
+	//endregion
+
+	private final Properties testProps = new Properties();
+
+	protected final MockedAppInsightsIngestion mockedIngestion = new MockedAppInsightsIngestion();
+
+	/**
+	 * This rule does a few things:
+	 * 1. failure detection: logs are only grabbed when the test fails.
+	 * 2. reads test metadata from annotations
+	 */
+	@Rule
+	public TestWatcher theWatchman = new TestWatcher() {
+		@Override
+		protected void starting(Description description) {
+			TargetUri targetUri = description.getAnnotation(TargetUri.class);
+			AiSmokeTest thiz = AiSmokeTest.this;
+			if (targetUri == null) {
+				thiz.targetUri = null;
+				thiz.httpMethod = null;
+			} else {
+				thiz.targetUri = targetUri.value();
+				if (!thiz.targetUri.startsWith("/")) {
+					thiz.targetUri = "/"+thiz.targetUri;
+				}
+
+				thiz.httpMethod = targetUri.method().toUpperCase();
+			}
+
+			ExpectSomeTelemetry expectSomeTelemetry = description.getAnnotation(ExpectSomeTelemetry.class);
+			thiz.expectSomeTelemetry = expectSomeTelemetry == null || expectSomeTelemetry.value();
+		}
+
+		@Override
+		protected void failed(Throwable t, Description description) {
+			// NOTE this happens after @After :)
+			String containerId = lastContainerId();
+			System.out.println("Test failure detected.");
+			
+			System.out.println("\nFetching appserver logs");
+			try {
+				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
+			}
+			catch (Exception e) {
+				System.err.println("Error executing tailLastLog.sh");
+				e.printStackTrace();
+			}
+			
+			try {
+				System.out.println("\nFetching container logs for "+containerId);
+				docker.printContainerLogs(containerId);
+
+			}
+			catch (Exception e) {
+				System.err.println("Error copying logs to stream");
+				e.printStackTrace();
+			}
+			finally {
+				System.out.println("\nFinished gathering logs.");
+			}
+		}
+	};
+
+	protected static String lastContainerId() {
+		return containerStack.peek().getContainerId();
+	}
+
+	@BeforeClass
+	public static void configureShutdownHook() {
+		// NOTE the JUnit runner (or gradle) forces this to happen. The syncronized block and check for empty should avoid any issues
+		Runtime.getRuntime().addShutdownHook(new Thread(destroyAllContainers));
+	}
 
 	@Before
-	public void setup() throws Exception {
+	public void setupEnvironment() throws Exception {
 		System.out.println("Preparing test...");
 		checkParams();
 		setupProperties();
 		startMockedIngestion();
-		startDocker();
-		System.out.println("Test preperation complete");
-		doCalcSendsData();
+		startDockerContainer();
+		waitForApplicationToStart();
+		callTargetUriAndWaitForTelemetry();
+		System.out.println("Test preparation complete");
+	}
+
+	//region: before test helper methods
+	protected String getAppContext() {
+		return warFileName.replace(".war", "");
+	}
+
+	protected String getBaseUrl() {
+		return "http://localhost:" + appServerPort + "/" + getAppContext();
+	}
+
+	protected void waitForApplicationToStart() throws Exception {
+		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
+		waitForUrl(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext());
+		System.out.println("Test app health check complete.");
+	}
+
+	protected void callTargetUriAndWaitForTelemetry() throws Exception {
+		if (targetUri == null) {
+			System.out.println("targetUri==null: automated testapp request disabled");
+			return;
+		}
+
+		String url = getBaseUrl()+targetUri;
+		final String content;
+		switch(httpMethod) {
+			case "GET":
+				content = HttpHelper.get(url);
+				break;
+			default:
+				throw new NotSupportedException(String.format("http method '%s' is not currently supported", httpMethod));
+		}
+
+		String expectationMessage = "The base context in testApps should return a nonempty response.";
+		assertNotNull(String.format("Null response from targetUri: '%s'. %s", targetUri, expectationMessage), content);
+		assertTrue(String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage), content.length() > 0);
+
+		System.out.printf("Waiting %ds for telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		System.out.println("Finished waiting for telemetry. Starting validation...");
+
+		if (expectSomeTelemetry) {
+			assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
+		}
 	}
 
 	protected void checkParams() {
-		assertNotNull("appServer", this.appServer);
-		assertNotNull("os", this.os);
-		assertNotNull("jreVersion", this.jreVersion);
+		String fmt = "Missing required framework parameter: %s - this indicates an error in the parameter generator";
+		assertNotNull(String.format(fmt, "appServer"), this.appServer);
+		assertNotNull(String.format(fmt, "os"), this.os);
+		assertNotNull(String.format(fmt, "jreVersion"), this.jreVersion);
 	}
 
 	protected void setupProperties() throws Exception {
@@ -245,14 +312,13 @@ public abstract class AiSmokeTest {
 	}
 
 	protected void checkMockedIngestionHealth() throws Exception {
-		// TODO make the port configurable
-		String ok = HttpHelper.get("http://localhost:60606/");
+		String ok = HttpHelper.get("http://localhost:"+mockedIngestion.getPort()+"/");
 		assertEquals(MockedAppInsightsIngestion.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
 		String postResponse = HttpHelper.post("http://localhost:60606/v2/track", MockedAppInsightsIngestion.PING);
 		assertEquals(MockedAppInsightsIngestion.PONG, postResponse);
 	}
 
-	protected void startDocker() throws Exception {		
+	protected void startDockerContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
 		String containerId = docker.startContainer(currentImageName, appServerPort+":8080");
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
@@ -271,7 +337,7 @@ public abstract class AiSmokeTest {
 			System.err.println("Error starting app server");
 			throw e;
 		}
-		
+
 		try {
 			warFileName = getProperty("ai.smoketest.testAppWarFile");
 			System.out.printf("Deploying test application: %s...%n", warFileName);
@@ -284,6 +350,7 @@ public abstract class AiSmokeTest {
 		}
 		// TODO start application dependencies---container(s)
 	}
+	//endregion
 
 	protected void doCalcSendsData() throws Exception {
 		System.out.println("Wait for app to finish deploying...");
@@ -313,24 +380,20 @@ public abstract class AiSmokeTest {
 		System.out.println("Test resources cleaned.");
 	}
 
-	protected static void stopContainer(ContainerInfo info) throws Exception {	
-		System.out.printf("Stopping container: %s%n", info);
-		Stopwatch killTimer = Stopwatch.createUnstarted();
-		try {
-			killTimer.start();
-			docker.stopContainer(info.getContainerId());
-			System.out.printf("Container stopped (%s) in %dms%n", info, killTimer.elapsed(TimeUnit.MILLISECONDS));
-		}
-		catch (Exception e) {
-			System.err.printf("Error stopping container (in %dms): %s%n", killTimer.elapsed(TimeUnit.MILLISECONDS), info);
-			throw e;
-		}
-	}
-
+	//region after test helpter methods
 	protected void resetMockedIngestion() throws Exception {
 		mockedIngestion.stopServer();
 		mockedIngestion.resetData();
 	}
+	//endregion
+
+	@AfterClass
+	public static void tearDownContainers() {
+		destroyAllContainers.run();
+	}
+
+	//region: test helper methods
+	/// This section has methods to be used inside tests ///
 
 	protected String getProperty(String key) {
 		String rval = testProps.getProperty(key);
@@ -363,16 +426,8 @@ public abstract class AiSmokeTest {
 		assertFalse(String.format("Empty response from '%s'. HealthCheck urls should return something non-empty", url), rval.isEmpty());
 	}
 
-	// TODO make this dependent on container mode
-	private static final AiDockerClient docker = AiDockerClient.createLinuxClient();
-
-	// ***** below here is clean ***** FIXME remove this
-
-	// framework methods
-
-	protected <T extends Domain> T getTelemetryTypeData(int index, String data){		
-        Envelope mEnvelope = mockedIngestion.getItemsByType(data).get(index);
-        Data<T> dHolder = (Data<T>) mEnvelope.getData();
-        return dHolder.getBaseData();
-    }
+	protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
+		return mockedIngestion.getBaseDataForType(index, type);
+	}
+	//endregion
 }

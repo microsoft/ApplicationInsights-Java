@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 12/22/2014.

@@ -36,15 +36,9 @@ public class ApplicationInsightsAppenderTests {
 
     // region Consts
 
-    private final String TestInstrumentationKey = "c9341531-05ac-4d8c-972e-36e97601d5ff";
+    private static final String TestInstrumentationKey = "c9341531-05ac-4d8c-972e-36e97601d5ff";
 
     // endregion Consts
-
-    // region Members
-
-    private List<Telemetry> telemetriesSent;
-
-    // endregion Members
 
     // region Initialization & cleanup
 
@@ -66,12 +60,51 @@ public class ApplicationInsightsAppenderTests {
     }
 
     @Test
-    public void testAppenderSendsGivenEvent() {
+    public void testAppenderHasNameSet() {
+        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+        Assert.assertEquals("test", appender.getName());
+    }
+
+    @Test
+    public void testIgnoreExceptionsValue() {
+        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+        Assert.assertEquals(true, appender.ignoreExceptions());
+    }
+
+    @Test
+    public void testFilterIsPresent() {
+        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+        Assert.assertEquals(true, appender.hasFilter());
+    }
+
+    @Test
+    public void testFilterOnMatchValue() {
+        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+        Assert.assertEquals("ACCEPT", appender.getFilter().getOnMatch().name());
+    }
+
+
+    @Test
+    public void testFilterOnMisMatchValue() {
+        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+        Assert.assertEquals("DENY", appender.getFilter().getOnMismatch().name());
+    }
+
+    @Test
+    public void testAppenderDoesNotAppendLogsBelowFilterThreshold() {
         Logger logger = LogManager.getRootLogger();
         logger.trace("New event!");
-
-        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
+        Assert.assertEquals(0, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
     }
+
+    @Test
+    public void testAppenderAppendsItemOnAndAboveSetThreshold() {
+        Logger logger = LogManager.getRootLogger();
+        logger.error("This should be appended!");
+        logger.fatal("This is fatal is reported");
+        Assert.assertEquals(2, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
+    }
+
 
     // endregion Tests
 
