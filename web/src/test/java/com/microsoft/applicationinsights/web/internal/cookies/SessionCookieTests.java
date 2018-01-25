@@ -166,9 +166,28 @@ public class SessionCookieTests {
 
         SessionCookie sessionCookie = new SessionCookie(cookie);
 
-        Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
         Assert.assertEquals("Wrong session acquisition time", expectedAcquisitionTime, DateTimeUtils.formatAsRoundTripDate(sessionCookie.getSessionAcquisitionDate()));
         Assert.assertEquals("Wrong session renewal time", expectedRenewalTime, DateTimeUtils.formatAsRoundTripDate(sessionCookie.getSessionRenewalDate()));
+    }
+
+
+    @Test
+    public void testCookieParsedSuccessfullyWithMiliseconds() throws Exception {
+        Date expectedAcquisitionTime = new Date();
+        Date expectedRenewalTime = new Date();
+
+        String formattedCookie = SessionCookie.formatCookie(new String[] {
+                sessionId,
+                expectedAcquisitionTime.getTime() + ".10",
+                expectedRenewalTime.getTime() + ".99"
+        });
+
+        Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
+
+        SessionCookie sessionCookie = new SessionCookie(cookie);
+
+        Assert.assertEquals("Wrong session acquisition time", expectedAcquisitionTime, sessionCookie.getSessionAcquisitionDate());
+        Assert.assertEquals("Wrong session renewal time", expectedRenewalTime, sessionCookie.getSessionRenewalDate());
     }
 
     // endregion Tests
