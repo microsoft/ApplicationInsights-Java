@@ -1,26 +1,16 @@
 package com.microsoft.ajl.simplecalc;
 
-import com.microsoft.ajl.simplecalc.model.BinaryCalculation;
-import com.microsoft.ajl.simplecalc.model.BinaryOperator;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import static com.microsoft.ajl.simplecalc.ParameterConstants.*;
+import com.microsoft.applicationinsights.TelemetryClient;
 
 /**
  * Servlet implementation class SimpleCalculatorServlet
@@ -29,99 +19,27 @@ import static com.microsoft.ajl.simplecalc.ParameterConstants.*;
 public class SimpleCalculatorServlet extends HttpServlet {
 	private static final long serialVersionUID = -633683109556605395L;
 	private TelemetryClient client = new TelemetryClient();
-	
+
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		BinaryCalculation bc = null;
-		try {
-			bc = readParameters(request.getParameterMap());
-		}
-		catch (CalculatorParameterException cpe) {
-			String errMsg = cpe.getLocalizedMessage();
-			System.err.println(errMsg);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, errMsg);
-			return;			
-		}
-		
-		if (bc == null) {
-			System.out.println("No parameters given.");
-			response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-			return;
-		}
-		
-		response.setContentType("text/html;charset=UTF-8");
-		renderHtml(bc, response.getWriter());
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		ServletFuncs.geRrenderHtml(request, response);
 
-		Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }}; 
-		Map<String, Double> metrics = new HashMap<String, Double>() {{ put("key", 1d); }};		
+		Map<String, String> properties = new HashMap<String, String>() {
+			{
+				put("key", "value");
+			}
+		};
+		Map<String, Double> metrics = new HashMap<String, Double>() {
+			{
+				put("key", 1d);
+			}
+		};
 
 		//Event
 		client.trackEvent("EventDataTest");
 		client.trackEvent("EventDataPropertyTest", properties, metrics);
-
-		//Trace
-		client.trackTrace("This is first trace message.");
-		client.trackTrace("This is second trace message.", SeverityLevel.Error, null);
-		client.trackTrace("This is third trace message.", SeverityLevel.Information, properties);
 	}
-
-	/**
-	 * @param parameterMap
-	 * @return null if parameterMap is empty
-	 */
-	private static BinaryCalculation readParameters(Map<String, String[]> parameterMap) throws CalculatorParameterException {
-		if (parameterMap == null) {
-			throw new IllegalArgumentException("parameterMap cannot be null");
-		}
-		
-		if (parameterMap.isEmpty()) {
-			return null;
-		}
-		
-		// log params
-		System.out.println("Given parameters:");
-		for (Entry<String, String[]> entry : parameterMap.entrySet()) {
-			String pname = entry.getKey();
-			System.out.printf("%s: %s%n", pname, Arrays.toString(entry.getValue()));
-		}
-		
-		// FIXME this could throw, but I don't care
-		String strLopnd = parameterMap.get(LEFT_OPERAND)[0];
-		String strRopnd = parameterMap.get(RIGHT_OPERAND)[0];
-		String strOprtr = parameterMap.get(OPERATOR)[0];
-		
-		double lopnd = parseParamOrThrow(strLopnd, "Left operand is not a number: %s");
-		double ropnd = parseParamOrThrow(strRopnd, "Right operand is not a number: %s");		
-		
-		BinaryOperator op = BinaryOperator.fromVerb(strOprtr);
-		if (op == null) {
-			throw new CalculatorParameterException("Unknown operator: "+strOprtr);
-		}
-		
-		return new BinaryCalculation(lopnd, ropnd, op);
-	}
-	
-	private static double parseParamOrThrow(String param, String errMsgFmt) throws CalculatorParameterException {
-		try {
-			return Double.parseDouble(param);
-		} catch (NumberFormatException e) {
-			throw new CalculatorParameterException(String.format("Left operand is not a number: %s", param), e);
-		}
-	}
-	
-	private static void renderHtml(BinaryCalculation calc, PrintWriter writer) {
-		writer.println("<html>");
-		writer.println("<head><title>Calculation Result</title></head>");
-		writer.println("<body>");
-		writer.printf("<i>%s</i> %s <i>%s</i> = <b>%s</b>%n", 
-				calc.getLeftOperandFormatted(), 
-				calc.getOperatorSymbol(), 
-				calc.getRightOperandFormatted(), 
-				calc.resultFormatted());
-		writer.println("<p><a href=\"/SimpleCalculator/\">Do Another Calculation</a></p>");
-		writer.println("</body></html>");
-	}
-
 }

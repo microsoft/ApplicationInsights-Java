@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class supplies the overall cpu usage of the machine.
@@ -99,12 +100,14 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
             line = bufferedReader.readLine();
         } catch (Exception e) {
             logError("Error while parsing file: '%s'", e.getMessage());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
                     logError("Error while closing file : '%s'", e.getMessage());
+                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 }
             }
         }

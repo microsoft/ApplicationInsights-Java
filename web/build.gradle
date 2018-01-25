@@ -32,6 +32,8 @@ dependencies {
     provided (project(':agent')) { transitive = false }
     compile (project(':core')) { transitive = false }
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
+    compile ([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'])
+    compile ([group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.3'])
     provided 'com.opensymphony:xwork:2.0.4' // Struts 2
     provided 'org.springframework:spring-webmvc:3.1.0.RELEASE'
     provided group: 'javax.servlet', name: 'servlet-api', version: '2.5'
@@ -44,11 +46,11 @@ dependencies {
     testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
     testCompile group: 'org.json', name:'json', version:'20090211'
     testCompile group: 'com.microsoft.azure', name: 'azure-storage', version: '2.1.0'
-    testCompile ([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'])
 }
 
 shadowJar {
     classifier=''
+    relocate 'org.apache.http', 'com.microsoft.applicationinsights.web.dependencies.http'
     relocate 'org.apache.commons', 'com.microsoft.applicationinsights.web.dependencies.apachecommons'
 }
 

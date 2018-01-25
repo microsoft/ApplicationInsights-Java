@@ -22,11 +22,13 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Telemetry sent to Azure Application Insights about dependencies - that is, calls from
@@ -79,6 +81,21 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
         this.data.setData(commandName);
         this.data.setDuration(duration);
         this.data.setSuccess(success);
+    }
+
+    /**
+     * Gets the dependency Id.
+     */
+    public String getId() {
+        return this.data.getId();
+    }
+    
+    /**
+     * Sets the dependency Id.
+     * @param value The value for the Id.
+     */
+    public void setId(String value) {
+        this.data.setId(value);
     }
 
     /**
@@ -205,6 +222,8 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
             try {
                 result = Enum.valueOf(DependencyKind.class, type);
             } catch (Throwable t) {
+                InternalLogger.INSTANCE.error("Exception while getting dependency kind: Type is empty");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
             }
         }
         return result;
@@ -234,6 +253,21 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      */
     public void setType(String value) {
         data.setType(value);
+    }
+
+    /**
+     * Gets the target of this dependency.
+     */
+    public String getTarget() {
+        return data.getTarget();
+    }
+
+    /**
+     * Sets the target of this dependency.
+     * @param value The value for the Target property.
+     */
+    public void setTarget(String value) {
+        data.setTarget(value);
     }
 
     public void setResultCode(String value) {

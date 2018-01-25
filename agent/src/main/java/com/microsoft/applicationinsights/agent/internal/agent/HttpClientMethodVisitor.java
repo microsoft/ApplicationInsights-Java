@@ -33,7 +33,7 @@ import org.objectweb.asm.Type;
 public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
     private final static String FINISH_DETECT_METHOD_NAME = "httpMethodFinished";
-    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
+    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
 
     public HttpClientMethodVisitor(int access,
                                    String desc,
@@ -47,6 +47,9 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
     private int deltaInNS;
     private int methodLocal;
     private int uriLocal;
+    private int childIdLocal;
+    private int correlationContextLocal;
+    private int appCorrelationId;
 
     @Override
     public void onMethodEnter() {
@@ -54,6 +57,37 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         deltaInNS = this.newLocal(Type.LONG_TYPE);
         mv.visitVarInsn(LSTORE, deltaInNS);
 
+        // generate child ID
+        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyId", "()Ljava/lang/String;", false);
+        childIdLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, childIdLocal);
+        
+        // retrieve correlation context
+        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveCorrelationContext", "()Ljava/lang/String;", false);
+        correlationContextLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, correlationContextLocal);
+        
+        // retrieve request context
+        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveApplicationCorrelationId", "()Ljava/lang/String;", false);
+        appCorrelationId = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, appCorrelationId);
+
+        // inject headers
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitLdcInsn("Request-Id");
+        mv.visitVarInsn(ALOAD, childIdLocal);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitLdcInsn("Correlation-Context");
+        mv.visitVarInsn(ALOAD, correlationContextLocal);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+        
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitLdcInsn("Request-Context");
+        mv.visitVarInsn(ALOAD, appCorrelationId);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+        
         mv.visitVarInsn(ALOAD, 2);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "getRequestLine", "()Lorg/apache/http/RequestLine;", true);
         int requestLineLocal = this.newLocal(Type.getType(Object.class));
@@ -99,13 +133,56 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
                 int statusCodeLocal = this.newLocal(Type.INT_TYPE);
                 mv.visitVarInsn(ISTORE, statusCodeLocal);
 
+                //get Request-Context from response
+                mv.visitVarInsn(ALOAD, resultOfMethod.tempVarIndex);
+                mv.visitLdcInsn("Request-Context");
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/client/methods/CloseableHttpResponse", "getFirstHeader", "(Ljava/lang/String;)Lorg/apache/http/Header;", true);
+                int headerLocal = this.newLocal(Type.getType(Object.class));
+                mv.visitVarInsn(ASTORE, headerLocal);
+
+                // if header != null, getValue and continue
+                mv.visitVarInsn(ALOAD, headerLocal);
+                Label nullLabel = new Label();
+                mv.visitJumpInsn(IFNULL, nullLabel);
+
+                mv.visitVarInsn(ALOAD, headerLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/Header", "getValue", "()Ljava/lang/String;", true);
+                int headerValueLocal = this.newLocal(Type.getType(Object.class));
+                mv.visitVarInsn(ASTORE, headerValueLocal);
+
+                //generate target
+                mv.visitVarInsn(ALOAD, headerValueLocal);
+                mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyTarget", "(Ljava/lang/String;)Ljava/lang/String;", false);
+                int targetLocal = this.newLocal(Type.getType(Object.class));
+                mv.visitVarInsn(ASTORE, targetLocal);
+
                 mv.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");
                 mv.visitLdcInsn(getMethodName());
                 mv.visitVarInsn(ALOAD, methodLocal);
+                mv.visitVarInsn(ALOAD, childIdLocal);
                 mv.visitVarInsn(ALOAD, uriLocal);
+                mv.visitVarInsn(ALOAD, targetLocal);
                 mv.visitVarInsn(ILOAD, statusCodeLocal);
                 mv.visitVarInsn(LLOAD, deltaInNS);
                 mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_RETURN_SIGNATURE, false);
+
+                //skip the following instructions
+                Label notNullLabel = new Label();
+                mv.visitJumpInsn(GOTO, notNullLabel);
+
+                // if header == null, do the following
+                mv.visitLabel(nullLabel);
+                mv.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");
+                mv.visitLdcInsn(getMethodName());
+                mv.visitVarInsn(ALOAD, methodLocal);
+                mv.visitVarInsn(ALOAD, childIdLocal);
+                mv.visitVarInsn(ALOAD, uriLocal);
+                mv.visitInsn(ACONST_NULL);
+                mv.visitVarInsn(ILOAD, statusCodeLocal);
+                mv.visitVarInsn(LLOAD, deltaInNS);
+                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_RETURN_SIGNATURE, false);
+                
+                mv.visitLabel(notNullLabel);
                 return;
 
             default:

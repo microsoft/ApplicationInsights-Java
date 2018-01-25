@@ -27,6 +27,12 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 
 apply plugin: 'java'
 
+tasks.withType(JavaCompile) {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
+// setting this variable is highly recommended
 def java7JreDir = System.env.'JAVA_JRE_7'
 if (java7JreDir) {
     def requiredJavaBootArchives = ["rt.jar", "jsse.jar"]
@@ -40,8 +46,6 @@ if (java7JreDir) {
         bootClasspath += "$archivePath;"
     }
     tasks.withType(JavaCompile) {
-        sourceCompatibility = 1.7
-        targetCompatibility = 1.7
         options.bootClasspath = bootClasspath
     }
 } else {

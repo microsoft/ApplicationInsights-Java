@@ -90,6 +90,12 @@ public class JsonTelemetryDataSerializerTest {
         private Map<String, Integer> m1 = new HashMap<String, Integer>();
         private List<String> list1 = new ArrayList<String>();
         private com.microsoft.applicationinsights.internal.schemav2.SeverityLevel severity;
+        private boolean b1;
+        private short sh1;
+        private float f1;
+        private Float f2;
+        private double d1;
+        private Double d2;
 
         public int getI1() {
             return i1;
@@ -159,6 +165,30 @@ public class JsonTelemetryDataSerializerTest {
             this.severity = severity;
         }
 
+        public boolean getB1() { return b1; }
+
+        public void setB1(boolean b1) { this.b1 = b1; }
+
+        public short getSh1() { return sh1; }
+
+        public void setSh1(short  sh1) { this.sh1 = sh1; }
+
+        public float getF1() { return f1; }
+
+        public void setF1(float f1) { this.f1 = f1; }
+
+        public Float getF2() { return f2; }
+
+        public void setF2(Float f2) { this.f2 = f2; }
+
+        public double getD1() { return d1; }
+
+        public void setD1(double d1) { this.d1 = d1; }
+
+        public Double getD2() { return d2; }
+
+        public void setD2(Double d2) { this.d2 = d2; }
+
         @Override
         public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
             serializer.write("i1", i1);
@@ -170,6 +200,12 @@ public class JsonTelemetryDataSerializerTest {
             serializer.write("m1", m1);
             serializer.write("list1", list1);
             serializer.write("severity", severity);
+            serializer.write("b1", b1);
+            serializer.write("sh1", sh1);
+            serializer.write("f1", f1);
+            serializer.write("f2", f2);
+            serializer.write("d1", d1);
+            serializer.write("d2", d2);
         }
 
         @Override
@@ -283,11 +319,20 @@ public class JsonTelemetryDataSerializerTest {
         stubClass.getM1().put("key2", 6);
         stubClass.getM1().put("key3", 7);
         stubClass.setSeverity(SeverityLevel.Critical);
+        stubClass.setB1(true);
+        stubClass.setSh1((short)4);
+        stubClass.setF1(5.0f);
+        stubClass.setF2(6.0f);
+        stubClass.setD1(7.0);
+        stubClass.setD2(8.0);
+
         StringWriter stringWriter = new StringWriter();
         JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
         stubClass.serialize(tested);
         tested.close();
         String str = stringWriter.toString();
+
+        System.out.println("[test] Serialized StubClass: " + str);
 
         Gson gson = new Gson();
         StubClass bac = gson.fromJson(str, StubClass.class);
@@ -298,10 +343,63 @@ public class JsonTelemetryDataSerializerTest {
         assertEquals(bac.list1, stubClass.list1);
         assertEquals(bac.m1, stubClass.m1);
         assertEquals(bac.severity, stubClass.severity);
-        
+        assertEquals(bac.b1, stubClass.b1);
+        assertEquals(bac.sh1, stubClass.sh1);
+        assertEquals(bac.f1, stubClass.f1, 0.001);
+        assertEquals(bac.f2, stubClass.f2, 0.001);
+        assertEquals(bac.d1, stubClass.d1, 0.001);
+        assertEquals(bac.d2, stubClass.d2, 0.001);
+
         // There's a bug in Gson where it does not respect setLeinient(false) to enable strict parsing/deserialization. There doesn't appear to be a workaround.
         // this should verify that the Json is valid.
         assertEquals(str, gson.toJson(bac));
     }
 
+    @Test
+    public void testFloatingPointNaNs() throws IOException {
+        StubClass stubClass = new StubClass();
+        stubClass.setF1(Float.NaN);
+        stubClass.setF2(Float.NaN);
+        stubClass.setD1(Double.NaN);
+        stubClass.setD2(Double.NaN);
+
+        StringWriter stringWriter = new StringWriter();
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        stubClass.serialize(tested);
+        tested.close();
+        String str = stringWriter.toString();
+
+        System.out.println("[testFloatingPointNaNs] Serialized StubClass: " + str);
+
+        Gson gson = new Gson();
+        StubClass bac = gson.fromJson(str, StubClass.class);
+        assertEquals(bac.f1, 0, 0.001);
+        assertEquals(bac.f2, 0, 0.001);
+        assertEquals(bac.d1, 0, 0.001);
+        assertEquals(bac.d2, 0, 0.001);
+    }
+
+    @Test
+    public void testFloatingPointInfinity() throws IOException {
+        StubClass stubClass = new StubClass();
+        stubClass.setF1(Float.POSITIVE_INFINITY);
+        stubClass.setF2(Float.POSITIVE_INFINITY);
+        stubClass.setD1(Double.POSITIVE_INFINITY);
+        stubClass.setD2(Double.POSITIVE_INFINITY);
+
+        StringWriter stringWriter = new StringWriter();
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        stubClass.serialize(tested);
+        tested.close();
+        String str = stringWriter.toString();
+
+        System.out.println("[testFloatingPointInfinity] Serialized StubClass: " + str);
+
+        Gson gson = new Gson();
+        StubClass bac = gson.fromJson(str, StubClass.class);
+        assertEquals(bac.f1, 0, 0.001);
+        assertEquals(bac.f2, 0, 0.001);
+        assertEquals(bac.d1, 0, 0.001);
+        assertEquals(bac.d2, 0, 0.001);
+    }
 }
