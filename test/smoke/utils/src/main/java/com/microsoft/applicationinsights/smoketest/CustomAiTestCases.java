@@ -8,10 +8,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class AiTestCases {
+public class CustomAiTestCases {
 	public final TelemetryClient tclient;
 
-	public AiTestCases(TelemetryClient tclient) {
+	public CustomAiTestCases(TelemetryClient tclient) {
 		this.tclient = tclient;
 	}
 

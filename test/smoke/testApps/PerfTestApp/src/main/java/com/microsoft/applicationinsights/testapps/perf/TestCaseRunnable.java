@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.testapps.coreonly;
+package com.microsoft.applicationinsights.testapps.perf;
 
 public class TestCaseRunnable implements Runnable {
 	private final Runnable op;
@@ -33,7 +33,7 @@ public class TestCaseRunnable implements Runnable {
 
 	private void churn(String name) {
 		System.out.printf("starting %s loop...%n", name);
-		double d = 0.0;
+		double d = 100.0;
 		for(int i = 1; i <= MAX_LOOP; i++) {
 			d += d / Math.abs(-(double)i);
 		}
