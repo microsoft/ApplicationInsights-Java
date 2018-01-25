@@ -22,8 +22,7 @@
 package com.microsoft.applicationinsights.web.internal.cookies;
 
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 import javax.servlet.http.Cookie;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
@@ -191,8 +190,10 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
      */
     private Date parseDateWithBackwardCompatibility(String dateStr) throws ParseException {
         try {
-            return new Date(Long.parseLong(dateStr));
-        } catch (NumberFormatException e) {
+            Scanner s = new Scanner(dateStr);
+            s.useDelimiter("\\.");
+            return new Date(s.nextLong());
+        } catch (NoSuchElementException e) {
             return DateTimeUtils.parseRoundTripDateString(dateStr);
         }
     }
