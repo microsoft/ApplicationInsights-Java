@@ -117,8 +117,8 @@ public class SessionCookieTests {
 
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 sessionId,
-                "corruptedAcquisitionTime",
-                String.valueOf(sessionRenewalTime.getTime())
+                String.valueOf(sessionAcquisitionTime.getTime()),
+                "corruptedValue"
         });
 
         createSessionCookie(formattedCookie);
