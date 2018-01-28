@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Version 2.0.1
+- Logger Messages now being pushed as custom dimension when reporting exceptions via Loggers. (#400)
 - Enhanced Log4j2 appender to support basic parameters including Filters, Layouts and includeException. (#348)
 - Fixed performance issue on SDK startup.
 - Fixed PageView telemetry data not being reported. 
