@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 import ch.qos.logback.classic.Logger;
 
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class ApplicationInsightsAppenderTests {
 
@@ -78,6 +79,23 @@ public class ApplicationInsightsAppenderTests {
         ApplicationInsightsAppender appender = (ApplicationInsightsAppender) logger.getAppender("test");
 
         return appender;
+    }
+
+    @Test
+    public void testLoggerMessageIsRetainedWhenReportingException() {
+        Logger logger = (Logger) LoggerFactory.getLogger("root");
+        logger.error("This is an exception", new Exception("Fake Exception"));
+        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
+        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().containsKey("Logger Message"));
+        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().get("Logger Message").equals("This is an exception"));
+    }
+
+    @Test
+    public void testMDCPropertiesAreBeingSetAsCustomDimensions() {
+        Logger logger = (Logger) LoggerFactory.getLogger("root");
+        MDC.put("key", "value");
+        logger.error("This is an exception", new Exception("Fake Exception"));
+        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().get("key").equals("value"));
     }
 
     private void setMockTelemetryChannelToAIAppender() {
