@@ -128,12 +128,12 @@ public enum QuickPulseDataCollector {
         } catch (Throwable t) {
             try {
                 InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-                temp = null;
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
             }
+            temp = null;
         }
         cpuPerformanceCounterCalculator = temp;
         memory = ManagementFactory.getMemoryMXBean();

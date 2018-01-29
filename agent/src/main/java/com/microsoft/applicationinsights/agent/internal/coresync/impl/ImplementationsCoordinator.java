@@ -312,12 +312,12 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         } catch (Throwable throwable) {
             try {
                 InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
-                return null;
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
             }
+            return null;
         }
     }
 
