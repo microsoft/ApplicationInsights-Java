@@ -30,6 +30,12 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
+import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
+import org.apache.logging.log4j.core.config.plugins.PluginElement;
+import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
+import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import java.io.Serializable;
 
 @Plugin(name="ApplicationInsightsAppender", category = "Core", elementType = "appender")
 public class ApplicationInsightsAppender extends AbstractAppender {
@@ -39,6 +45,58 @@ public class ApplicationInsightsAppender extends AbstractAppender {
     private boolean isInitialized = false;
     private transient TelemetryClientProxy telemetryClientProxy;
     private static final long serialVersionUID = 1L;
+
+    //Builder to create ApplicationInsights Appender Plugin, used by default by log4j if present
+    public static class Builder implements org.apache.logging.log4j.core.util.Builder<ApplicationInsightsAppender> {
+
+        @PluginBuilderAttribute
+        @Required(message = "No name provided for ApplicationInsightsAppender")
+        private String name;
+
+        //This is only needed when seperatly using Application Insights log4j2 appender
+        //without application insights core module. otherwise AI-core module will pick up Instrumentation-Key
+        @PluginBuilderAttribute
+        private String instrumentationKey;
+
+        @PluginBuilderAttribute
+        private boolean ignoreExceptions;
+
+        @PluginElement("Layout")
+        private Layout<? extends Serializable> layout;
+
+        @PluginElement("Filter")
+        private Filter filter;
+
+        public Builder setName(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setInstrumentationKey(final String instrumentationKey) {
+            this.instrumentationKey = instrumentationKey;
+            return this;
+        }
+
+        public Builder setIgnoreExceptions(boolean ignoreExceptions) {
+            this.ignoreExceptions = ignoreExceptions;
+            return this;
+        }
+
+        public Builder setLayout(final Layout<? extends Serializable> layout) {
+            this.layout = layout;
+            return this;
+        }
+
+        public Builder setFilter(Filter filter) {
+            this.filter = filter;
+            return this;
+        }
+
+        @Override
+        public ApplicationInsightsAppender build() {
+            return new ApplicationInsightsAppender(name, instrumentationKey, filter, layout, ignoreExceptions);
+        }
+    }
 
     //endregion Members
 
@@ -58,7 +116,32 @@ public class ApplicationInsightsAppender extends AbstractAppender {
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             this.isInitialized = false;
-            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s.", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s. " +
+                    " Generated Stack trace is %s.", e.getMessage(), ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+
+    /**
+     * @param name The Appender name
+     * @param instrumentationKey The AI-resource iKey
+     * @param filter log4j2 Filter object
+     * @param layout Log4j2 Layout object
+     * @param ignoreExceptions true/false to determine if exceptions should be ignored
+     */
+    protected ApplicationInsightsAppender(String name, String instrumentationKey, Filter filter, Layout<? extends Serializable> layout,
+                                          boolean ignoreExceptions) {
+
+        super(name, filter, layout, ignoreExceptions);
+
+        try {
+            telemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
+            this.isInitialized = true;
+        } catch (Exception e) {
+            // Appender failure must not fail the running application.
+            this.isInitialized = false;
+            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s. " +
+                    " Generated Stack trace is %s.", e.getMessage(), ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -68,6 +151,15 @@ public class ApplicationInsightsAppender extends AbstractAppender {
 
     public LogTelemetryClientProxy getTelemetryClientProxy() {
         return (LogTelemetryClientProxy)this.telemetryClientProxy;
+    }
+
+    /**
+     * Returns a plugin Builder object which is used internally by Log4j2 to create plugin
+     * @return
+     */
+    @PluginBuilderFactory
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     /**
@@ -105,7 +197,7 @@ public class ApplicationInsightsAppender extends AbstractAppender {
             this.telemetryClientProxy.sendEvent(aiEvent);
         } catch (Exception e) {
             // Appender failure must not fail the running application.
-            // TODO: Assert.Debug/warning on exception?
+            InternalLogger.INSTANCE.error("Something unexpected happened while sending logs %s", ExceptionUtils.getStackTrace(e));
         }
     }
 
