@@ -148,7 +148,7 @@ public class TelemetryCorrelationUtils {
 
 		//check if context is null - no correlation will happen
 		if (ThreadContext.getRequestTelemetryContext() == null) {
-			InternalLogger.INSTANCE.error("No correlation wil happen, Thread context is null");
+			InternalLogger.INSTANCE.warn("No correlation wil happen, Thread context is null");
 			return "";
 		}
 
@@ -273,7 +273,7 @@ public class TelemetryCorrelationUtils {
 
 		//check if context is null - no correlation will happen
 		if (ThreadContext.getRequestTelemetryContext() == null) {
-			InternalLogger.INSTANCE.error("No correlation will happen " +
+			InternalLogger.INSTANCE.warn("No correlation will happen " +
 					"Thread context is null while resolving Correlation Context");
 			return;
 		}
