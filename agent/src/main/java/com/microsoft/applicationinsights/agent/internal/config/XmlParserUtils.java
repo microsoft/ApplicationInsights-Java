@@ -72,7 +72,7 @@ final class XmlParserUtils {
             }
             return defaultValue;
         } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%b) will be used.", ENABLED_ATTRIBUTE, elementName, defaultValue);
         }
 
         return defaultValue;
@@ -91,7 +91,7 @@ final class XmlParserUtils {
             }
             return defaultValue;
         } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%d) will be used.", attributeName, elementName, defaultValue);
         }
 
         return defaultValue;
@@ -114,7 +114,7 @@ final class XmlParserUtils {
             }
             return null;
         } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s'", ENABLED_ATTRIBUTE, elementName);
         }
 
         return null;
