@@ -4,9 +4,9 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class CustomAiTestCases {
 	public final TelemetryClient tclient;

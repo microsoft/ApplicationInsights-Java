@@ -39,7 +39,11 @@ include ':test:smoke:testApps'
 //include ':test:smoke:testApps:SimpleCalculator'
 include ':test:smoke:testApps:SimpleEventData'
 include ':test:smoke:testApps:PerfTestApp'
-include ':test:smoke:utils'
+include ':test:smoke:framework:testCore'
+include ':test:smoke:framework:utils'
+include ':test:smoke:framework:testCases'
+include ':test:smoke:framework:fakeIngestion:servlet'
+include ':test:smoke:framework:fakeIngestion:standalone'
 
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'

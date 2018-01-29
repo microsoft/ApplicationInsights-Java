@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.testapps.perf.servlets;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.smoketest.FixedAiTestCases;
-import com.microsoft.applicationinsights.testapps.perf.TestCaseRunnable;
 import com.microsoft.applicationinsights.testapps.perf.TestCaseRunnableFactory;
 
 import javax.servlet.annotation.WebServlet;

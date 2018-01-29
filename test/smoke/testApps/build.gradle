@@ -3,13 +3,6 @@ apply plugin: 'base'
 subprojects {
 	apply plugin: 'java'
 
-	ext {
-		// FIXME FEATURE use jars that we provide
-		aiAgentJar = project(':agent')
-		aiCoreJar = project(':core')
-		aiWebJar =  project(':web')
-	}
-
 	repositories {
 		jcenter()
 		mavenCentral()
@@ -32,10 +25,12 @@ subprojects {
 	}
 
 	dependencies {
-		smokeTestCompile project(':test:smoke:utils')
+		smokeTestCompile project(':test:smoke:framework:testCore')
+		smokeTestCompile project(':test:smoke:framework:utils')
 		smokeTestCompile 'junit:junit:4.12'
 		
-		testCompile project(':test:smoke:utils') // not necessary; vs code bug workaround
+		testCompile project(':test:smoke:framework:testCore') // not necessary; vs code bug workaround
+		testCompile project(':test:smoke:framework:utils')
 		testCompile 'junit:junit:4.12'
 	}
 

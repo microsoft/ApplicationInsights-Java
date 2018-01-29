@@ -20,16 +20,7 @@ public class HttpHelper {
 		try {
 			HttpGet get = new HttpGet(url);
 			CloseableHttpResponse resp1 = client.execute(get);
-			try {
-				HttpEntity entity = resp1.getEntity();
-				StringWriter cw = new StringWriter();
-				CharStreams.copy(new InputStreamReader(entity.getContent()), cw);
-				EntityUtils.consume(entity);
-				return cw.toString();
-			}
-			finally {
-				resp1.close();
-			}
+			return extractResponseBody(resp1);
 		}
 		finally {
 			client.close();
@@ -42,19 +33,23 @@ public class HttpHelper {
 			HttpPost post = new HttpPost(url);
 			post.setEntity(new StringEntity("PING"));
 			CloseableHttpResponse resp1 = client.execute(post);
-			try {
-				HttpEntity entity = resp1.getEntity();
-				StringWriter cw = new StringWriter();
-				CharStreams.copy(new InputStreamReader(entity.getContent()), cw);
-				EntityUtils.consume(entity);
-				return cw.toString();
-			}
-			finally {
-				resp1.close();
-			}
+			return extractResponseBody(resp1);
 		}
 		finally {
 			client.close();
 		}
+	}
+
+	private static String extractResponseBody(CloseableHttpResponse resp) throws IOException {
+		try {
+            HttpEntity entity = resp.getEntity();
+            StringWriter cw = new StringWriter();
+            CharStreams.copy(new InputStreamReader(entity.getContent()), cw);
+            EntityUtils.consume(entity);
+            return cw.toString();
+        }
+        finally {
+            resp.close();
+        }
 	}
 }

@@ -1,0 +1,11 @@
+apply plugin: 'java-library'
+
+repositories {
+	jcenter()
+}
+
+dependencies {
+	compile aiCoreJar
+}
+
+compileJava.sourceCompatibility = 1.8

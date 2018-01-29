@@ -10,27 +10,10 @@ import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Stack;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
+import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
+import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
+import org.junit.*;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -39,6 +22,15 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import javax.transaction.NotSupportedException;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 /**
@@ -167,7 +159,7 @@ public abstract class AiSmokeTest {
 
 	private final Properties testProps = new Properties();
 
-	protected final MockedAppInsightsIngestion mockedIngestion = new MockedAppInsightsIngestion();
+	protected final MockedAppInsightsIngestionServer mockedIngestion = new MockedAppInsightsIngestionServer();
 
 	/**
 	 * This rule does a few things:
@@ -313,9 +305,9 @@ public abstract class AiSmokeTest {
 
 	protected void checkMockedIngestionHealth() throws Exception {
 		String ok = HttpHelper.get("http://localhost:"+mockedIngestion.getPort()+"/");
-		assertEquals(MockedAppInsightsIngestion.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
-		String postResponse = HttpHelper.post("http://localhost:60606/v2/track", MockedAppInsightsIngestion.PING);
-		assertEquals(MockedAppInsightsIngestion.PONG, postResponse);
+		assertEquals(MockedAppInsightsIngestionServlet.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
+		String postResponse = HttpHelper.post("http://localhost:60606/v2/track", MockedAppInsightsIngestionServlet.PING);
+		assertEquals(MockedAppInsightsIngestionServlet.PONG, postResponse);
 	}
 
 	protected void startDockerContainer() throws Exception {
