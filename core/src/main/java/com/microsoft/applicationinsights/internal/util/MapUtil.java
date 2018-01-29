@@ -24,7 +24,10 @@ package com.microsoft.applicationinsights.internal.util;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 /**
@@ -33,6 +36,14 @@ import com.google.common.base.Strings;
 public class MapUtil
 {
     public static <Value> void copy(Map<String, Value> source, Map<String, Value> target) {
+        if (source == null) {
+            Preconditions.checkArgument(source != null, "source must not be null");
+            return;
+        }
+        if (target == null) {
+            Preconditions.checkArgument(target != null, "target must not be null");
+            return;
+        }
         for (Map.Entry<String,Value> entry : source.entrySet()) {
             String key = entry.getKey();
             if (Strings.isNullOrEmpty(key)) {
@@ -40,7 +51,11 @@ public class MapUtil
             }
 
             if (!target.containsKey(key)) {
-                target.put(key,entry.getValue());
+                if (target instanceof ConcurrentHashMap && entry.getValue() == null) {
+                    continue;
+                } else {
+                    target.put(key, entry.getValue());
+                }
             }
         }
     }
