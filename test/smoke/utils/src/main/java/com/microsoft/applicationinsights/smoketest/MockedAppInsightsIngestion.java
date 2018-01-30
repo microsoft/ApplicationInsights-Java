@@ -31,7 +31,6 @@ public class MockedAppInsightsIngestion implements AutoCloseable {
 	public static final int DEFAULT_PORT = 60606;
 	private final Server server;
 
-	// FIXME deserialize to object instead of string
 	private final Queue<Envelope> telemetryReceived = new ConcurrentLinkedDeque<Envelope>();
 	private final ListMultimap<String, Envelope> type2envelope = MultimapBuilder.treeKeys().arrayListValues().build();
 
@@ -152,7 +151,7 @@ public class MockedAppInsightsIngestion implements AutoCloseable {
 						}
 						else {
 							logit("Deserializing payload...");
-							// logit(body); // FIXME this should print if debug logging is enabled... not sure how to turn that on yet
+							logit("raw payload:\n\n"+body+"\n");
 							String[] lines = body.split("\n");
 							for (String line : lines) {
 								Envelope envelope;
@@ -194,7 +193,7 @@ public class MockedAppInsightsIngestion implements AutoCloseable {
 					resp.getWriter().append(ENDPOINT_HEALTH_CHECK_RESPONSE);
 					resp.setStatus(200);
 					return;
-				case "/api/profiles": // FIXME is this needed?
+				case "/api/profiles":
 					resp.getWriter().append(this.appid);
 					resp.setStatus(200);
 					return;

@@ -110,7 +110,6 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(id, "id");
 		Preconditions.checkNotNull(appArchive, "appArchive");
 		
-		// FIXME docker-stage should be configurable
 		Process p = buildProcess(dockerExePath, "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
 		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
 		

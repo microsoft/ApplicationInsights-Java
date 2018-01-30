@@ -14,14 +14,14 @@ subprojects {
 	apply plugin: 'base'
 
 	ext {
-		appServerShortName = null // set in subproject build.gradle; FIXME this value could probably be harvested from somewhere
+		appServerShortName = null // set in subproject build.gradle
 		outputRoot = "$projectDir/build"
 		dockerfileOutputDir = "$outputRoot/dockerfiles"
 		resourcesOutputDir = "$outputRoot/resources"
 		stagingDir = "$outputRoot/tmp"
 	}
 
-	task generateDockerfiles { // FIXME needs to support both OS
+	task generateDockerfiles {
 		description 'Generates Dockerfiles for building images'
 
 		if (!jreMasterList.exists()) {
@@ -35,7 +35,6 @@ subprojects {
 		
 		FileTree inputDockerfiles = fileTree(dir: projectDir, include: "*$partialDockerfileExt")
 		if (inputDockerfiles.files.size() > 1) {
-			// FIXME this needs different validation when we support mutiple OS or configurations
 			throw new GradleException("Expected only 1 *$partialDockerfileExt file in $projectDir.name")
 		}
 		inputs.files(inputDockerfiles)
@@ -59,7 +58,6 @@ subprojects {
 				}
 				jresFile << "$jreVersion\n"
 			}
-			// FIXME make generic to work for both linux and windows
 		}
 	}
 
@@ -193,7 +191,6 @@ def getCurrentDockerServerArch() {
 }
 
 def switchDockerDaemon(targetMode = null) {
-	// FIXME this should only be applicable for desktop builds
 	verifyDockerInstallation()
 	logger.lifecycle "Switching docker mode. Current mode = "+getCurrentDockerServerArch()
 	if (targetMode != null) {

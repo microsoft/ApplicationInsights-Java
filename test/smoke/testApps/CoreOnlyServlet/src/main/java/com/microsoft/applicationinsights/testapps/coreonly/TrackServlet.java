@@ -43,7 +43,7 @@ public class TrackServlet extends HttpServlet {
 							Integer.valueOf(req.getParameter("sampleCount")), 
 							Double.valueOf(req.getParameter("min")), 
 							Double.valueOf(req.getParameter("max")),
-							null)); // FIXME how to parse maps from url
+							null));
 					}
 					else {
 						tcr = new TestCaseRunnable(cases.getTrackMetric(
@@ -52,7 +52,7 @@ public class TrackServlet extends HttpServlet {
 					}
 					break;
 				case "event":
-					throw new NotImplementedException("track/event"); // TODO needs map parsing
+					throw new NotImplementedException("track/event");
 				case "trace":
 					tcr = new TestCaseRunnable(cases.getTrackTrace(
 						req.getParameter("message"), 
@@ -60,13 +60,13 @@ public class TrackServlet extends HttpServlet {
 						null));
 					break;
 				case "exception":
-					throw new NotImplementedException("track/exception"); //  TODO needs map parsing
+					throw new NotImplementedException("track/exception");
 				case "request":
 					throw new NotImplementedException("track/request");
 				case "httprequest":
 					tcr = new TestCaseRunnable(cases.getTrackHttpRequest(
 						req.getParameter("name"), 
-						new SimpleDateFormat().parse(req.getParameter("timestamp")), // FIXME does this work?
+						new SimpleDateFormat().parse(req.getParameter("timestamp")),
 						Long.valueOf(req.getParameter("duration")), 
 						req.getParameter("responseCode"), 
 						Boolean.parseBoolean(req.getParameter("success"))));

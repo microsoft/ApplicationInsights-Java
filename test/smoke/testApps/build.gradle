@@ -4,7 +4,6 @@ subprojects {
 	apply plugin: 'java'
 
 	ext {
-		// FIXME FEATURE use jars that we provide
 		aiAgentJar = project(':agent')
 		aiCoreJar = project(':core')
 		aiWebJar =  project(':web')
@@ -76,7 +75,6 @@ subprojects {
 		}
 	}
 
-	// FIXME is this redundant with the other info-level logging?
 	tasks.withType(Test) {
 		reports.html.destination = file("${reporting.baseDir}/${name}")
 

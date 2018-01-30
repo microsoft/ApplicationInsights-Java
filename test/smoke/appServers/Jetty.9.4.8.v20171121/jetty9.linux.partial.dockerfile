@@ -17,7 +17,6 @@ RUN wget http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.
 ENV JETTY_HOME /opt/jetty-distribution-9.4.8.v20171121
 ENV JETTY_BASE /opt/jetty-distribution-9.4.8.v20171121/demo-base
 
-# FIXME could these live elsewhere? or does it matter?
 ADD ./deploy.sh /opt/jetty-distribution-9.4.8.v20171121/demo-base/deploy.sh
 ADD ./tailLastLog.sh /opt/jetty-distribution-9.4.8.v20171121/demo-base/tailLastLog.sh
 
