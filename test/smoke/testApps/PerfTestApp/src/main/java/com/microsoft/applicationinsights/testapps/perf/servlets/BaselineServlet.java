@@ -11,11 +11,6 @@ public class BaselineServlet extends APerfTestServlet {
 
     @Override
     protected void reallyDoGet(HttpServletRequest req, HttpServletResponse resp) {
-        new TestCaseRunnable(new Runnable() {
-            @Override
-            public void run() {
-                // nop
-            }
-        }).run();
+        new TestCaseRunnable(null).run();
     }
 }

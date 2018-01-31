@@ -8,7 +8,7 @@
 <p>
     Each endpoint will respond with the number of milliseconds the request took.
 </p>
-<h2><a href="/baseline">Baseline</a></h2>
+<h2><a href="./baseline">Baseline</a></h2>
 <p>
     This endpoint simulates an application without the Java SDK. It performs some simple computations to simulate something close to a real application.
     <strong>When doing a comparison with track/*, this should be run first.</strong>
@@ -20,15 +20,15 @@
 </p>
 <ul>
     <!-- TODO provide values for parameters sent to methods -->
-    <li><a href="/track/metric">Metric</a></li>
-    <li><a href="/track/event">Event</a></li>
-    <li><a href="/track/httpRequest">HttpRequest</a></li>
-    <li><a href="/track/dependency">Dependency</a></li>
-    <li><a href="/track/trace">Trace</a></li>
-    <li><a href="/track/exception">Exception</a></li>
-    <li><a href="/track/pageView">PageView</a></li>
+    <li><a href="./track/metric">Metric</a></li>
+    <li><a href="./track/event">Event</a></li>
+    <li><a href="./track/httpRequest">HttpRequest</a></li>
+    <li><a href="./track/dependency">Dependency</a></li>
+    <li><a href="./track/trace">Trace</a></li>
+    <li><a href="./track/exception">Exception</a></li>
+    <li><a href="./track/pageView">PageView</a></li>
 </ul>
-<h2>FakeRest Endpoint</h2>
+<h2><a href="./fakeRest">FakeRest Endpoint</a></h2>
 <p>
     This simulates a "real world" endpoint. It runs trackDependnecy, trackEvent, trackMetric and trackTrace.
 </p>
