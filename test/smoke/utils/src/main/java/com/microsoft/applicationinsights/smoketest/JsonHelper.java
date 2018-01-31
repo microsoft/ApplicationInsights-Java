@@ -107,7 +107,8 @@ public class JsonHelper {
 	private static class DataPointTypeEnumConverter implements JsonDeserializer<DataPointType>, JsonSerializer<DataPointType> {
 		@Override
 		public DataPointType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-			switch (json.getAsInt()) {
+			final int id = json.getAsInt();
+			switch (id) {
 				case 0: return DataPointType.Measurement;
 				case 1: return DataPointType.Aggregation;
 				default: throw new IllegalArgumentException("No DataPointType with id="+id);
