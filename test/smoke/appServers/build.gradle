@@ -31,16 +31,23 @@ subprojects {
 		def jreBlacklist = file('jre.excludes.txt')
 
 		def jresToUse = getConfigSet(jreMasterList, jreWhitelist, jreBlacklist)
-		logger.lifecycle "JREs to use for $project.name containers: $jresToUse"
 		
 		FileTree inputDockerfiles = fileTree(dir: projectDir, include: "*$partialDockerfileExt")
-		if (inputDockerfiles.files.size() > 1) {
-			throw new GradleException("Expected only 1 *$partialDockerfileExt file in $projectDir.name")
-		}
+
 		inputs.files(inputDockerfiles)
 		outputs.dir(outputRoot)
 		outputs.files fileTree(dir: outputRoot)
 		outputs.upToDateWhen { false }
+
+		doFirst {
+			if (!jreMasterList.exists()) {
+				throw new GradleException("Missing master jre list: jre.master.txt")
+			}
+			if (inputDockerfiles.files.size() > 1) {
+				throw new GradleException("Expected only 1 *$partialDockerfileExt file in $projectDir.name")
+			}
+			logger.lifecycle "JREs to use for $project.name containers: $jresToUse"
+		}
 
 		doLast {
 			def jresFile = file("$resourcesOutputDir/${appServerShortName}.jre.txt")
@@ -69,6 +76,12 @@ subprojects {
 		// TODO write upToDateWhen predicate
 		// TODO should this have outputs?
 		outputs.upToDateWhen { false }
+
+		doFirst {
+			if (!dockerExe) {
+				throw new GradleException("Please set environment variable DOCKER_EXE to the absolute path of the docker executable")
+			}
+		}
 		doLast {
 			copy {
 				from "$projectDir/resources/linux"
@@ -121,6 +134,9 @@ task prune(type: Exec) {
 }
 
 def getConfigSet(File universeFile, File includesFile, File excludesFile) {
+	if (!universeFile.exists()) {
+		return [].toSet()
+	}
 	def hasIncludes = includesFile.exists()
 	def hasExcludes = excludesFile.exists()
 	if (hasIncludes) {
@@ -155,11 +171,10 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
 }
 
 def findDockerExe() {
-	if (System.env.DOCKER_EXE) {
-		return System.env.DOCKER_EXE
+	if (!System.env.DOCKER_EXE) {
+		logger.info 'DOCKER_EXE not set'
 	}
-	throw new GradleException("Please set environment variable DOCKER_EXE to the absolute path of the docker executable")
-	// TODO try to find docker
+	return System.env.DOCKER_EXE
 }
 
 def findDockerCliExe() {
