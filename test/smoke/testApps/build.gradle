@@ -3,6 +3,12 @@ apply plugin: 'base'
 subprojects {
 	apply plugin: 'java'
 
+	ext {
+		aiAgentJar = project(':agent')
+		aiCoreJar = project(':core')
+		aiWebJar =  project(':web')
+	}
+
 	repositories {
 		jcenter()
 		mavenCentral()
@@ -71,7 +77,6 @@ subprojects {
 		}
 	}
 
-	// FIXME is this redundant with the other info-level logging?
 	tasks.withType(Test) {
 		reports.html.destination = file("${reporting.baseDir}/${name}")
 

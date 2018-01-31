@@ -65,8 +65,7 @@ public abstract class AiSmokeTest {
 		return Lists.transform(rval, new Function<String, String>() {
 			@Override
 			public String apply(String input) {
-				// FIXME some may have '/'. update to use regex
-				return input.replace(':', '_');
+				return input.replaceAll("[:/]", "_");
 			}
 		});
 	}

@@ -10,9 +10,7 @@ dependencies {
     providedRuntime 'mysql:mysql-connector-java:5.1.44'
 
     smokeTestCompile 'com.google.guava:guava:23.0'
-
-    // FIXME these are not necessary; they're a workaround for a VSCode intellisense bug (it doesn't work with only the smokeTest configuration)
-    testCompile 'com.google.guava:guava:23.0'
+    testCompile 'com.google.guava:guava:23.0' // VSCODE workaround for intellisense bug
 }
 
 compileJava.sourceCompatibility = 1.7
