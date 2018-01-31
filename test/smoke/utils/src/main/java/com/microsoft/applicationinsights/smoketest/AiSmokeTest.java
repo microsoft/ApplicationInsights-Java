@@ -351,6 +351,27 @@ public abstract class AiSmokeTest {
 	}
 	//endregion
 
+	protected void doCalcSendsData() throws Exception {
+		System.out.println("Wait for app to finish deploying...");
+		String appContext = warFileName.replace(".war", "");
+		String baseUrl = "http://localhost:" + appServerPort + "/" + appContext;
+		waitForUrl(baseUrl, 60, TimeUnit.SECONDS, appContext);
+		System.out.println("Test app health check complete.");
+
+		String url = baseUrl+"/doCalc?leftOperand=1&rightOperand=2&operator=plus";
+		String content = HttpHelper.get(url);
+
+		assertNotNull(content);
+		assertTrue(content.length() > 0);
+		
+		System.out.println("Waiting 10s for telemetry...");
+		TimeUnit.SECONDS.sleep(10);
+		System.out.println("Finished waiting for telemetry. Starting validation...");
+
+		assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
+		assertTrue("mocked ingestion has 0 items", mockedIngestion.getItemCount() > 0);	
+	}
+
 	@After
 	public void tearDown() throws Exception {
 		System.out.println("Cleaning up test resources...");
