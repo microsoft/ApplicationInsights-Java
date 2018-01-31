@@ -11,15 +11,18 @@ RUN mkdir /root/docker-stage
 RUN apt-get update \
 	&& apt-get install -y wget
 
-# install tomcat (FXIME gpg?)
-RUN wget http://www-eu.apache.org/dist/tomcat/tomcat-7/v7.0.82/bin/apache-tomcat-7.0.82.tar.gz \
-	&& wget https://www.apache.org/dist/tomcat/tomcat-7/v7.0.82/bin/apache-tomcat-7.0.82.tar.gz.sha1 \
-	&& sha1sum --check apache-tomcat-7.0.82.tar.gz.sha1 \
-	&& tar xzvf apache-tomcat-7.0.82.tar.gz \
-	&& mv ./apache-tomcat-7.0.82 /opt/apache-tomcat-7.0.82
+ENV TOMCAT_MAJOR_VERSION 7
+ENV TOMCAT_FULL_VERSION 7.0.84
 
-ENV CATALINA_HOME /opt/apache-tomcat-7.0.82
-ENV CATALINA_BASE /opt/apache-tomcat-7.0.82
+# install tomcat (FXIME gpg?)
+RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
+	&& wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
+	&& sha1sum --check apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
+	&& tar xzvf apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
+	&& mv ./apache-tomcat-$TOMCAT_FULL_VERSION /opt/apache-tomcat-$TOMCAT_FULL_VERSION
+
+ENV CATALINA_HOME /opt/apache-tomcat-$TOMCAT_FULL_VERSION
+ENV CATALINA_BASE /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 
 ADD ./deploy.sh /root/docker-stage/deploy.sh
 ADD ./tailLastLog.sh /root/docker-stage/tailLastLog.sh
