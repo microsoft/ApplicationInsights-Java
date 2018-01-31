@@ -19,7 +19,7 @@ The following packages are built in this repository:
 
 ## To upgrade to the latest SDK 
 
-After you upgrade, you'll need to merge back any customizations you made to ApplicationInsights.xml. Take a copy of it to compare with the new file.
+After you upgrade, you'll need to merge back any customizations you made to `ApplicationInsights.xml`. Take a copy of it to compare with the new file.
 
 *If you're using Maven or Gradle*
 
