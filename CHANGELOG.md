@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 2.0.0
+
+- Fix #506 Null Reference Check causing Null Pointer Exception in `TelemetryCorrelationUtils.java`
+
 ## Version 2.0.0-BETA
 - Updating various dependencies to latest version
 - Introducing public class CustomClassWriter in Agent to enable finding common super classes used for Agent instrumentation without loading it
