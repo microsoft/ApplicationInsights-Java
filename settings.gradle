@@ -45,7 +45,6 @@ include ':test:smoke:framework:fakeIngestion:standalone'
 
 include ':test:smoke:testApps:PerfTestApp'
 //include ':test:smoke:testApps:SimpleCalculator'
-include ':test:smoke:testApps:SimpleEventData'
 include ':test:smoke:testApps:SimpleTelemetryData'
 
 if (System.env.'COLLECTD_HOME') {

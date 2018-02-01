@@ -29,5 +29,16 @@
 	<input type="submit" />
 </form>
 
+<form action="trackException" autocomplete="off">
+	<input name="leftOperand" />
+	<select name="operator">
+		<option value="plus">+</option>
+		<option value="minus">−</option>
+		<!-- TODO: add other binary operators -->
+	</select>
+	<input name="rightOperand" />
+	<input type="submit" />
+</form>
+
 </body>
 </html>
