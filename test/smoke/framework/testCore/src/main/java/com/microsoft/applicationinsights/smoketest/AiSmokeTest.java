@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
@@ -9,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
@@ -21,6 +23,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import javax.annotation.Nullable;
 import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
@@ -297,6 +300,20 @@ public abstract class AiSmokeTest {
 	}
 
 	protected void startMockedIngestion() throws Exception {
+		mockedIngestion.addIngestionFilter(new Predicate<Envelope>() {
+			@Override
+			public boolean apply(@Nullable Envelope input) {
+				String deviceId = input.getTags().get("ai.device.id");
+				if (deviceId == null) {
+					return true;
+				}
+				final boolean belongsToCurrentContainer = lastContainerId().startsWith(deviceId);
+				if (!belongsToCurrentContainer) {
+					System.out.println("Telemetry from previous container");
+				}
+				return belongsToCurrentContainer;
+			}
+		});
 		mockedIngestion.startServer();
 		TimeUnit.SECONDS.sleep(2);
 		checkMockedIngestionHealth();

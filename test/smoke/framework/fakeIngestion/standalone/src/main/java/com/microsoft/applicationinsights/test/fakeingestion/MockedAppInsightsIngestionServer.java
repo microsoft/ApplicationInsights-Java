@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -41,6 +42,10 @@ public class MockedAppInsightsIngestionServer implements AutoCloseable {
 		System.out.println("Stopping fake ingestion...");
 		server.stop();
 		server.join();
+	}
+
+	public void addIngestionFilter(Predicate<Envelope> filter) {
+		this.servlet.addIngestionFilter(filter);
 	}
 
 	public void resetData() {
