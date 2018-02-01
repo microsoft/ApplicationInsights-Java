@@ -72,7 +72,7 @@ This file can include JREs which are not found in the master file.
 1. Create a test application directory, e.g. `/test/smoke/testApps/`**_`MyTestApp`_**
 2. Create the application's build file: `/test/smoke/testApps/`_`MyTestApp/`**`build.gradle`**_
 	* This can be used just like any other build file: add dependencies, add custom build step, add unit tests, etc. See the [gradle documantation][gradledocs] for more information.
-	* The application source should be in the standard location: `/test/smoke/testApps/MyTestApp/src/main/java`
+	* The application source should be in the standard location: `/test/smoke/testApps/`_`MyTestApp`_**`/src/main/java`**
 	* You will add directories for smoke tests in the next section.
 3. Finally, add this project to the root project, e.g. add the following to `ApplciationInsights-Java/settings.gradle`:
 	```gradle
@@ -85,13 +85,16 @@ Note: your test application should have a "health check" endpoint at the root. F
 In the current system, test cases are coupled with the test application. So, you must have created a test application in the previous section to create a test case.
 
 1. Create the smoke test source and resource directories:
-	* `/test/smoke/testApps/`_`MyTestApp`_`/src/smokeTest/java`
-	* `/test/smoke/testApps/`_`MyTestApp`_`/src/smokeTest/resources`
+	* `/test/smoke/testApps/`_`MyTestApp`_**`/src/smokeTest/java`**
+	* `/test/smoke/testApps/`_`MyTestApp`_**`/src/smokeTest/resources`**
+
 2. In the smoke test resource directory, create a file `appServers.txt`.
 	* You must explicitly specify the shortnames of the application servers where the test application should be deployed; one per line.
 	* The application server shortnames can be found in `build.gradle` in their respective directories.
+
 3. Create a smoke test class. This is a JUnit test which inherits from `AiSmokeTest` found in `/utils`.
 // TODO metion that junit and utils is already a dependency
+
 4. Specify any additional dependencies using the configuration `smokeTestCompile`, e.g.:
 	```gradle
 	dependencies {
@@ -100,10 +103,74 @@ In the current system, test cases are coupled with the test application. So, you
 	```
 
 ## Add an application server
-TODO
+1. Create a subdirectory under `/test/smoke/appServers`. The subdirectory should be named the name of the app server and its version separated by a dot (`.`). For example, `/test/smoke/appServers/`_**`MyAppServer.1`**_ would represent and app server named _MyAppServer_ version _1_.
 
-## Run a single test or test class
-TODO
+2. Inside the app server subdirectory, create a `build.gradle` which defines the variable `appServerShortName`. Generally, this is the app server's name and it's version in all lowercase with no spaces or special characters. Currently, this is the name the rest of the system will use to refer to this environment (container names, inside tests, etc.). 
+
+Example for `/test/smoke/appServers/`_**`MyAppServer.1`**_`/build.gradle`:
+```gradle
+ext {
+	appServerShortName = 'myappserver1'
+}
+```
+
+3. Create partial dockerfile with the following naming scheme: _**`appServerShortName`**_`.`_**`target_os`**_`.partial.dockerfile`. **appServerShortName** should be the same as defined in step 2. More on this in the next section.
+
+Currently, the only **target_os** supported is `linux`. There are plans to support more in the future.
+
+4. Inside the appserver subdirectory, create a directory named `resources` with a subdirectory for each target OS (again, currently only `linux` is supported). For example, `/test/smoke/appServers`_`MyAppServer.1`_`/`_**`resources/linux`**_
+
+5. Inside the `resources/linux` directory, create two scripts specific to this application server:
+	*  `deploy.sh` - This should take one argument, the absolute path to the test application WAR file. The script will use the application server's mechanism to deploy the WAR file into the server. This can be using the appserver's management API or copying the WAR into a scanned directory; it depends on the application server spec.
+	`deploy.sh` will be run after the appserver has started and after the test app WAR is copied into the container.
+	* `tailLastLog.sh` - This takes one optional argument, number of lines to tail. This will be run when a test failed and the goal is to provide any additional diagnostics for addressing the test failure. When run, it should print the given/default number of lines from the tail of the application server's logs. This should include the application server log file which captures the logs from the test application. Logs from deployment should also be included. This could be from one or more files depending on the application server spec. If more than one file is tailed, include a filename header before dumping the log file.
+6. Add an `inlucde` statement to `settings.gradle` at the root of the repository. For example:
+```gradle
+include ':test:smoke:appServers:MyAppServer'
+```
+### Writing the `.partial.dockerfile`
+This can be written like any other Dockerfile, with some additional steps:
+1. The base image must be `@JRE@`. This is a template variable used by the system. It will be replaces by the JRE base images supported by this application server.
+2. The final `WORKDIR` should contain the scripts from step 5.
+
+For example:
+```dockerfile
+FROM @JRE@
+
+# then continue writing the dockerfile as normal ...
+
+# ... more docker commands ...
+
+# you should include something like this (the directory name can vary):
+RUN mkdir /docker-stage
+
+ADD ./deploy.sh /docker-stage/deploy.sh
+ADD ./tailLastLog.sh /docker-stage/tailLastLog.sh
+
+# then at the end of the file...
+WORKDIR /docker-stage
+# the final workdir should be the directory with the scripts
+```
+
+Notes/tips:
+* The actual docerfiles are generated and copied into `/test/smoke/appServers/`_`appServerName.version`_`/build/dockerfiles`. Check here if the dockerfiles are not building correctly.
+* When building docker images, the system first copies the dockerfiles and resources into a staging directory: `/test/smoke/appServers/`_`appServerName.version`_`/build/tmp`. Here is another place to check when debugging docker build issues.
+
+### Optional steps
+7. If the applciation server does not support a specific JRE, you can add one of these files (see note below) to filter the JREs for a specific application server:
+	* `jre.excludes.txt` - list of JREs from the master file (`/test/smoke/appServers/jre.master.txt`) which _should not_ be used as a base image for this application server.
+	* `jre.includes.txt` - list of JREs which _should_ be used as base image for this applications server. This overrides `jre.master.txt`, so this file can be though of as the master file specifically for this app server. If you want to add an additional JRE, copy the contents of `jre.master.txt` into it and add the additional entry. If this app server supports only 1 JRE, then include it as the only entry in this file.
+
+Note: Though the system supports having both of these files, it's easier to manage if you include only one or the other.
+
+## Run specific test(s) or test class(es)
+Use the `--tests ` _`<testpattern>`_ option with the `smokeTest` task. *testpattern* can use `*` as a wildcard. For example,
+```
+gradlew smokeTest --tests "*SomeTestClass*trackEvent*"
+```
+This example will run all tests in classes whose name contains *SomeTestClass* and test methods with names containing *trackEvent*.
+
+See [gradle documentation](gradledocs) for more information.
 
 # Future Plans
 * Run smoke tests against provided SDK JARs
@@ -114,7 +181,9 @@ TODO
 * Decouple tests from test applications (common schema? dynamic resources created by the test?).
 * Detect if the smokeTests are being run on a linux machine and only run the Linux tests. Same for Windows.
 * Add ability to vary the Linux OS?
-* gradles tasks for creating a new test application, new environment; maybe automating other things e.g. 'add jre'
+* gradle tasks for creating a new test application, new environment; maybe automating other things e.g. 'add jre'
+* Automate discovery of application servers.
+* Automate _appServerShortName_ to remove need for build.gralde only with variable name defined.
 
 # References
 * [Docker for Windows][windock]
