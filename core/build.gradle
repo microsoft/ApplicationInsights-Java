@@ -30,10 +30,6 @@ import org.apache.tools.ant.taskdefs.condition.Os
 boolean skipWinNative = (System.properties['skipWinNative'] ?: 'false').toBoolean()
 if (skipWinNative) {
     logger.warn 'Windows native components will not be built: skipWinNative=true'
-    if (isBuildServer) {
-        logger.error 'skipWinNative=true and isBuildServer=true'
-        throw new GradleException('Cannot use skipWinNative=true and isBuildServer=true')
-    }
     if (isRelease) {
         logger.error 'skipWinNative=true and isRelease=true'
         throw new GradleException('Cannot use skipWinNative=true and isRelease=true')
