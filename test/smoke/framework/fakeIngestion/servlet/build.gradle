@@ -1,0 +1,17 @@
+apply plugin: 'war'
+
+repositories {
+	jcenter()
+	mavenCentral()
+}
+
+dependencies {
+	compile 'com.google.guava:guava:23.0'
+	providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+	compile 'com.google.code.gson:gson:2.8.2'
+	compile aiCoreJar
+	compile project(':test:smoke:framework:utils')
+
+}
+
+compileJava.sourceCompatibility = 1.8
