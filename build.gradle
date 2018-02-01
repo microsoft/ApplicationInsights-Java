@@ -31,6 +31,16 @@ apply from: "$buildScriptsDir/test.gradle"
 // region Root project script
 
 def rootProjectBuildFolder = "$rootDir/build"
+ext {
+    isBuildServer = (System.properties["isBuildServer"] ?: "false").toBoolean()
+    isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
+    if (isBuildServer) {
+        logger.lifecycle "Building on SERVER"
+    }
+    else {
+        logger.lifecycle "Building on DESKTOP"
+    }
+}
 
 task clean {
     doLast {
@@ -38,26 +48,16 @@ task clean {
     }
 }
 
-// endregion Root project script
-
-// region private methods
-
-// calculate sdk version based on system properties
-def calcProjectVersion() {
-    def projectVersion = version;
-    def userProvidedVersion = System.properties["version"]
-    if (userProvidedVersion != null && userProvidedVersion.trim() != "") {
-        projectVersion = userProvidedVersion.trim()
-        logger.info "User provided a version; version updated to $projectVersion"
+allprojects {
+    tasks.withType(JavaCompile) {
+        doFirst {
+            logger.info("sourceCompatibility = $sourceCompatibility")
+            logger.info("tatgetCompatibility = $targetCompatibility")
+            logger.info("options.bootClasspath = $options.bootClasspath")
+            logger.info("options.compilerArgs = $options.compilerArgs")
+        }
     }
-
-    String isRelease = System.properties["isRelease"]
-    if (isRelease == null || isRelease.trim().toLowerCase() != "true") {
-        projectVersion = projectVersion + "-SNAPSHOT"
-        logger.info "This is NOT a release version; version updated to $projectVersion"
-    }
-    projectVersion
 }
 
-// endregion private methods
+// endregion Root project script
 

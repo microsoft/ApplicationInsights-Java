@@ -1,0 +1,95 @@
+apply plugin: 'base'
+
+subprojects {
+	apply plugin: 'java'
+
+	ext {
+		aiAgentJar = project(':agent')
+		aiCoreJar = project(':core')
+		aiWebJar =  project(':web')
+	}
+
+	repositories {
+		jcenter()
+		mavenCentral()
+	}
+
+	sourceSets {
+		smokeTest {
+			java {
+				// compileClasspath += main.output + test.output
+				// runtimeClasspath += main.output + test.output
+				srcDir file('src/smokeTest/java')
+			}
+			resources.srcDir file('src/smokeTest/resources')
+		}
+	}
+
+	configurations {
+		smokeTestCompile.extendsFrom testCompile
+		smokeTestRuntime.extendsFrom testRuntime
+	}
+
+	dependencies {
+		smokeTestCompile project(':test:smoke:framework:testCore')
+		smokeTestCompile project(':test:smoke:framework:utils')
+		smokeTestCompile 'junit:junit:4.12'
+		
+		testCompile project(':test:smoke:framework:testCore') // not necessary; vs code bug workaround
+		testCompile project(':test:smoke:framework:utils')
+		testCompile 'junit:junit:4.12'
+	}
+
+	task smokeTest(type: Test) {
+		// TODO this adds the whole tree rooted at :appServers. Could this depend on :appServers which depends on :appServers:*:build?
+		dependsOn project(':test:smoke:appServers').getTasksByName('buildDockerImage', true)
+		
+		if (gradle.gradleVersion.startsWith('4')) {
+			testClassesDirs = files(sourceSets.smokeTest.output.classesDir)
+		} else {
+			testClassesDir = file(sourceSets.smokeTest.output.classesDir) // deprecated in Gradle v4
+		}
+
+		classpath = sourceSets.smokeTest.runtimeClasspath
+		outputs.upToDateWhen { false }
+	}
+
+	smokeTest.dependsOn assemble
+	smokeTest.mustRunAfter assemble
+
+	processSmokeTestResources {
+		outputs.upToDateWhen { false }
+		doLast {
+			copy {
+				from testAppArtifactDir
+				into processSmokeTestResources.destinationDir
+				include testAppArtifactFilename
+			}
+			copy {
+				from "$sharedResourcesDir"
+				into processSmokeTestResources.destinationDir
+				include '**/*'
+			}
+			def testInfoProps = new File(processSmokeTestResources.destinationDir, "testInfo.properties")
+			def props = new Properties()
+			props.setProperty("ai.smoketest.testAppWarFile", testAppArtifactFilename)
+			testInfoProps.withWriter { props.store((Writer)it, "information needed for test") }
+		}
+	}
+
+	tasks.withType(Test) {
+		reports.html.destination = file("${reporting.baseDir}/${name}")
+
+		testLogging {
+			events 'FAILED', 'PASSED', 'SKIPPED', 'STANDARD_OUT', 'STANDARD_ERROR'
+			exceptionFormat 'FULL'
+			showExceptions true
+			showCauses true
+			showStackTraces true
+		}
+
+		doLast {
+			println "$it.name complete. HTML reports: $reports.html.destination"
+		}
+	}
+}

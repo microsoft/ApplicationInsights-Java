@@ -1,0 +1,23 @@
+
+apply plugin: 'base'
+
+allprojects {
+	ext {
+		sharedOutputRoot = project(':test:smoke').projectDir.absolutePath+'/shared-tmp'
+		sharedResourcesDir = "$sharedOutputRoot/resources"
+	}
+}
+
+subprojects {
+	ext {
+		aiAgentJar = project(':agent')
+		aiCoreJar = project(':core')
+		aiWebJar =  project(':web')
+	}
+}
+
+clean {
+	delete file(sharedOutputRoot)
+}
+
+defaultTasks 'build'

@@ -27,10 +27,19 @@ apply from: "$buildScriptsDir/publishing.gradle"
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
-if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    apply from: "native.gradle"
+boolean skipWinNative = (System.properties['skipWinNative'] ?: 'false').toBoolean()
+if (skipWinNative) {
+    logger.warn 'Windows native components will not be built: skipWinNative=true'
+    if (isRelease) {
+        logger.error 'skipWinNative=true and isRelease=true'
+        throw new GradleException('Cannot use skipWinNative=true and isRelease=true')
+    }
 } else {
-    logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        apply from: "native.gradle"
+    } else {
+        logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
+    }
 }
 
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
