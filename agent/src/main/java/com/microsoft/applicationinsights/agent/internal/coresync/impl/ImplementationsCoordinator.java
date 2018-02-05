@@ -276,7 +276,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
 
             return implementationName;
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
+            InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());
             return null;
         }
     }
@@ -290,7 +290,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             mainHandler = handler;
             InternalAgentLogger.INSTANCE.trace("Setting main handler");
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
+            InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());
         }
     }
 

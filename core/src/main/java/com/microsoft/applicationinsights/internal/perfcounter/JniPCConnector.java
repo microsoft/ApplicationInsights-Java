@@ -78,7 +78,7 @@ public final class JniPCConnector {
         } catch (Throwable e) {
             InternalLogger.INSTANCE.error(
                 "Failed to load native dll, Windows performance counters will not be used. " +
-                "Please make sure that Visual C++ Redistributable is properly installed: %s.", e.getMessage());
+                "Please make sure that Visual C++ Redistributable is properly installed: %s.", e.toString());
 
             return false;
         }
@@ -190,14 +190,14 @@ public final class JniPCConnector {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    InternalLogger.INSTANCE.error("Failed to close input stream for dll extraction: %s", e.getMessage());
+                    InternalLogger.INSTANCE.error("Failed to close input stream for dll extraction: %s", e.toString());
                 }
             }
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    InternalLogger.INSTANCE.error("Failed to close output stream for dll extraction: %s", e.getMessage());
+                    InternalLogger.INSTANCE.error("Failed to close output stream for dll extraction: %s", e.toString());
                 }
             }
         }

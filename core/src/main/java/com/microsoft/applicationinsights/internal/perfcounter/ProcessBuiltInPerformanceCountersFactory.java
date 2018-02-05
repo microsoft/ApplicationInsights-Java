@@ -54,7 +54,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
                 InternalLogger.INSTANCE.error("Unknown OS, performance counters are not created.");
             }
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.getMessage());
+            InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.toString());
         }
 
         return Collections.emptyList();
@@ -100,14 +100,14 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
                 windowsPCsData = null;
             }
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.toString());
         }
 
         try {
             WindowsPerformanceCounterAsPC pcWindowsPCs = new WindowsPerformanceCounterAsPC();
             performanceCounters.add(pcWindowsPCs);
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.toString());
         }
 
         return performanceCounters;

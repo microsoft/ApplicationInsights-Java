@@ -116,8 +116,7 @@ public class ApplicationInsightsAppender extends AbstractAppender {
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             this.isInitialized = false;
-            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s. " +
-                    " Generated Stack trace is %s.", e.getMessage(), ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s. Generated Stack trace is %s.", e.toString(), ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -140,8 +139,7 @@ public class ApplicationInsightsAppender extends AbstractAppender {
         } catch (Exception e) {
             // Appender failure must not fail the running application.
             this.isInitialized = false;
-            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s. " +
-                    " Generated Stack trace is %s.", e.getMessage(), ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s. Generated Stack trace is %s.", e.toString(), ExceptionUtils.getStackTrace(e));
         }
     }
 

@@ -60,7 +60,7 @@ public final class AgentImplementation {
             appendJarsToBootstrapClassLoader(inst);
             initializeCodeInjector(inst);
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: " + throwable.getMessage());
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: %s", throwable.toString());
 			throwable.printStackTrace();
             System.exit(-1);
         }
@@ -100,7 +100,7 @@ public final class AgentImplementation {
 			}
             inst.addTransformer(codeInjector);
         } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load the code injector, exception: %s", e.getMessage());
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load the code injector, exception: %s", e.toString());
             throw e;
         }
     }
@@ -113,7 +113,7 @@ public final class AgentImplementation {
         for (File file : agentFolder.listFiles()) {
             if (file.getName().indexOf(AGENT_JAR_PREFIX) != -1) {
                 agentJarName = file.getName();
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar name is " + agentJarName);
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar name is %s", agentJarName);
                 break;
             }
         }
@@ -123,7 +123,7 @@ public final class AgentImplementation {
             throw new RuntimeException("Could not find agent jar");
         }
 
-        InternalAgentLogger.INSTANCE.info("Found jar: " + agentJarPath + " " + agentJarName);
+        InternalAgentLogger.INSTANCE.info("Found jar: %s %s", agentJarPath, agentJarName);
 
         URL configurationURL = new URL(agentJarPath + agentJarName);
 
@@ -142,7 +142,7 @@ public final class AgentImplementation {
                     String urlPath = url.getPath();
 
                     if (urlPath.indexOf(AGENT_JAR_PREFIX) != -1) {
-                        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar found at " + urlPath);
+                        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar found at %s", urlPath);
                         int index = urlPath.lastIndexOf('/');
                         urlPath = urlPath.substring(0, index + 1);
                         return urlPath;
@@ -151,7 +151,7 @@ public final class AgentImplementation {
                 }
             }
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: " + throwable.getMessage());
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: %s", throwable.toString());
         }
 
         String stringPath = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
@@ -198,13 +198,13 @@ public final class AgentImplementation {
             throw new Exception(errorMessage);
         }
 
-        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Found jar: " + coreJarName);
+        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Found jar: %s", coreJarName);
 
         JarFile jarFile = null;
         try {
             jarFile = new JarFile(coreJarName);
         } catch (IOException e) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Could not load jar: " + coreJarName);
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Could not load jar: %s", coreJarName);
             throw e;
         }
         Enumeration<JarEntry> e = jarFile.entries();

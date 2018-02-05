@@ -234,7 +234,7 @@ public enum PerformanceCounterContainer implements Stoppable {
                             try {
                                 performanceCounter.report(telemetryClient);
                             } catch (Throwable e) {
-                                InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': '%s'", performanceCounter.getId(), e.getMessage());
+                                InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': '%s'", performanceCounter.getId(), e.toString());
                                 InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                             }
                         }

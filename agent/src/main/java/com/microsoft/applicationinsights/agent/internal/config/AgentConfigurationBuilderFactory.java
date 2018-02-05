@@ -40,7 +40,7 @@ public class AgentConfigurationBuilderFactory {
                 return (AgentConfigurationBuilder)builder;
             }
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'" + t.getMessage());
+            InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'", t.toString());
         }
 
         return null;

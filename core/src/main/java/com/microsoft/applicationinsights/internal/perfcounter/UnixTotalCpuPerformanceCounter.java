@@ -99,14 +99,14 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
             bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
             line = bufferedReader.readLine();
         } catch (Exception e) {
-            logError("Error while parsing file: '%s'", e.getMessage());
+            logError("Error while parsing file: '%s'", e.toString());
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
-                    logError("Error while closing file : '%s'", e.getMessage());
+                    logError("Error while closing file : '%s'", e.toString());
                     InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 }
             }

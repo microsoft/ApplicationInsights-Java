@@ -64,7 +64,7 @@ final class ApacheSender43 implements ApacheSender {
                 ((CloseableHttpResponse)response).close();
             }
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to send or failed to close response, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to send or failed to close response, exception: %s", e.toString());
         }
     }
 
@@ -73,7 +73,7 @@ final class ApacheSender43 implements ApacheSender {
         try {
             httpClient.close();
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to close http client, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to close http client, exception: %s", e.toString());
         }
     }
 

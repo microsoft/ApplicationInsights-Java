@@ -104,8 +104,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             }
         } catch (Throwable t) {
             developerMode = false;
-            InternalLogger.INSTANCE.trace("%s generated exception in parsing," +
-                    "stack trace is %s", DEVELOPER_MODE_SYSTEM_PROPRETY_NAME, ExceptionUtils.getStackTrace(t));
+            InternalLogger.INSTANCE.trace("%s generated exception in parsing, stack trace is %s", DEVELOPER_MODE_SYSTEM_PROPRETY_NAME, ExceptionUtils.getStackTrace(t));
         }
         initialize(null,
                 null,

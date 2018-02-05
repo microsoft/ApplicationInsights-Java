@@ -48,7 +48,7 @@ public class DockerContextPoller extends Thread {
 
     @Override
     public void run() {
-        InternalLogger.INSTANCE.info("Starting to poll for Docker context file under: " + this.contextFile.getAbsolutePath());
+        InternalLogger.INSTANCE.info("Starting to poll for Docker context file under: %s", this.contextFile.getAbsolutePath());
 
         boolean fileExists = false;
         while (!fileExists){
@@ -71,7 +71,7 @@ public class DockerContextPoller extends Thread {
             this.dockerContext = this.dockerContextFactory.createDockerContext(this.contextFile);
             InternalLogger.INSTANCE.info("Docker context file has been deserialized successfully");
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Docker context file failed to be parsed with error: " + e.getMessage());
+            InternalLogger.INSTANCE.error("Docker context file failed to be parsed with error: %s",  e.toString());
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
