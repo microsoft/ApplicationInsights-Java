@@ -60,7 +60,6 @@ public class ServletFuncs {
 			System.out.printf("%s: %s%n", pname, Arrays.toString(entry.getValue()));
 		}
 
-		// FIXME this could throw, but I don't care
 		String strLopnd = parameterMap.get(LEFT_OPERAND)[0];
 		String strRopnd = parameterMap.get(RIGHT_OPERAND)[0];
 		String strOprtr = parameterMap.get(OPERATOR)[0];

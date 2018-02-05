@@ -11,31 +11,40 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
 /**
- * Servlet implementation class SimpleTrackTraceServlet
+ * Servlet Servlet implementation class SimpleTrackExceptionServlet
  */
-@WebServlet(description = "Performs given calculation", urlPatterns = { "/trackTrace" })
-public class SimpleTrackTraceServlet extends HttpServlet {
-    private static final long serialVersionUID = -633683109556605395L;
+@WebServlet(description = "Performs given calculation", urlPatterns = { "/trackException" })
+public class SimpleTrackExceptionServlet extends HttpServlet {
+    private static final long serialVersionUID = 9009843523432371365L;
     private TelemetryClient client = new TelemetryClient();
 
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
+
+        Exception exception = new Exception("This is track exception.");
 
         Map<String, String> properties = new HashMap<String, String>() {
             {
                 put("key", "value");
             }
         };
-        //Trace
-        client.trackTrace("This is first trace message.");
-        client.trackTrace("This is second trace message.", SeverityLevel.Error, null);
-        client.trackTrace("This is third trace message.", SeverityLevel.Information, properties);
+        Map<String, Double> metrics = new HashMap<String, Double>() {
+            {
+                put("key", 1d);
+            }
+        };
+
+        client.trackException(exception);
+        client.trackException(exception, properties, metrics);
+
+        ExceptionTelemetry et = new ExceptionTelemetry(exception);
+        et.setSeverityLevel(SeverityLevel.Error);
+        client.track(et);
     }
+
 }
