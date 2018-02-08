@@ -60,6 +60,37 @@ dependencies {
 
 afterEvaluate {
     assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
+    pom {
+        project {
+            name = projectPomName
+            description = projectPomDescription
+            url = "https://github.com/Microsoft/ApplicationInsights-Java"
+
+            licenses {
+                license {
+                    name = "MIT License"
+                    url = "http://www.opensource.org/licenses/mit-license.php"
+                }
+            }
+
+            scm {
+                url = "scm:git:https://github.com/Microsoft/ApplicationInsights-Java"
+                connection = "scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git"
+            }
+
+            developers {
+                developer {
+                    id = "microsoft"
+                    name = "Microsoft"
+                }
+            }
+        }
+
+        scopeMappings.addMapping(MavenPlugin.PROVIDED_COMPILE_PRIORITY, configurations.getByName("provided"), Conf2ScopeMappingContainer.PROVIDED)
+
+        whenConfigured whenPomConfigured
+    }.writeTo("pom.xml")
+
     uploadArchives {
         ext.requriedProperties = ["mavenRepositoryUrl", "mavenUsername", "mavenUserPassword"]
         if (requiredPropertiesExist(requriedProperties)) {
@@ -74,8 +105,15 @@ afterEvaluate {
                     updatePomWithGeneralProjectInformation(pom)
                 }
             }
+        } else {
+            logger.warn "Missing required properties for maven publish"
         }
     }
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compile + configurations.provided
 }
 
 task prepareSourcesArchive(type: Jar) {
@@ -110,7 +148,7 @@ task prepare {
 
 // region Public methods
 ext {
-    updatePomWithGeneralProjectInformation = this.&updatePomWithGeneralProjectInformation
+    //updatePomWithGeneralProjectInformation = this.&updatePomWithGeneralProjectInformation
     writePomToArtifactsDirectory = this.&writePomToArtifactsDirectory
     getArtifactsDirectory = this.&getArtifactsDirectory
 }
