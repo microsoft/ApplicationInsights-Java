@@ -82,8 +82,13 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
      * @return sessionId 
      */
     private static String parseCookie(Cookie cookie) {
-        String[] split = cookie.getValue().split(RAW_COOKIE_SPLIT_DELIMITER, 2);
-        return split[0];
+        String value = cookie.getValue();
+        int idx = value.indexOf(RAW_COOKIE_DELIMITER);
+        if (idx >= 0) {
+            return value.substring(0, idx);
+        } else {
+            return value;
+        }
     }
     // endregion Private
 }
