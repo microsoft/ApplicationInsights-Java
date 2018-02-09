@@ -44,9 +44,12 @@ def programFilesX86 = System.env.'ProgramFiles(x86)'
 def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
 
 // region Native binary definition and configuration
-
+ext {
+    isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
+}
 model {
     buildTypes {
+        debug
         release
     }
     platforms {
@@ -58,6 +61,13 @@ model {
         "windows"(NativeLibrarySpec) {
             targetPlatform "x86"
             targetPlatform "x64"
+
+            if (isRelease) {
+                targetBuildTypes "release"
+            } else {
+                targetBuildTypes "debug"
+            }
+
             baseName = "applicationinsights-core-native-win"
 
             sources {
@@ -135,6 +145,8 @@ model {
 
                         // Use the debug multithread-specific and DLL-specific version of the run-time library.
                         cppCompiler.args '/MDd'
+
+                        cppCompiler.args '/FS'
                     }
                 }
             }
