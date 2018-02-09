@@ -159,16 +159,21 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
                 if (samplingSupportingTelemetry.getSamplingPercentage() == null) {
 
                     samplingSupportingTelemetry.setSamplingPercentage(samplingPercentage);
-
-                    if (SamplingScoreGeneratorV2.getSamplingScore(telemetry) >= samplingPercentage) {
-
-                        InternalLogger.INSTANCE.info("Item %s sampled out", telemetry.getClass());
-                        return false;
-                    }
+                                        
+                    
                 } else {
                     InternalLogger.INSTANCE.info("Item has sampling percentage already set to :"
                             + samplingSupportingTelemetry.getSamplingPercentage());
+                    
+                    samplingPercentage = samplingSupportingTelemetry.getSamplingPercentage();
                 }
+                
+                if (SamplingScoreGeneratorV2.getSamplingScore(telemetry) >= samplingPercentage) {
+
+                    InternalLogger.INSTANCE.info("Item %s sampled out", telemetry.getClass());
+                    return false;
+                }
+                
             } else {
                 InternalLogger.INSTANCE.trace("Skip sampling since %s type is not sampling applicable", telemetry.getClass());
             }
