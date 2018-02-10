@@ -155,7 +155,6 @@ model {
     }
 }
 
-
 sourceSets {
     main {
         resources {
