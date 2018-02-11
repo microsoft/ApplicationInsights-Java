@@ -135,11 +135,13 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     @Override
     public boolean send(Transmission transmission) {
         if (size.get() >= capacityInKB) {
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Persistent storage max capcity has been reached; currently at %s KB. Telemetry will be lost, please set the MaxTransmissionStorageFilesCapacityInMB property in the configuration file.", size.get());
             return false;
         }
 
         Optional<File> tempTransmissionFile = createTemporaryFile();
         if (!tempTransmissionFile.isPresent()) {
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Persistent storage unable to create temporary file.");
             return false;
         }
 
@@ -151,6 +153,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             return false;
         }
 
+        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Persistent storage saved permanent file; data will be persisted and sent when the network is available.");
         return true;
     }
 

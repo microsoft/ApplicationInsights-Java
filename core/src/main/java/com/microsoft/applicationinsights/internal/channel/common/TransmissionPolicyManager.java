@@ -51,7 +51,9 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  */
 public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
 
-	// 
+	private final int DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF = 600;
+	
+	// Current thread backoff manager
 	private SenderThreadsBackOffManager backoffManager;
 	
 	// List of transmission policies implemented as handlers
@@ -98,12 +100,22 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
     public void backoff() {
     	policyState.setCurrentState(TransmissionPolicy.BACKOFF);
-        backoffManager.backOffCurrentSenderThread();
+    	long backOffMillis = backoffManager.backOffCurrentSenderThread();
+        if (backOffMillis > 0)
+        {
+        	long backOffSeconds = backOffMillis / 1000;
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
+        	this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
+        } else {
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Backoff has been maxed out, will suspend thread for %s seconds.", DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF);
+        	this.suspendInSeconds(TransmissionPolicy.BACKOFF, DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF);
+        }
     }
     
     public void clearBackoff() {
     	policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         backoffManager.onDoneSending();
+        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Backoff has been reset.");
     }
     
     public void suspendInSeconds(TransmissionPolicy policy, long suspendInSeconds) {
