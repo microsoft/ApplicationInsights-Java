@@ -27,6 +27,11 @@ public class PartialSuccessHandler implements TransmissionHandler {
 
 	@Override
 	public void onTransmissionSent(TransmissionHandlerArgs args) {
+		validateTransmissionAndSend(args);
+
+	}
+
+	public boolean validateTransmissionAndSend(TransmissionHandlerArgs args) {
 		if (args.getTransmission() != null && args.getTransmissionDispatcher() != null) {
 			switch (args.getResponseCode()) {
 			case HttpStatus.SC_PARTIAL_CONTENT:
@@ -35,44 +40,19 @@ public class PartialSuccessHandler implements TransmissionHandler {
 				// In case the 206 was false we can break here
 				if(beR != null && (beR.itemsAccepted == beR.itemsReceived))
 				{
-					break;
+					return false;
 				}
 			
-				ArrayList<String> originalItems = new ArrayList<String>();
-				ArrayList<String> newTransmission = new ArrayList<String>();
-
-				if (args.getTransmission().getWebContentEncodingType() == "gzip") {
-					
-					try {
-						GZIPInputStream gis = new GZIPInputStream(
-								new ByteArrayInputStream(args.getTransmission().getContent()));
-						BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gis));
-						String line;
-						while ((line = bufferedReader.readLine()) != null) {
-							originalItems.add(line);
-						}
-						if (gis != null)
-						{
-							gis.close();	
-						}
-						if (bufferedReader != null) 
-						{
-							bufferedReader.close();
-						}
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (Throwable t) {
-						// TODO Auto-generated catch block
-						t.printStackTrace();
-					} finally {					
-					}
-				} else {
-					for (String s : new String(args.getTransmission().getContent()).split("\r\n")) {
-						originalItems.add(s);
-					}
-				}
+				ArrayList<String> originalItems = generateOriginalItems(args);
 				
+				// Somehow the amount of items received and the items sent do not match
+				if(beR != null && (originalItems.size() != beR.itemsReceived))
+				{
+					return false;
+				}
+			
+				
+				ArrayList<String> newTransmission = new ArrayList<String>();
 				for (BackendResponse.Error e : beR.errors) {
 					switch (e.statusCode) {
 					case HttpStatus.SC_REQUEST_TIMEOUT:
@@ -88,20 +68,63 @@ public class PartialSuccessHandler implements TransmissionHandler {
 					}
 				}
 				
-				if (!newTransmission.isEmpty())
-				{
-					GzipTelemetrySerializer serializer = new GzipTelemetrySerializer();
-					Optional<Transmission> newT = serializer.serialize(newTransmission);
-					args.getTransmissionDispatcher().dispatch(newT.get());	
-				}
-				break;
+				return sendNewTransmission(args, newTransmission);
 			default:
 				InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(),
 						this.getClass().getName());
-				break;
+				return false;
 			}
 		}
+		return false;
+	}
 
+	public ArrayList<String> generateOriginalItems(TransmissionHandlerArgs args) {
+		ArrayList<String> originalItems = new ArrayList<String>();
+		
+
+		if (args.getTransmission().getWebContentEncodingType() == "gzip") {
+			
+			try {
+				GZIPInputStream gis = new GZIPInputStream(
+						new ByteArrayInputStream(args.getTransmission().getContent()));
+				BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gis));
+				String line;
+				while ((line = bufferedReader.readLine()) != null) {
+					originalItems.add(line);
+				}
+				if (gis != null)
+				{
+					gis.close();	
+				}
+				if (bufferedReader != null) 
+				{
+					bufferedReader.close();
+				}
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (Throwable t) {
+				// TODO Auto-generated catch block
+				t.printStackTrace();
+			} finally {					
+			}
+		} else {
+			for (String s : new String(args.getTransmission().getContent()).split("\r\n")) {
+				originalItems.add(s);
+			}
+		}
+		return originalItems;
+	}
+
+	public boolean sendNewTransmission(TransmissionHandlerArgs args, ArrayList<String> newTransmission) {
+		if (!newTransmission.isEmpty())
+		{
+			GzipTelemetrySerializer serializer = new GzipTelemetrySerializer();
+			Optional<Transmission> newT = serializer.serialize(newTransmission);
+			args.getTransmissionDispatcher().dispatch(newT.get());
+			return true;
+		}
+		return false;
 	}
 
 	private BackendResponse getBackendResponse(String response) {

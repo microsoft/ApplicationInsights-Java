@@ -28,6 +28,10 @@ public class ThrottlingHandler implements TransmissionHandler {
 	
 	@Override
 	public void onTransmissionSent(TransmissionHandlerArgs args) {
+		validateTransmissionAndSend(args);
+	}
+
+	public boolean validateTransmissionAndSend(TransmissionHandlerArgs args) {
 		if (args.getRetryHeader() != null && args.getTransmission() != null && args.getTransmissionDispatcher() != null)
 		{
 			args.getTransmission().incrementNumberOfSends();
@@ -37,12 +41,13 @@ public class ThrottlingHandler implements TransmissionHandler {
 			case 439:
 				suspendTransmissions(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, args.getRetryHeader());
 				args.getTransmissionDispatcher().dispatch(args.getTransmission());
-				break;
+				return true;
 			default:
 				InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(), this.getClass().getName());
-				break;
+				return false;
 			}        
 		}
+		return false;
 	}
 	
 	
