@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.channel.concrete.inprocess;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
@@ -246,7 +247,7 @@ public class PartialSuccessHandlerTest {
 		args.setTransmission(new Transmission(fourItems, "application/x-json-stream", "gzip"));
 		args.setTransmissionDispatcher(mockedDispatcher);
 		PartialSuccessHandler eh = new PartialSuccessHandler(tpm); 
-		ArrayList<String> originalItems = eh.generateOriginalItems(args);
+		List<String> originalItems = eh.generateOriginalItems(args);
 		Assert.assertEquals(4, originalItems.size());
 	}
 	
@@ -259,7 +260,7 @@ public class PartialSuccessHandlerTest {
 		args.setTransmission(new Transmission(fourItemsNonGZIP.getBytes(), "application/json", "utf8"));
 		args.setTransmissionDispatcher(mockedDispatcher);
 		PartialSuccessHandler eh = new PartialSuccessHandler(tpm); 
-		ArrayList<String> originalItems = eh.generateOriginalItems(args);
+		List<String> originalItems = eh.generateOriginalItems(args);
 		Assert.assertEquals(4, originalItems.size());
 	}
 

@@ -57,7 +57,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 	private SenderThreadsBackOffManager backoffManager;
 	
 	// List of transmission policies implemented as handlers
-	private ArrayList<TransmissionHandler> transmissionHandlers;
+	private List<TransmissionHandler> transmissionHandlers;
 	
     // The future date the the transmission is blocked
     private Date suspensionDate;
