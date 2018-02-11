@@ -35,6 +35,7 @@ public class ErrorHandler implements TransmissionHandler {
 				break;
 			default:
 				InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(), this.getClass().getName());
+				break;
 			}             
 		} else if (args.getException() != null) {
 			this.transmissionPolicyManager.backoff();

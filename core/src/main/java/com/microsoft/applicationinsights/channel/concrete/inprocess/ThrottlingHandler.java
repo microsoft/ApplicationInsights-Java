@@ -40,6 +40,7 @@ public class ThrottlingHandler implements TransmissionHandler {
 				break;
 			default:
 				InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(), this.getClass().getName());
+				break;
 			}        
 		}
 	}
