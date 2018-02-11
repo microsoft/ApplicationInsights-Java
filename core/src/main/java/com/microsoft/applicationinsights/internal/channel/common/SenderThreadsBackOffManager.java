@@ -63,8 +63,13 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
         SenderThreadLocalBackOffData currentThreadData = this.get();
         currentThreadData.onDoneSending();
     }
+    
+    public long backOffCurrentSenderThreadValue() {
+        SenderThreadLocalBackOffData currentThreadData = this.get();
+        return currentThreadData.backOffTimerValue();
+    }
 
-    public long backOffCurrentSenderThread() {
+    public boolean backOffCurrentSenderThread() {
         SenderThreadLocalBackOffData currentThreadData = this.get();
         return currentThreadData.backOff();
     }
