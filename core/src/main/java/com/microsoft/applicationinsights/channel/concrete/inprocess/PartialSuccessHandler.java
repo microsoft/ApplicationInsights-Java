@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.http.HttpStatus;
@@ -43,7 +44,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
 					return false;
 				}
 			
-				ArrayList<String> originalItems = generateOriginalItems(args);
+				List<String> originalItems = generateOriginalItems(args);
 				
 				// Somehow the amount of items received and the items sent do not match
 				if(beR != null && (originalItems.size() != beR.itemsReceived))
@@ -52,7 +53,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
 				}
 			
 				
-				ArrayList<String> newTransmission = new ArrayList<String>();
+				List<String> newTransmission = new ArrayList<String>();
 				for (BackendResponse.Error e : beR.errors) {
 					switch (e.statusCode) {
 					case HttpStatus.SC_REQUEST_TIMEOUT:
@@ -78,8 +79,8 @@ public class PartialSuccessHandler implements TransmissionHandler {
 		return false;
 	}
 
-	public ArrayList<String> generateOriginalItems(TransmissionHandlerArgs args) {
-		ArrayList<String> originalItems = new ArrayList<String>();
+	public List<String> generateOriginalItems(TransmissionHandlerArgs args) {
+		List<String> originalItems = new ArrayList<String>();
 		
 
 		if (args.getTransmission().getWebContentEncodingType() == "gzip") {
@@ -116,7 +117,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
 		return originalItems;
 	}
 
-	public boolean sendNewTransmission(TransmissionHandlerArgs args, ArrayList<String> newTransmission) {
+	public boolean sendNewTransmission(TransmissionHandlerArgs args, List<String> newTransmission) {
 		if (!newTransmission.isEmpty())
 		{
 			GzipTelemetrySerializer serializer = new GzipTelemetrySerializer();
