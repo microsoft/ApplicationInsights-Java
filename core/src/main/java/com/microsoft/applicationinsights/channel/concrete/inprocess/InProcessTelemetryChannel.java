@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.Map;
@@ -38,7 +37,6 @@ import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 

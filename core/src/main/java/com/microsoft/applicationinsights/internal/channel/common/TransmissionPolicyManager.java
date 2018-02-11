@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -28,6 +29,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
@@ -46,8 +51,14 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 6/29/2015.
  */
-public final class TransmissionPolicyManager implements Stoppable {
+public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
 
+	// 
+	private SenderThreadsBackOffManager backoffManager;
+	
+	// List of transmission policies implemented as handlers
+	private ArrayList<TransmissionHandler> transmissionHandlers;
+	
     // The future date the the transmission is blocked
     private Date suspensionDate;
 
@@ -83,8 +94,20 @@ public final class TransmissionPolicyManager implements Stoppable {
     public TransmissionPolicyManager(boolean throttlingIsEnabled) {
         suspensionDate = null;
         this.throttlingIsEnabled = throttlingIsEnabled;
+        this.transmissionHandlers = new ArrayList<TransmissionHandler>();
+        this.backoffManager = new SenderThreadsBackOffManager(new ExponentialBackOffTimesPolicy());
     }
 
+    public void backoff() {
+    	policyState.setCurrentState(TransmissionPolicy.BACKOFF);
+        backoffManager.backOffCurrentSenderThread();
+    }
+    
+    public void clearBackoff() {
+    	policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
+        backoffManager.onDoneSending();
+    }
+    
     public void suspendInSeconds(TransmissionPolicy policy, long suspendInSeconds) {
         if (!throttlingIsEnabled) {
             return;
@@ -111,7 +134,7 @@ public final class TransmissionPolicyManager implements Stoppable {
             if (policy == TransmissionPolicy.UNBLOCKED ) {
                 return;
             }
-
+                       
             Date date = Calendar.getInstance().getTime();
             date.setTime(date.getTime() + 1000 * suspendInSeconds);
             if (this.suspensionDate != null) {
@@ -160,4 +183,18 @@ public final class TransmissionPolicyManager implements Stoppable {
 
         SDKShutdownActivity.INSTANCE.register(this);
     }
+    
+	@Override
+	public void onTransmissionSent(TransmissionHandlerArgs transmissionArgs) {
+		for (TransmissionHandler handler : this.transmissionHandlers) {
+			handler.onTransmissionSent(transmissionArgs);
+		}
+	}
+	
+	@Override
+	public void addTransmissionHandler(TransmissionHandler handler) {
+		if(handler != null) {
+			this.transmissionHandlers.add(handler);
+		}
+	}
 }
