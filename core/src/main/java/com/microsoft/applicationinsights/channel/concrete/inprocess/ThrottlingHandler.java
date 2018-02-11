@@ -38,6 +38,8 @@ public class ThrottlingHandler implements TransmissionHandler {
 				suspendTransmissions(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, args.getRetryHeader());
 				args.getTransmissionDispatcher().dispatch(args.getTransmission());
 				break;
+			default:
+				InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(), this.getClass().getName());
 			}        
 		}
 	}
@@ -63,6 +65,7 @@ public class ThrottlingHandler implements TransmissionHandler {
 			} catch (Throwable e) {
 				InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
 						"Throttled but failed to block transmission, exception: %s", e.getMessage());
+				this.transmissionPolicyManager.backoff();
 			}
 		
 	}

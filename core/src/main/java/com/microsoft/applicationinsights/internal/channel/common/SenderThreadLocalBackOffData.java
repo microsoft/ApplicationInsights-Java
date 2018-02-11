@@ -100,7 +100,7 @@ final class SenderThreadLocalBackOffData {
      *         3. The thread was interrupted while was waiting.
      *         4. The thread has exhausted all the back-off timeouts
      */
-    public boolean backOff() {
+    public long backOff() {
          try {
              lock.lock();
              ++currentBackOffIndex;
@@ -108,23 +108,21 @@ final class SenderThreadLocalBackOffData {
                  currentBackOffIndex = -1;
 
                  // Exhausted the back-offs
-                 return false;
+                 return -1;
              }
 
              if (!instanceIsActive) {
-                return false;
+                return 0;
             }
 
-             try {
+            
                  long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
                  if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
                      millisecondsToWait += addMilliseconds;
                  }
-                 backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
-                 return instanceIsActive;
-            } catch (InterruptedException e) {
-                return false;
-            }
+                 //backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
+                 return millisecondsToWait;
+            
         } finally {
             lock.unlock();
         }

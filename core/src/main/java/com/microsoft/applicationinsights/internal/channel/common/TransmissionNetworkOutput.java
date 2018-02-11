@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
@@ -127,7 +128,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	 */
 	@Override
 	public boolean send(Transmission transmission) {
-		while (!stopped) {
+		if (!stopped) {
+			// If we're not stopped but in a blocked state then fail to second TransmissionOutput
 			if (transmissionPolicyManager.getTransmissionPolicyState()
 					.getCurrentState() != TransmissionPolicy.UNBLOCKED) {
 				return false;
@@ -140,6 +142,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 			Throwable ex = null;
 			Header retryAfterHeader = null;
 			try {
+				// POST the transmission data to the endpoint
 				request = createTransmissionPostRequest(transmission);
 				httpClient.enhanceRequest(request);
 				response = httpClient.sendPostRequest(request);
@@ -148,14 +151,15 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 				respString = EntityUtils.toString(respEntity);
 				retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
 				
-				// After the third time through this dispatcher we should reset the counter and then fail
-				if (transmission.getNumberOfSends() >= 3) {
+				// After the third time through this dispatcher we should reset the counter and then fail to second TransmissionOutput
+				if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() >= 3) {
 					transmission.setNumberOfSends(0);
 					return false;
-				} else {
+				} else if (code == HttpStatus.SC_OK) {
+					// If we've completed then clear the back off flags as the channel does not need to be throttled
 					transmissionPolicyManager.clearBackoff();
-					return true;
 				}
+				return true;
 					
 			} catch (ConnectionPoolTimeoutException e) {
 				ex = e;
@@ -183,17 +187,22 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 				}
 				httpClient.dispose(response);
 				
-				TransmissionHandlerArgs args = new TransmissionHandlerArgs();
-				args.setTransmission(transmission);
-				args.setTransmissionDispatcher(transmissionDispatcher);
-				args.setResponseBody(respString);
-				args.setResponseCode(code);
-				args.setException(ex);
-				args.setRetryHeader(retryAfterHeader);
-				this.transmissionPolicyManager.onTransmissionSent(args);			
+				if (code != HttpStatus.SC_OK && transmission.getNumberOfSends() < 3) {
+					// Invoke the listeners for handling things like errors
+					// The listeners will handle the back off logic as well as the dispatch operation
+					TransmissionHandlerArgs args = new TransmissionHandlerArgs();
+					args.setTransmission(transmission);
+					args.setTransmissionDispatcher(transmissionDispatcher);
+					args.setResponseBody(respString);
+					args.setResponseCode(code);
+					args.setException(ex);
+					args.setRetryHeader(retryAfterHeader);
+					this.transmissionPolicyManager.onTransmissionSent(args);
+				}
 			}
 		}
-		transmissionPolicyManager.clearBackoff();
+		// If we end up here we've hit an error code we do not expect (403, 401, 400, etc.)
+		// This also means that unless there is a TransmissionHandler for this code we will not retry.
 		return true;
 	}
 

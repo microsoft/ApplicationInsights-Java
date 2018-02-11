@@ -5,6 +5,7 @@ import org.apache.http.HttpStatus;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyManager;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 public class PartialSuccessHandler implements TransmissionHandler {
 
@@ -22,9 +23,11 @@ public class PartialSuccessHandler implements TransmissionHandler {
 			switch (args.getResponseCode())
 			{
 			case HttpStatus.SC_PARTIAL_CONTENT:
-
+				
 				args.getTransmissionDispatcher().dispatch(args.getTransmission());
 				break;
+			default:
+				InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(), this.getClass().getName());
 			}             
 		}
 	}
