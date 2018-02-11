@@ -100,7 +100,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
     public void backoff() {
     	policyState.setCurrentState(TransmissionPolicy.BACKOFF);
-    	long backOffMillis = backoffManager.backOffCurrentSenderThread();
+    	long backOffMillis = backoffManager.backOffCurrentSenderThreadValue();
         if (backOffMillis > 0)
         {
         	long backOffSeconds = backOffMillis / 1000;
