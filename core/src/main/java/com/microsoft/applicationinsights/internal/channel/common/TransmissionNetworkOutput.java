@@ -24,32 +24,20 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
-import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -70,10 +58,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
 	// For future use: re-send a failed transmission back to the dispatcher
 	private TransmissionDispatcher transmissionDispatcher;
-	
-	
-	
-	private SenderThreadsBackOffManager backoffManager;
 
 	private final String serverUri;
 
@@ -112,10 +96,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 		this.transmissionDispatcher = transmissionDispatcher;
 	}
 	
-	public TransmissionDispatcher getTransmissionDispatcher() {
-		return this.transmissionDispatcher;
-	}
-
 	/**
 	 * Stops all threads from sending data.
 	 * 

@@ -26,12 +26,10 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
 /**
  * The class is responsible for loading transmission files that were saved to the disk
