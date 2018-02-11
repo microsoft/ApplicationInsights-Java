@@ -68,6 +68,15 @@ final class SenderThreadLocalBackOffData {
     public boolean isTryingToSend() {
         return currentBackOffIndex != -1;
     }
+    
+    public long getCurrentBackoffMillis() {
+    	if (currentBackOffIndex != -1 && (currentBackOffIndex < this.backOffTimeoutsInMillis.length - 1)) 
+    	{
+    		return this.backOffTimeoutsInMillis[currentBackOffIndex];
+    	} else {
+    		return 0;
+    	}
+    }
 
     /**
      * This method should be called by the Sender thread when the

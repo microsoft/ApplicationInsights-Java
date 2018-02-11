@@ -108,7 +108,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                                 case UNBLOCKED:
                                     fetchNext(true);
                                     break;
-
+                                case BACKOFF:
                                 case BLOCKED_BUT_CAN_BE_PERSISTED:
                                     Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
                                     break;
