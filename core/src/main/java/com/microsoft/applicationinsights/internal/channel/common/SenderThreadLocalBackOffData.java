@@ -69,15 +69,6 @@ final class SenderThreadLocalBackOffData {
         return currentBackOffIndex != -1;
     }
     
-    public long getCurrentBackoffMillis() {
-    	if (currentBackOffIndex != -1 && (currentBackOffIndex < this.backOffTimeoutsInMillis.length - 1)) 
-    	{
-    		return this.backOffTimeoutsInMillis[currentBackOffIndex];
-    	} else {
-    		return 0;
-    	}
-    }
-
     /**
      * This method should be called by the Sender thread when the
      * Transmission is considered as 'done sending', which means the
@@ -130,6 +121,13 @@ final class SenderThreadLocalBackOffData {
        }
    }
     
+    /**
+     * Increment the current back off amount or resets the counter if needed.
+     * <p>
+     * This method does not block but instead provides the amount of time to sleep which can be used 
+     * in another method.
+     * @return The number of milliseconds to sleep for.
+     */
     public long backOffTimerValue() {
         try {
             lock.lock();

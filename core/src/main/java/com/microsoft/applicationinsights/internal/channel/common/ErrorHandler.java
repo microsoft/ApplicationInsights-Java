@@ -1,10 +1,9 @@
-package com.microsoft.applicationinsights.channel.concrete.inprocess;
+package com.microsoft.applicationinsights.internal.channel.common;
 
 import org.apache.http.HttpStatus;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyManager;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**

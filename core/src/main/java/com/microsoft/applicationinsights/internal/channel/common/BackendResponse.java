@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.channel.concrete.inprocess;
+package com.microsoft.applicationinsights.internal.channel.common;
 
 /**
  * Utility class used by the {@link PartialSuccessHandler}

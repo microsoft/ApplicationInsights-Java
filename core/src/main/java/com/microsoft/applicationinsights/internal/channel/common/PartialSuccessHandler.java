@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.channel.concrete.inprocess;
+package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -16,9 +16,6 @@ import com.google.gson.GsonBuilder;
 import com.google.common.base.Optional;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySerializer;
-import com.microsoft.applicationinsights.internal.channel.common.Transmission;
-import com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyManager;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
@@ -61,20 +58,19 @@ public class PartialSuccessHandler implements TransmissionHandler {
 		if (args.getTransmission() != null && args.getTransmissionDispatcher() != null) {
 			switch (args.getResponseCode()) {
 			case HttpStatus.SC_PARTIAL_CONTENT:
-				BackendResponse beR = getBackendResponse(args.getResponseBody());
+				BackendResponse backendResponse = getBackendResponse(args.getResponseBody());
 				List<String> originalItems = generateOriginalItems(args);
 
 				// Somehow the amount of items received and the items sent do not match
-				if (beR != null && (originalItems.size() != beR.itemsReceived)) {
+				if (backendResponse != null && (originalItems.size() != backendResponse.itemsReceived)) {
 					InternalLogger.INSTANCE.trace(
 							"Skipping partial content handler due to itemsReceived being larger than the items sent.");
 					return false;
 				}
 
-				if (beR != null && (beR.itemsAccepted != beR.itemsReceived)) {
-
+				if (backendResponse != null && (backendResponse.itemsAccepted < backendResponse.itemsReceived)) {
 					List<String> newTransmission = new ArrayList<String>();
-					for (BackendResponse.Error e : beR.errors) {
+					for (BackendResponse.Error e : backendResponse.errors) {
 						switch (e.statusCode) {
 						case HttpStatus.SC_REQUEST_TIMEOUT:
 						case HttpStatus.SC_INTERNAL_SERVER_ERROR:
