@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.channel.concrete.inprocess;
+package com.microsoft.applicationinsights.internal.channel.common;
 
 import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
@@ -7,6 +7,8 @@ import org.mockito.Mockito;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
+import com.microsoft.applicationinsights.internal.channel.common.ErrorHandler;
+import com.microsoft.applicationinsights.internal.channel.common.ThrottlingHandler;
 import com.microsoft.applicationinsights.internal.channel.common.Transmission;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyManager;
 

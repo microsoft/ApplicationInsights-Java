@@ -81,11 +81,6 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
         stopped = true;
     }
     
-    public long getCurrentBackoffMillis() {
-    	SenderThreadLocalBackOffData currentThreadData = this.get();
-        return currentThreadData.getCurrentBackoffMillis();
-    }
-
     @Override
     protected SenderThreadLocalBackOffData initialValue() {
         int addSeconds = threadsSecondsDifference.incrementAndGet();

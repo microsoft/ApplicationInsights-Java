@@ -69,16 +69,37 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
 	private TransmissionPolicyManager transmissionPolicyManager;
 
+	/**
+	 * Creates an instance of the network transmission class.
+	 * <p>
+	 * Will use the DEFAULT_SERVER_URI for the endpoint.
+	 * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.  
+	 * @return
+	 */
 	public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
 		return create(DEFAULT_SERVER_URI, transmissionPolicyManager);
 	}
 
+	/**
+	 * Creates an instance of the network transmission class.
+	 * 
+	 * @param endpoint The HTTP endpoint to send our telemetry too.
+	 * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.  
+	 * @return
+	 */
 	public static TransmissionNetworkOutput create(String endpoint,
 			TransmissionPolicyManager transmissionPolicyManager) {
 		String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
 		return new TransmissionNetworkOutput(realEndpoint, transmissionPolicyManager);
 	}
 
+	/**
+	 * Private Ctor to initialize class.
+	 * <p>
+	 * Also creates the httpClient using the ApacheSender instance
+	 * @param serverUri The HTTP endpoint to send our telemetry too.
+	 * @param transmissionPolicyManager
+	 */
 	private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager) {
 		Preconditions.checkNotNull(serverUri, "serverUri should be a valid non-null value");
 		Preconditions.checkArgument(!Strings.isNullOrEmpty(serverUri), "serverUri should be a valid non-null value");
@@ -93,6 +114,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
 	}
 
+	/**
+	 * Used to inject the dispatcher used for this output so it can be injected to the retry logic. 
+	 * @param transmissionDispatcher The dispatcher to be injected.
+	 */
 	public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
 		this.transmissionDispatcher = transmissionDispatcher;
 	}
@@ -217,6 +242,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 		return true;
 	}
 
+	/**
+	 * Generates the HTTP POST to send to the endpoint.
+	 * @param transmission The transmission to send.
+	 * @return The completed {@link HttpPost} object
+	 */
 	private HttpPost createTransmissionPostRequest(Transmission transmission) {
 		HttpPost request = new HttpPost(serverUri);
 		request.addHeader(CONTENT_TYPE_HEADER, transmission.getWebContentType());
