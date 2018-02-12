@@ -152,7 +152,7 @@ public final class HttpClassDataProvider {
                     REST_TEMPLATE_METTHOD,
                     null);
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.getMessage());
+            InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());
         }
     }
 

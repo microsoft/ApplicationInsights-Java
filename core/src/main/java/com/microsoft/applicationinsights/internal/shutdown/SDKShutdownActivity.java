@@ -100,7 +100,7 @@ public enum SDKShutdownActivity {
                         channelToStop.stop(1L, TimeUnit.SECONDS);
                     }
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.getMessage());
+                    InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());
                     InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                 }
             }
@@ -113,7 +113,7 @@ public enum SDKShutdownActivity {
                 try {
                     stoppable.stop(1L, TimeUnit.SECONDS);
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.getMessage());
+                    InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.toString());
                     InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                 }
             }

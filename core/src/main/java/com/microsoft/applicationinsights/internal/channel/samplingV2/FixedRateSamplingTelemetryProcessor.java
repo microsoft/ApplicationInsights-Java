@@ -128,7 +128,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     public void setSamplingPercentage(String samplingPercentage) {
         try {
             this.samplingPercentage = Double.valueOf(samplingPercentage);
-            InternalLogger.INSTANCE.info("Sampling rate set to " + samplingPercentage);
+            InternalLogger.INSTANCE.info("Sampling rate set to %s", samplingPercentage);
         }
         catch (NumberFormatException ex) {
             this.samplingPercentage = 100.0;
@@ -207,7 +207,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     public void addToExcludedType(String value) {
 
         setIncludedOrExcludedTypes(value, excludedTypes);
-        InternalLogger.INSTANCE.trace(value + " added as excluded to sampling");
+        InternalLogger.INSTANCE.trace("%s added as excluded to sampling", value);
 
     }
 
@@ -219,7 +219,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     public void addToIncludedType(String value) {
 
         setIncludedOrExcludedTypes(value, includedTypes);
-        InternalLogger.INSTANCE.trace(value + " added as included to sampling");
+        InternalLogger.INSTANCE.trace("%s added as included to sampling", value);
 
     }
 }

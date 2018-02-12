@@ -105,7 +105,7 @@ public class DockerContextInitializer implements TelemetryInitializer {
         try {
             fileFactory.create(sdkInfoFilePath, sdkInfo);
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to write SDK info file for Docker awareness. Error: " + e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to write SDK info file for Docker awareness. Error: %s", e.toString());
         }
     }
 }

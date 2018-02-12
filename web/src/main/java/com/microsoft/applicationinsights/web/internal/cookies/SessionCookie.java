@@ -175,7 +175,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
             acquisitionDate = parseDateWithBackwardCompatibility(split[CookieFields.SESSION_ACQUISITION_DATE.getValue()]);
             renewalDate = parseDateWithBackwardCompatibility(split[CookieFields.SESSION_LAST_UPDATE_DATE.getValue()]);
         } catch (Exception e) {
-            String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.getMessage());
+            String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.toString());
 
             // TODO: dedicated exception
             throw new Exception(errorMessage);

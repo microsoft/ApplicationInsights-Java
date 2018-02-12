@@ -54,7 +54,7 @@ public final class CodeInjector implements ClassFileTransformer {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is up");
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is NOT activated: failed to initialize CodeInjector: '%s'", throwable.getMessage());
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is NOT activated: failed to initialize CodeInjector: '%s'", throwable.toString());
         }
     }
 
@@ -81,7 +81,7 @@ public final class CodeInjector implements ClassFileTransformer {
                 return byteCodeTransformer.transform(originalBuffer, className, loader);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to instrument '%s', exception: '%s': ", className, throwable.getMessage());
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to instrument '%s', exception: '%s': ", className, throwable.toString());
             }
         }
 

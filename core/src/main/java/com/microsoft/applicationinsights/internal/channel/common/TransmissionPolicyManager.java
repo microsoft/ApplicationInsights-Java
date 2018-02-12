@@ -129,7 +129,7 @@ public final class TransmissionPolicyManager implements Stoppable {
 
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetries are blocked from now, for %s seconds", suspendInSeconds);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.toString());
         }
     }
 

@@ -413,7 +413,7 @@ public class TelemetryClient {
         try {
             telemetry.getContext().initialize(ctx);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.getMessage());
+            InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.toString());
         }
 
         activateInitializers(telemetry);
@@ -434,7 +434,7 @@ public class TelemetryClient {
         try {
             getChannel().send(telemetry);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.getMessage());
+            InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.toString());
         }
     }
 
@@ -443,7 +443,7 @@ public class TelemetryClient {
             try {
                 initializer.initialize(telemetry);
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed during telemetry initialization class '%s', exception: %s", initializer.getClass().getName(), e.getMessage());
+                InternalLogger.INSTANCE.error("Failed during telemetry initialization class '%s', exception: %s", initializer.getClass().getName(), e.toString());
             }
         }
     }
@@ -455,7 +455,7 @@ public class TelemetryClient {
                     return false;
                 }
             } catch (Throwable t) {
-                InternalLogger.INSTANCE.error("Exception while processing telemetry: '%s'",t.getMessage());
+                InternalLogger.INSTANCE.error("Exception while processing telemetry: '%s'",t.toString());
             }
         }
 
@@ -487,7 +487,7 @@ public class TelemetryClient {
             try {
                 init.initialize(ctx);
             } catch (Throwable t) {
-                InternalLogger.INSTANCE.error("Exception in context initializer: '%s'", t.getMessage());
+                InternalLogger.INSTANCE.error("Exception in context initializer: '%s'", t.toString());
             }
         }
 

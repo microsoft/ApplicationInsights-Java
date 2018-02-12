@@ -98,7 +98,7 @@ public class TelemetryCorrelationUtils {
 			addTargetAppIdForResponseHeader(response);
 		}
 		catch(Exception ex) {
-			InternalLogger.INSTANCE.error("Failed to resolve correlation. Exception information: " + ex);
+			InternalLogger.INSTANCE.error("Failed to resolve correlation. Exception information: %s", ex.toString());
 			InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
 		}
 	}
@@ -125,7 +125,7 @@ public class TelemetryCorrelationUtils {
 			return requestTelemetry.getId() + context.incrementChildId() + ".";
 		}
 		catch (Exception ex) {
-			InternalLogger.INSTANCE.error("Failed to generate child ID. Exception information: " + ex);
+			InternalLogger.INSTANCE.error("Failed to generate child ID. Exception information: %s", ex.toString());
 			InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
 		}
 
@@ -213,7 +213,7 @@ public class TelemetryCorrelationUtils {
 
 			String requestContext = request.getHeader(REQUEST_CONTEXT_HEADER_NAME);
 			if (requestContext == null || requestContext.isEmpty()) {
-				InternalLogger.INSTANCE.info("Skip resolving request source as the following header was not found: " + REQUEST_CONTEXT_HEADER_NAME);
+				InternalLogger.INSTANCE.info("Skip resolving request source as the following header was not found: %s", REQUEST_CONTEXT_HEADER_NAME);
 				return;
 			}
 
@@ -226,7 +226,7 @@ public class TelemetryCorrelationUtils {
 			requestTelemetry.setSource(source);
 		}
 		catch(Exception ex) {
-			InternalLogger.INSTANCE.error("Failed to resolve request source. Exception information: " + ex);
+			InternalLogger.INSTANCE.error("Failed to resolve request source. Exception information: %s", ex.toString());
 			InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
 		}
 	}
@@ -252,7 +252,7 @@ public class TelemetryCorrelationUtils {
 		Enumeration<String> baggages = request.getHeaders(CORRELATION_CONTEXT_HEADER_NAME);
 
 		if (baggages == null) {
-			InternalLogger.INSTANCE.warn("Could not access header information: " + CORRELATION_CONTEXT_HEADER_NAME);
+			InternalLogger.INSTANCE.warn("Could not access header information: %s", CORRELATION_CONTEXT_HEADER_NAME);
 			return;
 		}
 
