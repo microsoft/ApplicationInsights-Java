@@ -33,6 +33,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -62,7 +63,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
     private final static int DEFAULT_BACKOFF_TIME_SECONDS = 300;
-
+    private final static int DEFAULT_RETRY_ATTEMPTS = 3;
+ 
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
 
@@ -124,6 +126,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
      */
     @Override
     public boolean send(Transmission transmission) {
+        int retry = 0;
+
         while (!stopped) {
             if (transmissionPolicyManager.getTransmissionPolicyState().getCurrentState() != TransmissionPolicy.UNBLOCKED) {
                 return false;
@@ -156,22 +160,22 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                         return true;
                 }
             } catch (ConnectionPoolTimeoutException e) {
-                InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
+                InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception: %s", ExceptionUtils.getStackTrace(e));
                 shouldBackoff = true;
             } catch (SocketException e) {
-                InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
+                InternalLogger.INSTANCE.error("Failed to send, socket timeout exception: %s", ExceptionUtils.getStackTrace(e));
                 shouldBackoff = true;
             } catch (UnknownHostException e) {
-                InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s - %s", e.getMessage(), ExceptionUtils.getStackTrace(e));
                 shouldBackoff = true;
             } catch (IOException ioe) {
-                InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send, exception: %s - %s", ioe.getMessage(), ExceptionUtils.getStackTrace(ioe));
                 shouldBackoff = true;
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s - %s", e.getMessage(), ExceptionUtils.getStackTrace(e));
                 shouldBackoff = true;
             } catch (Throwable t) {
-                InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s - %s", t.getMessage(), ExceptionUtils.getStackTrace(t));
                 shouldBackoff = true;
             }
             finally {
@@ -181,10 +185,16 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 httpClient.dispose(response);
                 // backoff before trying again
                 if (shouldBackoff) {
-                    InternalLogger.INSTANCE.trace("Backing off for %s seconds", DEFAULT_BACKOFF_TIME_SECONDS);
-                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+                    if (retry > DEFAULT_RETRY_ATTEMPTS) {
+                        InternalLogger.INSTANCE.trace("Backing off for %s seconds", DEFAULT_BACKOFF_TIME_SECONDS);
+                        transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+                    } else {
+                        InternalLogger.INSTANCE.trace("Retrying transmission (retry attempt: %d)", (retry+1));
+                    }
                 }
             }
+
+            retry++;
         }
 
         return true;
@@ -209,7 +219,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             long retryAfterAsSeconds = (date.getTime() - convertToDateToGmt(now).getTime())/1000;
             transmissionPolicyManager.suspendInSeconds(suspensionPolicy, retryAfterAsSeconds);
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Throttled but failed to block transmission, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Throttled but failed to block transmission, exception: %s - %s", e.getMessage(), ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -302,7 +312,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
             InternalLogger.INSTANCE.error("Failed to send, %s : %s", baseErrorMessage, responseLine);
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to send, %s, failed to log the error", baseErrorMessage);
+            InternalLogger.INSTANCE.error("Failed to send, %s, failed to log the error: %s", baseErrorMessage, ExceptionUtils.getStackTrace(e));
         } finally {
             if (inputStream != null) {
                 try {
