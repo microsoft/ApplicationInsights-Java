@@ -68,6 +68,15 @@ final class SenderThreadLocalBackOffData {
     public boolean isTryingToSend() {
         return currentBackOffIndex != -1;
     }
+    
+    public long getCurrentBackoffMillis() {
+    	if (currentBackOffIndex != -1 && (currentBackOffIndex < this.backOffTimeoutsInMillis.length - 1)) 
+    	{
+    		return this.backOffTimeoutsInMillis[currentBackOffIndex];
+    	} else {
+    		return 0;
+    	}
+    }
 
     /**
      * This method should be called by the Sender thread when the
@@ -92,34 +101,62 @@ final class SenderThreadLocalBackOffData {
      *         4. The thread has exhausted all the back-off timeouts
      */
     public boolean backOff() {
-         try {
-             lock.lock();
-             ++currentBackOffIndex;
-             if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
-                 currentBackOffIndex = -1;
+        try {
+            lock.lock();
+            ++currentBackOffIndex;
+            if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
+                currentBackOffIndex = -1;
 
-                 // Exhausted the back-offs
-                 return false;
-             }
-
-             if (!instanceIsActive) {
+                // Exhausted the back-offs
                 return false;
             }
 
-             try {
-                 long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
-                 if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
-                     millisecondsToWait += addMilliseconds;
-                 }
-                 backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
-                 return instanceIsActive;
-            } catch (InterruptedException e) {
-                return false;
+            if (!instanceIsActive) {
+               return false;
+           }
+
+            try {
+                long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
+                if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
+                    millisecondsToWait += addMilliseconds;
+                }
+                backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
+                return instanceIsActive;
+           } catch (InterruptedException e) {
+               return false;
+           }
+       } finally {
+           lock.unlock();
+       }
+   }
+    
+    public long backOffTimerValue() {
+        try {
+            lock.lock();
+            ++currentBackOffIndex;
+            if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
+                currentBackOffIndex = -1;
+
+                // Exhausted the back-offs
+                return -1;
             }
-        } finally {
-            lock.unlock();
-        }
-    }
+
+            if (!instanceIsActive) {
+               return 0;
+           }
+
+           
+                long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
+                if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
+                    millisecondsToWait += addMilliseconds;
+                }
+                //backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
+                return millisecondsToWait;
+           
+       } finally {
+           lock.unlock();
+       }
+   }
 
     /**
      * Stop a waiting thread if there is one, and prevent that thread for backOffing.

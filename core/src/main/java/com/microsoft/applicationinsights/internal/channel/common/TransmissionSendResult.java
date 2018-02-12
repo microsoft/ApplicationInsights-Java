@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 /**
  * Created by gupele on 2/10/2015.
  */
-enum TransmissionSendResult {
+public enum TransmissionSendResult {
     SENT_SUCCESSFULLY,
 
     FAILED_TO_SEND_DUE_TO_NETWORK_ISSUES,

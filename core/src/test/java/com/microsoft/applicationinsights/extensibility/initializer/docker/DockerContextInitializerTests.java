@@ -56,7 +56,7 @@ public class DockerContextInitializerTests {
 
     @BeforeClass
     public static void classInit() throws Exception {
-        String json = String.format(com.microsoft.applicationinsights.extensibility.initializer.docker.Constants.CONTEXT_FILE_PATTERN, DEFAULT_HOST, DEFAULT_IMAGE, DEFAULT_CONTAINER_NAME, DEFAULT_CONTAINER_ID);
+        String json = String.format(com.microsoft.applicationinsights.extensibility.initializer.docker.ConstantsTest.CONTEXT_FILE_PATTERN, DEFAULT_HOST, DEFAULT_IMAGE, DEFAULT_CONTAINER_NAME, DEFAULT_CONTAINER_ID);
         defaultDockerContext = new DockerContext(json);
         initializerUnderTest = new DockerContextInitializer(fileFactoryMock, contextPollerMock);
     }

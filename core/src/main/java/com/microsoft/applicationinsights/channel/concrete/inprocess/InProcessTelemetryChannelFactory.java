@@ -35,8 +35,11 @@ import com.microsoft.applicationinsights.internal.channel.common.*;
 final class InProcessTelemetryChannelFactory implements TransmitterFactory {
     @Override
     public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled) {
-        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
-
+        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);     	
+        transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
+        transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
+        transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
+        
         // An active object with the network sender
         TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, transmissionPolicyManager);
 
@@ -51,6 +54,7 @@ final class InProcessTelemetryChannelFactory implements TransmitterFactory {
         // The dispatcher works with the two active senders
         TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[] {networkSender, activeFileSystemOutput});
         actualNetworkSender.setTransmissionDispatcher(dispatcher);
+        
 
         // The loader works with the file system loader as the active one does
         TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, stateFetcher, dispatcher);

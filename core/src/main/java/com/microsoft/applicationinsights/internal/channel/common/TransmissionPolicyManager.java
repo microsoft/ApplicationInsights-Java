@@ -21,19 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-
-import com.google.common.base.Preconditions;
 
 /**
  * This class is responsible for managing the transmission state.
@@ -46,8 +50,16 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 6/29/2015.
  */
-public final class TransmissionPolicyManager implements Stoppable {
+public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
 
+	private final int DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF = 600;
+	
+	// Current thread backoff manager
+	private SenderThreadsBackOffManager backoffManager;
+	
+	// List of transmission policies implemented as handlers
+	private List<TransmissionHandler> transmissionHandlers;
+	
     // The future date the the transmission is blocked
     private Date suspensionDate;
 
@@ -83,8 +95,30 @@ public final class TransmissionPolicyManager implements Stoppable {
     public TransmissionPolicyManager(boolean throttlingIsEnabled) {
         suspensionDate = null;
         this.throttlingIsEnabled = throttlingIsEnabled;
+        this.transmissionHandlers = new ArrayList<TransmissionHandler>();
+        this.backoffManager = new SenderThreadsBackOffManager(new ExponentialBackOffTimesPolicy());
     }
 
+    public void backoff() {
+    	policyState.setCurrentState(TransmissionPolicy.BACKOFF);
+    	long backOffMillis = backoffManager.backOffCurrentSenderThreadValue();
+        if (backOffMillis > 0)
+        {
+        	long backOffSeconds = backOffMillis / 1000;
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
+        	this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
+        } else {
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Backoff has been maxed out, will suspend thread for %s seconds.", DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF);
+        	this.suspendInSeconds(TransmissionPolicy.BACKOFF, DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF);
+        }
+    }
+    
+    public void clearBackoff() {
+    	policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
+        backoffManager.onDoneSending();
+        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Backoff has been reset.");
+    }
+    
     public void suspendInSeconds(TransmissionPolicy policy, long suspendInSeconds) {
         if (!throttlingIsEnabled) {
             return;
@@ -111,7 +145,7 @@ public final class TransmissionPolicyManager implements Stoppable {
             if (policy == TransmissionPolicy.UNBLOCKED ) {
                 return;
             }
-
+                       
             Date date = Calendar.getInstance().getTime();
             date.setTime(date.getTime() + 1000 * suspendInSeconds);
             if (this.suspensionDate != null) {
@@ -160,4 +194,18 @@ public final class TransmissionPolicyManager implements Stoppable {
 
         SDKShutdownActivity.INSTANCE.register(this);
     }
+    
+	@Override
+	public void onTransmissionSent(TransmissionHandlerArgs transmissionArgs) {
+		for (TransmissionHandler handler : this.transmissionHandlers) {
+			handler.onTransmissionSent(transmissionArgs);
+		}
+	}
+	
+	@Override
+	public void addTransmissionHandler(TransmissionHandler handler) {
+		if(handler != null) {
+			this.transmissionHandlers.add(handler);
+		}
+	}
 }
