@@ -20,56 +20,80 @@ import com.microsoft.applicationinsights.internal.channel.common.Transmission;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyManager;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
+/**
+ * This class implements the retry logic for partially accepted transmissions.
+ * HTTP status code 206.
+ * <p>
+ * 
+ * @see <a href=
+ *      "https://github.com/Microsoft/ApplicationInsights-dotnet/blob/master/docs/ServerTelemetryChannel%20error%20handling.md#partialsuccesstransmissionpolicy">PartialSuccessTransmissionPolicy</a>
+ * @author jamdavi
+ *
+ */
 public class PartialSuccessHandler implements TransmissionHandler {
 
+	/**
+	 * Ctor
+	 * 
+	 * Constructs the PartialSuccessHandler object.
+	 * 
+	 * @param policy
+	 *            The {@link TransmissionPolicyManager} object that is needed to
+	 *            control the back off policy.
+	 */
 	public PartialSuccessHandler(TransmissionPolicyManager policy) {
-
 	}
 
 	@Override
 	public void onTransmissionSent(TransmissionHandlerArgs args) {
 		validateTransmissionAndSend(args);
-
 	}
 
-	public boolean validateTransmissionAndSend(TransmissionHandlerArgs args) {
+	/**
+	 * Provides the core logic for the retransmission
+	 * 
+	 * @param args
+	 *            The {@link TransmissionHandlerArgs} for this transmission.
+	 * @return Returns a pass/fail for handling this transmission.
+	 */
+	boolean validateTransmissionAndSend(TransmissionHandlerArgs args) {
 		if (args.getTransmission() != null && args.getTransmissionDispatcher() != null) {
 			switch (args.getResponseCode()) {
 			case HttpStatus.SC_PARTIAL_CONTENT:
 				BackendResponse beR = getBackendResponse(args.getResponseBody());
-				
-				// In case the 206 was false we can break here
-				if(beR != null && (beR.itemsAccepted == beR.itemsReceived))
-				{
-					return false;
-				}
-			
 				List<String> originalItems = generateOriginalItems(args);
-				
+
 				// Somehow the amount of items received and the items sent do not match
-				if(beR != null && (originalItems.size() != beR.itemsReceived))
-				{
+				if (beR != null && (originalItems.size() != beR.itemsReceived)) {
+					InternalLogger.INSTANCE.trace(
+							"Skipping partial content handler due to itemsReceived being larger than the items sent.");
 					return false;
 				}
-			
-				
-				List<String> newTransmission = new ArrayList<String>();
-				for (BackendResponse.Error e : beR.errors) {
-					switch (e.statusCode) {
-					case HttpStatus.SC_REQUEST_TIMEOUT:
-					case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-					case HttpStatus.SC_SERVICE_UNAVAILABLE:
-					case 429:
-					case 439:
-						// Unknown condition where backend response returns an index greater than the items we're returning
-						if (e.index < originalItems.size()) {
-							newTransmission.add(originalItems.get(e.index));	
+
+				if (beR != null && (beR.itemsAccepted != beR.itemsReceived)) {
+
+					List<String> newTransmission = new ArrayList<String>();
+					for (BackendResponse.Error e : beR.errors) {
+						switch (e.statusCode) {
+						case HttpStatus.SC_REQUEST_TIMEOUT:
+						case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+						case HttpStatus.SC_SERVICE_UNAVAILABLE:
+						case 429:
+						case 439:
+							// Unknown condition where backend response returns an index greater than the
+							// items we're returning
+							if (e.index < originalItems.size()) {
+								newTransmission.add(originalItems.get(e.index));
+							}
+							break;
 						}
-						break;
 					}
+					return sendNewTransmission(args, newTransmission);
 				}
-				
-				return sendNewTransmission(args, newTransmission);
+				InternalLogger.INSTANCE
+						.trace("Skipping partial content handler due to itemsAccepted and itemsReceived being equal.");
+				return false;
+
 			default:
 				InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(),
 						this.getClass().getName());
@@ -79,12 +103,20 @@ public class PartialSuccessHandler implements TransmissionHandler {
 		return false;
 	}
 
-	public List<String> generateOriginalItems(TransmissionHandlerArgs args) {
+	/**
+	 * Used to parse the original telemetry request in order to resend the failed
+	 * ones.
+	 * 
+	 * @param args
+	 *            The {@link TransmissionHandlerArgs} that contains the
+	 *            {@link Transmission} object.
+	 * @return A List<> of each sent item
+	 */
+	List<String> generateOriginalItems(TransmissionHandlerArgs args) {
 		List<String> originalItems = new ArrayList<String>();
-		
 
 		if (args.getTransmission().getWebContentEncodingType() == "gzip") {
-			
+
 			try {
 				GZIPInputStream gis = new GZIPInputStream(
 						new ByteArrayInputStream(args.getTransmission().getContent()));
@@ -93,12 +125,10 @@ public class PartialSuccessHandler implements TransmissionHandler {
 				while ((line = bufferedReader.readLine()) != null) {
 					originalItems.add(line);
 				}
-				if (gis != null)
-				{
-					gis.close();	
+				if (gis != null) {
+					gis.close();
 				}
-				if (bufferedReader != null) 
-				{
+				if (bufferedReader != null) {
 					bufferedReader.close();
 				}
 			} catch (IOException e1) {
@@ -107,7 +137,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
 			} catch (Throwable t) {
 				// TODO Auto-generated catch block
 				t.printStackTrace();
-			} finally {					
+			} finally {
 			}
 		} else {
 			for (String s : new String(args.getTransmission().getContent()).split("\r\n")) {
@@ -117,9 +147,19 @@ public class PartialSuccessHandler implements TransmissionHandler {
 		return originalItems;
 	}
 
-	public boolean sendNewTransmission(TransmissionHandlerArgs args, List<String> newTransmission) {
-		if (!newTransmission.isEmpty())
-		{
+	/**
+	 * Sends a new transmission generated from the failed attempts from the original
+	 * request.
+	 * 
+	 * @param args
+	 *            The {@link TransmissionHandlerArgs} object that contains the
+	 *            {@link TransmissionDispatcher}
+	 * @param newTransmission
+	 *            The {@link List} of items to resent
+	 * @return A pass/fail response
+	 */
+	boolean sendNewTransmission(TransmissionHandlerArgs args, List<String> newTransmission) {
+		if (!newTransmission.isEmpty()) {
 			GzipTelemetrySerializer serializer = new GzipTelemetrySerializer();
 			Optional<Transmission> newT = serializer.serialize(newTransmission);
 			args.getTransmissionDispatcher().dispatch(newT.get());
@@ -128,6 +168,14 @@ public class PartialSuccessHandler implements TransmissionHandler {
 		return false;
 	}
 
+	/**
+	 * Helper method to parse the 206 response. Uses {@link Gson}
+	 * 
+	 * @param response
+	 *            The body of the response.
+	 * @return A {@link BackendResponse} object that contains the status of the
+	 *         partial success.
+	 */
 	private BackendResponse getBackendResponse(String response) {
 
 		BackendResponse backend = null;

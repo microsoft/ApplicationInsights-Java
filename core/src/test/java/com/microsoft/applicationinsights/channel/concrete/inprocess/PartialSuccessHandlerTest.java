@@ -1,11 +1,8 @@
 package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

@@ -1,15 +1,20 @@
 package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
-public class BackendResponse {
+/**
+ * Utility class used by the {@link PartialSuccessHandler}
+ * 
+ * @author jamdavi
+ *
+ */
+class BackendResponse {
 
-	public int itemsReceived;
-    public int itemsAccepted;
-    public Error[] errors;
+	int itemsReceived;
+	int itemsAccepted;
+	Error[] errors;
 
-    class Error
-    {       
-        public int index;
-        public int statusCode;      
-        public String message;
-    }
+	class Error {
+		public int index;
+		public int statusCode;
+		public String message;
+	}
 }
