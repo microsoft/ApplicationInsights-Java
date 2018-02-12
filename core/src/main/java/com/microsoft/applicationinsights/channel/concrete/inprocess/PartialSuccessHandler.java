@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpStatus;
 
 import com.google.gson.Gson;
@@ -132,11 +133,11 @@ public class PartialSuccessHandler implements TransmissionHandler {
 					bufferedReader.close();
 				}
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				InternalLogger.INSTANCE.error("IOException: Error while reading the GZIP stream.\r\nStack Trace:\r\n%s",
+						ExceptionUtils.getStackTrace(e1));
 			} catch (Throwable t) {
-				// TODO Auto-generated catch block
-				t.printStackTrace();
+				InternalLogger.INSTANCE.error("Error while reading the GZIP stream.\r\nStack Trace:\r\n%s",
+						ExceptionUtils.getStackTrace(t));
 			} finally {
 			}
 		} else {
@@ -185,8 +186,9 @@ public class PartialSuccessHandler implements TransmissionHandler {
 			Gson gson = gsonBuilder.create();
 			backend = gson.fromJson(response, BackendResponse.class);
 		} catch (Throwable t) {
-			InternalLogger.INSTANCE.trace("Error deserializing backend response with Gson, message: %s",
-					t.getMessage());
+			InternalLogger.INSTANCE.trace(
+					"Error deserializing backend response with Gson.\r\n" + "Stack Trace:\r\n" + "%s",
+					ExceptionUtils.getStackTrace(t));
 		} finally {
 		}
 		return backend;

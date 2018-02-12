@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.Header;
 
 import com.google.common.base.Strings;
@@ -102,8 +103,8 @@ public class ThrottlingHandler implements TransmissionHandler {
 			long retryAfterAsSeconds = (date.getTime() - convertToDateToGmt(now).getTime()) / 1000;
 			this.transmissionPolicyManager.suspendInSeconds(suspensionPolicy, retryAfterAsSeconds);
 		} catch (Throwable e) {
-			InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
-					"Throttled but failed to block transmission, exception: %s", e.getMessage());
+			InternalLogger.INSTANCE.error("Throttled but failed to block transmission.\r\n" + "Stack Trace:\r\n" + "%s",
+					ExceptionUtils.getStackTrace(e));
 			this.transmissionPolicyManager.backoff();
 		}
 
