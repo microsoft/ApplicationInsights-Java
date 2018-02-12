@@ -35,6 +35,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.util.EntityUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -55,7 +56,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
 
 	private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
-
 
 	// For future use: re-send a failed transmission back to the dispatcher
 	private TransmissionDispatcher transmissionDispatcher;
@@ -90,13 +90,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 		httpClient = ApacheSenderFactory.INSTANCE.create();
 		this.transmissionPolicyManager = transmissionPolicyManager;
 		stopped = false;
-		
+
 	}
 
 	public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
 		this.transmissionDispatcher = transmissionDispatcher;
 	}
-	
+
 	/**
 	 * Stops all threads from sending data.
 	 * 
@@ -129,12 +129,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	@Override
 	public boolean send(Transmission transmission) {
 		if (!stopped) {
-			// If we're not stopped but in a blocked state then fail to second TransmissionOutput
+			// If we're not stopped but in a blocked state then fail to second
+			// TransmissionOutput
 			if (transmissionPolicyManager.getTransmissionPolicyState()
 					.getCurrentState() != TransmissionPolicy.UNBLOCKED) {
 				return false;
 			}
-			
+
 			HttpResponse response = null;
 			HttpPost request = null;
 			int code = 0;
@@ -150,46 +151,56 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 				code = response.getStatusLine().getStatusCode();
 				respString = EntityUtils.toString(respEntity);
 				retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
-				
-				// After the third time through this dispatcher we should reset the counter and then fail to second TransmissionOutput
+
+				// After the third time through this dispatcher we should reset the counter and
+				// then fail to second TransmissionOutput
 				if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() >= 3) {
 					transmission.setNumberOfSends(0);
 					return false;
 				} else if (code == HttpStatus.SC_OK) {
-					// If we've completed then clear the back off flags as the channel does not need to be throttled
+					// If we've completed then clear the back off flags as the channel does not need
+					// to be throttled
 					transmissionPolicyManager.clearBackoff();
 				}
 				return true;
-					
+
 			} catch (ConnectionPoolTimeoutException e) {
 				ex = e;
-				InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
+				InternalLogger.INSTANCE.error(
+						"Failed to send, connection pool timeout exception\r\n" + "Stack Trace:\r\n" + "%s",
+						ExceptionUtils.getStackTrace(e));
 			} catch (SocketException e) {
 				ex = e;
-				InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
+				InternalLogger.INSTANCE.error(
+						"Failed to send, socket timeout exception.\r\n" + "Stack Trace:\r\n" + "%s",
+						ExceptionUtils.getStackTrace(e));
 			} catch (UnknownHostException e) {
 				ex = e;
-				InternalLogger.INSTANCE.error(
-						"Failed to send, wrong host address or cannot reach address due to network issues, exception: %s",
-						e.getMessage());
+				InternalLogger.INSTANCE
+						.error("Failed to send, wrong host address or cannot reach address due to network issues.\r\n"
+								+ "Stack Trace:\r\n" + "%s", ExceptionUtils.getStackTrace(e));
 			} catch (IOException ioe) {
 				ex = ioe;
-				InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
+				InternalLogger.INSTANCE.error("Failed to send.\r\n" + "Stack Trace:\r\n" + "%s",
+						ExceptionUtils.getStackTrace(ioe));
 			} catch (Exception e) {
 				ex = e;
-				InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
+				InternalLogger.INSTANCE.error("Failed to send, unexpected exception.\r\n" + "Stack Trace:\r\n" + "%s",
+						ExceptionUtils.getStackTrace(e));
 			} catch (Throwable t) {
 				ex = t;
-				InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
+				InternalLogger.INSTANCE.error("Failed to send, unexpected error.\r\n" + "Stack Trace:\r\n" + "%s",
+						ExceptionUtils.getStackTrace(t));
 			} finally {
 				if (request != null) {
 					request.releaseConnection();
 				}
 				httpClient.dispose(response);
-				
+
 				if (code != HttpStatus.SC_OK && transmission.getNumberOfSends() < 3) {
 					// Invoke the listeners for handling things like errors
-					// The listeners will handle the back off logic as well as the dispatch operation
+					// The listeners will handle the back off logic as well as the dispatch
+					// operation
 					TransmissionHandlerArgs args = new TransmissionHandlerArgs();
 					args.setTransmission(transmission);
 					args.setTransmissionDispatcher(transmissionDispatcher);
@@ -216,6 +227,5 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
 		return request;
 	}
-
 
 }
