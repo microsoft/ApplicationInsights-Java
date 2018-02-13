@@ -64,6 +64,15 @@ public class ApplicationInsightsAppenderTests {
         Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
     }
 
+    @Test
+    public void testLoggerMessageIsRetainedWhenReportingException() {
+        Logger logger = LogManager.getRootLogger();
+        logger.error("This is an exception", new Exception("Fake Exception"));
+        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
+        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().containsKey("Logger Message"));
+        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().get("Logger Message").equals("This is an exception"));
+    }
+
     // endregion Tests
 
     // region Private methods

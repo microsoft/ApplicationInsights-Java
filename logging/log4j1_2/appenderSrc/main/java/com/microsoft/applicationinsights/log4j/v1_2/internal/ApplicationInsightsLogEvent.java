@@ -75,6 +75,10 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
         addLogEventProperty("ThreadName", loggingEvent.getThreadName(), metaData);
         addLogEventProperty("TimeStamp", getFormattedDate(loggingEvent.getTimeStamp()), metaData);
 
+        if (isException()) {
+            addLogEventProperty("Logger Message", getMessage(), metaData);
+        }
+
         if (loggingEvent.locationInformationExists()) {
             LocationInfo locationInfo = loggingEvent.getLocationInformation();
 
