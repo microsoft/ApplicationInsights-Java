@@ -42,9 +42,9 @@ public class ErrorHandler implements TransmissionHandler {
 		if (args.getTransmission() != null && args.getTransmissionDispatcher() != null) {
 			args.getTransmission().incrementNumberOfSends();
 			switch (args.getResponseCode()) {
-			case HttpStatus.SC_REQUEST_TIMEOUT:
-			case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-			case HttpStatus.SC_SERVICE_UNAVAILABLE:
+			case TransmissionSendResult.REQUEST_TIMEOUT:
+			case TransmissionSendResult.INTERNAL_SERVER_ERROR:
+			case TransmissionSendResult.SERVICE_UNAVAILABLE:
 				backoffAndSendTransmission(args);
 				return true;
 			default:

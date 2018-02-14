@@ -108,6 +108,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
         	this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
         } else {
+        	// TODO Remove Static Time
         	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Backoff has been maxed out, will suspend thread for %s seconds.", DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF);
         	this.suspendInSeconds(TransmissionPolicy.BACKOFF, DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF);
         }

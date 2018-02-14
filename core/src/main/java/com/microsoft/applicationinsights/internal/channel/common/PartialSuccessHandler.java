@@ -72,11 +72,11 @@ public class PartialSuccessHandler implements TransmissionHandler {
 					List<String> newTransmission = new ArrayList<String>();
 					for (BackendResponse.Error e : backendResponse.errors) {
 						switch (e.statusCode) {
-						case HttpStatus.SC_REQUEST_TIMEOUT:
-						case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-						case HttpStatus.SC_SERVICE_UNAVAILABLE:
-						case 429:
-						case 439:
+						case TransmissionSendResult.REQUEST_TIMEOUT:
+						case TransmissionSendResult.INTERNAL_SERVER_ERROR:
+						case TransmissionSendResult.SERVICE_UNAVAILABLE:
+						case TransmissionSendResult.THROTTLED: 
+						case TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME: 
 							// Unknown condition where backend response returns an index greater than the
 							// items we're returning
 							if (e.index < originalItems.size()) {
@@ -129,10 +129,10 @@ public class PartialSuccessHandler implements TransmissionHandler {
 					bufferedReader.close();
 				}
 			} catch (IOException e1) {
-				InternalLogger.INSTANCE.error("IOException: Error while reading the GZIP stream.\r\nStack Trace:\r\n%s",
+				InternalLogger.INSTANCE.error("IOException: Error while reading the GZIP stream.%nStack Trace:%n%s",
 						ExceptionUtils.getStackTrace(e1));
 			} catch (Throwable t) {
-				InternalLogger.INSTANCE.error("Error while reading the GZIP stream.\r\nStack Trace:\r\n%s",
+				InternalLogger.INSTANCE.error("Error while reading the GZIP stream.%nStack Trace:%n%s",
 						ExceptionUtils.getStackTrace(t));
 			} finally {
 			}
@@ -183,7 +183,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
 			backend = gson.fromJson(response, BackendResponse.class);
 		} catch (Throwable t) {
 			InternalLogger.INSTANCE.trace(
-					"Error deserializing backend response with Gson.\r\n" + "Stack Trace:\r\n" + "%s",
+					"Error deserializing backend response with Gson.%nStack Trace:%n%s",
 					ExceptionUtils.getStackTrace(t));
 		} finally {
 		}

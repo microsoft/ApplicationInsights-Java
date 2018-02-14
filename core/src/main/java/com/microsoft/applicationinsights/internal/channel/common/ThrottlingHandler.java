@@ -56,8 +56,8 @@ public class ThrottlingHandler implements TransmissionHandler {
 				&& args.getTransmissionDispatcher() != null) {
 			args.getTransmission().incrementNumberOfSends();
 			switch (args.getResponseCode()) {
-			case 429:
-			case 439:
+			case TransmissionSendResult.THROTTLED: 
+			case TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME: 
 				suspendTransmissions(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, args.getRetryHeader());
 				args.getTransmissionDispatcher().dispatch(args.getTransmission());
 				return true;
@@ -101,7 +101,7 @@ public class ThrottlingHandler implements TransmissionHandler {
 			long retryAfterAsSeconds = (date.getTime() - convertToDateToGmt(now).getTime()) / 1000;
 			this.transmissionPolicyManager.suspendInSeconds(suspensionPolicy, retryAfterAsSeconds);
 		} catch (Throwable e) {
-			InternalLogger.INSTANCE.error("Throttled but failed to block transmission.\r\n" + "Stack Trace:\r\n" + "%s",
+			InternalLogger.INSTANCE.error("Throttled but failed to block transmission.%nStack Trace:%n%s",
 					ExceptionUtils.getStackTrace(e));
 			this.transmissionPolicyManager.backoff();
 		}
