@@ -52,7 +52,8 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  */
 public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
 
-	private final int DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF = 600;
+	private int INSTANT_RETRY_AMOUNT = 3; // Should always be set by the creator of this class
+	private int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
 	
 	// Current thread backoff manager
 	private SenderThreadsBackOffManager backoffManager;
@@ -107,11 +108,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         	long backOffSeconds = backOffMillis / 1000;
         	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
         	this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
-        } else {
-        	// TODO Remove Static Time
-        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Backoff has been maxed out, will suspend thread for %s seconds.", DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF);
-        	this.suspendInSeconds(TransmissionPolicy.BACKOFF, DEFAULT_MAX_SECONDS_TO_PAUSE_AFTER_MAX_BACKOFF);
-        }
+        } 
     }
     
     public void clearBackoff() {
@@ -208,5 +205,15 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 		if(handler != null) {
 			this.transmissionHandlers.add(handler);
 		}
+	}
+	
+	public void setMaxInstantRetries(int maxInstantRetries) {
+		if (maxInstantRetries >= 0 && maxInstantRetries < INSTANT_RETRY_MAX) {
+			INSTANT_RETRY_AMOUNT = maxInstantRetries;
+		}
+	}
+	
+	public int getMaxInstantRetries() {
+		return INSTANT_RETRY_AMOUNT;
 	}
 }

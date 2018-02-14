@@ -26,4 +26,5 @@ package com.microsoft.applicationinsights.internal.channel;
  */
 public interface TransmitterFactory {
     TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled);
+    TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries);
 }

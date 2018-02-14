@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import org.apache.http.HttpStatus;
-
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -60,7 +58,13 @@ public class ErrorHandler implements TransmissionHandler {
 	}
 
 	private void backoffAndSendTransmission(TransmissionHandlerArgs args) {
-		this.transmissionPolicyManager.backoff();
+		// It is possible for us to have a temporary blip in transmission 
+		// this setting will allow us to control how many instant retries we perform
+		// before backing off the send
+		if (args.getTransmission() != null && (args.getTransmission().getNumberOfSends() > transmissionPolicyManager.getMaxInstantRetries()))
+		{
+			this.transmissionPolicyManager.backoff();
+		}
 		args.getTransmissionDispatcher().dispatch(args.getTransmission());
 	}
 }
