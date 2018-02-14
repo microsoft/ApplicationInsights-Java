@@ -65,5 +65,4 @@ public interface TelemetryChannel {
      * @param telemetrySampler - The sampler
      */
     void setSampler(TelemetrySampler telemetrySampler);
-    
 }
