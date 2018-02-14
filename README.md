@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is the repository of the Java SDK for [Visual Studio Application Insights](https://acom-prod-uswest-01.azurewebsites.net/documentation/articles/app-insights-overview/). Application Insights is a service that monitors the availability, performance and usage of your application. The SDK sends telemetry about the performance and usage of your app to the Application Insights service where your data can be visualized in the [Azure Portal](https://portal.azure.com). The SDK automatically collects telemetry about HTTP requests, dependencies, and exceptions. You can also use the SDK to send your own events and trace logs. 
+This is the repository of the Java SDK for [Azure Application Insights](https://azure.microsoft.com/en-us/services/application-insights/). Application Insights is a service that monitors the availability, performance and usage of your application. The SDK sends telemetry about the performance and usage of your app to the Application Insights service where your data can be visualized in the [Azure Portal](https://portal.azure.com). The SDK automatically collects telemetry about HTTP requests, dependencies, and exceptions. You can also use the SDK to send your own events and trace logs. 
 
 Please refer to:
 
@@ -28,7 +28,7 @@ After you upgrade, you'll need to merge back any customizations you made to `App
 
 *Otherwise*
 
-* Download the latest version of [Application Insights Java SDK](https://aka.ms/aijavasdk) and replace the old ones. 
+* Download the latest version of [Application Insights Java SDK](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-get-started), [scroll down to section](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-get-started)and follow the instructions to manually download the SDK and replace the old Jars.
  
 Compare the old and new `ApplicationInsights.xml`. Many of the changes you see are because we added and removed modules. Reinstate any customizations that you made.
 
