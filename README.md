@@ -48,7 +48,7 @@ The Spring Boot framework is wildly popular, and while Application Insights for 
 While our 2.0 SDK will provide full support for fixed rate sampling, we plan to add support for adaptive sampling. Adaptive sampling provides fine-grained controls over a variable sampling rate when traffic to an application fluctuates and finding a fixed rate to sample with would otherwise be difficult.
 
 ### Support for Java 9
-We are working to bring full support for customers who have upgraded their applications to Java 9.
+The Application Insights for Java SDK currently supports Java 7 and 8. We are working to bring full support for customers who have upgraded their applications to Java 9 as well.
 
 
 ## Microsoft Open Source Code of Conduct
