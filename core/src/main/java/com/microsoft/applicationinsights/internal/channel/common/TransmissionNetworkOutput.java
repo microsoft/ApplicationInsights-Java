@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
  * Created by gupele on 12/18/2014.
  */
 public final class TransmissionNetworkOutput implements TransmissionOutput {
+	private static final int MAX_RESEND = 3;
 	private final static String CONTENT_TYPE_HEADER = "Content-Type";
 	private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
 	private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
@@ -73,7 +74,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	 * Creates an instance of the network transmission class.
 	 * <p>
 	 * Will use the DEFAULT_SERVER_URI for the endpoint.
-	 * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.  
+	 * 
+	 * @param transmissionPolicyManager
+	 *            The transmission policy used to mark this sender active or
+	 *            blocked.
 	 * @return
 	 */
 	public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
@@ -83,8 +87,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	/**
 	 * Creates an instance of the network transmission class.
 	 * 
-	 * @param endpoint The HTTP endpoint to send our telemetry too.
-	 * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.  
+	 * @param endpoint
+	 *            The HTTP endpoint to send our telemetry too.
+	 * @param transmissionPolicyManager
+	 *            The transmission policy used to mark this sender active or
+	 *            blocked.
 	 * @return
 	 */
 	public static TransmissionNetworkOutput create(String endpoint,
@@ -97,7 +104,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	 * Private Ctor to initialize class.
 	 * <p>
 	 * Also creates the httpClient using the ApacheSender instance
-	 * @param serverUri The HTTP endpoint to send our telemetry too.
+	 * 
+	 * @param serverUri
+	 *            The HTTP endpoint to send our telemetry too.
 	 * @param transmissionPolicyManager
 	 */
 	private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager) {
@@ -115,8 +124,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	}
 
 	/**
-	 * Used to inject the dispatcher used for this output so it can be injected to the retry logic. 
-	 * @param transmissionDispatcher The dispatcher to be injected.
+	 * Used to inject the dispatcher used for this output so it can be injected to
+	 * the retry logic.
+	 * 
+	 * @param transmissionDispatcher
+	 *            The dispatcher to be injected.
 	 */
 	public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
 		this.transmissionDispatcher = transmissionDispatcher;
@@ -179,7 +191,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
 				// After the third time through this dispatcher we should reset the counter and
 				// then fail to second TransmissionOutput
-				if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() >= 3) {
+				if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() >= MAX_RESEND) {
 					transmission.setNumberOfSends(0);
 					return false;
 				} else if (code == HttpStatus.SC_OK) {
@@ -191,30 +203,27 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
 			} catch (ConnectionPoolTimeoutException e) {
 				ex = e;
-				InternalLogger.INSTANCE.error(
-						"Failed to send, connection pool timeout exception\r\n" + "Stack Trace:\r\n" + "%s",
+				InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception%nStack Trace:%n%s",
 						ExceptionUtils.getStackTrace(e));
 			} catch (SocketException e) {
 				ex = e;
-				InternalLogger.INSTANCE.error(
-						"Failed to send, socket timeout exception.\r\n" + "Stack Trace:\r\n" + "%s",
+				InternalLogger.INSTANCE.error("Failed to send, socket exception.%nStack Trace:%n%s",
 						ExceptionUtils.getStackTrace(e));
 			} catch (UnknownHostException e) {
 				ex = e;
-				InternalLogger.INSTANCE
-						.error("Failed to send, wrong host address or cannot reach address due to network issues.\r\n"
-								+ "Stack Trace:\r\n" + "%s", ExceptionUtils.getStackTrace(e));
+				InternalLogger.INSTANCE.error(
+						"Failed to send, wrong host address or cannot reach address due to network issues.%nStack Trace:%n%s",
+						ExceptionUtils.getStackTrace(e));
 			} catch (IOException ioe) {
 				ex = ioe;
-				InternalLogger.INSTANCE.error("Failed to send.\r\n" + "Stack Trace:\r\n" + "%s",
-						ExceptionUtils.getStackTrace(ioe));
+				InternalLogger.INSTANCE.error("Failed to send.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(ioe));
 			} catch (Exception e) {
 				ex = e;
-				InternalLogger.INSTANCE.error("Failed to send, unexpected exception.\r\n" + "Stack Trace:\r\n" + "%s",
+				InternalLogger.INSTANCE.error("Failed to send, unexpected exception.%nStack Trace:%n%s",
 						ExceptionUtils.getStackTrace(e));
 			} catch (Throwable t) {
 				ex = t;
-				InternalLogger.INSTANCE.error("Failed to send, unexpected error.\r\n" + "Stack Trace:\r\n" + "%s",
+				InternalLogger.INSTANCE.error("Failed to send, unexpected error.%nStack Trace:%n%s",
 						ExceptionUtils.getStackTrace(t));
 			} finally {
 				if (request != null) {
@@ -222,7 +231,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 				}
 				httpClient.dispose(response);
 
-				if (code != HttpStatus.SC_OK && transmission.getNumberOfSends() < 3) {
+				if (code != HttpStatus.SC_OK && transmission.getNumberOfSends() < MAX_RESEND) {
 					// Invoke the listeners for handling things like errors
 					// The listeners will handle the back off logic as well as the dispatch
 					// operation
@@ -237,14 +246,18 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 				}
 			}
 		}
-		// If we end up here we've hit an error code we do not expect (403, 401, 400, etc.)
-		// This also means that unless there is a TransmissionHandler for this code we will not retry.
+		// If we end up here we've hit an error code we do not expect (403, 401, 400,
+		// etc.)
+		// This also means that unless there is a TransmissionHandler for this code we
+		// will not retry.
 		return true;
 	}
 
 	/**
 	 * Generates the HTTP POST to send to the endpoint.
-	 * @param transmission The transmission to send.
+	 * 
+	 * @param transmission
+	 *            The transmission to send.
 	 * @return The completed {@link HttpPost} object
 	 */
 	private HttpPost createTransmissionPostRequest(Transmission transmission) {

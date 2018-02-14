@@ -78,7 +78,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private final static int DELETE_TIMEOUT_ON_FAILURE_IN_MILLS = 100;
 
     private final static int DEFAULT_CAPACITY_MEGABYTES = 10;
-    private final static int MAX_CAPACITY_MEGABYTES = 100;
+    private final static int MAX_CAPACITY_MEGABYTES = 1000;
     private final static int MIN_CAPACITY_MEGABYTES = 1;
     private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacityInMB";
 
@@ -135,13 +135,12 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     @Override
     public boolean send(Transmission transmission) {
         if (size.get() >= capacityInKB) {
-        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Persistent storage max capcity has been reached; currently at %s KB. Telemetry will be lost, please set the MaxTransmissionStorageFilesCapacityInMB property in the configuration file.", size.get());
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Persistent storage max capcity has been reached; currently at %s KB. Telemetry will be lost, please set the MaxTransmissionStorageFilesCapacityInMB property in the configuration file.", size.get());
             return false;
         }
 
         Optional<File> tempTransmissionFile = createTemporaryFile();
         if (!tempTransmissionFile.isPresent()) {
-        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Persistent storage unable to create temporary file.");
             return false;
         }
 

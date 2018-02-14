@@ -148,7 +148,6 @@ final class SenderThreadLocalBackOffData {
                 if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
                     millisecondsToWait += addMilliseconds;
                 }
-                //backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
                 return millisecondsToWait;
            
        } finally {
