@@ -25,6 +25,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
@@ -52,10 +53,13 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
         this.transmissionPolicy = transmissionPolicy;
 
         threadPool = ThreadPoolUtils.newLimitedThreadPool(1, 3, 20L, 1024);
+        final String threadNameFmt = String.format("%s-job-%%d", ActiveTransmissionFileSystemOutput.class.getSimpleName());
         threadPool.setThreadFactory(new ThreadFactory() {
+            private AtomicInteger threadId = new AtomicInteger();
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
+                thread.setName(String.format(threadNameFmt, threadId.getAndIncrement()));
                 thread.setDaemon(true);
                 return thread;
             }

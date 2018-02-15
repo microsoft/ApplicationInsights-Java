@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
@@ -232,10 +233,12 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
 
     private void createTimerThread() {
         threads = new ScheduledThreadPoolExecutor(1);
+        final String threadNameFmt = String.format("%s-job-%%d", AdaptiveTelemetrySampler.class.getSimpleName());
         threads.setThreadFactory(new ThreadFactory() {
+            private final AtomicInteger threadId = new AtomicInteger();
             @Override
             public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
+                Thread thread = new Thread(r, String.format(threadNameFmt, threadId.getAndIncrement()));
                 thread.setDaemon(true);
                 return thread;
             }

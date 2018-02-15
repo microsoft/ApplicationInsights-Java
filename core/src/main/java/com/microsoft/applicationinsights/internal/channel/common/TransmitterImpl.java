@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
@@ -135,10 +136,12 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
         semaphore = new Semaphore(MAX_PENDING_SCHEDULE_REQUESTS);
 
         threadPool = new ScheduledThreadPoolExecutor(2);
+        final String threadNameFmt = String.format("%s-job-%%d", TransmitterImpl.class.getSimpleName());
         threadPool.setThreadFactory(new ThreadFactory() {
+            private final AtomicInteger threadId = new AtomicInteger();
             @Override
             public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
+                Thread thread = new Thread(r, String.format(threadNameFmt, threadId.getAndIncrement()));
                 thread.setDaemon(true);
                 return thread;
             }

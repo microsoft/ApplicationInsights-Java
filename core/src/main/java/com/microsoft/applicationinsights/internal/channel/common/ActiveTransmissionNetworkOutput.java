@@ -25,6 +25,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
@@ -63,10 +64,12 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
                 maxThreads,
                 DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS,
                 maxMessagesInBuffer);
+        final String threadNameFmt = String.format("%s-job-%%d", ActiveTransmissionNetworkOutput.class.getSimpleName());
         outputThreads.setThreadFactory(new ThreadFactory() {
+            private final AtomicInteger threadId = new AtomicInteger();
             @Override
             public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
+                Thread thread = new Thread(r, String.format(threadNameFmt, threadId.getAndIncrement()));
                 thread.setDaemon(true);
                 return thread;
             }
