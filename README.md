@@ -33,10 +33,10 @@ After you upgrade, you'll need to merge back any customizations you made to `App
 Compare the old and new `ApplicationInsights.xml`. Many of the changes you see are because we added and removed modules. Reinstate any customizations that you made.
 
 ## Application Insights for Java Roadmap
-The Application Insights team have been hard at work to deliver the next wave of features for our Java support and experience. Below is an outline of the features and improvements that are planned for our next release, which is targeted to be completed for mid-year 2018.
+The Application Insights team have been hard at work to deliver the next wave of features for our Java support and experience. Below is an outline of the features and improvements that are planned for our next several releases, which are targeted to be completed for mid-year 2018.
 
 ### Application Insights for Java SDK 2.0
-In December [we released the beta version of the Application Insights for Java 2.0 SDK](https://github.com/Microsoft/ApplicationInsights-Java/releases/tag/v2.0.0-BETA). That release introduced support for cross-component telemetry correlation and fixed rate sampling. For the final release, we'll be addressing any reliability issues and improving performance.
+In December [we released the beta version of the Application Insights for Java 2.0 SDK](https://github.com/Microsoft/ApplicationInsights-Java/releases/tag/v2.0.0-BETA). That release introduced support for cross-component telemetry correlation and fixed rate sampling. For the final release, we'll be addressing any reliability issues that are found or reported.
 
 ### Documentation Improvements
 The Application Insights team believes that documentation is important to the overall successfulness of our users. As such, we strive to continually improve our documentation. The full list of [documentation changes](https://github.com/Microsoft/ApplicationInsights-Java/issues?q=is%3Aissue+is%3Aopen+label%3A%22Documentation+Changes%22) can be found in our [issue tracker](https://github.com/Microsoft/ApplicationInsights-Java/issues). Feel free to [open a new issue](https://github.com/Microsoft/ApplicationInsights-Java/issues/new) to report incorrect or unclear documentation.
