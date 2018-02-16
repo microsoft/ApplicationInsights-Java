@@ -21,18 +21,33 @@
 
 package com.microsoft.applicationinsights.boot;
 
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * {@link ConfigurationProperties} for configuring application insights.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 @ConfigurationProperties("azure.application-insights")
 public class ApplicationInsightsProperties {
 
+    /**
+     * Enables application insights auto-configuration.
+     */
     private boolean enabled = true;
+    /**
+     * Instrumentation key from Azure Portal.
+     */
     private String instrumentationKey;
-    private Channel channel = new Channel();
-    private QuickPulse quickPulse = new QuickPulse();
+    /**
+     * Logger properties.
+     */
     private Logger logger = new Logger();
 
     public boolean isEnabled() {
@@ -51,22 +66,6 @@ public class ApplicationInsightsProperties {
         this.instrumentationKey = instrumentationKey;
     }
 
-    public Channel getChannel() {
-        return channel;
-    }
-
-    public void setChannel(Channel channel) {
-        this.channel = channel;
-    }
-
-    public QuickPulse getQuickPulse() {
-        return quickPulse;
-    }
-
-    public void setQuickPulse(QuickPulse quickPulse) {
-        this.quickPulse = quickPulse;
-    }
-
     public Logger getLogger() {
         return logger;
     }
@@ -75,89 +74,14 @@ public class ApplicationInsightsProperties {
         this.logger = logger;
     }
 
-    public static class QuickPulse {
-        private boolean enabled = true;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-    }
-
-    public static class Channel {
-        private InProcess inProcess = new InProcess();
-
-        public InProcess getInProcess() {
-            return inProcess;
-        }
-
-        public void setInProcess(InProcess inProcess) {
-            this.inProcess = inProcess;
-        }
-
-        public static class InProcess {
-            private boolean developerMode = false;
-            private String endpointAddress;
-            private int maxTelemetryBufferCapacity;
-            private int flushIntervalInSeconds;
-            private int maxTransmissionStorageFilesCapacityInMb;
-            private boolean throttling = true;
-
-            public boolean isDeveloperMode() {
-                return developerMode;
-            }
-
-            public void setDeveloperMode(boolean developerMode) {
-                this.developerMode = developerMode;
-            }
-
-            public String getEndpointAddress() {
-                return endpointAddress;
-            }
-
-            public void setEndpointAddress(String endpointAddress) {
-                this.endpointAddress = endpointAddress;
-            }
-
-            public int getMaxTelemetryBufferCapacity() {
-                return maxTelemetryBufferCapacity;
-            }
-
-            public void setMaxTelemetryBufferCapacity(int maxTelemetryBufferCapacity) {
-                this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
-            }
-
-            public int getFlushIntervalInSeconds() {
-                return flushIntervalInSeconds;
-            }
-
-            public void setFlushIntervalInSeconds(int flushIntervalInSeconds) {
-                this.flushIntervalInSeconds = flushIntervalInSeconds;
-            }
-
-            public int getMaxTransmissionStorageFilesCapacityInMb() {
-                return maxTransmissionStorageFilesCapacityInMb;
-            }
-
-            public void setMaxTransmissionStorageFilesCapacityInMb(int maxTransmissionStorageFilesCapacityInMb) {
-                this.maxTransmissionStorageFilesCapacityInMb = maxTransmissionStorageFilesCapacityInMb;
-            }
-
-            public boolean isThrottling() {
-                return throttling;
-            }
-
-            public void setThrottling(boolean throttling) {
-                this.throttling = throttling;
-            }
-        }
-    }
-
     public static class Logger {
+        /**
+         * Type of application insights logger.
+         */
         private LoggerOutputType type = LoggerOutputType.CONSOLE;
+        /**
+         * Minimal level of application insights logger.
+         */
         private LoggingLevel level = LoggingLevel.INFO;
 
         public LoggerOutputType getType() {

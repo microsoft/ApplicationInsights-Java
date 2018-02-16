@@ -25,16 +25,12 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 import com.microsoft.applicationinsights.web.spring.internal.InterceptorRegistry;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -42,9 +38,9 @@ import org.springframework.core.Ordered;
 
 @Configuration
 @Import(InterceptorRegistry.class)
-@AutoConfigureAfter(ApplicationInsightsTelemetryAutoConfiguration.class)
 @ConditionalOnBean(TelemetryConfiguration.class)
 @ConditionalOnWebApplication
+@AutoConfigureAfter(ApplicationInsightsTelemetryAutoConfiguration.class)
 public class ApplicationInsightsWebMvcAutoConfiguration {
 
     @Bean
@@ -59,22 +55,14 @@ public class ApplicationInsightsWebMvcAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public WebRequestTrackingFilter webRequestTrackingFilter(
-            ApplicationContext applicationContext,
-            @Value("${spring.application.name:application}") String applicationName) {
-        // Spring Boot application is running inside embedded container
-        if (applicationContext instanceof EmbeddedWebApplicationContext) {
-            return new WebRequestTrackingFilter(applicationName);
-        }
-        else {
-            return new WebRequestTrackingFilter();
-        }
+    public WebRequestTrackingFilter webRequestTrackingFilter(@Value("${spring.application.name:application}") String applicationName) {
+        return new WebRequestTrackingFilter(applicationName);
     }
 
     @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.quick-pulse.enabled", havingValue = "true", matchIfMissing = true)
     public QuickPulse quickPulse() {
         QuickPulse.INSTANCE.initialize();
         return QuickPulse.INSTANCE;
     }
 }
+

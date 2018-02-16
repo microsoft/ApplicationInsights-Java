@@ -44,6 +44,9 @@ import org.springframework.context.annotation.Bean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+/**
+ * @author Arthur Gavlyukovskiy
+ */
 class ApplicationInsightsTelemetryAutoConfigurationTests {
 
     private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();

@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsTelemetryAutoConfiguration.EnabledAndHasInstrumentationKeyCondition;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
@@ -35,13 +34,11 @@ import com.microsoft.applicationinsights.internal.channel.sampling.FixedRateTele
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -52,9 +49,14 @@ import java.util.Map;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+/**
+ * Auto-configuration for application insights. Configures {@link TelemetryConfiguration}
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 @Configuration
+@ConditionalOnProperty(value = "azure.application-insights.instrumentation-key")
 @EnableConfigurationProperties(ApplicationInsightsProperties.class)
-@Conditional(EnabledAndHasInstrumentationKeyCondition.class)
 @ConditionalOnClass(TelemetryConfiguration.class)
 @Import({
         ApplicationInsightsModuleConfiguration.class,
@@ -126,10 +128,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public TelemetryChannel telemetryChannel(TelemetrySampler telemetrySampler) {
-        ApplicationInsightsProperties.Channel.InProcess inProcess = applicationInsightsProperties.getChannel().getInProcess();
-        InProcessTelemetryChannel telemetryChannel = new InProcessTelemetryChannel(inProcess.getEndpointAddress(),
-                /*String.valueOf(inProcess.getMaxTransmissionStorageFilesCapacityInMb()),*/ inProcess.isDeveloperMode(),
-                inProcess.getMaxTelemetryBufferCapacity(), inProcess.getFlushIntervalInSeconds()/*, inProcess.isThrottling()*/);
+        InProcessTelemetryChannel telemetryChannel = new InProcessTelemetryChannel();
         telemetryChannel.setSampler(telemetrySampler);
         return telemetryChannel;
     }
@@ -141,21 +140,5 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         loggerParameters.put("Level", logger.getLevel().name());
         InternalLogger.INSTANCE.initialize(logger.getType().name(), loggerParameters);
         return InternalLogger.INSTANCE;
-    }
-
-    static class EnabledAndHasInstrumentationKeyCondition extends AllNestedConditions {
-
-        EnabledAndHasInstrumentationKeyCondition() {
-            super(ConfigurationPhase.REGISTER_BEAN);
-        }
-
-        @ConditionalOnProperty(value = "azure.application-insights.enabled", matchIfMissing = true)
-        static class OnEnabled {
-        }
-
-
-        @ConditionalOnProperty(value = "azure.application-insights.instrumentation-key")
-        static class OnInstrumentationKeySet {
-        }
     }
 }

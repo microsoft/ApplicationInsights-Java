@@ -25,11 +25,17 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
+import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import java.util.Map;
 
+/**
+ * {@link Condition} that checks if the application is running on specific operating system.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 public class OnOperationSystemCondition extends SpringBootCondition {
 
     @Override

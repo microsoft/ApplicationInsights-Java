@@ -1,0 +1,64 @@
+{
+  "properties": [
+    {
+      "name": "azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable ProcessPerformanceCountersModule.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebRequestTrackingTelemetryModule.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebSessionTrackingTelemetryModule.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebSessionTrackingTelemetryModule.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebUserTrackingTelemetryModule.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebUserTrackingTelemetryModule.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebPerformanceCounterModule.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebPerformanceCounterModule.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebOperationIdTelemetryInitializer.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebOperationIdTelemetryInitializer.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebOperationNameTelemetryInitializer.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebOperationNameTelemetryInitializer.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebSessionTelemetryInitializer.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebSessionTelemetryInitializer.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebUserTelemetryInitializer.",
+      "defaultValue": "true"
+    },
+    {
+      "name": "azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WebUserAgentTelemetryInitializer.",
+      "defaultValue": "true"
+    }
+  ]
+}

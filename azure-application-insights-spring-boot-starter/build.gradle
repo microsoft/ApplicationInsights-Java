@@ -39,10 +39,6 @@ dependencies {
     testCompile('org.assertj:assertj-core:3.9.0')
 }
 
-jar {
-    enabled = false
-}
-
 // region Publishing properties
 
 projectPomName = project.msftAppInsightsJavaSdk + " Spring Boot starter"

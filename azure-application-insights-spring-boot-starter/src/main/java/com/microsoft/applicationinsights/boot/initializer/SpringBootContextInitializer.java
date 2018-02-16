@@ -29,6 +29,11 @@ import org.springframework.boot.bind.RelaxedPropertyResolver;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.env.Environment;
 
+/**
+ * Context initializer that adds information regarding spring and spring boot version.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 public class SpringBootContextInitializer implements ContextInitializer {
     private final Environment environment;
 

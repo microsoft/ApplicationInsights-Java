@@ -21,6 +21,11 @@
 
 package com.microsoft.applicationinsights.boot.conditional;
 
+/**
+ * List of available for operating system for condition.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 public enum OperatingSystem {
     WINDOWS,
     UNIX
