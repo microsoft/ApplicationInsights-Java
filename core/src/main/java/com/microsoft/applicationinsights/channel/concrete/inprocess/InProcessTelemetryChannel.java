@@ -163,7 +163,11 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 			throttling = Boolean.valueOf(namesAndValues.get("Throttling"));
 			developerMode = Boolean.valueOf(namesAndValues.get(DEVELOPER_MODE_NAME));
 			try {
-				maxInstantRetries = Integer.parseInt(INSTANT_RETRY_NAME);
+				String instantRetryValue = namesAndValues.get(INSTANT_RETRY_NAME);
+				if (instantRetryValue != null){
+					maxInstantRetries = Integer.parseInt(instantRetryValue);	
+				}
+				
 			} catch (NumberFormatException e) {
 				InternalLogger.INSTANCE.error("Unable to parse configuration setting %s to integer value.%nStack Trace:%n%s", INSTANT_RETRY_NAME, ExceptionUtils.getStackTrace(e));
 			}
