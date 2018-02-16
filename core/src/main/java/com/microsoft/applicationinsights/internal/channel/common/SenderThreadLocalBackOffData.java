@@ -68,7 +68,7 @@ final class SenderThreadLocalBackOffData {
     public boolean isTryingToSend() {
         return currentBackOffIndex != -1;
     }
-
+    
     /**
      * This method should be called by the Sender thread when the
      * Transmission is considered as 'done sending', which means the
@@ -92,34 +92,68 @@ final class SenderThreadLocalBackOffData {
      *         4. The thread has exhausted all the back-off timeouts
      */
     public boolean backOff() {
-         try {
-             lock.lock();
-             ++currentBackOffIndex;
-             if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
-                 currentBackOffIndex = -1;
+        try {
+            lock.lock();
+            ++currentBackOffIndex;
+            if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
+                currentBackOffIndex = -1;
 
-                 // Exhausted the back-offs
-                 return false;
-             }
-
-             if (!instanceIsActive) {
+                // Exhausted the back-offs
                 return false;
             }
 
-             try {
-                 long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
-                 if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
-                     millisecondsToWait += addMilliseconds;
-                 }
-                 backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
-                 return instanceIsActive;
-            } catch (InterruptedException e) {
-                return false;
+            if (!instanceIsActive) {
+               return false;
+           }
+
+            try {
+                long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
+                if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
+                    millisecondsToWait += addMilliseconds;
+                }
+                backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
+                return instanceIsActive;
+           } catch (InterruptedException e) {
+               return false;
+           }
+       } finally {
+           lock.unlock();
+       }
+   }
+    
+    /**
+     * Increment the current back off amount or resets the counter if needed.
+     * <p>
+     * This method does not block but instead provides the amount of time to sleep which can be used 
+     * in another method.
+     * @return The number of milliseconds to sleep for.
+     */
+    public long backOffTimerValue() {
+        try {
+            lock.lock();
+            ++currentBackOffIndex;
+            if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
+                currentBackOffIndex = -1;
+
+                // Exhausted the back-offs
+                return -1;
             }
-        } finally {
-            lock.unlock();
-        }
-    }
+
+            if (!instanceIsActive) {
+               return 0;
+           }
+
+           
+                long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
+                if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
+                    millisecondsToWait += addMilliseconds;
+                }
+                return millisecondsToWait;
+           
+       } finally {
+           lock.unlock();
+       }
+   }
 
     /**
      * Stop a waiting thread if there is one, and prevent that thread for backOffing.
