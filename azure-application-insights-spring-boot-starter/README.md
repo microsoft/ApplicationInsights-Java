@@ -37,7 +37,7 @@ Start your spring boot application as usual and in few minutes you'll start gett
 
 **Additional Configuration**
 
-Sending custom telemetry:
+#### Sending custom telemetry
 ```java
 @RestController
 public class TelemetryController {
@@ -52,8 +52,12 @@ public class TelemetryController {
 }
 ```
 
-To configure application to send logs to the application insights, follow the instructions from (Spring Boot logging documentation)[https://docs.spring.io/spring-boot/docs/current/reference/html/howto-logging.html] to configure custom logback or log4j2 appender.
-`logback-spring.xml`
+
+#### Sending logs to the application insight
+
+Follow the instructions from [Spring Boot logging documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/howto-logging.html) to configure custom logback or log4j2 appender.
+
+`logback-spring.xml`:
 ```xml
 <appender name="aiAppender"
   class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender">
@@ -77,7 +81,7 @@ To configure application to send logs to the application insights, follow the in
 </Configuration>
 ```
 
-You can register own telemetry module, processor or initializer by defining it as a bean in your configuration:
+#### Register own telemetry module, processor or initializer by defining it as a bean in the configuration
 ```java
 @SpringBootApplication
 public class MyApplication {
@@ -108,7 +112,8 @@ public class MyApplication {
 }
 ```
 
-Configure more parameters using `application.properties`:
+
+#### Configure more parameters using `application.properties`
 ```properties
 # Enable/Disable tracking
 azure.application-insights.enabled=true
