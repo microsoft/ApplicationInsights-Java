@@ -33,6 +33,6 @@ projectPomDescription = "This module provides a $project.msftAppInsights appende
 // endregion Publishing properties
 
 dependencies {
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'
-    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.2'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
 }
