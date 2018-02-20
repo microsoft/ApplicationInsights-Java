@@ -115,18 +115,21 @@ public class MyApplication {
 
 #### Configure more parameters using `application.properties`
 ```properties
-# Enable/Disable tracking
-azure.application-insights.enabled=true
-
-# Instrumentation key from the Azure Portal
+# Instrumentation key from the Azure Portal. Required.
 azure.application-insights.instrumentation-key=00000000-0000-0000-0000-000000000000
 
-# Logging type [console, file]
-azure.application-insights.logger.type=console
-# Logging level [all, trace, info, warn, error, off]
-azure.application-insights.logger.level=info
+# Enable/Disable tracking. Default value: true.
+azure.application-insights.enabled=true
 
-# Enable/Disable default telemetry modules
+# Enable/Disable web modules. Default value: true.
+azure.application-insights.web.enabled=true
+
+# Logging type [console, file]. Default value: console.
+azure.application-insights.logger.type=console
+# Logging level [all, trace, info, warn, error, off]. Default value: error.
+azure.application-insights.logger.level=error
+
+# Enable/Disable default telemetry modules. Default value: true.
 azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled=true
 azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled=true
 azure.application-insights.default-modules.WebSessionTrackingTelemetryModule.enabled=true

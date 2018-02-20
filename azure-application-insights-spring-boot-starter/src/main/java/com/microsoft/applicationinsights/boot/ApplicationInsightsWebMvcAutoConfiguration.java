@@ -22,13 +22,13 @@
 package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 import com.microsoft.applicationinsights.web.spring.internal.InterceptorRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +40,7 @@ import org.springframework.core.Ordered;
 @Import(InterceptorRegistry.class)
 @ConditionalOnBean(TelemetryConfiguration.class)
 @ConditionalOnWebApplication
+@ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureAfter(ApplicationInsightsTelemetryAutoConfiguration.class)
 public class ApplicationInsightsWebMvcAutoConfiguration {
 
@@ -57,12 +58,6 @@ public class ApplicationInsightsWebMvcAutoConfiguration {
     @ConditionalOnMissingBean
     public WebRequestTrackingFilter webRequestTrackingFilter(@Value("${spring.application.name:application}") String applicationName) {
         return new WebRequestTrackingFilter(applicationName);
-    }
-
-    @Bean
-    public QuickPulse quickPulse() {
-        QuickPulse.INSTANCE.initialize();
-        return QuickPulse.INSTANCE;
     }
 }
 

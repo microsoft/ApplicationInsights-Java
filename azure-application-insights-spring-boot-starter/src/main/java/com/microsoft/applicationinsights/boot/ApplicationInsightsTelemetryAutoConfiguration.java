@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.sampling.FixedRateTelemetrySampler;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -131,6 +132,13 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         InProcessTelemetryChannel telemetryChannel = new InProcessTelemetryChannel();
         telemetryChannel.setSampler(telemetrySampler);
         return telemetryChannel;
+    }
+
+    @Bean
+    @ConditionalOnProperty(value = "azure.application-insights.quick-pulse.enabled", havingValue = "true", matchIfMissing = true)
+    public QuickPulse quickPulse() {
+        QuickPulse.INSTANCE.initialize();
+        return QuickPulse.INSTANCE;
     }
 
     @Bean

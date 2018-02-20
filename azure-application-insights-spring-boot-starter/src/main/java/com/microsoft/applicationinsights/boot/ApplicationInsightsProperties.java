@@ -21,13 +21,18 @@
 
 package com.microsoft.applicationinsights.boot;
 
-import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebUserTelemetryInitializer;
+import com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule;
+import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
+import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
+import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@link ConfigurationProperties} for configuring application insights.
@@ -45,6 +50,14 @@ public class ApplicationInsightsProperties {
      * Instrumentation key from Azure Portal.
      */
     private String instrumentationKey;
+    /**
+     * Web plugins settings.
+     */
+    private Web web = new Web();
+    /**
+     * Quick Pulse settings.
+     */
+    private QuickPulse quickPulse = new QuickPulse();
     /**
      * Logger properties.
      */
@@ -66,12 +79,72 @@ public class ApplicationInsightsProperties {
         this.instrumentationKey = instrumentationKey;
     }
 
+    public Web getWeb() {
+        return web;
+    }
+
+    public void setWeb(Web web) {
+        this.web = web;
+    }
+
+    public QuickPulse getQuickPulse() {
+        return quickPulse;
+    }
+
+    public void setQuickPulse(QuickPulse quickPulse) {
+        this.quickPulse = quickPulse;
+    }
+
     public Logger getLogger() {
         return logger;
     }
 
     public void setLogger(Logger logger) {
         this.logger = logger;
+    }
+
+    public static class Web {
+        /**
+         * Enables Web telemetry modules.
+         *
+         * Implicitly affects modules:
+         *  - {@link WebRequestTrackingTelemetryModule}
+         *  - {@link WebSessionTrackingTelemetryModule}
+         *  - {@link WebUserTrackingTelemetryModule}
+         *  - {@link WebPerformanceCounterModule}
+         *  - {@link WebOperationIdTelemetryInitializer}
+         *  - {@link WebOperationNameTelemetryInitializer}
+         *  - {@link WebSessionTelemetryInitializer}
+         *  - {@link WebUserTelemetryInitializer}
+         *  - {@link WebUserAgentTelemetryInitializer}
+         *
+         *  False means that all those modules will be disabled
+         *  regardless of the enabled property of concrete module.
+         */
+        private boolean enabled = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+
+    public static class QuickPulse {
+        /**
+         * Enables Quick Pulse integration.
+         */
+        private boolean enabled = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
     }
 
     public static class Logger {
@@ -82,7 +155,7 @@ public class ApplicationInsightsProperties {
         /**
          * Minimal level of application insights logger.
          */
-        private LoggingLevel level = LoggingLevel.INFO;
+        private LoggingLevel level = LoggingLevel.ERROR;
 
         public LoggerOutputType getType() {
             return type;
