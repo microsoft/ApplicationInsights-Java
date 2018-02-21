@@ -40,7 +40,6 @@ import org.springframework.core.env.Environment;
  * @author Arthur Gavlyukovskiy
  */
 @Configuration
-@ConditionalOnBean(TelemetryConfiguration.class)
 public class ApplicationInsightsModuleConfiguration {
 
     @Bean

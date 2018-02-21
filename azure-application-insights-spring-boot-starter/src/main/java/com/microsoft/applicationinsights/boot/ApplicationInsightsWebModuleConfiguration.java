@@ -43,7 +43,6 @@ import org.springframework.context.annotation.Configuration;
  * @author Arthur Gavlyukovskiy
  */
 @Configuration
-@ConditionalOnBean(TelemetryConfiguration.class)
 @ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication
 public class ApplicationInsightsWebModuleConfiguration {
