@@ -164,6 +164,30 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
+    public void httpMethodFinishedWithPath(String identifier, String method, String path, String correlationId, String uri, String target, int result, long delta) {
+        if (!LocalStringsUtils.isNullOrEmpty(uri) && (uri.startsWith("https://dc.services.visualstudio.com") || uri.startsWith("https://rt.services.visualstudio.com"))) {
+            return;
+        }
+        long deltaInMS = nanoToMilliseconds(delta);
+        String name = method + " " + path;
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(name, uri, new Duration(delta), true);
+        telemetry.setId(correlationId);
+        telemetry.setResultCode(Integer.toString(result));
+        telemetry.setType("HTTP");
+        if (target != null && !target.isEmpty()) {
+            if (telemetry.getTarget() == null) {
+                telemetry.setTarget(target);
+            } else {
+                telemetry.setTarget(telemetry.getTarget() + " | " + target);
+            }
+        }
+
+        InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, deltaInMS);
+        telemetryClient.track(telemetry);
+
+    }
+
+    @Override
     public void jedisMethodStarted(String name) {
         int index = name.lastIndexOf('#');
         if (index != -1) {            
