@@ -170,7 +170,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         }
         long deltaInMS = nanoToMilliseconds(delta);
         String name = method + " " + path;
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(name, uri, new Duration(delta), true);
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(name, uri, new Duration(deltaInMS), true);
         telemetry.setId(correlationId);
         telemetry.setResultCode(Integer.toString(result));
         telemetry.setType("HTTP");
