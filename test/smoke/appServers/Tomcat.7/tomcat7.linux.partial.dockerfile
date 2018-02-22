@@ -11,6 +11,9 @@ RUN mkdir /root/docker-stage
 RUN apt-get update \
 	&& apt-get install -y wget
 
+RUN apt-get install -y procps
+
+
 ENV TOMCAT_MAJOR_VERSION 7
 ENV TOMCAT_FULL_VERSION 7.0.84
 
@@ -24,10 +27,9 @@ RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$T
 ENV CATALINA_HOME /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 ENV CATALINA_BASE /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 
-ADD ./deploy.sh /root/docker-stage/deploy.sh
-ADD ./tailLastLog.sh /root/docker-stage/tailLastLog.sh
+ADD ./*.sh /root/docker-stage/
 
 EXPOSE 8080
 
 WORKDIR /root/docker-stage
-CMD $CATALINA_HOME/bin/catalina.sh run
+CMD ./startServer.sh
