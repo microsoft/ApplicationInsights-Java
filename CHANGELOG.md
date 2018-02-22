@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Version 2.0.1
+- Fix issue when dependency start time wasn't being recorded correctly
 - Fixed #533 HTTP Dependency Telemetry now matches with .NET SDK
 - Introduced public method `httpMethodFinishedWithPath(String identifier, String method, String path, String correlationId, String uri, String target, int result, long delta)`
   to support instrumentation of Path of URI in HTTP requests.
