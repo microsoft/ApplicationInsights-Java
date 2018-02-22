@@ -6,16 +6,13 @@ if [ -z "$CATALINA_HOME" ]; then
 fi
 
 if [ -z "$1" ]; then
-	echo "Nothing given to deploy"
+	echo "Nothing given to undeploy"
 	exit 0
 fi
 
-if [ ! -e $1 ]; then
-	echo "File '$1' does not exist" >&2
+if [ ! -e $CATALINA_HOME/webapps/$1 ]; then
+	echo "WAR File '$1' does not exist" >&2
 	exit 2
 fi
 
-WARFILE=`readlink -f $1`
-BASEPATH=`basename $WARFILE .war`
-
-rm $CATALINA_HOME/webapps/$WARFILE
+rm $CATALINA_HOME/webapps/$1
