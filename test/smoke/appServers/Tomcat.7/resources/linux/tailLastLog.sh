@@ -5,11 +5,20 @@ if [ -z "$CATALINA_HOME" ]; then
 	exit 1
 fi
 
-NUM_LINES=25
+TODAYS_DATE=`date +%Y-%m-%d`
+LOG_FILE=$CATALINA_HOME/logs/catalina.$TODAYS_DATE.log
+
 if [ ! -z "$1" ]; then
-	NUM_LINES=$1
+	LOG_FILE=$1
 fi
 
-ls -1td $CATALINA_HOME/logs
+NUM_LINES=50
+if [ ! -z "$2" ]; then
+	NUM_LINES=$2
+fi
 
-tail -n$NUM_LINES `ls -1td $CATALINA_HOME/logs/* | head -n1`
+if ! tail -v -n$NUM_LINES $LOG_FILE; then
+	echo "USAGE: tailLastLog.sh [logfile] [numlines]"
+	echo "	logfile		- absolute path to logfile to tail (default="
+	echo "	numlines	- number of lines to taile (default=50)"
+fi
