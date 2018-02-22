@@ -183,7 +183,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
                     }
 
                     try {
-                        TimeUnit.MILLISECONDS.sleep(DELETE_TIMEOUT_ON_FAILURE_IN_MILLS);
+                        Thread.sleep(DELETE_TIMEOUT_ON_FAILURE_IN_MILLS);
                     } catch (InterruptedException e) {
                         break;
                     }

@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.util.concurrent.TimeUnit;
-
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
@@ -61,7 +59,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                     sleepInMS = sendData();
                 }
                 try {
-                    TimeUnit.MILLISECONDS.sleep(sleepInMS);
+                    Thread.sleep(sleepInMS);
                 } catch (InterruptedException e) {
                 }
             }
