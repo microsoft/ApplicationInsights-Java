@@ -388,10 +388,11 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     private void sendInstrumentationTelemetry(MethodData methodData, Throwable throwable) {
-        Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, duration, throwable == null);
+        long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, new Duration(durationInMilliSeconds), throwable == null);
         telemetry.setType(methodData.type);
-
+        Date dependencyStartDate = new Date(System.currentTimeMillis() - durationInMilliSeconds);
+        telemetry.setTimestamp(dependencyStartDate);
         InternalLogger.INSTANCE.trace("Sending RDD event for '%s'", methodData.name);
 
         telemetryClient.track(telemetry);
@@ -411,6 +412,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(url, null, duration, throwable == null);
             telemetry.setDependencyKind(DependencyKind.Http);
+            Date dependencyStartDate = new Date(System.currentTimeMillis() - durationInMilliSeconds);
+            telemetry.setTimestamp(dependencyStartDate);
             telemetryClient.trackDependency(telemetry);
             if (throwable != null) {
                 ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
@@ -447,6 +450,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                     duration,
                     throwable == null);
             telemetry.setDependencyKind(DependencyKind.SQL);
+            Date dependencyStartTime = new Date(System.currentTimeMillis() - durationInMilliSeconds);
+            telemetry.setTimestamp(dependencyStartTime);
   
             StringBuilder sb = null;
             if (methodData.arguments.length > 3) {
@@ -464,7 +469,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             }
   
             InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
-  
+
             telemetryClient.track(telemetry);
             if (throwable != null) {
                 InternalLogger.INSTANCE.trace("Sending Sql exception");
