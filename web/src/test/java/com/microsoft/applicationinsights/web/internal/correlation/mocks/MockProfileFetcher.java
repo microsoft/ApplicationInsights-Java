@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import com.microsoft.applicationinsights.web.internal.correlation.AppProfileFetcher;
 import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
@@ -59,4 +60,9 @@ public class MockProfileFetcher implements AppProfileFetcher {
     public void setResultStatus(ProfileFetcherResultTaskStatus status) {
         this.status = status;
     }
+
+	@Override
+	public void close() throws IOException {
+		// nop
+	}
 }
