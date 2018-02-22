@@ -34,11 +34,22 @@ import com.microsoft.applicationinsights.internal.channel.common.*;
 final class ThroughputTestTransmitterFactory implements TransmitterFactory {
     @Override
     public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled) {
+    	return create(endpoint, maxTransmissionStorageCapacity, throttlingIsEnabled, 3);
+    }
+    
+    @Override
+    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstanceRetries) {
         // An active object with the network sender
         TransmissionOutput actualNetworkSender = TestThreadLocalData.getTransmissionOutput();
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
+        transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
+        transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
+        transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
+        transmissionPolicyManager.setMaxInstantRetries(maxInstanceRetries);
+        
         TransmissionPolicyStateFetcher stateFetcher = transmissionPolicyManager.getTransmissionPolicyState();
         TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
+        
 
         // An active object with the file system sender
         TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput();
