@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.LinkedList;
 
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
@@ -171,6 +172,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         long deltaInMS = nanoToMilliseconds(delta);
         String name = method + " " + path;
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(name, uri, new Duration(deltaInMS), true);
+        Date dependencyStartTime = new Date(System.currentTimeMillis() - deltaInMS);
+        telemetry.setTimestamp(dependencyStartTime);
         telemetry.setId(correlationId);
         telemetry.setResultCode(Integer.toString(result));
         telemetry.setType("HTTP");
