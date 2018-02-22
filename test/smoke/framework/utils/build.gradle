@@ -7,6 +7,7 @@ repositories {
 dependencies {
 	compile 'com.google.code.gson:gson:2.8.2'
     compile 'org.apache.httpcomponents:httpclient:4.5.3'
+	compile 'com.google.guava:guava:20.0'
 	compile aiCoreJar
 
 	testCompile 'junit:junit:4.12'

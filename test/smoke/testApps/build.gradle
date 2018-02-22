@@ -3,12 +3,6 @@ apply plugin: 'base'
 subprojects {
 	apply plugin: 'java'
 
-	ext {
-		aiAgentJar = project(':agent')
-		aiCoreJar = project(':core')
-		aiWebJar =  project(':web')
-	}
-
 	repositories {
 		jcenter()
 		mavenCentral()
