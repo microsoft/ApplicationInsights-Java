@@ -238,7 +238,9 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     public void methodFinished(String classAndMethodNames, long deltaInNS, Object[] args, Throwable throwable) {
         long durationInMS = nanoToMilliseconds(deltaInNS);
         Duration duration = new Duration(durationInMS);
+        Date dependencyStartTime = new Date(System.currentTimeMillis() - durationInMS);
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(classAndMethodNames, null, duration, throwable == null);
+        telemetry.setTimestamp(dependencyStartTime);
         telemetry.setDependencyKind(DependencyKind.Other);
 
         if (args != null) {
