@@ -114,27 +114,36 @@ public class PartialSuccessHandler implements TransmissionHandler {
 
 		if (args.getTransmission().getWebContentEncodingType() == "gzip") {
 
+			GZIPInputStream gis = null;
+			BufferedReader bufferedReader = null;
+
 			try {
-				GZIPInputStream gis = new GZIPInputStream(
+				gis = new GZIPInputStream(
 						new ByteArrayInputStream(args.getTransmission().getContent()));
-				BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gis));
+				bufferedReader = new BufferedReader(new InputStreamReader(gis));
 				String line;
 				while ((line = bufferedReader.readLine()) != null) {
 					originalItems.add(line);
 				}
+			} catch (IOException ex) {
+				InternalLogger.INSTANCE.error("IOException: Error while reading the GZIP stream.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(ex));
+			} catch (Throwable t) {
+				InternalLogger.INSTANCE.error("Error while reading the GZIP stream.%nStack Trace:%n%s",	ExceptionUtils.getStackTrace(t));
+			} finally {
 				if (gis != null) {
-					gis.close();
+					try {
+						gis.close();	
+					} catch (IOException ex){
+						InternalLogger.INSTANCE.warn("Error while closing the GZIP stream.%nStack Trace:%n%s",	ExceptionUtils.getStackTrace(ex));
+					}
 				}
 				if (bufferedReader != null) {
-					bufferedReader.close();
+					try {
+						bufferedReader.close();	
+					} catch (IOException ex){
+						InternalLogger.INSTANCE.warn("Error while closing the buffered reader.%nStack Trace:%n%s",	ExceptionUtils.getStackTrace(ex));
+					}
 				}
-			} catch (IOException e1) {
-				InternalLogger.INSTANCE.error("IOException: Error while reading the GZIP stream.%nStack Trace:%n%s",
-						ExceptionUtils.getStackTrace(e1));
-			} catch (Throwable t) {
-				InternalLogger.INSTANCE.error("Error while reading the GZIP stream.%nStack Trace:%n%s",
-						ExceptionUtils.getStackTrace(t));
-			} finally {
 			}
 		} else {
 			for (String s : new String(args.getTransmission().getContent()).split("\r\n")) {
