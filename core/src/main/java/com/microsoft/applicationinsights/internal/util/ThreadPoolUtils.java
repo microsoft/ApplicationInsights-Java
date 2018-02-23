@@ -22,9 +22,10 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -60,5 +61,31 @@ public final class ThreadPoolUtils {
             threadPool.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * {@code poolName} will be appended with a hyphen and the threadId.
+     * @param clazz The class holding the thread pool
+     * @param instanceId The identifier of the instance of {@code clazz}
+     */
+    public static ThreadFactory createDaemonThreadFactory(final Class<?> clazz, final int instanceId) {
+        return createNamedDaemonThreadFactory(String.format("%s_%d", clazz.getSimpleName(), instanceId));
+    }
+
+    public static ThreadFactory createDaemonThreadFactory(final Class<?> clazz) {
+        return createNamedDaemonThreadFactory(clazz.getSimpleName());
+    }
+
+    public static ThreadFactory createNamedDaemonThreadFactory(final String poolName) {
+        return new ThreadFactory(){
+            private AtomicInteger threadId = new AtomicInteger();
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName(String.format("%s-%d", poolName, threadId.getAndIncrement()));
+                thread.setDaemon(true);
+                return thread;
+            }
+        };
     }
 }
