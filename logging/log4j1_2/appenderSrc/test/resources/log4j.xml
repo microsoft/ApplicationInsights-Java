@@ -35,7 +35,7 @@
         </layout>
     </appender>
 
-    <!-- suppresses embedded http logger -->
+    <!-- suppresses repackaged HttpClient logger -->
     <logger name="com.microsoft.applicationinsights.core.dependencies.http">
         <level value="off" />
     </logger>
