@@ -34,9 +34,12 @@
             <param name="ConversionPattern" value="%-5p %c - %m%n"/>
         </layout>
     </appender>
+
+    <!-- suppresses embedded http logger -->
     <logger name="com.microsoft.applicationinsights.core.dependencies.http">
         <level value="off" />
     </logger>
+    
     <root>
         <level value ="TRACE" />
         <appender-ref ref="test" />
