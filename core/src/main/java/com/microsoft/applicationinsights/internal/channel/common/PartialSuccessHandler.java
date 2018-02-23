@@ -134,14 +134,14 @@ public class PartialSuccessHandler implements TransmissionHandler {
 					try {
 						gis.close();	
 					} catch (IOException ex){
-						InternalLogger.INSTANCE.error("Error while closing the GZIP stream.%nStack Trace:%n%s",	ExceptionUtils.getStackTrace(ex));
+						InternalLogger.INSTANCE.warn("Error while closing the GZIP stream.%nStack Trace:%n%s",	ExceptionUtils.getStackTrace(ex));
 					}
 				}
 				if (bufferedReader != null) {
 					try {
 						bufferedReader.close();	
 					} catch (IOException ex){
-						InternalLogger.INSTANCE.error("Error while closing the buffered reader.%nStack Trace:%n%s",	ExceptionUtils.getStackTrace(ex));
+						InternalLogger.INSTANCE.warn("Error while closing the buffered reader.%nStack Trace:%n%s",	ExceptionUtils.getStackTrace(ex));
 					}
 				}
 			}
