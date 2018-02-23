@@ -6,6 +6,7 @@
 - Fixed performance issue on SDK startup.
 - Fixed PageView telemetry data not being reported. 
 - Fixed Issue #526 (NPE in MapUtil.copy())
+- Fixed Issue #513 (Memory leak in SDKShutdownActivity). This fix upgrades our Servlet version from 2.5 to 3.0. The SDK must now be run on an application server supporting Servlet 3.0.
 
 ## Version 2.0.0-BETA
 - Updating various dependencies to latest version
