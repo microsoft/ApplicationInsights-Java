@@ -19,6 +19,7 @@ subprojects {
 		dockerfileOutputDir = "$outputRoot/dockerfiles"
 		resourcesOutputDir = "$outputRoot/resources"
 		stagingDir = "$outputRoot/tmp"
+		additionalReplaceTokenMap = []
 	}
 
 	task generateDockerfiles {
@@ -53,13 +54,14 @@ subprojects {
 			def jresFile = file("$resourcesOutputDir/${appServerShortName}.jre.txt")
 			jresFile.getParentFile().mkdirs()
 			jresFile.createNewFile()
-
+			def tokenMap = additionalReplaceTokenMap
+			tokenMap << [JRE: jreVersion]
 			jresToUse.each { jreVersion -> 
 				copy {
 					from projectDir
 					into dockerfileOutputDir
 					include "*$partialDockerfileExt"
-					filter(ReplaceTokens, tokens: [JRE: jreVersion])
+					filter(ReplaceTokens, tokens: tokenMap)
 					def sanitizedJreVersion = jreVersion.replace(':','_').replace('/','_')
 					rename(/(.+\.)(partial)(\.dockerfile)/, "\$1$sanitizedJreVersion\$3")
 				}
