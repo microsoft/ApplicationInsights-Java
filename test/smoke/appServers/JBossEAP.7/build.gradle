@@ -1,0 +1,4 @@
+ext { 
+	jbossEapVersion = 7
+}
+apply from: '../JBossEAP.gradle'

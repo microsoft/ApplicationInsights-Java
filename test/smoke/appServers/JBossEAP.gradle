@@ -1,0 +1,28 @@
+if (!project.hasProperty('jbossEapVersion')) {
+	throw new GradleException("JBoss buildfile in $projectDir misconfigured. Missing definition 'jbossEapVersion'.")
+}
+
+ext.jbossEapInstallerVar = "JBOSSEAP${jbossEapVersion}_INSTALLER"
+ext.appServerShortName = "jbosseap${jbossEapVersion}"
+
+if (!System.env."${jbossEapInstallerVar}") {
+	logger.warn "Skipping generation of JBoss EAP ${jbossEapVersion} containers. To run these, you must sign up for the Red Hat Developer Program and download the installer manually. Then set '${jbossEapInstallerVar}' (env var or property) to the location of the installer jar."
+	if (isBuildServer) {
+		throw new GradleException("Missing JBoss EAP ${jbossEapVersion} installer!")
+	}
+	project.tasks.all { task -> task.enabled = false }
+} else {
+	ext.jbossInstallerFile = file(System.env."${jbossEapInstallerVar}")
+	if (!ext.jbossInstallerFile.exists()) {
+		throw new GradleException("${ext.jbossInstallerFile} does not exist.")
+	}
+	if (!ext.jbossInstallerFile.isFile()) {
+		throw new GradleException("${ext.jbossInstallerFile} is not a valid file.")
+	}
+}
+
+task stageJBossInstaller(type: Copy) {
+	from ext.jbossInstallerFile.parent
+	into stagingDir // provided by parent project
+	include ext.jbossInstallerFile.name
+}
