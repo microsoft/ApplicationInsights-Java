@@ -65,7 +65,8 @@ public class ApplicationInsightsModuleConfiguration {
             return new ProcessPerformanceCountersModule();
         }
         catch (Exception e) {
-            throw new IllegalStateException("Could not initialize Windows performance counters module", e);
+            throw new IllegalStateException("Could not initialize Windows performance counters module, " +
+                    "please set property 'azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled=false' to avoid this error message.", e);
         }
     }
 }

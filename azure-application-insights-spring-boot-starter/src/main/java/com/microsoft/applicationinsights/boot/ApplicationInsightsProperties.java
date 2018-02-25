@@ -21,8 +21,10 @@
 
 package com.microsoft.applicationinsights.boot;
 
+import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
+import com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer;
@@ -33,6 +35,8 @@ import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTra
 import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.util.List;
 
 /**
  * {@link ConfigurationProperties} for configuring application insights.
@@ -50,6 +54,11 @@ public class ApplicationInsightsProperties {
      * Instrumentation key from Azure Portal.
      */
     private String instrumentationKey;
+    /**
+     * Telemetry transmission channel configuration.
+     */
+    private Channel channel = new Channel();
+    private Sampling sampling = new Sampling();
     /**
      * Web plugins settings.
      */
@@ -79,6 +88,22 @@ public class ApplicationInsightsProperties {
         this.instrumentationKey = instrumentationKey;
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    public Sampling getSampling() {
+        return sampling;
+    }
+
+    public void setSampling(Sampling sampling) {
+        this.sampling = sampling;
+    }
+
     public Web getWeb() {
         return web;
     }
@@ -101,6 +126,114 @@ public class ApplicationInsightsProperties {
 
     public void setLogger(Logger logger) {
         this.logger = logger;
+    }
+
+    public static class Channel {
+        private InProcess inProcess = new InProcess();
+
+        public InProcess getInProcess() {
+            return inProcess;
+        }
+
+        public void setInProcess(InProcess inProcess) {
+            this.inProcess = inProcess;
+        }
+
+        public static class InProcess {
+            private boolean developerMode = false;
+            private String endpointAddress;
+            private int maxTelemetryBufferCapacity;
+            private int flushIntervalInSeconds;
+            private int maxTransmissionStorageFilesCapacityInMb;
+            private boolean throttling = true;
+
+            public boolean isDeveloperMode() {
+                return developerMode;
+            }
+
+            public void setDeveloperMode(boolean developerMode) {
+                this.developerMode = developerMode;
+            }
+
+            public String getEndpointAddress() {
+                return endpointAddress;
+            }
+
+            public void setEndpointAddress(String endpointAddress) {
+                this.endpointAddress = endpointAddress;
+            }
+
+            public int getMaxTelemetryBufferCapacity() {
+                return maxTelemetryBufferCapacity;
+            }
+
+            public void setMaxTelemetryBufferCapacity(int maxTelemetryBufferCapacity) {
+                this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
+            }
+
+            public int getFlushIntervalInSeconds() {
+                return flushIntervalInSeconds;
+            }
+
+            public void setFlushIntervalInSeconds(int flushIntervalInSeconds) {
+                this.flushIntervalInSeconds = flushIntervalInSeconds;
+            }
+
+            public int getMaxTransmissionStorageFilesCapacityInMb() {
+                return maxTransmissionStorageFilesCapacityInMb;
+            }
+
+            public void setMaxTransmissionStorageFilesCapacityInMb(int maxTransmissionStorageFilesCapacityInMb) {
+                this.maxTransmissionStorageFilesCapacityInMb = maxTransmissionStorageFilesCapacityInMb;
+            }
+
+            public boolean isThrottling() {
+                return throttling;
+            }
+
+            public void setThrottling(boolean throttling) {
+                this.throttling = throttling;
+            }
+        }
+    }
+
+    public static class Sampling {
+        /**
+         * Percent of telemetry events that will be sent to Application Insights.
+         */
+        private double percentage;
+        /**
+         * If set only telemetry of specified types will be included.
+         */
+        private List<TelemetryType> include;
+        /**
+         * If set telemetry of specified type will be excluded.
+         */
+        private List<TelemetryType> exclude;
+
+        public double getPercentage() {
+            return percentage;
+        }
+
+        public void setPercentage(double percentage) {
+            this.percentage = percentage;
+        }
+
+        public List<TelemetryType> getInclude() {
+            return include;
+        }
+
+        public void setInclude(List<TelemetryType> include) {
+            this.include = include;
+        }
+
+        public List<TelemetryType> getExclude() {
+            return exclude;
+        }
+
+        public void setExclude(List<TelemetryType> exclude) {
+            this.exclude = exclude;
+        }
     }
 
     public static class Web {

@@ -3,8 +3,14 @@ package com.microsoft.applicationinsights.internal.channel.samplingV2;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
@@ -39,14 +45,16 @@ import org.apache.commons.lang3.StringUtils;
 @BuiltInProcessor("FixedRateSamplingTelemetryProcessor")
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {
 
-    private final String dependencyTelemetryName = "Dependency";
-    private static final String eventTelemetryName = "Event";
-    private static final String exceptionTelemetryName = "Exception";
-    private static final String pageViewTelemetryName = "PageView";
-    private static final String requestTelemetryName = "Request";
-    private static final String traceTelemetryName = "Trace";
+    private static Map<TelemetryType, Class> allowedTypes = new HashMap<>();
 
-    private static Map<String, Class> allowedTypes;
+    static {
+        allowedTypes.put(TelemetryType.Dependency, RemoteDependencyTelemetry.class);
+        allowedTypes.put(TelemetryType.Event, EventTelemetry.class);
+        allowedTypes.put(TelemetryType.Exception, ExceptionTelemetry.class);
+        allowedTypes.put(TelemetryType.PageView, PageViewTelemetry.class);
+        allowedTypes.put(TelemetryType.Request, RequestTelemetry.class);
+        allowedTypes.put(TelemetryType.Trace, TraceTelemetry.class);
+    }
 
     private Set<Class> excludedTypes;
 
@@ -64,20 +72,8 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      */
     public FixedRateSamplingTelemetryProcessor() {
         this.samplingPercentage = 100.00;
-        this.includedTypes = new HashSet<Class>();
-        this.excludedTypes = new HashSet<Class>();
-        try {
-            this.allowedTypes = new HashMap<String, Class>() {{
-                put(dependencyTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry"));
-                put(eventTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.EventTelemetry"));
-                put(exceptionTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.ExceptionTelemetry"));
-                put(pageViewTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.PageViewTelemetry"));
-                put(requestTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.RequestTelemetry"));
-                put(traceTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.TraceTelemetry"));
-            }};
-        } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.trace("Unable to locate telemetry classes. stack trace is %s", ExceptionUtils.getStackTrace(e));
-        }
+        this.includedTypes = new HashSet<>();
+        this.excludedTypes = new HashSet<>();
     }
 
     /**
@@ -100,16 +96,12 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
 
 
     private void setIncludedOrExcludedTypes(String value, Set<Class> typeSet) {
-
-        if (!StringUtils.isEmpty(value)) {
-            value = value.trim();
-            if (!StringUtils.isEmpty(value) && allowedTypes.containsKey(value)) {
-                typeSet.add(allowedTypes.get(value));
-            } else {
-                InternalLogger.INSTANCE.error("Item is either not allowed to sample or is empty");
-            }
+        value = value.trim();
+        TelemetryType telemetryType = TelemetryType.valueOfOrNull(value);
+        if (telemetryType != null) {
+            typeSet.add(allowedTypes.get(telemetryType));
         } else {
-            InternalLogger.INSTANCE.error("Empty types cannot be considered");
+            InternalLogger.INSTANCE.error("Telemetry type " + value + " is either not allowed to sample or is empty");
         }
     }
 
