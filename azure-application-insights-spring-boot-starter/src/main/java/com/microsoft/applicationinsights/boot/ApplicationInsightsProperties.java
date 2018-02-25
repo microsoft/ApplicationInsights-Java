@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.boot;
 
+import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
@@ -129,6 +130,9 @@ public class ApplicationInsightsProperties {
     }
 
     public static class Channel {
+        /**
+         * Configuration of {@link InProcessTelemetryChannel}.
+         */
         private InProcess inProcess = new InProcess();
 
         public InProcess getInProcess() {
@@ -140,11 +144,30 @@ public class ApplicationInsightsProperties {
         }
 
         public static class InProcess {
+            /**
+             * Enables developer mode, all telemetry will be sent immediately without batching.
+             * Significantly affects performance and should be used only in developer environment.
+             */
             private boolean developerMode = false;
+            /**
+             * Endpoint address.
+             */
             private String endpointAddress;
-            private int maxTelemetryBufferCapacity;
-            private int flushIntervalInSeconds;
-            private int maxTransmissionStorageFilesCapacityInMb;
+            /**
+             * Maximum count of telemetries that will be batched before sending.
+             */
+            private int maxTelemetryBufferCapacity = 500;
+            /**
+             * nterval to send telemetry.
+             */
+            private int flushIntervalInSeconds = 5;
+            /**
+             * Size of disk that we can use.
+             */
+            private int maxTransmissionStorageFilesCapacityInMb = 10;
+            /**
+             * Enables throttling on sending telemetry data.
+             */
             private boolean throttling = true;
 
             public boolean isDeveloperMode() {
@@ -201,7 +224,7 @@ public class ApplicationInsightsProperties {
         /**
          * Percent of telemetry events that will be sent to Application Insights.
          */
-        private double percentage;
+        private double percentage = 100;
         /**
          * If set only telemetry of specified types will be included.
          */
