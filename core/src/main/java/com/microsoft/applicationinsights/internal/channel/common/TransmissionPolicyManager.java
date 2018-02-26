@@ -52,15 +52,15 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  */
 public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
 
-	private int INSTANT_RETRY_AMOUNT = 3; // Should always be set by the creator of this class
-	private int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
-	
-	// Current thread backoff manager
-	private SenderThreadsBackOffManager backoffManager;
-	
-	// List of transmission policies implemented as handlers
-	private List<TransmissionHandler> transmissionHandlers;
-	
+    private int instantRetryAmount = 3;         // Should always be set by the creator of this class
+    private final int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
+
+    // Current thread backoff manager
+    private SenderThreadsBackOffManager backoffManager;
+
+    // List of transmission policies implemented as handlers
+    private List<TransmissionHandler> transmissionHandlers;
+
     // The future date the the transmission is blocked
     private Date suspensionDate;
 
@@ -95,7 +95,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
     /**
      * Create the {@link TransmissionPolicyManager} and set the ability to throttle.
-     * @param throttlingIsEnabled Set whether the {@link TransmissionPolicyManager} can be throttled.  
+     * @param throttlingIsEnabled Set whether the {@link TransmissionPolicyManager} can be throttled.
      */
     public TransmissionPolicyManager(boolean throttlingIsEnabled) {
         suspensionDate = null;
@@ -104,32 +104,32 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         this.backoffManager = new SenderThreadsBackOffManager(new ExponentialBackOffTimesPolicy());
     }
 
-    /** 
+    /**
      * Suspend the transmission thread according to the current back off policy.
      */
     public void backoff() {
-    	policyState.setCurrentState(TransmissionPolicy.BACKOFF);
-    	long backOffMillis = backoffManager.backOffCurrentSenderThreadValue();
-        if (backOffMillis > 0)
+        policyState.setCurrentState(TransmissionPolicy.BACKOFF);
+        long backOffMillis = backoffManager.backOffCurrentSenderThreadValue();
+        if (backOffMillis > 0) 
         {
             long backOffSeconds = backOffMillis / 1000;
-            InternalLogger.INSTANCE.info("App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
             this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
-        } 
+        }
     }
-    
+
     /**
      * Clear the current thread state and and reset the back off counter.
      */
     public void clearBackoff() {
-    	policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
+        policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         backoffManager.onDoneSending();
         InternalLogger.INSTANCE.info("Backoff has been reset.");
     }
-    
+
     /**
      * Suspend this transmission thread using the specified policy
-     * @param policy The {@link TransmissionPolicy} to use for suspension 
+     * @param policy The {@link TransmissionPolicy} to use for suspension
      * @param suspendInSeconds The number of seconds to suspend.
      */
     public void suspendInSeconds(TransmissionPolicy policy, long suspendInSeconds) {
@@ -162,10 +162,10 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
     private synchronized void doSuspend(TransmissionPolicy policy, long suspendInSeconds) {
         try {
-            if (policy == TransmissionPolicy.UNBLOCKED ) {
+            if (policy == TransmissionPolicy.UNBLOCKED) {
                 return;
             }
-                       
+
             Date date = Calendar.getInstance().getTime();
             date.setTime(date.getTime() + 1000 * suspendInSeconds);
             if (this.suspensionDate != null) {
@@ -214,36 +214,36 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
         SDKShutdownActivity.INSTANCE.register(this);
     }
-    
-	@Override
-	public void onTransmissionSent(TransmissionHandlerArgs transmissionArgs) {
-		for (TransmissionHandler handler : this.transmissionHandlers) {
-			handler.onTransmissionSent(transmissionArgs);
-		}
-	}
-	
-	@Override
-	public void addTransmissionHandler(TransmissionHandler handler) {
-		if(handler != null) {
-			this.transmissionHandlers.add(handler);
-		}
-	}
-	
-	/**
-	 * Set the number of retries before performing a back off operation.
-	 * @param maxInstantRetries Number of retries
-	 */
-	public void setMaxInstantRetries(int maxInstantRetries) {
-		if (maxInstantRetries >= 0 && maxInstantRetries < INSTANT_RETRY_MAX) {
-			INSTANT_RETRY_AMOUNT = maxInstantRetries;
-		}
-	}
-	
-	/**
-	 * Get the number of retries before performing a back off operation.
-	 * @return Number of retries
-	 */
-	public int getMaxInstantRetries() {
-		return INSTANT_RETRY_AMOUNT;
-	}
+
+    @Override
+    public void onTransmissionSent(TransmissionHandlerArgs transmissionArgs) {
+        for (TransmissionHandler handler : this.transmissionHandlers) {
+            handler.onTransmissionSent(transmissionArgs);
+        }
+    }
+
+    @Override
+    public void addTransmissionHandler(TransmissionHandler handler) {
+        if (handler != null) {
+            this.transmissionHandlers.add(handler);
+        }
+    }
+
+    /**
+     * Set the number of retries before performing a back off operation.
+     * @param maxInstantRetries Number of retries
+     */
+    public void setMaxInstantRetries(int maxInstantRetries) {
+        if (maxInstantRetries >= 0 && maxInstantRetries < INSTANT_RETRY_MAX) {
+            instantRetryAmount = maxInstantRetries;
+        }
+    }
+
+    /**
+     * Get the number of retries before performing a back off operation.
+     * @return Number of retries
+     */
+    public int getMaxInstantRetries() {
+        return instantRetryAmount;
+    }
 }
