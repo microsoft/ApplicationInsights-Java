@@ -8,9 +8,6 @@ ext.jbossZipFile = null
 
 if (!System.env."${jbossEapZipfileVar}") {
 	logger.warn "Skipping generation of JBoss EAP ${jbossEapVersion} containers. To run these, you must sign up for the Red Hat Developer Program and download the zip file manually. Then set '${jbossEapZipfileVar}' environment variable to the location of the installer jar."
-	if (isBuildServer) {
-		throw new GradleException("Missing JBoss EAP ${jbossEapVersion} zipfile!")
-	}
 	project.tasks.all { task -> task.enabled = false }
 } else {
 	jbossZipFile = file(System.env."${jbossEapZipfileVar}")
@@ -23,7 +20,6 @@ if (!System.env."${jbossEapZipfileVar}") {
 	logger.info "Found ${jbossEapZipfileVar}=${jbossZipFile.absolutePath}"
 }
 
-// FIXME 
 if (jbossZipFile) {
 	task stageJBossInstaller(type: Copy) {
 		from jbossZipFile.parent
@@ -31,4 +27,13 @@ if (jbossZipFile) {
 		include jbossZipFile.name
 	}
 	buildDockerImage.dependsOn stageJBossInstaller
+} else {	
+	task missingJBossEAPZip {
+		doFirst {
+			if (isBuildServer) {
+				throw new GradleException("Missing JBoss EAP ${jbossEapVersion} zipfile!")
+			}
+		}
+	}
+	buildDockerImage.dependsOn missingJBossEAPZip
 }
