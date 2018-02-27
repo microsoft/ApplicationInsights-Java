@@ -7,7 +7,7 @@ import com.microsoft.applicationinsights.internal.channel.common.Transmission;
 /**
  * This class is used to store information between the transmission sender and the transmission handlers
  * <p>
- * An example class that uses this are {@link ErrorHandler}
+ * An example class that uses this are {@link com.microsoft.applicationinsights.internal.channel.common.ErrorHandler}
  * @author jamdavi
  *
  */
