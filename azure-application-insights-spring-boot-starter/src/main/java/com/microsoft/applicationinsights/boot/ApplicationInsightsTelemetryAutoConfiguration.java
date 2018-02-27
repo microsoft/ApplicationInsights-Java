@@ -23,22 +23,18 @@ package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel.InProcess;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Sampling;
+import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
-import com.microsoft.applicationinsights.internal.channel.sampling.FixedRateTelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
-import com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -128,7 +124,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
 
     @Bean
     public FixedRateSamplingTelemetryProcessor fixedRateSamplingTelemetryProcessor() {
-        Sampling sampling = applicationInsightsProperties.getSampling();
+        Sampling sampling = applicationInsightsProperties.getTelemetryProcessor().getSampling();
         FixedRateSamplingTelemetryProcessor processor = new FixedRateSamplingTelemetryProcessor();
         processor.setSamplingPercentage(String.valueOf(sampling.getPercentage()));
         for (TelemetryType include : sampling.getInclude()) {

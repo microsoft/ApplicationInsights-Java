@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
@@ -37,6 +38,7 @@ import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTracki
 import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,7 +61,10 @@ public class ApplicationInsightsProperties {
      * Telemetry transmission channel configuration.
      */
     private Channel channel = new Channel();
-    private Sampling sampling = new Sampling();
+    /**
+     * Built in telemetry processors configuration.
+     */
+    private TelemetryProcessor telemetryProcessor = new TelemetryProcessor();
     /**
      * Web plugins settings.
      */
@@ -97,12 +102,12 @@ public class ApplicationInsightsProperties {
         this.channel = channel;
     }
 
-    public Sampling getSampling() {
-        return sampling;
+    public TelemetryProcessor getTelemetryProcessor() {
+        return telemetryProcessor;
     }
 
-    public void setSampling(Sampling sampling) {
-        this.sampling = sampling;
+    public void setTelemetryProcessor(TelemetryProcessor telemetryProcessor) {
+        this.telemetryProcessor = telemetryProcessor;
     }
 
     public Web getWeb() {
@@ -129,7 +134,7 @@ public class ApplicationInsightsProperties {
         this.logger = logger;
     }
 
-    public static class Channel {
+    static class Channel {
         /**
          * Configuration of {@link InProcessTelemetryChannel}.
          */
@@ -143,7 +148,7 @@ public class ApplicationInsightsProperties {
             this.inProcess = inProcess;
         }
 
-        public static class InProcess {
+        static class InProcess {
             /**
              * Enables developer mode, all telemetry will be sent immediately without batching.
              * Significantly affects performance and should be used only in developer environment.
@@ -220,46 +225,62 @@ public class ApplicationInsightsProperties {
         }
     }
 
-    public static class Sampling {
+    static class TelemetryProcessor {
+
         /**
-         * Percent of telemetry events that will be sent to Application Insights.
+         * Configuration of {@link FixedRateSamplingTelemetryProcessor}.
          */
-        private double percentage = 100;
-        /**
-         * If set only telemetry of specified types will be included.
-         */
-        private List<TelemetryType> include;
-        /**
-         * If set telemetry of specified type will be excluded.
-         */
-        private List<TelemetryType> exclude;
+        private Sampling sampling = new Sampling();
 
-        public double getPercentage() {
-            return percentage;
+        public Sampling getSampling() {
+            return sampling;
         }
 
-        public void setPercentage(double percentage) {
-            this.percentage = percentage;
+        public void setSampling(Sampling sampling) {
+            this.sampling = sampling;
         }
 
-        public List<TelemetryType> getInclude() {
-            return include;
-        }
+        static class Sampling {
+            /**
+             * Percent of telemetry events that will be sent to Application Insights.
+             */
+            private double percentage = 100;
+            /**
+             * If set only telemetry of specified types will be included.
+             */
+            private List<TelemetryType> include = new ArrayList<>();
+            /**
+             * If set telemetry of specified type will be excluded.
+             */
+            private List<TelemetryType> exclude = new ArrayList<>();
 
-        public void setInclude(List<TelemetryType> include) {
-            this.include = include;
-        }
+            public double getPercentage() {
+                return percentage;
+            }
 
-        public List<TelemetryType> getExclude() {
-            return exclude;
-        }
+            public void setPercentage(double percentage) {
+                this.percentage = percentage;
+            }
 
-        public void setExclude(List<TelemetryType> exclude) {
-            this.exclude = exclude;
+            public List<TelemetryType> getInclude() {
+                return include;
+            }
+
+            public void setInclude(List<TelemetryType> include) {
+                this.include = include;
+            }
+
+            public List<TelemetryType> getExclude() {
+                return exclude;
+            }
+
+            public void setExclude(List<TelemetryType> exclude) {
+                this.exclude = exclude;
+            }
         }
     }
 
-    public static class Web {
+    static class Web {
         /**
          * Enables Web telemetry modules.
          *
@@ -303,7 +324,7 @@ public class ApplicationInsightsProperties {
         }
     }
 
-    public static class Logger {
+    static class Logger {
         /**
          * Type of application insights logger.
          */

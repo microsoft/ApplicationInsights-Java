@@ -29,20 +29,20 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
+import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 /**
  * @author Arthur Gavlyukovskiy
@@ -118,7 +118,7 @@ class ApplicationInsightsTelemetryAutoConfigurationTests {
     }
 
     @Test
-    void shouldNotBeAbleToDisableInstrumentationByProperty() {
+    void shouldBeAbleToDisableInstrumentationByProperty() {
         EnvironmentTestUtils.addEnvironment(context,
                 "azure.application-insights.enabled: false",
                 "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000");
@@ -126,8 +126,8 @@ class ApplicationInsightsTelemetryAutoConfigurationTests {
                 ApplicationInsightsTelemetryAutoConfiguration.class);
         context.refresh();
 
-        assertThat(context.getBeansOfType(TelemetryClient.class)).isEmpty();
-        assertThat(context.getBeansOfType(TelemetryConfiguration.class)).isEmpty();
+        TelemetryConfiguration telemetryConfiguration = context.getBean(TelemetryConfiguration.class);
+        assertThat(telemetryConfiguration.isTrackingDisabled()).isTrue();
     }
 
     @Test
@@ -148,6 +148,49 @@ class ApplicationInsightsTelemetryAutoConfigurationTests {
         assertThat(channel.isDeveloperMode()).isFalse();
         assertThat(channel).extracting("telemetryBuffer").extracting("transmitBufferTimeoutInSeconds").contains(123);
         assertThat(channel).extracting("telemetryBuffer").extracting("maxTelemetriesInBatch").contains(10);
+    }
+
+    @Test
+    void shouldBeAbleToConfigureSamplingTelemetryProcessor() {
+        EnvironmentTestUtils.addEnvironment(context,
+                "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
+                "azure.application-insights.telemetry-processor.sampling.percentage=50",
+                "azure.application-insights.telemetry-processor.sampling.include=Request");
+        context.register(PropertyPlaceholderAutoConfiguration.class,
+                ApplicationInsightsTelemetryAutoConfiguration.class);
+        context.refresh();
+
+        TelemetryConfiguration telemetryConfiguration = context.getBean(TelemetryConfiguration.class);
+        FixedRateSamplingTelemetryProcessor fixedRateSamplingTelemetryProcessor = context.getBean(FixedRateSamplingTelemetryProcessor.class);
+
+        assertThat(telemetryConfiguration.getTelemetryProcessors()).extracting("class").contains(FixedRateSamplingTelemetryProcessor.class);
+        assertThat(fixedRateSamplingTelemetryProcessor).extracting("samplingPercentage").contains(50.);
+        assertThat(fixedRateSamplingTelemetryProcessor.getIncludedTypes()).contains(RequestTelemetry.class);
+        assertThat(fixedRateSamplingTelemetryProcessor.getExcludedTypes()).isEmpty();
+    }
+
+    @Test
+    void shouldBeAbleToDisableAllWebModules() {
+        EnvironmentTestUtils.addEnvironment(context,
+                "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
+                "azure.application-insights.web.enabled=false");
+        context.register(PropertyPlaceholderAutoConfiguration.class,
+                ApplicationInsightsTelemetryAutoConfiguration.class);
+        context.refresh();
+
+        assertThat(context.getBeansOfType(WebUserTrackingTelemetryModule.class)).isEmpty();
+    }
+
+    @Test
+    void shouldBeAbleToDisableDefaultModules() {
+        EnvironmentTestUtils.addEnvironment(context,
+                "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
+                "azure.application-insights.default-modules.WebUserTrackingTelemetryModule.enabled=false");
+        context.register(PropertyPlaceholderAutoConfiguration.class,
+                ApplicationInsightsTelemetryAutoConfiguration.class);
+        context.refresh();
+
+        assertThat(context.getBeansOfType(WebUserTrackingTelemetryModule.class)).isEmpty();
     }
 
     @Test

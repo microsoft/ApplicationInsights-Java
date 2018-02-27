@@ -131,8 +131,8 @@ azure.application-insights.logger.level=error
 
 # Enable/Disable developer mode, all telemetry will be sent immediately without batching. Significantly affects performance and should be used only in developer environment. Default value: false.
 azure.application-insights.channel.in-process.developer-mode=false
-# Endpoint address, Default value: none.
-azure.application-insights.channel.in-process.endpoint-address=
+# Endpoint address, Default value: https://dc.services.visualstudio.com/v2/track.
+azure.application-insights.channel.in-process.endpoint-address=https://dc.services.visualstudio.com/v2/track
 # Maximum count of telemetries that will be batched before sending. Default value: 500.
 azure.application-insights.channel.in-process.max-telemetry-buffer-capacity=500
 # Interval to send telemetry. Default value: 5 seconds.
@@ -143,11 +143,11 @@ azure.application-insights.channel.in-process.max-transmission-storage-files-cap
 azure.application-insights.channel.in-process.throttling=true
 
 # Percent of telemetry events that will be sent to Application Insights. Default value: 100% (all telemetry events).
-azure.application-insights.sampling.percentage=100
+azure.application-insights.telemetry-processor.sampling.percentage=100
 # If set only telemetry of specified types will be included. Default value: all telemetries are included;
-azure.application-insights.sampling.include=
+azure.application-insights.telemetry-processor.sampling.include=
 # If set telemetry of specified type will be excluded. Default value: none telemetries are excluded.
-azure.application-insights.sampling.exclude=
+azure.application-insights.telemetry-processor.sampling.exclude=
 
 # Enable/Disable default telemetry modules. Default value: true.
 azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled=true
