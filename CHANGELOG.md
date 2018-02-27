@@ -2,7 +2,7 @@
 
 ## Version 2.0.0
 - Upgraded logback dependency version to 1.2.3
-- Improved FixedRateSampling so that it also supports Sampling Percentage set by users programmatically. Fixes [issue #535] (https://github.com/Microsoft/ApplicationInsights-Java/issues/535)
+- Improved FixedRateSampling so that it also supports Sampling Percentage set by users programmatically. Fixes [issue #535](https://github.com/Microsoft/ApplicationInsights-Java/issues/535)
 - Fault Tolerance improvements: introducing retries and exponential backoff capabilities with disk persistence.
 - [Issue #499](https://github.com/Microsoft/ApplicationInsights-Java/pull/499): Fix handling of NaN and +/-Infinity in JSON serializer
 - [Issue #506](https://github.com/Microsoft/ApplicationInsights-Java/pull/506): Null Reference Check causing Null Pointer Exception in `TelemetryCorrelationUtils.java`
