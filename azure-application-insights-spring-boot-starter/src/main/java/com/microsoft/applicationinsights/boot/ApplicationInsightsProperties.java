@@ -22,6 +22,8 @@
 package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
+import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
@@ -157,19 +159,19 @@ public class ApplicationInsightsProperties {
             /**
              * Endpoint address.
              */
-            private String endpointAddress;
+            private String endpointAddress = TransmissionNetworkOutput.DEFAULT_SERVER_URI;
             /**
              * Maximum count of telemetries that will be batched before sending.
              */
-            private int maxTelemetryBufferCapacity = 500;
+            private int maxTelemetryBufferCapacity = InProcessTelemetryChannel.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
             /**
              * nterval to send telemetry.
              */
-            private int flushIntervalInSeconds = 5;
+            private int flushIntervalInSeconds = InProcessTelemetryChannel.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
             /**
              * Size of disk that we can use.
              */
-            private int maxTransmissionStorageFilesCapacityInMb = 10;
+            private int maxTransmissionStorageFilesCapacityInMb = TransmissionFileSystemOutput.DEFAULT_CAPACITY_MEGABYTES;
             /**
              * Enables throttling on sending telemetry data.
              */
@@ -244,7 +246,7 @@ public class ApplicationInsightsProperties {
             /**
              * Percent of telemetry events that will be sent to Application Insights.
              */
-            private double percentage = 100;
+            private double percentage = FixedRateSamplingTelemetryProcessor.DEFAULT_SAMPLING_PERCENTAGE;
             /**
              * If set only telemetry of specified types will be included.
              */

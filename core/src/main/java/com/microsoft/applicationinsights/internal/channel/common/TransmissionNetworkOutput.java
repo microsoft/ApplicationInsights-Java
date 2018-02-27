@@ -60,7 +60,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
     private final static String RESPONSE_RETRY_AFTER_DATE_FORMAT = "E, dd MMM yyyy HH:mm:ss";
 
-    private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
+    public final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
     private final static int DEFAULT_BACKOFF_TIME_SECONDS = 300;
 
     // For future use: re-send a failed transmission back to the dispatcher

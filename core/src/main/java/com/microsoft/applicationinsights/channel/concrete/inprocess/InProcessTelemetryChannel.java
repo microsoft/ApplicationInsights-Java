@@ -65,12 +65,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 12/17/2014.
  */
 public final class InProcessTelemetryChannel implements TelemetryChannel {
-    private final static int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;
+    public final static int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;
     private final static int MIN_MAX_TELEMETRY_BUFFER_CAPACITY = 1;
     private final static int MAX_MAX_TELEMETRY_BUFFER_CAPACITY = 1000;
     private final static String MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME = "MaxTelemetryBufferCapacity";
 
-    private final static int DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 5;
+    public final static int DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 5;
     private final static int MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 1;
     private final static int MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 300;
     private final static String FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME = "FlushIntervalInSeconds";

@@ -45,6 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 @BuiltInProcessor("FixedRateSamplingTelemetryProcessor")
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {
 
+    public static final double DEFAULT_SAMPLING_PERCENTAGE = 100.;
     private static Map<TelemetryType, Class> allowedTypes = new HashMap<>();
 
     static {
@@ -71,7 +72,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      * to default settings
      */
     public FixedRateSamplingTelemetryProcessor() {
-        this.samplingPercentage = 100.00;
+        this.samplingPercentage = DEFAULT_SAMPLING_PERCENTAGE;
         this.includedTypes = new HashSet<>();
         this.excludedTypes = new HashSet<>();
     }
