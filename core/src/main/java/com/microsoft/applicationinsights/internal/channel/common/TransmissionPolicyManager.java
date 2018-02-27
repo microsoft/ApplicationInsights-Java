@@ -113,7 +113,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         if (backOffMillis > 0) 
         {
             long backOffSeconds = backOffMillis / 1000;
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
+            InternalLogger.INSTANCE.info("App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
             this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
         }
     }
@@ -167,7 +167,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
             }
 
             Date date = Calendar.getInstance().getTime();
-            date.setTime(date.getTime() + 1000 * suspendInSeconds);
+            date.setTime(date.getTime() + (1000 * suspendInSeconds));
             if (this.suspensionDate != null) {
                 long diff = date.getTime() - suspensionDate.getTime();
                 if (diff <= 0) {
@@ -234,7 +234,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
      * @param maxInstantRetries Number of retries
      */
     public void setMaxInstantRetries(int maxInstantRetries) {
-        if (maxInstantRetries >= 0 && maxInstantRetries < INSTANT_RETRY_MAX) {
+        if (maxInstantRetries > 0 && maxInstantRetries < INSTANT_RETRY_MAX) {
             instantRetryAmount = maxInstantRetries;
         }
     }

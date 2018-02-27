@@ -50,8 +50,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements TransmissionOutput {
-	private static final int MAX_RESEND = 3;
+public final class TransmissionNetworkOutput implements TransmissionOutput {	
 	private final static String CONTENT_TYPE_HEADER = "Content-Type";
 	private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
 	private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
