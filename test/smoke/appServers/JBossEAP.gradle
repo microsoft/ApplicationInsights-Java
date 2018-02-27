@@ -2,27 +2,33 @@ if (!project.hasProperty('jbossEapVersion')) {
 	throw new GradleException("JBoss buildfile in $projectDir misconfigured. Missing definition 'jbossEapVersion'.")
 }
 
-ext.jbossEapInstallerVar = "JBOSSEAP${jbossEapVersion}_INSTALLER"
+ext.jbossEapZipfileVar = "JBOSSEAP${jbossEapVersion}_ZIPFILE"
 ext.appServerShortName = "jbosseap${jbossEapVersion}"
+ext.jbossZipFile = null
 
-if (!System.env."${jbossEapInstallerVar}") {
-	logger.warn "Skipping generation of JBoss EAP ${jbossEapVersion} containers. To run these, you must sign up for the Red Hat Developer Program and download the installer manually. Then set '${jbossEapInstallerVar}' (env var or property) to the location of the installer jar."
+if (!System.env."${jbossEapZipfileVar}") {
+	logger.warn "Skipping generation of JBoss EAP ${jbossEapVersion} containers. To run these, you must sign up for the Red Hat Developer Program and download the zip file manually. Then set '${jbossEapZipfileVar}' environment variable to the location of the installer jar."
 	if (isBuildServer) {
-		throw new GradleException("Missing JBoss EAP ${jbossEapVersion} installer!")
+		throw new GradleException("Missing JBoss EAP ${jbossEapVersion} zipfile!")
 	}
 	project.tasks.all { task -> task.enabled = false }
 } else {
-	ext.jbossInstallerFile = file(System.env."${jbossEapInstallerVar}")
-	if (!ext.jbossInstallerFile.exists()) {
-		throw new GradleException("${ext.jbossInstallerFile} does not exist.")
+	jbossZipFile = file(System.env."${jbossEapZipfileVar}")
+	if (!jbossZipFile.exists()) {
+		throw new GradleException("${jbossZipFile} does not exist.")
 	}
-	if (!ext.jbossInstallerFile.isFile()) {
-		throw new GradleException("${ext.jbossInstallerFile} is not a valid file.")
+	if (!jbossZipFile.isFile()) {
+		throw new GradleException("${jbossZipFile} is not a valid file.")
 	}
+	logger.info "Found ${jbossEapZipfileVar}=${jbossZipFile.absolutePath}"
 }
 
-task stageJBossInstaller(type: Copy) {
-	from ext.jbossInstallerFile.parent
-	into stagingDir // provided by parent project
-	include ext.jbossInstallerFile.name
+// FIXME 
+if (jbossZipFile) {
+	task stageJBossInstaller(type: Copy) {
+		from jbossZipFile.parent
+		into stagingDir // provided by parent project
+		include jbossZipFile.name
+	}
+	buildDockerImage.dependsOn stageJBossInstaller
 }

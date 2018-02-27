@@ -1,4 +1,6 @@
-ext { 
-	jbossEapVersion = 7
-}
+ext.jbossEapVersion = 7
 apply from: '../JBossEAP.gradle'
+if (jbossZipFile) {
+	ext.additionalReplaceTokenMap << [ZIP_FILENAME: ext.jbossZipFile.name]
+	ext.additionalReplaceTokenMap << [JBOSS_HOME_DIR: "jboss-eap-7.1"] // TODO find a way to set this automatically
+}
