@@ -26,7 +26,7 @@ package com.microsoft.applicationinsights.internal.channel;
  */
 public interface TransmitterFactory {
 	/** 
-	 * Creates the {@link TelemetriesTransmitter} for use by the {@link TelemetryChannel}
+	 * Creates the {@link TelemetriesTransmitter} for use by the {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
 	 * @param endpoint HTTP Endpoint to send telemetry to
 	 * @param maxTransmissionStorageCapacity Max amount of disk space in KB for persistent storage to use
 	 * @param throttlingIsEnabled Allow the network telemetry sender to be throttled 
@@ -34,7 +34,7 @@ public interface TransmitterFactory {
 	 */
     TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled);
 	/** 
-	 * Creates the {@link TelemetriesTransmitter} for use by the {@link TelemetryChannel}
+	 * Creates the {@link TelemetriesTransmitter} for use by the {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
 	 * @param endpoint HTTP Endpoint to send telemetry to
 	 * @param maxTransmissionStorageCapacity Max amount of disk space in KB for persistent storage to use
 	 * @param throttlingIsEnabled Allow the network telemetry sender to be throttled 
