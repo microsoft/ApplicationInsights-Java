@@ -89,7 +89,6 @@ projectPomDescription = "This is the core module of " + project.msftAppInsightsJ
 whenPomConfigured = { p ->
     def agentArtifactId = project(":agent").jar.baseName
     p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != agentArtifactId }
-    writePomToArtifactsDirectory(p, project.name)
 }
 
 // endregion Publishing properties
