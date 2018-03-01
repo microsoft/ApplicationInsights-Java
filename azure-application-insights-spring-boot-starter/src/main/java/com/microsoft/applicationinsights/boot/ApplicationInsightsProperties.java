@@ -28,7 +28,6 @@ import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSa
 import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
-import com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer;

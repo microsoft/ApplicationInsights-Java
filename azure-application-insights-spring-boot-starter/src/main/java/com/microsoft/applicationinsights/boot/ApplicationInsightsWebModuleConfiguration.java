@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.boot;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer;
@@ -31,7 +30,6 @@ import com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTra
 import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;

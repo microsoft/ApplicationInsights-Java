@@ -21,14 +21,12 @@
 
 package com.microsoft.applicationinsights.boot;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.boot.conditional.ConditionalOnOperatingSystem;
 import com.microsoft.applicationinsights.boot.conditional.OperatingSystem;
 import com.microsoft.applicationinsights.boot.initializer.SpringBootContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
