@@ -43,6 +43,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 
 import java.util.Collection;
@@ -147,6 +148,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.quick-pulse.enabled", havingValue = "true", matchIfMissing = true)
+    @DependsOn("telemetryConfiguration")
     public QuickPulse quickPulse() {
         QuickPulse.INSTANCE.initialize();
         return QuickPulse.INSTANCE;

@@ -33,6 +33,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 
@@ -56,9 +57,8 @@ public class ApplicationInsightsWebMvcAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public WebRequestTrackingFilter webRequestTrackingFilter(@Value("${spring.application.name:application}") String applicationName,
-            // we have implicit dependency on configured telemetryConfiguration here
-            @SuppressWarnings("unused") TelemetryConfiguration telemetryConfiguration) {
+    @DependsOn("telemetryConfiguration")
+    public WebRequestTrackingFilter webRequestTrackingFilter(@Value("${spring.application.name:application}") String applicationName) {
         return new WebRequestTrackingFilter(applicationName);
     }
 }
