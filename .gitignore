@@ -95,3 +95,6 @@ $RECYCLE.BIN/
 /Backend/OrderService/build
 /Backend/OrderService/.idea
 Backend/OrderService/OrderService.iml
+
+# VS Code Workspace settings
+.vscode/settings.json

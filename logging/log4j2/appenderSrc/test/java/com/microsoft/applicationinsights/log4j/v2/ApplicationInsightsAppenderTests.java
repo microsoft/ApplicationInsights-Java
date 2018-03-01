@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.log4j.v2;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.shared.LogChannelMockVerifier;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -91,24 +92,30 @@ public class ApplicationInsightsAppenderTests {
     }
 
     @Test
-    public void testAppenderDoesNotAppendLogsBelowFilterThreshold() {
+    public void testAppenderDoesNotAppendLogsBelowFilterThreshold() throws Exception {
         Logger logger = LogManager.getRootLogger();
         logger.trace("New event!");
+        TimeUnit.SECONDS.sleep(1);
+
         Assert.assertEquals(0, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
     }
 
     @Test
-    public void testAppenderAppendsItemOnAndAboveSetThreshold() {
+    public void testAppenderAppendsItemOnAndAboveSetThreshold() throws Exception {
         Logger logger = LogManager.getRootLogger();
         logger.error("This should be appended!");
         logger.fatal("This is fatal is reported");
+        TimeUnit.SECONDS.sleep(1);
+
         Assert.assertEquals(2, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
     }
 
     @Test
-    public void testLoggerMessageIsRetainedWhenReportingException() {
+    public void testLoggerMessageIsRetainedWhenReportingException() throws Exception {
         Logger logger = LogManager.getRootLogger();
         logger.error("This is an exception", new Exception("Fake Exception"));
+        TimeUnit.SECONDS.sleep(1);
+
         Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
         Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().containsKey("Logger Message"));
         Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().get("Logger Message").equals("This is an exception"));
