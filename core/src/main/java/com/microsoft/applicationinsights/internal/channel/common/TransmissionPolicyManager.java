@@ -112,9 +112,9 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
     	long backOffMillis = backoffManager.backOffCurrentSenderThreadValue();
         if (backOffMillis > 0)
         {
-        	long backOffSeconds = backOffMillis / 1000;
-        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
-        	this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
+            long backOffSeconds = backOffMillis / 1000;
+            InternalLogger.INSTANCE.info("App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
+            this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
         } 
     }
     
@@ -124,7 +124,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
     public void clearBackoff() {
     	policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         backoffManager.onDoneSending();
-        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "Backoff has been reset.");
+        InternalLogger.INSTANCE.info("Backoff has been reset.");
     }
     
     /**
@@ -181,7 +181,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
             policyState.setCurrentState(policy);
             suspensionDate = date;
 
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetries are blocked from now, for %s seconds", suspendInSeconds);
+            InternalLogger.INSTANCE.info("App is throttled, telemetries are blocked from now, for %s seconds", suspendInSeconds);
         } catch (Throwable t) {
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.toString());
         }
@@ -194,7 +194,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
         policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         suspensionDate = null;
-        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled is cancelled");
+        InternalLogger.INSTANCE.info("App throttling is cancelled.");
     }
 
     private synchronized void createScheduler() {
