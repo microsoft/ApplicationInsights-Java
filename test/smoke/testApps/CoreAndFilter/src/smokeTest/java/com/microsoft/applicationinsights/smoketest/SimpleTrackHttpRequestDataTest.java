@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
-import org.junit.Test;
+import org.junit.*;
 
 @Ignore
 public class SimpleTrackHttpRequestDataTest extends AiSmokeTest {
