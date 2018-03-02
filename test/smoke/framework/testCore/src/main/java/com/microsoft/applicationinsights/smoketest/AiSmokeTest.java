@@ -208,6 +208,9 @@ public abstract class AiSmokeTest {
 	@BeforeWithParams
 	public static void configureEnvironment(final String appServer, final String os, final String jreVersion) throws Exception {
 		System.out.println("Preparing environment...");
+		if (currentContainerInfo != null) {
+			// FIXME test cleanup didn't take...try to clean up
+		}
 		checkParams(appServer, os, jreVersion);
 		setupProperties(appServer, os, jreVersion);
 		startMockedIngestion();
@@ -243,6 +246,7 @@ public abstract class AiSmokeTest {
 			return;
 		}
 
+		System.out.println("Calling "+targetUri+" ...");
 		String url = getBaseUrl()+targetUri;
 		final String content;
 		switch(httpMethod) {
@@ -259,7 +263,7 @@ public abstract class AiSmokeTest {
 
 		System.out.printf("Waiting %ds for telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
-		System.out.println("Finished waiting for telemetry. Starting validation...");
+		System.out.println("Finished waiting for telemetry.%nStarting validation...");
 
 		if (expectSomeTelemetry) {
 			assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
@@ -373,7 +377,9 @@ public abstract class AiSmokeTest {
 	@AfterWithParams
 	public static void tearDownContainer(final String appServer, final String os, final String jreVersion) throws Exception {
 		stopContainer(currentContainerInfo);
-		currentContainerInfo = null;
+		if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
+			currentContainerInfo = null;
+		}
 	}
 
 	//region: test helper methods
