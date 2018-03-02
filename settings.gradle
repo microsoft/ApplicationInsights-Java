@@ -45,7 +45,7 @@ include ':test:smoke:framework:fakeIngestion:standalone'
 
 include ':test:smoke:testApps:PerfTestApp'
 //include ':test:smoke:testApps:SimpleCalculator'
-include ':test:smoke:testApps:CoreWithFilter'
+include ':test:smoke:testApps:CoreAndFilter'
 
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
