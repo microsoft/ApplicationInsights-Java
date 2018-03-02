@@ -7,6 +7,7 @@ import com.microsoft.applicationinsights.telemetry.Duration;
 
 import org.junit.Test;
 
+@Ignore
 public class SimpleTrackHttpRequestDataTest extends AiSmokeTest {
     @Test
     @TargetUri("/trackHttpRequest?leftOperand=1&rightOperand=2&operator=plus")

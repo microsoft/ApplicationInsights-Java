@@ -8,8 +8,9 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 
-import org.junit.Test;
+import org.junit.*;
 
+@Ignore
 public class SimpleTrackExceptionDataTest extends AiSmokeTest {
 
     @Test

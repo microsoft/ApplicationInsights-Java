@@ -5,8 +5,9 @@ import static org.junit.Assert.assertEquals;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
-import org.junit.Test;
+import org.junit.*;
 
+@Ignore
 public class SimpleTrackDependencyDataTest extends AiSmokeTest {
 
     @Test

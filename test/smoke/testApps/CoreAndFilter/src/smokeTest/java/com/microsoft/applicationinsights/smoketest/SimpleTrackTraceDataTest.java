@@ -7,6 +7,7 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
+@Ignore
 public class SimpleTrackTraceDataTest extends AiSmokeTest {
 	@Test
 	@TargetUri("/trackTrace?leftOperand=1&rightOperand=2&operator=plus")

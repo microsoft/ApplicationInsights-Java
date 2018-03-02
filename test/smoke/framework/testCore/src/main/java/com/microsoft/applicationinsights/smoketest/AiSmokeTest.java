@@ -238,6 +238,10 @@ public abstract class AiSmokeTest {
 		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
 		waitForUrl(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext());
 		System.out.println("Test app health check complete.");
+		System.out.printf("Waiting %ds for any request telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		System.out.println("Clearing any RequestData from health check.");
+		mockedIngestion.resetData();
 	}
 
 	protected void callTargetUriAndWaitForTelemetry() throws Exception {
@@ -263,7 +267,7 @@ public abstract class AiSmokeTest {
 
 		System.out.printf("Waiting %ds for telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
-		System.out.println("Finished waiting for telemetry.%nStarting validation...");
+		System.out.println("Finished waiting for telemetry.\nStarting validation...");
 
 		if (expectSomeTelemetry) {
 			assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
