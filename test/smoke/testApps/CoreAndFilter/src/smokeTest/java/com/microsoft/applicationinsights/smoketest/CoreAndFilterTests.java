@@ -21,7 +21,7 @@ import java.util.List;
 public class CoreAndFilterTests extends AiSmokeTest {
 	
 	@Test
-    @TargetUri("/trackDependency?leftOperand=1&rightOperand=2&operator=plus")
+    @TargetUri("/trackDependency")
     public void trackDependency() throws Exception {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
@@ -43,7 +43,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 	}
 	
 	@Test
-	@TargetUri("/doCalc?leftOperand=1&rightOperand=2&operator=plus")
+	@TargetUri("/trackEvent")
 	public void testTrackEvent() throws Exception {
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 		assertEquals(2, mockedIngestion.getCountForType("EventData"));
@@ -69,7 +69,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 	}
 
 	@Test
-    @TargetUri("/trackException?leftOperand=1&rightOperand=2&operator=plus")
+    @TargetUri("/trackException")
     public void testTrackException() throws Exception {
 
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
@@ -106,7 +106,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 	}
 	
 	@Test
-    @TargetUri("/trackHttpRequest?leftOperand=1&rightOperand=2&operator=plus")
+    @TargetUri("/trackHttpRequest")
     public void testHttpRequest() throws Exception {
         assertEquals(3, mockedIngestion.getCountForType("RequestData"));
 
@@ -140,7 +140,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 	}
 	
 	@Test
-    @TargetUri("/trackMetric?leftOperand=1&rightOperand=2&operator=plus")
+    @TargetUri("/trackMetric")
     public void trackMetric() throws Exception {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("MetricData"));
@@ -168,7 +168,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 	}
 	
 	@Test
-	@TargetUri("/trackTrace?leftOperand=1&rightOperand=2&operator=plus")
+	@TargetUri("/trackTrace")
 	public void testTrackTrace() throws Exception {
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 		assertEquals(3, mockedIngestion.getCountForType("MessageData"));

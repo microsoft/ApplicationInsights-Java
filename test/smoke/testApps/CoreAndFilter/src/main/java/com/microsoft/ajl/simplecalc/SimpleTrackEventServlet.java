@@ -15,8 +15,8 @@ import com.microsoft.applicationinsights.TelemetryClient;
 /**
  * Servlet implementation class SimpleCalculatorServlet
  */
-@WebServlet(description = "Performs given calculation", urlPatterns = { "/doCalc" })
-public class SimpleCalculatorServlet extends HttpServlet {
+@WebServlet(description = "Performs given calculation", urlPatterns = { "/trackEvent" })
+public class SimpleTrackEventServlet extends HttpServlet {
 	private static final long serialVersionUID = -633683109556605395L;
 	private TelemetryClient client = new TelemetryClient();
 
