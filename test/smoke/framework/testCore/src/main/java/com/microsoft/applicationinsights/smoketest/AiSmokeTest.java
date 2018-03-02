@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
 import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
+import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
 import org.junit.*;
@@ -24,8 +25,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import javax.annotation.Nullable;
+import javax.swing.plaf.synth.SynthConstants;
 import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
@@ -33,8 +36,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -42,6 +43,7 @@ import static org.junit.Assert.*;
  * This is the base class for smoke tests.
  */
 @RunWith(Parameterized.class)
+@UseParametersRunnerFactory(ParameterizedRunnerWithFixturesFactory.class)
 public abstract class AiSmokeTest {
 
 	//region: parameterization
@@ -87,45 +89,6 @@ public abstract class AiSmokeTest {
 	// TODO make this dependent on container mode
 	private static final AiDockerClient docker = AiDockerClient.createLinuxClient();
 
-	protected static final Runnable destroyAllContainers = new Runnable() {
-		@Override
-		public void run() {
-			synchronized (containerStack) {
-				if (containerStack.isEmpty()) return;
-				final int numToStop = containerStack.size();
-				System.out.printf("Destroying all containers... (%d)%n", numToStop);
-				ExecutorService taskService = Executors.newFixedThreadPool(containerStack.size());
-				Stopwatch stopAllTimer = Stopwatch.createStarted();
-				while (!containerStack.isEmpty()) {
-					final ContainerInfo info = containerStack.pop();
-					taskService.execute(new Runnable(){
-						@Override
-						public void run() {
-							try {
-								stopContainer(info);
-							}
-							catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-					});
-				}
-				taskService.shutdown();
-				try {
-					taskService.awaitTermination(numToStop * 15, TimeUnit.SECONDS);
-				} catch (InterruptedException e) {
-					// don't care
-					System.err.println("Interrupted while stopping containers. There may still be containers running.");
-					e.printStackTrace();
-				}
-				finally {
-					stopAllTimer.stop();
-				}
-				System.out.printf("Stopping %d containers in parallel took %dms", numToStop, stopAllTimer.elapsed(TimeUnit.MILLISECONDS));
-			}
-		}
-	};
-
 	protected static void stopContainer(ContainerInfo info) throws Exception {
 		System.out.printf("Stopping container: %s%n", info);
 		Stopwatch killTimer = Stopwatch.createUnstarted();
@@ -140,9 +103,10 @@ public abstract class AiSmokeTest {
 		}
 	}
 
-	protected static Stack<ContainerInfo> containerStack = new Stack<>();
+	// protected static Stack<ContainerInfo> containerStack = new Stack<>();
 	protected static short currentPortNumber = BASE_PORT_NUMBER;
-
+	
+	protected static ContainerInfo currentContainerInfo = null;
 	protected static String currentImageName;
 	protected static short appServerPort;
 	protected static String warFileName;
@@ -195,7 +159,7 @@ public abstract class AiSmokeTest {
 		@Override
 		protected void failed(Throwable t, Description description) {
 			// NOTE this happens after @After :)
-			String containerId = lastContainerId();
+			String containerId = currentContainerInfo.getContainerId();
 			System.out.println("Test failure detected.");
 			
 			System.out.println("\nFetching appserver logs");
@@ -222,14 +186,23 @@ public abstract class AiSmokeTest {
 		}
 	};
 
-	protected static String lastContainerId() {
-		return containerStack.peek().getContainerId();
-	}
-
 	@BeforeClass
 	public static void configureShutdownHook() {
 		// NOTE the JUnit runner (or gradle) forces this to happen. The syncronized block and check for empty should avoid any issues
-		Runtime.getRuntime().addShutdownHook(new Thread(destroyAllContainers));
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if (currentContainerInfo == null) {
+					return;
+				}
+				try {
+					stopContainer(currentContainerInfo);
+				} catch (Exception e) {
+					System.err.println("Error while stopping container id="+currentContainerInfo.getContainerId()+". This must be stopped manually.");
+					e.printStackTrace();
+				}
+			}
+		}));
 	}
 
 	@BeforeWithParams
@@ -318,7 +291,7 @@ public abstract class AiSmokeTest {
 				if (deviceId == null) {
 					return true;
 				}
-				final boolean belongsToCurrentContainer = lastContainerId().startsWith(deviceId);
+				final boolean belongsToCurrentContainer = currentContainerInfo.getContainerId().startsWith(deviceId);
 				if (!belongsToCurrentContainer) {
 					System.out.println("Telemetry from previous container");
 				}
@@ -343,8 +316,7 @@ public abstract class AiSmokeTest {
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
 
-		ContainerInfo info = new ContainerInfo(containerId, currentImageName);
-		containerStack.push(info);
+		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Waiting for appserver to start (%s)...%n", url);
@@ -393,14 +365,15 @@ public abstract class AiSmokeTest {
 	}
 
 	@After
-	protected void resetMockedIngestion() throws Exception {
+	public void resetMockedIngestion() throws Exception {
 		mockedIngestion.resetData();
 		System.out.println("Mocked ingestion reset.");
 	}
 
 	@AfterWithParams
-	public static void tearDownContainers(final String appServer, final String os, final String jreVersion) {
-		destroyAllContainers.run();
+	public static void tearDownContainer(final String appServer, final String os, final String jreVersion) throws Exception {
+		stopContainer(currentContainerInfo);
+		currentContainerInfo = null;
 	}
 
 	//region: test helper methods
