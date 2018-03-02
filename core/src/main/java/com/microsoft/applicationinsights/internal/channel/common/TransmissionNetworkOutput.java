@@ -50,8 +50,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements TransmissionOutput {
-	private static final int MAX_RESEND = 3;
+public final class TransmissionNetworkOutput implements TransmissionOutput {	
     private final static String CONTENT_TYPE_HEADER = "Content-Type";
     private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
@@ -189,10 +188,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 				respString = EntityUtils.toString(respEntity);
 				retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
 
-				// After the third time through this dispatcher we should reset the counter and
-				// then fail to second TransmissionOutput
-				if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() >= MAX_RESEND) {
-					transmission.setNumberOfSends(0);
+				// After we reach our instant retry limit we should fail to second TransmissionOutput
+				if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
 					return false;
 				} else if (code == HttpStatus.SC_OK) {
 					// If we've completed then clear the back off flags as the channel does not need
@@ -231,7 +228,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 }
                 httpClient.dispose(response);
 
-				if (code != HttpStatus.SC_OK && transmission.getNumberOfSends() < MAX_RESEND) {
+				if (code != HttpStatus.SC_OK) {
 					// Invoke the listeners for handling things like errors
 					// The listeners will handle the back off logic as well as the dispatch
 					// operation
