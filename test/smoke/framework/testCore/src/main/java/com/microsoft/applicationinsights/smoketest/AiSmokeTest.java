@@ -103,7 +103,6 @@ public abstract class AiSmokeTest {
 		}
 	}
 
-	// protected static Stack<ContainerInfo> containerStack = new Stack<>();
 	protected static short currentPortNumber = BASE_PORT_NUMBER;
 	
 	protected static ContainerInfo currentContainerInfo = null;
@@ -209,7 +208,19 @@ public abstract class AiSmokeTest {
 	public static void configureEnvironment(final String appServer, final String os, final String jreVersion) throws Exception {
 		System.out.println("Preparing environment...");
 		if (currentContainerInfo != null) {
-			// FIXME test cleanup didn't take...try to clean up
+			// test cleanup didn't take...try to clean up
+			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
+				System.err.println("From last test run, container is still running: "+currentContainerInfo);
+				try {
+					docker.stopContainer(currentContainerInfo.getContainerId());
+				} catch (Exception e) {
+					System.err.println("Couldn't clean up environment. Must be done manually.");
+					throw e;
+				}
+			} else {
+				// container must have stopped after timeout reached.
+				currentContainerInfo = null;
+			}
 		}
 		checkParams(appServer, os, jreVersion);
 		setupProperties(appServer, os, jreVersion);
