@@ -50,6 +50,7 @@ public abstract class AiSmokeTest {
 	@Parameters(name = "{index}: {0}, {1}, {2}")
 	public static Collection<Object[]> parameterGenerator() throws MalformedURLException, IOException {
 		List<String> appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
+		System.out.println("Target appservers="+Arrays.toString(appServers.toArray()));
 		String os = System.getProperty("applicationinsights.smoketest.os", "linux");
 		Multimap<String, String> appServers2jres = HashMultimap.create();
 		for (String appServer : appServers) {
