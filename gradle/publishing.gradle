@@ -91,6 +91,7 @@ task prepare {
     dependsOn copyLibsToGlobalArtifactsFolder
     doLast {
         // this writes the pom to <repo root>/build/artifacts/<project.name>/<artifactId>-<version>.pom
+        assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
         whenPomConfigured(pom {
             project {
                 name = projectPomName
