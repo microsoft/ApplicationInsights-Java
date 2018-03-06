@@ -81,8 +81,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.getMessage());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.toString());                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {

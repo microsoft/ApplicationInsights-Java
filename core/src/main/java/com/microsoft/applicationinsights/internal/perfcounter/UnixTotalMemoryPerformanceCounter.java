@@ -77,13 +77,13 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
             result = reader.getValue() * KB;
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;
-            logError("Error while parsing file: '%s'", e.getMessage());
+            logError("Error while parsing file: '%s'", e.toString());
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
-                    logError("Error while closing file : '%s'", e.getMessage());
+                    logError("Error while closing file : '%s'", e.toString());
                 }
             }
         }

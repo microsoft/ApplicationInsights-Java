@@ -89,8 +89,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to send metric performance counter for '%s': '%s'", entry.getValue(), e.getMessage());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    InternalLogger.INSTANCE.error("Failed to send metric performance counter for '%s': '%s'", entry.getValue(), e.toString());                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {

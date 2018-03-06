@@ -81,8 +81,7 @@ public enum AgentConnector {
                 	throw td;
                 } catch (Throwable t) {
                     try {
-                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
-                        agentKey = null;
+                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.toString());                        agentKey = null;
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t2) {
@@ -122,8 +121,7 @@ public enum AgentConnector {
                 	throw td;
                 } catch (Throwable t) {
                     try {
-                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.getMessage());
-                        return false;
+                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.toString());                        return false;
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t2) {

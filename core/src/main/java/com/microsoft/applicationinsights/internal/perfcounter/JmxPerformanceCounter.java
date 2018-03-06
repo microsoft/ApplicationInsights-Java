@@ -112,7 +112,7 @@ public final class JmxPerformanceCounter implements PerformanceCounter {
                     value += Double.parseDouble(String.valueOf(obj));
                 } catch (Exception e) {
                     ok = false;
-                    InternalLogger.INSTANCE.error("Error while parsing JMX value for '%s:%s': '%s'", getId(), displayAndValues.getKey(), e.getMessage());
+                    InternalLogger.INSTANCE.error("Error while parsing JMX value for '%s:%s': '%s'", getId(), displayAndValues.getKey(), e.toString());
                     break;
                 }
             }
@@ -123,7 +123,7 @@ public final class JmxPerformanceCounter implements PerformanceCounter {
                     InternalLogger.INSTANCE.trace("JMX Metric: %s:%s: %s", telemetry.getCategoryName(), telemetry.getCounterName(), value);
                     telemetryClient.track(telemetry);
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Error while sending JMX data for '%s': '%s'", getId(), e.getMessage());
+                    InternalLogger.INSTANCE.error("Error while sending JMX data for '%s': '%s'", getId(), e.toString());
                 }
             }
         }

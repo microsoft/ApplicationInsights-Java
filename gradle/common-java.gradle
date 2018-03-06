@@ -32,28 +32,6 @@ tasks.withType(JavaCompile) {
     targetCompatibility = 1.7
 }
 
-// setting this variable is highly recommended
-def java7JreDir = System.env.'JAVA_JRE_7'
-if (java7JreDir) {
-    def requiredJavaBootArchives = ["rt.jar", "jsse.jar"]
-    def bootClasspath = ""
-    requiredJavaBootArchives.each { a ->
-        def archivePath = new File(java7JreDir, "lib/$a")
-        if (!archivePath.exists()) {
-            throw new ProjectConfigurationException("Archive $archivePath required for building in Java 7 could not be found.", null)
-        }
-        logger.info "Archive '$archivePath' added to boot class path"
-        bootClasspath += "$archivePath;"
-    }
-    tasks.withType(JavaCompile) {
-        options.bootClasspath = bootClasspath
-    }
-} else {
-    // FIXME this warning only makes sense if the JDK version being used is > 1.7.
-    // FIXME if this warning makes sense, it should be fatal if this is intended for release
-    logger.warn "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
-}
-
 if (hasProperty("JDKToUse")) {
     logger.info("using $JDKToUse to compile and run tests")
     def javaExecutablesPath = new File(JDKToUse, 'bin')
@@ -69,8 +47,8 @@ if (hasProperty("JDKToUse")) {
     tasks.withType(AbstractCompile) {
         options.with {
             fork = true
-            // FIXME forkOptions.executable is deprecated
             forkOptions.executable = javaExecutables.javac
+            forkOptions.javaHome = JDKToUse
         }
     }
     tasks.withType(Javadoc) {
@@ -86,6 +64,43 @@ if (hasProperty("JDKToUse")) {
     logger.info("JDKToUse not found. Using default JAVA_HOME")
 }
 updateTestDirectories()
+
+// setting this variable is highly recommended
+def java7JreDir = System.env.'JAVA_JRE_7'
+def isJava7 = JavaVersion.current().isJava7()
+def isJava7Compatible = JavaVersion.current().isJava7Compatible()
+
+if (!isJava7Compatible) {
+    logger.error "The current JDK version isn't compatible with Java 7: "+JavaVersion.current()+". Please upgrade JDK 1.7+"
+    if (isBuildServer || isRelease) {
+        throw new GradleException("incompatible JDK version: ${JavaVersion.current()}; needs 1.7+")
+    }
+}
+if (java7JreDir) {
+    def requiredJavaBootArchives = ["rt.jar", "jsse.jar"]
+    def bootClasspath = ""
+    requiredJavaBootArchives.each { a ->
+        def archivePath = new File(java7JreDir, "lib/$a")
+        if (!archivePath.exists()) {
+            throw new ProjectConfigurationException("Archive $archivePath required for building in Java 7 could not be found.", null)
+        }
+        logger.info "Archive '$archivePath' added to boot class path"
+        bootClasspath += "$archivePath;"
+    }
+    tasks.withType(JavaCompile) {
+        options.bootClasspath = bootClasspath
+    }
+} else {
+    def msg = "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
+    if (!isJava7) {
+        if (isBuildServer || isRelease) {
+            logger.error msg
+            throw new GradleException("JAVA_JRE_7 must be set")
+        } else {
+            logger.warn msg
+        }
+    }
+}
 
 sourceSets {
     integrationTest {

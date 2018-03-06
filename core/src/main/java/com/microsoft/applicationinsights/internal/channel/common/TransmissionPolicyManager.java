@@ -134,8 +134,7 @@ public final class TransmissionPolicyManager implements Stoppable {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.getMessage());
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

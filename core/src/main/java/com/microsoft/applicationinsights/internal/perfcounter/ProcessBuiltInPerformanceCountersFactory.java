@@ -57,8 +57,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.getMessage());
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -111,8 +110,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.getMessage());
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -126,8 +124,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.getMessage());
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

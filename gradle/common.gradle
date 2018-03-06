@@ -86,8 +86,8 @@ def calcProjectVersion() {
         logger.info "User provided a version; version updated to $projectVersion"
     }
 
-    String isRelease = System.properties["isRelease"]
-    if (isRelease == null || isRelease.trim().toLowerCase() != "true") {
+    boolean isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
+    if (!isRelease) {
         projectVersion = projectVersion + "-SNAPSHOT"
         logger.info "This is NOT a release version; version updated to $projectVersion"
     }

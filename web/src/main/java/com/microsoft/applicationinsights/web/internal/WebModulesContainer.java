@@ -58,8 +58,7 @@ public class WebModulesContainer {
             try {
                 module.onBeginRequest(req, res);
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error(
-                        "Web module " + module.getClass().getSimpleName() + " failed on BeginRequest with exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Web module %s failed on BeginRequest with exception: %s", module.getClass().getSimpleName(), e.toString());
                 InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }
@@ -75,8 +74,7 @@ public class WebModulesContainer {
             try {
                 module.onEndRequest(req, res);
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error(
-                        "Web module " + module.getClass().getSimpleName() + " failed on EndRequest with exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Web module %s failed on EndRequest with exception: %s",module.getClass().getSimpleName(), e.toString());
                 InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }

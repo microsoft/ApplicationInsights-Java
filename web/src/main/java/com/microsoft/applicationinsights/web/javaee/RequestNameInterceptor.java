@@ -58,7 +58,7 @@ public class RequestNameInterceptor {
             InternalLogger.INSTANCE.error(
                     "Failed to invoke interceptor '%s' with exception: %s.",
                     this.getClass().getSimpleName(),
-                    e.getMessage());
+                    e.toString());
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
     }

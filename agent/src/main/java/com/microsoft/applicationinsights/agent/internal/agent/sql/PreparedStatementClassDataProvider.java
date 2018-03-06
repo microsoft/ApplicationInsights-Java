@@ -74,8 +74,7 @@ public final class PreparedStatementClassDataProvider {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.getMessage());
-            } catch (ThreadDeath td) {
+                InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

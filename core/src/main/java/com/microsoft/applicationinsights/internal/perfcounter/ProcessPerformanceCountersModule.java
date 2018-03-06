@@ -88,8 +88,7 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to initialize Windows performance counter '%s'.", e.getMessage());
-                } catch (ThreadDeath td) {
+                    InternalLogger.INSTANCE.error("Failed to initialize Windows performance counter '%s'.", e.toString());                } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
                     // chomp

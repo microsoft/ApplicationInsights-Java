@@ -60,15 +60,15 @@ public final class ReflectionUtils {
 
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         }
 
         return null;
@@ -101,15 +101,15 @@ public final class ReflectionUtils {
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.toString());
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         } catch (Exception e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
         }
 
         return null;

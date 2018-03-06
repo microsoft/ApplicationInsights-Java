@@ -137,13 +137,12 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
 
                 this.notNeededUrls.add(ready);
             }
-            InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: set " + notNeededUrls);
+            InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: set %s", notNeededUrls);
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "PageViewTelemetryFilter: failed to parse NotNeededUrls: " + notNeededUrls);
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "PageViewTelemetryFilter: failed to parse NotNeededUrls: %s", notNeededUrls);            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

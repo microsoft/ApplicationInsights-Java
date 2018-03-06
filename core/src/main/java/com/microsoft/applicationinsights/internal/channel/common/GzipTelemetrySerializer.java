@@ -67,13 +67,12 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 try {
                     succeeded = compress(zipStream, telemetries);
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.getMessage());
+                    InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
                 } catch (ThreadDeath td) {
                 	throw td;
                 } catch (Throwable t) {
                     try {
-                        InternalLogger.INSTANCE.error("Failed to serialize, unknown exception: %s", t.getMessage());
-                    } catch (ThreadDeath td) {
+                        InternalLogger.INSTANCE.error("Failed to serialize, unknown exception: %s", t.toString());                    } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t2) {
                         // chomp
@@ -90,7 +89,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 }
             }
         } catch(Exception e) {
-            InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
         }
 
         return Optional.fromNullable(result);
@@ -114,7 +113,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 zipStream.write(telemetry.getBytes());
                 ++counter;
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
             }
 
             if (counter < telemetries.size()) {

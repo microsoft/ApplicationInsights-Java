@@ -113,7 +113,7 @@ public final class FixedRateTelemetrySampler implements TelemetrySampler {
 
                         return false;
                     }
-                    samplingSupportingTelemetry.setSamplingPercentage(telemetrySamplingScore);
+                    samplingSupportingTelemetry.setSamplingPercentage(testedPercentage);
                 }
             }
         }

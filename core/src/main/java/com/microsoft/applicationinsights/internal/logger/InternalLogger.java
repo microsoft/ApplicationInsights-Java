@@ -262,7 +262,7 @@ public enum InternalLogger {
                 try {
                     loggerOutput = new FileLoggerOutput(loggerData);
                 } catch (Exception e) {
-                    onInitializationError(String.format("SDK Internal Logger internal error while initializing 'FILE': '%s'.", e.getMessage()));
+                    onInitializationError(String.format("SDK Internal Logger internal error while initializing 'FILE': '%s'.", e.toString()));
                 }
                 return;
 

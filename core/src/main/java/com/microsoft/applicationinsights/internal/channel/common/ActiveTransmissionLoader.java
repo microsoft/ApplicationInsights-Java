@@ -95,9 +95,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                     try {
                         barrier.await();
                     } catch (InterruptedException e) {
-                        InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.getMessage());
+                        InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.toString());
                     } catch (BrokenBarrierException e) {
-                        InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.getMessage());
+                        InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.toString());
                     }
 
                     // Avoid un-expected exit of threads
@@ -152,9 +152,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
             barrier.await();
             return true;
         } catch (InterruptedException e) {
-            InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.toString());
         } catch (BrokenBarrierException e) {
-            InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.toString());
         }
 
         return false;
@@ -168,7 +168,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                 thread.interrupt();
                 thread.join();
             } catch (InterruptedException e) {
-                InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.toString());
             }
         }
     }

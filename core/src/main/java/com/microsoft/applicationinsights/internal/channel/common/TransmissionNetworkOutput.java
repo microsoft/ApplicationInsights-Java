@@ -162,20 +162,19 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
                 shouldBackoff = true;
             } catch (UnknownHostException e) {
-                InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.toString());
                 shouldBackoff = true;
             } catch (IOException ioe) {
-                InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.toString());
                 shouldBackoff = true;
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.toString());
                 shouldBackoff = true;
             } catch (ThreadDeath td) {
             	throw td;
             } catch (Throwable t) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.getMessage());
-                    shouldBackoff = true;
+                    InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.toString());                    shouldBackoff = true;
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
@@ -220,8 +219,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Throttled but failed to block transmission, exception: %s", e.getMessage());
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Throttled but failed to block transmission, exception: %s", e.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

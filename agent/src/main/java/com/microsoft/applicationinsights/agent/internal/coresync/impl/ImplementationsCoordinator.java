@@ -311,8 +311,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             throw td;
         } catch (Throwable throwable) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
-            } catch (ThreadDeath td) {
+                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -333,8 +332,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             throw td;
         } catch (Throwable throwable) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.getMessage());
-            } catch (ThreadDeath td) {
+                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

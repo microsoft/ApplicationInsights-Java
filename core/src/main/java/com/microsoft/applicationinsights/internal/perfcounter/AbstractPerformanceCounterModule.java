@@ -54,8 +54,7 @@ public abstract class AbstractPerformanceCounterModule implements TelemetryModul
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to register performance counter '%s': '%s'", performanceCounter.getId(), e.getMessage());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    InternalLogger.INSTANCE.error("Failed to register performance counter '%s': '%s'", performanceCounter.getId(), e.toString());                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {

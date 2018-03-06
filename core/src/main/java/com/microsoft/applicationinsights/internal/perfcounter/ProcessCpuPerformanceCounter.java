@@ -45,7 +45,7 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
         } catch (Throwable t) {
             try {
                 cpuPerformanceCounterCalculator = null;
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create ProcessCpuPerformanceCounter: %s", t.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create ProcessCpuPerformanceCounter: %s", t.toString());
                 InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;

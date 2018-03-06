@@ -416,8 +416,7 @@ public class TelemetryClient {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.getMessage());
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -447,8 +446,7 @@ public class TelemetryClient {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.getMessage());
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -464,8 +462,7 @@ public class TelemetryClient {
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed during telemetry initialization class '%s', exception: %s", initializer.getClass().getName(), e.getMessage());
-                } catch (ThreadDeath td) {
+                    InternalLogger.INSTANCE.error("Failed during telemetry initialization class '%s', exception: %s", initializer.getClass().getName(), e.toString());                } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
                     // chomp
@@ -484,8 +481,7 @@ public class TelemetryClient {
             	throw td;
             } catch (Throwable t) {
                 try {
-                    InternalLogger.INSTANCE.error("Exception while processing telemetry: '%s'",t.getMessage());
-                } catch (ThreadDeath td) {
+                    InternalLogger.INSTANCE.error("Exception while processing telemetry: '%s'",t.toString());                } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
                     // chomp
@@ -524,8 +520,7 @@ public class TelemetryClient {
             	throw td;
             } catch (Throwable t) {
                 try {
-                    InternalLogger.INSTANCE.error("Exception in context initializer: '%s'", t.getMessage());
-                } catch (ThreadDeath td) {
+                    InternalLogger.INSTANCE.error("Exception in context initializer: '%s'", t.toString());                } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
                     // chomp

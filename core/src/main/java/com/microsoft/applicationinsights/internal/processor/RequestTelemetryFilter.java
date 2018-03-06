@@ -105,13 +105,12 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
     public void setMinimumDurationInMS(String minimumDurationInMS) throws Throwable {
         try {
             this.minimumDurationInMS = Long.valueOf(minimumDurationInMS);
-            InternalLogger.INSTANCE.trace("RequestTelemetryFilter: successfully set MinimumDurationInMS " + this.minimumDurationInMS);
+            InternalLogger.INSTANCE.trace("RequestTelemetryFilter: successfully set MinimumDurationInMS = %d", this.minimumDurationInMS);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "RequestTelemetryFilter: failed to set minimum duration " + minimumDurationInMS);
-            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "RequestTelemetryFilter: failed to set minimum duration: %s", minimumDurationInMS);            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
