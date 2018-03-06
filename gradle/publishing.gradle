@@ -58,6 +58,7 @@ dependencies {
     mavenDeployer "org.apache.maven.wagon:wagon-ftp:2.8"
 }
 
+// not used at Microsoft, could be used for publishing a fork
 uploadArchives { task ->
     gradle.taskGraph.whenReady { graph ->
         if (graph.hasTask(task)) {
@@ -83,9 +84,20 @@ uploadArchives { task ->
     }
 }
 
+// task for installing artifacts to maven local repository
 install {
     doFirst {
         updatePomWithGeneralProjectInformation(repositories.mavenInstaller.pom)
+    }
+}
+
+// generates a pom file "beside" the jar file
+task generatePom {
+    doLast {
+        def pomFileName = jar.archiveName.replaceFirst(/\.jar$/, '.pom')
+        def pomFileObj = new File(jar.destinationDir, pomFileName)
+        def pomObject = updatePomWithGeneralProjectInformation(pom())
+        pomObject.writeTo(pomFileObj)
     }
 }
 
@@ -96,6 +108,7 @@ def updatePomWithGeneralProjectInformation(pomObject) {
         project {
             name = projectPomName
             description = projectPomDescription
+            artifactId = archivesBaseName
             url = "https://github.com/Microsoft/ApplicationInsights-Java"
 
             licenses {
@@ -123,7 +136,7 @@ def updatePomWithGeneralProjectInformation(pomObject) {
         withXml {
             // Append license text to pom.xml
             def pomText = asString()
-            def licenseComment = new StringBuilder()
+             def licenseComment = new StringBuilder()
             licenseComment.append("<!--\n")
             licenseComment.append(rootProject.file("LICENSE.txt").text)
             licenseComment.append("\n-->\n")
@@ -161,7 +174,7 @@ task copyLibsToGlobalArtifactsFolder(type: Copy) {
     from libsDir
     into new File(artifactsDirectoryRoot, project.name)
     exclude '**/windows/**'
-    dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive
+    dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, generatePom
 }
 
 task prepare {
