@@ -1,0 +1,2 @@
+openjdk:7-jre
+azul/zulu-openjdk:7
