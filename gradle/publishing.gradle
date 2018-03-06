@@ -58,59 +58,6 @@ dependencies {
     mavenDeployer "org.apache.maven.wagon:wagon-ftp:2.8"
 }
 
-afterEvaluate {
-    assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
-    pom {
-        project {
-            name = projectPomName
-            description = projectPomDescription
-            url = "https://github.com/Microsoft/ApplicationInsights-Java"
-
-            licenses {
-                license {
-                    name = "MIT License"
-                    url = "http://www.opensource.org/licenses/mit-license.php"
-                }
-            }
-
-            scm {
-                url = "scm:git:https://github.com/Microsoft/ApplicationInsights-Java"
-                connection = "scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git"
-            }
-
-            developers {
-                developer {
-                    id = "microsoft"
-                    name = "Microsoft"
-                }
-            }
-        }
-
-        scopeMappings.addMapping(MavenPlugin.PROVIDED_COMPILE_PRIORITY, configurations.getByName("provided"), Conf2ScopeMappingContainer.PROVIDED)
-
-        whenConfigured whenPomConfigured
-    }.writeTo("pom.xml")
-
-    uploadArchives {
-        ext.requriedProperties = ["mavenRepositoryUrl", "mavenUsername", "mavenUserPassword"]
-        if (requiredPropertiesExist(requriedProperties)) {
-            repositories {
-                mavenDeployer {
-                    configuration = configurations.mavenDeployer
-
-                    repository(url: mavenRepositoryUrl) {
-                        authentication(userName: mavenUsername, password: mavenUserPassword)
-                    }
-
-                    updatePomWithGeneralProjectInformation(pom)
-                }
-            }
-        } else {
-            logger.warn "Missing required properties for maven publish"
-        }
-    }
-}
-
 javadoc {
     source = sourceSets.main.allJava
     classpath = configurations.compile + configurations.provided
@@ -142,53 +89,55 @@ task copyLibsToGlobalArtifactsFolder(type: Copy) {
 
 task prepare {
     dependsOn copyLibsToGlobalArtifactsFolder
+    doLast {
+        // this writes the pom to <repo root>/build/artifacts/<project.name>/<artifactId>-<version>.pom
+        assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
+        whenPomConfigured(pom {
+            project {
+                name = projectPomName
+                description = projectPomDescription
+                artifactId = archivesBaseName
+                url = "https://github.com/Microsoft/ApplicationInsights-Java"
+
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "http://www.opensource.org/licenses/mit-license.php"
+                    }
+                }
+
+                scm {
+                    url = "scm:git:https://github.com/Microsoft/ApplicationInsights-Java"
+                    connection = "scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git"
+                }
+
+                developers {
+                    developer {
+                        id = "microsoft"
+                        name = "Microsoft"
+                    }
+                }
+            }
+            scopeMappings.addMapping(MavenPlugin.PROVIDED_COMPILE_PRIORITY, configurations.getByName("provided"), Conf2ScopeMappingContainer.PROVIDED)
+        })
+    }
 }
 
 // endregion Publishing configuration
 
 // region Public methods
 ext {
-    //updatePomWithGeneralProjectInformation = this.&updatePomWithGeneralProjectInformation
     writePomToArtifactsDirectory = this.&writePomToArtifactsDirectory
     getArtifactsDirectory = this.&getArtifactsDirectory
-}
-
-def updatePomWithGeneralProjectInformation(pomObject) {
-    pomObject.project {
-
-        name = projectPomName
-        description = projectPomDescription
-        url = "https://github.com/Microsoft/ApplicationInsights-Java"
-
-        licenses {
-            license {
-                name = "MIT License"
-                url = "http://www.opensource.org/licenses/mit-license.php"
-            }
-        }
-
-        scm {
-            url = "scm:git:https://github.com/Microsoft/ApplicationInsights-Java"
-            connection = "scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git"
-        }
-
-        developers {
-            developer {
-                id = "microsoft"
-                name = "Microsoft"
-            }
-        }
-    }
-
-    pomObject.scopeMappings.addMapping(MavenPlugin.PROVIDED_COMPILE_PRIORITY, configurations.getByName("provided"), Conf2ScopeMappingContainer.PROVIDED)
-
-    pomObject.whenConfigured whenPomConfigured
 }
 
 def writePomToArtifactsDirectory(pomObject, directoryName) {
     def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
     def artifactsDir = getArtifactsDirectory(directoryName)
-    def pomWriter = new FileWriter(new File(artifactsDir, pomFilename), false)
+    def pomFileObj = new File(artifactsDir, pomFilename)
+    def pomWriter = new FileWriter(pomFileObj, false)
+
+    logger.info "Writing '${pomFileObj.absolutePath}'..."
 
     // Converting the POM object to string, to be able to read one by line.
     StringWriter stringWriter = new StringWriter()
@@ -211,6 +160,7 @@ def writePomToArtifactsDirectory(pomObject, directoryName) {
     }
 
     pomWriter.close()
+    logger.info "Finished writing '${pomFileObj.absolutePath}'..."
 }
 
 def getArtifactsDirectory(artifactId) {
