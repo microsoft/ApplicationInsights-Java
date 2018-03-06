@@ -1,2 +1,3 @@
 jbosseap7
-tomcat7tomcat8
+tomcat7
+tomcat8
