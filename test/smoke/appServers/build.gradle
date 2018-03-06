@@ -19,6 +19,7 @@ subprojects {
 		dockerfileOutputDir = "$outputRoot/dockerfiles"
 		resourcesOutputDir = "$outputRoot/resources"
 		stagingDir = "$outputRoot/tmp"
+		additionalReplaceTokenMap = [:]
 	}
 
 	task generateDockerfiles {
@@ -53,13 +54,15 @@ subprojects {
 			def jresFile = file("$resourcesOutputDir/${appServerShortName}.jre.txt")
 			jresFile.getParentFile().mkdirs()
 			jresFile.createNewFile()
-
+			def tokenMap = [:] << additionalReplaceTokenMap
 			jresToUse.each { jreVersion -> 
+				tokenMap << [JRE: jreVersion]
+				logger.debug "tokenMap = ${tokenMap}"
 				copy {
 					from projectDir
 					into dockerfileOutputDir
 					include "*$partialDockerfileExt"
-					filter(ReplaceTokens, tokens: [JRE: jreVersion])
+					filter(ReplaceTokens, tokens: tokenMap)
 					def sanitizedJreVersion = jreVersion.replace(':','_').replace('/','_')
 					rename(/(.+\.)(partial)(\.dockerfile)/, "\$1$sanitizedJreVersion\$3")
 				}
@@ -157,13 +160,13 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
 	// if the excludes file contains entries which do not exist in the master list, warn the user; this is likely a typo
 	def uniqueExcludes = excludeSet.minus(universalSet)
 	if (uniqueExcludes.size() > 0) {
-		logger.warn("$excludesFile.name entries are not a subset of ${universeFile.name}: ${uniqueExcludes}. These entries are nops and can be removed.")
+		logger.info("$excludesFile.name entries are not a subset of ${universeFile.name}: ${uniqueExcludes}. These entries are nops and can be removed.")
 	}
 	
 	// if the includes file contains entires which do not exist in the master list, warn the user; be aware that these will be included
 	def uniqueIncludes = includeSet.minus(universalSet)
 	if (uniqueIncludes.size() > 1) {
-		logger.warn("FYI: $includesFile.name has ${includeSubset.size()} entries not found in $universeFile.name: $includeSubset")
+		logger.info("FYI: $includesFile.name has ${includeSubset.size()} entries not found in $universeFile.name: $includeSubset")
 	}
 
 	def resultantSet = includeSet.intersect(universalSet.minus(excludeSet)).plus(uniqueIncludes)
