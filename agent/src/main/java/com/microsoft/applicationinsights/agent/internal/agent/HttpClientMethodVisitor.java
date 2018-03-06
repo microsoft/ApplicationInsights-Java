@@ -90,32 +90,29 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         mv.visitVarInsn(ALOAD, appCorrelationId);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
-        mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "getRequestLine", "()Lorg/apache/http/RequestLine;", true);
-        int requestLineLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, requestLineLocal);
-
-        mv.visitVarInsn(ALOAD, requestLineLocal);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/RequestLine", "getMethod", "()Ljava/lang/String;", true);
-        methodLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, methodLocal);
-
-        mv.visitVarInsn(ALOAD, requestLineLocal);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/RequestLine", "getUri", "()Ljava/lang/String;", true);
-        uriLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, uriLocal);
-
         //Load HttpUriRequest instance into Local Array. Contains information of Path and Host
         mv.visitVarInsn(ALOAD, 2);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/client/methods/HttpUriRequest", "getURI", "()Ljava/net/URI;", true);
         int uri = this.newLocal(Type.getType(Object.class));
         mv.visitVarInsn(ASTORE, uri);
 
+        //Get Method Name from HttpUriLRequest interface object
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/client/methods/HttpUriRequest", "getMethod", "()Ljava/lang/String;", true);
+        methodLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, methodLocal);
+
         //Use HttpUriRequest instance loaded to retrieve the target(aka host name) from java.net.URI class
         mv.visitVarInsn(ALOAD, uri);
         mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URI", "getHost", "()Ljava/lang/String;", false);
         target = this.newLocal(Type.getType(Object.class));
         mv.visitVarInsn(ASTORE, target);
+
+        //Get the URL String from URI object
+        mv.visitVarInsn(ALOAD, uri);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URI", "toString", "()Ljava/lang/String;", false);
+        uriLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, uriLocal);
 
         //Use HttpUriRequest instance loaded to retrieve the path(relative URL) from java.net.URI class
         mv.visitVarInsn(ALOAD, uri);
