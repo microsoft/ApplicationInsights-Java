@@ -13,6 +13,9 @@ import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
+import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
+import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
+import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
 import org.junit.*;
@@ -22,8 +25,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import javax.annotation.Nullable;
+import javax.swing.plaf.synth.SynthConstants;
 import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
@@ -31,8 +36,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -40,12 +43,14 @@ import static org.junit.Assert.*;
  * This is the base class for smoke tests.
  */
 @RunWith(Parameterized.class)
+@UseParametersRunnerFactory(ParameterizedRunnerWithFixturesFactory.class)
 public abstract class AiSmokeTest {
 
 	//region: parameterization
 	@Parameters(name = "{index}: {0}, {1}, {2}")
 	public static Collection<Object[]> parameterGenerator() throws MalformedURLException, IOException {
 		List<String> appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
+		System.out.println("Target appservers="+Arrays.toString(appServers.toArray()));
 		String os = System.getProperty("applicationinsights.smoketest.os", "linux");
 		Multimap<String, String> appServers2jres = HashMultimap.create();
 		for (String appServer : appServers) {
@@ -85,45 +90,6 @@ public abstract class AiSmokeTest {
 	// TODO make this dependent on container mode
 	private static final AiDockerClient docker = AiDockerClient.createLinuxClient();
 
-	protected static final Runnable destroyAllContainers = new Runnable() {
-		@Override
-		public void run() {
-			synchronized (containerStack) {
-				if (containerStack.isEmpty()) return;
-				final int numToStop = containerStack.size();
-				System.out.printf("Destroying all containers... (%d)%n", numToStop);
-				ExecutorService taskService = Executors.newFixedThreadPool(containerStack.size());
-				Stopwatch stopAllTimer = Stopwatch.createStarted();
-				while (!containerStack.isEmpty()) {
-					final ContainerInfo info = containerStack.pop();
-					taskService.execute(new Runnable(){
-						@Override
-						public void run() {
-							try {
-								stopContainer(info);
-							}
-							catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-					});
-				}
-				taskService.shutdown();
-				try {
-					taskService.awaitTermination(numToStop * 15, TimeUnit.SECONDS);
-				} catch (InterruptedException e) {
-					// don't care
-					System.err.println("Interrupted while stopping containers. There may still be containers running.");
-					e.printStackTrace();
-				}
-				finally {
-					stopAllTimer.stop();
-				}
-				System.out.printf("Stopping %d containers in parallel took %dms", numToStop, stopAllTimer.elapsed(TimeUnit.MILLISECONDS));
-			}
-		}
-	};
-
 	protected static void stopContainer(ContainerInfo info) throws Exception {
 		System.out.printf("Stopping container: %s%n", info);
 		Stopwatch killTimer = Stopwatch.createUnstarted();
@@ -138,16 +104,16 @@ public abstract class AiSmokeTest {
 		}
 	}
 
-	protected static Stack<ContainerInfo> containerStack = new Stack<>();
 	protected static short currentPortNumber = BASE_PORT_NUMBER;
-
-	protected String currentImageName;
+	
+	protected static ContainerInfo currentContainerInfo = null;
+	protected static String currentImageName;
+	protected static short appServerPort;
+	protected static String warFileName;
 	//endregion
 
 	//region: application fields
-	protected String warFileName;
 
-	protected short appServerPort;
 
 	protected String targetUri;
 	protected String httpMethod;
@@ -159,9 +125,9 @@ public abstract class AiSmokeTest {
 	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
 	//endregion
 
-	private final Properties testProps = new Properties();
+	private static final Properties testProps = new Properties();
 
-	protected final MockedAppInsightsIngestionServer mockedIngestion = new MockedAppInsightsIngestionServer();
+	protected static final MockedAppInsightsIngestionServer mockedIngestion = new MockedAppInsightsIngestionServer();
 
 	/**
 	 * This rule does a few things:
@@ -193,7 +159,7 @@ public abstract class AiSmokeTest {
 		@Override
 		protected void failed(Throwable t, Description description) {
 			// NOTE this happens after @After :)
-			String containerId = lastContainerId();
+			String containerId = currentContainerInfo.getContainerId();
 			System.out.println("Test failure detected.");
 			
 			System.out.println("\nFetching appserver logs");
@@ -220,41 +186,74 @@ public abstract class AiSmokeTest {
 		}
 	};
 
-	protected static String lastContainerId() {
-		return containerStack.peek().getContainerId();
-	}
-
 	@BeforeClass
 	public static void configureShutdownHook() {
 		// NOTE the JUnit runner (or gradle) forces this to happen. The syncronized block and check for empty should avoid any issues
-		Runtime.getRuntime().addShutdownHook(new Thread(destroyAllContainers));
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if (currentContainerInfo == null) {
+					return;
+				}
+				try {
+					stopContainer(currentContainerInfo);
+				} catch (Exception e) {
+					System.err.println("Error while stopping container id="+currentContainerInfo.getContainerId()+". This must be stopped manually.");
+					e.printStackTrace();
+				}
+			}
+		}));
 	}
 
-	@Before
-	public void setupEnvironment() throws Exception {
-		System.out.println("Preparing test...");
-		checkParams();
-		setupProperties();
+	@BeforeWithParams
+	public static void configureEnvironment(final String appServer, final String os, final String jreVersion) throws Exception {
+		System.out.println("Preparing environment...");
+		if (currentContainerInfo != null) {
+			// test cleanup didn't take...try to clean up
+			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
+				System.err.println("From last test run, container is still running: "+currentContainerInfo);
+				try {
+					docker.stopContainer(currentContainerInfo.getContainerId());
+				} catch (Exception e) {
+					System.err.println("Couldn't clean up environment. Must be done manually.");
+					throw e;
+				}
+			} else {
+				// container must have stopped after timeout reached.
+				currentContainerInfo = null;
+			}
+		}
+		checkParams(appServer, os, jreVersion);
+		setupProperties(appServer, os, jreVersion);
 		startMockedIngestion();
 		startDockerContainer();
 		waitForApplicationToStart();
+		System.out.println("Environment preparation complete.");
+	}
+
+	
+	@Before
+	public void setupTest() throws Exception {
 		callTargetUriAndWaitForTelemetry();
-		System.out.println("Test preparation complete");
 	}
 
 	//region: before test helper methods
-	protected String getAppContext() {
+	protected static String getAppContext() {
 		return warFileName.replace(".war", "");
 	}
 
-	protected String getBaseUrl() {
+	protected static String getBaseUrl() {
 		return "http://localhost:" + appServerPort + "/" + getAppContext();
 	}
 
-	protected void waitForApplicationToStart() throws Exception {
+	protected static void waitForApplicationToStart() throws Exception {
 		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
 		waitForUrl(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext());
 		System.out.println("Test app health check complete.");
+		System.out.printf("Waiting %ds for any request telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		System.out.println("Clearing any RequestData from health check.");
+		mockedIngestion.resetData();
 	}
 
 	protected void callTargetUriAndWaitForTelemetry() throws Exception {
@@ -263,6 +262,7 @@ public abstract class AiSmokeTest {
 			return;
 		}
 
+		System.out.println("Calling "+targetUri+" ...");
 		String url = getBaseUrl()+targetUri;
 		final String content;
 		switch(httpMethod) {
@@ -279,27 +279,31 @@ public abstract class AiSmokeTest {
 
 		System.out.printf("Waiting %ds for telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
-		System.out.println("Finished waiting for telemetry. Starting validation...");
+		System.out.println("Finished waiting for telemetry.\nStarting validation...");
 
 		if (expectSomeTelemetry) {
 			assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
 		}
 	}
 
-	protected void checkParams() {
+	protected static void checkParams(final String appServer, final String os, final String jreVersion) {
 		String fmt = "Missing required framework parameter: %s - this indicates an error in the parameter generator";
-		assertNotNull(String.format(fmt, "appServer"), this.appServer);
-		assertNotNull(String.format(fmt, "os"), this.os);
-		assertNotNull(String.format(fmt, "jreVersion"), this.jreVersion);
+		assertNotNull(String.format(fmt, "appServer"), appServer);
+		assertNotNull(String.format(fmt, "os"), os);
+		assertNotNull(String.format(fmt, "jreVersion"), jreVersion);
 	}
 
-	protected void setupProperties() throws Exception {
+	protected void checkParams() {
+		checkParams(this.appServer, this.os, this.jreVersion);
+	}
+
+	protected static void setupProperties(final String appServer, final String os, final String jreVersion) throws Exception {
 		testProps.load(new FileReader(new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI())));
-		currentImageName = String.format("%s_%s_%s", this.appServer, this.os, this.jreVersion);
+		currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
 		appServerPort = currentPortNumber++;
 	}
 
-	protected void startMockedIngestion() throws Exception {
+	protected static void startMockedIngestion() throws Exception {
 		mockedIngestion.addIngestionFilter(new Predicate<Envelope>() {
 			@Override
 			public boolean apply(@Nullable Envelope input) {
@@ -307,7 +311,7 @@ public abstract class AiSmokeTest {
 				if (deviceId == null) {
 					return true;
 				}
-				final boolean belongsToCurrentContainer = lastContainerId().startsWith(deviceId);
+				final boolean belongsToCurrentContainer = currentContainerInfo.getContainerId().startsWith(deviceId);
 				if (!belongsToCurrentContainer) {
 					System.out.println("Telemetry from previous container");
 				}
@@ -319,23 +323,22 @@ public abstract class AiSmokeTest {
 		checkMockedIngestionHealth();
 	}
 
-	protected void checkMockedIngestionHealth() throws Exception {
+	protected static void checkMockedIngestionHealth() throws Exception {
 		String ok = HttpHelper.get("http://localhost:"+mockedIngestion.getPort()+"/");
 		assertEquals(MockedAppInsightsIngestionServlet.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
 		String postResponse = HttpHelper.post("http://localhost:60606/v2/track", MockedAppInsightsIngestionServlet.PING);
 		assertEquals(MockedAppInsightsIngestionServlet.PONG, postResponse);
 	}
 
-	protected void startDockerContainer() throws Exception {
+	protected static void startDockerContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
 		String containerId = docker.startContainer(currentImageName, appServerPort+":8080");
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
 
-		ContainerInfo info = new ContainerInfo(containerId, currentImageName);
-		containerStack.push(info);
+		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
 		try {
-			String url = String.format("http://localhost:%s/", String.valueOf(this.appServerPort));
+			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Waiting for appserver to start (%s)...%n", url);
 
 			waitForUrl(url, 90, TimeUnit.SECONDS, "app server");// TODO change to actual app server name
@@ -382,34 +385,29 @@ public abstract class AiSmokeTest {
 	}
 
 	@After
-	public void tearDown() throws Exception {
-		System.out.println("Cleaning up test resources...");
-		resetMockedIngestion();
-		System.out.println("Test resources cleaned.");
-	}
-
-	//region after test helpter methods
-	protected void resetMockedIngestion() throws Exception {
-		mockedIngestion.stopServer();
+	public void resetMockedIngestion() throws Exception {
 		mockedIngestion.resetData();
+		System.out.println("Mocked ingestion reset.");
 	}
-	//endregion
 
-	@AfterClass
-	public static void tearDownContainers() {
-		destroyAllContainers.run();
+	@AfterWithParams
+	public static void tearDownContainer(final String appServer, final String os, final String jreVersion) throws Exception {
+		stopContainer(currentContainerInfo);
+		if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
+			currentContainerInfo = null;
+		}
 	}
 
 	//region: test helper methods
 	/// This section has methods to be used inside tests ///
 
-	protected String getProperty(String key) {
+	protected static String getProperty(String key) {
 		String rval = testProps.getProperty(key);
 		if (rval == null) throw new RuntimeException(String.format("test property not found '%s'", key));
 		return rval;
 	}
 
-	protected void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName) throws InterruptedException {
+	protected static void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName) throws InterruptedException {
 		String rval = null;
 		Stopwatch watch = Stopwatch.createStarted();
 		do {

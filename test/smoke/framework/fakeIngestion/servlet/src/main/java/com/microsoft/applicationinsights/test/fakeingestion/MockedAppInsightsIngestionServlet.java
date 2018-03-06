@@ -96,6 +96,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     public void resetData() {
         logit("Clearing telemetry accumulator...");
         telemetryReceived.clear();
+        type2envelope.clear();
     }
 
     public boolean hasData() {
