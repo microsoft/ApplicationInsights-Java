@@ -7,6 +7,7 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
+import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
@@ -193,5 +194,32 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		assertEquals(expectedMessage3, d3.getMessage());
 		assertEquals(SeverityLevel.Information, d3.getSeverityLevel());
 		assertEquals(expectedValue, d3.getProperties().get("key"));
-	}
+    }
+    
+    @Test
+    @TargetUri("/trackPageView")
+    public void testTrackPageView() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(2, mockedIngestion.getCountForType("PageViewData"));
+        
+        PageViewData pv1 = getTelemetryDataForType(0, "PageViewData");
+        assertEquals("test-page", pv1.getName());
+        assertEquals(new Duration(0), pv1.getDuration());
+
+        PageViewData pv2 = getTelemetryDataForType(1, "PageViewData");
+        assertEquals("test-page-2", pv2.getName());
+        assertEquals(new Duration(123456), pv2.getDuration());
+        assertEquals("value", pv2.getProperties().get("key"));
+    }
+
+    @Test
+    @TargetUri("/doPageView.jsp")
+    public void testTrackPageView_JSP() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(1, mockedIngestion.getCountForType("PageViewData"));
+        
+        PageViewData pv1 = getTelemetryDataForType(0, "PageViewData");
+        assertEquals("doPageView", pv1.getName());
+        assertEquals(new Duration(0), pv1.getDuration());
+    }
 }
