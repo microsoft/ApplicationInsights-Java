@@ -189,9 +189,7 @@ tasks.withType(Test) {
             events  TestLogEvent.FAILED,
                     TestLogEvent.PASSED,
                     TestLogEvent.SKIPPED,
-                    TestLogEvent.STANDARD_ERROR,
-                    TestLogEvent.STARTED,
-                    TestLogEvent.STANDARD_OUT
+                    TestLogEvent.STANDARD_ERROR
 
             exceptionFormat TestExceptionFormat.FULL
             showExceptions true
@@ -201,6 +199,8 @@ tasks.withType(Test) {
 
         debug {
             events = info.events
+            events << TestLogEvent.STARTED
+            events << TestLogEvent.STANDARD_OUT
             
             exceptionFormat = info.exceptionFormat
             showExceptions = info.showExceptions
