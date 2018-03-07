@@ -97,6 +97,19 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     @Override
+    public void httpMethodFinishedWithPath(String identifier, String method, String path, String correlationId, String uri,
+                                           String target, int result, long delta) {
+        try {
+            AgentNotificationsHandler implementation = getImplementation();
+            if (implementation != null) {
+                implementation.httpMethodFinishedWithPath(identifier, method, path, correlationId, uri, target, result,
+                        delta);
+            }
+        } catch (Throwable t) {
+        }
+    }
+
+    @Override
     public void exceptionCaught(String classAndMethodNames, Throwable throwable) {
         try {
             AgentNotificationsHandler implementation = getImplementation();
