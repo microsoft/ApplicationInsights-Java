@@ -37,13 +37,14 @@ import org.apache.http.params.HttpParams;
  */
 final class ApacheSender42 implements ApacheSender {
 
-    private HttpClient httpClient;
+    private final PoolingClientConnectionManager cm;
+    private final HttpClient httpClient;
 
     public ApacheSender42() {
-        PoolingClientConnectionManager cm = new PoolingClientConnectionManager();
+        cm = new PoolingClientConnectionManager();
         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-
+        
         httpClient = new DefaultHttpClient(cm);
 
         HttpParams params = httpClient.getParams();
@@ -65,6 +66,11 @@ final class ApacheSender42 implements ApacheSender {
 
     @Override
     public void close() {
+        try {
+            cm.shutdown();
+        } catch (Exception e) {
+            // chomp
+        }
     }
 
     @Override
