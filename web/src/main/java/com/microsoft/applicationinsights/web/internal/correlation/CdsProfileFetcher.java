@@ -28,6 +28,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
+import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
@@ -39,7 +46,7 @@ import org.apache.http.util.EntityUtils;
 
 public class CdsProfileFetcher implements AppProfileFetcher {
 
-	private HttpAsyncClient httpClient;
+	private CloseableHttpAsyncClient httpClient;
     private String endpointAddress;
     private static final String ProfileQueryEndpointAppIdFormat = "%s/api/profiles/%s/appId";
     private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
@@ -54,11 +61,11 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .setConnectionRequestTimeout(5000)
             .build();
 
-        this.httpClient = HttpAsyncClients.custom()
+        setHttpClient(HttpAsyncClients.custom()
             .setDefaultRequestConfig(requestConfig)
-            .build();
+            .build());
         
-        ((CloseableHttpAsyncClient)this.httpClient).start();
+        this.httpClient.start();
 
         this.tasks = new ConcurrentHashMap<String, Future<HttpResponse>>();
         this.endpointAddress = DefaultProfileQueryEndpointAddress;
@@ -108,8 +115,9 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         }
     }
 
-	public void setHttpClient(HttpAsyncClient client) {
+	public void setHttpClient(CloseableHttpAsyncClient client) {
         this.httpClient = client;
+        SDKShutdownActivity.INSTANCE.register(this.httpClient);
     }
 
     public void setEndpointAddress(String endpoint) throws MalformedURLException {
@@ -124,4 +132,9 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 		HttpGet request = new HttpGet(String.format(ProfileQueryEndpointAppIdFormat, this.endpointAddress, instrumentationKey));
         return this.httpClient.execute(request, null);
     }
+
+	@Override
+	public void close() throws IOException {
+        this.httpClient.close();
+	}
 }

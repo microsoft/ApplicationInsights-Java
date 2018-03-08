@@ -86,6 +86,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
         this.fileSystem = fileSystem;
         this.dispatcher = dispatcher;
         threads = new Thread[numberOfThreads];
+        final String threadNameFmt = String.format("%s-worker-%%d", ActiveTransmissionLoader.class.getSimpleName());
         for (int i = 0; i < numberOfThreads; ++i) {
             threads[i] = new Thread(new Runnable() {
                 @Override
@@ -128,7 +129,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                         // TODO: check whether we need to pause after exception
                     }
                 }
-            });
+            }, String.format(threadNameFmt, i));
             threads[i].setDaemon(true);
         }}
 

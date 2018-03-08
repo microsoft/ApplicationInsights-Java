@@ -26,8 +26,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Preconditions;
@@ -51,6 +51,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  * Created by gupele on 6/29/2015.
  */
 public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
+    private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
 
     private int instantRetryAmount = 3;         // Should always be set by the creator of this class
     private final int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
@@ -73,6 +74,8 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
     // Keeps the current policy state of the transmission
     private final TransmissionPolicyState policyState = new TransmissionPolicyState();
     private boolean throttlingIsEnabled = true;
+
+    private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
     /**
      * The class will be activated when a timeout expires
@@ -203,14 +206,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         }
 
         threads = new ScheduledThreadPoolExecutor(1);
-        threads.setThreadFactory(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(TransmissionPolicyManager.class, instanceId));
 
         SDKShutdownActivity.INSTANCE.register(this);
     }

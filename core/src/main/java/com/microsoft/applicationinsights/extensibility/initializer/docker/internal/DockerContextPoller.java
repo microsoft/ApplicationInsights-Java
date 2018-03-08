@@ -41,9 +41,9 @@ public class DockerContextPoller extends Thread {
     }
 
     public DockerContextPoller(String contextFileDirectory) {
+        this(new File(contextFileDirectory + "/" + CONTEXT_FILE_NAME), new DockerContextFactory());
         this.setDaemon(true);
-        this.contextFile = new File(contextFileDirectory + "/" + CONTEXT_FILE_NAME);
-        this.dockerContextFactory = new DockerContextFactory();
+        this.setName(DockerContextPoller.class.getSimpleName());
     }
 
     @Override
