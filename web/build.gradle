@@ -66,8 +66,11 @@ projectPomDescription = "This is the web module of " + project.msftAppInsightsJa
 
 whenPomConfigured = { p ->
     def agentArtifactId = project(":agent").jar.baseName
-    p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != agentArtifactId }
-    writePomToArtifactsDirectory(p, project.name)
+    p.dependencies = p.dependencies.findAll { dep ->
+        dep.artifactId != agentArtifactId &&
+                !(dep.groupId in ['org.apache.http', 'org.apache.commons', 'commons-io',
+                                  'org.apache.httpcomponents'])
+    }
 }
 
 // endregion Publishing properties

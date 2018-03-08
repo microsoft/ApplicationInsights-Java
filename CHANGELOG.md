@@ -13,6 +13,13 @@
 - Fixed Issue #526 (NPE in MapUtil.copy())
 - Fixed Issue #513 (Memory leak in SDKShutdownActivity). This fix upgrades our Servlet version from 2.5 to 3.0. The SDK must now be run on an application server supporting Servlet 3.0.
 
+## Version 2.0.0
+- Upgraded logback dependency version to 1.2.3
+- Improved FixedRateSampling so that it also supports Sampling Percentage set by users programmatically. Fixes [issue #535](https://github.com/Microsoft/ApplicationInsights-Java/issues/535)
+- Fault Tolerance improvements: introducing retries and exponential backoff capabilities with disk persistence.
+- [Issue #499](https://github.com/Microsoft/ApplicationInsights-Java/pull/499): Fix handling of NaN and +/-Infinity in JSON serializer
+- [Issue #506](https://github.com/Microsoft/ApplicationInsights-Java/pull/506): Null Reference Check causing Null Pointer Exception in `TelemetryCorrelationUtils.java`
+
 ## Version 2.0.0-BETA
 - Updating various dependencies to latest version
 - Introducing public class CustomClassWriter in Agent to enable finding common super classes used for Agent instrumentation without loading it
