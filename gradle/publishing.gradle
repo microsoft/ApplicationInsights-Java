@@ -25,7 +25,7 @@ apply from: "$buildScriptsDir/provided-configuration.gradle"
 ext {
     projectPomName = ""
     projectPomDescription = ""
-    whenPomConfigured = { p -> writePomToArtifactsDirectory(p, project.name) }
+    whenPomConfigured = { p -> }
 }
 
 def releaseNotesFileDir = "$project.buildDir/src/common/main/resources"
@@ -58,24 +58,99 @@ dependencies {
     mavenDeployer "org.apache.maven.wagon:wagon-ftp:2.8"
 }
 
-afterEvaluate {
-    assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
-    uploadArchives {
-        ext.requriedProperties = ["mavenRepositoryUrl", "mavenUsername", "mavenUserPassword"]
-        if (requiredPropertiesExist(requriedProperties)) {
-            repositories {
-                mavenDeployer {
-                    configuration = configurations.mavenDeployer
+// not used at Microsoft, could be used for publishing a fork
+uploadArchives { task ->
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(task)) {
+            // check properties defined and fail early
+            mavenRepositoryUrl
+            mavenUsername
+            mavenUserPassword
+        }
+    }
 
-                    repository(url: mavenRepositoryUrl) {
-                        authentication(userName: mavenUsername, password: mavenUserPassword)
-                    }
+    doFirst {
+        repositories {
+            mavenDeployer {
+                configuration = configurations.mavenDeployer
 
-                    updatePomWithGeneralProjectInformation(pom)
+                repository(url: mavenRepositoryUrl) {
+                    authentication(userName: mavenUsername, password: mavenUserPassword)
                 }
+
+                updatePomWithGeneralProjectInformation(pom)
             }
         }
     }
+}
+
+// task for installing artifacts to maven local repository
+install {
+    doFirst {
+        updatePomWithGeneralProjectInformation(repositories.mavenInstaller.pom)
+    }
+}
+
+// generates a pom file "beside" the jar file
+task generatePom {
+    doLast {
+        def pomFileName = jar.archiveName.replaceFirst(/\.jar$/, '.pom')
+        def pomFileObj = new File(jar.destinationDir, pomFileName)
+        def pomObject = updatePomWithGeneralProjectInformation(pom())
+        pomObject.writeTo(pomFileObj)
+    }
+}
+
+// customizes pom, used for both uploadArchives.repositories.mavenDeployer.pom and install.repositories.mavenInstaller.pom
+def updatePomWithGeneralProjectInformation(pomObject) {
+    configure(pomObject) {
+        assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
+        project {
+            name = projectPomName
+            description = projectPomDescription
+            artifactId = archivesBaseName
+            url = "https://github.com/Microsoft/ApplicationInsights-Java"
+
+            licenses {
+                license {
+                    name = "MIT License"
+                    url = "http://www.opensource.org/licenses/mit-license.php"
+                }
+            }
+
+            scm {
+                url = "scm:git:https://github.com/Microsoft/ApplicationInsights-Java"
+                connection = "scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git"
+            }
+
+            developers {
+                developer {
+                    id = "microsoft"
+                    name = "Microsoft"
+                }
+            }
+        }
+
+        scopeMappings.addMapping(MavenPlugin.PROVIDED_COMPILE_PRIORITY, configurations.getByName("provided"), Conf2ScopeMappingContainer.PROVIDED)
+
+        withXml {
+            // Append license text to pom.xml
+            def pomText = asString()
+             def licenseComment = new StringBuilder()
+            licenseComment.append("<!--\n")
+            licenseComment.append(rootProject.file("LICENSE.txt").text)
+            licenseComment.append("\n-->\n")
+            // insert in pom.xml after the first row (xml declaration)
+            pomText.insert(pomText.indexOf(String.valueOf((char)'\n')) + 1, licenseComment)
+        }
+
+        whenConfigured whenPomConfigured
+    }
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compile + configurations.provided
 }
 
 task prepareSourcesArchive(type: Jar) {
@@ -99,7 +174,7 @@ task copyLibsToGlobalArtifactsFolder(type: Copy) {
     from libsDir
     into new File(artifactsDirectoryRoot, project.name)
     exclude '**/windows/**'
-    dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive
+    dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, generatePom
 }
 
 task prepare {
@@ -107,79 +182,3 @@ task prepare {
 }
 
 // endregion Publishing configuration
-
-// region Public methods
-ext {
-    updatePomWithGeneralProjectInformation = this.&updatePomWithGeneralProjectInformation
-    writePomToArtifactsDirectory = this.&writePomToArtifactsDirectory
-    getArtifactsDirectory = this.&getArtifactsDirectory
-}
-
-def updatePomWithGeneralProjectInformation(pomObject) {
-    pomObject.project {
-
-        name = projectPomName
-        description = projectPomDescription
-        url = "https://github.com/Microsoft/ApplicationInsights-Java"
-
-        licenses {
-            license {
-                name = "MIT License"
-                url = "http://www.opensource.org/licenses/mit-license.php"
-            }
-        }
-
-        scm {
-            url = "scm:git:https://github.com/Microsoft/ApplicationInsights-Java"
-            connection = "scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git"
-        }
-
-        developers {
-            developer {
-                id = "microsoft"
-                name = "Microsoft"
-            }
-        }
-    }
-
-    pomObject.scopeMappings.addMapping(MavenPlugin.PROVIDED_COMPILE_PRIORITY, configurations.getByName("provided"), Conf2ScopeMappingContainer.PROVIDED)
-
-    pomObject.whenConfigured whenPomConfigured
-}
-
-def writePomToArtifactsDirectory(pomObject, directoryName) {
-    def pomFilename = pomObject.getArtifactId() + '-' + pomObject.getVersion() + '.pom'
-    def artifactsDir = getArtifactsDirectory(directoryName)
-    def pomWriter = new FileWriter(new File(artifactsDir, pomFilename), false)
-
-    // Converting the POM object to string, to be able to read one by line.
-    StringWriter stringWriter = new StringWriter()
-    pomObject.writeTo(stringWriter)
-    StringReader reader = new StringReader(stringWriter.toString())
-
-    // Appending xml schema first
-    String schema = reader.readLine()
-    pomWriter.append(schema + "\n")
-
-    // Appending license text
-    def licenseText = GFileUtils.readFile(new File("LICENSE.TXT"))
-    pomWriter.append("<!--\n")
-    pomWriter.append(licenseText + "\n")
-    pomWriter.append("-->\n")
-
-    // Appending the rest of the pom file.
-    for (String line : reader.readLines()) {
-        pomWriter.append(line + "\n")
-    }
-
-    pomWriter.close()
-}
-
-def getArtifactsDirectory(artifactId) {
-    File dir = new File(artifactsDirectoryRoot, artifactId)
-    dir.mkdirs()
-
-    return dir
-}
-
-// endregion Public methods

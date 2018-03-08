@@ -37,7 +37,6 @@ import org.apache.http.ParseException;
       * @param instrumentationKey The instrumentation key for which to fetch the appId.
       * @throws ExecutionException
       * @throws InterruptedException
-      * @throws JSONException
       * @throws IOException
       * @throws ParseException
       */
