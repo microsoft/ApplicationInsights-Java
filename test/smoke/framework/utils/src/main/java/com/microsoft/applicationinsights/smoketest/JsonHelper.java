@@ -19,6 +19,7 @@ import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
+import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.schemav2.PerformanceCounterData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
@@ -51,7 +52,8 @@ public class JsonHelper {
 				MetricData.class,
 				RemoteDependencyData.class,
 				PerformanceCounterData.class,
-				SessionStateData.class
+				SessionStateData.class,
+				PageViewData.class
 			};
 
 			for (Class<? extends Domain> clazz : classes) {
