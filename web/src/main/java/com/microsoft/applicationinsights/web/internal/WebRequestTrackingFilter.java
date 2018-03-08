@@ -36,6 +36,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.annotation.WebFilter;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -48,6 +49,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 /**
  * Created by yonisha on 2/2/2015.
  */
+@WebFilter
 public final class WebRequestTrackingFilter implements Filter {
     private final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";

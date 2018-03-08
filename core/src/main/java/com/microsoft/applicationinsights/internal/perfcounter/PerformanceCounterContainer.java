@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ThreadFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -282,14 +281,7 @@ public enum PerformanceCounterContainer implements Stoppable {
 
     private void createThreadToCollect() {
         threads = new ScheduledThreadPoolExecutor(1);
-        threads.setThreadFactory(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(PerformanceCounterContainer.class));
     }
 
     public void setPlugin(PerformanceCountersCollectionPlugin plugin) {

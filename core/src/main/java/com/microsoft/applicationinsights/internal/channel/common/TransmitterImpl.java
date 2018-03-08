@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.util.Collection;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
@@ -112,7 +112,9 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
         }
     }
 
-    private final static int MAX_PENDING_SCHEDULE_REQUESTS = 16384;
+    private static final int MAX_PENDING_SCHEDULE_REQUESTS = 16384;
+
+    private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1); 
 
     private final TransmissionDispatcher transmissionDispatcher;
 
@@ -123,6 +125,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
     private final TransmissionsLoader transmissionsLoader;
 
     private final Semaphore semaphore;
+
+    private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
     public TransmitterImpl(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, TransmissionsLoader transmissionsLoader) {
         Preconditions.checkNotNull(transmissionDispatcher, "transmissionDispatcher must be non-null value");
@@ -135,14 +139,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
         semaphore = new Semaphore(MAX_PENDING_SCHEDULE_REQUESTS);
 
         threadPool = new ScheduledThreadPoolExecutor(2);
-        threadPool.setThreadFactory(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        threadPool.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(TransmitterImpl.class, instanceId));
 
         this.transmissionsLoader = transmissionsLoader;
         this.transmissionsLoader.load(false);

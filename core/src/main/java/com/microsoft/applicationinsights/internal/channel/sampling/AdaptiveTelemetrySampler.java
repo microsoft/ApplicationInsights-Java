@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.channel.sampling;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -232,14 +231,7 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
 
     private void createTimerThread() {
         threads = new ScheduledThreadPoolExecutor(1);
-        threads.setThreadFactory(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(AdaptiveTelemetrySampler.class));
     }
 
     private int getIntValueOrDefault(String name, String valueAsString, int defaultValue, int minValue, int maxValue) {

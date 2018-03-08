@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -47,6 +47,7 @@ import com.google.common.base.Preconditions;
  * Created by gupele on 6/29/2015.
  */
 public final class TransmissionPolicyManager implements Stoppable {
+    private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
 
     // The future date the the transmission is blocked
     private Date suspensionDate;
@@ -60,6 +61,8 @@ public final class TransmissionPolicyManager implements Stoppable {
     // Keeps the current policy state of the transmission
     private final TransmissionPolicyState policyState = new TransmissionPolicyState();
     private boolean throttlingIsEnabled = true;
+
+    private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
     /**
      * The class will be activated when a timeout expires
@@ -158,14 +161,7 @@ public final class TransmissionPolicyManager implements Stoppable {
         }
 
         threads = new ScheduledThreadPoolExecutor(1);
-        threads.setThreadFactory(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(TransmissionPolicyManager.class, instanceId));
 
         SDKShutdownActivity.INSTANCE.register(this);
     }

@@ -180,6 +180,7 @@ public class TelemetryCorrelationUtils {
 
 		String target = generateSourceTargetCorrelation(instrumentationKey, requestContext);
 		if (target == null) {
+			InternalLogger.INSTANCE.warn("Target value is null and hence returning empty string");
 			return ""; // we want an empty string instead of null so it plays nicer with bytecode injection
 		}
 

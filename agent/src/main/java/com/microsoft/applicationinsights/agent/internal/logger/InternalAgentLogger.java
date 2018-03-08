@@ -161,7 +161,8 @@ public enum InternalAgentLogger {
             currentDateAsString = dateFormatter.format(new Date());
         }
         String formattedMessage = String.format(message, args);
-        String theMessage = String.format("%s %s, %d: %s", prefix, currentDateAsString, Thread.currentThread().getId(), formattedMessage);
+        final Thread thisThread = Thread.currentThread();
+        String theMessage = String.format("%s %s, %d(%s): %s", prefix, currentDateAsString, thisThread.getId(), thisThread.getName(), formattedMessage);
         return theMessage;
     }
 

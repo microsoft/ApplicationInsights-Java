@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
-import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 public class MockHttpAsyncClientWrapper {
 
-    private final HttpAsyncClient mockClient;
+    private final CloseableHttpAsyncClient mockClient;
     private final MockHttpEntity entity;
     private final MockHttpResponse response;
     private final MockHttpTask task;
@@ -43,7 +43,7 @@ public class MockHttpAsyncClientWrapper {
         
         this.task = new MockHttpTask(this.response);
 
-        this.mockClient = mock(HttpAsyncClient.class);
+        this.mockClient = mock(CloseableHttpAsyncClient.class);
         
         when(mockClient.execute(any(HttpUriRequest.class), any(FutureCallback.class))).thenReturn(this.task);
     }
@@ -68,7 +68,7 @@ public class MockHttpAsyncClientWrapper {
         this.response.setStatusCode(code);
     }
 
-    public HttpAsyncClient getClient() {
+    public CloseableHttpAsyncClient getClient() {
         return this.mockClient;
     }
 }
