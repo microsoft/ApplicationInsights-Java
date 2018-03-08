@@ -96,6 +96,19 @@ public final class ExceptionTelemetryTest {
         assertSame(error, telemetry.getThrowable());
     }
 
+    @Test
+    public void testMaxExceptionCount() {
+        Exception exception = new Exception("mock1", new Exception("mock2", new Exception("mock3",
+                new Exception("mock4", new Exception("mock5", new Exception("mock6", new Exception("mock7",
+                        new Exception("mock8", new Exception("mock9", new Exception("mock10", new Exception("mock11")))))))))));
+
+        ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
+        //1 + 10 Max Allowed Exceptions
+        assertEquals(11, exceptionTelemetry.getExceptions().size());
+        assertTrue(exceptionTelemetry.getExceptions().get(0).getMessage().startsWith("number of inner exception"));
+    }
+
+
     private static void testSeverityLevel(SeverityLevel severityLevel) {
         ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
 
