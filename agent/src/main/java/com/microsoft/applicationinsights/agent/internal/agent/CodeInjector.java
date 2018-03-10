@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguratio
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class is responsible for finding needed classes
@@ -51,10 +52,11 @@ public final class CodeInjector implements ClassFileTransformer {
         try {
             loadConfiguration(agentConfiguration);
 
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is up");
+            InternalAgentLogger.INSTANCE.info("Agent is up");
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is NOT activated: failed to initialize CodeInjector: '%s'", throwable.toString());
+            InternalAgentLogger.INSTANCE.error( "Agent is NOT activated: failed to initialize CodeInjector: '%s'",
+                    ExceptionUtils.getStackTrace(throwable));
         }
     }
 
@@ -81,7 +83,8 @@ public final class CodeInjector implements ClassFileTransformer {
                 return byteCodeTransformer.transform(originalBuffer, className, loader);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to instrument '%s', exception: '%s': ", className, throwable.toString());
+                InternalAgentLogger.INSTANCE.error("Failed to instrument '%s', " +
+                        "exception: '%s': ", className, ExceptionUtils.getStackTrace(throwable));
             }
         }
 

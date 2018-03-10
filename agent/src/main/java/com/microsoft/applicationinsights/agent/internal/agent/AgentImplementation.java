@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguratio
 import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +61,7 @@ public final class AgentImplementation {
             appendJarsToBootstrapClassLoader(inst);
             initializeCodeInjector(inst);
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: %s", throwable.toString());
+            InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to load to bootstrap class loader: %s", ExceptionUtils.getStackTrace(throwable));
 			throwable.printStackTrace();
             System.exit(-1);
         }
@@ -86,7 +87,7 @@ public final class AgentImplementation {
             DataOfConfigurationForException exceptionData = agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException();
             if (inst.isRetransformClassesSupported()) {
                 if (exceptionData.isEnabled()) {
-                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Instrumenting runtime exceptions.");
+                    InternalAgentLogger.INSTANCE.trace("Instrumenting runtime exceptions.");
 
                     inst.addTransformer(codeInjector, true);
                     ImplementationsCoordinator.INSTANCE.setExceptionData(exceptionData);
@@ -95,12 +96,12 @@ public final class AgentImplementation {
                 }
 			} else {
                 if (exceptionData.isEnabled()) {
-                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "The JVM does not support re-transformation of classes.");
+                    InternalAgentLogger.INSTANCE.trace("The JVM does not support re-transformation of classes.");
                 }
 			}
             inst.addTransformer(codeInjector);
         } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load the code injector, exception: %s", e.toString());
+            InternalAgentLogger.INSTANCE.error("Failed to load the code injector, exception: %s", ExceptionUtils.getStackTrace(e));
             throw e;
         }
     }
@@ -113,7 +114,7 @@ public final class AgentImplementation {
         for (File file : agentFolder.listFiles()) {
             if (file.getName().indexOf(AGENT_JAR_PREFIX) != -1) {
                 agentJarName = file.getName();
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar name is %s", agentJarName);
+                InternalAgentLogger.INSTANCE.info("Agent jar name is %s", agentJarName);
                 break;
             }
         }
@@ -131,7 +132,7 @@ public final class AgentImplementation {
 
         inst.appendToBootstrapClassLoaderSearch(agentJar);
 
-        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Successfully loaded Agent jar");
+        InternalAgentLogger.INSTANCE.trace("Successfully loaded Agent jar");
     }
 
     public static String getAgentJarLocation() throws UnsupportedEncodingException {
@@ -142,7 +143,7 @@ public final class AgentImplementation {
                     String urlPath = url.getPath();
 
                     if (urlPath.indexOf(AGENT_JAR_PREFIX) != -1) {
-                        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO,"Agent jar found at %s", urlPath);
+                        InternalAgentLogger.INSTANCE.info("Agent jar found at %s", urlPath);
                         int index = urlPath.lastIndexOf('/');
                         urlPath = urlPath.substring(0, index + 1);
                         return urlPath;
@@ -151,7 +152,7 @@ public final class AgentImplementation {
                 }
             }
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: %s", throwable.toString());
+            InternalAgentLogger.INSTANCE.error("Error while trying to fetch Jar Location, Exception: %s", ExceptionUtils.getStackTrace(throwable));
         }
 
         String stringPath = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
@@ -166,45 +167,45 @@ public final class AgentImplementation {
         File sdkFolder = new File(path);
         if (!sdkFolder.exists()) {
             String errorMessage = String.format("Path %s for core jar does not exist", path);
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, errorMessage);
+            InternalAgentLogger.INSTANCE.error(errorMessage);
             throw new Exception(errorMessage);
         }
 
         if (!sdkFolder.isDirectory()) {
             String errorMessage = String.format("Path %s for core jar must be a folder", path);
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, errorMessage);
+            InternalAgentLogger.INSTANCE.error(errorMessage);
             throw new Exception(errorMessage);
         }
 
         if (!sdkFolder.canRead()) {
             String errorMessage = String.format("Path %s for core jar must be a folder that can be read", path);
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, errorMessage);
+            InternalAgentLogger.INSTANCE.error(errorMessage);
             throw new Exception(errorMessage);
         }
 
-        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Found %s", path);
+        InternalAgentLogger.INSTANCE.trace("Found %s", path);
         String coreJarName = null;
         for (File file : sdkFolder.listFiles()) {
             if (file.getName().indexOf(CORE_JAR_PREFIX) != -1 || file.getName().indexOf(DISTRIBUTION_JAR_PREFIX) != -1) {
                 coreJarName = file.getAbsolutePath();
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Found core jar: %s", coreJarName);
+                InternalAgentLogger.INSTANCE.trace("Found core jar: %s", coreJarName);
                 break;
             }
         }
 
         if (coreJarName == null) {
             String errorMessage = String.format("Did not find core jar in path %s", path);
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, errorMessage);
+            InternalAgentLogger.INSTANCE.error(errorMessage);
             throw new Exception(errorMessage);
         }
 
-        InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Found jar: %s", coreJarName);
+        InternalAgentLogger.INSTANCE.trace( "Found jar: %s", coreJarName);
 
         JarFile jarFile = null;
         try {
             jarFile = new JarFile(coreJarName);
         } catch (IOException e) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Could not load jar: %s", coreJarName);
+            InternalAgentLogger.INSTANCE.error("Could not load jar: %s", coreJarName);
             throw e;
         }
         Enumeration<JarEntry> e = jarFile.entries();
@@ -220,22 +221,22 @@ public final class AgentImplementation {
             try {
                 Class clazz = cl.loadClass(CORE_SELF_REGISTRATOR_CLASS_NAME);
                 clazz.getDeclaredConstructor().newInstance();
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.TRACE, "Loaded core jar");
+                InternalAgentLogger.INSTANCE.trace("Loaded core jar");
                 break;
             } catch (ClassNotFoundException e1) {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Could not load class: %s, ClassNotFoundException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                InternalAgentLogger.INSTANCE.error("Could not load class: %s, ClassNotFoundException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
                 throw e1;
             } catch (InvocationTargetException e1) {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Could not load class: %s, InvocationTargetException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                InternalAgentLogger.INSTANCE.error("Could not load class: %s, InvocationTargetException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
                 throw e1;
             } catch (NoSuchMethodException e1) {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Could not load class: %s, NoSuchMethodException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                InternalAgentLogger.INSTANCE.error("Could not load class: %s, NoSuchMethodException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
                 throw e1;
             } catch (InstantiationException e1) {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Could not load class: %s, InstantiationException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                InternalAgentLogger.INSTANCE.error("Could not load class: %s, InstantiationException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
                 throw e1;
             } catch (IllegalAccessException e1) {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Could not load class: %s, IllegalAccessException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                InternalAgentLogger.INSTANCE.error("Could not load class: %s, IllegalAccessException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
                 throw e1;
             }
         }

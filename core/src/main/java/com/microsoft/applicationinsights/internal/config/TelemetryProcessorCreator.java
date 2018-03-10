@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.config;
 
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class will try to create the {@link TelemetryProcessor}
@@ -56,12 +57,14 @@ public final class TelemetryProcessorCreator {
                     for (String paramExcluded : confClass.getExcludedTypes().getExcludedType()) {
                         try {
                             if (!ReflectionUtils.activateMethod(processor, "addToExcludedType" , paramExcluded, String.class)) {
-                                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "%s: method 'addToExcludedType' failed, the class will not be used.", confClass.getType());
+                                InternalLogger.INSTANCE.error("%s: method 'addToExcludedType' failed, the class will not be used.",
+                                        confClass.getType());
                                 return null;
                             }
                         }
                         catch (Throwable t) {
-                            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "%s: failed to activate method 'methodName', exception: %s, the class will not be used.", confClass.getType(), t.toString());
+                            InternalLogger.INSTANCE.error("%s: failed to activate method 'methodName', the class will not be used. %s",
+                                    confClass.getType(), ExceptionUtils.getStackTrace(t));
                             return null;
                         }
                     }
@@ -84,12 +87,14 @@ public final class TelemetryProcessorCreator {
                     for (String paramIncluded : confClass.getIncludedTypes().getIncludedType()) {
                         try {
                             if (!ReflectionUtils.activateMethod(processor, "addToIncludedType" , paramIncluded, String.class)) {
-                                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "%s: method 'addToIncludeType' failed, the class will not be used.", confClass.getType());
+                                InternalLogger.INSTANCE.error("%s: method 'addToIncludeType' failed, the class will not be used.",
+                                        confClass.getType());
                                 return null;
                             }
                         }
                         catch (Throwable t) {
-                            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "%s: failed to activate method 'methodName', exception: , the class will not be used.", confClass.getType(), t.toString());
+                            InternalLogger.INSTANCE.error("%s: failed to activate method 'methodName', " +
+                                    "the class will not be used. %s", confClass.getType(), ExceptionUtils.getStackTrace(t));
                             return null;
                         }
                     }
@@ -107,16 +112,18 @@ public final class TelemetryProcessorCreator {
                 String methodName = "set" + param.getName();
                 try {
                     if (!ReflectionUtils.activateMethod(processor, methodName, param.getValue(), String.class)) {
-                        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "%s: method %s failed, the class will not be used.", confClass.getType(), methodName);
+                        InternalLogger.INSTANCE.error( "%s: method %s failed, the class will not be used.", confClass.getType(), methodName);
                         return null;
                     }
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "%s: failed to activate method %s, exception: %s, the class will not be used.", confClass.getType(), methodName, t.toString());
+                    InternalLogger.INSTANCE.error("%s: failed to activate method %s,  the class will not be used. %s",
+                            confClass.getType(), methodName, ExceptionUtils.getStackTrace(t));
                     return null;
                 }
             }
         } catch (Throwable throwable) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "%s: unexpected exception while creating processor %s, exception: %s, the class will not be used.", confClass.getType(), confClass.getType(), throwable.toString());
+            InternalLogger.INSTANCE.error("%s: unexpected exception while creating processor %s, the class will not be used. %s",
+                    confClass.getType(), confClass.getType(), ExceptionUtils.getStackTrace(throwable));
             return null;
         }
 

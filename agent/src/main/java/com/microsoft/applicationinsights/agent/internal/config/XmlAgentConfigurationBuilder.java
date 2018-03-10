@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -110,9 +111,10 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 try {
                     boolean debugMode = Boolean.valueOf(debugModeAsString);
                     agentConfiguration.setDebugMode(debugMode);
-                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Instrumentation debug mode set to '%s'", debugMode);
+                    InternalAgentLogger.INSTANCE.warn("Instrumentation debug mode set to '%s'", debugMode);
                 } catch (Throwable t) {
-                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to parse debug attribute '%s'", debugModeAsString);
+                    InternalAgentLogger.INSTANCE.error("Failed to parse debug attribute '%s, %s'", debugModeAsString,
+                            ExceptionUtils.getStackTrace(t));
                 }
             }
 

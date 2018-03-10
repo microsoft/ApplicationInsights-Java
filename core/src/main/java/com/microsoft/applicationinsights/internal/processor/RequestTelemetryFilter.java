@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class can filter out RequestTelemetries that
@@ -106,9 +107,10 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
         try {
             this.minimumDurationInMS = Long.valueOf(minimumDurationInMS);
             InternalLogger.INSTANCE.trace("RequestTelemetryFilter: successfully set MinimumDurationInMS = %d", this.minimumDurationInMS);
-        } catch (Throwable e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "RequestTelemetryFilter: failed to set minimum duration: %s", minimumDurationInMS);
-            throw e;
+        } catch (Throwable t) {
+            InternalLogger.INSTANCE.error("RequestTelemetryFilter: failed to set minimum duration: %s, %s", minimumDurationInMS
+            , ExceptionUtils.getStackTrace(t));
+            throw t;
         }
     }
 
@@ -141,9 +143,10 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                 }
                 hasBlocked = !exactBadResponseCodes.isEmpty() || !ignoredResponseCodeRange.isEmpty();
             }
-            InternalLogger.INSTANCE.trace(String.format("ResponseCodeFilter: successfully set non needed response codes: %s", notNeededResponseCodes));
+            InternalLogger.INSTANCE.trace("ResponseCodeFilter: successfully set non needed response codes: %s", notNeededResponseCodes);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("RequestTelemetryFilter: failed to parse NotNeededResponseCodes: ", notNeededResponseCodes));
+            InternalLogger.INSTANCE.error("RequestTelemetryFilter: failed to parse NotNeededResponseCodes: %s, %s", notNeededResponseCodes,
+                    ExceptionUtils.getStackTrace(t));
             throw t;
         }
     }

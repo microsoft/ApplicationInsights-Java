@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.agent;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class is responsible for connecting the Agent and register there for future calls
@@ -78,7 +79,7 @@ public enum AgentConnector {
                     coreDataAgent = new CoreAgentNotificationsHandler(name);
                     agentKey = ImplementationsCoordinator.INSTANCE.register(classLoader, coreDataAgent);
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.toString());
+                    InternalLogger.INSTANCE.error( "Could not find Agent: '%s'", ExceptionUtils.getStackTrace(t));
                     agentKey = null;
                 }
 
@@ -89,11 +90,11 @@ public enum AgentConnector {
                 return new RegistrationResult(agentKey, coreDataAgent.getCleaner());
 
             case SELF:
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Core was already registered by the Agent");
+                InternalLogger.INSTANCE.error("Core was already registered by the Agent");
                 return null;
 
             default:
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Unknown registration type '%s' found", registrationType);
+                InternalLogger.INSTANCE.error("Unknown registration type '%s' found", registrationType);
                 return null;
         }
     }
@@ -111,7 +112,7 @@ public enum AgentConnector {
                 try {
                     coreDataAgent = new CoreAgentNotificationsHandler("app");
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not find Agent: '%s'", t.toString());
+                    InternalLogger.INSTANCE.error("Could not find Agent: '%s'", ExceptionUtils.getStackTrace(t));
                     return false;
                 }
                 ImplementationsCoordinator.INSTANCE.registerSelf(coreDataAgent);
@@ -121,15 +122,15 @@ public enum AgentConnector {
                 return true;
 
             case WEB:
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Core was already registered by the Web module");
+                InternalLogger.INSTANCE.error("Core was already registered by the Web module");
                 return false;
 
             case SELF:
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Core was already registered by the Agent, ignored");
+                InternalLogger.INSTANCE.info( "Core was already registered by the Agent, ignored");
                 return true;
 
             default:
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Unknown registration type '%s' found", registrationType);
+                InternalLogger.INSTANCE.error("Unknown registration type '%s' found", registrationType);
                 return false;
         }
     }

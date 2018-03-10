@@ -76,7 +76,7 @@ public final class SyntheticSourceFilter implements TelemetryProcessor {
             }
             InternalLogger.INSTANCE.trace(String.format("SyntheticSourceFilter: set NotNeededSources: %s", notNeededSources));
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("SyntheticSourceFilter: failed to parse NotNeededSources: %s", notNeededSources));
+            InternalLogger.INSTANCE.error(String.format("SyntheticSourceFilter: failed to parse NotNeededSources: %s", notNeededSources));
             throw e;
         }
     }

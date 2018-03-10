@@ -53,7 +53,7 @@ final class TelemetrySamplerInitializer {
                 try {
                     percentage = Double.valueOf(percentageAsString);
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse %s", percentageAsString);
+                    InternalLogger.INSTANCE.error("Failed to parse %s", percentageAsString);
                 }
             }
 
@@ -82,7 +82,7 @@ final class TelemetrySamplerInitializer {
 
                 telemetrySampler = adaptiveTelemetrySampler;
             } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not resolve sampler type. Possible values are 'Fixed' or 'Adaptive'");
+                InternalLogger.INSTANCE.error("Could not resolve sampler type. Possible values are 'Fixed' or 'Adaptive'");
             }
         }
 

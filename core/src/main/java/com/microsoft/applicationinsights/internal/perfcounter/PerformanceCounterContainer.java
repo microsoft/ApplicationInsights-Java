@@ -161,8 +161,9 @@ public enum PerformanceCounterContainer implements Stoppable {
      */
     public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
         if (collectionFrequencyInSec <= MIN_COLLECTION_FREQUENCY_IN_SEC) {
-            String errorMessage = String.format("Collecting Interval: illegal value '%d'. The minimum value, '%d', is used instead.", collectionFrequencyInSec, MIN_COLLECTION_FREQUENCY_IN_SEC);
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, errorMessage);
+            String errorMessage = String.format("Collecting Interval: illegal value '%d'. The minimum value, '%d', " +
+                    "is used instead.", collectionFrequencyInSec, MIN_COLLECTION_FREQUENCY_IN_SEC);
+            InternalLogger.INSTANCE.error(errorMessage);
 
             collectionFrequencyInSec = MIN_COLLECTION_FREQUENCY_IN_SEC;
         }

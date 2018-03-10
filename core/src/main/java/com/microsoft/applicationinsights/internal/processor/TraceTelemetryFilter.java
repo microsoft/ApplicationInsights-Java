@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -102,11 +103,11 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
                 this.fromSeverityLevel = sl;
             }
             InternalLogger.INSTANCE.trace(String.format("TraceTelemetryFilter: set severity level to %s", this.fromSeverityLevel));
-        } catch (Throwable e) {
+        } catch (Throwable t) {
             this.fromSeverityLevel = SeverityLevel.Verbose;
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
-                    String.format("TraceTelemetryFilter: failed to parse: %s", fromSeverityLevel));
-            throw e;
+            InternalLogger.INSTANCE.error("TraceTelemetryFilter: failed to parse: %s", fromSeverityLevel,
+                    ExceptionUtils.getStackTrace(t));
+            throw t;
         }
     }
 }

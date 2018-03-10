@@ -30,6 +30,7 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Utililty methods for dealing with reflection
@@ -51,7 +52,7 @@ public final class ReflectionUtils {
     public static <T> T createInstance(String className, Class<T> interfaceClass) {
         try {
             if (LocalStringsUtils.isNullOrEmpty(className)) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create empty class name");
+                InternalLogger.INSTANCE.error("Failed to create empty class name");
                 return null;
             }
 
@@ -60,15 +61,15 @@ public final class ReflectionUtils {
 
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         } catch (Exception e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         }
 
         return null;
@@ -92,7 +93,7 @@ public final class ReflectionUtils {
     public static  <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
         try {
             if (LocalStringsUtils.isNullOrEmpty(className)) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create empty class name");
+                InternalLogger.INSTANCE.error("Failed to create empty class name");
                 return null;
             }
 
@@ -101,15 +102,15 @@ public final class ReflectionUtils {
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
         } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         } catch (Exception e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create %s, %s", className, e.toString());
+            InternalLogger.INSTANCE.error("Failed to create %s, %s", className, ExceptionUtils.getStackTrace(e));
         }
 
         return null;
@@ -133,14 +134,11 @@ public final class ReflectionUtils {
             method.invoke(object, value);
             return true;
         } catch (NoSuchMethodException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
-                    "Failed to call method " + methodName + ". NoSuchMethodException");
+            InternalLogger.INSTANCE.error("Failed to call method %s .NoSuchMethodException",  methodName);
         } catch (InvocationTargetException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
-                    "Failed to call method " + methodName + ". InvocationTargetException");
+            InternalLogger.INSTANCE.error("Failed to call method %s .InvocationTargetException",  methodName);
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
-                    "Failed to call method " + methodName + ". IllegalAccessException");
+            InternalLogger.INSTANCE.error("Failed to call method %s .IllegalAccessException",  methodName);
         }
         return false;
     }

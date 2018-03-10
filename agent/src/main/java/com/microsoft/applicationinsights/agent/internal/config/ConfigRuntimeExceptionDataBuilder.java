@@ -103,7 +103,7 @@ final class ConfigRuntimeExceptionDataBuilder {
                 int maxStackSize = Integer.parseInt(preparedValue);
                 stackSize = maxStackSize;
             } catch (Exception e) {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to parse attribute %s with value %s, will send full stack", MAX_STACK_SIZE, maxStackSizeAsString);
+                InternalAgentLogger.INSTANCE.error("Failed to parse attribute %s with value %s, will send full stack", MAX_STACK_SIZE, maxStackSizeAsString);
             }
         }
 

@@ -83,7 +83,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 return waitBetweenPostsInMS;
 
             default:
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Critical error while sending QP data: unknown status, aborting");
+                InternalLogger.INSTANCE.error( "Critical error while sending QP data: unknown status, aborting");
                 QuickPulseDataCollector.INSTANCE.disable();
                 stopped = true;
                 return 0;
@@ -100,12 +100,11 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 pingMode = false;
                 dataSender.startSending();
                 return waitBetweenPostsInMS;
-
             case QP_IS_OFF:
                 return waitBetweenPingsInMS;
 
             default:
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Critical error while ping QP: unknown status, aborting");
+                InternalLogger.INSTANCE.error( "Critical error while ping QP: unknown status, aborting");
                 QuickPulseDataCollector.INSTANCE.disable();
                 stopped = true;
                 return 0;
