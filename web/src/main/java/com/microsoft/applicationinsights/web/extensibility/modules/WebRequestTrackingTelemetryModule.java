@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
-//import org.apache.http.HttpStatus;
 
 /**
  * Created by yonisha on 2/2/2015.
