@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 import org.junit.Assert;
 import org.junit.Test;
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.mockito.Mockito;
@@ -93,7 +94,7 @@ public class WebRequestTrackingFilterTests {
 
         FilterChain chain = mock(FilterChain.class);
 
-        ServletRequest request = ServletUtils.generateDummyServletRequest();
+        HttpServletRequest request = ServletUtils.generateDummyServletRequest();
 
         // execute
         filter.doFilter(request, ServletUtils.generateDummyServletResponse(), chain);
@@ -163,8 +164,8 @@ public class WebRequestTrackingFilterTests {
         try {
             FilterChain chain = mock(FilterChain.class);
 
-            ServletRequest request = ServletUtils.generateDummyServletRequest();
-            ServletResponse response = ServletUtils.generateDummyServletResponse();
+            HttpServletRequest request = ServletUtils.generateDummyServletRequest();
+            HttpServletResponse response = ServletUtils.generateDummyServletResponse();
             Mockito.doThrow(expectedException).when(chain).doFilter(eq(request), any(ServletResponse.class));
 
             // execute

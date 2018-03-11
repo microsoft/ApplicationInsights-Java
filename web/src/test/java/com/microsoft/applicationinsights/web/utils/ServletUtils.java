@@ -78,11 +78,11 @@ public class ServletUtils {
         return container;
     }
 
-    public static ServletRequest generateDummyServletRequest() {
+    public static HttpServletRequest generateDummyServletRequest() {
         return mock(HttpServletRequest.class);
     }
 
-    public static ServletResponse generateDummyServletResponse() {
+    public static HttpServletResponse generateDummyServletResponse() {
         return mock(HttpServletResponse.class);
     }
 
