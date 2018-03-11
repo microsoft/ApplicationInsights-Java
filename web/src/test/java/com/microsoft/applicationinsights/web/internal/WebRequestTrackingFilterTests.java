@@ -34,8 +34,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
@@ -165,8 +163,8 @@ public class WebRequestTrackingFilterTests {
         try {
             FilterChain chain = mock(FilterChain.class);
 
-            HttpServletRequest request = (HttpServletRequest) ServletUtils.generateDummyServletRequest();
-            HttpServletResponse response = (HttpServletResponse) ServletUtils.generateDummyServletResponse();
+            ServletRequest request =  ServletUtils.generateDummyServletRequest();
+            ServletResponse response = ServletUtils.generateDummyServletResponse();
             Mockito.doThrow(expectedException).when(chain).doFilter(eq(request), any(ServletResponse.class));
 
             // execute
