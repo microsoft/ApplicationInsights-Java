@@ -21,16 +21,9 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.Date;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import com.microsoft.applicationinsights.common.CommonUtils;
-//import org.apache.http.HttpStatus;
-import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
@@ -39,6 +32,14 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+
+//import org.apache.http.HttpStatus;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -123,7 +124,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
             long endTime = new Date().getTime();
 
-            ApplicationInsightsHttpResponseWrapper response = ((ApplicationInsightsHttpResponseWrapper)res);
+            HttpServletResponse response = (HttpServletResponse)res;
             if (response != null) {
                 telemetry.setSuccess(response.getStatus() < 400 || response.getStatus() == 401 );
                 telemetry.setResponseCode(Integer.toString(response.getStatus()));
