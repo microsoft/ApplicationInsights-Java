@@ -22,19 +22,20 @@
 package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
+import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import com.microsoft.applicationinsights.web.utils.ServletUtils;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
@@ -94,7 +95,7 @@ public class WebRequestTrackingFilterTests {
 
         FilterChain chain = mock(FilterChain.class);
 
-        HttpServletRequest request = ServletUtils.generateDummyServletRequest();
+        ServletRequest request = ServletUtils.generateDummyServletRequest();
 
         // execute
         filter.doFilter(request, ServletUtils.generateDummyServletResponse(), chain);
@@ -164,8 +165,8 @@ public class WebRequestTrackingFilterTests {
         try {
             FilterChain chain = mock(FilterChain.class);
 
-            HttpServletRequest request = ServletUtils.generateDummyServletRequest();
-            HttpServletResponse response = ServletUtils.generateDummyServletResponse();
+            HttpServletRequest request = (HttpServletRequest) ServletUtils.generateDummyServletRequest();
+            HttpServletResponse response = (HttpServletResponse) ServletUtils.generateDummyServletResponse();
             Mockito.doThrow(expectedException).when(chain).doFilter(eq(request), any(ServletResponse.class));
 
             // execute
