@@ -63,7 +63,8 @@ public final class TelemetryProcessorCreator {
                             }
                         }
                         catch (Throwable t) {
-                            InternalLogger.INSTANCE.error("%s: failed to activate method 'methodName', the class will not be used. %s",
+                            InternalLogger.INSTANCE.error("%s: failed to activate method 'methodName', " +
+                                            "the class will not be used. Exception : %s",
                                     confClass.getType(), ExceptionUtils.getStackTrace(t));
                             return null;
                         }
@@ -94,7 +95,7 @@ public final class TelemetryProcessorCreator {
                         }
                         catch (Throwable t) {
                             InternalLogger.INSTANCE.error("%s: failed to activate method 'methodName', " +
-                                    "the class will not be used. %s", confClass.getType(), ExceptionUtils.getStackTrace(t));
+                                    "the class will not be used. Exception : %s", confClass.getType(), ExceptionUtils.getStackTrace(t));
                             return null;
                         }
                     }
@@ -116,13 +117,13 @@ public final class TelemetryProcessorCreator {
                         return null;
                     }
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("%s: failed to activate method %s,  the class will not be used. %s",
+                    InternalLogger.INSTANCE.error("%s: failed to activate method %s,  the class will not be used. Exception : %s",
                             confClass.getType(), methodName, ExceptionUtils.getStackTrace(t));
                     return null;
                 }
             }
         } catch (Throwable throwable) {
-            InternalLogger.INSTANCE.error("%s: unexpected exception while creating processor %s, the class will not be used. %s",
+            InternalLogger.INSTANCE.error("%s: unexpected exception while creating processor %s, the class will not be used. Exception : %s",
                     confClass.getType(), confClass.getType(), ExceptionUtils.getStackTrace(throwable));
             return null;
         }

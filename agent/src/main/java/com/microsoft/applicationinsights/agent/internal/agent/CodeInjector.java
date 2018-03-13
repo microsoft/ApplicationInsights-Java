@@ -84,7 +84,7 @@ public final class CodeInjector implements ClassFileTransformer {
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
                 InternalAgentLogger.INSTANCE.error("Failed to instrument '%s', " +
-                        "exception: '%s': ", className, ExceptionUtils.getStackTrace(throwable));
+                        "exception: '%s'", className, ExceptionUtils.getStackTrace(throwable));
             }
         }
 

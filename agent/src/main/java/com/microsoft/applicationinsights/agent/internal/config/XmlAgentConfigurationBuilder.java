@@ -113,7 +113,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                     agentConfiguration.setDebugMode(debugMode);
                     InternalAgentLogger.INSTANCE.warn("Instrumentation debug mode set to '%s'", debugMode);
                 } catch (Throwable t) {
-                    InternalAgentLogger.INSTANCE.error("Failed to parse debug attribute '%s, %s'", debugModeAsString,
+                    InternalAgentLogger.INSTANCE.error("Failed to parse debug attribute '%s, Exception : %s'", debugModeAsString,
                             ExceptionUtils.getStackTrace(t));
                 }
             }

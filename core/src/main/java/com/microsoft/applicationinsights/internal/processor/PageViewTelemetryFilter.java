@@ -95,7 +95,7 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
             this.durationThresholdInMS = Long.valueOf(durationThresholdInMS);
             InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: successfully set DurationThresholdInMS to %s", durationThresholdInMS);
         } catch (NumberFormatException e) {
-            InternalLogger.INSTANCE.error( "PageViewTelemetryFilter: failed to set DurationThresholdInMS:%s %s ",
+            InternalLogger.INSTANCE.error( "PageViewTelemetryFilter: failed to set DurationThresholdInMS:%s Exception : %s ",
                     durationThresholdInMS, ExceptionUtils.getStackTrace(e));
             throw e;
         }
@@ -114,7 +114,7 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
             }
             InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: set NotNeededNames: %s", notNeededNames);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: failed to parse NotNeededNames: %s %s", notNeededNames,
+            InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: failed to parse NotNeededNames: %s Exception : %s", notNeededNames,
                     ExceptionUtils.getStackTrace(t));
             throw t;
         }
@@ -133,7 +133,7 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
             }
             InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: set %s", notNeededUrls);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("PageViewTelemetryFilter: failed to parse NotNeededUrls: %s %s", notNeededUrls,
+            InternalLogger.INSTANCE.error("PageViewTelemetryFilter: failed to parse NotNeededUrls: %s Exception : %s", notNeededUrls,
                     ExceptionUtils.getStackTrace(t));
             throw t;
         }

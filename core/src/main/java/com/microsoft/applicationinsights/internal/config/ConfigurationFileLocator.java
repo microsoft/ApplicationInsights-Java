@@ -89,7 +89,8 @@ public final class ConfigurationFileLocator {
             try {
                 return new FileInputStream(configurationFile);
             } catch (FileNotFoundException e) {
-                InternalLogger.INSTANCE.warn("Configuration file '%s' could not be opened for reading %s", configurationFile,
+                InternalLogger.INSTANCE.warn("Configuration file '%s' could not be opened for reading, Exception : %s",
+                        configurationFile,
                         ExceptionUtils.getStackTrace(e));
             }
         } else {
@@ -100,10 +101,12 @@ public final class ConfigurationFileLocator {
 
     private static void logException(Throwable t, String message) {
         if (t.getCause() != null) {
-            InternalLogger.INSTANCE.warn("Failed to find configuration file, exception while fetching from %s: '%s'",
+            InternalLogger.INSTANCE.warn("Failed to find configuration file, exception while fetching from %s: " +
+                            "Exception : '%s'",
                     message, ExceptionUtils.getStackTrace(t));
         } else {
-            InternalLogger.INSTANCE.warn("Failed to find configuration file, exception while fetching from %s: '%s'",
+            InternalLogger.INSTANCE.warn("Failed to find configuration file, exception while fetching from %s: " +
+                            "Exception : '%s'",
                     message, ExceptionUtils.getStackTrace(t));
         }
     }
@@ -128,7 +131,7 @@ public final class ConfigurationFileLocator {
             return configurationFile;
         } catch (Throwable t) {
             logException(t, "current class loader");
-            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
         }
 
         return null;
@@ -155,7 +158,7 @@ public final class ConfigurationFileLocator {
             }
         } catch (Throwable t) {
             logException(t, "library location");
-            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
         }
         return null;
     }
@@ -196,7 +199,7 @@ public final class ConfigurationFileLocator {
             }
         } catch (Throwable t) {
             logException(t, "class path");
-            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
         }
         return null;
     }
@@ -219,7 +222,8 @@ public final class ConfigurationFileLocator {
         try {
             uri = url.toURI();
         } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.warn("Failed to convert URL '%s' to URI %s ", url, ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.warn("Failed to convert URL '%s' to URI, Exception : %s ", url,
+                    ExceptionUtils.getStackTrace(e));
             return null;
         }
 

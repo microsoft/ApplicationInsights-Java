@@ -226,17 +226,17 @@ public enum PerformanceCounterContainer implements Stoppable {
                             try {
                                 plugin.preCollection();
                             } catch (Throwable t) {
-                                InternalLogger.INSTANCE.error("Error in thread scheduled for PerformanceCounterContainer");
-                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                                InternalLogger.INSTANCE.error("Error in thread scheduled for PerformanceCounterContainer" +
+                                        " Exception : %s ", ExceptionUtils.getStackTrace(t));
                             }
                         }
 
                         for (PerformanceCounter performanceCounter : performanceCounters.values()) {
                             try {
                                 performanceCounter.report(telemetryClient);
-                            } catch (Throwable e) {
-                                InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': '%s'", performanceCounter.getId(), e.toString());
-                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                            } catch (Throwable t) {
+                                InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': " +
+                                        " Exception : '%s'", performanceCounter.getId(),ExceptionUtils.getStackTrace(t));
                             }
                         }
 
@@ -244,8 +244,8 @@ public enum PerformanceCounterContainer implements Stoppable {
                             try {
                                 plugin.postCollection();
                             } catch (Throwable t) {
-                                InternalLogger.INSTANCE.error("Error while executing post collection");
-                                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                                InternalLogger.INSTANCE.error("Error while executing post collection, Exception : %s ",
+                                        ExceptionUtils.getStackTrace(t));
                             }
                         }
                     }

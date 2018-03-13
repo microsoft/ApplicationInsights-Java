@@ -114,7 +114,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
     private void onException(Exception e, ServletRequest req, ServletResponse res, boolean isRequestProcessedSuccessfully) {
         try {
-            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", e.toString());
+            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", ExceptionUtils.getStackTrace(e));
             if (telemetryClient != null) {
                 telemetryClient.trackException(e);
             }
@@ -147,7 +147,7 @@ public final class WebRequestTrackingFilter implements Filter {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.info(
                     "Application Insights filter %s has been failed to initialized.\n" +
-                            "Web request tracking filter will be disabled. Exception: %s", filterName, e.toString());
+                            "Web request tracking filter will be disabled. Exception: %s", filterName, ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -175,7 +175,8 @@ public final class WebRequestTrackingFilter implements Filter {
             webModulesContainer.invokeOnBeginRequest(req, res);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnBeginRequest on telemetry modules with the following exception: %s", e.toString());
+                    "Failed to invoke OnBeginRequest on telemetry modules with the following exception: %s",
+                    ExceptionUtils.getStackTrace(e));
 
             success = false;
         }
@@ -190,7 +191,8 @@ public final class WebRequestTrackingFilter implements Filter {
             }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s", e.toString());
+                    "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s",
+                    ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -204,7 +206,8 @@ public final class WebRequestTrackingFilter implements Filter {
 
                     // This means that the Agent is not present and therefore we will stop trying
                     agentIsUp = false;
-                    InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'", e.toString());
+                    InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'",
+                            ExceptionUtils.getStackTrace(e));
                 }
             }
         }
@@ -233,7 +236,8 @@ public final class WebRequestTrackingFilter implements Filter {
 
             InternalLogger.INSTANCE.info("Successfully registered the filter '%s'", FILTER_NAME);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", FILTER_NAME, t.toString());
+            InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", FILTER_NAME,
+                    ExceptionUtils.getStackTrace(t));
         }
     }
 
@@ -308,7 +312,7 @@ public final class WebRequestTrackingFilter implements Filter {
         } catch (Throwable t) {
             agentIsUp = false;
             this.key = null;
-            InternalLogger.INSTANCE.error("setKey: Failed to find AgentTLS", ExceptionUtils.getStackTrace(t));
+            InternalLogger.INSTANCE.error("setKey: Failed to find AgentTLS, Exception : %s", ExceptionUtils.getStackTrace(t));
         }
     }
 }

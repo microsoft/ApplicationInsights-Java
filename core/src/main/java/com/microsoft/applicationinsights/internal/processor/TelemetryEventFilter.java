@@ -80,7 +80,7 @@ public final class TelemetryEventFilter implements TelemetryProcessor {
             }
             InternalLogger.INSTANCE.trace(String.format("TelemetryEventFilter: set NotNeededNames: %s", notNeededNames));
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("TelemetryEventFilter: failed to parse NotNeededNames: %s %s", notNeededNames,
+            InternalLogger.INSTANCE.error("TelemetryEventFilter: failed to parse NotNeededNames: %s Exception : %s", notNeededNames,
                     ExceptionUtils.getStackTrace(e));
             throw e;
         }

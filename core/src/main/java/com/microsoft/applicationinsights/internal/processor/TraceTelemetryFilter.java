@@ -105,7 +105,7 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
             InternalLogger.INSTANCE.trace(String.format("TraceTelemetryFilter: set severity level to %s", this.fromSeverityLevel));
         } catch (Throwable t) {
             this.fromSeverityLevel = SeverityLevel.Verbose;
-            InternalLogger.INSTANCE.error("TraceTelemetryFilter: failed to parse: %s", fromSeverityLevel,
+            InternalLogger.INSTANCE.error("TraceTelemetryFilter: failed to parse: %s, Exception : %s", fromSeverityLevel,
                     ExceptionUtils.getStackTrace(t));
             throw t;
         }
