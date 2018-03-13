@@ -1,0 +1,4 @@
+
+ext {
+	appServerShortName = 'tomcat8'
+}

@@ -36,6 +36,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.annotation.WebFilter;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -48,6 +49,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 /**
  * Created by yonisha on 2/2/2015.
  */
+@WebFilter
 public final class WebRequestTrackingFilter implements Filter {
     private final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
@@ -113,7 +115,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
     private void onException(Exception e, ServletRequest req, ServletResponse res, boolean isRequestProcessedSuccessfully) {
         try {
-            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", e.toString());
             if (telemetryClient != null) {
                 telemetryClient.trackException(e);
             }
@@ -146,7 +148,7 @@ public final class WebRequestTrackingFilter implements Filter {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.info(
                     "Application Insights filter %s has been failed to initialized.\n" +
-                            "Web request tracking filter will be disabled. Exception: %s", filterName, e.getMessage());
+                            "Web request tracking filter will be disabled. Exception: %s", filterName, e.toString());
         }
     }
 
@@ -174,7 +176,7 @@ public final class WebRequestTrackingFilter implements Filter {
             webModulesContainer.invokeOnBeginRequest(req, res);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnBeginRequest on telemetry modules with the following exception: %s", e.getMessage());
+                    "Failed to invoke OnBeginRequest on telemetry modules with the following exception: %s", e.toString());
 
             success = false;
         }
@@ -189,7 +191,7 @@ public final class WebRequestTrackingFilter implements Filter {
             }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s", e.getMessage());
+                    "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s", e.toString());
         }
     }
 
@@ -203,7 +205,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
                     // This means that the Agent is not present and therefore we will stop trying
                     agentIsUp = false;
-                    InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'", e.getMessage());
+                    InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'", e.toString());
                 }
             }
         }
@@ -232,7 +234,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Successfully registered the filter '%s'", FILTER_NAME);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.toString());
         }
     }
 
@@ -287,7 +289,7 @@ public final class WebRequestTrackingFilter implements Filter {
                 name = contextPath.substring(1);
             }
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.getMessage());
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.toString());
         }
         appName = name;
         return name;

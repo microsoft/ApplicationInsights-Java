@@ -78,7 +78,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                             pcData.displayName, pcData.categoryName, pcData.counterName, pcData.instanceName, value);
                 }
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.toString());
                 InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         }

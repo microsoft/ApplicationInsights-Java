@@ -98,14 +98,14 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             result = parser.getValue();
         } catch (Exception e) {
             result = Constants.DEFAULT_DOUBLE_VALUE;
-            logError("Error while parsing file: '%s'", getId(), e.getMessage());
+            logError("Error while parsing file: '%s'", getId(), e.toString());
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
-                    logError("Error while closing file : '%s'", e.getMessage());
+                    logError("Error while closing file : '%s'", e.toString());
                     InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 }
             }

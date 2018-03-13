@@ -57,7 +57,7 @@ public final class AnnotationPackageScanner {
         try {
             annotationDetector.detect(packageToScan);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Failed to scan packages '%s': exception: '%s'", packageToScan, t.getMessage());
+            InternalLogger.INSTANCE.error("Failed to scan packages '%s': exception: '%s'", packageToScan, t.toString());
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
         }
 

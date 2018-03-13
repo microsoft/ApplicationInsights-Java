@@ -30,11 +30,33 @@ import java.util.HashMap;
 public class InProcessTelemetryChannelTest {
 
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
+    private final static String INSTANT_RETRY_NAME = "MaxInstantRetry";
+	private final static int DEFAULT_MAX_INSTANT_RETRY = 3;
 
     @Test(expected = IllegalArgumentException.class)
     public void testNotValidEndpointAddressAsMapValue() {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("EndpointAddress", NON_VALID_URL);
+        new InProcessTelemetryChannel(map);
+    }
+    @Test()
+    public void testStringIntegerMaxInstanceRetry() {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put(INSTANT_RETRY_NAME, "AABB");
+        new InProcessTelemetryChannel(map);
+    }
+
+    @Test()
+    public void testValidIntegerMaxInstanceRetry() {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put(INSTANT_RETRY_NAME, "4");
+        new InProcessTelemetryChannel(map);
+    }
+
+    @Test()
+    public void testInvalidIntegerMaxInstanceRetry() {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put(INSTANT_RETRY_NAME, "-1");
         new InProcessTelemetryChannel(map);
     }
 

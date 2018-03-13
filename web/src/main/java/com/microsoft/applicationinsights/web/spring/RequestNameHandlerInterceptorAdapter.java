@@ -68,7 +68,7 @@ public class RequestNameHandlerInterceptorAdapter extends HandlerInterceptorAdap
             InternalLogger.INSTANCE.error(
                 "Failed to invoke interceptor '%s' with exception: %s.",
                 this.getClass().getSimpleName(),
-                e.getMessage());
+                e.toString());
         }
 
         return true;

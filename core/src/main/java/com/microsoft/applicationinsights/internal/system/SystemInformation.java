@@ -66,7 +66,7 @@ public enum SystemInformation {
                     processId = processIdAsString;
                     return;
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to fetch process id: '%s'", e.getMessage());
+                    InternalLogger.INSTANCE.error("Failed to fetch process id: '%s'", e.toString());
                 }
             }
         }

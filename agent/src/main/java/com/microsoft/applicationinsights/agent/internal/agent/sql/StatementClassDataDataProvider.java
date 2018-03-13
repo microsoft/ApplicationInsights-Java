@@ -76,7 +76,7 @@ public class StatementClassDataDataProvider {
             addStatements();
             addPossibleQueryLimit();
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.getMessage());
+            InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());
         }
     }
 

@@ -45,26 +45,32 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * An implementation of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
+ * An implementation of
+ * {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
  * <p>
  * The channel holds two main entities:
  * <p>
- * A buffer for incoming {@link com.microsoft.applicationinsights.telemetry.Telemetry} instances
- * A transmitter
+ * A buffer for incoming
+ * {@link com.microsoft.applicationinsights.telemetry.Telemetry} instances A
+ * transmitter
  * <p>
- * The buffer is stores incoming telemetry instances. Every new buffer starts a timer.
- * When the timer expires, or when the buffer is 'full' (whichever happens first), the
- * transmitter will pick up that buffer and will handle its sending to the server. For example,
- * a transmitter will be responsible for compressing, sending and activate a policy in case of failures.
+ * The buffer is stores incoming telemetry instances. Every new buffer starts a
+ * timer. When the timer expires, or when the buffer is 'full' (whichever
+ * happens first), the transmitter will pick up that buffer and will handle its
+ * sending to the server. For example, a transmitter will be responsible for
+ * compressing, sending and activate a policy in case of failures.
  * <p>
  * The model here is:
  * <p>
- * Use application threads to populate the buffer
- * Use channel's threads to send buffers to the server
+ * Use application threads to populate the buffer Use channel's threads to send
+ * buffers to the server
  * <p>
  * Created by gupele on 12/17/2014.
  */
 public final class InProcessTelemetryChannel implements TelemetryChannel {
+
+	private final static String INSTANT_RETRY_NAME = "MaxInstantRetry";
+	private final static int DEFAULT_MAX_INSTANT_RETRY = 3;
     public final static int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;
     private final static int MIN_MAX_TELEMETRY_BUFFER_CAPACITY = 1;
     private final static int MAX_MAX_TELEMETRY_BUFFER_CAPACITY = 1000;
@@ -102,28 +108,33 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             }
         } catch (Throwable t) {
             developerMode = false;
-            InternalLogger.INSTANCE.trace("%s generated exception in parsing," +
-                    "stack trace is %s", DEVELOPER_MODE_SYSTEM_PROPRETY_NAME, ExceptionUtils.getStackTrace(t));
+            InternalLogger.INSTANCE.trace("%s generated exception in parsing, stack trace is %s", DEVELOPER_MODE_SYSTEM_PROPRETY_NAME, ExceptionUtils.getStackTrace(t));
         }
-        initialize(null,
-                null,
-                developerMode,
-                createDefaultMaxTelemetryBufferCapacityEnforcer(null),
-                createDefaultSendIntervalInSecondsEnforcer(null),
-                true);
+		initialize(null, null, developerMode, createDefaultMaxTelemetryBufferCapacityEnforcer(null),
+				createDefaultSendIntervalInSecondsEnforcer(null), true);
     }
 
     /**
      * Ctor
      *
-     * @param endpointAddress            Must be empty string or a valid uri, else an exception will be thrown
-     * @param developerMode              True will behave in a 'non-production' mode to ease the debugging
-     * @param maxTelemetryBufferCapacity Max number of Telemetries we keep in the buffer, when reached we will send the buffer
-     *                                   Note, value should be between TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS and TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS inclusive
-     * @param sendIntervalInMillis       The maximum number of milliseconds to wait before we send the buffer
-     *                                   Note, value should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
+	 * @param endpointAddress
+	 *            Must be empty string or a valid uri, else an exception will be
+	 *            thrown
+	 * @param developerMode
+	 *            True will behave in a 'non-production' mode to ease the debugging
+	 * @param maxTelemetryBufferCapacity
+	 *            Max number of Telemetries we keep in the buffer, when reached we
+	 *            will send the buffer Note, value should be between
+	 *            TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS and
+	 *            TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS inclusive
+	 * @param sendIntervalInMillis
+	 *            The maximum number of milliseconds to wait before we send the
+	 *            buffer Note, value should be between
+	 *            MIN_MAX_TELEMETRY_BUFFER_CAPACITY and
+	 *            MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
      */
-    public InProcessTelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
+    public InProcessTelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity,
+            int sendIntervalInMillis) {
         this(endpointAddress, null, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis, true);
     }
 
@@ -139,13 +150,16 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
     /**
      * This Ctor will query the 'namesAndValues' map for data to initialize itself
-     * It will ignore data that is not of its interest, this Ctor is useful for building an instance from configuration
+	 * It will ignore data that is not of its interest, this Ctor is useful for
+	 * building an instance from configuration
      *
-     * @param namesAndValues - The data passed as name and value pairs
+	 * @param namesAndValues
+	 *            - The data passed as name and value pairs
      */
     public InProcessTelemetryChannel(Map<String, String> namesAndValues) {
         boolean developerMode = false;
         String endpointAddress = null;
+		int maxInstantRetries = DEFAULT_MAX_INSTANT_RETRY;
 
         LimitsEnforcer maxTelemetryBufferCapacityEnforcer = createDefaultMaxTelemetryBufferCapacityEnforcer(null);
 
@@ -155,17 +169,30 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         if (namesAndValues != null) {
             throttling = Boolean.valueOf(namesAndValues.get("Throttling"));
             developerMode = Boolean.valueOf(namesAndValues.get(DEVELOPER_MODE_NAME));
+			try {
+				String instantRetryValue = namesAndValues.get(INSTANT_RETRY_NAME);
+				if (instantRetryValue != null){
+					maxInstantRetries = Integer.parseInt(instantRetryValue);
+				}
+
+			} catch (NumberFormatException e) {
+				InternalLogger.INSTANCE.error("Unable to parse configuration setting %s to integer value.%nStack Trace:%n%s", INSTANT_RETRY_NAME, ExceptionUtils.getStackTrace(e));
+			}
+
             if (!developerMode) {
                 developerMode = Boolean.valueOf(System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME));
             }
             endpointAddress = namesAndValues.get(ENDPOINT_ADDRESS_NAME);
 
-            maxTelemetryBufferCapacityEnforcer.normalizeStringValue(namesAndValues.get(MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME));
-            sendIntervalInSecondsEnforcer.normalizeStringValue(namesAndValues.get(FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME));
+			maxTelemetryBufferCapacityEnforcer
+					.normalizeStringValue(namesAndValues.get(MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME));
+			sendIntervalInSecondsEnforcer
+					.normalizeStringValue(namesAndValues.get(FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME));
         }
 
         String maxTransmissionStorageCapacity = namesAndValues.get(MAX_TRANSMISSION_STORAGE_CAPACITY_NAME);
-        initialize(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSecondsEnforcer, throttling);
+		initialize(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer,
+				sendIntervalInSecondsEnforcer, throttling, maxInstantRetries);
     }
 
     /**
@@ -179,7 +206,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     /**
      * Sets value indicating whether this channel is in developer mode.
      *
-     * @param developerMode True or false
+	 * @param developerMode
+	 *            True or false
      */
     @Override
     public void setDeveloperMode(boolean developerMode) {
@@ -259,10 +287,11 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     }
 
     /**
-     * Sets an optional Sampler that can sample out telemetries
-     * Currently, we don't allow to replace a valid telemtry sampler.
+	 * Sets an optional Sampler that can sample out telemetries Currently, we don't
+	 * allow to replace a valid telemtry sampler.
      *
-     * @param telemetrySampler - The sampler
+	 * @param telemetrySampler
+	 *            - The sampler
      */
     @Override
     public void setSampler(TelemetrySampler telemetrySampler) {
@@ -274,10 +303,11 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     /**
      * Sets the buffer size
      *
-     * @param maxTelemetriesInBatch should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY
-     *                              and MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
-     *                              if the number is lower than the minimum then the minimum will be used
-     *                              if the number is higher than the maximum then the maximum will be used
+	 * @param maxTelemetriesInBatch
+	 *            should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and
+	 *            MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive if the number is lower
+	 *            than the minimum then the minimum will be used if the number is
+	 *            higher than the maximum then the maximum will be used
      */
     public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch) {
         telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
@@ -286,10 +316,11 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     /**
      * Sets the time tow wait before flushing the internal buffer
      *
-     * @param transmitBufferTimeoutInSeconds should be between MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS
-     *                                       and MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS inclusive
-     *                                       if the number is lower than the minimum then the minimum will be used
-     *                                       if the number is higher than the maximum then the maximum will be used
+	 * @param transmitBufferTimeoutInSeconds
+	 *            should be between MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS and
+	 *            MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS inclusive if the number is
+	 *            lower than the minimum then the minimum will be used if the number
+	 *            is higher than the maximum then the maximum will be used
      */
     public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds) {
         telemetryBuffer.setTransmitBufferTimeoutInSeconds(transmitBufferTimeoutInSeconds);
@@ -299,27 +330,34 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         InternalLogger.INSTANCE.trace("InProcessTelemetryChannel sending telemetry");
     }
 
-    private synchronized void initialize(String endpointAddress,
-                                         String maxTransmissionStorageCapacity,
-                                         boolean developerMode,
-                                         LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
-                                         LimitsEnforcer sendIntervalInSeconds,
-                                         boolean throttling) {
+	private synchronized void initialize(String endpointAddress, String maxTransmissionStorageCapacity,
+			boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
+			LimitsEnforcer sendIntervalInSeconds, boolean throttling) {
+		initialize(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer,
+				sendIntervalInSeconds, throttling, DEFAULT_MAX_INSTANT_RETRY);
+	}
+
+	private synchronized void initialize(String endpointAddress, String maxTransmissionStorageCapacity,
+			boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
+			LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         if (s_transmitterFactory == null) {
             s_transmitterFactory = new InProcessTelemetryChannelFactory();
         }
 
-        telemetriesTransmitter = s_transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity, throttling);
-        telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
+		telemetriesTransmitter = s_transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity,
+				throttling, maxInstantRetry);
+		telemetryBuffer = new TelemetryBuffer(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer,
+				sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);
     }
 
     /**
-     * The method will throw IllegalArgumentException if the endpointAddress is not a valid uri
-     * Please note that a null or empty string is valid as far as the class is concerned and thus considered valid
+	 * The method will throw IllegalArgumentException if the endpointAddress is not
+	 * a valid uri Please note that a null or empty string is valid as far as the
+	 * class is concerned and thus considered valid
      *
      * @param endpointAddress
      */
@@ -337,24 +375,18 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
     }
 
     private LimitsEnforcer createDefaultMaxTelemetryBufferCapacityEnforcer(Integer currentValue) {
-        LimitsEnforcer maxItemsInBatchEnforcer =
-                LimitsEnforcer.createWithClosestLimitOnError(
-                        MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME,
-                        MIN_MAX_TELEMETRY_BUFFER_CAPACITY,
-                        MAX_MAX_TELEMETRY_BUFFER_CAPACITY,
-                        DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY,
+		LimitsEnforcer maxItemsInBatchEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
+				MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME, MIN_MAX_TELEMETRY_BUFFER_CAPACITY,
+				MAX_MAX_TELEMETRY_BUFFER_CAPACITY, DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY,
                         currentValue == null ? DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY : currentValue);
 
         return maxItemsInBatchEnforcer;
     }
 
     private LimitsEnforcer createDefaultSendIntervalInSecondsEnforcer(Integer currentValue) {
-        LimitsEnforcer sendIntervalInSecondsEnforcer =
-                LimitsEnforcer.createWithClosestLimitOnError(
-                        FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME,
-                        MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
-                        MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
-                        DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
+		LimitsEnforcer sendIntervalInSecondsEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
+				FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME, MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
+				MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS, DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
                         currentValue == null ? DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS : currentValue);
 
         return sendIntervalInSecondsEnforcer;

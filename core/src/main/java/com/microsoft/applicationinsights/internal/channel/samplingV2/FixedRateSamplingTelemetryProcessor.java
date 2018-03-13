@@ -25,7 +25,8 @@ import org.apache.commons.lang3.StringUtils;
  * <p>
  * How to use in ApplicationInsights Configuration :
  * <p>
-* <TelemetryProcessors>
+ * {@code
+<TelemetryProcessors>
     <BuiltInProcessors>
         <Processor type = "FixedRateSamplingTelemetryProcessor">
             <Add name = "SamplingPercentage" value = "50" />
@@ -41,6 +42,7 @@ import org.apache.commons.lang3.StringUtils;
         </Processor>
     </BuiltInProcessors>
 </TelemetryProcessors>
+ }
  */
 @BuiltInProcessor("FixedRateSamplingTelemetryProcessor")
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {
@@ -121,7 +123,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     public void setSamplingPercentage(String samplingPercentage) {
         try {
             this.samplingPercentage = Double.valueOf(samplingPercentage);
-            InternalLogger.INSTANCE.info("Sampling rate set to " + samplingPercentage);
+            InternalLogger.INSTANCE.info("Sampling rate set to %s", samplingPercentage);
         }
         catch (NumberFormatException ex) {
             this.samplingPercentage = 100.0;
@@ -150,16 +152,21 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
                 if (samplingSupportingTelemetry.getSamplingPercentage() == null) {
 
                     samplingSupportingTelemetry.setSamplingPercentage(samplingPercentage);
-
-                    if (SamplingScoreGeneratorV2.getSamplingScore(telemetry) >= samplingPercentage) {
-
-                        InternalLogger.INSTANCE.info("Item %s sampled out", telemetry.getClass());
-                        return false;
-                    }
+                                        
+                    
                 } else {
                     InternalLogger.INSTANCE.info("Item has sampling percentage already set to :"
                             + samplingSupportingTelemetry.getSamplingPercentage());
+                    
+                    samplingPercentage = samplingSupportingTelemetry.getSamplingPercentage();
                 }
+                
+                if (SamplingScoreGeneratorV2.getSamplingScore(telemetry) >= samplingPercentage) {
+
+                    InternalLogger.INSTANCE.info("Item %s sampled out", telemetry.getClass());
+                    return false;
+                }
+                
             } else {
                 InternalLogger.INSTANCE.trace("Skip sampling since %s type is not sampling applicable", telemetry.getClass());
             }
@@ -195,7 +202,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     public void addToExcludedType(String value) {
 
         setIncludedOrExcludedTypes(value, excludedTypes);
-        InternalLogger.INSTANCE.trace(value + " added as excluded to sampling");
+        InternalLogger.INSTANCE.trace("%s added as excluded to sampling", value);
 
     }
 
@@ -207,7 +214,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     public void addToIncludedType(String value) {
 
         setIncludedOrExcludedTypes(value, includedTypes);
-        InternalLogger.INSTANCE.trace(value + " added as included to sampling");
+        InternalLogger.INSTANCE.trace("%s added as included to sampling", value);
 
     }
 }

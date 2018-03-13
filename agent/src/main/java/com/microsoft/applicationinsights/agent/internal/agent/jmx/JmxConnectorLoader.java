@@ -48,15 +48,15 @@ public final class JmxConnectorLoader {
 			
 			return true;
         } catch (MalformedObjectNameException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MalformedObjectNameException': '%s'", e.getMessage());
+            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MalformedObjectNameException': '%s'", e.toString());
         } catch (NotCompliantMBeanException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'NotCompliantMBeanException': '%s'", e.getMessage());
+            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'NotCompliantMBeanException': '%s'", e.toString());
         } catch (InstanceAlreadyExistsException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'InstanceAlreadyExistsException': '%s'", e.getMessage());
+            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'InstanceAlreadyExistsException': '%s'", e.toString());
         } catch (MBeanRegistrationException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MBeanRegistrationException': '%s'", e.getMessage());
+            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MBeanRegistrationException': '%s'", e.toString());
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.getMessage());
+            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.toString());
         }
 		
 		return false;

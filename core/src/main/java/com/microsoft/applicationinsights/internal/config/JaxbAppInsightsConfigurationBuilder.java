@@ -51,9 +51,9 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
             return applicationInsights;
         } catch (JAXBException e) {
             if (e.getCause() != null) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getCause().getMessage());
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getCause().toString());
             } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getMessage());
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.toString());
             }
         } catch (NullPointerException e) {
             e.printStackTrace();

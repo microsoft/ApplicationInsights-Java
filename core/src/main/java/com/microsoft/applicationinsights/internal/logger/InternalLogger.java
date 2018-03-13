@@ -226,7 +226,8 @@ public enum InternalLogger {
             currentDateAsString = dateFormatter.format(new Date());
         }
         String formattedMessage = String.format(message, args);
-        String theMessage = String.format("%s %s, %d: %s", prefix, currentDateAsString, Thread.currentThread().getId(), formattedMessage);
+        final Thread thisThread = Thread.currentThread();
+        String theMessage = String.format("%s %s, %d(%s): %s", prefix, currentDateAsString, thisThread.getId(), thisThread.getName(), formattedMessage);
         return theMessage;
     }
 
@@ -262,7 +263,7 @@ public enum InternalLogger {
                 try {
                     loggerOutput = new FileLoggerOutput(loggerData);
                 } catch (Exception e) {
-                    onInitializationError(String.format("SDK Internal Logger internal error while initializing 'FILE': '%s'.", e.getMessage()));
+                    onInitializationError(String.format("SDK Internal Logger internal error while initializing 'FILE': '%s'.", e.toString()));
                 }
                 return;
 

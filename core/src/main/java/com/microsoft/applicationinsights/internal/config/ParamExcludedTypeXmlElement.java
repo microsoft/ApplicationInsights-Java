@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
 /**
- * This is the class for binding the xml array list of <ExcludedTypes>
+ * This is the class for binding the xml array list of {@code <ExcludedTypes>}
  */
 
 @XmlRootElement(name = "ExcludedTypes")

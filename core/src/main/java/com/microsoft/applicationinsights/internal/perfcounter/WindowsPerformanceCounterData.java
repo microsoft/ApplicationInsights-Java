@@ -65,7 +65,7 @@ public final class WindowsPerformanceCounterData {
             translatedInstanceName = JniPCConnector.translateInstanceName(instanceName);
             this.instanceName = translatedInstanceName;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Failed to translate instance name '%s': '%s'", instanceName, e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to translate instance name '%s': '%s'", instanceName, e.toString());
             throw e;
         }
         return this;
