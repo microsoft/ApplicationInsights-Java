@@ -133,16 +133,16 @@ azure.application-insights.logger.level=error
 azure.application-insights.channel.in-process.developer-mode=false
 # Endpoint address, Default value: https://dc.services.visualstudio.com/v2/track.
 azure.application-insights.channel.in-process.endpoint-address=https://dc.services.visualstudio.com/v2/track
-# Maximum count of telemetries that will be batched before sending. Default value: 500.
+# Maximum count of telemetries that will be batched before sending. Must be between 1 and 1000. Default value: 500.
 azure.application-insights.channel.in-process.max-telemetry-buffer-capacity=500
-# Interval to send telemetry. Default value: 5 seconds.
+# Interval to send telemetry. Must be between 1 and 300. Default value: 5 seconds.
 azure.application-insights.channel.in-process.flush-interval-in-seconds=5
-# Size of disk that we can use. Default value: 10 megabytes.
+# Size of disk that we can use. Must be between 1 and 1000. Default value: 10 megabytes.
 azure.application-insights.channel.in-process.max-transmission-storage-files-capacity-in-mb=10
 # Enable/Disable throttling on sending telemetry data. Default value: true.
 azure.application-insights.channel.in-process.throttling=true
 
-# Percent of telemetry events that will be sent to Application Insights. Default value: 100% (all telemetry events).
+# Percent of telemetry events that will be sent to Application Insights. Must be between 0.0 and 100.0. Default value: 100 (all telemetry events).
 azure.application-insights.telemetry-processor.sampling.percentage=100
 # If set only telemetry of specified types will be included. Default value: all telemetries are included;
 azure.application-insights.telemetry-processor.sampling.include=

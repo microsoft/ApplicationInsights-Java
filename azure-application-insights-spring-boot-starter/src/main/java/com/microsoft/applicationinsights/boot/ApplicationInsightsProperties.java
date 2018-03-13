@@ -160,15 +160,15 @@ public class ApplicationInsightsProperties {
              */
             private String endpointAddress = TransmissionNetworkOutput.DEFAULT_SERVER_URI;
             /**
-             * Maximum count of telemetries that will be batched before sending.
+             * Maximum count of telemetries that will be batched before sending. Must be between 1 and 1000.
              */
             private int maxTelemetryBufferCapacity = InProcessTelemetryChannel.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
             /**
-             * nterval to send telemetry.
+             * Interval to send telemetry. Must be between 1 and 300.
              */
             private int flushIntervalInSeconds = InProcessTelemetryChannel.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
             /**
-             * Size of disk that we can use.
+             * Size of disk that we can use. Must be between 1 and 1000.
              */
             private int maxTransmissionStorageFilesCapacityInMb = TransmissionFileSystemOutput.DEFAULT_CAPACITY_MEGABYTES;
             /**
@@ -243,7 +243,7 @@ public class ApplicationInsightsProperties {
 
         static class Sampling {
             /**
-             * Percent of telemetry events that will be sent to Application Insights.
+             * Percent of telemetry events that will be sent to Application Insights. Must be between 0.0 and 100.0.
              */
             private double percentage = FixedRateSamplingTelemetryProcessor.DEFAULT_SAMPLING_PERCENTAGE;
             /**
