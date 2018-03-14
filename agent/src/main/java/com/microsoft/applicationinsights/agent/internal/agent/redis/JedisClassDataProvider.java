@@ -58,8 +58,15 @@ public final class JedisClassDataProvider {
             data.addAllMethods(false, true, methodVisitorFactory);
 
             classesToInstrument.put(JEDIS_CLASS_NAME, data);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load instrumentation for Jedis: '%s'", t.toString());
+            try {
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load instrumentation for Jedis: '%s'", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 }

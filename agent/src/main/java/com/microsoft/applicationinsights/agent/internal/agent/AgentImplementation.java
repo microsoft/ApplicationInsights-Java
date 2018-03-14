@@ -59,10 +59,17 @@ public final class AgentImplementation {
             agentJarLocation = getAgentJarLocation();
             appendJarsToBootstrapClassLoader(inst);
             initializeCodeInjector(inst);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: %s", throwable.toString());
-			throwable.printStackTrace();
-            System.exit(-1);
+            try {
+                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent is NOT activated: failed to load to bootstrap class loader: %s", throwable.toString());                throwable.printStackTrace();
+                System.exit(-1);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                // chomp
+            }
         }
     }
 
@@ -138,7 +145,7 @@ public final class AgentImplementation {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         try {
             if ((systemClassLoader instanceof URLClassLoader)) {
-                for (URL url : ((URLClassLoader)systemClassLoader).getURLs()) {
+                for (URL url : ((URLClassLoader) systemClassLoader).getURLs()) {
                     String urlPath = url.getPath();
 
                     if (urlPath.indexOf(AGENT_JAR_PREFIX) != -1) {
@@ -150,6 +157,8 @@ public final class AgentImplementation {
 
                 }
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
             InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Error while trying to fetch Jar Location, Exception: %s", throwable.toString());
         }

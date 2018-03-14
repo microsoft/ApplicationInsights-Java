@@ -91,6 +91,8 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         public void run() {
             try {
                 cancelSuspension(expectedGeneration);
+            } catch (ThreadDeath td) {
+            	throw td;
             } catch (Throwable t) {
             }
         }
@@ -185,8 +187,15 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
             suspensionDate = date;
 
             InternalLogger.INSTANCE.info("App is throttled, telemetries are blocked from now, for %s seconds", suspendInSeconds);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.toString());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

@@ -126,9 +126,17 @@ public final class ConfigurationFileLocator {
                     configurationFile == null ? "NOT " : "");
 
             return configurationFile;
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            logException(t, "current class loader");
-            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            try {
+                logException(t, "current class loader");
+                InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return null;
@@ -153,9 +161,17 @@ public final class ConfigurationFileLocator {
             } else {
                 InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Can not access folder '%s'", jarFullPath);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            logException(t, "library location");
-            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            try {
+                logException(t, "library location");
+                InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
         return null;
     }
@@ -194,9 +210,17 @@ public final class ConfigurationFileLocator {
                     checkedUrls.add(configurationPath);
                 }
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            logException(t, "class path");
-            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            try {
+                logException(t, "class path");
+                InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
         return null;
     }

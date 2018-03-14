@@ -64,8 +64,15 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
             }
 
             pcs.add(dlpc);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create DeadLockDetector, exception: %s", t.toString());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create DeadLockDetector, exception: %s", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
@@ -78,8 +85,15 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
 
             JvmHeapMemoryUsedPerformanceCounter mpc = new JvmHeapMemoryUsedPerformanceCounter();
             pcs.add(mpc);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create JvmHeapMemoryUsedPerformanceCounter, exception: %s", t.toString());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create JvmHeapMemoryUsedPerformanceCounter, exception: %s", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

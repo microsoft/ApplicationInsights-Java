@@ -218,10 +218,17 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 				ex = e;
 				InternalLogger.INSTANCE.error("Failed to send, unexpected exception.%nStack Trace:%n%s",
 						ExceptionUtils.getStackTrace(e));
+            } catch (ThreadDeath td) {
+            	throw td;
             } catch (Throwable t) {
 				ex = t;
-				InternalLogger.INSTANCE.error("Failed to send, unexpected error.%nStack Trace:%n%s",
-						ExceptionUtils.getStackTrace(t));
+				try {
+					InternalLogger.INSTANCE.error("Failed to send, unexpected error.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(t));
+				} catch (ThreadDeath td) {
+					throw td;
+				} catch (Throwable t2) {
+					// chomp
+				}
 			} finally {
                 if (request != null) {
                     request.releaseConnection();

@@ -105,6 +105,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             if (throwable instanceof Exception) {
                 telemetryClient.trackException((Exception)throwable);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -285,6 +287,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             ExceptionTelemetry et = new ExceptionTelemetry(e, stackSize);
 
             telemetryClient.track(et);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
         if (methodData != null) {
@@ -309,7 +313,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                         }
                     }
                 } catch (Throwable t) {
-                    url = "jdbc:Unknown DB URL (failed to fetch from connection)";
+                    try { // can assignment actually throw here?
+                        url = "jdbc:Unknown DB URL (failed to fetch from connection)";
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
 
@@ -322,7 +332,9 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             startSqlMethod(InstrumentedClassType.SQL.toString(), name, sqlMetaData);
             ThreadData localData = threadDataThreadLocal.get();
 
-        } catch (Throwable e) {
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
         }
     }
 
@@ -433,7 +445,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             String dependencyName = "";
             if (methodData.arguments[0] != null) {
                 dependencyName = methodData.arguments[0].toString();
-            }
+            }   
 
             String commandName = "";
             if (methodData.arguments.length > 1 && methodData.arguments[1] != null) {
@@ -443,7 +455,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             
             long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
             Duration duration = new Duration(durationInMilliSeconds);
-  
+
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(
                     dependencyName,
                     commandName,
@@ -467,7 +479,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                     }
                 }
             }
-  
+
             InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
 
             telemetryClient.track(telemetry);
@@ -476,10 +488,18 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                 ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
                 telemetryClient.track(exceptionTelemetry);
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            t.printStackTrace();
+            try {
+                t.printStackTrace();
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
-  
+
     }
 
     private static long nanoToMilliseconds(long nanoSeconds) {
@@ -504,7 +524,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             }
             sb.append(']');
             return sb;
-        } catch (Throwable t) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -541,7 +561,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                 }
                 explainSB.deleteCharAt(explainSB.length() - 1);
             }
-        } catch (Throwable t) {
+        } catch (Throwable t) { // FIXME can this be SQLException?
         } finally {
             if (rs != null) {
                 try {

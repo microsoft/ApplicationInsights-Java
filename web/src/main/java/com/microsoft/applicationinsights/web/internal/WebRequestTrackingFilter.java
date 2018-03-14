@@ -109,6 +109,8 @@ public final class WebRequestTrackingFilter implements Filter {
             for (ThreadLocalCleaner cleaner : cleaners) {
                 cleaner.clean();
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -119,7 +121,7 @@ public final class WebRequestTrackingFilter implements Filter {
             if (telemetryClient != null) {
                 telemetryClient.trackException(e);
             }
-        } catch (Throwable t) {
+        } catch (Exception ignoreMe) {
         }
         invokeSafeOnEndRequest(req, res, isRequestProcessedSuccessfully);
     }
@@ -199,13 +201,21 @@ public final class WebRequestTrackingFilter implements Filter {
         if (agentIsUp) {
             try {
                 AgentTLS.setTLSKey(key);
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable e) {
-                if (e instanceof ClassNotFoundException ||
-                        e instanceof NoClassDefFoundError) {
+                try {
+                    if (e instanceof ClassNotFoundException ||
+                            e instanceof NoClassDefFoundError) {
 
-                    // This means that the Agent is not present and therefore we will stop trying
-                    agentIsUp = false;
+                        // This means that the Agent is not present and therefore we will stop trying
+                        agentIsUp = false;
                     InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'", e.toString());
+                    }
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
                 }
             }
         }
@@ -220,9 +230,17 @@ public final class WebRequestTrackingFilter implements Filter {
             //if agent is not installed (jar not loaded), can skip the entire registration process
             try {
                 AgentConnector test = AgentConnector.INSTANCE;
+            } catch (ThreadDeath td) {
+                throw td;
             } catch(Throwable t) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Agent was not found. Skipping the agent registration");
-                return;
+                try {
+                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Agent was not found. Skipping the agent registration");
+                    return;
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
 
             ServletContext context = filterConfig.getServletContext();
@@ -233,8 +251,15 @@ public final class WebRequestTrackingFilter implements Filter {
             setKey(key);
 
             InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Successfully registered the filter '%s'", FILTER_NAME);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.toString());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to register '%s', exception: '%s'", FILTER_NAME, t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
@@ -288,8 +313,15 @@ public final class WebRequestTrackingFilter implements Filter {
             } else {
                 name = contextPath.substring(1);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.toString());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Exception while fetching WebApp name: '%s'", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
         appName = name;
         return name;
@@ -306,10 +338,18 @@ public final class WebRequestTrackingFilter implements Filter {
             AgentTLS.getTLSKey();
             agentIsUp = true;
             this.key = key;
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            agentIsUp = false;
-            this.key = null;
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "setKey: Failed to find AgentTLS");
+            try {
+                agentIsUp = false;
+                this.key = null;
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "setKey: Failed to find AgentTLS");
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 }
