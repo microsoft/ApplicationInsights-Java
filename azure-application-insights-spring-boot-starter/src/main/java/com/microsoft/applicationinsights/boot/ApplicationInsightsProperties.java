@@ -168,7 +168,7 @@ public class ApplicationInsightsProperties {
              */
             private int flushIntervalInSeconds = InProcessTelemetryChannel.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
             /**
-             * Size of disk that we can use. Must be between 1 and 1000.
+             * Size of disk space that Application Insights can use to store telemetry in case of network outage. Must be between 1 and 1000.
              */
             private int maxTransmissionStorageFilesCapacityInMb = TransmissionFileSystemOutput.DEFAULT_CAPACITY_MEGABYTES;
             /**
@@ -243,7 +243,8 @@ public class ApplicationInsightsProperties {
 
         static class Sampling {
             /**
-             * Percent of telemetry events that will be sent to Application Insights. Must be between 0.0 and 100.0.
+             * Percent of telemetry events that will be sent to Application Insights. Percentage must be close to 100/N where N is an integer.
+             * E.g. 50 (=100/2), 33.33 (=100/3), 25 (=100/4), 20, 1 (=100/100), 0.1 (=100/1000).
              */
             private double percentage = FixedRateSamplingTelemetryProcessor.DEFAULT_SAMPLING_PERCENTAGE;
             /**

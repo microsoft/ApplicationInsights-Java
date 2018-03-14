@@ -137,12 +137,13 @@ azure.application-insights.channel.in-process.endpoint-address=https://dc.servic
 azure.application-insights.channel.in-process.max-telemetry-buffer-capacity=500
 # Interval to send telemetry. Must be between 1 and 300. Default value: 5 seconds.
 azure.application-insights.channel.in-process.flush-interval-in-seconds=5
-# Size of disk that we can use. Must be between 1 and 1000. Default value: 10 megabytes.
+# Size of disk space that Application Insights can use to store telemetry in case of network outage. Must be between 1 and 1000. Default value: 10 megabytes.
 azure.application-insights.channel.in-process.max-transmission-storage-files-capacity-in-mb=10
 # Enable/Disable throttling on sending telemetry data. Default value: true.
 azure.application-insights.channel.in-process.throttling=true
 
-# Percent of telemetry events that will be sent to Application Insights. Must be between 0.0 and 100.0. Default value: 100 (all telemetry events).
+# Percent of telemetry events that will be sent to Application Insights. Percentage must be close to 100/N where N is an integer.
+# E.g. 50 (=100/2), 33.33 (=100/3), 25 (=100/4), 20, 1 (=100/100), 0.1 (=100/1000). Default value: 100 (all telemetry events).
 azure.application-insights.telemetry-processor.sampling.percentage=100
 # If set only telemetry of specified types will be included. Default value: all telemetries are included;
 azure.application-insights.telemetry-processor.sampling.include=
