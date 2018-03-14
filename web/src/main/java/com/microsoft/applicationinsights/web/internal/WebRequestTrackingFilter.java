@@ -21,30 +21,29 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
+import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.internal.agent.AgentConnector;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.LinkedList;
-
-import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.annotation.WebFilter;
-
-import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -75,7 +74,9 @@ public final class WebRequestTrackingFilter implements Filter {
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse)res);
+
+        //From Servlet API 3.0 onward there is getStatus() method in HttpServletResponse class.
+        HttpServletResponse response = (HttpServletResponse)res;
         setKeyOnTLS(key);
 
         boolean isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
@@ -83,20 +84,25 @@ public final class WebRequestTrackingFilter implements Filter {
         try {
             chain.doFilter(req, response);
             invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
-        } catch (ServletException se) {
-            onException(se, req, response,isRequestProcessedSuccessfully);
-            throw se;
-        } catch (IOException ioe) {
-            onException(ioe, req, response, isRequestProcessedSuccessfully);
-            throw ioe;
-        } catch (RuntimeException re) {
-            onException(re, req, response, isRequestProcessedSuccessfully);
-            throw re;
-        } finally {
+        } catch (ServletException | IOException | RuntimeException ex) {
+
+            //Explicitly set the response to 500 as the above three exceptions converts to 500
+            //later in the the chain inside the catch block of org.apache.catalina.core.StandardWrapperValue class
+            //The call to this method happens after the Filter Chain has been completed and thus response object
+            //can never have this value at this time.
+            response.setStatus(500);
+            onException(ex, req, response,isRequestProcessedSuccessfully);
+            throw ex;
+        }  finally {
             cleanup();
         }
     }
 
+    /**
+     * This constructor is used to set the Application Name in case of SpringBoot Application. In J2EE or Servlet
+     * Applications we get this value from ServletContext.
+     * @param appName The Name of the Application in case of SpringBoot Application
+     */
     public WebRequestTrackingFilter(String appName) {
         this.appName = appName;
     }

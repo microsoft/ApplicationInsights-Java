@@ -22,18 +22,18 @@
 package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
+import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
-
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import com.microsoft.applicationinsights.web.utils.ServletUtils;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
@@ -163,7 +163,7 @@ public class WebRequestTrackingFilterTests {
         try {
             FilterChain chain = mock(FilterChain.class);
 
-            ServletRequest request = ServletUtils.generateDummyServletRequest();
+            ServletRequest request =  ServletUtils.generateDummyServletRequest();
             ServletResponse response = ServletUtils.generateDummyServletResponse();
             Mockito.doThrow(expectedException).when(chain).doFilter(eq(request), any(ServletResponse.class));
 

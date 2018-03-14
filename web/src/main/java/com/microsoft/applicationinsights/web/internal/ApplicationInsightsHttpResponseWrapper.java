@@ -26,10 +26,12 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 
 /**
+ * @deprecated No longer needed as library has upgraded to Servlet API 3.0.1
  * This class wraps the HTTP servlet response in order to store the response status code.
  * This wrapper is used to support servlet API 2.5, which lacks the api to get response status.
  * Created by yonisha on 5/27/2015.
  */
+@Deprecated
 public class ApplicationInsightsHttpResponseWrapper extends HttpServletResponseWrapper {
 
     private int httpStatusCode = SC_OK;

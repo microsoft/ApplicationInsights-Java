@@ -1,6 +1,7 @@
 # CHANGELOG
 
-## Version 2.0.1
+## Version 2.0.2
+- Fix #600 where RequestTelemetry has 200 whereas browser shows 500 (when servlet throws)
 - Fix issue when dependency start time wasn't being recorded correctly
 - Fixed #533 HTTP Dependency Telemetry now matches with .NET SDK
 - Introduced public method `httpMethodFinishedWithPath(String identifier, String method, String path, String correlationId, String uri, String target, int result, long delta)`
@@ -12,6 +13,9 @@
 - Fixed PageView telemetry data not being reported. 
 - Fixed Issue #526 (NPE in MapUtil.copy())
 - Fixed Issue #513 (Memory leak in SDKShutdownActivity). This fix upgrades our Servlet version from 2.5 to 3.0. The SDK must now be run on an application server supporting Servlet 3.0.
+
+## Version 2.0.1
+-Fix Inconsistency in artifact names in POM files
 
 ## Version 2.0.0
 - Upgraded logback dependency version to 1.2.3
