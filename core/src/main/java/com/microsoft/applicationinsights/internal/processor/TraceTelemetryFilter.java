@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,15 +36,15 @@ import java.util.Map;
 /**
  * The class can filter out TraceTelemetries ('LOG' telemetries) that have 'lower' severity level than needed
  * The possible values are:
- *  OFF             - Filter out ALL traces
- *  TRACE           - No filtering. equals to Trace level
- *  INFO            - Filter out TRACE level
- *  WARN            - Filter out TRACE and INFO
- *  ERROR           - Filter out WARN, INFO, TRACE
- *  CRITICAL        - filter out all but CRITICAL
- *
- *  Illegal value will prevent from the filter from being used.
- *
+ * OFF             - Filter out ALL traces
+ * TRACE           - No filtering. equals to Trace level
+ * INFO            - Filter out TRACE level
+ * WARN            - Filter out TRACE and INFO
+ * ERROR           - Filter out WARN, INFO, TRACE
+ * CRITICAL        - filter out all but CRITICAL
+ * <p>
+ * Illegal value will prevent from the filter from being used.
+ * <p>
  * Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("TraceTelemetryFilter")
@@ -67,7 +68,7 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
             return false;
         }
 
-        TraceTelemetry tt = (TraceTelemetry)telemetry;
+        TraceTelemetry tt = (TraceTelemetry) telemetry;
         String message = tt.getMessage();
         if (LocalStringsUtils.isNullOrEmpty(message)) {
             return true;
@@ -104,17 +105,17 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
             InternalLogger.INSTANCE.trace(String.format("TraceTelemetryFilter: set severity level to %s", this.fromSeverityLevel));
         } catch (ThreadDeath td) {
             throw td;
-        } catch (Throwable e) {
+        } catch (Throwable t) {
             try {
                 this.fromSeverityLevel = SeverityLevel.Verbose;
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR,
-                        String.format("TraceTelemetryFilter: failed to parse: %s", fromSeverityLevel));
+                InternalLogger.INSTANCE.error("TraceTelemetryFilter: failed to parse: %s, Exception : %s", fromSeverityLevel,
+                        ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
             } finally {
-                throw e;
+                throw t;
             }
         }
     }

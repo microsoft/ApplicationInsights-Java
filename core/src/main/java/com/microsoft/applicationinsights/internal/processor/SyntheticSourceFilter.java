@@ -31,12 +31,13 @@ import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class will filter out telemetries that come from 'unneeded' configured list of source names
- *
- *  Illegal value will prevent from the filter from being used.
- *
+ * <p>
+ * Illegal value will prevent from the filter from being used.
+ * <p>
  * Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("SyntheticSourceFilter")
@@ -77,15 +78,16 @@ public final class SyntheticSourceFilter implements TelemetryProcessor {
             InternalLogger.INSTANCE.trace(String.format("SyntheticSourceFilter: set NotNeededSources: %s", notNeededSources));
         } catch (ThreadDeath td) {
             throw td;
-        } catch (Throwable e) {
+        } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("SyntheticSourceFilter: failed to parse NotNeededSources: %s", notNeededSources));
+                InternalLogger.INSTANCE.error(String.format("SyntheticSourceFilter: failed to parse NotNeededSources: %s," +
+                        " exception : %s", notNeededSources, ExceptionUtils.getStackTrace(t)));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
             } finally {
-                throw e;
+                throw t;
             }
         }
     }

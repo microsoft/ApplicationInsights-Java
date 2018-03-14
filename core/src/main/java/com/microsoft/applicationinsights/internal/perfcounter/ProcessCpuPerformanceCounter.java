@@ -30,7 +30,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class supplies the cpu usage of the Java process the SDK is in.
- *
+ * <p>
  * Created by gupele on 3/3/2015.
  */
 final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
@@ -45,8 +45,8 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
         } catch (Throwable t) {
             try {
                 cpuPerformanceCounterCalculator = null;
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to create ProcessCpuPerformanceCounter: %s", t.toString());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                InternalLogger.INSTANCE.error("Failed to create ProcessCpuPerformanceCounter," +
+                        " Exception : %s", ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

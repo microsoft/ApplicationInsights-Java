@@ -84,7 +84,7 @@ public final class FixedRateTelemetrySampler implements TelemetrySampler {
         if (samplingPercentage != null) {
             this.samplingPercentage.set(samplingPercentage);
         }
-        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.INFO, "Setting sampling percentage to %s percent", this.samplingPercentage);
+        InternalLogger.INSTANCE.info( "Setting sampling percentage to %s percent", this.samplingPercentage);
     }
 
     @Override
@@ -133,7 +133,7 @@ public final class FixedRateTelemetrySampler implements TelemetrySampler {
                     continue;
                 }
                 if (!allowedTypes.containsKey(type)) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "%s contains illegal type %s, ignored", prefix, type);
+                    InternalLogger.INSTANCE.error("%s contains illegal type %s, ignored", prefix, type);
                     continue;
                 }
 

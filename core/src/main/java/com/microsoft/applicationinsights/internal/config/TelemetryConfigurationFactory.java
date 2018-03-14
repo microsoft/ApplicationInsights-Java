@@ -45,6 +45,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Initializer class for configuration instances.
@@ -88,7 +89,7 @@ public enum TelemetryConfigurationFactory {
 
             ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
             if (applicationInsightsConfig == null) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to read configuration file");
+                InternalLogger.INSTANCE.error("Failed to read configuration file. Application Insights XML file is null...setting default configuration");
                 setMinimumConfiguration(applicationInsightsConfig, configuration);
                 return;
             }
@@ -111,7 +112,7 @@ public enum TelemetryConfigurationFactory {
 
             initializeComponents(configuration);
         } catch (Exception e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to initialize configuration, exception: %s", e.toString());
+            InternalLogger.INSTANCE.error("Failed to initialize configuration, exception: %s", ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -444,7 +445,7 @@ public enum TelemetryConfigurationFactory {
         for (TelemetryProcessorXmlElement classData : classesFromConfigration) {
             TelemetryProcessor processor = creator.Create(classData);
             if (processor == null) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Processor %s failure during initialization", classData.getType());
+                InternalLogger.INSTANCE.error("Processor %s failure during initialization", classData.getType());
                 continue;
             }
 
