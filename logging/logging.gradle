@@ -62,7 +62,6 @@ findbugs.sourceSets = [sourceSets.main]
 
 whenPomConfigured = { p ->
     p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != "junit" && dep.artifactId != "mockito-all" }
-    writePomToArtifactsDirectory(p, project.name)
 }
 
 // endregion Publishing properties

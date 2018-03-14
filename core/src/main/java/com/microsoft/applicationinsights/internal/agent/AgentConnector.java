@@ -28,7 +28,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class is responsible for connecting the Agent and register there for future calls
- *
+ * <p>
  * Created by gupele on 5/7/2015.
  */
 public enum AgentConnector {
@@ -64,11 +64,11 @@ public enum AgentConnector {
 
     /**
      * Registers the caller, and returning a key to represent that data. The method should not throw!
-     *
+     * <p>
      * The method is basically delegating the call to the relevant Agent class.
      *
      * @param classLoader The class loader that is associated with the caller.
-     * @param name The name that is associated with the caller
+     * @param name        The name that is associated with the caller
      * @return The key that will represent the caller, null if the registration failed.
      */
     @SuppressWarnings("unchecked")
@@ -78,9 +78,18 @@ public enum AgentConnector {
                 try {
                     coreDataAgent = new CoreAgentNotificationsHandler(name);
                     agentKey = ImplementationsCoordinator.INSTANCE.register(classLoader, coreDataAgent);
+                } catch (ThreadDeath td) {
+                    throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error( "Could not find Agent: '%s'", ExceptionUtils.getStackTrace(t));
-                    agentKey = null;
+                    try {
+                        InternalLogger.INSTANCE.error("Could not find Agent: '%s'", ExceptionUtils.getStackTrace(t));
+                        agentKey = null;
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
+
                 }
 
                 registrationType = RegistrationType.WEB;
@@ -101,8 +110,9 @@ public enum AgentConnector {
 
     /**
      * Registers the caller, and returning a key to represent that data. The method should not throw!
-     *
+     * <p>
      * The method is basically delegating the call to the relevant Agent class.
+     *
      * @return A boolean value representing the agent registration
      */
     @SuppressWarnings("unchecked")
@@ -111,9 +121,17 @@ public enum AgentConnector {
             case NONE:
                 try {
                     coreDataAgent = new CoreAgentNotificationsHandler("app");
+                } catch (ThreadDeath td) {
+                    throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Could not find Agent: '%s'", ExceptionUtils.getStackTrace(t));
-                    return false;
+                    try {
+                        InternalLogger.INSTANCE.error("Could not find Agent: '%s'", ExceptionUtils.getStackTrace(t));
+                        return false;
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
                 ImplementationsCoordinator.INSTANCE.registerSelf(coreDataAgent);
 
@@ -126,7 +144,7 @@ public enum AgentConnector {
                 return false;
 
             case SELF:
-                InternalLogger.INSTANCE.info( "Core was already registered by the Agent, ignored");
+                InternalLogger.INSTANCE.info("Core was already registered by the Agent, ignored");
                 return true;
 
             default:

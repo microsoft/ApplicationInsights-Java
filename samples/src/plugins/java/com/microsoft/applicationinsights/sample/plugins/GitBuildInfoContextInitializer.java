@@ -83,10 +83,18 @@ public final class GitBuildInfoContextInitializer implements ContextInitializer 
             }
 
             hasBuildData = true;
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            hasBuildData = false;
-            InternalLogger.INSTANCE.error("Error while initializaing GitBuildInfoContextInitializer");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            try {
+                hasBuildData = false;
+                InternalLogger.INSTANCE.error("Error while initializaing GitBuildInfoContextInitializer");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

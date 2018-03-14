@@ -60,10 +60,19 @@ public final class AgentImplementation {
             agentJarLocation = getAgentJarLocation();
             appendJarsToBootstrapClassLoader(inst);
             initializeCodeInjector(inst);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to load to bootstrap class loader: %s", ExceptionUtils.getStackTrace(throwable));
-			throwable.printStackTrace();
-            System.exit(-1);
+            try {
+                InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to load to bootstrap class loader: %s",
+                        ExceptionUtils.getStackTrace(throwable));
+                System.exit(-1);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                // chomp
+            }
+
         }
     }
 
@@ -94,11 +103,11 @@ public final class AgentImplementation {
                     inst.retransformClasses(RuntimeException.class);
                     inst.removeTransformer(codeInjector);
                 }
-			} else {
+            } else {
                 if (exceptionData.isEnabled()) {
                     InternalAgentLogger.INSTANCE.trace("The JVM does not support re-transformation of classes.");
                 }
-			}
+            }
             inst.addTransformer(codeInjector);
         } catch (Exception e) {
             InternalAgentLogger.INSTANCE.error("Failed to load the code injector, exception: %s", ExceptionUtils.getStackTrace(e));
@@ -120,7 +129,7 @@ public final class AgentImplementation {
         }
 
         if (agentJarName == null) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR,"Agent Jar Name is null....Throwing runtime exception");
+            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Agent Jar Name is null....Throwing runtime exception");
             throw new RuntimeException("Could not find agent jar");
         }
 
@@ -139,7 +148,7 @@ public final class AgentImplementation {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         try {
             if ((systemClassLoader instanceof URLClassLoader)) {
-                for (URL url : ((URLClassLoader)systemClassLoader).getURLs()) {
+                for (URL url : ((URLClassLoader) systemClassLoader).getURLs()) {
                     String urlPath = url.getPath();
 
                     if (urlPath.indexOf(AGENT_JAR_PREFIX) != -1) {
@@ -151,6 +160,8 @@ public final class AgentImplementation {
 
                 }
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
             InternalAgentLogger.INSTANCE.error("Error while trying to fetch Jar Location, Exception: %s", ExceptionUtils.getStackTrace(throwable));
         }
@@ -199,7 +210,7 @@ public final class AgentImplementation {
             throw new Exception(errorMessage);
         }
 
-        InternalAgentLogger.INSTANCE.trace( "Found jar: %s", coreJarName);
+        InternalAgentLogger.INSTANCE.trace("Found jar: %s", coreJarName);
 
         JarFile jarFile = null;
         try {
@@ -210,12 +221,12 @@ public final class AgentImplementation {
         }
         Enumeration<JarEntry> e = jarFile.entries();
 
-        URL[] urls = { new URL("jar:file:" + coreJarName+"!/") };
+        URL[] urls = {new URL("jar:file:" + coreJarName + "!/")};
         URLClassLoader cl = URLClassLoader.newInstance(urls);
 
         while (e.hasMoreElements()) {
             JarEntry je = e.nextElement();
-            if(je.isDirectory() || !je.getName().endsWith(".class")){
+            if (je.isDirectory() || !je.getName().endsWith(".class")) {
                 continue;
             }
             try {

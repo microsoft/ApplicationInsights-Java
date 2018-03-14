@@ -21,19 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-
-import com.google.common.base.Preconditions;
 
 /**
  * This class is responsible for managing the transmission state.
@@ -46,7 +50,17 @@ import com.google.common.base.Preconditions;
  *
  * Created by gupele on 6/29/2015.
  */
-public final class TransmissionPolicyManager implements Stoppable {
+public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
+    private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
+
+    private int instantRetryAmount = 3;         // Should always be set by the creator of this class
+    private final int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
+
+    // Current thread backoff manager
+    private SenderThreadsBackOffManager backoffManager;
+
+    // List of transmission policies implemented as handlers
+    private List<TransmissionHandler> transmissionHandlers;
 
     // The future date the the transmission is blocked
     private Date suspensionDate;
@@ -60,6 +74,8 @@ public final class TransmissionPolicyManager implements Stoppable {
     // Keeps the current policy state of the transmission
     private final TransmissionPolicyState policyState = new TransmissionPolicyState();
     private boolean throttlingIsEnabled = true;
+
+    private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
     /**
      * The class will be activated when a timeout expires
@@ -75,16 +91,52 @@ public final class TransmissionPolicyManager implements Stoppable {
         public void run() {
             try {
                 cancelSuspension(expectedGeneration);
+            } catch (ThreadDeath td) {
+            	throw td;
             } catch (Throwable t) {
             }
         }
     }
 
+    /**
+     * Create the {@link TransmissionPolicyManager} and set the ability to throttle.
+     * @param throttlingIsEnabled Set whether the {@link TransmissionPolicyManager} can be throttled.
+     */
     public TransmissionPolicyManager(boolean throttlingIsEnabled) {
         suspensionDate = null;
         this.throttlingIsEnabled = throttlingIsEnabled;
+        this.transmissionHandlers = new ArrayList<TransmissionHandler>();
+        this.backoffManager = new SenderThreadsBackOffManager(new ExponentialBackOffTimesPolicy());
     }
 
+    /**
+     * Suspend the transmission thread according to the current back off policy.
+     */
+    public void backoff() {
+        policyState.setCurrentState(TransmissionPolicy.BACKOFF);
+        long backOffMillis = backoffManager.backOffCurrentSenderThreadValue();
+        if (backOffMillis > 0) 
+        {
+            long backOffSeconds = backOffMillis / 1000;
+            InternalLogger.INSTANCE.info("App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
+            this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
+        }
+    }
+
+    /**
+     * Clear the current thread state and and reset the back off counter.
+     */
+    public void clearBackoff() {
+        policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
+        backoffManager.onDoneSending();
+        InternalLogger.INSTANCE.info("Backoff has been reset.");
+    }
+
+    /**
+     * Suspend this transmission thread using the specified policy
+     * @param policy The {@link TransmissionPolicy} to use for suspension
+     * @param suspendInSeconds The number of seconds to suspend.
+     */
     public void suspendInSeconds(TransmissionPolicy policy, long suspendInSeconds) {
         if (!throttlingIsEnabled) {
             return;
@@ -97,23 +149,30 @@ public final class TransmissionPolicyManager implements Stoppable {
         doSuspend(policy, suspendInSeconds);
     }
 
+    /**
+     * Stop this transmission thread from sending.
+     */
     @Override
     public synchronized void stop(long timeout, TimeUnit timeUnit) {
         ThreadPoolUtils.stop(threads, timeout, timeUnit);
     }
 
+    /**
+     * Get the policy state fetcher
+     * @return A {@link TransmissionPolicyStateFetcher} object
+     */
     public TransmissionPolicyStateFetcher getTransmissionPolicyState() {
         return policyState;
     }
 
     private synchronized void doSuspend(TransmissionPolicy policy, long suspendInSeconds) {
         try {
-            if (policy == TransmissionPolicy.UNBLOCKED ) {
+            if (policy == TransmissionPolicy.UNBLOCKED) {
                 return;
             }
 
             Date date = Calendar.getInstance().getTime();
-            date.setTime(date.getTime() + 1000 * suspendInSeconds);
+            date.setTime(date.getTime() + (1000 * suspendInSeconds));
             if (this.suspensionDate != null) {
                 long diff = date.getTime() - suspensionDate.getTime();
                 if (diff <= 0) {
@@ -127,9 +186,16 @@ public final class TransmissionPolicyManager implements Stoppable {
             policyState.setCurrentState(policy);
             suspensionDate = date;
 
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled, telemetries are blocked from now, for %s seconds", suspendInSeconds);
+            InternalLogger.INSTANCE.info("App is throttled, telemetries are blocked from now, for %s seconds", suspendInSeconds);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.toString());
+            try {
+                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
@@ -140,7 +206,7 @@ public final class TransmissionPolicyManager implements Stoppable {
 
         policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         suspensionDate = null;
-        InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.TRACE, "App is throttled is cancelled");
+        InternalLogger.INSTANCE.info("App throttling is cancelled.");
     }
 
     private synchronized void createScheduler() {
@@ -149,15 +215,40 @@ public final class TransmissionPolicyManager implements Stoppable {
         }
 
         threads = new ScheduledThreadPoolExecutor(1);
-        threads.setThreadFactory(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(TransmissionPolicyManager.class, instanceId));
 
         SDKShutdownActivity.INSTANCE.register(this);
+    }
+
+    @Override
+    public void onTransmissionSent(TransmissionHandlerArgs transmissionArgs) {
+        for (TransmissionHandler handler : this.transmissionHandlers) {
+            handler.onTransmissionSent(transmissionArgs);
+        }
+    }
+
+    @Override
+    public void addTransmissionHandler(TransmissionHandler handler) {
+        if (handler != null) {
+            this.transmissionHandlers.add(handler);
+        }
+    }
+
+    /**
+     * Set the number of retries before performing a back off operation.
+     * @param maxInstantRetries Number of retries
+     */
+    public void setMaxInstantRetries(int maxInstantRetries) {
+        if (maxInstantRetries > 0 && maxInstantRetries < INSTANT_RETRY_MAX) {
+            instantRetryAmount = maxInstantRetries;
+        }
+    }
+
+    /**
+     * Get the number of retries before performing a back off operation.
+     * @return Number of retries
+     */
+    public int getMaxInstantRetries() {
+        return instantRetryAmount;
     }
 }

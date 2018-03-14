@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTrans
 import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision;
 import com.microsoft.applicationinsights.agent.internal.agent.MethodVisitorFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
+
 /**
  * Created by gupele on 8/6/2015.
  */
@@ -59,8 +60,16 @@ public final class JedisClassDataProvider {
             data.addAllMethods(false, true, methodVisitorFactory);
 
             classesToInstrument.put(JEDIS_CLASS_NAME, data);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to load instrumentation for Jedis: '%s'", ExceptionUtils.getStackTrace(t));
+            try {
+                InternalAgentLogger.INSTANCE.error("Failed to load instrumentation for Jedis: '%s'", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 }

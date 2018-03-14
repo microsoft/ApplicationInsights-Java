@@ -63,6 +63,11 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
         SenderThreadLocalBackOffData currentThreadData = this.get();
         currentThreadData.onDoneSending();
     }
+    
+    public long backOffCurrentSenderThreadValue() {
+        SenderThreadLocalBackOffData currentThreadData = this.get();
+        return currentThreadData.backOffTimerValue();
+    }
 
     public boolean backOffCurrentSenderThread() {
         SenderThreadLocalBackOffData currentThreadData = this.get();
@@ -75,7 +80,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
         }
         stopped = true;
     }
-
+    
     @Override
     protected SenderThreadLocalBackOffData initialValue() {
         int addSeconds = threadsSecondsDifference.incrementAndGet();

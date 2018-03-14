@@ -80,11 +80,11 @@ public enum QuickPulse implements Stoppable {
 
                     coordinator = new DefaultQuickPulseCoordinator(coordinatorInitData);
 
-                    senderThread = new Thread(quickPulseDataSender);
+                    senderThread = new Thread(quickPulseDataSender, QuickPulseDataSender.class.getSimpleName());
                     senderThread.setDaemon(true);
                     senderThread.start();
 
-                    thread = new Thread(coordinator);
+                    thread = new Thread(coordinator, DefaultQuickPulseCoordinator.class.getSimpleName());
                     thread.setDaemon(true);
                     thread.start();
 
@@ -109,9 +109,17 @@ public enum QuickPulse implements Stoppable {
         try {
             coordinator.stop();
             quickPulseDataSender.stop();
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Error while executing stop QuickPulse");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            try {
+                InternalLogger.INSTANCE.error("Error while executing stop QuickPulse");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         thread.interrupt();

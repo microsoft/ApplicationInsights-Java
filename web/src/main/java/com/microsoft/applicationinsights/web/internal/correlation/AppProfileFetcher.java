@@ -21,21 +21,22 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+
 import org.apache.http.ParseException;
 
 /**
  * Retrieves the application profile from storage
  */
- public interface AppProfileFetcher {
+ public interface AppProfileFetcher extends Closeable {
      /**
       * Fetches the application profile and returns the appId corresponding to the
       * instrumentation key provided.
       * @param instrumentationKey The instrumentation key for which to fetch the appId.
       * @throws ExecutionException
       * @throws InterruptedException
-      * @throws JSONException
       * @throws IOException
       * @throws ParseException
       */

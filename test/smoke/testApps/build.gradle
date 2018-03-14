@@ -75,7 +75,7 @@ subprojects {
 		reports.html.destination = file("${reporting.baseDir}/${name}")
 
 		testLogging {
-			events 'FAILED', 'PASSED', 'SKIPPED', 'STANDARD_OUT', 'STANDARD_ERROR'
+			events 'FAILED', 'PASSED', 'SKIPPED', 'STANDARD_OUT', 'STANDARD_ERROR', 'STARTED'
 			exceptionFormat 'FULL'
 			showExceptions true
 			showCauses true

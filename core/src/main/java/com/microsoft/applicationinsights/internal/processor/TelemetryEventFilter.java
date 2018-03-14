@@ -36,9 +36,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class will filter out Event Telemetries with unneeded values
- *
- *  Illegal value will prevent from the filter from being used.
- *
+ * <p>
+ * Illegal value will prevent from the filter from being used.
+ * <p>
  * Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("TelemetryEventFilter")
@@ -58,7 +58,7 @@ public final class TelemetryEventFilter implements TelemetryProcessor {
             return true;
         }
 
-        EventTelemetry et = (EventTelemetry)telemetry;
+        EventTelemetry et = (EventTelemetry) telemetry;
         String eventName = et.getName();
         if (LocalStringsUtils.isNullOrEmpty(eventName)) {
             return true;
@@ -79,10 +79,20 @@ public final class TelemetryEventFilter implements TelemetryProcessor {
                 this.notNeededNames.add(ready);
             }
             InternalLogger.INSTANCE.trace(String.format("TelemetryEventFilter: set NotNeededNames: %s", notNeededNames));
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("TelemetryEventFilter: failed to parse NotNeededNames: %s Exception : %s", notNeededNames,
-                    ExceptionUtils.getStackTrace(e));
-            throw e;
+            try {
+                InternalLogger.INSTANCE.error("TelemetryEventFilter: failed to parse NotNeededNames: %s Exception : %s", notNeededNames,
+                        ExceptionUtils.getStackTrace(e));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw e;
+            }
+
         }
     }
 }

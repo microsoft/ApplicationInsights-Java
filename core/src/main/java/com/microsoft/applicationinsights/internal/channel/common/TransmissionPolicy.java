@@ -27,5 +27,6 @@ package com.microsoft.applicationinsights.internal.channel.common;
 enum TransmissionPolicy {
     UNBLOCKED,
     BLOCKED_BUT_CAN_BE_PERSISTED,
-    BLOCKED_AND_CANNOT_BE_PERSISTED
+    BLOCKED_AND_CANNOT_BE_PERSISTED,
+    BACKOFF
 }

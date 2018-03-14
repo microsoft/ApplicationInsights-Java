@@ -19,7 +19,8 @@ import org.apache.commons.lang3.StringUtils;
  * <p>
  * How to use in ApplicationInsights Configuration :
  * <p>
-* <TelemetryProcessors>
+ * {@code
+<TelemetryProcessors>
     <BuiltInProcessors>
         <Processor type = "FixedRateSamplingTelemetryProcessor">
             <Add name = "SamplingPercentage" value = "50" />
@@ -35,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
         </Processor>
     </BuiltInProcessors>
 </TelemetryProcessors>
+ }
  */
 @BuiltInProcessor("FixedRateSamplingTelemetryProcessor")
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {

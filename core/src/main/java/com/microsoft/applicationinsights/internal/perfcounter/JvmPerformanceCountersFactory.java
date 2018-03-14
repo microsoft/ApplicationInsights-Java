@@ -32,7 +32,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class will create dedicated Jvm performance counters, unless disabled by user in the configuration file
- *
+ * <p>
  * Created by gupele on 8/8/2016.
  */
 public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
@@ -54,20 +54,28 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     private void addDeadLockDetector(ArrayList<PerformanceCounter> pcs) {
         try {
             if (disabledJvmPCs.contains(DeadLockDetectorPerformanceCounter.NAME)) {
-                InternalLogger.INSTANCE.trace( "DeadLockDetectorPerformanceCounter is disabled");
+                InternalLogger.INSTANCE.trace("DeadLockDetectorPerformanceCounter is disabled");
                 return;
             }
 
             DeadLockDetectorPerformanceCounter dlpc = new DeadLockDetectorPerformanceCounter();
             if (!dlpc.isSupported()) {
-                InternalLogger.INSTANCE.trace( "DeadLockDetectorPerformanceCounter is not supported");
+                InternalLogger.INSTANCE.trace("DeadLockDetectorPerformanceCounter is not supported");
                 return;
             }
 
             pcs.add(dlpc);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error( "Failed to create DeadLockDetector, exception: %s",
-                    ExceptionUtils.getStackTrace(t));
+            try {
+                InternalLogger.INSTANCE.error("Failed to create DeadLockDetector, exception: %s",
+                        ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
@@ -80,9 +88,18 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
 
             JvmHeapMemoryUsedPerformanceCounter mpc = new JvmHeapMemoryUsedPerformanceCounter();
             pcs.add(mpc);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Failed to create JvmHeapMemoryUsedPerformanceCounter, exception: %s",
-                    ExceptionUtils.getStackTrace(t));
+            try {
+                InternalLogger.INSTANCE.error("Failed to create JvmHeapMemoryUsedPerformanceCounter, exception: %s",
+                        ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
+
         }
     }
 

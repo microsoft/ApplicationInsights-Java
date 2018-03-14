@@ -43,7 +43,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 public final class ConfigurationFileLocator {
 
-    /** name of property containing path to directory with configuration file */
+    /**
+     * name of property containing path to directory with configuration file
+     */
     public static final String CONFIG_DIR_PROPERTY = "applicationinsights.configurationDirectory";
 
     private final String configurationFileName;
@@ -129,9 +131,17 @@ public final class ConfigurationFileLocator {
                     configurationFile == null ? "NOT " : "");
 
             return configurationFile;
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            logException(t, "current class loader");
-            InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+            try {
+                logException(t, "current class loader");
+                InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return null;
@@ -154,11 +164,19 @@ public final class ConfigurationFileLocator {
                     return configurationPath;
                 }
             } else {
-                InternalLogger.INSTANCE.warn( "Can not access folder '%s'", jarFullPath);
+                InternalLogger.INSTANCE.warn("Can not access folder '%s'", jarFullPath);
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            logException(t, "library location");
-            InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+            try {
+                logException(t, "library location");
+                InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
         return null;
     }
@@ -197,9 +215,17 @@ public final class ConfigurationFileLocator {
                     checkedUrls.add(configurationPath);
                 }
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            logException(t, "class path");
-            InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+            try {
+                logException(t, "class path");
+                InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
         return null;
     }

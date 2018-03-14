@@ -120,9 +120,17 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
                     }
                 }
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Error while setting the Thread Info");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            try {
+                InternalLogger.INSTANCE.error("Error while setting the Thread Info");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
         sb.append(SEPERATOR);
     }

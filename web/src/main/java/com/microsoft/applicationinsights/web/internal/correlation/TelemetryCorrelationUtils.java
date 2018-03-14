@@ -111,7 +111,15 @@ public class TelemetryCorrelationUtils {
 	public static String generateChildDependencyId() {
 		
 		try {
+
 			RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+
+			//check if context is null - no correlation will happen
+			if (context == null) {
+				InternalLogger.INSTANCE.warn("No Correlation will happen, Thread context is null while generating child dependency");
+				return "";
+			}
+
 			RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
 			String parentId = requestTelemetry.getContext().getOperation().getParentId();
@@ -137,6 +145,13 @@ public class TelemetryCorrelationUtils {
 	 * @return The correlation context as a string.
 	 */
 	public static String retrieveCorrelationContext() {
+
+		//check if context is null - no correlation will happen
+		if (ThreadContext.getRequestTelemetryContext() == null) {
+			InternalLogger.INSTANCE.warn("No correlation wil happen, Thread context is null");
+			return "";
+		}
+
 		CorrelationContext context = ThreadContext.getRequestTelemetryContext().getCorrelationContext();
 		return context.toString();
 	}
@@ -180,6 +195,7 @@ public class TelemetryCorrelationUtils {
 
 		String target = generateSourceTargetCorrelation(instrumentationKey, requestContext);
 		if (target == null) {
+			InternalLogger.INSTANCE.warn("Target value is null and hence returning empty string");
 			return ""; // we want an empty string instead of null so it plays nicer with bytecode injection
 		}
 
@@ -253,6 +269,13 @@ public class TelemetryCorrelationUtils {
 
 		if (baggages == null) {
 			InternalLogger.INSTANCE.warn("Could not access header information: %s", CORRELATION_CONTEXT_HEADER_NAME);
+			return;
+		}
+
+		//check if context is null - no correlation will happen
+		if (ThreadContext.getRequestTelemetryContext() == null) {
+			InternalLogger.INSTANCE.warn("No correlation will happen " +
+					"Thread context is null while resolving Correlation Context");
 			return;
 		}
 

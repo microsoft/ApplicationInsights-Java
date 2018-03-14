@@ -26,12 +26,10 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
 /**
  * The class is responsible for loading transmission files that were saved to the disk
@@ -88,6 +86,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
         this.fileSystem = fileSystem;
         this.dispatcher = dispatcher;
         threads = new Thread[numberOfThreads];
+        final String threadNameFmt = String.format("%s-worker-%%d", ActiveTransmissionLoader.class.getSimpleName());
         for (int i = 0; i < numberOfThreads; ++i) {
             threads[i] = new Thread(new Runnable() {
                 @Override
@@ -108,7 +107,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                                 case UNBLOCKED:
                                     fetchNext(true);
                                     break;
-
+                                case BACKOFF:
                                 case BLOCKED_BUT_CAN_BE_PERSISTED:
                                     Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
                                     break;
@@ -125,12 +124,14 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                                     break;
                             }
                         } catch (Exception e) {
+                        } catch (ThreadDeath td) {
+                        	throw td;
                         } catch (Throwable t) {
                         }
                         // TODO: check whether we need to pause after exception
                     }
                 }
-            });
+            }, String.format(threadNameFmt, i));
             threads[i].setDaemon(true);
         }}
 

@@ -7,6 +7,7 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
+import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
@@ -108,14 +109,15 @@ public class CoreAndFilterTests extends AiSmokeTest {
 	@Test
     @TargetUri("/trackHttpRequest")
     public void testHttpRequest() throws Exception {
-        assertEquals(3, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(5, mockedIngestion.getCountForType("RequestData"));
 
         int totalItems = mockedIngestion.getItemCount();
-		int expectedItems = 3;
+		int expectedItems = 5;
 		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
                 expectedItems, totalItems);
                 
         // TODO get HttpRequest data envelope and verify value
+        //true
         RequestData d = getTelemetryDataForType(0, "RequestData");
         
         final String expectedName = "HttpRequestDataTest";
@@ -137,8 +139,23 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(new Duration(1), d1.getDuration());
         assertEquals(true, d1.getSuccess());
         assertEquals(expectedURL, d1.getUrl());
+
+        //false
+        RequestData rd1 = getTelemetryDataForType(2, "RequestData");
+        assertEquals("FailedHttpRequest", rd1.getName());
+        assertEquals("404", rd1.getResponseCode());
+        assertEquals(new Duration(6666), rd1.getDuration());
+        assertEquals(false, rd1.getSuccess());
+
+        RequestData rd2 = getTelemetryDataForType(3, "RequestData");
+        assertEquals("FailedHttpRequest2", rd2.getName());
+        assertEquals("505", rd2.getResponseCode());
+        assertEquals(new Duration(8888), rd2.getDuration());
+        assertEquals(false, rd2.getSuccess());
+        assertEquals("https://www.bingasdasdasdasda.com/", rd2.getUrl());
+
 	}
-	
+    
 	@Test
     @TargetUri("/trackMetric")
     public void trackMetric() throws Exception {
@@ -193,5 +210,32 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		assertEquals(expectedMessage3, d3.getMessage());
 		assertEquals(SeverityLevel.Information, d3.getSeverityLevel());
 		assertEquals(expectedValue, d3.getProperties().get("key"));
-	}
+    }
+    
+    @Test
+    @TargetUri("/trackPageView")
+    public void testTrackPageView() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(2, mockedIngestion.getCountForType("PageViewData"));
+        
+        PageViewData pv1 = getTelemetryDataForType(0, "PageViewData");
+        assertEquals("test-page", pv1.getName());
+        assertEquals(new Duration(0), pv1.getDuration());
+
+        PageViewData pv2 = getTelemetryDataForType(1, "PageViewData");
+        assertEquals("test-page-2", pv2.getName());
+        assertEquals(new Duration(123456), pv2.getDuration());
+        assertEquals("value", pv2.getProperties().get("key"));
+    }
+
+    @Test
+    @TargetUri("/doPageView.jsp")
+    public void testTrackPageView_JSP() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(1, mockedIngestion.getCountForType("PageViewData"));
+        
+        PageViewData pv1 = getTelemetryDataForType(0, "PageViewData");
+        assertEquals("doPageView", pv1.getName());
+        assertEquals(new Duration(0), pv1.getDuration());
+    }
 }

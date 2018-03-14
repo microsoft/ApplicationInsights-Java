@@ -38,11 +38,11 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class can filter out RequestTelemetries that
- *   have a duration which is less than a predefined value
- *   have http codes that are not needed based on configuration
- *
- *  Illegal value will prevent from the filter from being used.
- *
+ * have a duration which is less than a predefined value
+ * have http codes that are not needed based on configuration
+ * <p>
+ * Illegal value will prevent from the filter from being used.
+ * <p>
  * Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("RequestTelemetryFilter")
@@ -76,7 +76,7 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
         }
 
         if (telemetry instanceof RequestTelemetry) {
-            RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
+            RequestTelemetry requestTelemetry = (RequestTelemetry) telemetry;
             String responseCode = requestTelemetry.getResponseCode();
 
             if (exactBadResponseCodes.contains(requestTelemetry.getResponseCode())) {
@@ -107,10 +107,19 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
         try {
             this.minimumDurationInMS = Long.valueOf(minimumDurationInMS);
             InternalLogger.INSTANCE.trace("RequestTelemetryFilter: successfully set MinimumDurationInMS = %d", this.minimumDurationInMS);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("RequestTelemetryFilter: failed to set minimum duration: %s, Exception : %s", minimumDurationInMS
-            , ExceptionUtils.getStackTrace(t));
-            throw t;
+            try {
+                InternalLogger.INSTANCE.error("RequestTelemetryFilter: failed to set minimum duration: %s, Exception : %s", minimumDurationInMS
+                        , ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
         }
     }
 
@@ -143,11 +152,21 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                 }
                 hasBlocked = !exactBadResponseCodes.isEmpty() || !ignoredResponseCodeRange.isEmpty();
             }
-            InternalLogger.INSTANCE.trace("ResponseCodeFilter: successfully set non needed response codes: %s", notNeededResponseCodes);
+
+            InternalLogger.INSTANCE.trace(String.format("ResponseCodeFilter: successfully set non needed response codes: %s", notNeededResponseCodes));
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("RequestTelemetryFilter: failed to parse NotNeededResponseCodes: %s, " +
-                            "Exception : %s", notNeededResponseCodes, ExceptionUtils.getStackTrace(t));
-            throw t;
+            try {
+                InternalLogger.INSTANCE.error("RequestTelemetryFilter: failed to parse NotNeededResponseCodes: %s, " +
+                        "Exception : %s", notNeededResponseCodes, ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
         }
     }
 }

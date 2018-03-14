@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.LinkedList;
 
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
@@ -104,6 +105,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             if (throwable instanceof Exception) {
                 telemetryClient.trackException((Exception)throwable);
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
     }
@@ -164,6 +167,32 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
+    public void httpMethodFinishedWithPath(String identifier, String method, String path, String correlationId, String uri, String target, int result, long delta) {
+        if (!LocalStringsUtils.isNullOrEmpty(uri) && (uri.startsWith("https://dc.services.visualstudio.com") || uri.startsWith("https://rt.services.visualstudio.com"))) {
+            return;
+        }
+        long deltaInMS = nanoToMilliseconds(delta);
+        String name = method + " " + path;
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(name, uri, new Duration(deltaInMS), true);
+        Date dependencyStartTime = new Date(System.currentTimeMillis() - deltaInMS);
+        telemetry.setTimestamp(dependencyStartTime);
+        telemetry.setId(correlationId);
+        telemetry.setResultCode(Integer.toString(result));
+        telemetry.setType("HTTP");
+        if (target != null && !target.isEmpty()) {
+            if (telemetry.getTarget() == null) {
+                telemetry.setTarget(target);
+            } else {
+                telemetry.setTarget(telemetry.getTarget() + " | " + target);
+            }
+        }
+
+        InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, deltaInMS);
+        telemetryClient.track(telemetry);
+
+    }
+
+    @Override
     public void jedisMethodStarted(String name) {
         int index = name.lastIndexOf('#');
         if (index != -1) {            
@@ -211,7 +240,9 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     public void methodFinished(String classAndMethodNames, long deltaInNS, Object[] args, Throwable throwable) {
         long durationInMS = nanoToMilliseconds(deltaInNS);
         Duration duration = new Duration(durationInMS);
+        Date dependencyStartTime = new Date(System.currentTimeMillis() - durationInMS);
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(classAndMethodNames, null, duration, throwable == null);
+        telemetry.setTimestamp(dependencyStartTime);
         telemetry.setDependencyKind(DependencyKind.Other);
 
         if (args != null) {
@@ -256,6 +287,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             ExceptionTelemetry et = new ExceptionTelemetry(e, stackSize);
 
             telemetryClient.track(et);
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
         }
         if (methodData != null) {
@@ -280,7 +313,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                         }
                     }
                 } catch (Throwable t) {
-                    url = "jdbc:Unknown DB URL (failed to fetch from connection)";
+                    try { // can assignment actually throw here?
+                        url = "jdbc:Unknown DB URL (failed to fetch from connection)";
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
 
@@ -293,7 +332,9 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             startSqlMethod(InstrumentedClassType.SQL.toString(), name, sqlMetaData);
             ThreadData localData = threadDataThreadLocal.get();
 
-        } catch (Throwable e) {
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
         }
     }
 
@@ -359,10 +400,11 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     private void sendInstrumentationTelemetry(MethodData methodData, Throwable throwable) {
-        Duration duration = new Duration(nanoToMilliseconds(methodData.interval));
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, duration, throwable == null);
+        long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(methodData.name, null, new Duration(durationInMilliSeconds), throwable == null);
         telemetry.setType(methodData.type);
-
+        Date dependencyStartDate = new Date(System.currentTimeMillis() - durationInMilliSeconds);
+        telemetry.setTimestamp(dependencyStartDate);
         InternalLogger.INSTANCE.trace("Sending RDD event for '%s'", methodData.name);
 
         telemetryClient.track(telemetry);
@@ -382,6 +424,8 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(url, null, duration, throwable == null);
             telemetry.setDependencyKind(DependencyKind.Http);
+            Date dependencyStartDate = new Date(System.currentTimeMillis() - durationInMilliSeconds);
+            telemetry.setTimestamp(dependencyStartDate);
             telemetryClient.trackDependency(telemetry);
             if (throwable != null) {
                 ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
@@ -401,7 +445,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             String dependencyName = "";
             if (methodData.arguments[0] != null) {
                 dependencyName = methodData.arguments[0].toString();
-            }
+            }   
 
             String commandName = "";
             if (methodData.arguments.length > 1 && methodData.arguments[1] != null) {
@@ -411,13 +455,15 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             
             long durationInMilliSeconds = nanoToMilliseconds(methodData.interval);
             Duration duration = new Duration(durationInMilliSeconds);
-  
+
             RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(
                     dependencyName,
                     commandName,
                     duration,
                     throwable == null);
             telemetry.setDependencyKind(DependencyKind.SQL);
+            Date dependencyStartTime = new Date(System.currentTimeMillis() - durationInMilliSeconds);
+            telemetry.setTimestamp(dependencyStartTime);
   
             StringBuilder sb = null;
             if (methodData.arguments.length > 3) {
@@ -433,19 +479,27 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                     }
                 }
             }
-  
+
             InternalLogger.INSTANCE.trace("Sending Sql RDD event for '%s', command: '%s', duration=%s ms", dependencyName, commandName, durationInMilliSeconds);
-  
+
             telemetryClient.track(telemetry);
             if (throwable != null) {
                 InternalLogger.INSTANCE.trace("Sending Sql exception");
                 ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
                 telemetryClient.track(exceptionTelemetry);
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            t.printStackTrace();
+            try {
+                t.printStackTrace();
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
-  
+
     }
 
     private static long nanoToMilliseconds(long nanoSeconds) {
@@ -470,7 +524,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             }
             sb.append(']');
             return sb;
-        } catch (Throwable t) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -507,7 +561,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
                 }
                 explainSB.deleteCharAt(explainSB.length() - 1);
             }
-        } catch (Throwable t) {
+        } catch (Throwable t) { // FIXME can this be SQLException?
         } finally {
             if (rs != null) {
                 try {

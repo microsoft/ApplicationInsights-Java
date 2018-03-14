@@ -1,7 +1,7 @@
 # Application Insights for Java
-Build & Unit Tests: ![aibuild](https://mseng.visualstudio.com/_apis/public/build/definitions/96a62c4a-58c2-4dbb-94b6-5979ebc7f2af/5311/badge)
-
-Smoke Tests: ![aismoke](https://mseng.visualstudio.com/_apis/public/build/definitions/96a62c4a-58c2-4dbb-94b6-5979ebc7f2af/6159/badge)
+| Build & Unit Tests | Smoke Tests |
+:-:|:-:
+| ![Build + Unit Tests](https://mseng.visualstudio.com/_apis/public/build/definitions/96a62c4a-58c2-4dbb-94b6-5979ebc7f2af/5311/badge "Build & Unit Tests' Status") | ![Smoke Tests](https://mseng.visualstudio.com/_apis/public/build/definitions/96a62c4a-58c2-4dbb-94b6-5979ebc7f2af/6159/badge "Smoke Tests' Status") |
 
 ## Introduction
 

@@ -84,8 +84,15 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
                                 setInstanceName(element.getInstanceName());
 
                 configurationRequests.add(data);
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed to initialize Windows performance counter '%s'.", e.toString());
+                try {
+                    InternalLogger.INSTANCE.error("Failed to initialize Windows performance counter '%s'.", e.toString());                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
         }
 

@@ -36,6 +36,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.annotation.WebFilter;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -49,6 +50,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 /**
  * Created by yonisha on 2/2/2015.
  */
+@WebFilter
 public final class WebRequestTrackingFilter implements Filter {
     private final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
@@ -67,14 +69,15 @@ public final class WebRequestTrackingFilter implements Filter {
 
     /**
      * Processing the given request and response.
-     * @param req The servlet request.
-     * @param res The servlet response.
+     *
+     * @param req   The servlet request.
+     * @param res   The servlet response.
      * @param chain The filters chain
-     * @throws IOException Exception that can be thrown from invoking the filters chain.
+     * @throws IOException      Exception that can be thrown from invoking the filters chain.
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse)res);
+        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse) res);
         setKeyOnTLS(key);
 
         boolean isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
@@ -83,7 +86,7 @@ public final class WebRequestTrackingFilter implements Filter {
             chain.doFilter(req, response);
             invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
         } catch (ServletException se) {
-            onException(se, req, response,isRequestProcessedSuccessfully);
+            onException(se, req, response, isRequestProcessedSuccessfully);
             throw se;
         } catch (IOException ioe) {
             onException(ioe, req, response, isRequestProcessedSuccessfully);
@@ -108,6 +111,8 @@ public final class WebRequestTrackingFilter implements Filter {
             for (ThreadLocalCleaner cleaner : cleaners) {
                 cleaner.clean();
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
         }
     }
@@ -118,16 +123,17 @@ public final class WebRequestTrackingFilter implements Filter {
             if (telemetryClient != null) {
                 telemetryClient.trackException(e);
             }
-        } catch (Throwable t) {
+        } catch (Exception ignoreMe) {
         }
         invokeSafeOnEndRequest(req, res, isRequestProcessedSuccessfully);
     }
 
     /**
      * Initializes the filter from the given config.
+     *
      * @param config The filter configuration.
      */
-    public void init(FilterConfig config){
+    public void init(FilterConfig config) {
         try {
             initialize(config);
 
@@ -169,7 +175,7 @@ public final class WebRequestTrackingFilter implements Filter {
         boolean success = true;
 
         try {
-            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(), (HttpServletRequest)req);
+            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(), (HttpServletRequest) req);
             ThreadContext.setRequestTelemetryContext(context);
 
             webModulesContainer.invokeOnBeginRequest(req, res);
@@ -200,14 +206,21 @@ public final class WebRequestTrackingFilter implements Filter {
         if (agentIsUp) {
             try {
                 AgentTLS.setTLSKey(key);
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable e) {
-                if (e instanceof ClassNotFoundException ||
-                        e instanceof NoClassDefFoundError) {
-
-                    // This means that the Agent is not present and therefore we will stop trying
-                    agentIsUp = false;
-                    InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'",
-                            ExceptionUtils.getStackTrace(e));
+                try {
+                    if (e instanceof ClassNotFoundException ||
+                            e instanceof NoClassDefFoundError) {
+                        // This means that the Agent is not present and therefore we will stop trying
+                        agentIsUp = false;
+                        InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'",
+                                ExceptionUtils.getStackTrace(e));
+                    }
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
                 }
             }
         }
@@ -222,9 +235,17 @@ public final class WebRequestTrackingFilter implements Filter {
             //if agent is not installed (jar not loaded), can skip the entire registration process
             try {
                 AgentConnector test = AgentConnector.INSTANCE;
-            } catch(Throwable t) {
-                InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration");
-                return;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                try {
+                    InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration");
+                    return;
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
 
             ServletContext context = filterConfig.getServletContext();
@@ -235,9 +256,19 @@ public final class WebRequestTrackingFilter implements Filter {
             setKey(key);
 
             InternalLogger.INSTANCE.info("Successfully registered the filter '%s'", FILTER_NAME);
+
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", FILTER_NAME,
-                    ExceptionUtils.getStackTrace(t));
+            try {
+                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", FILTER_NAME,
+                        ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
+
         }
     }
 
@@ -253,7 +284,7 @@ public final class WebRequestTrackingFilter implements Filter {
             key = result.getKey();
 
             if (CommonUtils.isNullOrEmpty(key)) {
-                InternalLogger.INSTANCE.error( "Key for '%s' key is null'. No way to have RDD telemetries for this WebApp", name);
+                InternalLogger.INSTANCE.error("Key for '%s' key is null'. No way to have RDD telemetries for this WebApp", name);
             } else {
                 if (result.getCleaner() != null) {
                     cleaners.add(result.getCleaner());
@@ -291,8 +322,17 @@ public final class WebRequestTrackingFilter implements Filter {
             } else {
                 name = contextPath.substring(1);
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Exception while fetching WebApp name: '%s'", ExceptionUtils.getStackTrace(t));
+            try {
+                InternalLogger.INSTANCE.error("Exception while fetching WebApp name: '%s'", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
+
         }
         appName = name;
         return name;
@@ -309,10 +349,18 @@ public final class WebRequestTrackingFilter implements Filter {
             AgentTLS.getTLSKey();
             agentIsUp = true;
             this.key = key;
-        } catch (Throwable t) {
-            agentIsUp = false;
-            this.key = null;
-            InternalLogger.INSTANCE.error("setKey: Failed to find AgentTLS, Exception : %s", ExceptionUtils.getStackTrace(t));
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable throwable) {
+            try {
+                agentIsUp = false;
+                this.key = null;
+                InternalLogger.INSTANCE.error("setKey: Failed to find AgentTLS, Exception : %s", ExceptionUtils.getStackTrace(throwable));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 }

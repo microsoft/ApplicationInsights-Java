@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
+import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.http.Header;
@@ -33,35 +34,28 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.util.EntityUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The class is responsible for the actual sending of {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
+ * The class is responsible for the actual sending of
+ * {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
  *
  * The class uses Apache's HttpClient framework for that.
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements TransmissionOutput {
+public final class TransmissionNetworkOutput implements TransmissionOutput {	
     private final static String CONTENT_TYPE_HEADER = "Content-Type";
     private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
-    private final static String RESPONSE_RETRY_AFTER_DATE_FORMAT = "E, dd MMM yyyy HH:mm:ss";
 
     private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
-    private final static int DEFAULT_BACKOFF_TIME_SECONDS = 300;
 
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
@@ -75,35 +69,77 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     private TransmissionPolicyManager transmissionPolicyManager;
 
+	/**
+	 * Creates an instance of the network transmission class.
+	 * <p>
+	 * Will use the DEFAULT_SERVER_URI for the endpoint.
+	 * 
+	 * @param transmissionPolicyManager
+	 *            The transmission policy used to mark this sender active or
+	 *            blocked.
+	 * @return
+	 */
     public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
         return create(DEFAULT_SERVER_URI, transmissionPolicyManager);
     }
 
-    public static TransmissionNetworkOutput create(String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
+	/**
+	 * Creates an instance of the network transmission class.
+	 * 
+	 * @param endpoint
+	 *            The HTTP endpoint to send our telemetry too.
+	 * @param transmissionPolicyManager
+	 *            The transmission policy used to mark this sender active or
+	 *            blocked.
+	 * @return
+	 */
+	public static TransmissionNetworkOutput create(String endpoint,
+			TransmissionPolicyManager transmissionPolicyManager) {
         String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
         return new TransmissionNetworkOutput(realEndpoint, transmissionPolicyManager);
     }
 
+	/**
+	 * Private Ctor to initialize class.
+	 * <p>
+	 * Also creates the httpClient using the ApacheSender instance
+	 * 
+	 * @param serverUri
+	 *            The HTTP endpoint to send our telemetry too.
+	 * @param transmissionPolicyManager
+	 */
     private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager) {
         Preconditions.checkNotNull(serverUri, "serverUri should be a valid non-null value");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(serverUri), "serverUri should be a valid non-null value");
-        Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
+		Preconditions.checkNotNull(transmissionPolicyManager,
+				"transmissionPolicyManager should be a valid non-null value");
 
         this.serverUri = serverUri;
 
         httpClient = ApacheSenderFactory.INSTANCE.create();
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
+
     }
 
+	/**
+	 * Used to inject the dispatcher used for this output so it can be injected to
+	 * the retry logic.
+	 * 
+	 * @param transmissionDispatcher
+	 *            The dispatcher to be injected.
+	 */
     public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
         this.transmissionDispatcher = transmissionDispatcher;
     }
 
     /**
      * Stops all threads from sending data.
-     * @param timeout The timeout to wait, which is not relevant here.
-     * @param timeUnit The time unit, which is not relevant in this method.
+	 * 
+	 * @param timeout
+	 *            The timeout to wait, which is not relevant here.
+	 * @param timeUnit
+	 *            The time unit, which is not relevant in this method.
      */
     @Override
     public synchronized void stop(long timeout, TimeUnit timeUnit) {
@@ -116,203 +152,118 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     }
 
     /**
-     * Tries to send a {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
-     * The thread that calls that method might be suspended if there is a throttling issues, in any case
-     * the thread that enters this method is responsive for 'stop' request that might be issued by the application.
-     * @param transmission The data to send
+	 * Tries to send a
+	 * {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
+	 * The thread that calls that method might be suspended if there is a throttling
+	 * issues, in any case the thread that enters this method is responsive for
+	 * 'stop' request that might be issued by the application.
+	 * 
+	 * @param transmission
+	 *            The data to send
      * @return True when done.
      */
     @Override
     public boolean send(Transmission transmission) {
-        while (!stopped) {
-            if (transmissionPolicyManager.getTransmissionPolicyState().getCurrentState() != TransmissionPolicy.UNBLOCKED) {
+		if (!stopped) {
+			// If we're not stopped but in a blocked state then fail to second
+			// TransmissionOutput
+			if (transmissionPolicyManager.getTransmissionPolicyState()
+					.getCurrentState() != TransmissionPolicy.UNBLOCKED) {
                 return false;
             }
 
             HttpResponse response = null;
             HttpPost request = null;
-            boolean shouldBackoff = false;
+			int code = 0;
+			String respString = null;
+			Throwable ex = null;
+			Header retryAfterHeader = null;
             try {
+				// POST the transmission data to the endpoint
                 request = createTransmissionPostRequest(transmission);
                 httpClient.enhanceRequest(request);
-
                 response = httpClient.sendPostRequest(request);
-
                 HttpEntity respEntity = response.getEntity();
-                int code = response.getStatusLine().getStatusCode();
+				code = response.getStatusLine().getStatusCode();
+				respString = EntityUtils.toString(respEntity);
+				retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
 
-                TransmissionSendResult sendResult = translateResponse(code, respEntity);
-                switch (sendResult) {
-                    case PAYMENT_REQUIRED:
-                    case THROTTLED:
-                        suspendTransmissions(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, response);
-                        break;
+				// After we reach our instant retry limit we should fail to second TransmissionOutput
+				if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
+					return false;
+				} else if (code == HttpStatus.SC_OK) {
+					// If we've completed then clear the back off flags as the channel does not need
+					// to be throttled
+					transmissionPolicyManager.clearBackoff();
+				}
+				return true;
 
-                    case THROTTLED_OVER_EXTENDED_TIME:
-                        suspendTransmissions(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, response);
-                        break;
-
-                    default:
-                        return true;
-                }
             } catch (ConnectionPoolTimeoutException e) {
-                InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception");
-                shouldBackoff = true;
+				ex = e;
+				InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception%nStack Trace:%n%s",
+						ExceptionUtils.getStackTrace(e));
             } catch (SocketException e) {
-                InternalLogger.INSTANCE.error("Failed to send, socket timeout exception");
-                shouldBackoff = true;
+				ex = e;
+				InternalLogger.INSTANCE.error("Failed to send, socket exception.%nStack Trace:%n%s",
+						ExceptionUtils.getStackTrace(e));
             } catch (UnknownHostException e) {
-                InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues, exception: %s", e.toString());
-                shouldBackoff = true;
+				ex = e;
+				InternalLogger.INSTANCE.error(
+						"Failed to send, wrong host address or cannot reach address due to network issues.%nStack Trace:%n%s",
+						ExceptionUtils.getStackTrace(e));
             } catch (IOException ioe) {
-                InternalLogger.INSTANCE.error("Failed to send, exception: %s", ioe.toString());
-                shouldBackoff = true;
+				ex = ioe;
+				InternalLogger.INSTANCE.error("Failed to send.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(ioe));
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Failed to send, unexpected exception: %s", e.toString());
-                shouldBackoff = true;
+				ex = e;
+				InternalLogger.INSTANCE.error("Failed to send, unexpected exception.%nStack Trace:%n%s",
+						ExceptionUtils.getStackTrace(e));
+            } catch (ThreadDeath td) {
+            	throw td;
             } catch (Throwable t) {
-                InternalLogger.INSTANCE.error("Failed to send, unexpected error: %s", t.toString());
-                shouldBackoff = true;
-            }
-            finally {
+				ex = t;
+				try {
+					InternalLogger.INSTANCE.error("Failed to send, unexpected error.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(t));
+				} catch (ThreadDeath td) {
+					throw td;
+				} catch (Throwable t2) {
+					// chomp
+				}
+			} finally {
                 if (request != null) {
                     request.releaseConnection();
                 }
                 httpClient.dispose(response);
-                // backoff before trying again
-                if (shouldBackoff) {
-                    InternalLogger.INSTANCE.trace("Backing off for %s seconds", DEFAULT_BACKOFF_TIME_SECONDS);
-                    transmissionPolicyManager.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, DEFAULT_BACKOFF_TIME_SECONDS);
+
+				if (code != HttpStatus.SC_OK) {
+					// Invoke the listeners for handling things like errors
+					// The listeners will handle the back off logic as well as the dispatch
+					// operation
+					TransmissionHandlerArgs args = new TransmissionHandlerArgs();
+					args.setTransmission(transmission);
+					args.setTransmissionDispatcher(transmissionDispatcher);
+					args.setResponseBody(respString);
+					args.setResponseCode(code);
+					args.setException(ex);
+					args.setRetryHeader(retryAfterHeader);
+					this.transmissionPolicyManager.onTransmissionSent(args);
                 }
             }
         }
-
+		// If we end up here we've hit an error code we do not expect (403, 401, 400,
+		// etc.)
+		// This also means that unless there is a TransmissionHandler for this code we
+		// will not retry.
         return true;
     }
 
-    private void suspendTransmissions(TransmissionPolicy suspensionPolicy, HttpResponse response) {
-        Header retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
-        if (retryAfterHeader == null) {
-            return;
-        }
-
-        String retryAfterAsString = retryAfterHeader.getValue();
-        if (Strings.isNullOrEmpty(retryAfterAsString)) {
-            return;
-        }
-
-        try {
-            DateFormat formatter = new SimpleDateFormat(RESPONSE_RETRY_AFTER_DATE_FORMAT);
-            Date date = formatter.parse(retryAfterAsString);
-
-            Date now = Calendar.getInstance().getTime();
-            long retryAfterAsSeconds = (date.getTime() - convertToDateToGmt(now).getTime())/1000;
-            transmissionPolicyManager.suspendInSeconds(suspensionPolicy, retryAfterAsSeconds);
-        } catch (Throwable e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Throttled but failed to block transmission, exception: %s", e.toString());
-        }
-    }
-
-    private  static Date convertToDateToGmt(Date date){
-        TimeZone tz = TimeZone.getDefault();
-        Date ret = new Date(date.getTime() - tz.getRawOffset());
-
-        // If we are now in DST, back off by the delta.  Note that we are checking the GMT date, this is the KEY.
-        if (tz.inDaylightTime(ret)) {
-            Date dstDate = new Date(ret.getTime() - tz.getDSTSavings());
-
-            // Check to make sure we have not crossed back into standard time
-            if (tz.inDaylightTime(dstDate)) {
-                ret = dstDate;
-            }
-        }
-        return ret;
-    }
-
-    private TransmissionSendResult translateResponse(int code, HttpEntity respEntity) {
-        if (code == HttpStatus.SC_OK) {
-            return TransmissionSendResult.SENT_SUCCESSFULLY;
-        }
-
-        TransmissionSendResult result;
-
-        String errorMessage;
-        if (code < HttpStatus.SC_OK ||
-                (code >= HttpStatus.SC_MULTIPLE_CHOICES && code < HttpStatus.SC_BAD_REQUEST) ||
-                code > HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-
-            errorMessage = String.format("Unexpected response code: %d", code);
-            result = TransmissionSendResult.REJECTED_BY_SERVER;
-        } else {
-            switch (code) {
-                case HttpStatus.SC_BAD_REQUEST:
-                    errorMessage = "Bad request ";
-                    result = TransmissionSendResult.BAD_REQUEST;
-                    break;
-
-                case 429:
-                    result = TransmissionSendResult.THROTTLED;
-                    errorMessage = "Throttling (All messages of the transmission were rejected) ";
-                    break;
-
-                case 439:
-                    result = TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME;
-                    errorMessage = "Throttling extended";
-                    break;
-
-                case 402:
-                    result = TransmissionSendResult.PAYMENT_REQUIRED;
-                    errorMessage = "Throttling: payment required";
-                    break;
-
-                case HttpStatus.SC_PARTIAL_CONTENT:
-                    result = TransmissionSendResult.PARTIALLY_THROTTLED;
-                    errorMessage = "Throttling (Partial messages of the transmission were rejected) ";
-                    break;
-
-                case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    errorMessage = "Internal server error ";
-                    result = TransmissionSendResult.INTERNAL_SERVER_ERROR;
-                    break;
-
-                default:
-                    result = TransmissionSendResult.REJECTED_BY_SERVER;
-                    errorMessage = String.format("Error, response code: %d", code);
-                    break;
-            }
-        }
-
-        logError(errorMessage, respEntity);
-        return result;
-    }
-
-    private void logError(String baseErrorMessage, HttpEntity respEntity) {
-        if (respEntity == null || !InternalLogger.INSTANCE.isErrorEnabled()) {
-            InternalLogger.INSTANCE.error(baseErrorMessage);
-            return;
-        }
-
-        InputStream inputStream = null;
-        try {
-            inputStream = respEntity.getContent();
-            InputStreamReader streamReader = new InputStreamReader(inputStream, "UTF-8");
-            BufferedReader reader = new BufferedReader(streamReader);
-            String responseLine = reader.readLine();
-            respEntity.getContent().close();
-
-            InternalLogger.INSTANCE.error("Failed to send, %s : %s", baseErrorMessage, responseLine);
-        } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to send, %s, failed to log the error", baseErrorMessage);
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-    }
-
+	/**
+	 * Generates the HTTP POST to send to the endpoint.
+	 * 
+	 * @param transmission
+	 *            The transmission to send.
+	 * @return The completed {@link HttpPost} object
+	 */
     private HttpPost createTransmissionPostRequest(Transmission transmission) {
         HttpPost request = new HttpPost(serverUri);
         request.addHeader(CONTENT_TYPE_HEADER, transmission.getWebContentType());
@@ -323,4 +274,5 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
         return request;
     }
+
 }

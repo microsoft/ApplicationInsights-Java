@@ -71,8 +71,8 @@ final class XmlParserUtils {
                 return value;
             }
             return defaultValue;
-        } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+        } catch (Exception e) {
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%b) will be used.", ENABLED_ATTRIBUTE, elementName, defaultValue);
         }
 
         return defaultValue;
@@ -90,8 +90,8 @@ final class XmlParserUtils {
                 return value;
             }
             return defaultValue;
-        } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+        } catch (Exception e) {
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%d) will be used.", attributeName, elementName, defaultValue);
         }
 
         return defaultValue;
@@ -103,14 +103,18 @@ final class XmlParserUtils {
         }
 
         try {
-            String strValue = element.getFirstChild().getTextContent();
+            Node node = element.getFirstChild();
+            if (node == null) {
+                return null;
+            }
+            String strValue = node.getTextContent();
             if (!StringUtils.isNullOrEmpty(strValue)) {
                 Long value = Long.valueOf(strValue);
                 return value;
             }
             return null;
-        } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", ENABLED_ATTRIBUTE, elementName);
+        } catch (Exception e) {
+            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s'", ENABLED_ATTRIBUTE, elementName);
         }
 
         return null;
