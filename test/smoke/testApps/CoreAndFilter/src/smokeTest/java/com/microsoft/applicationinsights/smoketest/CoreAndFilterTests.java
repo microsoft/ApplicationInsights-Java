@@ -240,8 +240,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/autoFailedRequestWithCode")
-    public void testAutoFailedRequestWithCode() {
+    @TargetUri("/autoFailedRequestWithResultCode")
+    public void testAutoFailedRequestWithResultCode() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 
         RequestData rd1 = getTelemetryDataForType(0, "RequestData");
