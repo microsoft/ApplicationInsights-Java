@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -179,6 +180,20 @@ class ApplicationInsightsTelemetryAutoConfigurationTests {
         context.refresh();
 
         assertThat(context.getBeansOfType(WebUserTrackingTelemetryModule.class)).isEmpty();
+    }
+
+    @Test
+    void internalLoggerShouldBeInitializedBeforeTelemetryConfiguration() {
+        EnvironmentTestUtils.addEnvironment(context,
+            "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
+            "azure.application-insights.logger.level=INFO"
+            );
+        context.register(PropertyPlaceholderAutoConfiguration.class,
+            ApplicationInsightsTelemetryAutoConfiguration.class);
+        context.refresh();
+        InternalLogger logger = context.getBean(InternalLogger.class);
+        assertThat(logger.isInfoEnabled()).isEqualTo(true);
+
     }
 
     @Test

@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -83,6 +84,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
     private Collection<TelemetryProcessor> telemetryProcessors;
 
     @Bean
+    @DependsOn("internalLogger")
     public TelemetryConfiguration telemetryConfiguration(TelemetryChannel telemetryChannel) {
         TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.getActive();
         telemetryConfiguration.setTrackingIsDisabled(!applicationInsightsProperties.isEnabled());

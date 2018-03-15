@@ -334,7 +334,7 @@ public class ApplicationInsightsProperties {
         /**
          * Minimal level of application insights logger.
          */
-        private LoggingLevel level = LoggingLevel.ERROR;
+        private LoggingLevel level = LoggingLevel.OFF;
 
         public LoggerOutputType getType() {
             return type;
