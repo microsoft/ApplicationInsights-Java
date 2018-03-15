@@ -68,15 +68,15 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 12/17/2014.
  */
 public final class InProcessTelemetryChannel implements TelemetryChannel {
-	
+
 	private final static String INSTANT_RETRY_NAME = "MaxInstantRetry";
 	private final static int DEFAULT_MAX_INSTANT_RETRY = 3;
-    private final static int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;
+    public final static int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;
     private final static int MIN_MAX_TELEMETRY_BUFFER_CAPACITY = 1;
     private final static int MAX_MAX_TELEMETRY_BUFFER_CAPACITY = 1000;
     private final static String MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME = "MaxTelemetryBufferCapacity";
 
-    private final static int DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 5;
+    public final static int DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 5;
     private final static int MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 1;
     private final static int MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 300;
     private final static String FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME = "FlushIntervalInSeconds";
@@ -133,11 +133,19 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 	 *            MIN_MAX_TELEMETRY_BUFFER_CAPACITY and
 	 *            MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
      */
-	public InProcessTelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity,
-			int sendIntervalInMillis) {
-		initialize(endpointAddress, null, developerMode,
+    public InProcessTelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity,
+            int sendIntervalInMillis) {
+        this(endpointAddress, null, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis, true);
+    }
+
+    public InProcessTelemetryChannel(String endpointAddress, String maxTransmissionStorageCapacity, boolean developerMode,
+            int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling) {
+        initialize(endpointAddress,
+                maxTransmissionStorageCapacity,
+                developerMode,
                 createDefaultMaxTelemetryBufferCapacityEnforcer(maxTelemetryBufferCapacity),
-				createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis), true);
+                createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis),
+                throttling);
     }
 
     /**
@@ -152,7 +160,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         boolean developerMode = false;
         String endpointAddress = null;
 		int maxInstantRetries = DEFAULT_MAX_INSTANT_RETRY;
-		
+
         LimitsEnforcer maxTelemetryBufferCapacityEnforcer = createDefaultMaxTelemetryBufferCapacityEnforcer(null);
 
         LimitsEnforcer sendIntervalInSecondsEnforcer = createDefaultSendIntervalInSecondsEnforcer(null);
@@ -164,13 +172,13 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 			try {
 				String instantRetryValue = namesAndValues.get(INSTANT_RETRY_NAME);
 				if (instantRetryValue != null){
-					maxInstantRetries = Integer.parseInt(instantRetryValue);	
+					maxInstantRetries = Integer.parseInt(instantRetryValue);
 				}
-				
+
 			} catch (NumberFormatException e) {
 				InternalLogger.INSTANCE.error("Unable to parse configuration setting %s to integer value.%nStack Trace:%n%s", INSTANT_RETRY_NAME, ExceptionUtils.getStackTrace(e));
 			}
-			
+
             if (!developerMode) {
                 developerMode = Boolean.valueOf(System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME));
             }

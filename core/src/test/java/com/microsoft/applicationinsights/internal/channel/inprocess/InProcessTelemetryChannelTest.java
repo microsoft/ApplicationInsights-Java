@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.channel.inprocess;
 
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -44,18 +45,24 @@ public class InProcessTelemetryChannelTest {
         map.put(INSTANT_RETRY_NAME, "AABB");
         new InProcessTelemetryChannel(map);
     }
-    
+
     @Test()
     public void testValidIntegerMaxInstanceRetry() {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put(INSTANT_RETRY_NAME, "4");
         new InProcessTelemetryChannel(map);
     }
-    
+
     @Test()
     public void testInvalidIntegerMaxInstanceRetry() {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put(INSTANT_RETRY_NAME, "-1");
         new InProcessTelemetryChannel(map);
+    }
+
+    @Test
+    public void testInProcessTelemetryChannelWithDefaultSpringBootParameters() {
+        new InProcessTelemetryChannel("https://dc.services.visualstudio.com/v2/track", "10",
+                false, 500, 5, true);
     }
 }
