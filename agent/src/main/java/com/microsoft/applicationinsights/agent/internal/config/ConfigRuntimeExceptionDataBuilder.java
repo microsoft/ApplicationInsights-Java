@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -103,7 +104,8 @@ final class ConfigRuntimeExceptionDataBuilder {
                 int maxStackSize = Integer.parseInt(preparedValue);
                 stackSize = maxStackSize;
             } catch (Exception e) {
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to parse attribute %s with value %s, will send full stack", MAX_STACK_SIZE, maxStackSizeAsString);
+                InternalAgentLogger.INSTANCE.error("Failed to parse attribute %s with value %s, will send full stack" +
+                        "exception : %s", MAX_STACK_SIZE, maxStackSizeAsString, ExceptionUtils.getStackTrace(e));
             }
         }
 

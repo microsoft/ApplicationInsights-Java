@@ -69,8 +69,16 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             if (!sendQueue.offer(request)) {
                 InternalLogger.INSTANCE.trace("Quick Pulse send queue is full");
             }
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.trace("Quick Pulse failed to prepare data for send");
+            try {
+                InternalLogger.INSTANCE.trace("Quick Pulse failed to prepare data for send");
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

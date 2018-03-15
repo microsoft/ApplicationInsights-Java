@@ -241,7 +241,7 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
             if (value > 0) {
                 result = value;
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
 
         if (result > maxValue) {
@@ -262,7 +262,7 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
             if (value > 0) {
                 result = value;
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
 
         if (result > maxValue) {

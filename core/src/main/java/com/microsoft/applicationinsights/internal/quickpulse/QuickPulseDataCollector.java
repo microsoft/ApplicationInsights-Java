@@ -123,8 +123,16 @@ public enum QuickPulseDataCollector {
         CpuPerformanceCounterCalculator temp;
         try {
             temp = new CpuPerformanceCounterCalculator();
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            try {
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
             temp = null;
         }
         cpuPerformanceCounterCalculator = temp;

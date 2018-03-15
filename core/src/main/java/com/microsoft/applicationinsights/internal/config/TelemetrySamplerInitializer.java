@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.internal.channel.sampling.AdaptiveTelem
 import com.microsoft.applicationinsights.internal.channel.sampling.FixedRateTelemetrySampler;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 11/14/2016.
@@ -33,6 +34,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 final class TelemetrySamplerInitializer {
     /**
      * Sets the configuration data of Context Initializers in configuration class.
+     *
      * @param sampler The configuration data.
      */
     public TelemetrySampler getSampler(SamplerXmlElement sampler) {
@@ -52,8 +54,9 @@ final class TelemetrySamplerInitializer {
             if (!LocalStringsUtils.isNullOrEmpty(percentageAsString)) {
                 try {
                     percentage = Double.valueOf(percentageAsString);
-                } catch (Throwable t) {
-                    InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse %s", percentageAsString);
+                } catch (Exception e) {
+                    InternalLogger.INSTANCE.error("Failed to parse %s, exception : %s", percentageAsString,
+                            ExceptionUtils.getStackTrace(e));
                 }
             }
 
@@ -82,7 +85,7 @@ final class TelemetrySamplerInitializer {
 
                 telemetrySampler = adaptiveTelemetrySampler;
             } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Could not resolve sampler type. Possible values are 'Fixed' or 'Adaptive'");
+                InternalLogger.INSTANCE.error("Could not resolve sampler type. Possible values are 'Fixed' or 'Adaptive'");
             }
         }
 

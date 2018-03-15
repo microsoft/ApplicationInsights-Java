@@ -55,8 +55,15 @@ public final class JmxConnectorLoader {
             InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'InstanceAlreadyExistsException': '%s'", e.toString());
         } catch (MBeanRegistrationException e) {
             InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MBeanRegistrationException': '%s'", e.toString());
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.toString());
+            try {
+                InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 		
 		return false;

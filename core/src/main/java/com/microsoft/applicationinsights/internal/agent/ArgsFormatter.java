@@ -38,7 +38,7 @@ final class ArgsFormatter {
             }
             String argsAsString = sb.deleteCharAt(sb.length() - 1).toString();
             return argsAsString;
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
 
         return "";

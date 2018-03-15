@@ -33,15 +33,16 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class can filter out PageViewTelemetries that
  * have a duration which is less than a predefined value
  * have URLs that has parts that are not needed, i.e. telemetries that will not be sent, based on configuration
  * have unneeded page names i.e. telemetries that will not be sent, that were predefined in configuration
- *
+ * <p>
  * Invalid values would prevent the filter from being used.
- *
+ * <p>
  * Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("PageViewTelemetryFilter")
@@ -64,7 +65,7 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
             return true;
         }
 
-        PageViewTelemetry asPVT = (PageViewTelemetry)telemetry;
+        PageViewTelemetry asPVT = (PageViewTelemetry) telemetry;
         URI uri = asPVT.getUri();
         if (uri == null) {
             return true;
@@ -92,9 +93,10 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
     public void setDurationThresholdInMS(String durationThresholdInMS) throws NumberFormatException {
         try {
             this.durationThresholdInMS = Long.valueOf(durationThresholdInMS);
-            InternalLogger.INSTANCE.trace(String.format("PageViewTelemetryFilter: successfully set DurationThresholdInMS to %s", durationThresholdInMS));
+            InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: successfully set DurationThresholdInMS to %s", durationThresholdInMS);
         } catch (NumberFormatException e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("PageViewTelemetryFilter: failed to set DurationThresholdInMS: ", durationThresholdInMS));
+            InternalLogger.INSTANCE.error("PageViewTelemetryFilter: failed to set DurationThresholdInMS:%s Exception : %s ",
+                    durationThresholdInMS, ExceptionUtils.getStackTrace(e));
             throw e;
         }
     }
@@ -110,10 +112,21 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
 
                 this.notNeededNames.add(ready);
             }
+
             InternalLogger.INSTANCE.trace(String.format("PageViewTelemetryFilter: set NotNeededNames: %s", notNeededNames));
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("PageViewTelemetryFilter: failed to parse NotNeededNames: %s", notNeededNames));
-            throw t;
+            try {
+                InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: failed to parse NotNeededNames: %s Exception : %s", notNeededNames,
+                        ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
         }
     }
 
@@ -129,9 +142,19 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
                 this.notNeededUrls.add(ready);
             }
             InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: set %s", notNeededUrls);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "PageViewTelemetryFilter: failed to parse NotNeededUrls: %s", notNeededUrls);
-            throw t;
+            try {
+                InternalLogger.INSTANCE.error("PageViewTelemetryFilter: failed to parse NotNeededUrls: %s Exception : %s", notNeededUrls,
+                        ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
         }
     }
 }

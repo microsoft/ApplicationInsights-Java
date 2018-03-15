@@ -221,9 +221,17 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
         if (!LocalStringsUtils.isNullOrEmpty(type)) {
             try {
                 result = Enum.valueOf(DependencyKind.class, type);
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable t) {
-                InternalLogger.INSTANCE.error("Exception while getting dependency kind: Type is empty");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                try {
+                    InternalLogger.INSTANCE.error("Exception while getting dependency kind: Type is empty");
+                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
         }
         return result;

@@ -106,9 +106,9 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             if (!LocalStringsUtils.isNullOrEmpty(developerModeAsString)) {
                 developerMode = Boolean.valueOf(developerModeAsString);
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
             developerMode = false;
-            InternalLogger.INSTANCE.trace("%s generated exception in parsing, stack trace is %s", DEVELOPER_MODE_SYSTEM_PROPRETY_NAME, ExceptionUtils.getStackTrace(t));
+            InternalLogger.INSTANCE.trace("%s generated exception in parsing, stack trace is %s", DEVELOPER_MODE_SYSTEM_PROPRETY_NAME, ExceptionUtils.getStackTrace(e));
         }
 		initialize(null, null, developerMode, createDefaultMaxTelemetryBufferCapacityEnforcer(null),
 				createDefaultSendIntervalInSecondsEnforcer(null), true);
@@ -272,9 +272,17 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
             telemetriesTransmitter.stop(timeout, timeUnit);
             stopped = true;
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            try {
+                InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

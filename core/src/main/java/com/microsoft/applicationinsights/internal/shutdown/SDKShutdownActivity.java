@@ -90,7 +90,10 @@ public enum SDKShutdownActivity {
         private void stopInternalLogger() {
             try {
                 InternalLogger.INSTANCE.stop();
+            } catch (ThreadDeath td) {
+            	throw td;
             } catch (Throwable t) {
+                // chomp
             }
         }
 
@@ -104,9 +107,16 @@ public enum SDKShutdownActivity {
                     if (channelToStop != null) {
                         channelToStop.stop(1L, TimeUnit.SECONDS);
                     }
+                } catch (ThreadDeath td) {
+                	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    try {
+                        InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
         }
@@ -117,9 +127,16 @@ public enum SDKShutdownActivity {
             for (Stoppable stoppable : stoppables) {
                 try {
                     stoppable.stop(1L, TimeUnit.SECONDS);
+                } catch (ThreadDeath td) {
+                	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.toString());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    try {
+                        InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.toString());                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
         }

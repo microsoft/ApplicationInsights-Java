@@ -34,15 +34,15 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class can filter out MetricTelemetries with configurable names
- *
+ * <p>
  * Invalid values would prevent the filter from being used.
- *
+ * <p>
  * Created by gupele on 8/7/2016.
  */
 public final class MetricTelemetryFilter implements TelemetryProcessor {
     private HashSet<String> notNeeded = new HashSet<String>();
 
-    public void setNotNeeded(String allNotNeeded) throws Throwable{
+    public void setNotNeeded(String allNotNeeded) throws Throwable {
         try {
             List<String> notNeededAsList = Arrays.asList(allNotNeeded.split(","));
             for (String notNeeded : notNeededAsList) {
@@ -54,10 +54,20 @@ public final class MetricTelemetryFilter implements TelemetryProcessor {
                 this.notNeeded.add(ready);
             }
             InternalLogger.INSTANCE.trace(String.format("MetricTelemetryFilter: set NotNeeded: %s", notNeeded));
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, String.format("MetricTelemetryFilter: failed to parse NotNeededNames: %s", allNotNeeded));
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-            throw t;
+            try {
+                InternalLogger.INSTANCE.error("MetricTelemetryFilter: failed to parse NotNeededNames: %s, Exception : %s",
+                        allNotNeeded, ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            } finally {
+                throw t;
+            }
+
         }
     }
 
@@ -68,7 +78,7 @@ public final class MetricTelemetryFilter implements TelemetryProcessor {
         }
 
         if (telemetry instanceof MetricTelemetry) {
-            MetricTelemetry mt = (MetricTelemetry)telemetry;
+            MetricTelemetry mt = (MetricTelemetry) telemetry;
             if (notNeeded.contains(mt.getName())) {
                 return false;
             }

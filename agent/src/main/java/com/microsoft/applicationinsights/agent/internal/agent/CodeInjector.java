@@ -31,10 +31,11 @@ import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguratio
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class is responsible for finding needed classes
- *
+ * <p>
  * Created by gupele on 5/11/2015.
  */
 public final class CodeInjector implements ClassFileTransformer {
@@ -45,26 +46,35 @@ public final class CodeInjector implements ClassFileTransformer {
     /**
      * The constructor will set all the data needed for the transformation
      *
-     * @param agentConfiguration  The configuration
+     * @param agentConfiguration The configuration
      */
     public CodeInjector(AgentConfiguration agentConfiguration) {
         try {
             loadConfiguration(agentConfiguration);
+            InternalAgentLogger.INSTANCE.info("Agent is up");
 
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is up");
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.INFO, "Agent is NOT activated: failed to initialize CodeInjector: '%s'", throwable.toString());
+            try {
+                InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to initialize CodeInjector: '%s'",
+                        ExceptionUtils.getStackTrace(throwable));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
     /**
      * Main method that transforms classes
-     * @param loader The class loader that loaded this class
-     * @param className The class name
+     *
+     * @param loader              The class loader that loaded this class
+     * @param className           The class name
      * @param classBeingRedefined The class that is being redefined
-     * @param protectionDomain The protection domain
-     * @param originalBuffer The class that was loaded before transforming it
+     * @param protectionDomain    The protection domain
+     * @param originalBuffer      The class that was loaded before transforming it
      * @return A byte array that contains the transformed original class or the original one if nothing was done.
      * @throws IllegalClassFormatException Theoretical, since the following implementation won't throw.
      */
@@ -79,9 +89,17 @@ public final class CodeInjector implements ClassFileTransformer {
         if (byteCodeTransformer != null) {
             try {
                 return byteCodeTransformer.transform(originalBuffer, className, loader);
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable throwable) {
-                throwable.printStackTrace();
-                InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to instrument '%s', exception: '%s': ", className, throwable.toString());
+                try {
+                    InternalAgentLogger.INSTANCE.error("Failed to instrument '%s', " +
+                            "exception: '%s'", className, ExceptionUtils.getStackTrace(throwable));
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
         }
 
@@ -91,6 +109,7 @@ public final class CodeInjector implements ClassFileTransformer {
     /**
      * The method will try to load the configuration file for the Agent. The file is optional but
      * is assumed to be located 'near' the agent jar. Failing to put the file there will cause the file not to be loaded
+     *
      * @param agentConfiguration The configuration
      */
     private void loadConfiguration(AgentConfiguration agentConfiguration) {
@@ -99,9 +118,9 @@ public final class CodeInjector implements ClassFileTransformer {
 
         if (agentConfiguration.getBuiltInConfiguration().isJmxEnabled()) {
             jmxConnectorLoader = new JmxConnectorLoader();
-			if (!jmxConnectorLoader.initialize()) {
-				jmxConnectorLoader = null;
-			}
+            if (!jmxConnectorLoader.initialize()) {
+                jmxConnectorLoader = null;
+            }
         }
     }
 }

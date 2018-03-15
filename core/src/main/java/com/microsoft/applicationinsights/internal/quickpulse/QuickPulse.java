@@ -109,9 +109,17 @@ public enum QuickPulse implements Stoppable {
         try {
             coordinator.stop();
             quickPulseDataSender.stop();
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Error while executing stop QuickPulse");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            try {
+                InternalLogger.INSTANCE.error("Error while executing stop QuickPulse");
+                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         thread.interrupt();
