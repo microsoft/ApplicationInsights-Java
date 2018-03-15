@@ -238,4 +238,14 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("doPageView", pv1.getName());
         assertEquals(new Duration(0), pv1.getDuration());
     }
+
+    @Test
+    @TargetUri("/autoFailedRequestWithResultCode")
+    public void testAutoFailedRequestWithResultCode() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+
+        RequestData rd1 = getTelemetryDataForType(0, "RequestData");
+        assertEquals(false, rd1.getSuccess());
+        assertEquals("404", rd1.getResponseCode());
+    }
 }
