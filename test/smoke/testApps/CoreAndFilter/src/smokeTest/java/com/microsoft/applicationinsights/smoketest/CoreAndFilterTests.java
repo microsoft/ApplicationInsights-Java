@@ -248,4 +248,15 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(false, rd1.getSuccess());
         assertEquals("404", rd1.getResponseCode());
     }
+
+    @Test
+    @TargetUri("/requestSlow")
+    public void testRequestSlowWithResponseTime() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+
+        RequestData rd1 = getTelemetryDataForType(0, "RequestData");
+        long actual = rd1.getDuration().getTotalMilliseconds();
+        long expected = (new Duration(0, 0, 0, 20, 0).getTotalMilliseconds());
+        assertTrue(actual >= expected);
+    }
 }
