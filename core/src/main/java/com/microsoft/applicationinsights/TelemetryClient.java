@@ -106,8 +106,8 @@ public class TelemetryClient {
      * @return 'true' if tracking is disabled, 'false' otherwise.
      */
     public boolean isDisabled() {
-        return
-                Strings.isNullOrEmpty(getContext().getInstrumentationKey()) || configuration.isTrackingDisabled();
+        return (Strings.isNullOrEmpty(configuration.getInstrumentationKey()) && Strings.isNullOrEmpty(getContext().getInstrumentationKey()))
+                || configuration.isTrackingDisabled();
     }
 
     /**
