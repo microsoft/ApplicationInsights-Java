@@ -86,7 +86,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
     @Bean
     @DependsOn("internalLogger")
     public TelemetryConfiguration telemetryConfiguration(TelemetryChannel telemetryChannel) {
-        TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.getActive();
+        TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.getActiveWithoutInitializingCofig();
         telemetryConfiguration.setTrackingIsDisabled(!applicationInsightsProperties.isEnabled());
         telemetryConfiguration.setInstrumentationKey(applicationInsightsProperties.getInstrumentationKey());
         if (contextInitializers != null) {

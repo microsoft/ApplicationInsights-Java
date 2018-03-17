@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -48,6 +49,7 @@ import org.junit.Test;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.notNull;
 
 public final class TelemetryConfigurationFactoryTest {
 
@@ -393,6 +395,17 @@ public final class TelemetryConfigurationFactoryTest {
         initializeWithFactory(mockParser, mockConfiguration);
 
         assertEquals(mockConfiguration.getChannel().isDeveloperMode(), false);
+    }
+
+    @Test
+    public void testEmptyConfiguration() {
+        TelemetryConfiguration emptyConfig = TelemetryConfiguration.getActiveWithoutInitializingCofig();
+        Assert.assertEquals(null, emptyConfig.getInstrumentationKey());
+        Assert.assertEquals(null, emptyConfig.getChannel());
+        Assert.assertEquals(0, emptyConfig.getTelemetryModules().size());
+        Assert.assertEquals(false, emptyConfig.isTrackingDisabled());
+        Assert.assertEquals(0, emptyConfig.getContextInitializers().size());
+        Assert.assertEquals(0, emptyConfig.getTelemetryProcessors().size());
     }
 
     private MockTelemetryModule generateTelemetryModules(boolean addParameter) {

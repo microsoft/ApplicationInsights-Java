@@ -75,6 +75,24 @@ public final class TelemetryConfiguration {
     }
 
     /**
+     * This method provides the new instance of TelmetryConfiguration without loading the configuration
+     * from configuration file. This will just give a plain bare bone instance. Typically used when
+     * performing configuration programatically by creating beans, using @Beans tags. This is a common
+     * scenario in SpringBoot.
+     * @return {@link com.microsoft.applicationinsights.TelemetryConfiguration}
+     */
+    public static TelemetryConfiguration getActiveWithoutInitializingCofig() {
+        if (active == null) {
+            synchronized (s_lock) {
+                if (active == null) {
+                    active = new TelemetryConfiguration();
+                }
+            }
+        }
+        return active;
+    }
+
+    /**
      * Creates a new instance loaded from the ApplicationInsights.xml file.
      * If the configuration file does not exist, the new configuration instance is initialized with minimum defaults
      * needed to send telemetry to Application Insights.
