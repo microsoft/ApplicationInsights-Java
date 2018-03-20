@@ -145,7 +145,8 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         InProcess inProcess = applicationInsightsProperties.getChannel().getInProcess();
         return new InProcessTelemetryChannel(inProcess.getEndpointAddress(),
                 String.valueOf(inProcess.getMaxTransmissionStorageFilesCapacityInMb()), inProcess.isDeveloperMode(),
-                inProcess.getMaxTelemetryBufferCapacity(), inProcess.getFlushIntervalInSeconds(), inProcess.isThrottling());
+                inProcess.getMaxTelemetryBufferCapacity(), inProcess.getFlushIntervalInSeconds(), inProcess.isThrottling(),
+            inProcess.getMaxInstantRetry());
     }
 
     @Bean

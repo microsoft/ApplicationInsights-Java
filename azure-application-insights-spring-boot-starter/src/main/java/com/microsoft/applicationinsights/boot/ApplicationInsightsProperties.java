@@ -176,12 +176,25 @@ public class ApplicationInsightsProperties {
              */
             private boolean throttling = true;
 
+            /**
+             * Sets the size of maximum instant retries without delay
+             */
+            private int maxInstantRetry = InProcessTelemetryChannel.DEFAULT_MAX_INSTANT_RETRY;
+
             public boolean isDeveloperMode() {
                 return developerMode;
             }
 
             public void setDeveloperMode(boolean developerMode) {
                 this.developerMode = developerMode;
+            }
+
+            public int getMaxInstantRetry() {
+                return maxInstantRetry;
+            }
+
+            public void setMaxInstantRetry(int maxInstantRetry) {
+                this.maxInstantRetry = maxInstantRetry;
             }
 
             public String getEndpointAddress() {
