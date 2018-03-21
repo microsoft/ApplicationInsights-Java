@@ -92,7 +92,7 @@ public final class TelemetryConfiguration {
      * If the configuration file does not exist, the new configuration instance is initialized with minimum defaults
      * needed to send telemetry to Application Insights.
      *
-     * This call permits client to create client with its own i-Key stored, for instance, in some Key-Value storage
+     * This call permits to create a client with its own i-Key stored, for instance, in some Key-Value storage
      * in the cloud and let intrinsically created TelemetryClients (such as for JMX metrics) to be aware of the key
      * even it is not in the ApplicationInsights.xml. This permits convenient work with environment-based configurations.
      *
