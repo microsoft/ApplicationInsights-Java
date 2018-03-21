@@ -21,31 +21,33 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.extensibility.*;
-import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.channel.TelemetrySampler;
+import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.extensibility.PerformanceCountersCollectionPlugin;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
-import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
-
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Initializer class for configuration instances.
@@ -70,13 +72,14 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Currently we do the following:
-     *
+     * <p>
      * Set Instrumentation Key
      * Set Developer Mode (default false)
      * Set Channel (default {@link InProcessTelemetryChannel})
      * Set Tracking Disabled Mode (default false)
      * Set Context Initializers where they should be written with full package name
      * Set Telemetry Initializers where they should be written with full package name
+     *
      * @param configuration The configuration that will be populated
      */
     public final void initialize(TelemetryConfiguration configuration) {
@@ -96,7 +99,10 @@ public enum TelemetryConfigurationFactory {
 
             setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
 
-            setInstrumentationKey(applicationInsightsConfig, configuration);
+            // If configuration supplied by constructor contains the key, we do not alter it from external sources.
+            if (com.microsoft.applicationinsights.agent.internal.common.StringUtils.isNullOrEmpty(configuration.getInstrumentationKey())) {
+                setInstrumentationKey(applicationInsightsConfig, configuration);
+            }
 
             TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
             setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
@@ -132,8 +138,9 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Sets the configuration data of Telemetry Initializers in configuration class.
+     *
      * @param telemetryInitializers The configuration data.
-     * @param configuration The configuration class.
+     * @param configuration         The configuration class.
      */
     private void setTelemetryInitializers(TelemetryInitializersXmlElement telemetryInitializers, TelemetryConfiguration configuration) {
         if (telemetryInitializers == null) {
@@ -146,8 +153,9 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Sets the configuration data of Context Initializers in configuration class.
+     *
      * @param contextInitializers The configuration data.
-     * @param configuration The configuration class.
+     * @param configuration       The configuration class.
      */
     private void setContextInitializers(ContextInitializersXmlElement contextInitializers, TelemetryConfiguration configuration) {
         new ContextInitializersInitializer().initialize(contextInitializers, configuration);
@@ -162,8 +170,9 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Sets the configuration data of Modules Initializers in configuration class.
+     *
      * @param appConfiguration The configuration data.
-     * @param configuration The configuration class.
+     * @param configuration    The configuration class.
      */
     private void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
         TelemetryModulesXmlElement configurationModules = appConfiguration.getModules();
@@ -213,8 +222,9 @@ public enum TelemetryConfigurationFactory {
      * First we try the system property '-DAPPLICATION_INSIGHTS_IKEY=i_key' or '-DAPPINSIGHTS_INSTRUMENTATIONKEY=i_key'
      * Next we will try the environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
      * Next we will try to fetch the i-key from the ApplicationInsights.xml
+     *
      * @param userConfiguration The configuration that was represents the user's configuration in ApplicationInsights.xml.
-     * @param configuration The configuration class.
+     * @param configuration     The configuration class.
      */
     private void setInstrumentationKey(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         try {
@@ -299,7 +309,7 @@ public enum TelemetryConfigurationFactory {
                     continue;
                 }
                 if (module instanceof PerformanceCounterConfigurationAware) {
-                    PerformanceCounterConfigurationAware awareModule = (PerformanceCounterConfigurationAware)module;
+                    PerformanceCounterConfigurationAware awareModule = (PerformanceCounterConfigurationAware) module;
                     try {
                         awareModule.addConfigurationData(performanceConfigurationData);
                     } catch (Exception e) {
@@ -334,13 +344,13 @@ public enum TelemetryConfigurationFactory {
      * The method will load the Jmx performance counters requested by the user to the system:
      * 1. Build a map where the key is the Jmx object name and the value is a list of requested attributes.
      * 2. Go through all the requested Jmx counters:
-     *      a. If the object name is not in the map, add it with an empty list
-     *         Else get the list
-     *      b. Add the attribute to the list.
-     *  3. Go through the map
-     *      For every entry (object name and attributes)
-     *          Build a {@link JmxMetricPerformanceCounter}
-     *          Register the Performance Counter in the {@link PerformanceCounterContainer}
+     * a. If the object name is not in the map, add it with an empty list
+     * Else get the list
+     * b. Add the attribute to the list.
+     * 3. Go through the map
+     * For every entry (object name and attributes)
+     * Build a {@link JmxMetricPerformanceCounter}
+     * Register the Performance Counter in the {@link PerformanceCounterContainer}
      *
      * @param jmxXmlElements
      */
@@ -401,9 +411,10 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Setting the channel.
+     *
      * @param channelXmlElement The configuration element holding the channel data.
-     * @param telemetrySampler The sampler that should be injected into the channel
-     * @param configuration The configuration class.
+     * @param telemetrySampler  The sampler that should be injected into the channel
+     * @param configuration     The configuration class.
      * @return True on success.
      */
     private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetrySampler telemetrySampler, TelemetryConfiguration configuration) {
@@ -456,12 +467,12 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
-     *
+     * <p>
      * Note that currently we 'swallow' all exceptions and simply return null if we fail
      *
-     * @param className The class we create an instance of
+     * @param className      The class we create an instance of
      * @param interfaceClass The class' parent interface we wish to work with
-     * @param <T> The class type to create
+     * @param <T>            The class type to create
      * @return The instance or null if failed
      */
     @SuppressWarnings("unchecked")
@@ -472,15 +483,15 @@ public enum TelemetryConfigurationFactory {
     /**
      * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
      * The class is created by using a constructor that has one parameter which is sent to the method
-     *
+     * <p>
      * Note that currently we 'swallow' all exceptions and simply return null if we fail
      *
-     * @param className The class we create an instance of
+     * @param className      The class we create an instance of
      * @param interfaceClass The class' parent interface we wish to work with
-     * @param argumentClass Type of class to use as argument for Ctor
-     * @param argument The argument to pass the Ctor
-     * @param <T> The class type to create
-     * @param <A> The class type as the Ctor argument
+     * @param argumentClass  Type of class to use as argument for Ctor
+     * @param argument       The argument to pass the Ctor
+     * @param <T>            The class type to create
+     * @param <A>            The class type as the Ctor argument
      * @return The instance or null if failed
      */
     @SuppressWarnings("unchecked")
