@@ -34,16 +34,17 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
  * Created by gupele on 3/15/2015.
  */
 public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
-    private final MetricTelemetry telemetry = new MetricTelemetry();
 
     public JmxMetricPerformanceCounter(String id, String objectName, Collection<JmxAttributeData> attributes) {
         super(id, objectName, attributes);
-        telemetry.markAsCustomPerfCounter();
     }
 
     @Override
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
         InternalLogger.INSTANCE.trace("Metric JMX: %s, %s", displayName, value);
+	
+	MetricTelemetry telemetry = new MetricTelemetry();
+	telemetry.markAsCustomPerfCounter();
         telemetry.setName(displayName);
         telemetry.setValue(value);
         telemetry.getProperties().put("CustomPerfCounter", "true");
