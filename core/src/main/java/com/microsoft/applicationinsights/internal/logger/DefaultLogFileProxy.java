@@ -57,6 +57,11 @@ public final class DefaultLogFileProxy implements LogFileProxy {
 
     public void writeLine(String line) throws IOException {
         out.write(line + NEW_LINE);
+
+        //flush every time for real time streaming of logs on file.
+        //Please use logger with caution. Using File logger with TRACE level logging
+        //can significantly increase the load
+        flush();
     }
 
     public boolean isFull() {
