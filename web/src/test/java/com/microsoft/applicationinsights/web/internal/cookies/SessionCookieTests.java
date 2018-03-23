@@ -85,22 +85,6 @@ public class SessionCookieTests {
         Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
     }
 
-    @Test
-    public void testSessionHttpCookiePathSetForAllPages() {
-        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(requestTelemetryContextMock, sessionContext, 10);
-
-        Assert.assertEquals("Path should catch all urls", HttpCookieFactory.COOKIE_PATH_ALL_URL, cookie.getPath());
-    }
-
-    @Test
-    public void testSessionHttpCookieSetMaxAge() {
-        final int sessionTimeoutInMinutes = 10;
-
-        Cookie cookie = HttpCookieFactory.generateSessionHttpCookie(requestTelemetryContextMock, sessionContext, sessionTimeoutInMinutes);
-
-        Assert.assertEquals(sessionTimeoutInMinutes * 60, cookie.getMaxAge());
-    }
-
     // endregion Tests
 
     // region Private

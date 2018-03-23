@@ -102,20 +102,6 @@ public class UserCookieTests {
         createUserCookie(formattedCookie);
     }
 
-    @Test
-    public void testUserHttpCookiePathSetForAllPages() {
-        Cookie cookie = HttpCookieFactory.generateUserHttpCookie(requestTelemetryContextMock);
-
-        Assert.assertEquals("Path should catch all urls", HttpCookieFactory.COOKIE_PATH_ALL_URL, cookie.getPath());
-    }
-
-    @Test
-    public void testUserHttpCookieSetMaxAge() {
-        Cookie cookie = HttpCookieFactory.generateUserHttpCookie(requestTelemetryContextMock);
-
-        Assert.assertEquals("Cookie age should be set to max value.", Integer.MAX_VALUE, cookie.getMaxAge());
-    }
-
     // endregion Tests
 
     // region Private
