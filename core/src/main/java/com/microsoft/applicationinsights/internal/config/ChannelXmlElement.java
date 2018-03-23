@@ -25,14 +25,12 @@ import com.google.common.base.Strings;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by gupele on 3/15/2015.
  */
-@XmlRootElement(name="Channel")
 public class ChannelXmlElement {
 
     private String endpointAddress;

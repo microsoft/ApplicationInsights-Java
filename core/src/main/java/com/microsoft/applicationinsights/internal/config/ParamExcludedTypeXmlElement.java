@@ -7,8 +7,6 @@ import java.util.List;
 /**
  * This is the class for binding the xml array list of {@code <ExcludedTypes>}
  */
-
-@XmlRootElement(name = "ExcludedTypes")
 public class ParamExcludedTypeXmlElement {
 
     public List<String> getExcludedType() {

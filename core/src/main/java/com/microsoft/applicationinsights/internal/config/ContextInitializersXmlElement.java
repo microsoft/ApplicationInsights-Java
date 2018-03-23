@@ -28,7 +28,6 @@ import java.util.ArrayList;
 /**
  * Created by gupele on 3/15/2015.
  */
-@XmlRootElement(name="ContextInitializers")
 public class ContextInitializersXmlElement {
 
     private ArrayList<AddTypeXmlElement> adds;

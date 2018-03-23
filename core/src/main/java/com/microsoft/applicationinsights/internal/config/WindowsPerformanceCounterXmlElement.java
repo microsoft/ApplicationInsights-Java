@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by gupele on 3/30/2015.
  */
-@XmlRootElement(name="Add")
 public class WindowsPerformanceCounterXmlElement {
     private String displayName;
     private String categoryName;

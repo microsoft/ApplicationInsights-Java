@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by gupele on 12/13/2016.
  */
-@XmlRootElement(name="QuickPulse")
 public class QuickPulseXmlElement {
     private boolean enabled = true;
 

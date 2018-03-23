@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by gupele on 3/15/2015.
  */
-@XmlRootElement(name="Jmx")
 public class JmxListXmlElement {
     private ArrayList<JmxXmlElement> jmx;
 

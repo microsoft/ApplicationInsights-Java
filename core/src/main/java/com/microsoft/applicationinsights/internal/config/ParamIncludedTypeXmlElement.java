@@ -7,8 +7,6 @@ import java.util.List;
 /**
  * This class is used to bind the xml array list of {@code <IncludeTypes>}
  */
-
-@XmlRootElement(name = "IncludedTypes")
 public class ParamIncludedTypeXmlElement {
 
     public List<String> getIncludedType() {

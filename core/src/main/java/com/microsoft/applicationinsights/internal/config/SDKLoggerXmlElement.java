@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by gupele on 3/15/2015.
  */
-@XmlRootElement(name="SDKLogger")
 public class SDKLoggerXmlElement {
     private String type = "CONSOLE";
     private String level;

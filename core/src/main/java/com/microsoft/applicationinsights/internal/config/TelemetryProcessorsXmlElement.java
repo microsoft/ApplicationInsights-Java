@@ -27,7 +27,6 @@ import java.util.ArrayList;
 /**
  * Created by gupele on 7/26/2016.
  */
-@XmlRootElement(name="TelemetryProcessors")
 public class TelemetryProcessorsXmlElement {
     private ArrayList<TelemetryProcessorXmlElement> custom = new ArrayList<TelemetryProcessorXmlElement>();
     private ArrayList<TelemetryProcessorXmlElement> builtIn = new ArrayList<TelemetryProcessorXmlElement>();

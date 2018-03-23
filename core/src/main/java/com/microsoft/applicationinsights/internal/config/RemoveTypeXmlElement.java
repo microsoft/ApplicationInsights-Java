@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by gupele on 3/16/2015.
  */
-@XmlRootElement(name="Remove")
 public class RemoveTypeXmlElement {
     private String type;
 

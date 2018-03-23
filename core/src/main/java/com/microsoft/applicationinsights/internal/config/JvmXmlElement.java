@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by gupele on 8/8/2016.
  */
-@XmlRootElement(name="JvmPC")
 public class JvmXmlElement {
     private String name;
     private boolean enabled = true;

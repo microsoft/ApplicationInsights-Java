@@ -28,7 +28,6 @@ import java.util.ArrayList;
 /**
  * Created by gupele on 3/15/2015.
  */
-@XmlRootElement(name="TelemetryModules")
 public class TelemetryModulesXmlElement {
     private ArrayList<AddTypeXmlElement> adds;
 

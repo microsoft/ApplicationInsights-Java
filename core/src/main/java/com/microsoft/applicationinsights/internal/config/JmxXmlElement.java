@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by gupele on 3/15/2015.
  */
-@XmlRootElement(name="Add")
 public class JmxXmlElement {
     private String displayName;
     private String objectName;
