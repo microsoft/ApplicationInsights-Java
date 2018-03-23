@@ -9,6 +9,7 @@ import com.google.gson.JsonSyntaxException;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.JsonHelper;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,9 +19,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPInputStream;
 
 public class MockedAppInsightsIngestionServlet extends HttpServlet {
@@ -31,11 +40,17 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
 
     private final String appid = "DUMMYAPPID";
 
-    private Queue<Envelope> telemetryReceived;
-    private ListMultimap<String, Envelope> type2envelope;
+
+    private final Queue<Envelope> telemetryReceived;
+    @GuardedBy("multimapLock")
+    private final ListMultimap<String, Envelope> type2envelope;
     private List<Predicate<Envelope>> filters;
 
+    private final Object multimapLock = new Object();
+
     private MockedIngestionServletConfig config;
+
+    private final ExecutorService itemExecutor = Executors.newSingleThreadExecutor();
 
     public static final String LOG_PAYLOADS_PARAMETER_KEY = "logPayloads";
     public static final String RETAIN_PAYLOADS_PARAMETER_KEY = "retainPayloads";
@@ -96,7 +111,9 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     public void resetData() {
         logit("Clearing telemetry accumulator...");
         telemetryReceived.clear();
-        type2envelope.clear();
+        synchronized (multimapLock) {
+            type2envelope.clear();
+        }
     }
 
     public boolean hasData() {
@@ -113,7 +130,33 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
 
     public List<Envelope> getItemsByType(String type) {
         Preconditions.checkNotNull(type, "type");
-        return type2envelope.get(type);
+        synchronized (multimapLock) {
+            return type2envelope.get(type);
+        }
+    }
+
+    public List<Envelope> waitForItems(final Predicate<Envelope> condition, final int numItems, int timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+        final Future<List<Envelope>> future = itemExecutor.submit(new Callable<List<Envelope>>() {
+            @Override
+            public List<Envelope> call() throws Exception {
+                List<Envelope> targetCollection = new ArrayList<>(numItems);
+                while(targetCollection.size() < numItems) {
+                    targetCollection.clear();
+                    final Collection<Envelope> currentValues;
+                    synchronized (multimapLock) {
+                        currentValues = new ArrayList<>(type2envelope.values());
+                    }
+                    for (Envelope val : currentValues) {
+                        if (condition.apply(val)) {
+                            targetCollection.add(val);
+                        }
+                    }
+                    TimeUnit.MILLISECONDS.sleep(75);
+                }
+                return targetCollection;
+            }
+        });
+        return future.get(timeout, timeUnit);
     }
 
     @Override
@@ -157,8 +200,10 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                                 String baseType = envelope.getData().getBaseType();
                                 if (filtersAllowItem(envelope)) {
                                     logit("Adding telemetry item: "+baseType);
-                                    type2envelope.put(baseType, envelope);
                                     telemetryReceived.offer(envelope);
+                                    synchronized (multimapLock) {
+                                        type2envelope.put(baseType, envelope);
+                                    }
                                 } else {
                                     logit("Rejected telemetry item by filter: "+baseType);
                                 }

@@ -1,17 +1,19 @@
 package com.microsoft.applicationinsights.test.fakeingestion;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class MockedAppInsightsIngestionServer implements AutoCloseable {
 	public static final int DEFAULT_PORT = 60606;
@@ -87,6 +89,32 @@ public class MockedAppInsightsIngestionServer implements AutoCloseable {
 	public <T extends Domain> T getBaseDataForType(int index, String type) {
 		Data<T> data = (Data<T>) getItemsByType(type).get(index).getData();
 		return data.getBaseData();
+	}
+
+	/**
+	 * Waits the given amount of time for this mocked server to recieve one telemetry item matching the given predicate.
+	 *
+	 * @see #waitForItems(Predicate, int, int, TimeUnit)
+	 */
+	public Envelope waitForItem(Predicate<Envelope> condition, int timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+		return waitForItems(condition, 1, timeout, timeUnit).get(0);
+	}
+
+
+	/**
+	 * Waits the given amount of time for this mocked server to receive a certain number of items which match the given predicate.
+	 *
+	 * @param condition condition describing what items to wait for.
+	 * @param numItems number of matching items to wait for.
+	 * @param timeout amount of time to wait
+	 * @param timeUnit the unit of time to wait
+	 * @return The items the given condition. This will be at least {@code numItems}, but could be more.
+	 * @throws InterruptedException if the thread is interrupted while waiting
+	 * @throws ExecutionException if an exception is thrown while waiting
+	 * @throws TimeoutException if the timeout is reached
+	 */
+	public List<Envelope> waitForItems(Predicate<Envelope> condition, int numItems, int timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+		return this.servlet.waitForItems(condition, numItems, timeout, timeUnit);
 	}
 
 	@Override
