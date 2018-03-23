@@ -26,12 +26,10 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
 /**
  * The class is responsible for loading transmission files that were saved to the disk
@@ -88,6 +86,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
         this.fileSystem = fileSystem;
         this.dispatcher = dispatcher;
         threads = new Thread[numberOfThreads];
+        final String threadNameFmt = String.format("%s-worker-%%d", ActiveTransmissionLoader.class.getSimpleName());
         for (int i = 0; i < numberOfThreads; ++i) {
             threads[i] = new Thread(new Runnable() {
                 @Override
@@ -95,9 +94,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                     try {
                         barrier.await();
                     } catch (InterruptedException e) {
-                        InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.getMessage());
+                        InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.toString());
                     } catch (BrokenBarrierException e) {
-                        InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.getMessage());
+                        InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.toString());
                     }
 
                     // Avoid un-expected exit of threads
@@ -108,7 +107,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                                 case UNBLOCKED:
                                     fetchNext(true);
                                     break;
-
+                                case BACKOFF:
                                 case BLOCKED_BUT_CAN_BE_PERSISTED:
                                     Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
                                     break;
@@ -125,12 +124,14 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                                     break;
                             }
                         } catch (Exception e) {
+                        } catch (ThreadDeath td) {
+                        	throw td;
                         } catch (Throwable t) {
                         }
                         // TODO: check whether we need to pause after exception
                     }
                 }
-            });
+            }, String.format(threadNameFmt, i));
             threads[i].setDaemon(true);
         }}
 
@@ -150,9 +151,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
             barrier.await();
             return true;
         } catch (InterruptedException e) {
-            InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.toString());
         } catch (BrokenBarrierException e) {
-            InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.toString());
         }
 
         return false;
@@ -166,7 +167,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                 thread.interrupt();
                 thread.join();
             } catch (InterruptedException e) {
-                InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.toString());
             }
         }
     }

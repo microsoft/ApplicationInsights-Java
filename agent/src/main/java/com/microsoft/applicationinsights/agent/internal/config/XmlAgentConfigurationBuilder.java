@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -110,9 +111,10 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 try {
                     boolean debugMode = Boolean.valueOf(debugModeAsString);
                     agentConfiguration.setDebugMode(debugMode);
-                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Instrumentation debug mode set to '%s'", debugMode);
-                } catch (Throwable t) {
-                    InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to parse debug attribute '%s'", debugModeAsString);
+                    InternalAgentLogger.INSTANCE.warn("Instrumentation debug mode set to '%s'", debugMode);
+                } catch (Exception e) {
+                    InternalAgentLogger.INSTANCE.error("Failed to parse debug attribute '%s, Exception : %s'", debugModeAsString,
+                            ExceptionUtils.getStackTrace(e));
                 }
             }
 
@@ -145,8 +147,15 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
             agentConfiguration.setRequestedClassesToInstrument(classesToInstrument);
             return agentConfiguration;
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable e) {
-            InternalAgentLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'" + e.getMessage());
+            try {
+                InternalAgentLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'",  e.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
             return null;
         }
     }
@@ -362,7 +371,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             if (!StringUtils.isNullOrEmpty(valueStr)) {
                 try {
                     thresholdInMS = Long.valueOf(valueStr);
-                } catch (Throwable t) {
+                } catch (Exception e) {
                     InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", THRESHOLD_ATTRIBUTE, methodElement.getTagName());
                 }
             }

@@ -87,8 +87,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
         if (idx >= 0) {
             return value.substring(0, idx);
         } else {
-            return value;
-        }
+            return value;  
     }
     // endregion Private
 }

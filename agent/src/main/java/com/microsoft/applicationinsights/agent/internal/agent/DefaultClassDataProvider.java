@@ -139,7 +139,7 @@ class DefaultClassDataProvider implements ClassDataProvider {
 					ClassInstrumentationData newClassInstrumentationData = new ClassInstrumentationData(className, classInstrumentationData.getClassType(), classInstrumentationData.getClassVisitorFactory());
 					newClassInstrumentationData.setMethodInstrumentationInfo(classInstrumentationData.getMethodInstrumentationInfo());
 					classInstrumentationData = newClassInstrumentationData;
-					InternalAgentLogger.INSTANCE.trace("Adding " + classInstrumentationData.getFullPackageName());
+					InternalAgentLogger.INSTANCE.trace("Adding %s", classInstrumentationData.getFullPackageName());
                }
             }
         }

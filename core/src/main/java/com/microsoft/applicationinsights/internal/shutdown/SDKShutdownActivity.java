@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.shutdown;
 
+import java.io.Closeable;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -44,11 +46,12 @@ public enum SDKShutdownActivity {
      * 1. The class should not throw an exception
      * 2. The class 'run' method should exit as soon as possible
      */
-    private static class SDKShutdownThread extends Thread {
+    private static class SDKShutdownAction implements Runnable {
         private boolean stopped = false;
 
-        private final ArrayList<ChannelFetcher> fetchers = new ArrayList<ChannelFetcher>();
-        private final ArrayList<Stoppable> stoppables = new ArrayList<Stoppable>();
+        private final List<ChannelFetcher> fetchers = new ArrayList<ChannelFetcher>();
+        private final List<Stoppable> stoppables = new ArrayList<Stoppable>();
+        private final List<Closeable> closeables = new ArrayList<Closeable>();
 
         public synchronized void register(ChannelFetcher fetcher) {
             fetchers.add(fetcher);
@@ -58,7 +61,8 @@ public enum SDKShutdownActivity {
             stoppables.add(stoppable);
         }
 
-        public SDKShutdownThread() {
+        public synchronized void register(Closeable closeable) {
+            closeables.add(closeable);
         }
 
         @Override
@@ -71,6 +75,7 @@ public enum SDKShutdownActivity {
             try {
                 stopChannels();
                 stopStoppables();
+                closeClosables();
             } finally {
                 // As the last step, the SDK gracefully closes the Internal Logger
                 stopInternalLogger();
@@ -85,7 +90,10 @@ public enum SDKShutdownActivity {
         private void stopInternalLogger() {
             try {
                 InternalLogger.INSTANCE.stop();
+            } catch (ThreadDeath td) {
+            	throw td;
             } catch (Throwable t) {
+                // chomp
             }
         }
 
@@ -99,9 +107,16 @@ public enum SDKShutdownActivity {
                     if (channelToStop != null) {
                         channelToStop.stop(1L, TimeUnit.SECONDS);
                     }
+                } catch (ThreadDeath td) {
+                	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.getMessage());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    try {
+                        InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
         }
@@ -112,31 +127,64 @@ public enum SDKShutdownActivity {
             for (Stoppable stoppable : stoppables) {
                 try {
                     stoppable.stop(1L, TimeUnit.SECONDS);
+                } catch (ThreadDeath td) {
+                	throw td;
                 } catch (Throwable t) {
-                    InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.getMessage());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    try {
+                        InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.toString());                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
+                }
+            }
+        }
+        private void closeClosables() {
+            for (Closeable c : closeables) {
+                try {
+                    c.close();
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
+                    try {
+                        InternalLogger.INSTANCE.error("Failed to close closeable class '%s': %s", c.getClass().getName(), t.toString());
+                        InternalLogger.INSTANCE.trace("Stack trace: %s", ExceptionUtils.getStackTrace(t));
+                    } catch (ThreadDeath td2) {
+                        throw td2;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
                 }
             }
         }
     }
 
-    private static volatile SDKShutdownThread shutdownThread;
+    private static volatile SDKShutdownAction shutdownAction;
 
     public void register(ChannelFetcher fetcher) {
-        getShutdownThread().register(fetcher);
+        getShutdownAction().register(fetcher);
     }
 
     public void register(Stoppable stoppable) {
-        getShutdownThread().register(stoppable);
+        getShutdownAction().register(stoppable);
     }
 
-    private SDKShutdownThread getShutdownThread() {
-        if (shutdownThread == null) {
+    public void register(Closeable closable) {
+        getShutdownAction().register(closable);
+    }
+
+    public void stopAll() {
+        getShutdownAction().run();
+    }
+
+    private SDKShutdownAction getShutdownAction() {
+        if (shutdownAction == null) {
             synchronized (this) {
-                if (shutdownThread == null) {
+                if (shutdownAction == null) {
                     try {
-                        shutdownThread = new SDKShutdownThread();
-                        Runtime.getRuntime().addShutdownHook(shutdownThread);
+                        shutdownAction = new SDKShutdownAction();
+                        Runtime.getRuntime().addShutdownHook(new Thread(shutdownAction, SDKShutdownActivity.class.getSimpleName()));
                     } catch (Exception e) {
                         InternalLogger.INSTANCE.error("Error while adding shutdown hook in getShutDownThread call");
                         InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
@@ -145,6 +193,6 @@ public enum SDKShutdownActivity {
             }
         }
 
-        return shutdownThread;
+        return shutdownAction;
     }
 }

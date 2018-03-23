@@ -31,6 +31,25 @@ include 'samples'
 include 'test:performance'
 include 'test:webapps:bookstore-spring'
 
+// Projects for smokeTests
+include ':test:smoke'
+include ':test:smoke:appServers'
+include ':test:smoke:appServers:Tomcat.7'
+include ':test:smoke:appServers:Tomcat.8'
+include ':test:smoke:appServers:Tomcat.8.5'
+include ':test:smoke:appServers:JBossEAP.7'
+include ':test:smoke:testApps'
+
+include ':test:smoke:framework:testCore'
+include ':test:smoke:framework:utils'
+include ':test:smoke:framework:testCases'
+include ':test:smoke:framework:fakeIngestion:servlet'
+include ':test:smoke:framework:fakeIngestion:standalone'
+
+include ':test:smoke:testApps:PerfTestApp'
+//include ':test:smoke:testApps:SimpleCalculator'
+include ':test:smoke:testApps:CoreAndFilter'
+
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }

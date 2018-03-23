@@ -121,7 +121,7 @@ public enum InternalLogger {
             if (loggerOutput != null) {
                 loggerOutput.close();
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
 
         // Prevent further logging of messages
@@ -153,7 +153,7 @@ public enum InternalLogger {
     public void error(String message, Object... args) {
         try {
             log(LoggingLevel.ERROR, message, args);
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
     }
 
@@ -166,7 +166,7 @@ public enum InternalLogger {
     public void warn(String message, Object... args) {
         try {
             log(LoggingLevel.WARN, message, args);
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
     }
 
@@ -179,7 +179,7 @@ public enum InternalLogger {
     public void info(String message, Object... args) {
         try {
             log(LoggingLevel.INFO, message, args);
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
     }
 
@@ -192,7 +192,7 @@ public enum InternalLogger {
     public void trace(String message, Object... args) {
         try {
             log(LoggingLevel.TRACE, message, args);
-        } catch (Throwable t) {
+        } catch (Exception e) {
         }
     }
 
@@ -226,7 +226,8 @@ public enum InternalLogger {
             currentDateAsString = dateFormatter.format(new Date());
         }
         String formattedMessage = String.format(message, args);
-        String theMessage = String.format("%s %s, %d: %s", prefix, currentDateAsString, Thread.currentThread().getId(), formattedMessage);
+        final Thread thisThread = Thread.currentThread();
+        String theMessage = String.format("%s %s, %d(%s): %s", prefix, currentDateAsString, thisThread.getId(), thisThread.getName(), formattedMessage);
         return theMessage;
     }
 
@@ -262,7 +263,7 @@ public enum InternalLogger {
                 try {
                     loggerOutput = new FileLoggerOutput(loggerData);
                 } catch (Exception e) {
-                    onInitializationError(String.format("SDK Internal Logger internal error while initializing 'FILE': '%s'.", e.getMessage()));
+                    onInitializationError(String.format("SDK Internal Logger internal error while initializing 'FILE': '%s'.", e.toString()));
                 }
                 return;
 

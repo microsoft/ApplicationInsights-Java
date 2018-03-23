@@ -79,18 +79,18 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                     try {
                         send(telemetryClient, displayAndValues.getKey(), value);
                     } catch (Exception e) {
-                        InternalLogger.INSTANCE.error("Error while sending JMX data: '%s'", e.getMessage());
+                        InternalLogger.INSTANCE.error("Error while sending JMX data: '%s'", e.toString());
                         InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                     }
                 }
             }
         } catch (Exception e) {
             if (firstTime) {
-                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s', The PC will be ignored", e.getMessage());
+                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s', The PC will be ignored", e.toString());
                 InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 relevant = false;
             } else {
-                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s'", e.getMessage());
+                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s'", e.toString());
                 InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             }
         } finally {

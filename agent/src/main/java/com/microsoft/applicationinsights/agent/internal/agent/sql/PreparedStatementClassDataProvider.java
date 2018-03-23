@@ -70,8 +70,15 @@ public final class PreparedStatementClassDataProvider {
             doAdd(factory, "com/microsoft/sqlserver/jdbc/SQLServerPreparedStatement");
 
             addSqlite();
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.getMessage());
+            try {
+                InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 

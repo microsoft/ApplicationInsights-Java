@@ -56,16 +56,16 @@ public class FixedRateSamplingTelemetryProcessorTest {
     }
 
     @Test
-    public void telemetryItemSamplingIsSkippedWhenSetByUser() {
+    public void telemetryItemSamplingWorksWhenSetByUser() {
         FixedRateSamplingTelemetryProcessor processor = new FixedRateSamplingTelemetryProcessor();
-        processor.setSamplingPercentage("0.0");
+        processor.setSamplingPercentage("100.0");
         Telemetry requestTelemetry = new RequestTelemetry();
-        ((SupportSampling)requestTelemetry).setSamplingPercentage(100.0);
+        ((SupportSampling)requestTelemetry).setSamplingPercentage(0.0);
         int sentCount = 0;
         if (processor.process(requestTelemetry)) {
             ++sentCount;
         }
-        Assert.assertEquals(1, sentCount);
+        Assert.assertEquals(0, sentCount);
     }
 
     @Test

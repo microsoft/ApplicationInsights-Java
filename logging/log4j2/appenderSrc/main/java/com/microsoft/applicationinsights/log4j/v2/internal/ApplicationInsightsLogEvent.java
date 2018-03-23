@@ -75,6 +75,10 @@ public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent 
         addLogEventProperty("ThreadName", logEvent.getThreadName(), metaData);
         addLogEventProperty("TimeStamp", getFormattedDate(logEvent.getTimeMillis()), metaData);
 
+        if (isException()) {
+            addLogEventProperty("Logger Message", getMessage(), metaData);
+        }
+
         if (logEvent.isIncludeLocation()) {
             StackTraceElement stackTraceElement = logEvent.getSource();
 

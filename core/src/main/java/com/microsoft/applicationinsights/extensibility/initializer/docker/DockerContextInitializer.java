@@ -23,7 +23,10 @@ package com.microsoft.applicationinsights.extensibility.initializer.docker;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.*;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.Constants;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContext;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContextPoller;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.FileFactory;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -105,7 +108,7 @@ public class DockerContextInitializer implements TelemetryInitializer {
         try {
             fileFactory.create(sdkInfoFilePath, sdkInfo);
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to write SDK info file for Docker awareness. Error: " + e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to write SDK info file for Docker awareness. Error: %s", e.toString());
         }
     }
 }

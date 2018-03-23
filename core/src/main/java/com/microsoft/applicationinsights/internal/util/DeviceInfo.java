@@ -65,7 +65,7 @@ public class DeviceInfo
         }
         catch (UnknownHostException e)
         {
-            InternalLogger.INSTANCE.error("Failed to get canonical host name, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to get canonical host name, exception: %s", e.toString());
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
         return null;

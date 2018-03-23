@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.agent.redis;
 
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.Map;
@@ -31,6 +32,7 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTrans
 import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision;
 import com.microsoft.applicationinsights.agent.internal.agent.MethodVisitorFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
+
 /**
  * Created by gupele on 8/6/2015.
  */
@@ -58,8 +60,16 @@ public final class JedisClassDataProvider {
             data.addAllMethods(false, true, methodVisitorFactory);
 
             classesToInstrument.put(JEDIS_CLASS_NAME, data);
+        } catch (ThreadDeath td) {
+            throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.logAlways(InternalAgentLogger.LoggingLevel.ERROR, "Failed to load instrumentation for Jedis: '%s':'%s'", t.getClass().getName(), t.getMessage());
+            try {
+                InternalAgentLogger.INSTANCE.error("Failed to load instrumentation for Jedis: '%s'", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 }

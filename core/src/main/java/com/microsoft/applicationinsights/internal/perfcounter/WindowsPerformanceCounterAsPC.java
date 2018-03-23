@@ -77,9 +77,16 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                     InternalLogger.INSTANCE.trace("Sent performance counter for '%s'(%s, %s, %s): '%s'",
                             pcData.displayName, pcData.categoryName, pcData.counterName, pcData.instanceName, value);
                 }
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.getMessage());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                try {
+                    InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.toString());                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
         }
     }
@@ -111,9 +118,17 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                         setInstanceName(instance).
                         setDisplayName(category + " " + counter);
                 pcs.put(key, data);
+            } catch (ThreadDeath td) {
+                throw td;
             } catch (Throwable e) {
-                InternalLogger.INSTANCE.error("Exception while registering windows performance counter as PC");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                try {
+                    InternalLogger.INSTANCE.error("Exception while registering windows performance counter as PC");
+                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
             }
         }
     }

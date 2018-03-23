@@ -153,7 +153,7 @@ public final class FileLoggerOutput implements LoggerOutput {
                 logFileProxy.writeLine(message);
             }
         } catch (IOException e) {
-            fallbackLoggerOutput.log(String.format("Failed to write to log to file exception: %s. Message '%s'", e.getMessage(), message));
+            fallbackLoggerOutput.log(String.format("Failed to write to log to file exception: %s. Message '%s'", e.toString(), message));
         }
     }
 
@@ -192,7 +192,7 @@ public final class FileLoggerOutput implements LoggerOutput {
                 currentLogger.close();
             } catch (IOException e) {
                 // Failed to close but that should not stop us
-                fallbackLoggerOutput.log(String.format("Failed to close log file, exception: %s", e.getMessage()));
+                fallbackLoggerOutput.log(String.format("Failed to close log file, exception: %s", e.toString()));
             }
         }
 
@@ -210,7 +210,7 @@ public final class FileLoggerOutput implements LoggerOutput {
                 currentLogger.delete();
             } catch (Exception e) {
                 // Failed to delete but that should not stop us
-                fallbackLoggerOutput.log(String.format("Failed to delete log file, exception: %s", e.getMessage()));
+                fallbackLoggerOutput.log(String.format("Failed to delete log file, exception: %s", e.toString()));
             }
         }
 
@@ -228,7 +228,7 @@ public final class FileLoggerOutput implements LoggerOutput {
             attachToExisting(oldLogs);
         } catch (Exception e) {
             // Failed to delete but that should not stop us
-            fallbackLoggerOutput.log(String.format("Failed to delete old log file, exception: %s", e.getMessage()));
+            fallbackLoggerOutput.log(String.format("Failed to delete old log file, exception: %s", e.toString()));
         }
     }
 

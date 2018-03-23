@@ -30,6 +30,7 @@ import java.io.InputStream;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The JAXB implementation of the {@link com.microsoft.applicationinsights.internal.config.AppInsightsConfigurationBuilder}
@@ -51,9 +52,11 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
             return applicationInsights;
         } catch (JAXBException e) {
             if (e.getCause() != null) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getCause().getMessage());
+                InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
+                        ExceptionUtils.getStackTrace(e));
             } else {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to parse configuration file: '%s'", e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
+                        ExceptionUtils.getStackTrace(e));
             }
         } catch (NullPointerException e) {
             e.printStackTrace();

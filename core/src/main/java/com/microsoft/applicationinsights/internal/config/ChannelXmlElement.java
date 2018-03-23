@@ -41,6 +41,7 @@ public class ChannelXmlElement {
     private boolean developerMode;
     private boolean throttling = true;
     private String maxTransmissionStorageFilesCapacityInMB;
+    private String maxInstantRetry;
     private String type = "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
 
     public String getType() {
@@ -106,6 +107,16 @@ public class ChannelXmlElement {
         this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
     }
 
+
+    public String getMaxInstantRetry() {
+        return maxInstantRetry;
+    }
+
+    @XmlElement(name="MaxInstantRetry")
+    public void setMaxInstantRetry(String maxInstantRetry) {
+        this.maxInstantRetry = maxInstantRetry;
+    }
+
     public Map<String, String> getData() {
         HashMap<String, String> data = new HashMap<String, String>();
         if (developerMode) {
@@ -115,6 +126,7 @@ public class ChannelXmlElement {
         if (!Strings.isNullOrEmpty(endpointAddress)) {
             data.put("EndpointAddress", endpointAddress);
         }
+
 
         if (!Strings.isNullOrEmpty(maxTelemetryBufferCapacity)) {
             data.put("MaxTelemetryBufferCapacity", maxTelemetryBufferCapacity);
@@ -126,6 +138,10 @@ public class ChannelXmlElement {
 
         if (!Strings.isNullOrEmpty(maxTransmissionStorageFilesCapacityInMB)) {
             data.put("MaxTransmissionStorageFilesCapacityInMB", maxTransmissionStorageFilesCapacityInMB);
+        }
+
+        if (!Strings.isNullOrEmpty(maxInstantRetry)) {
+            data.put("MaxInstantRetry", maxInstantRetry);
         }
 
         data.put("Throttling", throttling ? "true" : "false");

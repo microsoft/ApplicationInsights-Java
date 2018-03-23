@@ -39,8 +39,15 @@ public class AgentConfigurationBuilderFactory {
             if (builder instanceof AgentConfigurationBuilder) {
                 return (AgentConfigurationBuilder)builder;
             }
+        } catch (ThreadDeath td) {
+        	throw td;
         } catch (Throwable t) {
-            InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'" + t.getMessage());
+            try {
+                InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'", t.toString());            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
 
         return null;

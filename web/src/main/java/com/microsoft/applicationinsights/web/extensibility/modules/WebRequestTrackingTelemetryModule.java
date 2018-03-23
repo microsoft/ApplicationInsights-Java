@@ -100,7 +100,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
-            InternalLogger.INSTANCE.error("Telemetry module " + moduleClassName + " onBeginRequest failed with exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Telemetry module %s onBeginRequest failed with exception: %s", moduleClassName, e.toString());
         }
     }
 
@@ -125,7 +125,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
             ApplicationInsightsHttpResponseWrapper response = ((ApplicationInsightsHttpResponseWrapper)res);
             if (response != null) {
-                telemetry.setSuccess(response.getStatus() < 400 || response.getStatus() == 401 );
+                telemetry.setSuccess(response.getStatus() < 400);
                 telemetry.setResponseCode(Integer.toString(response.getStatus()));
             } else {
                 InternalLogger.INSTANCE.error("Failed to get response status for request ID: %s", telemetry.getId());
@@ -139,7 +139,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             telemetryClient.track(telemetry);
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
-            InternalLogger.INSTANCE.error("Telemetry module " + moduleClassName + " onEndRequest failed with exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Telemetry module %s onEndRequest failed with exception: %s", moduleClassName, e.toString());
         }
     }
 
@@ -160,8 +160,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
             isInitialized = true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to initialize telemetry module " + this.getClass().getSimpleName() + ". Exception: %s.", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to initialize telemetry module %s. Exception: %s.", this.getClass().getSimpleName(), e.toString());
         }
     }
 

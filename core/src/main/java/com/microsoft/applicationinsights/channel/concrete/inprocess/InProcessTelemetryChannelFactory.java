@@ -33,10 +33,18 @@ import com.microsoft.applicationinsights.internal.channel.common.*;
  * Created by gupele on 1/15/2015.
  */
 final class InProcessTelemetryChannelFactory implements TransmitterFactory {
+	private final int DEFAULT_RETRY = 3;
+	@Override
+	public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled) {
+		return create(endpoint, maxTransmissionStorageCapacity, throttlingIsEnabled, DEFAULT_RETRY);
+	}
     @Override
-    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled) {
-        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
-
+    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
+        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);     	
+        transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
+        transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
+        transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
+        transmissionPolicyManager.setMaxInstantRetries(maxInstantRetries);
         // An active object with the network sender
         TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, transmissionPolicyManager);
 
@@ -51,6 +59,7 @@ final class InProcessTelemetryChannelFactory implements TransmitterFactory {
         // The dispatcher works with the two active senders
         TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[] {networkSender, activeFileSystemOutput});
         actualNetworkSender.setTransmissionDispatcher(dispatcher);
+        
 
         // The loader works with the file system loader as the active one does
         TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, stateFetcher, dispatcher);

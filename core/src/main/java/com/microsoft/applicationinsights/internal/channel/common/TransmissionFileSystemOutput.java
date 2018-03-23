@@ -78,7 +78,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private final static int DELETE_TIMEOUT_ON_FAILURE_IN_MILLS = 100;
 
     private final static int DEFAULT_CAPACITY_MEGABYTES = 10;
-    private final static int MAX_CAPACITY_MEGABYTES = 100;
+    private final static int MAX_CAPACITY_MEGABYTES = 1000;
     private final static int MIN_CAPACITY_MEGABYTES = 1;
     private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacityInMB";
 
@@ -135,6 +135,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     @Override
     public boolean send(Transmission transmission) {
         if (size.get() >= capacityInKB) {
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Persistent storage max capacity has been reached; currently at %s KB. Telemetry will be lost, please set the MaxTransmissionStorageFilesCapacityInMB property in the configuration file.", size.get());
             return false;
         }
 
@@ -151,6 +152,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             return false;
         }
 
+        InternalLogger.INSTANCE.info("Data persisted to file. To be sent when the network is available.");
         return true;
     }
 
@@ -250,11 +252,11 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             input = new ObjectInputStream (buffer);
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to load transmission, file not found, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to load transmission, file not found, exception: %s", e.toString());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to load transmission, non transmission, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to load transmission, non transmission, exception: %s", e.toString());
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to load transmission, io exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to load transmission, io exception: %s", e.toString());
         } finally{
             if (input != null) {
                 try {
@@ -275,7 +277,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             size.addAndGet(fileLength);
             return true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Rename To Permanent Name failed, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Rename To Permanent Name failed, exception: %s", e.toString());
         }
 
         return false;
@@ -289,7 +291,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             size.addAndGet(-renamedFile.length());
             transmissionFile = renamedFile;
         } catch (Exception ignore) {
-            InternalLogger.INSTANCE.error("Rename To Temporary Name failed, exception: %s", ignore.getMessage());
+            InternalLogger.INSTANCE.error("Rename To Temporary Name failed, exception: %s", ignore.toString());
             // Consume the exception, since there isn't anything 'smart' to do now
         }
 
@@ -304,7 +306,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             try{
                 output.writeObject(transmission);
             } catch (IOException e) {
-                InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.getMessage());
+                InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.toString());
             } finally{
                 try {
                     output.close();
@@ -314,7 +316,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             }
             return true;
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.toString());
         }
 
         return false;
@@ -325,7 +327,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         try {
             file = File.createTempFile(TRANSMISSION_FILE_PREFIX, null, folder);
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to create temporary file, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create temporary file, exception: %s", e.toString());
         }
 
         return Optional.fromNullable(file);

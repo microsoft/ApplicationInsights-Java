@@ -22,9 +22,9 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
@@ -38,11 +38,11 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  * Created by gupele on 12/22/2014.
  */
 public final class ActiveTransmissionFileSystemOutput implements TransmissionOutput {
+    private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
     private final ThreadPoolExecutor threadPool;
-
     private final TransmissionOutput actualOutput;
-
     private final TransmissionPolicyStateFetcher transmissionPolicy;
+    private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
     public ActiveTransmissionFileSystemOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
         Preconditions.checkNotNull(transmissionPolicy, "transmissionPolicy must be a non-null value");
@@ -52,14 +52,7 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
         this.transmissionPolicy = transmissionPolicy;
 
         threadPool = ThreadPoolUtils.newLimitedThreadPool(1, 3, 20L, 1024);
-        threadPool.setThreadFactory(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        threadPool.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(ActiveTransmissionFileSystemOutput.class, instanceId));
     }
 
     @Override
@@ -75,6 +68,8 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
                 public void run() {
                     try {
                         actualOutput.send(transmission);
+                    } catch (ThreadDeath td) {
+                        throw td;
                     } catch (Throwable throwable) {
                         // Avoid un-expected exit of thread
                     }

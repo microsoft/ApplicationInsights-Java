@@ -45,6 +45,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Initializer class for configuration instances.
@@ -88,7 +89,7 @@ public enum TelemetryConfigurationFactory {
 
             ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
             if (applicationInsightsConfig == null) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to read configuration file");
+                InternalLogger.INSTANCE.error("Failed to read configuration file. Application Insights XML file is null...setting default configuration");
                 setMinimumConfiguration(applicationInsightsConfig, configuration);
                 return;
             }
@@ -111,7 +112,7 @@ public enum TelemetryConfigurationFactory {
 
             initializeComponents(configuration);
         } catch (Exception e) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Failed to initialize configuration, exception: %s", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to initialize configuration, exception: %s", ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -258,7 +259,7 @@ public enum TelemetryConfigurationFactory {
                 configuration.setInstrumentationKey(ikey);
             }
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.toString());
         }
     }
 
@@ -302,7 +303,7 @@ public enum TelemetryConfigurationFactory {
                     try {
                         awareModule.addConfigurationData(performanceConfigurationData);
                     } catch (Exception e) {
-                        InternalLogger.INSTANCE.error("Failed to add configuration data to performance module: '%s'", e.getMessage());
+                        InternalLogger.INSTANCE.error("Failed to add configuration data to performance module: '%s'", e.toString());
                     }
                 }
                 modules.add(module);
@@ -386,11 +387,11 @@ public enum TelemetryConfigurationFactory {
                         InternalLogger.INSTANCE.trace("Failed to register JMX performance counter '%s'", entry.getKey());
                     }
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to register JMX performance counter '%s': '%s'", entry.getKey(), e.getMessage());
+                    InternalLogger.INSTANCE.error("Failed to register JMX performance counter '%s': '%s'", entry.getKey(), e.toString());
                 }
             }
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to register JMX performance counters: '%s'", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to register JMX performance counters: '%s'", e.toString());
         }
     }
 
@@ -425,7 +426,7 @@ public enum TelemetryConfigurationFactory {
             configuration.setChannel(channel);
             return true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.getMessage());
+            InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.toString());
             TelemetryChannel channel = new InProcessTelemetryChannel();
             channel.setSampler(telemetrySampler);
             configuration.setChannel(channel);
@@ -444,11 +445,11 @@ public enum TelemetryConfigurationFactory {
         for (TelemetryProcessorXmlElement classData : classesFromConfigration) {
             TelemetryProcessor processor = creator.Create(classData);
             if (processor == null) {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "Processor " + classData.getType() + " failure during initialization");
+                InternalLogger.INSTANCE.error("Processor %s failure during initialization", classData.getType());
                 continue;
             }
 
-            InternalLogger.INSTANCE.trace("Processor " + classData.getType() + " was added successfully");
+            InternalLogger.INSTANCE.trace("Processor %s was added successfully", classData.getType());
             list.add(processor);
         }
     }
