@@ -28,25 +28,12 @@ import javax.servlet.http.Cookie;
  */
 public class SessionCookie extends com.microsoft.applicationinsights.web.internal.cookies.Cookie {
 
-    // region Consts
-
     public static final String COOKIE_NAME = "ai_session";
-    public static final int SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES = 30;
-
-    // endregion Consts
-
-    // region Members
-
     private String sessionId;
-
-    // endregion Members
-
-    // region Ctor
 
     /**
      * Constructs new SessionCookie object from the given cookie.
      * @param cookie The http servlet cookie.
-     * @throws Exception Thrown when the cookie information cannot be parsed.
      */
     public SessionCookie(Cookie cookie) {
         this(parseCookie(cookie));
@@ -60,10 +47,6 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
         this.sessionId = sessionId;
     }
 
-    // endregion Ctor
-
-    // region Public
-
     /**
      * Gets the session id.
      * @return The session id.
@@ -71,10 +54,6 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
     public String getSessionId() {
         return sessionId;
     }
-
-    // endregion Public
-
-    // region Private
 
     /**
      * Parses the given cookie.
@@ -90,5 +69,4 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
             return value;  
         }
     }
-    // endregion Private
 }
