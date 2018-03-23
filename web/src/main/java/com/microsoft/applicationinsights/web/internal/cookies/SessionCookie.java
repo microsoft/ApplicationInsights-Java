@@ -88,6 +88,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
             return value.substring(0, idx);
         } else {
             return value;  
+        }
     }
     // endregion Private
 }
