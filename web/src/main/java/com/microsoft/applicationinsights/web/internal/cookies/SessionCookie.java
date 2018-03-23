@@ -21,11 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal.cookies;
 
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
 import javax.servlet.http.Cookie;
-import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 
 /**
  * Created by yonisha on 2/4/2015.
@@ -34,7 +30,6 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
 
     // region Consts
 
-    private static final int UPDATE_TIMEOUT_IN_MINUTES = 5;
     public static final String COOKIE_NAME = "ai_session";
     public static final int SESSION_DEFAULT_EXPIRATION_TIMEOUT_IN_MINUTES = 30;
 
@@ -43,22 +38,6 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
     // region Members
 
     private String sessionId;
-    private Date acquisitionDate;
-    private Date renewalDate;
-
-    private enum CookieFields {
-        SESSION_ID(0),
-        SESSION_ACQUISITION_DATE(1),
-        SESSION_LAST_UPDATE_DATE(2);
-
-        private final int value;
-
-        CookieFields(int value) {
-            this.value = value;
-        }
-
-        public int getValue() { return value; }
-    }
 
     // endregion Members
 
@@ -69,8 +48,8 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
      * @param cookie The http servlet cookie.
      * @throws Exception Thrown when the cookie information cannot be parsed.
      */
-    public SessionCookie(Cookie cookie) throws Exception {
-        parseCookie(cookie);
+    public SessionCookie(Cookie cookie) {
+        this(parseCookie(cookie));
     }
 
     /**
@@ -78,17 +57,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
      * @param sessionId The session ID.
      */
     public SessionCookie(String sessionId) {
-        String now = String.valueOf(System.currentTimeMillis());
-        String[] cookieRawValues = new String[] { sessionId, now, now };
-        String formattedCookie = SessionCookie.formatCookie(cookieRawValues);
-
-        Cookie cookie = new Cookie(COOKIE_NAME, formattedCookie);
-
-        try {
-            parseCookie(cookie);
-        } catch (Exception e) {
-            // This exception is not expected in any case.
-        }
+        this.sessionId = sessionId;
     }
 
     // endregion Ctor
@@ -103,53 +72,6 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
         return sessionId;
     }
 
-    /**
-     * Gets the session acquisition date.
-     * @return The session acquisition date.
-     */
-    public Date getSessionAcquisitionDate() {
-        return acquisitionDate;
-    }
-
-    /**
-     * Gets the session renewal date.
-     * @return The session renewal date.
-     */
-    public Date getSessionRenewalDate() {
-        return renewalDate;
-    }
-
-    /**
-     * Determines if the session has expired.
-     * @param sessionTimeoutInMinutes The session timeout in minutes.
-     * @return True if the session has expired, false otherwise.
-     */
-    public boolean isSessionExpired(int sessionTimeoutInMinutes) {
-        Date expirationDate = DateTimeUtils.addToDate(
-                this.getSessionRenewalDate(),
-                Calendar.MINUTE,
-                sessionTimeoutInMinutes);
-        Date now = new Date();
-
-        return  now.after(expirationDate);
-    }
-
-    /**
-     * Returns a value indicating whether the session cookie is up-to-date.
-     * Session cookie is considered up-to-date when the last renewal time is less than
-     * {@literal UPDATE_TIMEOUT_IN_MINUTES} minutes.
-     * @return True if the session cookie up-to-date.
-     */
-    public boolean isSessionCookieUpToDate() {
-        Date expectedRenewalTime = DateTimeUtils.addToDate(
-                this.getSessionRenewalDate(),
-                Calendar.MINUTE,
-                UPDATE_TIMEOUT_IN_MINUTES);
-        Date now = new Date();
-
-        return now.before(expectedRenewalTime);
-    }
-
     // endregion Public
 
     // region Private
@@ -157,45 +79,15 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
     /**
      * Parses the given cookie.
      * @param cookie The cookie contains the session information.
-     * @throws Exception Thrown when the cookie information cannot be parsed.
+     * @return sessionId 
      */
-    private void parseCookie(Cookie cookie) throws Exception {
-        String[] split = cookie.getValue().split(RAW_COOKIE_SPLIT_DELIMITER);
-
-        if (split.length < CookieFields.values().length) {
-
-            // TODO: dedicated exception
-            String errorMessage = String.format("Session cookie is not in the correct format: %s", cookie.getValue());
-
-            throw new Exception(errorMessage);
-        }
-
-        try {
-            sessionId = split[CookieFields.SESSION_ID.getValue()];
-            acquisitionDate = parseDateWithBackwardCompatibility(split[CookieFields.SESSION_ACQUISITION_DATE.getValue()]);
-            renewalDate = parseDateWithBackwardCompatibility(split[CookieFields.SESSION_LAST_UPDATE_DATE.getValue()]);
-        } catch (Exception e) {
-            String errorMessage = String.format("Failed to parse session cookie with exception: %s", e.toString());
-
-            // TODO: dedicated exception
-            throw new Exception(errorMessage);
-        }
+    private static String parseCookie(Cookie cookie) {
+        String value = cookie.getValue();
+        int idx = value.indexOf(RAW_COOKIE_DELIMITER);
+        if (idx >= 0) {
+            return value.substring(0, idx);
+        } else {
+            return value;  
     }
-
-    /**
-     * JavaScript SDK was changed to store dates as long, rather than a readable date string.
-     * For backward compatibility, we first try to parse with the new format (time represented by long) and then backward
-     * compatibility for time represented by a string.
-     * @param dateStr The date to parse.
-     * @return The parsed date.
-     */
-    private Date parseDateWithBackwardCompatibility(String dateStr) throws ParseException {
-        try {
-            return new Date(Long.parseLong(dateStr));
-        } catch (NumberFormatException e) {
-            return DateTimeUtils.parseRoundTripDateString(dateStr);
-        }
-    }
-
     // endregion Private
 }

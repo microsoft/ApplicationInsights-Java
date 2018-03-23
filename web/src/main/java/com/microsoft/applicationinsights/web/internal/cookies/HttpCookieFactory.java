@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.web.internal.cookies;
 
-import java.util.Date;
 import javax.servlet.http.Cookie;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
@@ -46,12 +45,9 @@ public class HttpCookieFactory {
      */
     public static Cookie generateSessionHttpCookie(
             RequestTelemetryContext context, SessionContext sessionContext, int sessionTimeoutInMinutes) {
-        Date renewalDate = DateTimeUtils.getDateTimeNow();
-
+        
         String formattedCookie = SessionCookie.formatCookie(new String[] {
-                sessionContext.getId(),
-                String.valueOf(context.getSessionCookie().getSessionAcquisitionDate().getTime()),
-                String.valueOf(renewalDate.getTime())
+                sessionContext.getId()
         });
 
         Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
