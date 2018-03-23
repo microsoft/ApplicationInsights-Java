@@ -1,11 +1,5 @@
 package com.microsoft.applicationinsights.test.fakeingestion;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
@@ -14,6 +8,12 @@ import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class MockedAppInsightsIngestionServer implements AutoCloseable {
 	public static final int DEFAULT_PORT = 60606;

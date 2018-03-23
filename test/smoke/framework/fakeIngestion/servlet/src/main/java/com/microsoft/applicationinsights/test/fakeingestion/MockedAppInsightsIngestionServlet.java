@@ -1,5 +1,20 @@
 package com.microsoft.applicationinsights.test.fakeingestion;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.io.CharStreams;
+import com.google.gson.JsonSyntaxException;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.JsonHelper;
+
+import javax.annotation.concurrent.GuardedBy;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
@@ -9,21 +24,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.zip.GZIPInputStream;
-import javax.annotation.concurrent.GuardedBy;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.io.CharStreams;
-import com.google.gson.JsonSyntaxException;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.JsonHelper;
 
 public class MockedAppInsightsIngestionServlet extends HttpServlet {
     public static final long serialVersionUID = -1;
