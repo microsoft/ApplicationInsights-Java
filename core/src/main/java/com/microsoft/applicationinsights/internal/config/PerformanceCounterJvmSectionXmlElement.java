@@ -28,7 +28,6 @@ import java.util.HashMap;
 /**
  * Created by gupele on 8/8/2016.
  */
-@XmlRootElement(name="Jvm")
 public class PerformanceCounterJvmSectionXmlElement {
     private ArrayList<JvmXmlElement> jvmXmlElements;
     private boolean enabled = true;

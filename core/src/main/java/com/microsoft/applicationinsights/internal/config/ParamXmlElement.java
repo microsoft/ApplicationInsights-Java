@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by yonisha on 3/16/2015.
  */
-@XmlRootElement(name="Param")
 public class ParamXmlElement {
     private String name;
     private String value;

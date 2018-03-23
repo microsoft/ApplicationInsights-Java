@@ -31,7 +31,6 @@ import java.util.Map;
 /**
  * Created by gupele on 3/15/2015.
  */
-@XmlRootElement(name="Add")
 public class AddTypeXmlElement {
     private String type;
     private ArrayList<ParamXmlElement> paramElements = new ArrayList<ParamXmlElement>();
