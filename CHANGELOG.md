@@ -1,17 +1,24 @@
 # CHANGELOG
 
-## Version 2.0.1
-- Fix issue when dependency start time wasn't being recorded correctly
-- Fixed #533 HTTP Dependency Telemetry now matches with .NET SDK
+## Version 2.0.2 
+- Fix #616, added a way to have real time SDK Logs when logging on File.
+- Fix #609, fixes the inaccurate timestamp recorded with JMX Metrics.
+- Added a way to configure MaxInstantRetries from XML.
+- Added the ability to have cold SDK initialization (no logs except critical logAlways messages)
+- Fix issue when dependency start time was not being recorded correctly.
+- Fixed #533 HTTP Dependency Telemetry now matches with .NET SDK.
 - Introduced public method `httpMethodFinishedWithPath(String identifier, String method, String path, String correlationId, String uri, String target, int result, long delta)`
   to support instrumentation of Path of URI in HTTP requests.
 - `httpMethodFinished(String identifier, String method, String correlationId, String uri, String target, int result, int delta)` is now marked as deprecated
 - Logger Messages now being pushed as custom dimension when reporting exceptions via Loggers. (#400)
 - Enhanced Log4j2 appender to support basic parameters including Filters, Layouts and includeException. (#348)
-- Fixed performance issue on SDK startup.
 - Fixed PageView telemetry data not being reported. 
 - Fixed Issue #526 (NPE in MapUtil.copy())
 - Fixed Issue #513 (Memory leak in SDKShutdownActivity). This fix upgrades our Servlet version from 2.5 to 3.0. The SDK must now be run on an application server supporting Servlet 3.0.
+- Fixed Issue #504 (SDK initialization happens twice) to improve startup performance.
+
+## Version 2.0.1
+- Fix Inconsistency in artifact names in POM files
 
 ## Version 2.0.0
 - Upgraded logback dependency version to 1.2.3
