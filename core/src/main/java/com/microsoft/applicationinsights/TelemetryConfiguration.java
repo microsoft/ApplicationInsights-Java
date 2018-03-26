@@ -81,7 +81,7 @@ public final class TelemetryConfiguration {
      * scenario in SpringBoot.
      * @return {@link com.microsoft.applicationinsights.TelemetryConfiguration}
      */
-    public static TelemetryConfiguration getActiveWithoutInitializingCofig() {
+    public static TelemetryConfiguration getActiveWithoutInitializingConfig() {
         if (active == null) {
             synchronized (s_lock) {
                 if (active == null) {

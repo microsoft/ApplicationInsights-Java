@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -30,7 +29,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
-import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
@@ -399,7 +397,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testEmptyConfiguration() {
-        TelemetryConfiguration emptyConfig = TelemetryConfiguration.getActiveWithoutInitializingCofig();
+        TelemetryConfiguration emptyConfig = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         Assert.assertEquals(null, emptyConfig.getInstrumentationKey());
         Assert.assertEquals(null, emptyConfig.getChannel());
         Assert.assertEquals(0, emptyConfig.getTelemetryModules().size());
