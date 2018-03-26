@@ -3,19 +3,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Simple Telemetry</title>
+<title>Performance Counter Data</title>
 </head>
 <body>
-<h1>Simple Telemetry</h1>
-<form action="doCalc" autocomplete="off">
-	<input name="leftOperand" />
-	<select name="operator">
-		<option value="plus">+</option>
-		<option value="minus">−</option>
-		<!-- TODO: add other binary operators -->
-	</select>
-	<input name="rightOperand" />
-	<input type="submit" />
-</form>
+<h1>Performance Counter Data</h1>
 </body>
 </html>
