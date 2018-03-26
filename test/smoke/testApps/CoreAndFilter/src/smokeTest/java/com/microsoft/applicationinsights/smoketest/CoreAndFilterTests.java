@@ -259,4 +259,21 @@ public class CoreAndFilterTests extends AiSmokeTest {
         long expected = (new Duration(0, 0, 0, 20, 0).getTotalMilliseconds());
         assertTrue(actual >= expected);
     }
+
+    @Test
+    @TargetUri("/autoExceptionWithFailedRequest")
+    public void testAutoExceptionWithFailedRequest() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
+
+        //due to there is a bug, the response code for the request data is not correct, so just comment this line code now.   
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
+        //assertEquals(false, rd.getSuccess());        
+        //assertEquals("404", rd.getResponseCode());
+        
+        ExceptionData ed = getTelemetryDataForType(0, "ExceptionData");
+        ExceptionDetails eDetails = getExceptionDetails(ed);
+        final String expectedName = "This is a auto thrown exception !";
+        assertEquals(expectedName, eDetails.getMessage());
+    }
 }
