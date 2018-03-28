@@ -18,7 +18,7 @@ public interface HeartBeatProviderInterface {
 
   boolean addHeartBeatProperty(String propertyName, String propertyValue, boolean isHealthy);
 
-  boolean setHeartBeatPropertyName(String propertyName, String propertyValue, boolean isHealthy);
+  boolean setHeartBeatProperty(String propertyName, String propertyValue, boolean isHealthy);
 
   boolean isHeartBeatEnabled();
 

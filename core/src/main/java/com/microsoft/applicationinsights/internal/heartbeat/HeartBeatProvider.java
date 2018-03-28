@@ -2,6 +2,8 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable {
 
@@ -28,6 +32,8 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   private TelemetryClient telemetryClient;
 
   private ExecutorService executorService = Executors.newCachedThreadPool();
+
+  private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
   private volatile boolean isEnabled;
 
@@ -55,20 +61,67 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       this.telemetryClient = new TelemetryClient(configuration);
     }
 
-    //populate default payload
+    executorService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
+        getExcludedHeartBeatPropertyProviders(), this));
+
+    if (isEnabled) {
+      scheduledExecutorService.schedule(heartBeatPulse(), interval, TimeUnit.SECONDS);
+    }
 
   }
 
   @Override
   public boolean addHeartBeatProperty(String propertyName, String propertyValue,
       boolean isHealthy) {
-    return false;
+
+    boolean isAdded= false;
+    if (!StringUtils.isNullOrEmpty(propertyName) && !HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
+      try {
+        if (!heartbeatProperties.containsKey(propertyName)) {
+             HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
+             payload.setHealthy(isHealthy);
+             payload.setPayloadValue(propertyValue);
+             heartbeatProperties.put(propertyName, payload);
+             isAdded = true;
+        }
+      } catch (Exception e) {
+        InternalLogger.INSTANCE.warn("Failed to add the property %s value %s, stack trace is : %s," ,
+            propertyName, propertyValue, ExceptionUtils.getStackTrace(e));
+      }
+    }
+    else {
+      InternalLogger.INSTANCE.warn("cannot add property without property name");
+    }
+    return isAdded;
   }
 
   @Override
-  public boolean setHeartBeatPropertyName(String propertyName, String propertyValue,
+  public boolean setHeartBeatProperty(String propertyName, String propertyValue,
       boolean isHealthy) {
-    return false;
+
+    boolean setResult = false;
+    if (!StringUtils.isNullOrEmpty(propertyName) && !HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
+      try {
+        if (heartbeatProperties.containsKey(propertyName)) {
+          HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
+          payload.setHealthy(isHealthy);
+          payload.setPayloadValue(propertyValue);
+          heartbeatProperties.put(propertyName, payload);
+          setResult = true;
+        }
+        else {
+          throw new Exception("Cannot set heartbeat property without adding it first");
+        }
+      }
+      catch (Exception e) {
+        InternalLogger.INSTANCE.warn("failed to set heartbeat property name %s, value %s, "
+            + "stack trace is: %s", propertyName, propertyValue, ExceptionUtils.getStackTrace(e));
+      }
+    }
+    else {
+      InternalLogger.INSTANCE.warn("cannot set property without property name");
+    }
+    return setResult;
   }
 
   @Override
@@ -127,5 +180,14 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     catch (InterruptedException e) {
 
     }
+  }
+
+  private Runnable heartBeatPulse() {
+    return new Runnable() {
+      @Override
+      public void run() {
+
+      }
+    };
   }
 }
