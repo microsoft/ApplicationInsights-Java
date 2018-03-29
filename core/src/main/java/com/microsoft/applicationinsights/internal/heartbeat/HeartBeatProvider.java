@@ -2,17 +2,22 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable {
@@ -36,6 +41,8 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
   private volatile boolean isEnabled;
+
+  private Lock lock = new ReentrantLock();
 
   public HeartBeatProvider() {
     this.interval = HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL;
@@ -61,11 +68,19 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       this.telemetryClient = new TelemetryClient(configuration);
     }
 
-    executorService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
-        getExcludedHeartBeatPropertyProviders(), this));
+//    try {
+      executorService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
+          getExcludedHeartBeatPropertyProviders(), this));
+//    }
+//    catch (InterruptedException e) {
+//
+//    }
+//    catch (ExecutionException e) {
+//
+//    }
 
     if (isEnabled) {
-      scheduledExecutorService.schedule(heartBeatPulse(), interval, TimeUnit.SECONDS);
+      scheduledExecutorService.scheduleAtFixedRate(heartBeatPulse(), interval, interval, TimeUnit.SECONDS);
     }
 
   }
@@ -75,7 +90,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       boolean isHealthy) {
 
     boolean isAdded= false;
-    if (!StringUtils.isNullOrEmpty(propertyName) && !HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
+    if (!StringUtils.isEmpty(propertyName)) {
       try {
         if (!heartbeatProperties.containsKey(propertyName)) {
              HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
@@ -83,6 +98,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
              payload.setPayloadValue(propertyValue);
              heartbeatProperties.put(propertyName, payload);
              isAdded = true;
+             InternalLogger.INSTANCE.trace("added heartbeat property");
         }
       } catch (Exception e) {
         InternalLogger.INSTANCE.warn("Failed to add the property %s value %s, stack trace is : %s," ,
@@ -100,7 +116,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       boolean isHealthy) {
 
     boolean setResult = false;
-    if (!StringUtils.isNullOrEmpty(propertyName) && !HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
+    if (!StringUtils.isEmpty(propertyName)) {
       try {
         if (heartbeatProperties.containsKey(propertyName)) {
           HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
@@ -182,11 +198,50 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     }
   }
 
+  private void send() {
+
+    lock.lock();
+    try {
+      MetricTelemetry telemetry = (MetricTelemetry)gatherData();
+      telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
+      telemetryClient.trackMetric(telemetry);
+      InternalLogger.INSTANCE.trace("sent heart beat");
+    }
+    finally{
+      lock.unlock();
+    }
+  }
+
+  private Telemetry gatherData() {
+
+    MetricTelemetry heartbeat = new MetricTelemetry(HEARTBEAT_SYNTHETIC_METRIC_NAME, 0.0);
+    Map<String, String> property = heartbeat.getProperties();
+    for (Map.Entry<String, HeartBeatPropertyPayload> entry : heartbeatProperties.entrySet()) {
+      property.put(entry.getKey(), entry.getValue().getPayloadValue());
+      double currentValue = heartbeat.getValue();
+      currentValue += entry.getValue().isHealthy() ? 0 : 1;
+      heartbeat.setValue(currentValue);
+      ++heartbeatsSent;
+    }
+    return heartbeat;
+  }
+
   private Runnable heartBeatPulse() {
     return new Runnable() {
       @Override
       public void run() {
+        if (isEnabled) {
 
+          try {
+           send();
+          }
+          catch (Exception e) {
+            InternalLogger.INSTANCE.warn("Error occured while sending heartbeat");
+          }
+        }
+        else {
+          InternalLogger.INSTANCE.info("Heartbeat is disabled");
+        }
       }
     };
   }

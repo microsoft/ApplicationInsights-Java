@@ -7,8 +7,6 @@ public interface HeartBeatDefaultPayloadProviderInterface {
 
   String getName();
 
-  boolean isKeyword(String keyword);
-
   Callable<Boolean> setDefaultPayload(List<String> disableFields, HeartBeatProviderInterface provider);
 
 }

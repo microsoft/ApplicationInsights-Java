@@ -11,15 +11,7 @@ public class HeartbeatDefaultPayload {
 
   static {
     defaultPayloadProviders.add(new BaseDefaultHeartbeatPropertyProvider());
-  }
-
-  public static boolean isDefaultKeyword(String keyword) {
-    for (HeartBeatDefaultPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
-      if (payloadProvider.isKeyword(keyword)) {
-        return true;
-      }
-    }
-    return false;
+    defaultPayloadProviders.add(new WebAppsDefaultHeartbeatProvider());
   }
 
   public static Callable<Boolean> populateDefaultPayload(final List<String> disabledFields, final List<String>

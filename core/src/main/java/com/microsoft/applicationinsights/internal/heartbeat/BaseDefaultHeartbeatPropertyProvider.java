@@ -2,23 +2,24 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPayloadProviderInterface {
 
-  private final List<String> defaultFields;
+  private final Set<String> defaultFields;
 
   private UUID uniqueProcessId;
 
   private final String name = "Base";
 
   public BaseDefaultHeartbeatPropertyProvider() {
-    defaultFields = new ArrayList<>();
+    defaultFields = new HashSet<>();
     initializeDefaultFields(defaultFields);
   }
 
@@ -28,17 +29,12 @@ public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPay
   }
 
   @Override
-  public boolean isKeyword(String keyword) {
-    return containsIgnoreCase(keyword, defaultFields);
-  }
-
-  @Override
   public Callable<Boolean> setDefaultPayload(final List<String> disableFields,
       final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
       volatile boolean hasSetValues = false;
-      volatile List<String> enabledProperties = except(defaultFields, disableFields);
+      volatile Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
       @Override
       public Boolean call() {
         for (String fieldName : enabledProperties) {
@@ -60,6 +56,9 @@ public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPay
                 provider.addHeartBeatProperty(fieldName, getProcessSessionId(), true);
                 hasSetValues = true;
                 break;
+              default:
+                InternalLogger.INSTANCE.trace("Encountered unknown default property");
+                break;
             }
           }
           catch (Exception e) {
@@ -69,57 +68,18 @@ public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPay
         }
         return hasSetValues;
       }
-
-      private List<String> except(List<String> list1, List<String> list2) {
-        try {
-          if (list1 == null || list2 == null) throw new IllegalArgumentException("Input is null");
-          List<String> union = new ArrayList<>(list1);
-          union.addAll(list2);
-          List<String> intersection = new ArrayList<>(list1);
-          intersection.retainAll(list2);
-          union.removeAll(intersection);
-          return union;
-        }
-        catch (Exception e) {
-          InternalLogger.INSTANCE.warn("stack trace is %s", ExceptionUtils.getStackTrace(e));
-        }
-        finally{
-          if (list1 != null) return list1;
-          return list2;
-        }
-      }
     };
   }
 
-  private void initializeDefaultFields(List<String> defaultFields) {
+  private void initializeDefaultFields(Set<String> defaultFields) {
 
     if (defaultFields == null) {
-      defaultFields = new ArrayList<>();
+      defaultFields = new HashSet<>();
     }
     defaultFields.add("jdkVersion");
     defaultFields.add("sdk-version");
     defaultFields.add("osType");
     defaultFields.add("processSessionId");
-  }
-
-  private boolean containsIgnoreCase(String keyword, List<String> inputList) {
-    try {
-      if (keyword == null) throw new IllegalArgumentException("Keyword to compare is null");
-      if (inputList == null) throw new IllegalArgumentException("List to compare is null");
-      for (String key : inputList) {
-        if (key.equalsIgnoreCase(keyword)) return true;
-      }
-      return false;
-    }
-    catch (Exception e) {
-      InternalLogger.INSTANCE.warn("exception while comparision, stack trace is %s",
-          ExceptionUtils.getStackTrace(e));
-    }
-    finally{
-      //return true so we don't add property when comparison exception
-      return true;
-    }
-
   }
 
   private String getJdkVersion() {

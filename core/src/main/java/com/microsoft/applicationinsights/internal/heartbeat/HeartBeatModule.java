@@ -7,12 +7,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class HeartBeatModule implements TelemetryModule {
 
   private final HeartBeatProviderInterface heartBeatProviderInterface;
 
+  private Lock lock = new ReentrantLock();
+
+  private boolean isEnabled = false;
+
   public HeartBeatModule(Map<String, String> properties) {
+
+    heartBeatProviderInterface = new HeartBeatProvider();
 
     if (properties != null) {
       for (Map.Entry<String, String> entry : properties.entrySet()) {
@@ -20,12 +28,14 @@ public class HeartBeatModule implements TelemetryModule {
           case "HeartBeatInterval":
             try {
               setHeartBeatInterval(Long.valueOf(entry.getValue()));
+              break;
             } catch (Exception e) {
               //add log
             }
           case "isHeartBeatEnabled":
             try {
               setHeartBeatEnabled(Boolean.parseBoolean(entry.getValue()));
+              break;
             }
             catch (Exception e) {
               //log
@@ -34,6 +44,7 @@ public class HeartBeatModule implements TelemetryModule {
             try {
               List<String> excludedHeartBeatPropertiesProviderList = parseStringToList(entry.getValue());
               setExcludedHeartBeatPropertiesProvider(excludedHeartBeatPropertiesProviderList);
+              break;
             }
             catch (Exception e) {
               //log
@@ -42,15 +53,17 @@ public class HeartBeatModule implements TelemetryModule {
             try {
               List<String> excludedHeartBeatPropertiesList = parseStringToList(entry.getValue());
               setExcludedHeartBeatProperties(excludedHeartBeatPropertiesList);
+              break;
             }
             catch (Exception e) {
               //log
             }
+          default:
+            break;
         }
       }
     }
 
-    heartBeatProviderInterface = new HeartBeatProvider();
   }
 
   public long getHeartBeatInterval() {
@@ -88,7 +101,18 @@ public class HeartBeatModule implements TelemetryModule {
 
   @Override
   public void initialize(TelemetryConfiguration configuration) {
-    InternalLogger.INSTANCE.info("heartbeat is enabled");
+    lock.lock();
+    try {
+      if (!isEnabled) {
+        this.heartBeatProviderInterface.initialize(configuration);
+        InternalLogger.INSTANCE.info("heartbeat is enabled");
+      }
+      isEnabled = true;
+    }
+    finally{
+      lock.lock();
+    }
+
   }
 
   private List<String> parseStringToList(String value) {
