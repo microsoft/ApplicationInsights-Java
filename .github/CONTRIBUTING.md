@@ -4,13 +4,13 @@ If you're interested in contributing, take a look at the general [contributer's 
 
 ## Prerequisites
 
-1.  Java SDK 1.6 or higher
+1.  Java SDK 1.7 or higher
 2.  Sign-in to [Microsoft Azure](https://azure.com)
 
 ## Getting started
 
 1.  Set JAVA_HOME environment variable to point to the JDK installation directory.
-2.  To build run `./gradlew build` on Linux systems or `gradlew.bat build` on Windows systems.
+2.  To build run `gradlew build`.
 
 ### Using Eclipse IDE
 
@@ -24,7 +24,7 @@ If you're interested in contributing, take a look at the general [contributer's 
 
 To build Application Insights CollectD writer plugin, please do the following:
 
-1.  Download CollectD Java API sources and compile them using JDK 1.6.
+1.  Download CollectD Java API sources and compile them using JDK 1.7.
     The output jar should be named: 'collectd-api.jar'.
     More info on compiling CollectD sources can be found here: https://collectd.org/dev-info.shtml
 2.  Create a new directory for CollectD library you just created, and set a new environment variable 'COLLECTD_HOME'
@@ -35,5 +35,5 @@ To build Application Insights CollectD writer plugin, please do the following:
 
 ### Notes
 
-* To create a Java 6 compatible build you need to either have JAVA_HOME point to "Java 6 SDK" path or set JAVA_JRE_6 environment variable to point to [JRE 6 JRE installation directory]
+* If you are using Java 8+, set JAVA_JRE_7 environment variable to point a Java 7 JRE installation.
 * To enable Windows Performance Counters you need to install the [Visual Studio 2013 C++ Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=40784) (or higher)
