@@ -110,7 +110,7 @@ public class HeartBeatModule implements TelemetryModule {
       isEnabled = true;
     }
     finally{
-      lock.lock();
+      lock.unlock();
     }
 
   }
