@@ -59,6 +59,7 @@ public class PerfCountersDataTest extends AiSmokeTest {
         }
         System.out.println("PerformanceCounterData are good: " + (System.currentTimeMillis() - start));
 
+        System.out.println("Waiting for metric data...");
         List<Envelope> metricItems = mockedIngestion.waitForItems(new Predicate<Envelope>() {
             @Override
             public boolean apply(@Nullable Envelope input) {
@@ -89,41 +90,66 @@ public class PerfCountersDataTest extends AiSmokeTest {
         assertNotNull(requestItem);
         System.out.println("Requests are good: " + (System.currentTimeMillis() - start));
 
-        DataPoint dp1 = getMetricDataDetails(2);
-        assertEquals("Heap Memory Used (MB)", dp1.getName());
-        assertEquals(DataPointType.Measurement, dp1.getKind());
-        assertTrue(dp1.getValue() > 0);
+        int heapMemoryUsed = 0;
+        int suspected = 0;
+        for (int i = metricItems.size(); i > 2; i = i - 1) {
+            DataPoint dp1 = getMetricDataDetails(i - 1);
+            switch (dp1.getName()) {
+            case "Suspected Deadlocked Threads":
+                assertEquals(DataPointType.Measurement, dp1.getKind());
+                assertTrue(dp1.getValue() == 0);
+                suspected++;
+                break;
+            case "Heap Memory Used (MB)":
+                assertEquals(DataPointType.Measurement, dp1.getKind());
+                assertTrue(dp1.getValue() > 0);
+                heapMemoryUsed++;
+                break;
+            default:
+                break;
+            }
+        }
+        assertEquals(1, heapMemoryUsed);
+        assertEquals(1, suspected);
 
-        DataPoint dp2 = getMetricDataDetails(3);
-        assertEquals("Suspected Deadlocked Threads", dp2.getName());
-        assertEquals(DataPointType.Measurement, dp2.getKind());
-        assertTrue(dp2.getValue() == 0);
+        int processor = 0, processPrivate = 0, processIO = 0, processTime = 0, memory = 0;
+        for (int i = performanceItems.size(); i > 3; i = i - 1) {
+            PerformanceCounterData perfd1 = getTelemetryDataForType(i - 1, "PerformanceCounterData");
+            switch (perfd1.getCategoryName()) {
+            case "Processor":
+                assertEquals("% Processor Time", perfd1.getCounterName());
+                assertEquals("_Total", perfd1.getInstanceName());
+                processor++;
+                break;
+            case "Memory":
+                assertEquals("Available Bytes", perfd1.getCounterName());
+                assertTrue(perfd1.getValue() != 0);
+                memory++;
+            case "Process":
+                assertTrue(perfd1.getValue() != 0);
+                switch (perfd1.getCounterName()) {
+                case "Private Bytes":
+                    processPrivate++;
+                    break;
+                case "IO Data Bytes/sec":
+                    processIO++;
+                    break;
+                case "% Processor Time":
+                    processTime++;
+                    break;
+                default:
+                    break;
+                }
+            default:
+                break;
+            }
+        }
 
-        PerformanceCounterData pcfd1 = getTelemetryDataForType(3, "PerformanceCounterData");
-        assertEquals("Processor", pcfd1.getCategoryName());
-        assertEquals("% Processor Time", pcfd1.getCounterName());
-        assertEquals("_Total", pcfd1.getInstanceName());
-        assertTrue(pcfd1.getValue() != 0);
-
-        PerformanceCounterData pcd2 = getTelemetryDataForType(4, "PerformanceCounterData");
-        assertEquals("Memory", pcd2.getCategoryName());
-        assertEquals("Available Bytes", pcd2.getCounterName());
-        assertTrue(pcd2.getValue() != 0);
-
-        PerformanceCounterData pcd3 = getTelemetryDataForType(5, "PerformanceCounterData");
-        assertEquals("Process", pcd3.getCategoryName());
-        assertEquals("Private Bytes", pcd3.getCounterName());
-        assertTrue(pcd3.getValue() != 0);
-
-        PerformanceCounterData pcd4 = getTelemetryDataForType(6, "PerformanceCounterData");
-        assertEquals("Process", pcd4.getCategoryName());
-        assertEquals("IO Data Bytes/sec", pcd4.getCounterName());
-        assertTrue(pcd4.getValue() != 0);
-
-        PerformanceCounterData pcd5 = getTelemetryDataForType(7, "PerformanceCounterData");
-        assertEquals("Process", pcd5.getCategoryName());
-        assertEquals("% Processor Time", pcd5.getCounterName());
-        assertTrue(pcd5.getValue() != 0);
+        assertEquals(1, processor);
+        assertEquals(1, processPrivate);
+        assertEquals(1, processIO);
+        assertEquals(1, processTime);
+        assertEquals(1, memory);
     }
 
     private DataPoint getMetricDataDetails(int index) {
