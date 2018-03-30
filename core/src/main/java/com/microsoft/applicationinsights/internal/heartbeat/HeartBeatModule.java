@@ -16,7 +16,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   private Lock lock = new ReentrantLock();
 
-  private boolean isEnabled = false;
+  private static boolean isEnabled = false;
 
   public HeartBeatModule(Map<String, String> properties) {
 
@@ -117,8 +117,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   private List<String> parseStringToList(String value) {
     if (value == null || value.length() == 0) return new ArrayList<>();
-    List<String> valueList = Arrays.asList(value.split(";"));
-    return valueList;
+    return Arrays.asList(value.split(";"));
   }
 
 }
