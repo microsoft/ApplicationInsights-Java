@@ -109,4 +109,51 @@ public class HeartbeatTests {
       }
     }
   }
+
+  @Test
+  public void heartBeatIsEnabledByDefault() {
+
+  }
+
+  @Test
+  public void canDisableHeartBeatPriorToInitialize() {
+    Map<String, String> dummyPropertyMap = new HashMap<>();
+    dummyPropertyMap.put("isHeartBeatEnabled", "false");
+    HeartBeatModule module = new HeartBeatModule(dummyPropertyMap);
+    TelemetryConfiguration configuration = new TelemetryConfiguration();
+    configuration.getTelemetryModules().add(module);
+    module.initialize(configuration);
+    Assert.assertFalse(module.isHeartBeatEnabled());
+
+    try {
+      Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
+      field.setAccessible(true);
+      HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
+      Assert.assertFalse(hbi.isHeartBeatEnabled());
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void canDisableHeartBeatPropertyProviderPriorToInitialize() {
+    HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
+    module.setExcludedHeartBeatPropertiesProvider(Arrays.asList("Base"));
+
+    try {
+      Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
+      field.setAccessible(true);
+      HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
+      Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
+
+      module.initialize(new TelemetryConfiguration());
+
+      Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+
+  }
 }
