@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.List;
@@ -119,7 +121,9 @@ public enum TelemetryConfigurationFactory {
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         setInstrumentationKey(userConfiguration, configuration);
         configuration.setChannel(new InProcessTelemetryChannel());
+        addHeartBeatModule(configuration);
         setContextInitializers(null, configuration);
+        initializeComponents(configuration);
     }
 
     private void setInternalLogger(SDKLoggerXmlElement sdkLogger, TelemetryConfiguration configuration) {
@@ -173,7 +177,13 @@ public enum TelemetryConfigurationFactory {
             ReflectionUtils.loadComponents(TelemetryModule.class, modules, configurationModules.getAdds());
         }
 
+        //if heartbeat module is not loaded, load heartbeat module
+        if (!heartBeatModuleAdded(modules)) {
+            addHeartBeatModule(configuration);
+        }
+
         List<TelemetryModule> pcModules = getPerformanceModules(appConfiguration.getPerformance());
+
         modules.addAll(pcModules);
     }
 
@@ -500,6 +510,18 @@ public enum TelemetryConfigurationFactory {
                         "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Exception");
             }
         }
+    }
+
+    private void addHeartBeatModule(TelemetryConfiguration configuration) {
+        HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
+        configuration.getTelemetryModules().add(module);
+    }
+
+    private boolean heartBeatModuleAdded(List<TelemetryModule> module) {
+        for (TelemetryModule mod : module) {
+            if (mod instanceof HeartBeatModule) return true;
+        }
+        return false;
     }
 
     void setPerformanceCountersSection(String performanceCountersSection) {
