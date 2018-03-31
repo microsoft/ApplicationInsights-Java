@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Version 2.0.2 
+- Fix incorrect success flag set when capturing HTTP Dependency.
 - Fix [#577](https://github.com/Microsoft/ApplicationInsights-Java/issues/577), removed HttpFactory class as it was not being used.
 - Fixed issue with sessionId not being set in request telemetry due to date parsing issues.
 - Fix [#616](https://github.com/Microsoft/ApplicationInsights-Java/issues/616), added a way to have real time SDK Logs when logging on File.
