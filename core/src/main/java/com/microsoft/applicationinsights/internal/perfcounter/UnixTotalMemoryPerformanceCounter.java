@@ -51,7 +51,7 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
     public void report(TelemetryClient telemetryClient) {
         double totalAvailableMemory = getTotalAvailableMemory();
 
-        InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, totalAvailableMemory);
+        InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, totalAvailableMemory);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
                 Constants.TOTAL_MEMORY_PC_COUNTER_NAME,
