@@ -87,7 +87,6 @@ public class JmxDataFetcher {
         String[] inners = null;
 
         AttributeType innerAttributeType = AttributeType.REGULAR;
-        // FIXME check for case?
         if (COMPOSITE_ATTRIBUTE_TYPE.equals(attributeType)) {
             innerAttributeType = AttributeType.COMPOSITE;
         } else if (TABULAR_ATTRIBUTE_TYPE.equals(attributeType)) {
