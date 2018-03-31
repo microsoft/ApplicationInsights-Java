@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.List;
@@ -178,7 +177,7 @@ public enum TelemetryConfigurationFactory {
         }
 
         //if heartbeat module is not loaded, load heartbeat module
-        if (!heartBeatModuleAdded(modules)) {
+        if (!isHeartBeatModuleAdded(modules)) {
             addHeartBeatModule(configuration);
         }
 
@@ -512,12 +511,21 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
+    /**
+     * Adds heartbeat module with default configuration
+     * @param configuration TelemetryConfiguration Instance
+     */
     private void addHeartBeatModule(TelemetryConfiguration configuration) {
         HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
         configuration.getTelemetryModules().add(module);
     }
 
-    private boolean heartBeatModuleAdded(List<TelemetryModule> module) {
+    /**
+     * Checks if heartbeat module is present
+     * @param module List of modules in current TelemetryConfiguration Instance
+     * @return true if heartbeat module is present
+     */
+    private boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {
         for (TelemetryModule mod : module) {
             if (mod instanceof HeartBeatModule) return true;
         }

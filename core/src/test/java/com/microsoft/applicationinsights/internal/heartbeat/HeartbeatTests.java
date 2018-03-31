@@ -82,7 +82,7 @@ public class HeartbeatTests {
 
     boolean origIsEnabled = true;
     String origExcludedHbProvider = "FakeProvider";
-    long orignalInterval = 0;
+    long originalInterval = 0;
     long setInterval = 30;
 
     for (TelemetryModule module : TelemetryConfiguration.getActive().getTelemetryModules()) {
@@ -92,7 +92,7 @@ public class HeartbeatTests {
 
         Assert.assertFalse(((HeartBeatModule)module).getExcludedHeartBeatProperties().contains(origExcludedHbProvider));
         ((HeartBeatModule)module).setExcludedHeartBeatPropertiesProvider(Arrays.asList(origExcludedHbProvider));
-        orignalInterval = ((HeartBeatModule)module).getHeartBeatInterval();
+        originalInterval = ((HeartBeatModule)module).getHeartBeatInterval();
         ((HeartBeatModule)module).setExcludedHeartBeatProperties(Arrays.asList("test01"));
         ((HeartBeatModule)module).setHeartBeatInterval(setInterval);
       }
@@ -104,7 +104,7 @@ public class HeartbeatTests {
         Assert.assertNotEquals(((HeartBeatModule)module).isHeartBeatEnabled(), origIsEnabled);
         Assert.assertTrue(((HeartBeatModule)module).getExcludedHeartBeatPropertiesProvider().contains(origExcludedHbProvider));
         Assert.assertTrue(((HeartBeatModule)module).getExcludedHeartBeatProperties().contains("test01"));
-        Assert.assertNotEquals(((HeartBeatModule)module).getHeartBeatInterval(), orignalInterval);
+        Assert.assertNotEquals(((HeartBeatModule)module).getHeartBeatInterval(), originalInterval);
         Assert.assertEquals(((HeartBeatModule)module).getHeartBeatInterval(), setInterval);
       }
     }
