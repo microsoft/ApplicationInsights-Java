@@ -15,34 +15,72 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+/**
+ * <p>
+ *  Concrete implementation of Heartbeat functionality. This class implements
+ *  {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface} and
+ *  {@link com.microsoft.applicationinsights.internal.shutdown.Stoppable}
+ * </p>
+ *
+ * @author Dhaval Doshi
+ * @since 03-30-2018
+ */
 public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable {
 
+  /**
+   * The name of the heartbeat metric.
+   */
   private final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
 
+  /**
+   * The list of disabled properties
+   */
   private List<String> disableDefaultProperties = new ArrayList<>();
 
+  /**
+   * List of disabled heartbeat providers
+   */
   private List<String> disabledHeartBeatPropertiesProviders = new ArrayList<>();
 
+  /**
+   * The counter for heartbeat sent to portal
+   */
   private long heartbeatsSent;
 
+  /**
+   * Map to hold heartbeat properties
+   */
   private ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
 
+  /**
+   * Interval at which heartbeat would be sent
+   */
   private long interval;
 
+  /**
+   * Telemetry client instance used to send heartbeat.
+   */
   private TelemetryClient telemetryClient;
 
+  /**
+   * ThreadPool used for adding properties to concurrent dictionary
+   */
   private ExecutorService executorService = Executors.newCachedThreadPool();
 
+  /**
+   * Threadpool used to send data heartbeat telemetry
+   */
   private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
+  /**
+   * Heartbeat enabled state
+   */
   private volatile boolean isEnabled;
 
-  private Lock lock = new ReentrantLock();
+  private final Object lock = new Object();
 
   public HeartBeatProvider() {
     this.interval = HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL;
@@ -68,16 +106,11 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       this.telemetryClient = new TelemetryClient(configuration);
     }
 
-//    try {
-      executorService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
-          getExcludedHeartBeatPropertyProviders(), this));
-//    }
-//    catch (InterruptedException e) {
-//
-//    }
-//    catch (ExecutionException e) {
-//
-//    }
+    //Submit task to set properties to dictionary using separate thread. we do not wait for the
+    //results to come out as some I/O bound properties may take time.
+    executorService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
+        getExcludedHeartBeatPropertyProviders(), this));
+
 
     if (isEnabled) {
       scheduledExecutorService.scheduleAtFixedRate(heartBeatPulse(), interval, interval, TimeUnit.SECONDS);
@@ -100,6 +133,9 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
              isAdded = true;
              InternalLogger.INSTANCE.trace("added heartbeat property");
         }
+        else {
+          throw new Exception("heartbeat property cannot be added twice");
+        }
       } catch (Exception e) {
         InternalLogger.INSTANCE.warn("Failed to add the property %s value %s, stack trace is : %s," ,
             propertyName, propertyValue, ExceptionUtils.getStackTrace(e));
@@ -118,7 +154,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     boolean setResult = false;
     if (!StringUtils.isEmpty(propertyName)) {
       try {
-        if (heartbeatProperties.containsKey(propertyName)) {
+        if (heartbeatProperties.containsKey(propertyName) && !HeartbeatDefaultPayload.isDefaultKeyWord(propertyName)) {
           HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
           payload.setHealthy(isHealthy);
           payload.setPayloadValue(propertyValue);
@@ -126,7 +162,8 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
           setResult = true;
         }
         else {
-          throw new Exception("Cannot set heartbeat property without adding it first");
+          throw new Exception("heartbeat property cannot be set without adding it first, or heartbeat"
+              + "beat property specified is a reserved property");
         }
       }
       catch (Exception e) {
@@ -198,20 +235,24 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     }
   }
 
+  /**
+   * Send the heartbeat item synchronously to application insights backend.
+   */
   private void send() {
 
-    lock.lock();
-    try {
+    synchronized (lock) {
       MetricTelemetry telemetry = (MetricTelemetry)gatherData();
       telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
       telemetryClient.trackMetric(telemetry);
       InternalLogger.INSTANCE.trace("sent heart beat");
     }
-    finally{
-      lock.unlock();
-    }
+
   }
 
+  /**
+   * Creates and returns the heartbeat telemetry.
+   * @return Metric Telemetry which represent heartbeat.
+   */
   private Telemetry gatherData() {
 
     MetricTelemetry heartbeat = new MetricTelemetry(HEARTBEAT_SYNTHETIC_METRIC_NAME, 0.0);
@@ -226,6 +267,10 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     return heartbeat;
   }
 
+  /**
+   * Runnable which is responsible for calling the send method to transmit telemetry
+   * @return Runnable which has logic to send heartbeat.
+   */
   private Runnable heartBeatPulse() {
     return new Runnable() {
       @Override

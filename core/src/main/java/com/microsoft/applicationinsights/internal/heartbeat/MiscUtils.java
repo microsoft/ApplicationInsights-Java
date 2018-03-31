@@ -6,8 +6,20 @@ import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+/**
+ * This class contains some misc. functions used in heartbeat module.
+ *
+ * @author Dhaval Doshi
+ * @since 03-30-2018
+ */
 class MiscUtils {
 
+  /**
+   * Returns a list which contains Items present in list2 but not in the set.
+   * @param set
+   * @param list2
+   * @return
+   */
   static Set<String> except(Set<String> set, List<String> list2) {
     try {
       if (set == null || list2 == null) throw new IllegalArgumentException("Input is null");
@@ -28,6 +40,12 @@ class MiscUtils {
 
   }
 
+  /**
+   * This method returns true if keyword is present in the input list ignoring the case
+   * @param keyword to compare
+   * @param inputList list of string containing reserved keywords
+   * @return true if input word is present in the list ignoring the case.
+   */
   static boolean containsIgnoreCase(String keyword, Set<String> inputList) {
     try {
       if (keyword == null) throw new IllegalArgumentException("Keyword to compare is null");

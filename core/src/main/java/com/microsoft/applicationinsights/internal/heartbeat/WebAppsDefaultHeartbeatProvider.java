@@ -8,14 +8,36 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+/**
+ * <h1>WebApp Heartbeat Property Provider</h1>
+ * <p>
+ *   This class is a concrete implementation of {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatDefaultPayloadProviderInterface}
+ *   It enables setting Web-apps Metadata to heartbeat payload.
+ * </p>
+ *
+ * @author Dhaval Doshi
+ * @since 03-30-2018
+ */
 public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadProviderInterface {
 
+  /**
+   * Name of the provider
+   */
   private final String name = "webapps";
 
+  /**
+   * Collection holding default properties for this default provider.
+   */
   private final Set<String> defaultFields;
 
+  /**
+   * Map for storing environment variables
+   */
   private final Map<String, String> environmentMap;
 
+  /**
+   * Constructor that initializes fields and load environment variables
+   */
   public WebAppsDefaultHeartbeatProvider() {
     defaultFields = new HashSet<>();
     environmentMap = System.getenv();
@@ -25,6 +47,11 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
   @Override
   public String getName() {
     return this.name;
+  }
+
+  @Override
+  public boolean isKeyWord(String keyword) {
+    return defaultFields.contains(keyword);
   }
 
   @Override
@@ -71,6 +98,10 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
     };
   }
 
+  /**
+   * Populates the default Fields with the properties
+   * @param defaultFields
+   */
   private void initializeDefaultFields(Set<String> defaultFields) {
     if (defaultFields == null) {
       defaultFields = new HashSet<>();
@@ -81,6 +112,10 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
 
   }
 
+  /**
+   * Returns the name of the website by reading environment variable
+   * @return website name
+   */
   private String getWebsiteSiteName() {
     if (environmentMap.containsKey("WEBSITE_SITE_NAME")) {
       return environmentMap.get("WEBSITE_SITE_NAME");
@@ -88,6 +123,10 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
     return null;
   }
 
+  /**
+   * Returns the website home stamp name by reading environment variable
+   * @return website stamp host name
+   */
   private String getWebsiteHostName() {
     if (environmentMap.containsKey("WEBSITE_HOME_STAMPNAME")) {
       return environmentMap.get("WEBSITE_HOME_STAMPNAME");
