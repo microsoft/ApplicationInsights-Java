@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -48,7 +49,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   /**
    * The counter for heartbeat sent to portal
    */
-  private long heartbeatsSent;
+  private AtomicLong heartbeatsSent;
 
   /**
    * Map to hold heartbeat properties
@@ -86,6 +87,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     this.interval = HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL;
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.isEnabled = true;
+    this.heartbeatsSent = new AtomicLong(0);
   }
 
   @Override
@@ -227,11 +229,14 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   @Override
   public void stop(long timeout, TimeUnit timeUnit) {
     executorService.shutdown();
+    scheduledExecutorService.shutdown();
     try {
-      executorService.awaitTermination(1L, TimeUnit.SECONDS);
+      executorService.awaitTermination(timeout, timeUnit);
+      scheduledExecutorService.awaitTermination(timeout, timeUnit);
     }
     catch (InterruptedException e) {
-
+      InternalLogger.INSTANCE.warn("unable to successfully terminate heartbeat module, "
+          + "encountered and exception with stacktrace, %s", ExceptionUtils.getStackTrace(e));
     }
   }
 
@@ -244,7 +249,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       MetricTelemetry telemetry = (MetricTelemetry)gatherData();
       telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
       telemetryClient.trackMetric(telemetry);
-      InternalLogger.INSTANCE.trace("sent heart beat");
+      InternalLogger.INSTANCE.trace("No of heartbeats sent, %s", heartbeatsSent.get());
     }
 
   }
@@ -262,7 +267,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       double currentValue = heartbeat.getValue();
       currentValue += entry.getValue().isHealthy() ? 0 : 1;
       heartbeat.setValue(currentValue);
-      ++heartbeatsSent;
+      heartbeatsSent.incrementAndGet();
     }
     return heartbeat;
   }
