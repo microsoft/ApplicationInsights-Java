@@ -29,7 +29,6 @@ import java.util.ArrayList;
 /**
  * Created by gupele on 7/26/2016.
  */
-@XmlRootElement(name="Processor")
 public class TelemetryProcessorXmlElement {
     private String type;
     private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();

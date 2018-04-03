@@ -26,7 +26,6 @@ import javax.xml.bind.annotation.*;
 /**
  * Created by gupele on 11/14/2016.
  */
-@XmlRootElement(name="Fixed")
 public class FixedSamplerXmlElement {
     private String includeTypes;
     private String excludeTypes;

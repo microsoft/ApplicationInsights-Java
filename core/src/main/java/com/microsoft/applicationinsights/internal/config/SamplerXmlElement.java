@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by gupele on 11/2/2016.
  */
-@XmlRootElement(name="Sampling")
 public class SamplerXmlElement {
     private FixedSamplerXmlElement fixedSamplerXmlElement;
     private AdaptiveSamplerXmlElement adaptiveSamplerXmlElement;

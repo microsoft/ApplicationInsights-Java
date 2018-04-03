@@ -27,7 +27,6 @@ import java.util.ArrayList;
 /**
  * Created by gupele on 3/15/2015.
  */
-@XmlRootElement(name="PerformanceCounters")
 public class PerformanceCountersXmlElement {
     private boolean useBuiltIn = true;
     private long collectionFrequencyInSec = 60;
