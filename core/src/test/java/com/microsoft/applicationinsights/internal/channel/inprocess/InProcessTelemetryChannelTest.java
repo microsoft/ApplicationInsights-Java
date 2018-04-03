@@ -29,8 +29,8 @@ import java.util.HashMap;
 
 public class InProcessTelemetryChannelTest {
 
-    private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
-    private final static String INSTANT_RETRY_NAME = "MaxInstantRetry";
+  private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
+  private final static String INSTANT_RETRY_NAME = "MaxInstantRetry";
 	private final static int DEFAULT_MAX_INSTANT_RETRY = 3;
 
     @Test(expected = IllegalArgumentException.class)
@@ -63,6 +63,6 @@ public class InProcessTelemetryChannelTest {
     @Test
     public void testInProcessTelemetryChannelWithDefaultSpringBootParameters() {
         new InProcessTelemetryChannel("https://dc.services.visualstudio.com/v2/track", "10",
-                false, 500, 5, true);
+                false, 500, 5, true, DEFAULT_MAX_INSTANT_RETRY);
     }
 }
