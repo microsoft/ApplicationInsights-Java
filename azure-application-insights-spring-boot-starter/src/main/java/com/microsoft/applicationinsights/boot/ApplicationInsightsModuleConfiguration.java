@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.boot.conditional.ConditionalOnOperatingSystem;
 import com.microsoft.applicationinsights.boot.conditional.OperatingSystem;
-import com.microsoft.applicationinsights.boot.initializer.SpringBootContextInitializer;
+import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
@@ -41,8 +41,8 @@ import org.springframework.core.env.Environment;
 public class ApplicationInsightsModuleConfiguration {
 
     @Bean
-    public SpringBootContextInitializer springBootContextInitializer(Environment environment) {
-        return new SpringBootContextInitializer(environment);
+    public SpringBootTelemetryInitializer springBootTelemetryInitializer(Environment environment) {
+        return new SpringBootTelemetryInitializer(environment);
     }
 
     @Bean

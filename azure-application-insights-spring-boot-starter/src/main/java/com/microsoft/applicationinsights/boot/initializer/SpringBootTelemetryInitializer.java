@@ -21,35 +21,36 @@
 
 package com.microsoft.applicationinsights.boot.initializer;
 
-import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.context.ContextTagKeys;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.bind.RelaxedPropertyResolver;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.env.Environment;
 
 /**
- * Context initializer that adds information regarding spring and spring boot version.
+ * Telemetry initializer that adds information regarding spring and spring boot version.
  *
- * @author Arthur Gavlyukovskiy
+ * @author Dhaval Doshi
  */
-public class SpringBootContextInitializer implements ContextInitializer {
+public class SpringBootTelemetryInitializer implements TelemetryInitializer {
     private final Environment environment;
 
-    public SpringBootContextInitializer(Environment environment) {
+    public SpringBootTelemetryInitializer(Environment environment) {
         this.environment = environment;
     }
 
     @Override
-    public void initialize(TelemetryContext telemetryContext) {
+    public void initialize(Telemetry telemetry) {
         RelaxedPropertyResolver relaxedPropertyResolver = new RelaxedPropertyResolver(environment);
-        telemetryContext.getTags().put("ai.spring-boot.version", SpringBootVersion.getVersion());
-        telemetryContext.getTags().put("ai.spring.version", SpringVersion.getVersion());
+        telemetry.getProperties().put("ai.spring-boot.version", SpringBootVersion.getVersion());
+        telemetry.getProperties().put("ai.spring.version", SpringVersion.getVersion());
         String ipAddress = relaxedPropertyResolver.getProperty("spring.cloud.client.ipAddress");
         if (ipAddress != null) {
             // if spring-cloud is available we can set ip address
-            telemetryContext.getTags().put(ContextTagKeys.getKeys().getLocationIP(), ipAddress);
+            telemetry.getProperties().put(ContextTagKeys.getKeys().getLocationIP(), ipAddress);
         }
+
     }
 }
