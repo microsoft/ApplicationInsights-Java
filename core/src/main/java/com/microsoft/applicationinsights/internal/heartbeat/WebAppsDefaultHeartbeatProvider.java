@@ -33,7 +33,7 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
   /**
    * Map for storing environment variables
    */
-  private final Map<String, String> environmentMap;
+  private Map<String, String> environmentMap;
 
   /**
    * Constructor that initializes fields and load environment variables
@@ -62,6 +62,9 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
       volatile Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
       @Override
       public Boolean call() {
+
+        //update environment variable to account for
+        updateEnvironmentVariableMap();
         for (String fieldName : enabledProperties) {
           try {
             switch (fieldName) {
@@ -132,5 +135,13 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
       return environmentMap.get("WEBSITE_HOME_STAMPNAME");
     }
     return null;
+  }
+
+  /**
+   * This method updates the environment variable at every call to add
+   * the payload, to cover hotswap scenarios.
+   */
+  private void updateEnvironmentVariableMap() {
+    environmentMap = System.getenv();
   }
 }
