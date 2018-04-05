@@ -260,7 +260,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertTrue(actual >= expected);
     }
 
-    @Ignore
+    @Ignore // See github issue #600. This should pass when that is fixed.
     @Test
     @TargetUri("/autoExceptionWithFailedRequest")
     public void testAutoExceptionWithFailedRequest() {
