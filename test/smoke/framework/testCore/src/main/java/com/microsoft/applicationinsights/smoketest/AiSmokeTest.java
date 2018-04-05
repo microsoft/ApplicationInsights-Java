@@ -341,7 +341,7 @@ public abstract class AiSmokeTest {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Waiting for appserver to start (%s)...%n", url);
 
-			waitForUrl(url, 90, TimeUnit.SECONDS, "app server");// TODO change to actual app server name
+			waitForUrl(url, 120, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName));
 			System.out.println("App server is ready.");
 		}
 		catch (Exception e) {
