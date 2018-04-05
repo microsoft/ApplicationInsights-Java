@@ -336,10 +336,14 @@ public abstract class AiSmokeTest {
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
 
+		final int appServerDelayAfterStart_seconds = 5;
+		System.out.println("Waiting %d seconds for app server to startup...");
+		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
+
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
-			System.out.printf("Waiting for appserver to start (%s)...%n", url);
+			System.out.printf("Verifying appserver has started (%s)...%n", url);
 
 			waitForUrl(url, 120, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName));
 			System.out.println("App server is ready.");
