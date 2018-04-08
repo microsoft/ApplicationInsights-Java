@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Predicate;
-import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -154,6 +153,7 @@ public class PerfCountersDataTest extends AiSmokeTest {
 
     private DataPoint getMetricDataDetails(int index) {
         MetricData md = getTelemetryDataForType(index, "MetricData");
+        assertEquals("true", md.getProperties().get("CustomPerfCounter"));
         List<DataPoint> metrics = md.getMetrics();
         assertEquals(1, metrics.size());
         DataPoint dp = metrics.get(0);
