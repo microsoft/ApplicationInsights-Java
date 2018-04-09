@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSa
 import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer;
@@ -37,10 +38,9 @@ import com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTra
 import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * {@link ConfigurationProperties} for configuring application insights.
@@ -78,6 +78,17 @@ public class ApplicationInsightsProperties {
      * Logger properties.
      */
     private Logger logger = new Logger();
+
+    /**
+     * Performance Counter Container Properties
+     */
+
+    private PerformanceCounter performanceCounter = new PerformanceCounter();
+
+    /**
+     * Jmx Counter container
+     */
+    private Jmx jmx = new Jmx();
 
     public boolean isEnabled() {
         return enabled;
@@ -133,6 +144,24 @@ public class ApplicationInsightsProperties {
 
     public void setLogger(Logger logger) {
         this.logger = logger;
+
+    }
+
+    public PerformanceCounter getPerformanceCounter() {
+        return performanceCounter;
+    }
+
+    public void setPerformanceCounter(
+        PerformanceCounter performanceCounter) {
+        this.performanceCounter = performanceCounter;
+    }
+
+    public Jmx getJmx() {
+        return jmx;
+    }
+
+    public void setJmx(Jmx jmx) {
+        this.jmx = jmx;
     }
 
     static class Channel {
@@ -363,6 +392,38 @@ public class ApplicationInsightsProperties {
 
         public void setLevel(LoggingLevel level) {
             this.level = level;
+        }
+    }
+
+    static class PerformanceCounter {
+
+        /**
+         * Default collection frequency of performance counters
+         */
+        private long collectionFrequencyInSeconds = PerformanceCounterContainer.DEFAULT_COLLECTION_FREQUENCY_IN_SEC;
+
+        public long getCollectionFrequencyInSeconds() {
+            return collectionFrequencyInSeconds;
+        }
+
+        public void setCollectionFrequencyInSeconds(long collectionFrequencyInSeconds) {
+            this.collectionFrequencyInSeconds = collectionFrequencyInSeconds;
+        }
+    }
+
+    static class Jmx {
+
+        /**
+         * List of JMX counters
+         */
+        List<String> jmxCounters = new ArrayList<>();
+
+        public List<String> getJmxCounters() {
+            return jmxCounters;
+        }
+
+        public void setJmxCounters(List<String> jmxCounters) {
+            this.jmxCounters = jmxCounters;
         }
     }
 }

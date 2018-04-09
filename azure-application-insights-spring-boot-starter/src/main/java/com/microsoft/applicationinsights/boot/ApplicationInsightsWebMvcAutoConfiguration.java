@@ -41,7 +41,7 @@ import org.springframework.core.Ordered;
 @Import(InterceptorRegistry.class)
 @ConditionalOnBean(TelemetryConfiguration.class)
 @ConditionalOnWebApplication
-@ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(value = "azure.application-insights.web.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureAfter(ApplicationInsightsTelemetryAutoConfiguration.class)
 public class ApplicationInsightsWebMvcAutoConfiguration {
 

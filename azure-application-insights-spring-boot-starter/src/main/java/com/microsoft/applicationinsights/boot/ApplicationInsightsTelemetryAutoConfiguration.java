@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.boot;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel.InProcess;
+import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.PerformanceCounter;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
@@ -33,8 +34,13 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
+import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
+import java.util.ArrayList;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -163,5 +169,134 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         loggerParameters.put("Level", logger.getLevel().name());
         InternalLogger.INSTANCE.initialize(logger.getType().name(), loggerParameters);
         return InternalLogger.INSTANCE;
+    }
+
+    @Bean
+    public PerformanceCounterContainer performanceCounterContainer() {
+        ApplicationInsightsProperties.PerformanceCounter performanceCounter = applicationInsightsProperties.getPerformanceCounter();
+        PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceCounter.getCollectionFrequencyInSeconds());
+
+        ApplicationInsightsProperties.Jmx jmx = applicationInsightsProperties.getJmx();
+        if (jmx.getJmxCounters() !=null && jmx.getJmxCounters().size() > 0) {
+            processAndLoadJmxCounters(jmx.getJmxCounters());
+        }
+        return PerformanceCounterContainer.INSTANCE;
+    }
+
+    private void processAndLoadJmxCounters(List<String> jmxCounterList) {
+
+        try {
+            Map<String, List<JmxAttributeData>> data = new HashMap<>();
+            for (String jmxCounter : jmxCounterList) {
+                CompositeJmxData compositeJmxData = convertToCompositeJmxData(jmxCounter);
+                if (compositeJmxData == null) {
+                    InternalLogger.INSTANCE.warn("unable to add Jmx counter %s", jmxCounter);
+                } else {
+                    List<JmxAttributeData> collection = data.get(compositeJmxData.getObjectName());
+                    if (collection == null) {
+                        collection = new ArrayList<>();
+                        data.put(compositeJmxData.getObjectName(), collection);
+                    }
+                    collection.add(new JmxAttributeData(compositeJmxData.getDisplayName(),
+                        compositeJmxData.getAttributeName(), compositeJmxData.getType()));
+                }
+            }
+
+            //Register each entry in performance counter container
+            for (Map.Entry<String, List<JmxAttributeData>> entry : data.entrySet()) {
+                try {
+                    if (PerformanceCounterContainer.INSTANCE.register(new JmxMetricPerformanceCounter(
+                        entry.getKey(), entry.getKey(), entry.getValue()
+                    ))) {
+                        InternalLogger.INSTANCE.trace("Registered Jmx performance counter %s",
+                            entry.getKey());
+                    }
+                    else {
+                        InternalLogger.INSTANCE.trace("Failed to register Jmx performance"
+                            + " counter %s", entry.getKey());
+                    }
+                }
+                catch (Exception e) {
+                    InternalLogger.INSTANCE.warn("Failed to register Jmx performance counter,"
+                        + " of object name %s Stack trace is %s", entry.getKey(), ExceptionUtils.getStackTrace(e));
+                }
+            }
+        }
+        catch (Exception e) {
+            InternalLogger.INSTANCE.warn("Unable to add Jmx performance counter. Exception is"
+                + " %s", ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+
+    private class CompositeJmxData {
+        String displayName;
+        String objectName;
+        String attributeName;
+        String type;
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getObjectName() {
+            return objectName;
+        }
+
+        public void setObjectName(String objectName) {
+            this.objectName = objectName;
+        }
+
+        public String getAttributeName() {
+            return attributeName;
+        }
+
+        public void setAttributeName(String attributeName) {
+            this.attributeName = attributeName;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+            if (this.type != null) {
+                this.type = this.type.toUpperCase();
+            }
+        }
+    }
+
+    private CompositeJmxData convertToCompositeJmxData(String jmxCounter) {
+        if (jmxCounter != null && jmxCounter.length() > 0) {
+            String[] attributes = jmxCounter.split("/");
+            if (attributes.length < 3) {
+                InternalLogger.INSTANCE.warn("Missing either objectName or attributeName or"
+                    + " display name. Jmx counter %s will not be added" , jmxCounter);
+                return null;
+            }
+            CompositeJmxData data = new CompositeJmxData();
+            for (int i = 0; i < attributes.length; ++i) {
+                if (i > 3) break;
+                if (i == 0) {
+                    data.setObjectName(attributes[0]);
+                }
+                else if (i == 1) {
+                    data.setAttributeName(attributes[1]);
+                }
+                else if (i == 2) {
+                    data.setDisplayName(attributes[2]);
+                }
+                else {
+                    data.setType(attributes[3]);
+                }
+            }
+            return data;
+        }
+        return null;
     }
 }

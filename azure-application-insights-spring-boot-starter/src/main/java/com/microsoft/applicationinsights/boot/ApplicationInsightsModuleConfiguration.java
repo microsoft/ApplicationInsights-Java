@@ -26,10 +26,12 @@ import com.microsoft.applicationinsights.boot.conditional.OperatingSystem;
 import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
 
 /**
@@ -38,6 +40,7 @@ import org.springframework.core.env.Environment;
  * @author Arthur Gavlyukovskiy
  */
 @Configuration
+@ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)
 public class ApplicationInsightsModuleConfiguration {
 
     @Bean
@@ -56,6 +59,7 @@ public class ApplicationInsightsModuleConfiguration {
     }
 
     @Bean
+    @DependsOn("performanceCounterContainer")
     @ConditionalOnOperatingSystem(OperatingSystem.WINDOWS)
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled", havingValue = "true", matchIfMissing = true)
     public ProcessPerformanceCountersModule processPerformanceCountersModule() {
@@ -65,6 +69,20 @@ public class ApplicationInsightsModuleConfiguration {
         catch (Exception e) {
             throw new IllegalStateException("Could not initialize Windows performance counters module, " +
                     "please set property 'azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled=false' to avoid this error message.", e);
+        }
+    }
+
+    @Bean
+    @DependsOn("performanceCounterContainer")
+    @ConditionalOnProperty(value = "azure.application-insights.default.modules.JvmPerformanceCountersModule.enabled", havingValue = "true", matchIfMissing = true)
+    public JvmPerformanceCountersModule jvmPerformanceCountersModule() {
+        try {
+            return new JvmPerformanceCountersModule();
+        }
+        catch (Exception e) {
+            throw new IllegalStateException("Could not initialize Jvm Performance Counters module "
+                + "please set the property 'azure.application-insights.default.modules.JvmPerformanceCountersModule.enabled=false' to "
+                + "avoid this error message", e);
         }
     }
 }
