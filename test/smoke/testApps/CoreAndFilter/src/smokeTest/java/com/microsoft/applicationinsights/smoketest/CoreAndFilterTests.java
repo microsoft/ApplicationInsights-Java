@@ -259,4 +259,21 @@ public class CoreAndFilterTests extends AiSmokeTest {
         long expected = (new Duration(0, 0, 0, 20, 0).getTotalMilliseconds());
         assertTrue(actual >= expected);
     }
+
+    @Ignore // See github issue #600. This should pass when that is fixed.
+    @Test
+    @TargetUri("/autoExceptionWithFailedRequest")
+    public void testAutoExceptionWithFailedRequest() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
+
+        //due to there is a bug, the success for the request data is not correct, so just ignore this case now.   
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
+        assertEquals(false, rd.getSuccess());
+        
+        ExceptionData ed = getTelemetryDataForType(0, "ExceptionData");
+        ExceptionDetails eDetails = getExceptionDetails(ed);
+        final String expectedName = "This is a auto thrown exception !";
+        assertEquals(expectedName, eDetails.getMessage());
+    }
 }
