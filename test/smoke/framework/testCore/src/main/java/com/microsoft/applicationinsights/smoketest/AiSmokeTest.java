@@ -62,7 +62,7 @@ public abstract class AiSmokeTest {
 			try {
 				serverJres = getAppServerJres(appServer);
 			} catch (Exception e) {
-				System.err.printf("Could not configure '%s' jres. SKIPPING.%n%s%n", appServer, e);
+				System.err.printf("SKIPPING '%s'. Could not configure jres: %s%n", appServer, e);
 				continue;
 			}
 			appServers2jres.putAll(appServer, serverJres);
