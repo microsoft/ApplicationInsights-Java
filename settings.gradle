@@ -49,6 +49,7 @@ include ':test:smoke:framework:fakeIngestion:standalone'
 include ':test:smoke:testApps:PerfTestApp'
 //include ':test:smoke:testApps:SimpleCalculator'
 include ':test:smoke:testApps:CoreAndFilter'
+include ':test:smoke:testApps:AutoPerfCounters'
 
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
