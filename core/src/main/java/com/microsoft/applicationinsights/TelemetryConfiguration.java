@@ -188,4 +188,11 @@ public final class TelemetryConfiguration {
 
         instrumentationKey = key;
     }
+
+    /**
+     * Method for tear down in tests
+     */
+    private static void setActiveAsNull() {
+        active = null;
+    }
 }
