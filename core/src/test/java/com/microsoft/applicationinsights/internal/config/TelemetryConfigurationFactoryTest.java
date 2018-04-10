@@ -492,10 +492,11 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.getTelemetryModules().size(), 1);
-        assertTrue(mockConfiguration.getTelemetryModules().get(0) instanceof MockPerformanceModule);
-        assertTrue(((MockPerformanceModule)mockConfiguration.getTelemetryModules().get(0)).initializeWasCalled);
-        assertTrue(((MockPerformanceModule)mockConfiguration.getTelemetryModules().get(0)).addConfigurationDataWasCalled);
+        //heartbeat is added as default
+        assertEquals(mockConfiguration.getTelemetryModules().size(), 2);
+        assertTrue(mockConfiguration.getTelemetryModules().get(1) instanceof MockPerformanceModule);
+        assertTrue(((MockPerformanceModule)mockConfiguration.getTelemetryModules().get(1)).initializeWasCalled);
+        assertTrue(((MockPerformanceModule)mockConfiguration.getTelemetryModules().get(1)).addConfigurationDataWasCalled);
     }
 
 

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 2.1.0
+- Introduced Heartbeat support to monitor application health periodically.
+
 ## Version 2.0.2 
 - Fix incorrect success flag set when capturing HTTP Dependency.
 - Fix [#577](https://github.com/Microsoft/ApplicationInsights-Java/issues/577), removed HttpFactory class as it was not being used.
