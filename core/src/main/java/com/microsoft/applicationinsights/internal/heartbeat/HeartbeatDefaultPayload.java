@@ -23,6 +23,14 @@ public class HeartbeatDefaultPayload {
     return false;
   }
 
+  public static boolean addDefaultPayLoadProvider(HeartBeatDefaultPayloadProviderInterface payloadProviderInterface) {
+    if (payloadProviderInterface != null) {
+      defaultPayloadProviders.add(payloadProviderInterface);
+      return true;
+    }
+    return false;
+  }
+
   public static Callable<Boolean> populateDefaultPayload(final List<String> disabledFields, final List<String>
       disabledProviders, final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {

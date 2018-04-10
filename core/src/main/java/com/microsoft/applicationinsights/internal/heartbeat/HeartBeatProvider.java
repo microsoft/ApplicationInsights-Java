@@ -249,6 +249,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       MetricTelemetry telemetry = (MetricTelemetry)gatherData();
       telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
       telemetryClient.trackMetric(telemetry);
+      heartbeatsSent.incrementAndGet();
       InternalLogger.INSTANCE.trace("No of heartbeats sent, %s", heartbeatsSent.get());
     }
 
@@ -267,7 +268,6 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       double currentValue = heartbeat.getValue();
       currentValue += entry.getValue().isHealthy() ? 0 : 1;
       heartbeat.setValue(currentValue);
-      heartbeatsSent.incrementAndGet();
     }
     return heartbeat;
   }

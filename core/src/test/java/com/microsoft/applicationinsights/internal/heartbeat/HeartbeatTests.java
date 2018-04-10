@@ -14,10 +14,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class HeartbeatTests {
+
+  @Before
+  public void setTelemetryConfigurationNull() throws Exception{
+    tearDown();
+  }
 
   @Test
   public void initializeHeartBeatModuleDoesNotThrow() {
@@ -114,6 +123,7 @@ public class HeartbeatTests {
   public void heartBeatIsEnabledByDefault() {
     TelemetryClient client = new TelemetryClient();
     List<TelemetryModule> modules = TelemetryConfiguration.getActive().getTelemetryModules();
+    System.out.println(modules.size());
     boolean hasHeartBeatModule = false;
     HeartBeatModule hbm = null;
     for (TelemetryModule m : modules) {
@@ -123,6 +133,7 @@ public class HeartbeatTests {
         break;
       }
     }
+    System.out.println(hasHeartBeatModule);
     Assert.assertTrue(hasHeartBeatModule);
     Assert.assertNotNull(hbm);
     Assert.assertTrue(hbm.isHeartBeatEnabled());
@@ -304,5 +315,16 @@ public class HeartbeatTests {
     Thread.sleep(100);
     Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("Base"));
     Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("webapps"));
+  }
+
+  @AfterClass
+  public static void tear() throws Exception{
+    tearDown();
+  }
+
+  private static void tearDown() throws Exception{
+    Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
+    method.setAccessible(true);
+    method.invoke(null);
   }
 }

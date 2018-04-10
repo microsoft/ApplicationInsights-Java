@@ -12,7 +12,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * @author Dhaval Doshi
  * @since 03-30-2018
  */
-class MiscUtils {
+public class MiscUtils {
 
   /**
    * Returns a list which contains Items present in list2 but not in the set.
@@ -20,7 +20,7 @@ class MiscUtils {
    * @param list2
    * @return
    */
-  static Set<String> except(Set<String> set, List<String> list2) {
+  public static Set<String> except(Set<String> set, List<String> list2) {
     try {
       if (set == null || list2 == null) throw new IllegalArgumentException("Input is null");
       Set<String> result = new HashSet<>();
