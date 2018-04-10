@@ -62,7 +62,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Auto-configuration for application insights. Configures {@link TelemetryConfiguration}
  *
- * @author Arthur Gavlyukovskiy
+ * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
 @Configuration
 @ConditionalOnProperty(value = "azure.application-insights.instrumentation-key")

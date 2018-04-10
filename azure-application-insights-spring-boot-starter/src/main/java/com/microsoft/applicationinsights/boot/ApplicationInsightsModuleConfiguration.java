@@ -37,7 +37,7 @@ import org.springframework.core.env.Environment;
 /**
  * {@link Configuration} for non-web applications.
  *
- * @author Arthur Gavlyukovskiy
+ * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
 @Configuration
 @ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)

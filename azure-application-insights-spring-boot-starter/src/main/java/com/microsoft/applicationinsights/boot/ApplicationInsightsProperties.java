@@ -45,7 +45,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * {@link ConfigurationProperties} for configuring application insights.
  *
- * @author Arthur Gavlyukovskiy
+ * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
 @ConfigurationProperties("azure.application-insights")
 public class ApplicationInsightsProperties {
