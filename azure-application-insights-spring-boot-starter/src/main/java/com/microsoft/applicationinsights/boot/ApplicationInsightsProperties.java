@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.internal.channel.common.TransmissionFil
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProvider;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggerOutputType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger.LoggingLevel;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
@@ -89,6 +90,8 @@ public class ApplicationInsightsProperties {
      * Jmx Counter container
      */
     private Jmx jmx = new Jmx();
+
+    private HeartBeat heartBeat = new HeartBeat();
 
     public boolean isEnabled() {
         return enabled;
@@ -164,7 +167,16 @@ public class ApplicationInsightsProperties {
         this.jmx = jmx;
     }
 
-    static class Channel {
+  public HeartBeat getHeartBeat() {
+    return heartBeat;
+  }
+
+  public void setHeartBeat(
+      HeartBeat heartBeat) {
+    this.heartBeat = heartBeat;
+  }
+
+  static class Channel {
         /**
          * Configuration of {@link InProcessTelemetryChannel}.
          */
@@ -425,5 +437,50 @@ public class ApplicationInsightsProperties {
         public void setJmxCounters(List<String> jmxCounters) {
             this.jmxCounters = jmxCounters;
         }
+    }
+
+    static class HeartBeat {
+
+      boolean isEnabled = false;
+
+      long heartBeatInterval = HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL;
+
+      List<String> excludedHeartBeatProviderList = new ArrayList<>();
+
+      List<String> excludedHeartBeatPropertiesList = new ArrayList<>();
+
+      public boolean isEnabled() {
+        return isEnabled;
+      }
+
+      public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
+      }
+
+      public long getHeartBeatInterval() {
+        return heartBeatInterval;
+      }
+
+      public void setHeartBeatInterval(long heartBeatInterval) {
+        this.heartBeatInterval = heartBeatInterval;
+      }
+
+      public List<String> getExcludedHeartBeatProviderList() {
+        return excludedHeartBeatProviderList;
+      }
+
+      public void setExcludedHeartBeatProviderList(
+          List<String> excludedHeartBeatProviderList) {
+        this.excludedHeartBeatProviderList = excludedHeartBeatProviderList;
+      }
+
+      public List<String> getExcludedHeartBeatPropertiesList() {
+        return excludedHeartBeatPropertiesList;
+      }
+
+      public void setExcludedHeartBeatPropertiesList(
+          List<String> excludedHeartBeatPropertiesList) {
+        this.excludedHeartBeatPropertiesList = excludedHeartBeatPropertiesList;
+      }
     }
 }

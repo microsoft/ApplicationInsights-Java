@@ -21,14 +21,21 @@
 
 package com.microsoft.applicationinsights.boot;
 
+import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.HeartBeat;
+import com.microsoft.applicationinsights.boot.HeartBeatProvider.SpringBootHeartBeatProvider;
 import com.microsoft.applicationinsights.boot.conditional.ConditionalOnOperatingSystem;
 import com.microsoft.applicationinsights.boot.conditional.OperatingSystem;
 import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartbeatDefaultPayload;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -40,13 +47,17 @@ import org.springframework.core.env.Environment;
  * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
 @Configuration
+@EnableConfigurationProperties(ApplicationInsightsProperties.class)
 @ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)
 public class ApplicationInsightsModuleConfiguration {
 
-    @Bean
-    public SpringBootTelemetryInitializer springBootTelemetryInitializer(Environment environment) {
-        return new SpringBootTelemetryInitializer(environment);
-    }
+    @Autowired
+    ApplicationInsightsProperties applicationInsightsProperties;
+
+//    @Bean
+//    public SpringBootTelemetryInitializer springBootTelemetryInitializer(Environment environment) {
+//        return new SpringBootTelemetryInitializer(environment);
+//    }
 
     @Bean
     public SdkVersionContextInitializer sdkVersionContextInitializer() {
@@ -83,6 +94,28 @@ public class ApplicationInsightsModuleConfiguration {
             throw new IllegalStateException("Could not initialize Jvm Performance Counters module "
                 + "please set the property 'azure.application-insights.default.modules.JvmPerformanceCountersModule.enabled=false' to "
                 + "avoid this error message", e);
+        }
+    }
+
+    @Bean
+    @ConditionalOnProperty(value = "azure.application-insights.default.modules.HearBeat.enabled", havingValue = "true", matchIfMissing = true)
+    public HeartBeatModule heartBeatModule(Environment environment) {
+        try {
+            HeartBeatModule heartBeatModule = new HeartBeatModule(null);
+            HeartbeatDefaultPayload.addDefaultPayLoadProvider(new SpringBootHeartBeatProvider(environment));
+            HeartBeat heartBeat = applicationInsightsProperties.getHeartBeat();
+            heartBeatModule.setHeartBeatInterval(heartBeat.getHeartBeatInterval());
+            if (heartBeat.getExcludedHeartBeatPropertiesList().size() > 0) {
+                heartBeatModule.setExcludedHeartBeatProperties(heartBeat.getExcludedHeartBeatPropertiesList());
+            }
+            if (heartBeat.getExcludedHeartBeatProviderList().size() > 0) {
+                heartBeatModule.setExcludedHeartBeatPropertiesProvider(heartBeat.getExcludedHeartBeatProviderList());
+            }
+            return heartBeatModule;
+        }
+        catch (Exception e) {
+            throw new IllegalStateException("could not configure Heartbeat, please disable 'azure.application-insights.default.modules.HearBeat.enabled'"
+                + " to false ", e);
         }
     }
 }

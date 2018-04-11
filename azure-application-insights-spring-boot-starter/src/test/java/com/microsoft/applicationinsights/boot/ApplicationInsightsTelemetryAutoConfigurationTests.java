@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
+import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
@@ -42,8 +43,10 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Map;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -303,5 +306,12 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
                 }
             };
         }
+    }
+
+    @AfterClass
+    public static void tearDown() throws Exception {
+        Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
+        method.setAccessible(true);
+        method.invoke(null);
     }
 }
