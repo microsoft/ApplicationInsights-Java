@@ -25,12 +25,10 @@ import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Hear
 import com.microsoft.applicationinsights.boot.HeartBeatProvider.SpringBootHeartBeatProvider;
 import com.microsoft.applicationinsights.boot.conditional.ConditionalOnOperatingSystem;
 import com.microsoft.applicationinsights.boot.conditional.OperatingSystem;
-import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartbeatDefaultPayload;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,11 +51,6 @@ public class ApplicationInsightsModuleConfiguration {
 
     @Autowired
     ApplicationInsightsProperties applicationInsightsProperties;
-
-//    @Bean
-//    public SpringBootTelemetryInitializer springBootTelemetryInitializer(Environment environment) {
-//        return new SpringBootTelemetryInitializer(environment);
-//    }
 
     @Bean
     public SdkVersionContextInitializer sdkVersionContextInitializer() {
