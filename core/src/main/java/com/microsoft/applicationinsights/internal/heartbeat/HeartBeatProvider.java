@@ -104,20 +104,20 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
 
   @Override
   public void initialize(TelemetryConfiguration configuration) {
-    if (this.telemetryClient == null) {
-      this.telemetryClient = new TelemetryClient(configuration);
-    }
-
-    //Submit task to set properties to dictionary using separate thread. we do not wait for the
-    //results to come out as some I/O bound properties may take time.
-    executorService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
-        getExcludedHeartBeatPropertyProviders(), this));
-
-
     if (isEnabled) {
+      if (this.telemetryClient == null) {
+        this.telemetryClient = new TelemetryClient(configuration);
+      }
+
+      //Submit task to set properties to dictionary using separate thread. we do not wait for the
+      //results to come out as some I/O bound properties may take time.
+      executorService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
+          getExcludedHeartBeatPropertyProviders(), this));
+
+
+
       scheduledExecutorService.scheduleAtFixedRate(heartBeatPulse(), interval, interval, TimeUnit.SECONDS);
     }
-
   }
 
   @Override

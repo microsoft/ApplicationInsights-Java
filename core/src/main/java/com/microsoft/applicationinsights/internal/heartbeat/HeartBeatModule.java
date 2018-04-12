@@ -31,9 +31,9 @@ public class HeartBeatModule implements TelemetryModule {
   private final Object lock = new Object();
 
   /**
-   * State of heartbeat
+   * Flag to seek if module is initialized
    */
-  private static boolean isEnabled = false;
+  private static boolean isInitialized = false;
 
   /**
    * Initializes the heartbeat configuration based on connfiguration properties specified in
@@ -161,12 +161,12 @@ public class HeartBeatModule implements TelemetryModule {
 
   @Override
   public void initialize(TelemetryConfiguration configuration) {
-    if (!isEnabled) {
+    if (!isInitialized) {
       synchronized (lock) {
-        if (!isEnabled) {
+        if (!isInitialized) {
           this.heartBeatProviderInterface.initialize(configuration);
           InternalLogger.INSTANCE.info("heartbeat is enabled");
-          isEnabled = true;
+          isInitialized = true;
         }
       }
     }
