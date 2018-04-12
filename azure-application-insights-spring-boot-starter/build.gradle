@@ -37,7 +37,7 @@ dependencies {
 //    testCompile('org.junit.jupiter:junit-jupiter-engine:5.1.1')
     testCompile('junit:junit:4.12')
     testCompile('org.springframework.boot:spring-boot-starter-test:1.5.9.RELEASE')
-    testCompile('org.assertj:assertj-core:3.9.0')
+    testCompile('org.assertj:assertj-core:2.6.0')
 }
 
 compileJava.dependsOn(processResources)
