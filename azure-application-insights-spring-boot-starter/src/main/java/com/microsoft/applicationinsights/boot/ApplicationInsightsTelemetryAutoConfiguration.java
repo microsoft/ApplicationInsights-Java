@@ -21,10 +21,11 @@
 
 package com.microsoft.applicationinsights.boot;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel.InProcess;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.PerformanceCounter;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
@@ -40,6 +41,10 @@ import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerforman
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +56,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Auto-configuration for application insights. Configures {@link TelemetryConfiguration}
@@ -76,17 +74,45 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
 
     private static final Logger log = getLogger(ApplicationInsightsTelemetryAutoConfiguration.class);
 
-    @Autowired
     private ApplicationInsightsProperties applicationInsightsProperties;
 
-    @Autowired(required = false)
     private Collection<ContextInitializer> contextInitializers;
-    @Autowired(required = false)
+
     private Collection<TelemetryInitializer> telemetryInitializers;
-    @Autowired(required = false)
+
     private Collection<TelemetryModule> telemetryModules;
-    @Autowired(required = false)
+
     private Collection<TelemetryProcessor> telemetryProcessors;
+
+    @Autowired
+    public ApplicationInsightsTelemetryAutoConfiguration(
+        ApplicationInsightsProperties applicationInsightsProperties) {
+        this.applicationInsightsProperties = applicationInsightsProperties;
+    }
+
+    @Autowired(required = false)
+    public void setContextInitializers(
+        Collection<ContextInitializer> contextInitializers) {
+        this.contextInitializers = contextInitializers;
+    }
+
+    @Autowired(required = false)
+    public void setTelemetryInitializers(
+        Collection<TelemetryInitializer> telemetryInitializers) {
+        this.telemetryInitializers = telemetryInitializers;
+    }
+
+    @Autowired(required = false)
+    public void setTelemetryModules(
+        Collection<TelemetryModule> telemetryModules) {
+        this.telemetryModules = telemetryModules;
+    }
+
+    @Autowired(required = false)
+    public void setTelemetryProcessors(
+        Collection<TelemetryProcessor> telemetryProcessors) {
+        this.telemetryProcessors = telemetryProcessors;
+    }
 
     @Bean
     @DependsOn("internalLogger")
@@ -183,6 +209,10 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         return PerformanceCounterContainer.INSTANCE;
     }
 
+    /**
+     * This method is used to process and load list of JmxCounters provided in the configuration.
+     * @param jmxCounterList
+     */
     private void processAndLoadJmxCounters(List<String> jmxCounterList) {
 
         try {
@@ -228,42 +258,44 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         }
     }
 
-
+    /**
+     * This Internal class is used to represent the Jmx Object Structure
+     */
     private class CompositeJmxData {
         String displayName;
         String objectName;
         String attributeName;
         String type;
 
-        public String getDisplayName() {
+         String getDisplayName() {
             return displayName;
         }
 
-        public void setDisplayName(String displayName) {
+         void setDisplayName(String displayName) {
             this.displayName = displayName;
         }
 
-        public String getObjectName() {
+         String getObjectName() {
             return objectName;
         }
 
-        public void setObjectName(String objectName) {
+         void setObjectName(String objectName) {
             this.objectName = objectName;
         }
 
-        public String getAttributeName() {
+         String getAttributeName() {
             return attributeName;
         }
 
-        public void setAttributeName(String attributeName) {
+         void setAttributeName(String attributeName) {
             this.attributeName = attributeName;
         }
 
-        public String getType() {
+         String getType() {
             return type;
         }
 
-        public void setType(String type) {
+         void setType(String type) {
             this.type = type;
             if (this.type != null) {
                 this.type = this.type.toUpperCase();
@@ -271,6 +303,11 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         }
     }
 
+    /**
+     * This converts jmxCounter String to {@link CompositeJmxData} object
+     * @param jmxCounter
+     * @return CompositeJmxData object
+     */
     private CompositeJmxData convertToCompositeJmxData(String jmxCounter) {
         if (jmxCounter != null && jmxCounter.length() > 0) {
             String[] attributes = jmxCounter.split("/");

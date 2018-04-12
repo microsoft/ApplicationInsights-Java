@@ -152,6 +152,7 @@ azure.application-insights.telemetry-processor.sampling.exclude=
 
 # Enable/Disable default telemetry modules. Default value: true.
 azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled=true
+azure.application-insights.default-modules.JvmPerformanceCountersModule.enabled=true
 azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled=true
 azure.application-insights.default-modules.WebSessionTrackingTelemetryModule.enabled=true
 azure.application-insights.default-modules.WebUserTrackingTelemetryModule.enabled=true
@@ -161,4 +162,21 @@ azure.application-insights.default-modules.WebOperationNameTelemetryInitializer.
 azure.application-insights.default-modules.WebSessionTelemetryInitializer.enabled=true
 azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled=true
 azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled=true
+
+#Enable/Disable heartbeat module. Default value : true
+azure.application-insights.heart-beat.enabled=true
+#Default heartbeat interval is 15 minutes. Minimum heartbeat interval can be 30 seconds.
+azure.application-insights.heart-beat.heart-beat-interval=900
+#If set of properties are specified they would be excluded from Heartbeat payload
+azure.application-insights.heart-beat.excluded-heart-beat-properties-list=
+#If set of HeartBeat providers are specified they would be excluded
+azure.application-insights.heart-beat.excluded-heart-beat-provider-list
 ```
+
+###Completely disable Application Insights using `application.properties`
+```properties
+azure.application-insights.enabled=false
+azure.application-insights.web.enabled=false
+```
+Note: Do not configure `azure.application-insights.instrumentation-key` property for optimal performance
+and avoiding any Application Insights beans creation by Spring.

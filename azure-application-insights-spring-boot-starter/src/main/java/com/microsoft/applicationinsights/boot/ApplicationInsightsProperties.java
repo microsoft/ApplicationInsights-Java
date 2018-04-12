@@ -51,436 +51,402 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("azure.application-insights")
 public class ApplicationInsightsProperties {
 
-    /**
-     * Enables application insights auto-configuration.
-     */
-    private boolean enabled = true;
-    /**
-     * Instrumentation key from Azure Portal.
-     */
-    private String instrumentationKey;
-    /**
-     * Telemetry transmission channel configuration.
-     */
-    private Channel channel = new Channel();
-    /**
-     * Built in telemetry processors configuration.
-     */
-    private TelemetryProcessor telemetryProcessor = new TelemetryProcessor();
-    /**
-     * Web plugins settings.
-     */
-    private Web web = new Web();
-    /**
-     * Quick Pulse settings.
-     */
-    private QuickPulse quickPulse = new QuickPulse();
-    /**
-     * Logger properties.
-     */
-    private Logger logger = new Logger();
+  /** Enables application insights auto-configuration. */
+  private boolean enabled = true;
+  /** Instrumentation key from Azure Portal. */
+  private String instrumentationKey;
+  /** Telemetry transmission channel configuration. */
+  private Channel channel = new Channel();
+  /** Built in telemetry processors configuration. */
+  private TelemetryProcessor telemetryProcessor = new TelemetryProcessor();
+  /** Web plugins settings. */
+  private Web web = new Web();
+  /** Quick Pulse settings. */
+  private QuickPulse quickPulse = new QuickPulse();
+  /** Logger properties. */
+  private Logger logger = new Logger();
 
-    /**
-     * Performance Counter Container Properties
-     */
+  /** Performance Counter Container Properties */
+  private PerformanceCounter performanceCounter = new PerformanceCounter();
 
-    private PerformanceCounter performanceCounter = new PerformanceCounter();
+  /** Jmx Counter container */
+  private Jmx jmx = new Jmx();
 
-    /**
-     * Jmx Counter container
-     */
-    private Jmx jmx = new Jmx();
+  /** Heartbeat Properties container */
+  private HeartBeat heartBeat = new HeartBeat();
 
-    private HeartBeat heartBeat = new HeartBeat();
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+  public String getInstrumentationKey() {
+    return instrumentationKey;
+  }
 
-    public String getInstrumentationKey() {
-        return instrumentationKey;
-    }
+  public void setInstrumentationKey(String instrumentationKey) {
+    this.instrumentationKey = instrumentationKey;
+  }
 
-    public void setInstrumentationKey(String instrumentationKey) {
-        this.instrumentationKey = instrumentationKey;
-    }
+  public Channel getChannel() {
+    return channel;
+  }
 
-    public Channel getChannel() {
-        return channel;
-    }
+  public void setChannel(Channel channel) {
+    this.channel = channel;
+  }
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
-    }
+  public TelemetryProcessor getTelemetryProcessor() {
+    return telemetryProcessor;
+  }
 
-    public TelemetryProcessor getTelemetryProcessor() {
-        return telemetryProcessor;
-    }
+  public void setTelemetryProcessor(TelemetryProcessor telemetryProcessor) {
+    this.telemetryProcessor = telemetryProcessor;
+  }
 
-    public void setTelemetryProcessor(TelemetryProcessor telemetryProcessor) {
-        this.telemetryProcessor = telemetryProcessor;
-    }
+  public Web getWeb() {
+    return web;
+  }
 
-    public Web getWeb() {
-        return web;
-    }
+  public void setWeb(Web web) {
+    this.web = web;
+  }
 
-    public void setWeb(Web web) {
-        this.web = web;
-    }
+  public QuickPulse getQuickPulse() {
+    return quickPulse;
+  }
 
-    public QuickPulse getQuickPulse() {
-        return quickPulse;
-    }
+  public void setQuickPulse(QuickPulse quickPulse) {
+    this.quickPulse = quickPulse;
+  }
 
-    public void setQuickPulse(QuickPulse quickPulse) {
-        this.quickPulse = quickPulse;
-    }
+  public Logger getLogger() {
+    return logger;
+  }
 
-    public Logger getLogger() {
-        return logger;
-    }
+  public void setLogger(Logger logger) {
+    this.logger = logger;
+  }
 
-    public void setLogger(Logger logger) {
-        this.logger = logger;
+  public PerformanceCounter getPerformanceCounter() {
+    return performanceCounter;
+  }
 
-    }
+  public void setPerformanceCounter(PerformanceCounter performanceCounter) {
+    this.performanceCounter = performanceCounter;
+  }
 
-    public PerformanceCounter getPerformanceCounter() {
-        return performanceCounter;
-    }
+  public Jmx getJmx() {
+    return jmx;
+  }
 
-    public void setPerformanceCounter(
-        PerformanceCounter performanceCounter) {
-        this.performanceCounter = performanceCounter;
-    }
-
-    public Jmx getJmx() {
-        return jmx;
-    }
-
-    public void setJmx(Jmx jmx) {
-        this.jmx = jmx;
-    }
+  public void setJmx(Jmx jmx) {
+    this.jmx = jmx;
+  }
 
   public HeartBeat getHeartBeat() {
     return heartBeat;
   }
 
-  public void setHeartBeat(
-      HeartBeat heartBeat) {
+  public void setHeartBeat(HeartBeat heartBeat) {
     this.heartBeat = heartBeat;
   }
 
   static class Channel {
-        /**
-         * Configuration of {@link InProcessTelemetryChannel}.
-         */
-        private InProcess inProcess = new InProcess();
+    /** Configuration of {@link InProcessTelemetryChannel}. */
+    private InProcess inProcess = new InProcess();
 
-        public InProcess getInProcess() {
-            return inProcess;
-        }
-
-        public void setInProcess(InProcess inProcess) {
-            this.inProcess = inProcess;
-        }
-
-        static class InProcess {
-            /**
-             * Enables developer mode, all telemetry will be sent immediately without batching.
-             * Significantly affects performance and should be used only in developer environment.
-             */
-            private boolean developerMode = false;
-            /**
-             * Endpoint address.
-             */
-            private String endpointAddress = TransmissionNetworkOutput.DEFAULT_SERVER_URI;
-            /**
-             * Maximum count of telemetries that will be batched before sending. Must be between 1 and 1000.
-             */
-            private int maxTelemetryBufferCapacity = InProcessTelemetryChannel.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
-            /**
-             * Interval to send telemetry. Must be between 1 and 300.
-             */
-            private int flushIntervalInSeconds = InProcessTelemetryChannel.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
-            /**
-             * Size of disk space that Application Insights can use to store telemetry in case of network outage. Must be between 1 and 1000.
-             */
-            private int maxTransmissionStorageFilesCapacityInMb = TransmissionFileSystemOutput.DEFAULT_CAPACITY_MEGABYTES;
-            /**
-             * Enables throttling on sending telemetry data.
-             */
-            private boolean throttling = true;
-
-            /**
-             * Sets the size of maximum instant retries without delay
-             */
-            private int maxInstantRetry = InProcessTelemetryChannel.DEFAULT_MAX_INSTANT_RETRY;
-
-            public boolean isDeveloperMode() {
-                return developerMode;
-            }
-
-            public void setDeveloperMode(boolean developerMode) {
-                this.developerMode = developerMode;
-            }
-
-            public int getMaxInstantRetry() {
-                return maxInstantRetry;
-            }
-
-            public void setMaxInstantRetry(int maxInstantRetry) {
-                this.maxInstantRetry = maxInstantRetry;
-            }
-
-            public String getEndpointAddress() {
-                return endpointAddress;
-            }
-
-            public void setEndpointAddress(String endpointAddress) {
-                this.endpointAddress = endpointAddress;
-            }
-
-            public int getMaxTelemetryBufferCapacity() {
-                return maxTelemetryBufferCapacity;
-            }
-
-            public void setMaxTelemetryBufferCapacity(int maxTelemetryBufferCapacity) {
-                this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
-            }
-
-            public int getFlushIntervalInSeconds() {
-                return flushIntervalInSeconds;
-            }
-
-            public void setFlushIntervalInSeconds(int flushIntervalInSeconds) {
-                this.flushIntervalInSeconds = flushIntervalInSeconds;
-            }
-
-            public int getMaxTransmissionStorageFilesCapacityInMb() {
-                return maxTransmissionStorageFilesCapacityInMb;
-            }
-
-            public void setMaxTransmissionStorageFilesCapacityInMb(int maxTransmissionStorageFilesCapacityInMb) {
-                this.maxTransmissionStorageFilesCapacityInMb = maxTransmissionStorageFilesCapacityInMb;
-            }
-
-            public boolean isThrottling() {
-                return throttling;
-            }
-
-            public void setThrottling(boolean throttling) {
-                this.throttling = throttling;
-            }
-        }
+    public InProcess getInProcess() {
+      return inProcess;
     }
 
-    static class TelemetryProcessor {
-
-        /**
-         * Configuration of {@link FixedRateSamplingTelemetryProcessor}.
-         */
-        private Sampling sampling = new Sampling();
-
-        public Sampling getSampling() {
-            return sampling;
-        }
-
-        public void setSampling(Sampling sampling) {
-            this.sampling = sampling;
-        }
-
-        static class Sampling {
-            /**
-             * Percent of telemetry events that will be sent to Application Insights. Percentage must be close to 100/N where N is an integer.
-             * E.g. 50 (=100/2), 33.33 (=100/3), 25 (=100/4), 20, 1 (=100/100), 0.1 (=100/1000).
-             */
-            private double percentage = FixedRateSamplingTelemetryProcessor.DEFAULT_SAMPLING_PERCENTAGE;
-            /**
-             * If set only telemetry of specified types will be included.
-             */
-            private List<TelemetryType> include = new ArrayList<>();
-            /**
-             * If set telemetry of specified type will be excluded.
-             */
-            private List<TelemetryType> exclude = new ArrayList<>();
-
-            public double getPercentage() {
-                return percentage;
-            }
-
-            public void setPercentage(double percentage) {
-                this.percentage = percentage;
-            }
-
-            public List<TelemetryType> getInclude() {
-                return include;
-            }
-
-            public void setInclude(List<TelemetryType> include) {
-                this.include = include;
-            }
-
-            public List<TelemetryType> getExclude() {
-                return exclude;
-            }
-
-            public void setExclude(List<TelemetryType> exclude) {
-                this.exclude = exclude;
-            }
-        }
+    public void setInProcess(InProcess inProcess) {
+      this.inProcess = inProcess;
     }
 
-    static class Web {
-        /**
-         * Enables Web telemetry modules.
-         *
-         * Implicitly affects modules:
-         *  - {@link WebRequestTrackingTelemetryModule}
-         *  - {@link WebSessionTrackingTelemetryModule}
-         *  - {@link WebUserTrackingTelemetryModule}
-         *  - {@link WebPerformanceCounterModule}
-         *  - {@link WebOperationIdTelemetryInitializer}
-         *  - {@link WebOperationNameTelemetryInitializer}
-         *  - {@link WebSessionTelemetryInitializer}
-         *  - {@link WebUserTelemetryInitializer}
-         *  - {@link WebUserAgentTelemetryInitializer}
-         *
-         *  False means that all those modules will be disabled
-         *  regardless of the enabled property of concrete module.
-         */
-        private boolean enabled = true;
+    static class InProcess {
+      /**
+       * Enables developer mode, all telemetry will be sent immediately without batching.
+       * Significantly affects performance and should be used only in developer environment.
+       */
+      private boolean developerMode = false;
+      /** Endpoint address. */
+      private String endpointAddress = TransmissionNetworkOutput.DEFAULT_SERVER_URI;
+      /**
+       * Maximum count of telemetries that will be batched before sending. Must be between 1 and
+       * 1000.
+       */
+      private int maxTelemetryBufferCapacity =
+          InProcessTelemetryChannel.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
+      /** Interval to send telemetry. Must be between 1 and 300. */
+      private int flushIntervalInSeconds =
+          InProcessTelemetryChannel.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
+      /**
+       * Size of disk space that Application Insights can use to store telemetry in case of network
+       * outage. Must be between 1 and 1000.
+       */
+      private int maxTransmissionStorageFilesCapacityInMb =
+          TransmissionFileSystemOutput.DEFAULT_CAPACITY_MEGABYTES;
+      /** Enables throttling on sending telemetry data. */
+      private boolean throttling = true;
 
-        public boolean isEnabled() {
-            return enabled;
-        }
+      /** Sets the size of maximum instant retries without delay */
+      private int maxInstantRetry = InProcessTelemetryChannel.DEFAULT_MAX_INSTANT_RETRY;
 
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-    }
-
-    public static class QuickPulse {
-        /**
-         * Enables Quick Pulse integration.
-         */
-        private boolean enabled = true;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-    }
-
-    static class Logger {
-        /**
-         * Type of application insights logger.
-         */
-        private LoggerOutputType type = LoggerOutputType.CONSOLE;
-        /**
-         * Minimal level of application insights logger.
-         */
-        private LoggingLevel level = LoggingLevel.OFF;
-
-        public LoggerOutputType getType() {
-            return type;
-        }
-
-        public void setType(LoggerOutputType type) {
-            this.type = type;
-        }
-
-        public LoggingLevel getLevel() {
-            return level;
-        }
-
-        public void setLevel(LoggingLevel level) {
-            this.level = level;
-        }
-    }
-
-    static class PerformanceCounter {
-
-        /**
-         * Default collection frequency of performance counters
-         */
-        private long collectionFrequencyInSeconds = PerformanceCounterContainer.DEFAULT_COLLECTION_FREQUENCY_IN_SEC;
-
-        public long getCollectionFrequencyInSeconds() {
-            return collectionFrequencyInSeconds;
-        }
-
-        public void setCollectionFrequencyInSeconds(long collectionFrequencyInSeconds) {
-            this.collectionFrequencyInSeconds = collectionFrequencyInSeconds;
-        }
-    }
-
-    static class Jmx {
-
-        /**
-         * List of JMX counters
-         */
-        List<String> jmxCounters = new ArrayList<>();
-
-        public List<String> getJmxCounters() {
-            return jmxCounters;
-        }
-
-        public void setJmxCounters(List<String> jmxCounters) {
-            this.jmxCounters = jmxCounters;
-        }
-    }
-
-    static class HeartBeat {
-
-      boolean isEnabled = false;
-
-      long heartBeatInterval = HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL;
-
-      List<String> excludedHeartBeatProviderList = new ArrayList<>();
-
-      List<String> excludedHeartBeatPropertiesList = new ArrayList<>();
-
-      public boolean isEnabled() {
-        return isEnabled;
+      public boolean isDeveloperMode() {
+        return developerMode;
       }
 
-      public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
+      public void setDeveloperMode(boolean developerMode) {
+        this.developerMode = developerMode;
       }
 
-      public long getHeartBeatInterval() {
-        return heartBeatInterval;
+      public int getMaxInstantRetry() {
+        return maxInstantRetry;
       }
 
-      public void setHeartBeatInterval(long heartBeatInterval) {
-        this.heartBeatInterval = heartBeatInterval;
+      public void setMaxInstantRetry(int maxInstantRetry) {
+        this.maxInstantRetry = maxInstantRetry;
       }
 
-      public List<String> getExcludedHeartBeatProviderList() {
-        return excludedHeartBeatProviderList;
+      public String getEndpointAddress() {
+        return endpointAddress;
       }
 
-      public void setExcludedHeartBeatProviderList(
-          List<String> excludedHeartBeatProviderList) {
-        this.excludedHeartBeatProviderList = excludedHeartBeatProviderList;
+      public void setEndpointAddress(String endpointAddress) {
+        this.endpointAddress = endpointAddress;
       }
 
-      public List<String> getExcludedHeartBeatPropertiesList() {
-        return excludedHeartBeatPropertiesList;
+      public int getMaxTelemetryBufferCapacity() {
+        return maxTelemetryBufferCapacity;
       }
 
-      public void setExcludedHeartBeatPropertiesList(
-          List<String> excludedHeartBeatPropertiesList) {
-        this.excludedHeartBeatPropertiesList = excludedHeartBeatPropertiesList;
+      public void setMaxTelemetryBufferCapacity(int maxTelemetryBufferCapacity) {
+        this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
+      }
+
+      public int getFlushIntervalInSeconds() {
+        return flushIntervalInSeconds;
+      }
+
+      public void setFlushIntervalInSeconds(int flushIntervalInSeconds) {
+        this.flushIntervalInSeconds = flushIntervalInSeconds;
+      }
+
+      public int getMaxTransmissionStorageFilesCapacityInMb() {
+        return maxTransmissionStorageFilesCapacityInMb;
+      }
+
+      public void setMaxTransmissionStorageFilesCapacityInMb(
+          int maxTransmissionStorageFilesCapacityInMb) {
+        this.maxTransmissionStorageFilesCapacityInMb = maxTransmissionStorageFilesCapacityInMb;
+      }
+
+      public boolean isThrottling() {
+        return throttling;
+      }
+
+      public void setThrottling(boolean throttling) {
+        this.throttling = throttling;
       }
     }
+  }
+
+  static class TelemetryProcessor {
+
+    /** Configuration of {@link FixedRateSamplingTelemetryProcessor}. */
+    private Sampling sampling = new Sampling();
+
+    public Sampling getSampling() {
+      return sampling;
+    }
+
+    public void setSampling(Sampling sampling) {
+      this.sampling = sampling;
+    }
+
+    static class Sampling {
+      /**
+       * Percent of telemetry events that will be sent to Application Insights. Percentage must be
+       * close to 100/N where N is an integer. E.g. 50 (=100/2), 33.33 (=100/3), 25 (=100/4), 20, 1
+       * (=100/100), 0.1 (=100/1000).
+       */
+      private double percentage = FixedRateSamplingTelemetryProcessor.DEFAULT_SAMPLING_PERCENTAGE;
+      /** If set only telemetry of specified types will be included. */
+      private List<TelemetryType> include = new ArrayList<>();
+      /** If set telemetry of specified type will be excluded. */
+      private List<TelemetryType> exclude = new ArrayList<>();
+
+      public double getPercentage() {
+        return percentage;
+      }
+
+      public void setPercentage(double percentage) {
+        this.percentage = percentage;
+      }
+
+      public List<TelemetryType> getInclude() {
+        return include;
+      }
+
+      public void setInclude(List<TelemetryType> include) {
+        this.include = include;
+      }
+
+      public List<TelemetryType> getExclude() {
+        return exclude;
+      }
+
+      public void setExclude(List<TelemetryType> exclude) {
+        this.exclude = exclude;
+      }
+    }
+  }
+
+  static class Web {
+    /**
+     * Enables Web telemetry modules.
+     *
+     * <p>Implicitly affects modules: - {@link WebRequestTrackingTelemetryModule} - {@link
+     * WebSessionTrackingTelemetryModule} - {@link WebUserTrackingTelemetryModule} - {@link
+     * WebPerformanceCounterModule} - {@link WebOperationIdTelemetryInitializer} - {@link
+     * WebOperationNameTelemetryInitializer} - {@link WebSessionTelemetryInitializer} - {@link
+     * WebUserTelemetryInitializer} - {@link WebUserAgentTelemetryInitializer}
+     *
+     * <p>False means that all those modules will be disabled regardless of the enabled property of
+     * concrete module.
+     */
+    private boolean enabled = true;
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+  }
+
+  public static class QuickPulse {
+    /** Enables Quick Pulse integration. */
+    private boolean enabled = true;
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+  }
+
+  static class Logger {
+    /** Type of application insights logger. */
+    private LoggerOutputType type = LoggerOutputType.CONSOLE;
+    /** Minimal level of application insights logger. */
+    private LoggingLevel level = LoggingLevel.OFF;
+
+    public LoggerOutputType getType() {
+      return type;
+    }
+
+    public void setType(LoggerOutputType type) {
+      this.type = type;
+    }
+
+    public LoggingLevel getLevel() {
+      return level;
+    }
+
+    public void setLevel(LoggingLevel level) {
+      this.level = level;
+    }
+  }
+
+  static class PerformanceCounter {
+
+    /** Default collection frequency of performance counters */
+    private long collectionFrequencyInSeconds =
+        PerformanceCounterContainer.DEFAULT_COLLECTION_FREQUENCY_IN_SEC;
+
+    public long getCollectionFrequencyInSeconds() {
+      return collectionFrequencyInSeconds;
+    }
+
+    public void setCollectionFrequencyInSeconds(long collectionFrequencyInSeconds) {
+      this.collectionFrequencyInSeconds = collectionFrequencyInSeconds;
+    }
+  }
+
+  static class Jmx {
+
+    /** List of JMX counters */
+    List<String> jmxCounters = new ArrayList<>();
+
+    public List<String> getJmxCounters() {
+      return jmxCounters;
+    }
+
+    public void setJmxCounters(List<String> jmxCounters) {
+      this.jmxCounters = jmxCounters;
+    }
+  }
+
+  static class HeartBeat {
+
+    /**
+     * Switch to enable / disable heartbeat
+     */
+    boolean isEnabled = false;
+
+    /**
+     * The heartbeat interval in seconds.
+     */
+    long heartBeatInterval = HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL;
+
+    /**
+     * List of excluded heartbeat properties
+     */
+    List<String> excludedHeartBeatProviderList = new ArrayList<>();
+
+    /**
+     * List of excluded heartbeat providers
+     */
+    List<String> excludedHeartBeatPropertiesList = new ArrayList<>();
+
+    public boolean isEnabled() {
+      return isEnabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      isEnabled = enabled;
+    }
+
+    public long getHeartBeatInterval() {
+      return heartBeatInterval;
+    }
+
+    public void setHeartBeatInterval(long heartBeatInterval) {
+      this.heartBeatInterval = heartBeatInterval;
+    }
+
+    public List<String> getExcludedHeartBeatProviderList() {
+      return excludedHeartBeatProviderList;
+    }
+
+    public void setExcludedHeartBeatProviderList(List<String> excludedHeartBeatProviderList) {
+      this.excludedHeartBeatProviderList = excludedHeartBeatProviderList;
+    }
+
+    public List<String> getExcludedHeartBeatPropertiesList() {
+      return excludedHeartBeatPropertiesList;
+    }
+
+    public void setExcludedHeartBeatPropertiesList(List<String> excludedHeartBeatPropertiesList) {
+      this.excludedHeartBeatPropertiesList = excludedHeartBeatPropertiesList;
+    }
+  }
 }

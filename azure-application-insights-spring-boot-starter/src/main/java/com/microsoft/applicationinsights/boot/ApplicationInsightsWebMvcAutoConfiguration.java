@@ -37,6 +37,10 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 
+/**
+ * Configuration for Auto-collection of HTTP requests.
+ */
+
 @Configuration
 @Import(InterceptorRegistry.class)
 @ConditionalOnBean(TelemetryConfiguration.class)

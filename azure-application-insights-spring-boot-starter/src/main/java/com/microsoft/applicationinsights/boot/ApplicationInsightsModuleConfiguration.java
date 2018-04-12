@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Hear
 import com.microsoft.applicationinsights.boot.HeartBeatProvider.SpringBootHeartBeatProvider;
 import com.microsoft.applicationinsights.boot.conditional.ConditionalOnOperatingSystem;
 import com.microsoft.applicationinsights.boot.conditional.OperatingSystem;
+import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
@@ -49,8 +50,12 @@ import org.springframework.core.env.Environment;
 @ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)
 public class ApplicationInsightsModuleConfiguration {
 
+    private ApplicationInsightsProperties applicationInsightsProperties;
+
     @Autowired
-    ApplicationInsightsProperties applicationInsightsProperties;
+    public ApplicationInsightsModuleConfiguration(ApplicationInsightsProperties properties) {
+        this.applicationInsightsProperties = properties;
+    }
 
     @Bean
     public SdkVersionContextInitializer sdkVersionContextInitializer() {
@@ -63,8 +68,14 @@ public class ApplicationInsightsModuleConfiguration {
     }
 
     @Bean
+    public SpringBootTelemetryInitializer springBootTelemetryInitializer() {
+        return new SpringBootTelemetryInitializer();
+    }
+
+    //FIXME: This should be conditional on operating System. However, current architecture of ProcessBuiltInPerformanceCountersFactory
+    //FIXME: does not separate this concerns therefore cannot condition as of now.
+    @Bean
     @DependsOn("performanceCounterContainer")
-    @ConditionalOnOperatingSystem(OperatingSystem.WINDOWS)
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled", havingValue = "true", matchIfMissing = true)
     public ProcessPerformanceCountersModule processPerformanceCountersModule() {
         try {

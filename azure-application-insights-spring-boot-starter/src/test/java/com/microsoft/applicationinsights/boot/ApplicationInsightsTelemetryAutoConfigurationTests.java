@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
-import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
@@ -266,6 +266,18 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         context.refresh();
 
         assertThat(context.getBeansOfType(JvmPerformanceCountersModule.class)).isNotEmpty();
+    }
+
+    @Test
+    public void heartBeatModuleShouldBeEnabledByDefault() {
+        EnvironmentTestUtils.addEnvironment(context,
+            "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
+            "azure.application-insights.heart-beat.enabled=true");
+        context.register(PropertyPlaceholderAutoConfiguration.class,
+            ApplicationInsightsTelemetryAutoConfiguration.class);
+        context.refresh();
+
+        assertThat(context.getBeansOfType(HeartBeatModule.class)).isNotEmpty();
     }
 
     private static class CustomModuleConfiguration {
