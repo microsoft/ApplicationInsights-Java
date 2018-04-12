@@ -21,14 +21,30 @@
 
 package com.microsoft.applicationinsights.agent.internal.logger;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 
 import static org.junit.Assert.*;
 
 public final class InternalAgentLoggerTest {
+
+    private static PrintStream REAL_SYSOUT;
+    private static ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+    @BeforeClass
+    public static void setupSysout() {
+        REAL_SYSOUT = System.out;
+        System.setOut(new PrintStream(baos, true));
+    }
+
+    @AfterClass
+    public static void restoreSysout() {
+        System.setOut(REAL_SYSOUT);
+    }
+
     @Before
     public void preTest() throws NoSuchFieldException, IllegalAccessException {
         Field field = InternalAgentLogger.class.getDeclaredField("initialized");
@@ -38,6 +54,11 @@ public final class InternalAgentLoggerTest {
         field = InternalAgentLogger.class.getDeclaredField("loggingLevel");
         field.setAccessible(true);
         field.set(InternalAgentLogger.INSTANCE, InternalAgentLogger.LoggingLevel.OFF);
+    }
+
+    @After
+    public void postTest() {
+        baos.reset();
     }
 
     @Test
@@ -74,5 +95,22 @@ public final class InternalAgentLoggerTest {
         assertTrue(InternalAgentLogger.INSTANCE.isWarnEnabled());
         assertTrue(InternalAgentLogger.INSTANCE.isErrorEnabled());
         assertFalse(InternalAgentLogger.INSTANCE.isTraceEnabled());
+    }
+
+    @Test // this is very dependent on the format string.
+    public void loggerDateFormatIncludesMilliseconds() throws NoSuchFieldException, IllegalAccessException {
+        InternalAgentLogger.INSTANCE.initialize("TRACE");
+        InternalAgentLogger.INSTANCE.info("T3$t");
+        String message = baos.toString();
+        REAL_SYSOUT.println(message);
+        assertTrue(message.contains("T3$t"));
+
+        String[] parts = message.split("\\s+");
+        String time = parts[3];
+        String[] timeParts = time.split(":");
+        assertEquals(3, timeParts.length);
+
+        int dotIndex = timeParts[2].indexOf('.');
+        assertEquals(2, dotIndex);
     }
 }

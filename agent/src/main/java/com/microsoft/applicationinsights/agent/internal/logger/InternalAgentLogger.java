@@ -53,7 +53,7 @@ public enum InternalAgentLogger {
 
     private boolean initialized = false;
 
-    private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+    private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
     private LoggingLevel loggingLevel = LoggingLevel.OFF;
 
     public boolean isTraceEnabled() {
