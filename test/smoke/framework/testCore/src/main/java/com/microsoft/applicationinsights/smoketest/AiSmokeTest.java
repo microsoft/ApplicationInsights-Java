@@ -22,20 +22,23 @@ import org.junit.*;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import javax.annotation.Nullable;
-import javax.swing.plaf.synth.SynthConstants;
 import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -44,17 +47,24 @@ import static org.junit.Assert.*;
  */
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(ParameterizedRunnerWithFixturesFactory.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class AiSmokeTest {
 
 	//region: parameterization
 	@Parameters(name = "{index}: {0}, {1}, {2}")
-	public static Collection<Object[]> parameterGenerator() throws MalformedURLException, IOException {
+	public static Collection<Object[]> parameterGenerator() throws IOException {
 		List<String> appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
 		System.out.println("Target appservers="+Arrays.toString(appServers.toArray()));
 		String os = System.getProperty("applicationinsights.smoketest.os", "linux");
 		Multimap<String, String> appServers2jres = HashMultimap.create();
 		for (String appServer : appServers) {
-			List<String> serverJres = getAppServerJres(appServer);
+			List<String> serverJres;
+			try {
+				serverJres = getAppServerJres(appServer);
+			} catch (Exception e) {
+				System.err.printf("SKIPPING '%s'. Could not configure jres: %s%n", appServer, e);
+				continue;
+			}
 			appServers2jres.putAll(appServer, serverJres);
 		}
 
@@ -64,6 +74,7 @@ public abstract class AiSmokeTest {
 		for (Entry<String, String> entry : appServers2jres.entries()) {
 			rval.add(new Object[]{entry.getKey(), os, entry.getValue()});
 		}
+		System.out.println("Configured appservers="+Arrays.toString(appServers2jres.keySet().toArray()));
 
 		return rval;
 	}
