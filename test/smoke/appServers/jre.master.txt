@@ -1,4 +1,2 @@
 openjdk:7-jre
 openjdk:8-jre
-azul/zulu-openjdk:7
-azul/zulu-openjdk:8
