@@ -3,8 +3,6 @@ FROM @JRE@
 USER root
 WORKDIR /root/docker-compile
 
-# TODO add label?
-
 RUN mkdir /root/docker-stage
 
 # update packages and install dependencies: wget
@@ -17,7 +15,7 @@ RUN apt-get install -y procps
 ENV TOMCAT_MAJOR_VERSION 7
 ENV TOMCAT_FULL_VERSION 7.0.84
 
-# install tomcat (FXIME gpg?)
+# install tomcat
 RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
 	&& wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
 	&& sha1sum --check apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
