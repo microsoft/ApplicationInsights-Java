@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ -z "$JETTY_BASE" ]; then
 	echo "\$JETTY_BASE not set" >&2
