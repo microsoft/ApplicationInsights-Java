@@ -15,7 +15,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public class MiscUtils {
 
   /**
-   * Returns a list which contains Items present in list2 but not in the set.
+   * Returns a list which contains items present in list2 but not in the set.
    * @param set
    * @param list2
    * @return

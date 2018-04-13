@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -243,7 +241,7 @@ public class HeartbeatTests {
   @Test
   public void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
     HeartBeatProviderMock mock = new HeartBeatProviderMock();
-    BaseDefaultHeartbeatPropertyProvider defaultProvider = new BaseDefaultHeartbeatPropertyProvider();
+    DefaultHeartbeatPropertyProvider defaultProvider = new DefaultHeartbeatPropertyProvider();
 
     HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(), new ArrayList<String>(),
         mock).call();
@@ -276,7 +274,7 @@ public class HeartbeatTests {
   public void cannotSetValueOfDefaultPayloadProperties() throws Exception {
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(null);
-    BaseDefaultHeartbeatPropertyProvider defaultBase = new BaseDefaultHeartbeatPropertyProvider();
+    DefaultHeartbeatPropertyProvider defaultBase = new DefaultHeartbeatPropertyProvider();
 
     //for callable to complete
     Thread.sleep(100);
@@ -290,7 +288,7 @@ public class HeartbeatTests {
 
   @Test
   public void cannotAddUnknownDefaultProperty() throws Exception {
-    BaseDefaultHeartbeatPropertyProvider base = new BaseDefaultHeartbeatPropertyProvider();
+    DefaultHeartbeatPropertyProvider base = new DefaultHeartbeatPropertyProvider();
     String testKey = "testKey";
 
     Field field = base.getClass().getDeclaredField("defaultFields");

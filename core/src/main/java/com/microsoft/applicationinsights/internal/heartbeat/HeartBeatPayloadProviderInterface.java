@@ -10,14 +10,14 @@ import java.util.concurrent.Callable;
  *   This interface is used to set the default payload of a provider and defines implementation for
  *   some helper methods to assist it.
  *
- *   The default concrete implementations are {@link com.microsoft.applicationinsights.internal.heartbeat.BaseDefaultHeartbeatPropertyProvider}
- *   and {@link com.microsoft.applicationinsights.internal.heartbeat.WebAppsDefaultHeartbeatProvider}
+ *   The default concrete implementations are {@link DefaultHeartbeatPropertyProvider}
+ *   and {@link WebAppsHeartbeatProvider}
  * </p>
  *
  * @author Dhaval Doshi
  * @since 03-30-2018
  */
-public interface HeartBeatDefaultPayloadProviderInterface {
+public interface HeartBeatPayloadProviderInterface {
 
   /**
    * Returns the name of the heartbeat provider.
@@ -30,7 +30,7 @@ public interface HeartBeatDefaultPayloadProviderInterface {
    * @param keyword string to test
    * @return true if input string is reserved keyword
    */
-  boolean isKeyWord(String keyword);
+  boolean isKeyword(String keyword);
 
   /**
    * Returns a callable which can be executed to set the payload based on the parameters.

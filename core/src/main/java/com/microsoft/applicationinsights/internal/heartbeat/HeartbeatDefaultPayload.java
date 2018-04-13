@@ -6,24 +6,24 @@ import java.util.concurrent.Callable;
 
 public class HeartbeatDefaultPayload {
 
-  private static final List<HeartBeatDefaultPayloadProviderInterface> defaultPayloadProviders =
+  private static final List<HeartBeatPayloadProviderInterface> defaultPayloadProviders =
       new ArrayList<>();
 
   static {
-    defaultPayloadProviders.add(new BaseDefaultHeartbeatPropertyProvider());
-    defaultPayloadProviders.add(new WebAppsDefaultHeartbeatProvider());
+    defaultPayloadProviders.add(new DefaultHeartbeatPropertyProvider());
+    defaultPayloadProviders.add(new WebAppsHeartbeatProvider());
   }
 
-  public static boolean isDefaultKeyWord(String keyword) {
-    for (HeartBeatDefaultPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
-      if (payloadProvider.isKeyWord(keyword)) {
+  public static boolean isDefaultKeyword(String keyword) {
+    for (HeartBeatPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
+      if (payloadProvider.isKeyword(keyword)) {
         return true;
       }
     }
     return false;
   }
 
-  public static boolean addDefaultPayLoadProvider(HeartBeatDefaultPayloadProviderInterface payloadProviderInterface) {
+  public static boolean addDefaultPayLoadProvider(HeartBeatPayloadProviderInterface payloadProviderInterface) {
     if (payloadProviderInterface != null) {
       defaultPayloadProviders.add(payloadProviderInterface);
       return true;
@@ -38,7 +38,7 @@ public class HeartbeatDefaultPayload {
       volatile boolean populatedFields = false;
       @Override
       public Boolean call() throws Exception {
-        for (HeartBeatDefaultPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
+        for (HeartBeatPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
           if (disabledProviders != null && disabledProviders.contains(payloadProvider.getName())) {
 
             // skip any azure specific modules here
