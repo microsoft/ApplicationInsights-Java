@@ -90,8 +90,8 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.isEnabled = true;
     this.heartbeatsSent = new AtomicLong(0);
-    this.propertyUpdateService = Executors.newCachedThreadPool(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class));
-    this.heartBeatSenderService = Executors.newScheduledThreadPool(1, ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class));
+    this.propertyUpdateService = Executors.newCachedThreadPool(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "propertyUpdateService"));
+    this.heartBeatSenderService = Executors.newScheduledThreadPool(1, ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
   }
 
   @Override

@@ -177,7 +177,7 @@ public class HeartbeatTests {
   public void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
     HeartBeatProviderMock mockProvider = new HeartBeatProviderMock();
     List<String> disabledProviders = new ArrayList<>();
-    disabledProviders.add("Base");
+    disabledProviders.add("Default");
     disabledProviders.add("webapps");
     Callable<Boolean> callable = HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(),
         disabledProviders, mockProvider);
