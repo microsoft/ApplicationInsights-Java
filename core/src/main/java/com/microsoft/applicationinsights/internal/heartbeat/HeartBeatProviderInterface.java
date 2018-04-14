@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
  * </p>
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
 public interface HeartBeatProviderInterface {
 

@@ -10,7 +10,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * This class contains some misc. functions used in heartbeat module.
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
 public class MiscUtils {
 

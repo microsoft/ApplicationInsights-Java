@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -29,7 +30,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * </p>
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
 public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable {
 
@@ -138,7 +138,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
              InternalLogger.INSTANCE.trace("added heartbeat property %s - %s", propertyName, propertyValue);
         }
         else {
-          throw new Exception("heartbeat property cannot be added twice. Please use setHeartBeatProperty instead to modify the value");
+          throw new IllegalStateException("heartbeat property cannot be added twice. Please use setHeartBeatProperty instead to modify the value");
         }
       } catch (Exception e) {
         InternalLogger.INSTANCE.warn("Failed to add the property %s value %s, stack trace is : %s," ,
@@ -160,19 +160,19 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       try {
 
         if (!heartbeatProperties.containsKey(propertyName)) {
-          setResult = false;
-          throw new Exception("heartbeat property cannot be set without adding it first");
-        } else if (HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
+          InternalLogger.INSTANCE.trace("The property %s is not already present. It will be added", propertyName);
+        }
+        if (HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
           setResult = false;
           throw new Exception("heartbeat beat property specified is a reserved property");
         }
-        else  {
-          HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
-          payload.setHealthy(isHealthy);
-          payload.setPayloadValue(propertyValue);
-          heartbeatProperties.put(propertyName, payload);
-          setResult = true;
-        }
+
+        HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
+        payload.setHealthy(isHealthy);
+        payload.setPayloadValue(propertyValue);
+        heartbeatProperties.put(propertyName, payload);
+        setResult = true;
+
       }
       catch (Exception e) {
         InternalLogger.INSTANCE.warn("failed to set heartbeat property name %s, value %s, "

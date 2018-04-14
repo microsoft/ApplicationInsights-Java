@@ -15,7 +15,6 @@ import java.util.concurrent.Callable;
  * </p>
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
 public interface HeartBeatPayloadProviderInterface {
 

@@ -262,11 +262,10 @@ public class HeartbeatTests {
   }
 
   @Test
-  public void cannotSetPropertyWithoutAddingItFirst() {
+  public void canSetPropertyWithoutAddingItFirst() {
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(null);
-    Assert.assertFalse(provider.setHeartBeatProperty("test01", "test val", true));
-    Assert.assertTrue(provider.addHeartBeatProperty("test01", "test val 2", true));
+    Assert.assertTrue(provider.setHeartBeatProperty("test01", "test val", true));
     Assert.assertTrue(provider.setHeartBeatProperty("test01", "test val", true));
   }
 

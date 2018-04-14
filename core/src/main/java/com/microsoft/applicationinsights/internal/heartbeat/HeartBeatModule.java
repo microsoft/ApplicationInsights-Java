@@ -19,7 +19,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * </p>
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
 public class HeartBeatModule implements TelemetryModule {
 
