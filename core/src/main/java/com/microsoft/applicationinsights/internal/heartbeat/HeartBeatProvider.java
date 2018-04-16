@@ -2,12 +2,11 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -51,7 +49,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   /**
    * The counter for heartbeat sent to portal
    */
-  private AtomicLong heartbeatsSent;
+  private long heartbeatsSent;
 
   /**
    * Map to hold heartbeat properties
@@ -89,7 +87,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     this.interval = HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL;
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.isEnabled = true;
-    this.heartbeatsSent = new AtomicLong(0);
+    this.heartbeatsSent = 0;
     this.propertyUpdateService = Executors.newCachedThreadPool(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "propertyUpdateService"));
     this.heartBeatSenderService = Executors.newScheduledThreadPool(1, ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
   }
@@ -128,21 +126,17 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
 
     boolean isAdded= false;
     if (!StringUtils.isEmpty(propertyName)) {
-      try {
-        if (!heartbeatProperties.containsKey(propertyName)) {
-             HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
-             payload.setHealthy(isHealthy);
-             payload.setPayloadValue(propertyValue);
-             heartbeatProperties.put(propertyName, payload);
-             isAdded = true;
-             InternalLogger.INSTANCE.trace("added heartbeat property %s - %s", propertyName, propertyValue);
-        }
-        else {
-          throw new IllegalStateException("heartbeat property cannot be added twice. Please use setHeartBeatProperty instead to modify the value");
-        }
-      } catch (Exception e) {
-        InternalLogger.INSTANCE.warn("Failed to add the property %s value %s, stack trace is : %s," ,
-            propertyName, propertyValue, ExceptionUtils.getStackTrace(e));
+      if (!heartbeatProperties.containsKey(propertyName)) {
+           HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
+           payload.setHealthy(isHealthy);
+           payload.setPayloadValue(propertyValue);
+           heartbeatProperties.put(propertyName, payload);
+           isAdded = true;
+           InternalLogger.INSTANCE.trace("added heartbeat property %s - %s", propertyName, propertyValue);
+      }
+      else {
+        InternalLogger.INSTANCE.trace("heartbeat property %s cannot be added twice. Please use setHeartBeatProperty instead to modify the value",
+                propertyName);
       }
     }
     else {
@@ -157,27 +151,21 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
 
     boolean setResult = false;
     if (!StringUtils.isEmpty(propertyName)) {
-      try {
 
-        if (!heartbeatProperties.containsKey(propertyName)) {
-          InternalLogger.INSTANCE.trace("The property %s is not already present. It will be added", propertyName);
-        }
-        if (HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
-          setResult = false;
-          throw new Exception("heartbeat beat property specified is a reserved property");
-        }
-
-        HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
-        payload.setHealthy(isHealthy);
-        payload.setPayloadValue(propertyValue);
-        heartbeatProperties.put(propertyName, payload);
-        setResult = true;
-
+      if (!heartbeatProperties.containsKey(propertyName)) {
+        InternalLogger.INSTANCE.trace("The property %s is not already present. It will be added", propertyName);
       }
-      catch (Exception e) {
-        InternalLogger.INSTANCE.warn("failed to set heartbeat property name %s, value %s, "
-            + "stack trace is: %s", propertyName, propertyValue, ExceptionUtils.getStackTrace(e));
+      if (HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
+        InternalLogger.INSTANCE.warn("heartbeat beat property specified %s is a reserved property", propertyName);
+        return false;
       }
+
+      HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
+      payload.setHealthy(isHealthy);
+      payload.setPayloadValue(propertyValue);
+      heartbeatProperties.put(propertyName, payload);
+      setResult = true;
+
     }
     else {
       InternalLogger.INSTANCE.warn("cannot set property without property name");
@@ -252,11 +240,10 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   private void send() {
 
     synchronized (lock) {
-      MetricTelemetry telemetry = (MetricTelemetry)gatherData();
+      MetricTelemetry telemetry = gatherData();
       telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
       telemetryClient.trackMetric(telemetry);
-      heartbeatsSent.incrementAndGet();
-      InternalLogger.INSTANCE.trace("No of heartbeats sent, %s", heartbeatsSent.get());
+      InternalLogger.INSTANCE.trace("No of heartbeats sent, %s", ++heartbeatsSent);
     }
 
   }
@@ -265,7 +252,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
    * Creates and returns the heartbeat telemetry.
    * @return Metric Telemetry which represent heartbeat.
    */
-  private Telemetry gatherData() {
+  private MetricTelemetry gatherData() {
 
     MetricTelemetry heartbeat = new MetricTelemetry(HEARTBEAT_SYNTHETIC_METRIC_NAME, 0.0);
     Map<String, String> property = heartbeat.getProperties();
@@ -286,17 +273,11 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     return new Runnable() {
       @Override
       public void run() {
-        if (isEnabled) {
-
-          try {
-           send();
-          }
-          catch (Exception e) {
-            InternalLogger.INSTANCE.warn("Error occured while sending heartbeat");
-          }
+        try {
+         send();
         }
-        else {
-          InternalLogger.INSTANCE.info("Heartbeat is disabled");
+        catch (Exception e) {
+          InternalLogger.INSTANCE.warn("Error occured while sending heartbeat");
         }
       }
     };
