@@ -38,6 +38,8 @@ include ':test:smoke:appServers:Tomcat.7'
 include ':test:smoke:appServers:Tomcat.8'
 include ':test:smoke:appServers:Tomcat.8.5'
 include ':test:smoke:appServers:JBossEAP.7'
+include ':test:smoke:appServers:JBossEAP.6'
+include ':test:smoke:appServers:Jetty.9'
 include ':test:smoke:testApps'
 
 include ':test:smoke:framework:testCore'
