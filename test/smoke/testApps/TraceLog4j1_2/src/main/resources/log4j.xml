@@ -13,27 +13,19 @@
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%-5p %c - %m%n"/>
         </layout>
-        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="levelMin" value="info" />
-            <param name="levelMax" value="fatal" />
-            <param name="AcceptOnMatch" value="true" />
-        </filter>
     </appender>
 
     <logger name="com.microsoft.applicationinsights.core.dependencies.http">
         <level value="off" />
     </logger>
     
-    <root>
-        <level  value ="TRACE" />
-        <appender-ref ref="test" />
-        <!-- <appender-ref ref="console" /> -->
-    </root>
+    <logger name="com.microsoft.applicationinsights.web.dependencies.http">
+        <level value="off" />
+    </logger>
 
-    <!-- <appender name="aiAppender" class="com.microsoft.applicationinsights.log4j.v1_2.ApplicationInsightsAppender" instrumentationKey="00000000-0000-0000-0000-0FEEDDADBEEF">
-    </appender>
     <root>
-      <level value ="TRACE" />
-      <appender-ref ref="aiAppender" />
-    </root> -->
+        <priority  value ="trace" />
+        <appender-ref ref="test" />
+        <appender-ref ref="console" />
+    </root>
 </log4j:configuration>

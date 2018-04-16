@@ -28,5 +28,10 @@ public class SimpleTestTraceLog4j1_2 extends HttpServlet {
 
         Logger logger = LogManager.getRootLogger();
         logger.trace("This is log4j1.2 trace.");
+        logger.debug("This is log4j1.2 debug.");
+        logger.info("This is log4j1.2 info.");
+        logger.warn("This is log4j1.2 warn.");
+        logger.error("This is log4j1.2 error.");
+        logger.fatal("This is log4j1.2 fatal.");
     }
 }
