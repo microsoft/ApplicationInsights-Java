@@ -1,37 +1,36 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * This class contains some misc. functions used in heartbeat module.
  *
  * @author Dhaval Doshi
  */
-public class MiscUtils {
+class MiscUtils {
 
   /**
-   * Returns a list which contains items present in list2 but not in the set.
-   * @param set
+   * Returns a list which contains result of List - Set
    * @param list2
+   * @param set
    * @return
    */
-  public static Set<String> except(Set<String> set, List<String> list2) {
+   static Set<String> except(List<String> list2, Set<String> set) {
     try {
-      if (set == null || list2 == null) throw new IllegalArgumentException("Input is null");
-      Set<String> result = new HashSet<>();
-      for (String s : list2) {
-        if (!set.contains(s)) {
-          result.add(s);
-        }
+      if (set == null) {
+        throw new IllegalArgumentException("Input is null");
       }
+      if( list2 == null) {
+        throw new IllegalArgumentException("Input is null");
+      }
+      Set<String> result = new HashSet<>(list2);
+      result.removeAll(set);
       return result;
     }
     catch (Exception e) {
-      InternalLogger.INSTANCE.warn("stack trace is %s", ExceptionUtils.getStackTrace(e));
+      //chomp;
     }
     finally{
       return set;
@@ -55,8 +54,7 @@ public class MiscUtils {
       return false;
     }
     catch (Exception e) {
-      InternalLogger.INSTANCE.warn("exception while comparision, stack trace is %s",
-          ExceptionUtils.getStackTrace(e));
+      //chomp;
     }
     finally{
       //return true so we don't add property when comparison exception
