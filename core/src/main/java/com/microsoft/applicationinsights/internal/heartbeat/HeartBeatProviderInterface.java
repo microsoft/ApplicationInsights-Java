@@ -114,4 +114,11 @@ public interface HeartBeatProviderInterface {
    */
   void setExcludedHeartBeatProperties(List<String> excludedHeartBeatProperties);
 
+  /**
+   * Returns true if the HeartBeat provider has the given HeartBeat Property
+   * @param Key
+   * @return
+   */
+  boolean containsHeartBeatProperty(String Key);
+
 }

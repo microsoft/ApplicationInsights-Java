@@ -14,10 +14,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class HeartbeatTests {
 
@@ -175,7 +180,17 @@ public class HeartbeatTests {
 
   @Test
   public void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
-    HeartBeatProviderMock mockProvider = new HeartBeatProviderMock();
+    HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
+    final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
+    Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
+        .then(new Answer<Boolean>() {
+              @Override
+              public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                        props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
+                        return true;
+                      }
+            });
+
     List<String> disabledProviders = new ArrayList<>();
     disabledProviders.add("Default");
     disabledProviders.add("webapps");
@@ -183,7 +198,7 @@ public class HeartbeatTests {
         disabledProviders, mockProvider);
 
     callable.call();
-    Assert.assertEquals(0, mockProvider.getHeartBeatProperties().size());
+    Assert.assertEquals(0, props.size());
   }
 
   @Test
@@ -240,16 +255,26 @@ public class HeartbeatTests {
 
   @Test
   public void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
-    HeartBeatProviderMock mock = new HeartBeatProviderMock();
+    HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
+    final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
+    Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
+        .then(new Answer<Boolean>() {
+          @Override
+          public Boolean answer(InvocationOnMock invocation) throws Throwable {
+            props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
+            return true;
+          }
+        });
     DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
     HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(), new ArrayList<String>(),
-        mock).call();
+        mockProvider).call();
     Field field = defaultProvider.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
     Set<String> defaultFields = (Set<String>)field.get(defaultProvider);
     for (String fieldName : defaultFields) {
-      Assert.assertTrue(mock.getHeartBeatProperties().containsKey(fieldName));
+      Assert.assertTrue(props.containsKey(fieldName));
+      Assert.assertTrue(props.get(fieldName).length() > 0);
     }
   }
 

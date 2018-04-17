@@ -3,10 +3,10 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -81,13 +80,12 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
    */
   private volatile boolean isEnabled;
 
-  private final Object lock = new Object();
-
   public HeartBeatProvider() {
     this.interval = HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL;
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.isEnabled = true;
     this.heartbeatsSent = 0;
+    SDKShutdownActivity.INSTANCE.register(this);
     this.propertyUpdateService = Executors.newCachedThreadPool(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "propertyUpdateService"));
     this.heartBeatSenderService = Executors.newScheduledThreadPool(1, ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
   }
@@ -136,7 +134,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       }
       else {
         InternalLogger.INSTANCE.trace("heartbeat property %s cannot be added twice. Please use setHeartBeatProperty instead to modify the value",
-                propertyName);
+            propertyName);
       }
     }
     else {
@@ -221,6 +219,11 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   }
 
   @Override
+  public boolean containsHeartBeatProperty(String key) {
+    return heartbeatProperties.containsKey(key);
+  }
+
+  @Override
   public void stop(long timeout, TimeUnit timeUnit) {
     propertyUpdateService.shutdown();
     heartBeatSenderService.shutdown();
@@ -239,12 +242,10 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
    */
   private void send() {
 
-    synchronized (lock) {
-      MetricTelemetry telemetry = gatherData();
-      telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
-      telemetryClient.trackMetric(telemetry);
-      InternalLogger.INSTANCE.trace("No of heartbeats sent, %s", ++heartbeatsSent);
-    }
+    MetricTelemetry telemetry = gatherData();
+    telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
+    telemetryClient.trackMetric(telemetry);
+    InternalLogger.INSTANCE.trace("No of heartbeats sent, %s", ++heartbeatsSent);
 
   }
 
@@ -282,4 +283,5 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       }
     };
   }
+
 }

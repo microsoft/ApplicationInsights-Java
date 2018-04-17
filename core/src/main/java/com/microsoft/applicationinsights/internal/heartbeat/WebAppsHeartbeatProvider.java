@@ -1,6 +1,8 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +80,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
               case WEBSITE_SITE_NAME:
                 String webSiteName = getWebsiteSiteName();
                 if (webSiteName == null) {
-                  InternalLogger.INSTANCE.trace("Web site name not available, probably not a web app");
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteName, true);
@@ -87,7 +88,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
               case WEBSITE_HOSTNAME:
                 String webSiteHostName = getWebsiteHostName();
                 if (webSiteHostName == null) {
-                  InternalLogger.INSTANCE.trace("web site host name not available, probably not a web app");
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteHostName, true);
@@ -96,7 +96,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
               case WEBSITE_HOME_STAMPNAME:
                 String websiteHomeStampName = getWebsiteHomeStampName();
                 if (websiteHomeStampName == null) {
-                  InternalLogger.INSTANCE.trace("web site host name not available, probably not a web app");
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteHomeStampName, true);
@@ -137,22 +136,16 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
    * @return website name
    */
   private String getWebsiteSiteName() {
-    if (environmentMap.containsKey("WEBSITE_SITE_NAME")) {
-      return environmentMap.get("WEBSITE_SITE_NAME");
-    }
-    return null;
+    return environmentMap.get("WEBSITE_SITE_NAME");
   }
 
   /**
    * Returns the website host name by reading environment variable
-   * @return
+   * @return WebSite Host Name
    */
 
   private String getWebsiteHostName() {
-    if (environmentMap.containsKey("WEBSITE_HOSTNAME ")) {
-      return environmentMap.get("WEBSITE_HOSTNAME ");
-    }
-    return null;
+    return environmentMap.get("WEBSITE_HOSTNAME ");
   }
 
   /**
@@ -160,10 +153,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
    * @return website stamp host name
    */
   private String getWebsiteHomeStampName() {
-    if (environmentMap.containsKey("WEBSITE_HOME_STAMPNAME")) {
-      return environmentMap.get("WEBSITE_HOME_STAMPNAME");
-    }
-    return null;
+    return environmentMap.get("WEBSITE_HOME_STAMPNAME");
   }
 
   /**

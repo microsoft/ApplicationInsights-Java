@@ -35,6 +35,13 @@ public class HeartBeatModule implements TelemetryModule {
   private static boolean isInitialized = false;
 
   /**
+   * Default constructor to initialize the default heartbeat configuration.
+   */
+  public HeartBeatModule() {
+    heartBeatProviderInterface = new HeartBeatProvider();
+  }
+
+  /**
    * Initializes the heartbeat configuration based on connfiguration properties specified in
    * ApplicationInsights.xml file.
    *
