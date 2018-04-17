@@ -65,7 +65,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
       final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
-      volatile Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
+      Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
       @Override
       public Boolean call() {
 

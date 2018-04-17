@@ -18,7 +18,7 @@ public class HeartbeatDefaultPayload {
       new ArrayList<>();
 
   static {
-    defaultPayloadProviders.add(new DefaultHeartbeatPropertyProvider());
+    defaultPayloadProviders.add(new DefaultHeartBeatPropertyProvider());
     defaultPayloadProviders.add(new WebAppsHeartbeatProvider());
   }
 

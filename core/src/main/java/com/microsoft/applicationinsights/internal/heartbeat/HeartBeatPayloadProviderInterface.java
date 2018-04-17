@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
  *   This interface is used to set the default payload of a provider and defines implementation for
  *   some helper methods to assist it.
  *
- *   The default concrete implementations are {@link DefaultHeartbeatPropertyProvider}
+ *   The default concrete implementations are {@link DefaultHeartBeatPropertyProvider}
  *   and {@link WebAppsHeartbeatProvider}
  * </p>
  *

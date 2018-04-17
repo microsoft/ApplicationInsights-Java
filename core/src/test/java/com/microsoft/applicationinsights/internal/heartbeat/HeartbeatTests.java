@@ -241,7 +241,7 @@ public class HeartbeatTests {
   @Test
   public void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
     HeartBeatProviderMock mock = new HeartBeatProviderMock();
-    DefaultHeartbeatPropertyProvider defaultProvider = new DefaultHeartbeatPropertyProvider();
+    DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
     HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(), new ArrayList<String>(),
         mock).call();
@@ -273,7 +273,7 @@ public class HeartbeatTests {
   public void cannotSetValueOfDefaultPayloadProperties() throws Exception {
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(null);
-    DefaultHeartbeatPropertyProvider defaultBase = new DefaultHeartbeatPropertyProvider();
+    DefaultHeartBeatPropertyProvider defaultBase = new DefaultHeartBeatPropertyProvider();
 
     //for callable to complete
     Thread.sleep(100);
@@ -287,7 +287,7 @@ public class HeartbeatTests {
 
   @Test
   public void cannotAddUnknownDefaultProperty() throws Exception {
-    DefaultHeartbeatPropertyProvider base = new DefaultHeartbeatPropertyProvider();
+    DefaultHeartBeatPropertyProvider base = new DefaultHeartBeatPropertyProvider();
     String testKey = "testKey";
 
     Field field = base.getClass().getDeclaredField("defaultFields");

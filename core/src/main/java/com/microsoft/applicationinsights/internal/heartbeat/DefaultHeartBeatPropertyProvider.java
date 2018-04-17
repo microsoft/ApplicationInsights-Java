@@ -20,7 +20,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  *
  * @author Dhaval Doshi
  */
-public class DefaultHeartbeatPropertyProvider implements HeartBeatPayloadProviderInterface {
+public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProviderInterface {
 
   /**
    * Collection holding default properties for this default provider.
@@ -47,7 +47,7 @@ public class DefaultHeartbeatPropertyProvider implements HeartBeatPayloadProvide
 
   private final String PROCESS_SESSION_ID = "processSessionId";
 
-  public DefaultHeartbeatPropertyProvider() {
+  public DefaultHeartBeatPropertyProvider() {
     defaultFields = new HashSet<>();
     initializeDefaultFields(defaultFields);
   }
@@ -67,7 +67,7 @@ public class DefaultHeartbeatPropertyProvider implements HeartBeatPayloadProvide
       final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
-      volatile Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
+      Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
       @Override
       public Boolean call() {
         boolean hasSetValues = false;
