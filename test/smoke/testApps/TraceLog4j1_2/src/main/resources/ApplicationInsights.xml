@@ -6,11 +6,6 @@
 
 	<InstrumentationKey>00000000-0000-0000-0000-0FEEDDADBEEF</InstrumentationKey>
 
-	<SDKLogger type="CONSOLE">
-		<enabled>true</enabled>
-		<UniquePrefix>JavaSDKLog</UniquePrefix>
-	</SDKLogger>
-
 	<!-- HTTP request component (not required for bare API) -->
 
 	<TelemetryModules>

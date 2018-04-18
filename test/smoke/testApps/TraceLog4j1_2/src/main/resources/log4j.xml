@@ -22,10 +22,10 @@
     <logger name="com.microsoft.applicationinsights.web.dependencies.http">
         <level value="off" />
     </logger>
-
+    
     <root>
-        <priority  value ="trace" />
+        <priority value ="trace" />
         <appender-ref ref="test" />
-        <appender-ref ref="console" />
+        <!-- <appender-ref ref="console" /> -->
     </root>
 </log4j:configuration>
