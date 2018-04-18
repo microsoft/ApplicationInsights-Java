@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -59,6 +60,32 @@ public final class ThreadPoolUtils {
             }
         } catch (InterruptedException ie) {
             threadPool.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * This method is used to shutdown ExecutorService
+     * @param executorService The instance of ExecutorService to shutdown
+     * @param timeout Max time to wait
+     * @param timeUnit Timeunit for timeout
+     */
+    public static void stop(ExecutorService executorService, long timeout, TimeUnit timeUnit) {
+        if (executorService == null) {
+            return;
+        }
+
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(timeout, timeUnit)) {
+                executorService.shutdownNow();
+
+                if (!executorService.awaitTermination(timeout, timeUnit)) {
+                    InternalLogger.INSTANCE.trace("Pool did not terminate");
+                }
+            }
+        } catch (InterruptedException ie) {
+            executorService.shutdownNow();
             Thread.currentThread().interrupt();
         }
     }

@@ -7,6 +7,9 @@ import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * <p>
@@ -87,7 +88,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     this.heartbeatsSent = 0;
     SDKShutdownActivity.INSTANCE.register(this);
     this.propertyUpdateService = Executors.newCachedThreadPool(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "propertyUpdateService"));
-    this.heartBeatSenderService = Executors.newScheduledThreadPool(1, ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
+    this.heartBeatSenderService = Executors.newSingleThreadScheduledExecutor( ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
   }
 
   @Override
@@ -225,16 +226,8 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
 
   @Override
   public void stop(long timeout, TimeUnit timeUnit) {
-    propertyUpdateService.shutdown();
-    heartBeatSenderService.shutdown();
-    try {
-      propertyUpdateService.awaitTermination(timeout, timeUnit);
-      heartBeatSenderService.awaitTermination(timeout, timeUnit);
-    }
-    catch (InterruptedException e) {
-      InternalLogger.INSTANCE.warn("unable to successfully terminate heartbeat module, "
-          + "encountered and exception with stacktrace, %s", ExceptionUtils.getStackTrace(e));
-    }
+    ThreadPoolUtils.stop(propertyUpdateService, timeout, timeUnit);
+    ThreadPoolUtils.stop(heartBeatSenderService, timeout, timeUnit);
   }
 
   /**
