@@ -8,7 +8,7 @@ import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import org.junit.Assume;
 import org.junit.Test;
 
-public class CoreAndFilterTests extends AiSmokeTest {
+public class TraceLog4j1_2Test extends AiSmokeTest {
     @Test
     @TargetUri("/traceLog4j1_2")
     public void testTraceLog4j1_2() {

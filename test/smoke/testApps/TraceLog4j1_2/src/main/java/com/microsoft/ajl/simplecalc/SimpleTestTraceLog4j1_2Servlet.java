@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  * Servlet implementation class SimpleTestTraceLog4j1_2
  */
 @WebServlet(description = "calls log4j1.2", urlPatterns = "/traceLog4j1_2")
-public class SimpleTestTraceLog4j1_2 extends HttpServlet {
+public class SimpleTestTraceLog4j1_2Servlet extends HttpServlet {
 
     private static final long serialVersionUID = 4271118116251185099L;
 
