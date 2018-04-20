@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -14,14 +15,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * <h1>Base Heartbeat Property Provider</h1>
  *
  * <p>
- *   This class is a concrete implementation of {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatDefaultPayloadProviderInterface}
+ *   This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface}
  *   It enables setting SDK Metadata to heartbeat payload.
  * </p>
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
-public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPayloadProviderInterface {
+public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProviderInterface {
 
   /**
    * Collection holding default properties for this default provider.
@@ -38,9 +38,17 @@ public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPay
   /**
    * Name of this provider.
    */
-  private final String name = "Base";
+  private final String name = "Default";
 
-  public BaseDefaultHeartbeatPropertyProvider() {
+  private final String JRE_VERSION = "jreVersion";
+
+  private final String SDK_VERSION = "sdkVersion";
+
+  private final String OS_VERSION = "osVersion";
+
+  private final String PROCESS_SESSION_ID = "processSessionId";
+
+  public DefaultHeartBeatPropertyProvider() {
     defaultFields = new HashSet<>();
     initializeDefaultFields(defaultFields);
   }
@@ -51,7 +59,7 @@ public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPay
   }
 
   @Override
-  public boolean isKeyWord(String keyword) {
+  public boolean isKeyword(String keyword) {
     return defaultFields.contains(keyword);
   }
 
@@ -60,27 +68,26 @@ public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPay
       final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
-      // using volatile here to avoid caching in threads.
-      volatile boolean hasSetValues = false;
-      volatile Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
+      Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
       @Override
       public Boolean call() {
+        boolean hasSetValues = false;
         for (String fieldName : enabledProperties) {
           try {
             switch (fieldName) {
-              case "jdkVersion":
-                provider.addHeartBeatProperty(fieldName, getJdkVersion(), true);
+              case JRE_VERSION:
+                provider.addHeartBeatProperty(fieldName, getJreVersion(), true);
                 hasSetValues = true;
                 break;
-              case "sdk-version":
+              case SDK_VERSION:
                 provider.addHeartBeatProperty(fieldName, getSdkVersion(), true);
                 hasSetValues = true;
                 break;
-              case "osType":
-                provider.addHeartBeatProperty(fieldName, getOsType(), true);
+              case OS_VERSION:
+                provider.addHeartBeatProperty(fieldName, getOsVersion(), true);
                 hasSetValues = true;
                 break;
-              case "processSessionId":
+              case PROCESS_SESSION_ID:
                 provider.addHeartBeatProperty(fieldName, getProcessSessionId(), true);
                 hasSetValues = true;
                 break;
@@ -109,17 +116,17 @@ public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPay
     if (defaultFields == null) {
       defaultFields = new HashSet<>();
     }
-    defaultFields.add("jdkVersion");
-    defaultFields.add("sdk-version");
-    defaultFields.add("osType");
-    defaultFields.add("processSessionId");
+    defaultFields.add(JRE_VERSION);
+    defaultFields.add(SDK_VERSION);
+    defaultFields.add(OS_VERSION);
+    defaultFields.add(PROCESS_SESSION_ID);
   }
 
   /**
    * Gets the JDK version being used by the application
    * @return String representing JDK Version
    */
-  private String getJdkVersion() {
+  private String getJreVersion() {
     return System.getProperty("java.version");
   }
 
@@ -145,7 +152,7 @@ public class BaseDefaultHeartbeatPropertyProvider implements HeartBeatDefaultPay
    * Gets the OS version on which application is running.
    * @return String representing OS version
    */
-  private String getOsType() {
+  private String getOsVersion() {
     return System.getProperty("os.name");
   }
 

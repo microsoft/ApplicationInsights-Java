@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
  * </p>
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
 public interface HeartBeatProviderInterface {
 
@@ -114,5 +113,12 @@ public interface HeartBeatProviderInterface {
    * @param excludedHeartBeatProperties  List of properties to be excluded
    */
   void setExcludedHeartBeatProperties(List<String> excludedHeartBeatProperties);
+
+  /**
+   * Returns true if the HeartBeat provider has the given HeartBeat Property
+   * @param Key
+   * @return
+   */
+  boolean containsHeartBeatProperty(String Key);
 
 }

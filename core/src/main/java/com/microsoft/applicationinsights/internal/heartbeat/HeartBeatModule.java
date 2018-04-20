@@ -3,11 +3,12 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * <h1>HeartBeat Provider Module</h1>
@@ -19,7 +20,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * </p>
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
 public class HeartBeatModule implements TelemetryModule {
 
@@ -31,9 +31,16 @@ public class HeartBeatModule implements TelemetryModule {
   private final Object lock = new Object();
 
   /**
-   * State of heartbeat
+   * Flag to seek if module is initialized
    */
-  private static boolean isEnabled = false;
+  private static volatile boolean isInitialized = false;
+
+  /**
+   * Default constructor to initialize the default heartbeat configuration.
+   */
+  public HeartBeatModule() {
+    heartBeatProviderInterface = new HeartBeatProvider();
+  }
 
   /**
    * Initializes the heartbeat configuration based on connfiguration properties specified in
@@ -161,12 +168,12 @@ public class HeartBeatModule implements TelemetryModule {
 
   @Override
   public void initialize(TelemetryConfiguration configuration) {
-    if (!isEnabled) {
+    if (!isInitialized && isHeartBeatEnabled()) {
       synchronized (lock) {
-        if (!isEnabled) {
+        if (!isInitialized && isHeartBeatEnabled()) {
           this.heartBeatProviderInterface.initialize(configuration);
           InternalLogger.INSTANCE.info("heartbeat is enabled");
-          isEnabled = true;
+          isInitialized = true;
         }
       }
     }

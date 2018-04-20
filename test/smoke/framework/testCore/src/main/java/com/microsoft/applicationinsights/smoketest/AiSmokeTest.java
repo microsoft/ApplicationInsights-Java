@@ -22,20 +22,23 @@ import org.junit.*;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import javax.annotation.Nullable;
-import javax.swing.plaf.synth.SynthConstants;
 import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -44,17 +47,24 @@ import static org.junit.Assert.*;
  */
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(ParameterizedRunnerWithFixturesFactory.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class AiSmokeTest {
 
 	//region: parameterization
 	@Parameters(name = "{index}: {0}, {1}, {2}")
-	public static Collection<Object[]> parameterGenerator() throws MalformedURLException, IOException {
+	public static Collection<Object[]> parameterGenerator() throws IOException {
 		List<String> appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
 		System.out.println("Target appservers="+Arrays.toString(appServers.toArray()));
 		String os = System.getProperty("applicationinsights.smoketest.os", "linux");
 		Multimap<String, String> appServers2jres = HashMultimap.create();
 		for (String appServer : appServers) {
-			List<String> serverJres = getAppServerJres(appServer);
+			List<String> serverJres;
+			try {
+				serverJres = getAppServerJres(appServer);
+			} catch (Exception e) {
+				System.err.printf("SKIPPING '%s'. Could not configure jres: %s%n", appServer, e);
+				continue;
+			}
 			appServers2jres.putAll(appServer, serverJres);
 		}
 
@@ -64,6 +74,7 @@ public abstract class AiSmokeTest {
 		for (Entry<String, String> entry : appServers2jres.entries()) {
 			rval.add(new Object[]{entry.getKey(), os, entry.getValue()});
 		}
+		System.out.println("Configured appservers="+Arrays.toString(appServers2jres.keySet().toArray()));
 
 		return rval;
 	}
@@ -336,12 +347,16 @@ public abstract class AiSmokeTest {
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
 
+		final int appServerDelayAfterStart_seconds = 5;
+		System.out.println("Waiting %d seconds for app server to startup...");
+		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
+
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
-			System.out.printf("Waiting for appserver to start (%s)...%n", url);
+			System.out.printf("Verifying appserver has started (%s)...%n", url);
 
-			waitForUrl(url, 90, TimeUnit.SECONDS, "app server");// TODO change to actual app server name
+			waitForUrl(url, 120, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName));
 			System.out.println("App server is ready.");
 		}
 		catch (Exception e) {
@@ -362,27 +377,6 @@ public abstract class AiSmokeTest {
 		// TODO start application dependencies---container(s)
 	}
 	//endregion
-
-	protected void doCalcSendsData() throws Exception {
-		System.out.println("Wait for app to finish deploying...");
-		String appContext = warFileName.replace(".war", "");
-		String baseUrl = "http://localhost:" + appServerPort + "/" + appContext;
-		waitForUrl(baseUrl, 60, TimeUnit.SECONDS, appContext);
-		System.out.println("Test app health check complete.");
-
-		String url = baseUrl+"/doCalc?leftOperand=1&rightOperand=2&operator=plus";
-		String content = HttpHelper.get(url);
-
-		assertNotNull(content);
-		assertTrue(content.length() > 0);
-		
-		System.out.println("Waiting 10s for telemetry...");
-		TimeUnit.SECONDS.sleep(10);
-		System.out.println("Finished waiting for telemetry. Starting validation...");
-
-		assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
-		assertTrue("mocked ingestion has 0 items", mockedIngestion.getItemCount() > 0);	
-	}
 
 	@After
 	public void resetMockedIngestion() throws Exception {

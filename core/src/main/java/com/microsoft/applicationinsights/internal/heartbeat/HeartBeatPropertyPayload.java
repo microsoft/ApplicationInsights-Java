@@ -7,7 +7,6 @@ package com.microsoft.applicationinsights.internal.heartbeat;
  *  </p>
  *
  *  @author Dhaval Doshi
- *  @since 03-30-2018
  */
 public class HeartBeatPropertyPayload {
 

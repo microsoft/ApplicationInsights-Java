@@ -14,12 +14,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.After;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class HeartbeatTests {
 
@@ -177,15 +180,25 @@ public class HeartbeatTests {
 
   @Test
   public void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
-    HeartBeatProviderMock mockProvider = new HeartBeatProviderMock();
+    HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
+    final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
+    Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
+        .then(new Answer<Boolean>() {
+              @Override
+              public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                        props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
+                        return true;
+                      }
+            });
+
     List<String> disabledProviders = new ArrayList<>();
-    disabledProviders.add("Base");
+    disabledProviders.add("Default");
     disabledProviders.add("webapps");
     Callable<Boolean> callable = HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(),
         disabledProviders, mockProvider);
 
     callable.call();
-    Assert.assertEquals(0, mockProvider.getHeartBeatProperties().size());
+    Assert.assertEquals(0, props.size());
   }
 
   @Test
@@ -242,16 +255,26 @@ public class HeartbeatTests {
 
   @Test
   public void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
-    HeartBeatProviderMock mock = new HeartBeatProviderMock();
-    BaseDefaultHeartbeatPropertyProvider defaultProvider = new BaseDefaultHeartbeatPropertyProvider();
+    HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
+    final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
+    Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
+        .then(new Answer<Boolean>() {
+          @Override
+          public Boolean answer(InvocationOnMock invocation) throws Throwable {
+            props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
+            return true;
+          }
+        });
+    DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
     HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(), new ArrayList<String>(),
-        mock).call();
+        mockProvider).call();
     Field field = defaultProvider.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
     Set<String> defaultFields = (Set<String>)field.get(defaultProvider);
     for (String fieldName : defaultFields) {
-      Assert.assertTrue(mock.getHeartBeatProperties().containsKey(fieldName));
+      Assert.assertTrue(props.containsKey(fieldName));
+      Assert.assertTrue(props.get(fieldName).length() > 0);
     }
   }
 
@@ -264,11 +287,10 @@ public class HeartbeatTests {
   }
 
   @Test
-  public void cannotSetPropertyWithoutAddingItFirst() {
+  public void canSetPropertyWithoutAddingItFirst() {
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(null);
-    Assert.assertFalse(provider.setHeartBeatProperty("test01", "test val", true));
-    Assert.assertTrue(provider.addHeartBeatProperty("test01", "test val 2", true));
+    Assert.assertTrue(provider.setHeartBeatProperty("test01", "test val", true));
     Assert.assertTrue(provider.setHeartBeatProperty("test01", "test val", true));
   }
 
@@ -276,7 +298,7 @@ public class HeartbeatTests {
   public void cannotSetValueOfDefaultPayloadProperties() throws Exception {
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(null);
-    BaseDefaultHeartbeatPropertyProvider defaultBase = new BaseDefaultHeartbeatPropertyProvider();
+    DefaultHeartBeatPropertyProvider defaultBase = new DefaultHeartBeatPropertyProvider();
 
     //for callable to complete
     Thread.sleep(100);
@@ -290,7 +312,7 @@ public class HeartbeatTests {
 
   @Test
   public void cannotAddUnknownDefaultProperty() throws Exception {
-    BaseDefaultHeartbeatPropertyProvider base = new BaseDefaultHeartbeatPropertyProvider();
+    DefaultHeartBeatPropertyProvider base = new DefaultHeartBeatPropertyProvider();
     String testKey = "testKey";
 
     Field field = base.getClass().getDeclaredField("defaultFields");

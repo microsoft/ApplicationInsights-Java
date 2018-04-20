@@ -1,6 +1,8 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,14 +13,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 /**
  * <h1>WebApp Heartbeat Property Provider</h1>
  * <p>
- *   This class is a concrete implementation of {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatDefaultPayloadProviderInterface}
+ *   This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface}
  *   It enables setting Web-apps Metadata to heartbeat payload.
  * </p>
  *
  * @author Dhaval Doshi
- * @since 03-30-2018
  */
-public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadProviderInterface {
+public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterface {
 
   /**
    * Name of the provider
@@ -35,10 +36,17 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
    */
   private Map<String, String> environmentMap;
 
+  private final String WEBSITE_SITE_NAME = "appSrv_SiteName";
+
+  private final String WEBSITE_HOSTNAME = "appSrv_wsHost";
+
+  private final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
+
+
   /**
    * Constructor that initializes fields and load environment variables
    */
-  public WebAppsDefaultHeartbeatProvider() {
+  public WebAppsHeartbeatProvider() {
     defaultFields = new HashSet<>();
     environmentMap = System.getenv();
     initializeDefaultFields(defaultFields);
@@ -50,7 +58,7 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
   }
 
   @Override
-  public boolean isKeyWord(String keyword) {
+  public boolean isKeyword(String keyword) {
     return defaultFields.contains(keyword);
   }
 
@@ -58,32 +66,39 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
   public Callable<Boolean> setDefaultPayload(final List<String> disableFields,
       final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
-      volatile boolean hasSetValues = false;
-      volatile Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
+
+      Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
       @Override
       public Boolean call() {
 
+        boolean hasSetValues = false;
         //update environment variable to account for
         updateEnvironmentVariableMap();
         for (String fieldName : enabledProperties) {
           try {
             switch (fieldName) {
-              case "website_site_name":
+              case WEBSITE_SITE_NAME:
                 String webSiteName = getWebsiteSiteName();
                 if (webSiteName == null) {
-                  InternalLogger.INSTANCE.trace("Web site name not available, probably not a web app");
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteName, true);
                 hasSetValues = true;
                 break;
-              case "website_home_name":
+              case WEBSITE_HOSTNAME:
                 String webSiteHostName = getWebsiteHostName();
                 if (webSiteHostName == null) {
-                  InternalLogger.INSTANCE.trace("web site host name not available, probably not a web app");
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteHostName, true);
+                hasSetValues = true;
+                break;
+              case WEBSITE_HOME_STAMPNAME:
+                String websiteHomeStampName = getWebsiteHomeStampName();
+                if (websiteHomeStampName == null) {
+                  break;
+                }
+                provider.addHeartBeatProperty(fieldName, websiteHomeStampName, true);
                 hasSetValues = true;
                 break;
               default:
@@ -110,8 +125,9 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
       defaultFields = new HashSet<>();
     }
 
-    defaultFields.add("website_site_name");
-    defaultFields.add("website_home_name");
+    defaultFields.add(WEBSITE_SITE_NAME);
+    defaultFields.add(WEBSITE_HOSTNAME);
+    defaultFields.add(WEBSITE_HOME_STAMPNAME);
 
   }
 
@@ -120,21 +136,24 @@ public class WebAppsDefaultHeartbeatProvider implements HeartBeatDefaultPayloadP
    * @return website name
    */
   private String getWebsiteSiteName() {
-    if (environmentMap.containsKey("WEBSITE_SITE_NAME")) {
-      return environmentMap.get("WEBSITE_SITE_NAME");
-    }
-    return null;
+    return environmentMap.get("WEBSITE_SITE_NAME");
+  }
+
+  /**
+   * Returns the website host name by reading environment variable
+   * @return WebSite Host Name
+   */
+
+  private String getWebsiteHostName() {
+    return environmentMap.get("WEBSITE_HOSTNAME ");
   }
 
   /**
    * Returns the website home stamp name by reading environment variable
    * @return website stamp host name
    */
-  private String getWebsiteHostName() {
-    if (environmentMap.containsKey("WEBSITE_HOME_STAMPNAME")) {
-      return environmentMap.get("WEBSITE_HOME_STAMPNAME");
-    }
-    return null;
+  private String getWebsiteHomeStampName() {
+    return environmentMap.get("WEBSITE_HOME_STAMPNAME");
   }
 
   /**
