@@ -42,13 +42,13 @@ import com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTra
 import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * {@link ConfigurationProperties} for configuring application insights.

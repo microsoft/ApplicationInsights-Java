@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.HeartBeat;
 import com.microsoft.applicationinsights.boot.HeartBeatProvider.SpringBootHeartBeatProvider;
-import com.microsoft.applicationinsights.boot.conditional.ConditionalOnOperatingSystem;
-import com.microsoft.applicationinsights.boot.conditional.OperatingSystem;
 import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
