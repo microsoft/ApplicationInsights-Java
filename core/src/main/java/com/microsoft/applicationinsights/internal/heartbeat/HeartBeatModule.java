@@ -3,11 +3,12 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * <h1>HeartBeat Provider Module</h1>
@@ -32,7 +33,7 @@ public class HeartBeatModule implements TelemetryModule {
   /**
    * Flag to seek if module is initialized
    */
-  private static boolean isInitialized = false;
+  private static volatile boolean isInitialized = false;
 
   /**
    * Default constructor to initialize the default heartbeat configuration.

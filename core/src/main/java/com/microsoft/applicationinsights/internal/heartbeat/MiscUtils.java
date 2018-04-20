@@ -38,29 +38,4 @@ class MiscUtils {
 
   }
 
-  /**
-   * This method returns true if keyword is present in the input list ignoring the case
-   * @param keyword to compare
-   * @param inputList list of string containing reserved keywords
-   * @return true if input word is present in the list ignoring the case.
-   */
-  static boolean containsIgnoreCase(String keyword, Set<String> inputList) {
-    try {
-      if (keyword == null) throw new IllegalArgumentException("Keyword to compare is null");
-      if (inputList == null) throw new IllegalArgumentException("List to compare is null");
-      for (String key : inputList) {
-        if (key.equalsIgnoreCase(keyword)) return true;
-      }
-      return false;
-    }
-    catch (Exception e) {
-      //chomp;
-    }
-    finally{
-      //return true so we don't add property when comparison exception
-      return true;
-    }
-
-  }
-
 }

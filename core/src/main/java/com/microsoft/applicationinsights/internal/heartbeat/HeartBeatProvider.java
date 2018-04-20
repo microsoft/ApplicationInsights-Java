@@ -8,7 +8,6 @@ import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,9 +85,9 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.isEnabled = true;
     this.heartbeatsSent = 0;
-    SDKShutdownActivity.INSTANCE.register(this);
     this.propertyUpdateService = Executors.newCachedThreadPool(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "propertyUpdateService"));
     this.heartBeatSenderService = Executors.newSingleThreadScheduledExecutor( ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
+    SDKShutdownActivity.INSTANCE.register(this);
   }
 
   @Override

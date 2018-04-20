@@ -21,14 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 12/22/2014.
@@ -42,26 +42,6 @@ public final class ThreadPoolUtils {
                 defaultRemoveIdleThread,
                 TimeUnit.SECONDS,
                 new ArrayBlockingQueue<Runnable>(bufferSize));
-    }
-
-    public static void stop(ThreadPoolExecutor threadPool, long timeout, TimeUnit timeUnit) {
-        if (threadPool == null) {
-            return;
-        }
-
-        threadPool.shutdown();
-        try {
-            if (!threadPool.awaitTermination(timeout, timeUnit)) {
-                threadPool.shutdownNow();
-
-                if (!threadPool.awaitTermination(timeout, timeUnit)) {
-                    InternalLogger.INSTANCE.trace("Pool did not terminate");
-                }
-            }
-        } catch (InterruptedException ie) {
-            threadPool.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
     }
 
     /**
