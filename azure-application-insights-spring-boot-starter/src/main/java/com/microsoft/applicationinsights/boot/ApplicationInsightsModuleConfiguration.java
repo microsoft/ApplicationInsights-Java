@@ -102,7 +102,7 @@ public class ApplicationInsightsModuleConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default.modules.HearBeat.enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(value = "azure.application-insights.default.modules.HeartBeat.enabled", havingValue = "true", matchIfMissing = true)
     public HeartBeatModule heartBeatModule(Environment environment) {
         try {
             HeartBeatModule heartBeatModule = new HeartBeatModule(null);
@@ -118,7 +118,7 @@ public class ApplicationInsightsModuleConfiguration {
             return heartBeatModule;
         }
         catch (Exception e) {
-            throw new IllegalStateException("could not configure Heartbeat, please disable 'azure.application-insights.default.modules.HearBeat.enabled'"
+            throw new IllegalStateException("could not configure Heartbeat, please set 'azure.application-insights.default.modules.HearBeat.enabled'"
                 + " to false ", e);
         }
     }

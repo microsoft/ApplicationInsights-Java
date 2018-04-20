@@ -1,19 +1,20 @@
 package com.microsoft.applicationinsights.boot.HeartBeatProvider;
 
-import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatDefaultPayloadProviderInterface;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatPayloadProviderInterface;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;
 import com.microsoft.applicationinsights.internal.heartbeat.MiscUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.env.Environment;
 
-public class SpringBootHeartBeatProvider implements HeartBeatDefaultPayloadProviderInterface {
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInterface {
 
   /**
    * Collection holding default properties for this default provider.
@@ -26,6 +27,12 @@ public class SpringBootHeartBeatProvider implements HeartBeatDefaultPayloadProvi
   private final String name = "SpringBootProvider";
 
   private final Environment environment;
+
+  private final String SPRING_BOOT_VERSION = "ai.spring-boot.version";
+
+  private final String SPRING_VERSION = "ai.spring.version";
+
+
 
   public SpringBootHeartBeatProvider(Environment environment) {
     defaultFields = new HashSet<>();
@@ -40,7 +47,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatDefaultPayloadProvi
   }
 
   @Override
-  public boolean isKeyWord(String keyword) {
+  public boolean isKeyword(String keyword) {
     return defaultFields.contains(keyword);
   }
 
@@ -49,19 +56,18 @@ public class SpringBootHeartBeatProvider implements HeartBeatDefaultPayloadProvi
       final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
-      // using volatile here to avoid caching in threads.
-      volatile boolean hasSetValues = false;
-      volatile Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
+      Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
       @Override
       public Boolean call() {
+        boolean hasSetValues = false;
         for (String fieldName : enabledProperties) {
           try {
             switch (fieldName) {
-              case "ai.spring-boot.version":
+              case SPRING_BOOT_VERSION:
                 provider.addHeartBeatProperty(fieldName, getSpringBootVersion(), true);
                 hasSetValues = true;
                 break;
-              case "ai.spring.version":
+              case SPRING_VERSION:
                 provider.addHeartBeatProperty(fieldName, getSpringVersion(), true);
                 hasSetValues = true;
                 break;
@@ -86,12 +92,8 @@ public class SpringBootHeartBeatProvider implements HeartBeatDefaultPayloadProvi
    * @param defaultFields collection to hold default properties.
    */
   private void initializeDefaultFields(Set<String> defaultFields) {
-
-    if (defaultFields == null) {
-      defaultFields = new HashSet<>();
-    }
-    defaultFields.add("ai.spring-boot.version");
-    defaultFields.add("ai.spring.version");
+    defaultFields.add(SPRING_BOOT_VERSION);
+    defaultFields.add(SPRING_VERSION);
   }
 
   /**
