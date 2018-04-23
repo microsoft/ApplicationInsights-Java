@@ -22,9 +22,14 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
+import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -39,22 +44,30 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
  */
 final class ApacheSender43 implements ApacheSender {
 
-    private final CloseableHttpClient httpClient;
-
+    private final AtomicReference<CloseableHttpClient> httpClientRef = new AtomicReference<>();
+    private volatile boolean isClientInitialized = false;
+    private final ExecutorService initializer = Executors.newSingleThreadExecutor();
     public ApacheSender43() {
-        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
-        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+        initializer.execute(new Runnable() {
 
-        httpClient = HttpClients.custom()
-                .setConnectionManager(cm)
-                .useSystemProperties()
-                .build();
-         }
+            @Override
+            public void run() {
+                PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+                cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
+                cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+
+                httpClientRef.compareAndSet(null, HttpClients.custom()
+                        .setConnectionManager(cm)
+                        .useSystemProperties()
+                        .build());
+            }
+        });
+        SDKShutdownActivity.INSTANCE.register(initializer);
+     }
 
     @Override
     public HttpResponse sendPostRequest(HttpPost post) throws IOException {
-        return httpClient.execute(post);
+        return getHttpClient().execute(post);
     }
 
     @Override
@@ -71,7 +84,7 @@ final class ApacheSender43 implements ApacheSender {
     @Override
     public void close() {
         try {
-            httpClient.close();
+            ((CloseableHttpClient)getHttpClient()).close();
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to close http client, exception: %s", e.toString());
         }
@@ -79,7 +92,21 @@ final class ApacheSender43 implements ApacheSender {
 
     @Override
     public HttpClient getHttpClient() {
-        return httpClient;
+        if (!isClientInitialized) {
+            synchronized (this) {
+                if (!isClientInitialized) {
+                    while (httpClientRef.get() == null) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(3);
+                        } catch (InterruptedException e){
+                        }
+                    }
+                    isClientInitialized = true;
+                }
+            }
+        }
+
+        return httpClientRef.get();
     }
 
     @Override

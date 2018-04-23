@@ -33,13 +33,14 @@ import java.util.List;
  * Created by gupele on 3/15/2015.
  */
 public final class AnnotationPackageScanner {
+    private AnnotationPackageScanner(){}
     /**
      * The method will scan packages searching for classes that have the needed annotations.
      * @param annotationsToSearch The annotations we need.
      * @param packageToScan The packages to scan from, note that all sub packages will be scanned too.
      * @return A list of class names that are under the package we asked and that carry the needed annotations
      */
-    public List<String> scanForClassAnnotations(final Class<? extends Annotation>[] annotationsToSearch, String packageToScan) {
+    public static List<String> scanForClassAnnotations(final Class<? extends Annotation>[] annotationsToSearch, String packageToScan) {
         final ArrayList<String> performanceModuleNames = new ArrayList<String>();
         AnnotationDetector.TypeReporter reporter = new AnnotationDetector.TypeReporter() {
             @Override

@@ -24,11 +24,14 @@ package com.microsoft.applicationinsights.internal.shutdown;
 import java.io.Closeable;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -63,6 +66,15 @@ public enum SDKShutdownActivity {
 
         public synchronized void register(Closeable closeable) {
             closeables.add(closeable);
+        }
+
+        public synchronized void register(final ExecutorService service) {
+            register(new Stoppable() {
+                @Override
+                public void stop(long timeout, TimeUnit timeUnit) {
+                    ThreadPoolUtils.stop(service, timeout, timeUnit);
+                }
+            });
         }
 
         @Override
@@ -172,6 +184,10 @@ public enum SDKShutdownActivity {
 
     public void register(Closeable closable) {
         getShutdownAction().register(closable);
+    }
+
+    public void register(ExecutorService service) {
+        getShutdownAction().register(service);
     }
 
     public void stopAll() {

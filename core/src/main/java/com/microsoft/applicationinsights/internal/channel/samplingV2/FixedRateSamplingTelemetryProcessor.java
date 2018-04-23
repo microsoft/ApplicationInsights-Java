@@ -70,14 +70,14 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
         this.excludedTypes = new HashSet<Class>();
         try {
             this.allowedTypes = new HashMap<String, Class>() {{
-                put(dependencyTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry"));
-                put(eventTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.EventTelemetry"));
-                put(exceptionTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.ExceptionTelemetry"));
-                put(pageViewTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.PageViewTelemetry"));
-                put(requestTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.RequestTelemetry"));
-                put(traceTelemetryName, Class.forName("com.microsoft.applicationinsights.telemetry.TraceTelemetry"));
+                put(dependencyTelemetryName, com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry.class);
+                put(eventTelemetryName, com.microsoft.applicationinsights.telemetry.EventTelemetry.class);
+                put(exceptionTelemetryName, com.microsoft.applicationinsights.telemetry.ExceptionTelemetry.class);
+                put(pageViewTelemetryName, com.microsoft.applicationinsights.telemetry.PageViewTelemetry.class);
+                put(requestTelemetryName, com.microsoft.applicationinsights.telemetry.RequestTelemetry.class);
+                put(traceTelemetryName, com.microsoft.applicationinsights.telemetry.TraceTelemetry.class);
             }};
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             InternalLogger.INSTANCE.trace("Unable to locate telemetry classes. stack trace is %s", ExceptionUtils.getStackTrace(e));
         }
     }

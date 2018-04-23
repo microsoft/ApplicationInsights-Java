@@ -6,7 +6,6 @@ import javax.servlet.annotation.WebListener;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
 @WebListener
 public class ApplicationInsightsServletContextListener implements ServletContextListener {
@@ -17,7 +16,7 @@ public class ApplicationInsightsServletContextListener implements ServletContext
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		InternalLogger.INSTANCE.trace("Shutting down threads");
+		InternalLogger.INSTANCE.info("Shutting down thread pools");
 		SDKShutdownActivity.INSTANCE.stopAll();
 	}
 	

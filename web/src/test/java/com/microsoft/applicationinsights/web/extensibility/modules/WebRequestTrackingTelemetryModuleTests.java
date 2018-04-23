@@ -418,32 +418,26 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     @Test
     public void testInstrumentationKeyIsResolvedDuringModuleInit() {
-        
-        // module is initialized during test init, so at this point we should 
-        // already have a task in pending status. This means the fetcher has already
-    	// been called once.
-    	Assert.assertEquals(1, mockProfileFetcher.callCount());
+        Assert.assertEquals(0, mockProfileFetcher.callCount());
         String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
 
         //calling resolver now will actually retrieve the appId from the completed task 
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
         mockProfileFetcher.setAppIdToReturn("someAppId");
         String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
-        Assert.assertEquals(2, mockProfileFetcher.callCount());
+        Assert.assertEquals(1, mockProfileFetcher.callCount());
         Assert.assertEquals("cid-v1:someAppId", appId);
         
         //calling it again should retrieve appId from cache (i.e. fetcher call count remains 2)
         appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(ikey);
-        Assert.assertEquals(2, mockProfileFetcher.callCount());
+        Assert.assertEquals(1, mockProfileFetcher.callCount());
         Assert.assertEquals("cid-v1:someAppId", appId);
     }
 
     @Test
     public void testInstrumentationKeyIsResolvedIfModifiedAtRuntime() {
-        
-    	// before request begins, resolving has been kicked-off during init
-        Assert.assertEquals(1, mockProfileFetcher.callCount());
-        
+        Assert.assertEquals(0, mockProfileFetcher.callCount());
+
         //setup: initialize a request telemetry context
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
@@ -462,7 +456,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         defaultModule.onBeginRequest(request, response);
         
         //onBegin must have called fetcher
-        Assert.assertEquals(2, mockProfileFetcher.callCount());
+        Assert.assertEquals(1, mockProfileFetcher.callCount());
 
         // mimic customer modifying ikey at runtime in request handler (e.g. controller)
         TelemetryConfiguration.getActive().setInstrumentationKey("myOtherIkey");
@@ -473,7 +467,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         defaultModule.onEndRequest(request, null);
         
         //the ikey is new, which means its appId ("id3") is not in cache, so again we call the fetcher
-        Assert.assertEquals(3, mockProfileFetcher.callCount());
+        Assert.assertEquals(2, mockProfileFetcher.callCount());
 
         // at this point source won't be set yet because the ikey has changed and so a new resolve task has started
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
@@ -489,10 +483,10 @@ public class WebRequestTrackingTelemetryModuleTests {
         defaultModule.onBeginRequest(request2, response);
 
         // at this point, the new appId should be available in the cache
-        Assert.assertEquals(4, mockProfileFetcher.callCount());
+        Assert.assertEquals(3, mockProfileFetcher.callCount());
         
         defaultModule.onEndRequest(request, null);
-        Assert.assertEquals(4, mockProfileFetcher.callCount());
+        Assert.assertEquals(3, mockProfileFetcher.callCount());
 
         RequestTelemetry requestTelemetry2 = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals("cid-v1:id1", requestTelemetry2.getSource());
@@ -502,11 +496,11 @@ public class WebRequestTrackingTelemetryModuleTests {
         ThreadContext.setRequestTelemetryContext(context3);
         ServletRequest request3 = ServletUtils.createServletRequestWithHeaders(headers);
         defaultModule.onBeginRequest(request3, response);
-        Assert.assertEquals(4, mockProfileFetcher.callCount());
+        Assert.assertEquals(3, mockProfileFetcher.callCount());
         
         // module.onEndRequest will attempt to retrieve new appId from task if it is completed
         defaultModule.onEndRequest(request, null);
-        Assert.assertEquals(4, mockProfileFetcher.callCount());
+        Assert.assertEquals(3, mockProfileFetcher.callCount());
         RequestTelemetry requestTelemetry3 = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals("cid-v1:id1", requestTelemetry3.getSource());
     }

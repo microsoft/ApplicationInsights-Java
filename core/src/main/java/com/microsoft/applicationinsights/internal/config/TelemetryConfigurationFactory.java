@@ -21,13 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.*;
@@ -40,10 +43,17 @@ import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
+import com.microsoft.applicationinsights.internal.processor.PageViewTelemetryFilter;
+import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
+import com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilter;
+import com.microsoft.applicationinsights.internal.processor.TelemetryEventFilter;
+import com.microsoft.applicationinsights.internal.processor.TraceTelemetryFilter;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -58,6 +68,8 @@ public enum TelemetryConfigurationFactory {
     private final static String CONFIG_FILE_NAME = "ApplicationInsights.xml";
     private final static String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
     private final static String BUILT_IN_NAME = "BuiltIn";
+    public static final String BUILTIN_PROCESSORS_SCANNING_ENABLED_PROPERTY = "applicationinsights.processors.builtin.scanning.enabled";
+    public static final String PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY = "applicationinsights.modules.performance.scanning.enabled";
 
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
@@ -65,6 +77,17 @@ public enum TelemetryConfigurationFactory {
     final static String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
     private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
+
+    private static final Set<String> defaultPerformaceModuleClassNames = new HashSet<>();
+
+    static {
+        addDefaultPerfModuleClassName(ProcessPerformanceCountersModule.class.getCanonicalName());
+        addDefaultPerfModuleClassName(JvmPerformanceCountersModule.class.getCanonicalName());
+    }
+
+    public synchronized static void addDefaultPerfModuleClassName(String name) {
+        defaultPerformaceModuleClassNames.add(name);
+    }
 
     TelemetryConfigurationFactory() {
     }
@@ -193,8 +216,12 @@ public enum TelemetryConfigurationFactory {
         if (configurationProcessors != null) {
             ArrayList<TelemetryProcessorXmlElement> b = configurationProcessors.getBuiltInTelemetryProcessors();
             if (!b.isEmpty()) {
-                final List<String> processorsBuiltInNames =
-                        new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{BuiltInProcessor.class}, performanceCountersSection);
+                List<String> processorsBuiltInNames = new ArrayList<>();
+                if (System.getProperty(BUILTIN_PROCESSORS_SCANNING_ENABLED_PROPERTY, "false").equalsIgnoreCase("true")) {
+                    processorsBuiltInNames = AnnotationPackageScanner.scanForClassAnnotations(new Class[]{BuiltInProcessor.class}, performanceCountersSection);
+                } else {
+                    addDefaultBuiltInProcessors(processorsBuiltInNames);
+                }
                 final HashMap<String, String> builtInMap = new HashMap<String, String>();
                 for (String processorsBuiltInName : processorsBuiltInNames) {
                     builtInMap.put(processorsBuiltInName.substring(processorsBuiltInName.lastIndexOf(".") + 1), processorsBuiltInName);
@@ -214,6 +241,15 @@ public enum TelemetryConfigurationFactory {
             ArrayList<TelemetryProcessorXmlElement> customs = configurationProcessors.getCustomTelemetryProcessors();
             loadProcessorComponents(processors, customs);
         }
+    }
+
+    private void addDefaultBuiltInProcessors(List<String> p) {
+        p.add(FixedRateSamplingTelemetryProcessor.class.getCanonicalName());
+        p.add(PageViewTelemetryFilter.class.getCanonicalName());
+        p.add(RequestTelemetryFilter.class.getCanonicalName());
+        p.add(SyntheticSourceFilter.class.getCanonicalName());
+        p.add(TelemetryEventFilter.class.getCanonicalName());
+        p.add(TraceTelemetryFilter.class.getCanonicalName());
     }
 
 
@@ -272,12 +308,6 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    private List<TelemetryProcessor> getTelemetryProcessors() {
-        ArrayList<TelemetryProcessor> processors = new ArrayList<TelemetryProcessor>();
-
-        return processors;
-    }
-
     @SuppressWarnings("unchecked")
     private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
@@ -290,18 +320,20 @@ public enum TelemetryConfigurationFactory {
 
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 
-        final List<String> performanceModuleNames =
-                new AnnotationPackageScanner().scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
+        List<String> performanceModuleNames = new ArrayList<>();
+        if (System.getProperty(PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY, "false").equalsIgnoreCase("true")) {
+            performanceModuleNames = AnnotationPackageScanner.scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
+        }
 
         if (performanceModuleNames.size() == 0) {
-
             // Only a workaround for JBoss web servers.
             // Will be removed once the issue will be investigated and fixed.
+            InternalLogger.INSTANCE.trace("Default performance counters will be automatically loaded.");
             performanceModuleNames.addAll(getDefaultPerformanceModulesNames());
         }
 
         for (String performanceModuleName : performanceModuleNames) {
-            TelemetryModule module = createInstance(performanceModuleName, TelemetryModule.class);
+            TelemetryModule module = ReflectionUtils.createInstance(performanceModuleName, TelemetryModule.class);
             if (module != null) {
                 PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
                 if (!performanceConfigurationData.isUseBuiltIn() && BUILT_IN_NAME.equals(pmAnnotation.value())) {
@@ -329,14 +361,8 @@ public enum TelemetryConfigurationFactory {
     /**
      * This method is only a workaround until the failure to load PCs in JBoss web servers will be solved.
      */
-    private List<String> getDefaultPerformanceModulesNames() {
-        InternalLogger.INSTANCE.trace("Default performance counters will be automatically loaded.");
-
-        ArrayList<String> modules = new ArrayList<String>();
-        modules.add("com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule");
-        modules.add("com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule");
-
-        return modules;
+    private Set<String> getDefaultPerformanceModulesNames() {
+        return defaultPerformaceModuleClassNames;
     }
 
     /**
@@ -418,7 +444,7 @@ public enum TelemetryConfigurationFactory {
     private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetrySampler telemetrySampler, TelemetryConfiguration configuration) {
         String channelName = channelXmlElement.getType();
         if (channelName != null) {
-            TelemetryChannel channel = createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
+            TelemetryChannel channel = ReflectionUtils.createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
             if (channel != null) {
                 channel.setSampler(telemetrySampler);
                 configuration.setChannel(channel);
@@ -463,39 +489,6 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    /**
-     * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
-     *
-     * Note that currently we 'swallow' all exceptions and simply return null if we fail
-     *
-     * @param className The class we create an instance of
-     * @param interfaceClass The class' parent interface we wish to work with
-     * @param <T> The class type to create
-     * @return The instance or null if failed
-     */
-    @SuppressWarnings("unchecked")
-    private <T> T createInstance(String className, Class<T> interfaceClass) {
-        return new ReflectionUtils().createInstance(className, interfaceClass);
-    }
-
-    /**
-     * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
-     * The class is created by using a constructor that has one parameter which is sent to the method
-     *
-     * Note that currently we 'swallow' all exceptions and simply return null if we fail
-     *
-     * @param className The class we create an instance of
-     * @param interfaceClass The class' parent interface we wish to work with
-     * @param argumentClass Type of class to use as argument for Ctor
-     * @param argument The argument to pass the Ctor
-     * @param <T> The class type to create
-     * @param <A> The class type as the Ctor argument
-     * @return The instance or null if failed
-     */
-    @SuppressWarnings("unchecked")
-    private <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
-        return ReflectionUtils.createInstance(className, interfaceClass, argumentClass, argument);
-    }
 
     // TODO: include context/telemetry initializers - where do they initialized?
     private void initializeComponents(TelemetryConfiguration configuration) {
