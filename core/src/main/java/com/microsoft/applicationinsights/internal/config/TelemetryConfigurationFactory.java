@@ -68,7 +68,17 @@ public enum TelemetryConfigurationFactory {
     private final static String CONFIG_FILE_NAME = "ApplicationInsights.xml";
     private final static String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
     private final static String BUILT_IN_NAME = "BuiltIn";
+
+    /**
+     * This enables scanning for classes annotated with {@link BuiltInProcessor}.
+     * If set "true" (case insensitive) scanning will be enabled. Otherwise (by default), it will be disabled.
+     */
     public static final String BUILTIN_PROCESSORS_SCANNING_ENABLED_PROPERTY = "applicationinsights.processors.builtin.scanning.enabled";
+
+    /**
+     * This enables scanning for classes annotated with {@link PerformanceModule}.
+     * If set "true" (case insensitive) scanning will be enabled. Otherwise (by default), it will be disabled.
+     */
     public static final String PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY = "applicationinsights.modules.performance.scanning.enabled";
 
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;

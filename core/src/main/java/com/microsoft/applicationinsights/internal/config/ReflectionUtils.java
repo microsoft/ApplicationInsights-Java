@@ -90,21 +90,12 @@ public final class ReflectionUtils {
 
             Class<?> clazz = builtInMap.get(className);
             if (clazz == null) {
-                InternalLogger.INSTANCE.trace(" :( class lookup failed: %s", className);
                 clazz = Class.forName(className).asSubclass(interfaceClass);
             } else {
                 clazz = clazz.asSubclass(interfaceClass);
             }
             T instance = (T)clazz.newInstance();
             return instance;
-        } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         }
@@ -143,14 +134,6 @@ public final class ReflectionUtils {
             Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
-        } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         }
