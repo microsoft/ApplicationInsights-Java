@@ -67,7 +67,10 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
         if (cpuPerformanceCounterCalculator == null) {
             return;
         }
-        double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
+        Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
+        if (processCpuUsage == null) {
+            return;
+        }
 
         InternalLogger.INSTANCE.trace("Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
         Telemetry telemetry = new PerformanceCounterTelemetry(

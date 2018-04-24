@@ -49,7 +49,10 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        double totalAvailableMemory = getTotalAvailableMemory();
+        Double totalAvailableMemory = getTotalAvailableMemory();
+        if (totalAvailableMemory == null) {
+            return;
+        }
 
         InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, totalAvailableMemory);
         Telemetry telemetry = new PerformanceCounterTelemetry(
@@ -61,10 +64,10 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
         telemetryClient.track(telemetry);
     }
 
-    private double getTotalAvailableMemory() {
+    private Double getTotalAvailableMemory() {
         BufferedReader bufferedReader = null;
 
-        double result = Constants.DEFAULT_DOUBLE_VALUE;
+        Double result = null;
         UnixTotalMemInfoParser reader = new UnixTotalMemInfoParser();
         try {
             bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
@@ -76,14 +79,14 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
             // The value we get is in KB so we need to translate that to bytes.
             result = reader.getValue() * KB;
         } catch (Exception e) {
-            result = Constants.DEFAULT_DOUBLE_VALUE;
-            logError("Error while parsing file: '%s'", e.toString());
+            result = null;
+            logPerfCounterErrorError("Error while parsing file: '%s'", e.toString());
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
-                    logError("Error while closing file : '%s'", e.toString());
+                    logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
                 }
             }
         }

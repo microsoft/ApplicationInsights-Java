@@ -45,11 +45,11 @@ abstract class AbstractUnixPerformanceCounter extends AbstractPerformanceCounter
         this.path = path;
         processFile = new File(path);
         if (!processFile.canRead()) {
-            logError("Can not read");
+            logPerfCounterErrorError("Can not read");
         }
     }
 
-    protected void logError(String format, Object... args) {
+    protected void logPerfCounterErrorError(String format, Object... args) {
         format = "Performance Counter " + getId() + ": Error in file '" + path + "': " + format;
         InternalLogger.INSTANCE.error(format, args);
     }

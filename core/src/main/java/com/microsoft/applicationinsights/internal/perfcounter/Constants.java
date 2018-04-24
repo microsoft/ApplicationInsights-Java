@@ -51,8 +51,6 @@ public final class Constants {
 
     public final static String PROCESS_CATEGORY = "Process";
 
-    public final static double DEFAULT_DOUBLE_VALUE = -1.0;
-
     private Constants() {
     }
 }
