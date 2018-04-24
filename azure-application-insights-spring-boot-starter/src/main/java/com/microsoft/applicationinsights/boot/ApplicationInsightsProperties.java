@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * <h1>This class is the container for Configuration Properties of Application Insights</h1>
+ *
  * {@link ConfigurationProperties} for configuring application insights.
  *
  * @author Arthur Gavlyukovskiy, Dhaval Doshi

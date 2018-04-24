@@ -55,7 +55,7 @@ import java.util.Map;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Auto-configuration for application insights. Configures {@link TelemetryConfiguration}
+ * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration} </h1>
  *
  * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */

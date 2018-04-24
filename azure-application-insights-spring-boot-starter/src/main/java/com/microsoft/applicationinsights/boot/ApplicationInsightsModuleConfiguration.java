@@ -39,7 +39,11 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
 
 /**
- * {@link Configuration} for non-web applications.
+ * <h1>Core Application Insights Configuration</h1>
+ * <p>
+ *   This class provides the Core Configuration for ApplicationInsights. This configuration is
+ *   irrespective of WebApplications. {@link Configuration} for non-web applications.
+ * </p>
  *
  * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
@@ -48,6 +52,9 @@ import org.springframework.core.env.Environment;
 @ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)
 public class ApplicationInsightsModuleConfiguration {
 
+    /**
+     * Instance for the container of ApplicationInsights Properties
+     */
     private ApplicationInsightsProperties applicationInsightsProperties;
 
     @Autowired
@@ -55,21 +62,37 @@ public class ApplicationInsightsModuleConfiguration {
         this.applicationInsightsProperties = properties;
     }
 
+    /**
+     * Bean for SdkVersionContextInitializer
+     * @return instance of {@link SdkVersionContextInitializer}
+     */
     @Bean
     public SdkVersionContextInitializer sdkVersionContextInitializer() {
         return new SdkVersionContextInitializer();
     }
 
+    /**
+     * Bean for DeviceInfoContextInitializer
+     * @return instance of {@link DeviceInfoContextInitializer}
+     */
     @Bean
     public DeviceInfoContextInitializer deviceInfoContextInitializer() {
         return new DeviceInfoContextInitializer();
     }
 
+    /**
+     * Bean for SpringBootTelemetryInitializer
+     * @return instance of {@link SpringBootTelemetryInitializer}
+     */
     @Bean
     public SpringBootTelemetryInitializer springBootTelemetryInitializer() {
         return new SpringBootTelemetryInitializer();
     }
 
+    /**
+     * Bean for ProcessPerformanceCounterModule
+     * @return instance of {@link ProcessPerformanceCountersModule}
+     */
     //FIXME: This should be conditional on operating System. However, current architecture of ProcessBuiltInPerformanceCountersFactory
     //FIXME: does not separate this concerns therefore cannot condition as of now.
     @Bean
@@ -85,6 +108,10 @@ public class ApplicationInsightsModuleConfiguration {
         }
     }
 
+    /**
+     * Bean for JvmPerformanceCounterModule
+     * @return instance of {@link JvmPerformanceCountersModule}
+     */
     @Bean
     @DependsOn("performanceCounterContainer")
     @ConditionalOnProperty(value = "azure.application-insights.default.modules.JvmPerformanceCountersModule.enabled", havingValue = "true", matchIfMissing = true)
@@ -99,11 +126,16 @@ public class ApplicationInsightsModuleConfiguration {
         }
     }
 
+    /**
+     * Bean for HeartBeatModule. This also sets the properties for HeartBeatModule
+     * @param environment
+     * @return initialized instance with user specified properties of {@link HeartBeatModule}
+     */
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default.modules.HeartBeat.enabled", havingValue = "true", matchIfMissing = true)
     public HeartBeatModule heartBeatModule(Environment environment) {
         try {
-            HeartBeatModule heartBeatModule = new HeartBeatModule(null);
+            HeartBeatModule heartBeatModule = new HeartBeatModule();
             HeartbeatDefaultPayload.addDefaultPayLoadProvider(new SpringBootHeartBeatProvider(environment));
             HeartBeat heartBeat = applicationInsightsProperties.getHeartBeat();
             heartBeatModule.setHeartBeatInterval(heartBeat.getHeartBeatInterval());

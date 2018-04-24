@@ -38,7 +38,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 
 /**
- * Configuration for Auto-collection of HTTP requests.
+ * <h1>Configuration for Auto-collection of HTTP requests.</h1>
+ *
+ * <p>
+ *   This class is responsible for configuring {@link WebRequestTrackingFilter} for auto collection
+ *   of incoming HTTP requests
+ * </p>
+ *
+ * @author Arthur Gavlyukovskiy
  */
 
 @Configuration

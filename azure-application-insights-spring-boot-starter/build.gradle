@@ -22,7 +22,7 @@
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
-archivesBaseName = 'azure-application-insights-spring-boot-starter'
+archivesBaseName = 'applicationinsights-spring-boot-starter'
 version = '1.0.0-BETA'
 
 dependencies {

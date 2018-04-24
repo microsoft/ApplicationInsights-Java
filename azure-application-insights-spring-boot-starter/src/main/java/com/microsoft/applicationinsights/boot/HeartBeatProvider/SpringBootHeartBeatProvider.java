@@ -4,16 +4,24 @@ import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatPayloadProv
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;
 import com.microsoft.applicationinsights.internal.heartbeat.MiscUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.env.Environment;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
+/**
+ * <h1>SpringBoot Heartbeat Property Provider</h1>
+ * <p>
+ *   This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface}
+ *   It enables setting SpringBoot Metadata to heartbeat payload.
+ * </p>
+ *
+ * @author Dhaval Doshi
+ */
 public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInterface {
 
   /**
