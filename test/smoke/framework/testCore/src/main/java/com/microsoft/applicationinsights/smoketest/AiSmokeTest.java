@@ -348,7 +348,7 @@ public abstract class AiSmokeTest {
 		System.out.println("Container started: "+containerId);
 
 		final int appServerDelayAfterStart_seconds = 5;
-		System.out.println("Waiting %d seconds for app server to startup...");
+		System.out.printf("Waiting %d seconds for app server to startup...%n", appServerDelayAfterStart_seconds);
 		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
 
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);

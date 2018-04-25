@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -8,7 +9,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.microsoft.applicationinsights.internal.schemav2.Base;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -20,6 +24,28 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 public class PerfCountersDataTest extends AiSmokeTest {
+
+    private static Predicate<Envelope> getPerfCounterPredicate(String category, String counter) {
+        return getPerfCounterPredicate(category, counter, null);
+    }
+
+    private static Predicate<Envelope> getPerfCounterPredicate(String category, String counter, String instance) {
+        Preconditions.checkNotNull(category, "category");
+        Preconditions.checkNotNull(counter, "counter");
+        return new Predicate<Envelope>() {
+            @Override
+            public boolean apply(@Nullable Envelope input) {
+                Base data = input.getData();
+                if (!data.getBaseType().equals("PerformanceCounterData")) {
+                    return false;
+                }
+                PerformanceCounterData pcd = ((Data<PerformanceCounterData>)data).getBaseData();
+                return category.equals(pcd.getCategoryName()) && counter.equals(pcd.getCounterName())
+                        && (instance == null || instance.equals(pcd.getInstanceName()));
+            }
+        };
+    }
+
     @Test
     public void testPerformanceCounterData() throws Exception {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
@@ -36,23 +62,24 @@ public class PerfCountersDataTest extends AiSmokeTest {
 
         System.out.println("Waiting for performance data...");
         long start = System.currentTimeMillis();
-        List<Envelope> performanceItems =
-                // this is the new method
-                mockedIngestion.waitForItems(new Predicate<Envelope>() { // this Predicate object lets you check for the
-                    // item you are looking for.
-                    @Override
-                    public boolean apply(@Nullable Envelope input) {
-                        if (input == null) {
-                            return false;
-                        }
-                        // here, we are just checking if the data type == "PerformanceCounterData", but you could check for more conditions.
-                        boolean rval = "PerformanceCounterData".equals(input.getData().getBaseType());
-                        return rval;
-                    }
-                }, 8, // waits for 8 items
-                        150, TimeUnit.SECONDS); // times out after 150 seconds (it will throw a TimeoutException)
 
-        assertEquals(8, performanceItems.size());
+        // we should get these envelopes:
+        //      MetricData, metrics.name="Suspected Deadlocked Threads"
+        //      PerformanceCounterData, categoryName=Memory, counterName=Available Bytes
+        //      MetricData, metrics.name="Heap Memory Used (MB)"
+        //      PerformanceCounterData, category=Process, counter="IO Data Bytes/sec"
+        //      PerformanceCounterData, category=Processor, counter="% Processor Time", instance="_Total"
+        //      PerformanceCounterData, category=Process, counter=Private Bytes
+        //      PerformanceCounterData, Process, "% Processor Time"
+
+        List<Envelope> performanceItems = new ArrayList<>();
+        performanceItems.add(mockedIngestion.waitForItem(getPerfCounterPredicate("Memory", "Available Bytes"), 150, TimeUnit.SECONDS));
+        performanceItems.add(mockedIngestion.waitForItem(getPerfCounterPredicate("Process", "IO Data Bytes/sec"), 150, TimeUnit.SECONDS));
+        performanceItems.add(mockedIngestion.waitForItem(getPerfCounterPredicate("Processor", "% Processor Time", "_Total"), 150, TimeUnit.SECONDS));
+        performanceItems.add(mockedIngestion.waitForItem(getPerfCounterPredicate("Process", "Private Bytes"), 150, TimeUnit.SECONDS));
+        performanceItems.add(mockedIngestion.waitForItem(getPerfCounterPredicate("Process", "% Processor Time"), 150, TimeUnit.SECONDS));
+
+        assertEquals(5, performanceItems.size());
         for (Envelope item : performanceItems) {
             assertEquals("PerformanceCounterData", item.getData().getBaseType());
         }
@@ -112,8 +139,9 @@ public class PerfCountersDataTest extends AiSmokeTest {
         assertEquals(1, suspected);
 
         int processor = 0, processPrivate = 0, processIO = 0, processTime = 0, memory = 0;
-        for (int i = performanceItems.size(); i > 3; i = i - 1) {
-            PerformanceCounterData perfd1 = getTelemetryDataForType(i - 1, "PerformanceCounterData");
+        for (Envelope env : performanceItems) {
+            PerformanceCounterData perfd1 = ((Data<PerformanceCounterData>)env.getData()).getBaseData();
+            assertTrue(perfd1.getValue() > -1);
             switch (perfd1.getCategoryName()) {
             case "Processor":
                 assertEquals("% Processor Time", perfd1.getCounterName());
