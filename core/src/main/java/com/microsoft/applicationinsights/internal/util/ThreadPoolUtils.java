@@ -21,13 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 12/22/2014.
@@ -43,22 +44,28 @@ public final class ThreadPoolUtils {
                 new ArrayBlockingQueue<Runnable>(bufferSize));
     }
 
-    public static void stop(ThreadPoolExecutor threadPool, long timeout, TimeUnit timeUnit) {
-        if (threadPool == null) {
+    /**
+     * This method is used to shutdown ExecutorService
+     * @param executorService The instance of ExecutorService to shutdown
+     * @param timeout Max time to wait
+     * @param timeUnit Timeunit for timeout
+     */
+    public static void stop(ExecutorService executorService, long timeout, TimeUnit timeUnit) {
+        if (executorService == null) {
             return;
         }
 
-        threadPool.shutdown();
+        executorService.shutdown();
         try {
-            if (!threadPool.awaitTermination(timeout, timeUnit)) {
-                threadPool.shutdownNow();
+            if (!executorService.awaitTermination(timeout, timeUnit)) {
+                executorService.shutdownNow();
 
-                if (!threadPool.awaitTermination(timeout, timeUnit)) {
+                if (!executorService.awaitTermination(timeout, timeUnit)) {
                     InternalLogger.INSTANCE.trace("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {
-            threadPool.shutdownNow();
+            executorService.shutdownNow();
             Thread.currentThread().interrupt();
         }
     }
@@ -70,6 +77,16 @@ public final class ThreadPoolUtils {
      */
     public static ThreadFactory createDaemonThreadFactory(final Class<?> clazz, final int instanceId) {
         return createNamedDaemonThreadFactory(String.format("%s_%d", clazz.getSimpleName(), instanceId));
+    }
+
+    /**
+     * {@code poolName} will be appended with a hyphen and the unique name.
+     * @param clazz The class holding the thread pool
+     * @param uniqueId The identifier of the instance of {@code clazz}
+     * @return
+     */
+    public static ThreadFactory createDaemonThreadFactory(final Class<?> clazz, final String uniqueId) {
+        return createNamedDaemonThreadFactory(String.format("%s_%s", clazz.getSimpleName(), uniqueId));
     }
 
     public static ThreadFactory createDaemonThreadFactory(final Class<?> clazz) {

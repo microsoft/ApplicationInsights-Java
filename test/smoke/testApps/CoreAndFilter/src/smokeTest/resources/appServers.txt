@@ -1,3 +1,4 @@
+jbosseap6
 jbosseap7
 tomcat7
 tomcat8
