@@ -61,7 +61,6 @@ public class ApplicationInsightsWebMvcAutoConfiguration {
         FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(webRequestTrackingFilter);
         registration.addUrlPatterns("/*");
-        registration.setName("webRequestTrackingFilter");
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
         return registration;
     }

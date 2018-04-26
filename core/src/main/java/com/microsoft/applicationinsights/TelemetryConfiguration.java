@@ -82,8 +82,12 @@ public final class TelemetryConfiguration {
      * @return {@link com.microsoft.applicationinsights.TelemetryConfiguration}
      */
     public static TelemetryConfiguration getActiveWithoutInitializingConfig() {
-        synchronized (s_lock) {
-          active = new TelemetryConfiguration();
+        if (active == null) {
+            synchronized (s_lock) {
+                if (active == null) {
+                    active = new TelemetryConfiguration();
+                }
+            }
         }
         return active;
     }

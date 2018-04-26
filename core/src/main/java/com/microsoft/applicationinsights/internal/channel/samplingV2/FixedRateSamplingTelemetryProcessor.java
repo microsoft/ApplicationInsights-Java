@@ -11,14 +11,11 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * This processor is used to Perform Sampling on User specified sampling rate
@@ -47,7 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 @BuiltInProcessor("FixedRateSamplingTelemetryProcessor")
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {
 
-    public static final double DEFAULT_SAMPLING_PERCENTAGE = 100.;
+    public static final double DEFAULT_SAMPLING_PERCENTAGE = 100.0;
     private static Map<TelemetryType, Class> allowedTypes = new HashMap<>();
 
     static {
@@ -104,7 +101,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
         if (telemetryType != null) {
             typeSet.add(allowedTypes.get(telemetryType));
         } else {
-            InternalLogger.INSTANCE.error("Telemetry type " + value + " is either not allowed to sample or is empty");
+            InternalLogger.INSTANCE.error("Telemetry type %s is either not allowed to sample or is empty", value);
         }
     }
 
