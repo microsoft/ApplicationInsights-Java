@@ -7,10 +7,7 @@ RUN mkdir /root/docker-stage
 
 # update packages and install dependencies: wget
 RUN apt-get update \
-	&& apt-get install -y wget
-
-RUN apt-get install -y procps
-
+	&& apt-get install -y wget procps
 
 ENV TOMCAT_MAJOR_VERSION 8
 ENV TOMCAT_FULL_VERSION 8.5.28
@@ -25,7 +22,14 @@ RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$T
 ENV CATALINA_HOME /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 ENV CATALINA_BASE /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 
+
 ADD ./*.sh /root/docker-stage/
+ADD ./*_AI-Agent.xml /root/docker-stage/
+
+# agent related stuff
+RUN mkdir /root/docker-stage/aiagent
+ENV AGENT_JAR_NAME @AGENT_JAR_NAME@
+ADD ./aiagent/ /root/docker-stage/aiagent/
 
 EXPOSE 8080
 

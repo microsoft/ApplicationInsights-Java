@@ -5,8 +5,9 @@ if [ -z "$CATALINA_HOME" ]; then
 	exit 1
 fi
 
-if [ ! -z "$AGENT_JAR_NAME" ]; then
-    cp ./setenv.sh $CATALINA_HOME/bin/setenv.sh
+if [ ! -z "$AI_AGENT_MODE" ]; then
+    cp -f ./setenv.sh $CATALINA_HOME/bin/setenv.sh
+    cp -f ./${AI_AGENT_MODE}_AI-Agent.xml ./aiagent/AI-Agent.xml
 fi
 
 $CATALINA_HOME/bin/catalina.sh run

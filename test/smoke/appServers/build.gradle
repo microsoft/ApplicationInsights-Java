@@ -8,6 +8,9 @@ ext {
 	jreMasterList = file('jre.master.txt')
 	dockerExe = findDockerExe()
 	dockerCliExe = findDockerCliExe()
+	globalResourcesDir = "$projectDir/global-resources"
+	agentLibsDir = file("${project(':agent').buildDir}/libs") // is there a better way to get this?
+	agentJarName = project(':agent').jar.archiveName
 }
 
 subprojects {
@@ -57,6 +60,7 @@ subprojects {
 			def tokenMap = [:] << additionalReplaceTokenMap
 			jresToUse.each { jreVersion -> 
 				tokenMap << [JRE: jreVersion]
+				tokenMap << [AGENT_JAR_NAME: agentJarName]
 				logger.debug "tokenMap = ${tokenMap}"
 				copy {
 					from projectDir
@@ -74,11 +78,11 @@ subprojects {
 	task buildDockerImage {
 		description 'Builds Docker images'
 
+		dependsOn ':agent:assemble'
 		dependsOn generateDockerfiles
 		inputs.files(fileTree(dir: dockerfileOutputDir, include: '*.dockerfile'))
-		// TODO write upToDateWhen predicate
-		// TODO should this have outputs?
-		outputs.upToDateWhen { false }
+
+		outputs.upToDateWhen { false } // let docker determine if something needs to be built
 
 		doFirst {
 			if (!dockerExe) {
@@ -93,6 +97,14 @@ subprojects {
 			copy {
 				from dockerfileOutputDir
 				into stagingDir
+			}
+			copy {
+				from globalResourcesDir
+				into stagingDir
+			}
+			copy {
+				from agentLibsDir
+				into "$stagingDir/aiagent"
 			}
 
 			fileTree(dir:stagingDir, include: '*.dockerfile').each { df ->
@@ -131,7 +143,11 @@ task buildDockerImage {
 	}
 }
 
+// deprecated
 task prune(type: Exec) {
+	doFirst {
+		logger.warn "This task (prune) is deprecated and will be removed in a future release."
+	}
 	executable dockerExe
 	args 'container', 'prune', '-f'
 }
