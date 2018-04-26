@@ -24,24 +24,22 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.util.EntityUtils;
 
 public class CdsProfileFetcher implements AppProfileFetcher {
@@ -50,9 +48,13 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     private String endpointAddress;
     private static final String ProfileQueryEndpointAppIdFormat = "%s/api/profiles/%s/appId";
     private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
+	private static final int MAX_RETRIES = 3;
 
     // cache of tasks per ikey
     private final ConcurrentMap<String, Future<HttpResponse>> tasks;
+    
+    // failure counters per ikey
+    private final Map<String, Integer> failureCounters;
 
     public CdsProfileFetcher() {
         RequestConfig requestConfig = RequestConfig.custom()
@@ -63,11 +65,14 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
         setHttpClient(HttpAsyncClients.custom()
             .setDefaultRequestConfig(requestConfig)
+            .useSystemProperties()
             .build());
         
         this.httpClient.start();
 
         this.tasks = new ConcurrentHashMap<String, Future<HttpResponse>>();
+        this.failureCounters = new HashMap<String, Integer>();
+
         this.endpointAddress = DefaultProfileQueryEndpointAddress;
     }
 
@@ -79,6 +84,14 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         }
 
         ProfileFetcherResult result = new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.PENDING);
+
+        // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
+        Integer failureCounter = this.failureCounters.get(instrumentationKey);
+        if (failureCounter != null && failureCounter.intValue() >= MAX_RETRIES) {
+            InternalLogger.INSTANCE.warn("The profile fetch task will not execute. Max number of retries reached.");
+            return result;
+        }
+
         Future<HttpResponse> currentTask = this.tasks.get(instrumentationKey);
 
         // if no task currently exists for this ikey, then let's create one.
@@ -97,6 +110,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             HttpResponse response = currentTask.get();
 
             if (response.getStatusLine().getStatusCode() != 200) {
+                incrementFailureCount(instrumentationKey);
                 return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.FAILED);
             }
 
@@ -104,10 +118,15 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
             //check for case when breeze returns invalid value
             if (appId == null || appId.isEmpty()) {
+                incrementFailureCount(instrumentationKey);
                 return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.FAILED);
             }
 
             return new ProfileFetcherResult(appId, ProfileFetcherResultTaskStatus.COMPLETE);
+
+        } catch (Exception ex) {
+            incrementFailureCount(instrumentationKey);
+            throw ex;
 
         } finally {
             // remove task as we're done with it.
@@ -131,6 +150,15 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     private Future<HttpResponse> createFetchTask(String instrumentationKey) {
 		HttpGet request = new HttpGet(String.format(ProfileQueryEndpointAppIdFormat, this.endpointAddress, instrumentationKey));
         return this.httpClient.execute(request, null);
+    }
+
+    private synchronized void incrementFailureCount(String instrumentationKey) {
+        Integer failureCounter = this.failureCounters.get(instrumentationKey);
+        if (failureCounter == null) {
+            this.failureCounters.put(instrumentationKey, new Integer(1));
+        } else {
+            this.failureCounters.put(instrumentationKey, new Integer(failureCounter.intValue() + 1));
+        }
     }
 
 	@Override
