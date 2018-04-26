@@ -21,33 +21,31 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.*;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
-import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
-
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
+import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
 import com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilter;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
-
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 import org.mockito.Mockito;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 
-import org.junit.Test;
-import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.notNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 
 public final class TelemetryConfigurationFactoryTest {
 
@@ -532,5 +530,12 @@ public final class TelemetryConfigurationFactoryTest {
         initializeWithFactory(mockParser, mockConfiguration);
         assertEquals(mockConfiguration.getInstrumentationKey(), expectedIkey);
         assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
+        method.setAccessible(true);
+        method.invoke(null);
     }
 }

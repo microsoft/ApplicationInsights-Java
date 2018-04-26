@@ -11,11 +11,12 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * This processor is used to Perform Sampling on User specified sampling rate
@@ -45,15 +46,22 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {
 
     public static final double DEFAULT_SAMPLING_PERCENTAGE = 100.0;
-    private static Map<TelemetryType, Class> allowedTypes = new HashMap<>();
+    private static Map<String, Class> allowedTypes = new HashMap<>();
+
+    private static final String dependencyTelemetryName = "Dependency";
+    private static final String eventTelemetryName = "Event";
+    private static final String exceptionTelemetryName = "Exception";
+    private static final String pageViewTelemetryName = "PageView";
+    private static final String requestTelemetryName = "Request";
+    private static final String traceTelemetryName = "Trace";
 
     static {
-        allowedTypes.put(TelemetryType.Dependency, RemoteDependencyTelemetry.class);
-        allowedTypes.put(TelemetryType.Event, EventTelemetry.class);
-        allowedTypes.put(TelemetryType.Exception, ExceptionTelemetry.class);
-        allowedTypes.put(TelemetryType.PageView, PageViewTelemetry.class);
-        allowedTypes.put(TelemetryType.Request, RequestTelemetry.class);
-        allowedTypes.put(TelemetryType.Trace, TraceTelemetry.class);
+        allowedTypes.put(dependencyTelemetryName, RemoteDependencyTelemetry.class);
+        allowedTypes.put(eventTelemetryName, EventTelemetry.class);
+        allowedTypes.put(exceptionTelemetryName, ExceptionTelemetry.class);
+        allowedTypes.put(pageViewTelemetryName, PageViewTelemetry.class);
+        allowedTypes.put(requestTelemetryName, RequestTelemetry.class);
+        allowedTypes.put(traceTelemetryName, TraceTelemetry.class);
     }
 
     private Set<Class> excludedTypes;
