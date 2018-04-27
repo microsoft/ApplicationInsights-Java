@@ -125,8 +125,6 @@ public abstract class AiSmokeTest {
 	//endregion
 
 	//region: application fields
-
-
 	protected String targetUri;
 	protected String httpMethod;
 	protected long targetUriDelayMs;
@@ -136,6 +134,7 @@ public abstract class AiSmokeTest {
 	//region: options
 	public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
 	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
+	public static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
 	//endregion
 
 	private static final Properties testProps = new Properties();
@@ -397,6 +396,7 @@ public abstract class AiSmokeTest {
 		if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
 			currentContainerInfo = null;
 		}
+		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
 	}
 
 	//region: test helper methods

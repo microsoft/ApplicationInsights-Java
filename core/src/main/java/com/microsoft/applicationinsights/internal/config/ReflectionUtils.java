@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,37 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 8/7/2016.
  */
 public final class ReflectionUtils {
+
+    private static final Map<String, Class<?>> builtInMap = new HashMap<>();
+
+    static {
+        addClass(com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel.class);
+        addClass(com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel.class);
+
+        addClass(com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule.class);
+        addClass(com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule.class);
+        addClass(com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule.class);
+
+        addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);
+        addClass(com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer.class);
+
+        addClass(com.microsoft.applicationinsights.extensibility.initializer.TimestampPropertyInitializer.class);
+        addClass(com.microsoft.applicationinsights.extensibility.initializer.SequencePropertyInitializer.class);
+        addClass(com.microsoft.applicationinsights.extensibility.initializer.docker.DockerContextInitializer.class);
+
+        addClass(com.microsoft.applicationinsights.internal.processor.MetricTelemetryFilter.class);
+        addClass(com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter.class);
+        addClass(com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor.class);
+        addClass(com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilter.class);
+        addClass(com.microsoft.applicationinsights.internal.processor.PageViewTelemetryFilter.class);
+        addClass(com.microsoft.applicationinsights.internal.processor.TelemetryEventFilter.class);
+        addClass(com.microsoft.applicationinsights.internal.processor.TraceTelemetryFilter.class);
+    }
+
+    static void addClass(Class<?> clazz) {
+        builtInMap.put(clazz.getCanonicalName(), clazz);
+    }
+
     /**
      * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
      *
@@ -56,18 +88,14 @@ public final class ReflectionUtils {
                 return null;
             }
 
-            Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
+            Class<?> clazz = builtInMap.get(className);
+            if (clazz == null) {
+                clazz = Class.forName(className).asSubclass(interfaceClass);
+            } else {
+                clazz = clazz.asSubclass(interfaceClass);
+            }
             T instance = (T)clazz.newInstance();
-
             return instance;
-        } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         }
@@ -97,18 +125,15 @@ public final class ReflectionUtils {
                 return null;
             }
 
-            Class<?> clazz = Class.forName(className).asSubclass(interfaceClass);
+            Class<?> clazz = builtInMap.get(className);
+            if (clazz == null) {
+                clazz = Class.forName(className).asSubclass(interfaceClass);
+            } else {
+                clazz = clazz.asSubclass(interfaceClass);
+            }
             Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
             T instance = (T)clazzConstructor.newInstance(argument);
             return instance;
-        } catch (ClassCastException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (InstantiationException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
-        } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         }
