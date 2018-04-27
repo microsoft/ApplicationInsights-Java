@@ -24,12 +24,12 @@ ENV CATALINA_BASE /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 
 
 ADD ./*.sh /root/docker-stage/
-ADD ./*_AI-Agent.xml /root/docker-stage/
 
 # agent related stuff
 RUN mkdir /root/docker-stage/aiagent
 ENV AGENT_JAR_NAME @AGENT_JAR_NAME@
 ADD ./aiagent/ /root/docker-stage/aiagent/
+ADD ./*_AI-Agent.xml /root/docker-stage/
 
 EXPOSE 8080
 
