@@ -25,27 +25,30 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
-import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
 
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
+import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
 import com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilter;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 
+import org.junit.*;
 import org.mockito.Mockito;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 
-import org.junit.Test;
-import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -470,22 +473,64 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     @Test
-    public void testPerformanceModules() {
+    public void testPerformanceModules_WithScanningEnabled() {
+        final String prevPropValue = System.getProperty(TelemetryConfigurationFactory.PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY);
+        try {
+            List<TelemetryModule> mods = doPerfModuleTest("true", 2);
+
+            assertTrue(Iterables.any(mods, Predicates.instanceOf(HeartBeatModule.class)));
+            assertTrue(Iterables.any(mods, Predicates.instanceOf(MockPerformanceModule.class)));
+            MockPerformanceModule theModule = Iterables.getOnlyElement(Iterables.filter(mods, MockPerformanceModule.class));
+            assertTrue(theModule.initializeWasCalled);
+            assertTrue(theModule.addConfigurationDataWasCalled);
+        } finally {
+            restoreProperties(prevPropValue);
+        }
+    }
+
+//    @Ignore
+    @Test
+    public void testPerformanceModules_withScanningDisabled() {
+        final String prevPropValue = System.getProperty(TelemetryConfigurationFactory.PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY);
+        try {
+            List<TelemetryModule> mods = doPerfModuleTest("false", 3);
+            assertTrue(Iterables.any(mods, Predicates.instanceOf(HeartBeatModule.class)));
+            assertTrue(Iterables.any(mods, Predicates.instanceOf(JvmPerformanceCountersModule.class)));
+            assertTrue(Iterables.any(mods, Predicates.instanceOf(ProcessPerformanceCountersModule.class)));
+        } finally {
+            restoreProperties(prevPropValue);
+        }
+    }
+
+    private void restoreProperties(String prevPropValue) {
+        if (prevPropValue == null) {
+            final Properties properties = System.getProperties();
+            properties.remove(TelemetryConfigurationFactory.PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY);
+            System.setProperties(properties);
+        } else {
+            System.setProperty(TelemetryConfigurationFactory.PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY, prevPropValue);
+        }
+    }
+
+    private List<TelemetryModule> doPerfModuleTest(String enabled, int expectedModuleCount) {
         AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, true);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build(null);
         appConf.setInstrumentationKey(MOCK_IKEY);
         appConf.getChannel().setDeveloperMode(true);
 
+        System.setProperty(TelemetryConfigurationFactory.PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY, enabled);
         TelemetryConfigurationFactory.INSTANCE.setPerformanceCountersSection("com.microsoft.applicationinsights.internal.config");
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
         initializeWithFactory(mockParser, mockConfiguration);
 
         //heartbeat is added as default
-        assertEquals(mockConfiguration.getTelemetryModules().size(), 2);
-        assertTrue(mockConfiguration.getTelemetryModules().get(1) instanceof MockPerformanceModule);
-        assertTrue(((MockPerformanceModule)mockConfiguration.getTelemetryModules().get(1)).initializeWasCalled);
-        assertTrue(((MockPerformanceModule)mockConfiguration.getTelemetryModules().get(1)).addConfigurationDataWasCalled);
+        List<TelemetryModule> mods = mockConfiguration.getTelemetryModules();
+        for (TelemetryModule tm : mods) {
+            System.out.println(" >> loaded telemetry module: "+tm.getClass().getCanonicalName());
+        }
+        assertEquals(expectedModuleCount, mods.size());
+        return mods;
     }
 
 

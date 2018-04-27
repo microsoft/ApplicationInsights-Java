@@ -22,7 +22,8 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.util.Collection;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -120,7 +121,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
 
     private final TelemetrySerializer serializer;
 
-    private final ScheduledThreadPoolExecutor threadPool;
+    private final ScheduledExecutorService threadPool;
 
     private final TransmissionsLoader transmissionsLoader;
 
@@ -138,8 +139,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
 
         semaphore = new Semaphore(MAX_PENDING_SCHEDULE_REQUESTS);
 
-        threadPool = new ScheduledThreadPoolExecutor(2);
-        threadPool.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(TransmitterImpl.class, instanceId));
+        threadPool = Executors.newScheduledThreadPool(2, ThreadPoolUtils.createDaemonThreadFactory(TransmitterImpl.class, instanceId));
 
         this.transmissionsLoader = transmissionsLoader;
         this.transmissionsLoader.load(false);
