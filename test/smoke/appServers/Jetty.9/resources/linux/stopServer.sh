@@ -15,4 +15,4 @@ if [ -z "$JETTY_STOP_KEY" ]; then
     exit 3
 fi
 
-java -jar "$JETTY_HOME/start.jar" --stop STOP.PORT=$JETTY_STOP_PORT STOP.KEY=$JETTY_STOP_KEY
+$JETTY_HOME/bin/jetty.sh stop
