@@ -18,6 +18,7 @@ import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.*;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -121,6 +122,7 @@ public abstract class AiSmokeTest {
 	protected static String currentImageName;
 	protected static short appServerPort;
 	protected static String warFileName;
+	protected static String agentMode;
 	//endregion
 
 	//region: application fields
@@ -216,30 +218,53 @@ public abstract class AiSmokeTest {
 		}));
 	}
 
+	@ClassRule
+	public static TestWatcher agentModeLoader = new TestWatcher() {
+		@Override
+		protected void starting(Description description) {
+			UseAgent ua = description.getAnnotation(UseAgent.class);
+			if (ua != null) {
+				agentMode = ua.value();
+				System.out.println("AGENT MODE: "+agentMode);
+			}
+		}
+
+		@Override
+		protected void finished(Description description) {
+			System.out.println("Finished test class. resetting AGENT MODE.");
+			agentMode = null;
+		}
+	};
+
 	@BeforeWithParams
 	public static void configureEnvironment(final String appServer, final String os, final String jreVersion) throws Exception {
 		System.out.println("Preparing environment...");
-		if (currentContainerInfo != null) {
-			// test cleanup didn't take...try to clean up
-			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
-				System.err.println("From last test run, container is still running: "+currentContainerInfo);
-				try {
-					docker.stopContainer(currentContainerInfo.getContainerId());
-				} catch (Exception e) {
-					System.err.println("Couldn't clean up environment. Must be done manually.");
-					throw e;
+		try {
+			if (currentContainerInfo != null) {
+				// test cleanup didn't take...try to clean up
+				if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
+					System.err.println("From last test run, container is still running: " + currentContainerInfo);
+					try {
+						docker.stopContainer(currentContainerInfo.getContainerId());
+					} catch (Exception e) {
+						System.err.println("Couldn't clean up environment. Must be done manually.");
+						throw e;
+					}
+				} else {
+					// container must have stopped after timeout reached.
+					currentContainerInfo = null;
 				}
-			} else {
-				// container must have stopped after timeout reached.
-				currentContainerInfo = null;
 			}
+			checkParams(appServer, os, jreVersion);
+			setupProperties(appServer, os, jreVersion);
+			startMockedIngestion();
+			startDockerContainer();
+			waitForApplicationToStart();
+			System.out.println("Environment preparation complete.");
+		} catch (Exception e) {
+			System.err.printf("Could not configure environment: %s%n", ExceptionUtils.getStackTrace(e));
+			throw e;
 		}
-		checkParams(appServer, os, jreVersion);
-		setupProperties(appServer, os, jreVersion);
-		startMockedIngestion();
-		startDockerContainer();
-		waitForApplicationToStart();
-		System.out.println("Environment preparation complete.");
 	}
 
 	
@@ -343,7 +368,7 @@ public abstract class AiSmokeTest {
 
 	protected static void startDockerContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
-		String containerId = docker.startContainer(currentImageName, appServerPort+":8080");
+		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", agentMode);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
 
