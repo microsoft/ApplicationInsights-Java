@@ -2,6 +2,7 @@
 
 # Version 2.1.0
 - Introduced Heartbeat feature which sends periodic heartbeats with basic information about application and runtime to Application Insights.
+- Enable support for system properties in the instrumentation key resolving component.
 
 ## Version 2.0.2 
 - Fix incorrect success flag set when capturing HTTP Dependency.
