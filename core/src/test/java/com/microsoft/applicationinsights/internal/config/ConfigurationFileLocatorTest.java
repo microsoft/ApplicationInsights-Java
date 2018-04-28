@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +38,11 @@ import static org.junit.Assert.*;
 public final class ConfigurationFileLocatorTest {
     private final static String MOCK_CONF_FILE = "MockApplicationInsights.xml";
     private final static String EXISTING_CONF_TEST_FILE = "ApplicationInsights.xml";
+
+    @Before
+    public void clearProp() {
+        System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCtorWithNull() {

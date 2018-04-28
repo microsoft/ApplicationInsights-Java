@@ -9,6 +9,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
@@ -126,6 +127,7 @@ public abstract class AiSmokeTest {
 	//region: application fields
 	protected String targetUri;
 	protected String httpMethod;
+	protected long targetUriDelayMs;
 	protected boolean expectSomeTelemetry = true;
 	//endregion
 
@@ -153,13 +155,14 @@ public abstract class AiSmokeTest {
 			if (targetUri == null) {
 				thiz.targetUri = null;
 				thiz.httpMethod = null;
+				thiz.targetUriDelayMs = 0L;
 			} else {
 				thiz.targetUri = targetUri.value();
 				if (!thiz.targetUri.startsWith("/")) {
 					thiz.targetUri = "/"+thiz.targetUri;
 				}
-
 				thiz.httpMethod = targetUri.method().toUpperCase();
+				thiz.targetUriDelayMs = targetUri.delay();
 			}
 
 			ExpectSomeTelemetry expectSomeTelemetry = description.getAnnotation(ExpectSomeTelemetry.class);
@@ -271,7 +274,11 @@ public abstract class AiSmokeTest {
 			System.out.println("targetUri==null: automated testapp request disabled");
 			return;
 		}
-
+		if (targetUriDelayMs > 0) {
+			System.out.printf("Waiting %.3fs before calling uri...%n", targetUriDelayMs/1000.0);
+			System.out.flush();
+			TimeUnit.MILLISECONDS.sleep(targetUriDelayMs);
+		}
 		System.out.println("Calling "+targetUri+" ...");
 		String url = getBaseUrl()+targetUri;
 		final String content;
@@ -287,7 +294,7 @@ public abstract class AiSmokeTest {
 		assertNotNull(String.format("Null response from targetUri: '%s'. %s", targetUri, expectationMessage), content);
 		assertTrue(String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage), content.length() > 0);
 
-		System.out.printf("Waiting %ds for telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		System.out.printf("Waiting %ds for telemetry...%n", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		System.out.println("Finished waiting for telemetry.\nStarting validation...");
 
@@ -347,7 +354,7 @@ public abstract class AiSmokeTest {
 		System.out.println("Container started: "+containerId);
 
 		final int appServerDelayAfterStart_seconds = 5;
-		System.out.println("Waiting %d seconds for app server to startup...");
+		System.out.printf("Waiting %d seconds for app server to startup...%n", appServerDelayAfterStart_seconds);
 		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
 
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
@@ -399,6 +406,10 @@ public abstract class AiSmokeTest {
 		String rval = testProps.getProperty(key);
 		if (rval == null) throw new RuntimeException(String.format("test property not found '%s'", key));
 		return rval;
+	}
+
+	protected static <T extends Domain> T getBaseData(Envelope envelope) {
+		return ((Data<T>)envelope.getData()).getBaseData();
 	}
 
 	protected static void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName) throws InterruptedException {

@@ -47,8 +47,8 @@ public final class CpuPerformanceCounterCalculator {
 
     }
 
-    public double getProcessCpuUsage() {
-        double processCpuUsage;
+    public Double getProcessCpuUsage() {
+        Double processCpuUsage = null;
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 
@@ -58,14 +58,12 @@ public final class CpuPerformanceCounterCalculator {
             if (prevUpTime > 0L && upTime > prevUpTime) {
                 long elapsedCpu = processCpuTime - prevProcessCpuTime;
                 long elapsedTime = upTime - prevUpTime;
-                processCpuUsage = Math.min(99F, elapsedCpu / (elapsedTime * 10000F * numberOfCpus));
-            } else {
-                processCpuUsage = Constants.DEFAULT_DOUBLE_VALUE;
+                processCpuUsage = Math.min(99.999, elapsedCpu / (elapsedTime * 10_000.0 * numberOfCpus)); // if this looks weird, here's another way to write it: (elapsedCpu / 1000000.0) / elapsedTime / numberOfCpus * 100.0
             }
             prevUpTime = upTime;
             prevProcessCpuTime = processCpuTime;
         } catch (Exception e) {
-            processCpuUsage = Constants.DEFAULT_DOUBLE_VALUE;
+            processCpuUsage = null;
             InternalLogger.INSTANCE.error("Error in getProcessCPUUsage");
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }

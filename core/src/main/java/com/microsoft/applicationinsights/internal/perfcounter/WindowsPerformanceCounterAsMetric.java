@@ -42,7 +42,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "WindowsPerformanceCounterAsMetric";
 
     private final HashMap<String, String> keyToDisplayName = new HashMap<String, String>();
-    private final MetricTelemetry telemetry = new MetricTelemetry("placeholder", Constants.DEFAULT_DOUBLE_VALUE);
+    private final MetricTelemetry telemetry = new MetricTelemetry();
 
     /**
      * Registers the argument's data into performance counters.
