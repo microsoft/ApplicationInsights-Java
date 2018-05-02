@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
@@ -135,6 +136,7 @@ public abstract class AiSmokeTest {
 	public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
 	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
 	public static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
+	public static final int HEALTH_CHECK_RETRIES = 4;
 	//endregion
 
 	private static final Properties testProps = new Properties();
@@ -261,7 +263,7 @@ public abstract class AiSmokeTest {
 
 	protected static void waitForApplicationToStart() throws Exception {
 		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
-		waitForUrl(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext());
+		waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext(), HEALTH_CHECK_RETRIES);
 		System.out.println("Test app health check complete.");
 		System.out.printf("Waiting %ds for any request telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
@@ -362,7 +364,7 @@ public abstract class AiSmokeTest {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Verifying appserver has started (%s)...%n", url);
 
-			waitForUrl(url, 120, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName));
+			waitForUrlWithRetries(url, 120, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
 			System.out.println("App server is ready.");
 		}
 		catch (Exception e) {
@@ -434,7 +436,23 @@ public abstract class AiSmokeTest {
 				rval = null;
 			}
 		} while (rval == null);
-		assertFalse(String.format("Empty response from '%s'. HealthCheck urls should return something non-empty", url), rval.isEmpty());
+		assertFalse(String.format("Empty response from '%s'. Health check urls should return something non-empty", url), rval.isEmpty());
+	}
+
+	protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) {
+		Preconditions.checkArgument(numberOfRetries >= 0, "numberOfRetries must be non-negative");
+		int triedCount = 0;
+		boolean success = false;
+		do {
+			try {
+				waitForUrl(url, timeout, timeoutUnit, appName);
+				success = true;
+			} catch (ThreadDeath td) {
+				throw td;
+			} catch (Throwable t) {
+				System.out.printf("WARNING: '%s' health check failed (%s). %d retries left. Exception: %s%n", appName, url, numberOfRetries-triedCount, t);
+			}
+		} while (!success && triedCount++ < numberOfRetries);
 	}
 
 	protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
