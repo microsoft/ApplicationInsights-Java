@@ -3,21 +3,16 @@ FROM @JRE@
 USER root
 WORKDIR /root/docker-compile
 
-# TODO add label?
-
 RUN mkdir /root/docker-stage
 
 # update packages and install dependencies: wget
 RUN apt-get update \
-	&& apt-get install -y wget
-
-RUN apt-get install -y procps
-
+	&& apt-get install -y wget procps
 
 ENV TOMCAT_MAJOR_VERSION 8
 ENV TOMCAT_FULL_VERSION 8.5.28
 
-# install tomcat (FXIME gpg?)
+# install tomcat
 RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
 	&& wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
 	&& sha1sum --check apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
@@ -27,7 +22,14 @@ RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$T
 ENV CATALINA_HOME /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 ENV CATALINA_BASE /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 
+
 ADD ./*.sh /root/docker-stage/
+
+# agent related stuff
+RUN mkdir /root/docker-stage/aiagent
+ENV AGENT_JAR_NAME @AGENT_JAR_NAME@
+ADD ./aiagent/ /root/docker-stage/aiagent/
+ADD ./*_AI-Agent.xml /root/docker-stage/
 
 EXPOSE 8080
 

@@ -75,13 +75,18 @@ public class AiDockerClient {
 		return new ProcessBuilder(cmdLine).redirectErrorStream(true);
 	}
 
-	public String startContainer(String image, String portMapping) throws IOException, InterruptedException {
+	public String startContainer(String image, String portMapping, String agentMode) throws IOException, InterruptedException {
 		Preconditions.checkNotNull(image, "image");
 		Preconditions.checkNotNull(portMapping, "portMapping");
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
-
-		Process p = buildProcess(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, image).start();
+		List<String> cmd = new ArrayList<>(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
+		if (agentMode != null) {
+			cmd.add("--env");
+			cmd.add("AI_AGENT_MODE="+agentMode);
+		}
+		cmd.add(image);
+		Process p = buildProcess(cmd).start();
 		if (!p.waitFor(10, TimeUnit.SECONDS)) {
 			p.destroyForcibly();
 			flushStdout(p);
