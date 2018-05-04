@@ -166,7 +166,8 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         EnvironmentTestUtils.addEnvironment(context,
                 "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
                 "azure.application-insights.telemetry-processor.sampling.percentage=50",
-                "azure.application-insights.telemetry-processor.sampling.include=Request");
+                "azure.application-insights.telemetry-processor.sampling.include=Request",
+            "azure.application-insights.telemetry-processor.sampling.enabled=true");
         context.register(PropertyPlaceholderAutoConfiguration.class,
                 ApplicationInsightsTelemetryAutoConfiguration.class);
         context.refresh();

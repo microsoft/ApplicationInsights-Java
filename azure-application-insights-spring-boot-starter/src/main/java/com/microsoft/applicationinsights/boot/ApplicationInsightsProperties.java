@@ -25,7 +25,6 @@ import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTel
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
-import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProvider;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -42,13 +41,12 @@ import com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTra
 import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * <h1>This class is the container for Configuration Properties of Application Insights</h1>
@@ -278,6 +276,9 @@ public class ApplicationInsightsProperties {
     }
 
     static class Sampling {
+
+      private boolean enabled = false;
+
       /**
        * Percent of telemetry events that will be sent to Application Insights. Percentage must be
        * close to 100/N where N is an integer. E.g. 50 (=100/2), 33.33 (=100/3), 25 (=100/4), 20, 1
@@ -285,9 +286,17 @@ public class ApplicationInsightsProperties {
        */
       private double percentage = FixedRateSamplingTelemetryProcessor.DEFAULT_SAMPLING_PERCENTAGE;
       /** If set only telemetry of specified types will be included. */
-      private List<TelemetryType> include = new ArrayList<>();
+      private List<String> include = new ArrayList<>();
       /** If set telemetry of specified type will be excluded. */
-      private List<TelemetryType> exclude = new ArrayList<>();
+      private List<String> exclude = new ArrayList<>();
+
+      public boolean isEnabled() {
+        return enabled;
+      }
+
+      public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+      }
 
       public double getPercentage() {
         return percentage;
@@ -297,19 +306,19 @@ public class ApplicationInsightsProperties {
         this.percentage = percentage;
       }
 
-      public List<TelemetryType> getInclude() {
+      public List<String> getInclude() {
         return include;
       }
 
-      public void setInclude(List<TelemetryType> include) {
+      public void setInclude(List<String> include) {
         this.include = include;
       }
 
-      public List<TelemetryType> getExclude() {
+      public List<String> getExclude() {
         return exclude;
       }
 
-      public void setExclude(List<TelemetryType> exclude) {
+      public void setExclude(List<String> exclude) {
         this.exclude = exclude;
       }
     }
@@ -409,7 +418,7 @@ public class ApplicationInsightsProperties {
     /**
      * Switch to enable / disable heartbeat
      */
-    boolean isEnabled = false;
+    boolean enabled = false;
 
     /**
      * The heartbeat interval in seconds.
@@ -427,11 +436,11 @@ public class ApplicationInsightsProperties {
     List<String> excludedHeartBeatPropertiesList = new ArrayList<>();
 
     public boolean isEnabled() {
-      return isEnabled;
+      return enabled;
     }
 
     public void setEnabled(boolean enabled) {
-      isEnabled = enabled;
+      this.enabled = enabled;
     }
 
     public long getHeartBeatInterval() {

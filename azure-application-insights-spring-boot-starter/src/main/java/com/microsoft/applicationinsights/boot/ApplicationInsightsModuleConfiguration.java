@@ -22,15 +22,21 @@
 package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.HeartBeat;
+import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
 import com.microsoft.applicationinsights.boot.HeartBeatProvider.SpringBootHeartBeatProvider;
 import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatPayloadProviderInterface;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartbeatDefaultPayload;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -126,17 +132,23 @@ public class ApplicationInsightsModuleConfiguration {
         }
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public HeartBeatPayloadProviderInterface heartBeatProviderInterface(Environment environment) {
+        return new SpringBootHeartBeatProvider(environment);
+    }
+
     /**
      * Bean for HeartBeatModule. This also sets the properties for HeartBeatModule
-     * @param environment
+     * @param heartBeatPayloadProviderInterface
      * @return initialized instance with user specified properties of {@link HeartBeatModule}
      */
     @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default.modules.HeartBeat.enabled", havingValue = "true", matchIfMissing = true)
-    public HeartBeatModule heartBeatModule(Environment environment) {
+    @ConditionalOnProperty(value = "azure.application-insights.heart-beat.enabled", havingValue = "true", matchIfMissing = true)
+    public HeartBeatModule heartBeatModule(HeartBeatPayloadProviderInterface heartBeatPayloadProviderInterface) {
         try {
             HeartBeatModule heartBeatModule = new HeartBeatModule();
-            HeartbeatDefaultPayload.addDefaultPayLoadProvider(new SpringBootHeartBeatProvider(environment));
+            HeartbeatDefaultPayload.addDefaultPayLoadProvider(heartBeatPayloadProviderInterface);
             HeartBeat heartBeat = applicationInsightsProperties.getHeartBeat();
             heartBeatModule.setHeartBeatInterval(heartBeat.getHeartBeatInterval());
             if (heartBeat.getExcludedHeartBeatPropertiesList().size() > 0) {
@@ -148,8 +160,28 @@ public class ApplicationInsightsModuleConfiguration {
             return heartBeatModule;
         }
         catch (Exception e) {
-            throw new IllegalStateException("could not configure Heartbeat, please set 'azure.application-insights.default.modules.HearBeat.enabled'"
+            throw new IllegalStateException("could not configure Heartbeat, please set 'azure.application-insights.heart-beat.enabled'"
                 + " to false ", e);
         }
     }
+
+    /**
+     * Bean for FixedRateSamplingTelemetryProcessor. This bean helps in configuring the fixed rate sampling.
+     * @return instance of {@link FixedRateSamplingTelemetryProcessor}
+     */
+    @Bean
+    @ConditionalOnProperty(value = "azure.application-insights.telemetry-processor.sampling.enabled", havingValue = "true")
+    public TelemetryProcessor fixedRateSamplingTelemetryProcessor() {
+        Sampling sampling = applicationInsightsProperties.getTelemetryProcessor().getSampling();
+        FixedRateSamplingTelemetryProcessor processor = new FixedRateSamplingTelemetryProcessor();
+        processor.setSamplingPercentage(String.valueOf(sampling.getPercentage()));
+        for (String include : sampling.getInclude()) {
+            processor.addToIncludedType(include);
+        }
+        for (String exclude : sampling.getExclude()) {
+            processor.addToExcludedType(exclude);
+        }
+        return processor;
+    }
+
 }

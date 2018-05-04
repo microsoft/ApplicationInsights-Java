@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.boot;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel.InProcess;
@@ -32,10 +34,13 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
-import com.microsoft.applicationinsights.internal.channel.samplingV2.TelemetryType;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -46,13 +51,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration} </h1>
@@ -153,19 +151,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         return new TelemetryClient(configuration);
     }
 
-    @Bean
-    public FixedRateSamplingTelemetryProcessor fixedRateSamplingTelemetryProcessor() {
-        Sampling sampling = applicationInsightsProperties.getTelemetryProcessor().getSampling();
-        FixedRateSamplingTelemetryProcessor processor = new FixedRateSamplingTelemetryProcessor();
-        processor.setSamplingPercentage(String.valueOf(sampling.getPercentage()));
-        for (TelemetryType include : sampling.getInclude()) {
-            processor.addToIncludedType(include.name());
-        }
-        for (TelemetryType exclude : sampling.getExclude()) {
-            processor.addToExcludedType(exclude.name());
-        }
-        return processor;
-    }
+
 
     @Bean
     @ConditionalOnMissingBean

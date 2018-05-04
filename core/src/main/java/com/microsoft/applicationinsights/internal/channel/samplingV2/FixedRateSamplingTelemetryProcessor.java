@@ -11,6 +11,7 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
@@ -104,12 +105,16 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
 
 
     private void setIncludedOrExcludedTypes(String value, Set<Class> typeSet) {
-        value = value.trim();
-        TelemetryType telemetryType = TelemetryType.valueOfOrNull(value);
-        if (telemetryType != null) {
-            typeSet.add(allowedTypes.get(telemetryType));
+
+        if (!StringUtils.isEmpty(value)) {
+            value = value.trim();
+            if (!StringUtils.isEmpty(value) && allowedTypes.containsKey(value)) {
+                typeSet.add(allowedTypes.get(value));
+            } else {
+                InternalLogger.INSTANCE.error("Item %s is either not allowed to sample or is empty", value);
+            }
         } else {
-            InternalLogger.INSTANCE.error("Telemetry type %s is either not allowed to sample or is empty", value);
+            InternalLogger.INSTANCE.error("Telemetry type %s is empty", value);
         }
     }
 
