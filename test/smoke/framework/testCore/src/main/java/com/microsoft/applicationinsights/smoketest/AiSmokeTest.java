@@ -15,6 +15,8 @@ import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
+import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
+import com.microsoft.applicationinsights.smoketest.exceptions.TimeoutException;
 import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
@@ -433,7 +435,7 @@ public abstract class AiSmokeTest {
 
 	protected static String getProperty(String key) {
 		String rval = testProps.getProperty(key);
-		if (rval == null) throw new RuntimeException(String.format("test property not found '%s'", key));
+		if (rval == null) throw new SmokeTestException(String.format("test property not found '%s'", key));
 		return rval;
 	}
 
@@ -446,7 +448,7 @@ public abstract class AiSmokeTest {
 		Stopwatch watch = Stopwatch.createStarted();
 		do {
 			if (watch.elapsed(timeoutUnit) > timeout) {
-				throw new RuntimeException(String.format("Timeout reached waiting for '%s' to come online", appName));
+				throw new TimeoutException(appName, timeout, timeoutUnit);
 			}
 
 			try {
@@ -483,7 +485,7 @@ public abstract class AiSmokeTest {
 			}
 		} while (!success && triedCount++ < numberOfRetries);
 		if (!success) {
-			throw new RuntimeException(lastThrowable);
+			throw new TimeoutException(appName, timeout*triedCount, timeoutUnit, String.format("Tried %d times to hit %s", triedCount, url), lastThrowable);
 		}
 	}
 

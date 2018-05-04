@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SessionStateData;
 import com.microsoft.applicationinsights.telemetry.Duration;
+
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,7 +79,7 @@ public class JsonHelper {
 			} catch (InstantiationException | IllegalAccessException e) {
 				System.err.println("Error deserializing data");
 				e.printStackTrace();
-				throw new RuntimeException(e);
+				throw new JsonParseException(e);
 			}
 		}
 

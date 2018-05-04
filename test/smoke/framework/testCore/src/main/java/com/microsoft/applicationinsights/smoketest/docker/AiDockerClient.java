@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
+import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
+import com.microsoft.applicationinsights.smoketest.exceptions.TimeoutException;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -42,11 +43,11 @@ public class AiDockerClient {
 		// TODO also check a property
 		String dockerPath = System.getenv(DOCKER_EXE_ENV_VAR);
 		if (Strings.isNullOrEmpty(dockerPath)) {
-			throw new RuntimeException(DOCKER_EXE_ENV_VAR+" not set");
+			throw new SmokeTestException(DOCKER_EXE_ENV_VAR+" not set");
 		}
 		File de = new File(dockerPath);
 		if (!de.exists()) {
-			throw new RuntimeException(String.format("Could not find docker: %s=%s", DOCKER_EXE_ENV_VAR, dockerPath));
+			throw new SmokeTestException(String.format("Could not find docker: %s=%s", DOCKER_EXE_ENV_VAR, dockerPath));
 		}
 		this.dockerExePath = de.getAbsolutePath();
 	}
@@ -87,15 +88,17 @@ public class AiDockerClient {
 		}
 		cmd.add(image);
 		Process p = buildProcess(cmd).start();
-		if (!p.waitFor(10, TimeUnit.SECONDS)) {
+		int timeout = 10;
+		TimeUnit unit = TimeUnit.SECONDS;
+		if (!p.waitFor(timeout, unit)) {
 			p.destroyForcibly();
 			flushStdout(p);
-			throw new RuntimeException("Could not start container: timeout reached");
+			throw new TimeoutException("container, "+image, timeout, unit);
 		}
 		final int exitCode = p.exitValue();
 		if (exitCode != 0) {
 			flushStdout(p);
-			throw new RuntimeException("Starting container exited with code "+exitCode);
+			throw new SmokeTestException("Starting container exited with code "+exitCode);
 		}
 		List<String> lines = CharStreams.readLines(new InputStreamReader(p.getInputStream()));
 		return lines.get(0);
@@ -144,17 +147,14 @@ public class AiDockerClient {
 		if (!p.waitFor(timeout, unit)) {
 			p.destroyForcibly();
 			flushStdout(p);
-			if (!Strings.isNullOrEmpty(actionName)) {
-				throw new RuntimeException("Hit timeout trying to "+actionName);
-			}
-			throw new RuntimeException("Process timed out");
+			throw new TimeoutException(
+					Strings.isNullOrEmpty(actionName) ? "process" : actionName,
+					timeout, unit);
 		}
 		if (p.exitValue() != 0) {
 			flushStdout(p);
-			if (!Strings.isNullOrEmpty(actionName)) {
-				throw new RuntimeException(String.format("Nonzero exit code (%d) trying to %s", p.exitValue(), actionName));
-			}
-			throw new RuntimeException("Nonzero exit code: "+p.exitValue());
+			throw new SmokeTestException(String.format("Nonzero exit code (%d)%s", p.exitValue(),
+						Strings.isNullOrEmpty(actionName) ? "" : " trying to "+actionName));
 		}
 	}
 
