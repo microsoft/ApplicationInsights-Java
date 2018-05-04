@@ -138,7 +138,7 @@ public abstract class AiSmokeTest {
 	public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
 	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
 	public static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
-	public static final int HEALTH_CHECK_RETRIES = 4;
+	public static final int HEALTH_CHECK_RETRIES = 2;
 	//endregion
 
 	private static final Properties testProps = new Properties();
@@ -419,9 +419,11 @@ public abstract class AiSmokeTest {
 
 	@AfterWithParams
 	public static void tearDownContainer(final String appServer, final String os, final String jreVersion) throws Exception {
-		stopContainer(currentContainerInfo);
-		if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
-			currentContainerInfo = null;
+		if (currentContainerInfo != null) {
+			stopContainer(currentContainerInfo);
+			if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
+				currentContainerInfo = null;
+			}
 		}
 		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
 	}
@@ -468,6 +470,7 @@ public abstract class AiSmokeTest {
 		Preconditions.checkArgument(numberOfRetries >= 0, "numberOfRetries must be non-negative");
 		int triedCount = 0;
 		boolean success = false;
+		Throwable lastThrowable = null;
 		do {
 			try {
 				waitForUrl(url, timeout, timeoutUnit, appName);
@@ -475,9 +478,13 @@ public abstract class AiSmokeTest {
 			} catch (ThreadDeath td) {
 				throw td;
 			} catch (Throwable t) {
+				lastThrowable = t;
 				System.out.printf("WARNING: '%s' health check failed (%s). %d retries left. Exception: %s%n", appName, url, numberOfRetries-triedCount, t);
 			}
 		} while (!success && triedCount++ < numberOfRetries);
+		if (!success) {
+			throw new RuntimeException(lastThrowable);
+		}
 	}
 
 	protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
