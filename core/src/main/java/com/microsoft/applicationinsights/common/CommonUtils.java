@@ -22,44 +22,30 @@
 package com.microsoft.applicationinsights.common;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-/** Created by oriy on 11/2/2016. */
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+
+/**
+ * Created by oriy on 11/2/2016.
+ */
 public class CommonUtils {
-  public static boolean isNullOrEmpty(String string) {
-    return string == null || string.length() == 0;
-  }
-
-  public static String getHostName() {
-    try {
-      InetAddress addr;
-      addr = InetAddress.getLocalHost();
-      return addr.getCanonicalHostName();
-    } catch (UnknownHostException ex) {
-      // optional parameter. do nothing if unresolvable
-      InternalLogger.INSTANCE.trace(
-          "Unresolvable host error. Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
-      return null;
+    public static boolean isNullOrEmpty(String string) {
+        return string == null || string.length() == 0;
     }
-  }
-
-  /**
-   * This method is used to test if the given class is loaded in the specified ClassLoader
-   * @param classSignature Fully Qualified signature of class
-   * @param classLoader ClassLoader under consideration
-   * @return true if class is loaded otherwise false
-   */
-  public static boolean isClassPresentOnClassPath(String classSignature, ClassLoader classLoader) {
-
-    try {
-      Class.forName(classSignature, false, classLoader);
-      return true;
-    } catch (ClassNotFoundException e) {
-      InternalLogger.INSTANCE.info(
-          "Specified class %s is not present on the classpath", classSignature);
-      return false;
+    public static String getHostName(){
+        try
+        {
+            InetAddress addr;
+            addr = InetAddress.getLocalHost();
+            return addr.getCanonicalHostName();
+        }
+        catch (UnknownHostException ex) {
+            // optional parameter. do nothing if unresolvable
+            InternalLogger.INSTANCE.trace("Unresolvable host error. Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
+            return null;
+        }
     }
-  }
 }

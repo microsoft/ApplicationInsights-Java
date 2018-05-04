@@ -62,8 +62,6 @@ public final class WebRequestTrackingFilter implements Filter {
     private boolean agentIsUp = false;
     private final LinkedList<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
-    private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights."
-        + "agent.internal.coresync.AgentNotificationsHandler";
 
     // endregion Members
 
@@ -232,20 +230,33 @@ public final class WebRequestTrackingFilter implements Filter {
     }
 
     private synchronized void initialize(FilterConfig filterConfig) {
-
-        //If Agent Jar is not present in the class path skip the process
-        if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
-            this.getClass().getClassLoader())) {
-            InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration");
-            return;
-        }
-
         try {
+
+            //if agent is not installed (jar not loaded), can skip the entire registration process
+            try {
+                AgentConnector test = AgentConnector.INSTANCE;
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                try {
+                    InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration");
+                    return;
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t2) {
+                    // chomp
+                }
+            }
+
             ServletContext context = filterConfig.getServletContext();
+
             String name = getName(context);
+
             String key = registerWebApp(appName);
             setKey(key);
+
             InternalLogger.INSTANCE.info("Successfully registered the filter '%s'", FILTER_NAME);
+
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
