@@ -15,6 +15,8 @@ import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
+import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
+import com.microsoft.applicationinsights.smoketest.exceptions.TimeoutException;
 import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
@@ -138,7 +140,7 @@ public abstract class AiSmokeTest {
 	public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
 	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
 	public static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
-	public static final int HEALTH_CHECK_RETRIES = 4;
+	public static final int HEALTH_CHECK_RETRIES = 2;
 	//endregion
 
 	private static final Properties testProps = new Properties();
@@ -419,9 +421,11 @@ public abstract class AiSmokeTest {
 
 	@AfterWithParams
 	public static void tearDownContainer(final String appServer, final String os, final String jreVersion) throws Exception {
-		stopContainer(currentContainerInfo);
-		if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
-			currentContainerInfo = null;
+		if (currentContainerInfo != null) {
+			stopContainer(currentContainerInfo);
+			if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
+				currentContainerInfo = null;
+			}
 		}
 		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
 	}
@@ -431,7 +435,7 @@ public abstract class AiSmokeTest {
 
 	protected static String getProperty(String key) {
 		String rval = testProps.getProperty(key);
-		if (rval == null) throw new RuntimeException(String.format("test property not found '%s'", key));
+		if (rval == null) throw new SmokeTestException(String.format("test property not found '%s'", key));
 		return rval;
 	}
 
@@ -444,7 +448,7 @@ public abstract class AiSmokeTest {
 		Stopwatch watch = Stopwatch.createStarted();
 		do {
 			if (watch.elapsed(timeoutUnit) > timeout) {
-				throw new RuntimeException(String.format("Timeout reached waiting for '%s' to come online", appName));
+				throw new TimeoutException(appName, timeout, timeoutUnit);
 			}
 
 			try {
@@ -468,6 +472,7 @@ public abstract class AiSmokeTest {
 		Preconditions.checkArgument(numberOfRetries >= 0, "numberOfRetries must be non-negative");
 		int triedCount = 0;
 		boolean success = false;
+		Throwable lastThrowable = null;
 		do {
 			try {
 				waitForUrl(url, timeout, timeoutUnit, appName);
@@ -475,9 +480,13 @@ public abstract class AiSmokeTest {
 			} catch (ThreadDeath td) {
 				throw td;
 			} catch (Throwable t) {
+				lastThrowable = t;
 				System.out.printf("WARNING: '%s' health check failed (%s). %d retries left. Exception: %s%n", appName, url, numberOfRetries-triedCount, t);
 			}
 		} while (!success && triedCount++ < numberOfRetries);
+		if (!success) {
+			throw new TimeoutException(appName, timeout*triedCount, timeoutUnit, String.format("Tried %d times to hit %s", triedCount, url), lastThrowable);
+		}
 	}
 
 	protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
