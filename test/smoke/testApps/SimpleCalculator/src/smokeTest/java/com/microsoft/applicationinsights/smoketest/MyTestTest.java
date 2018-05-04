@@ -13,6 +13,7 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
+@UseAgent
 public class MyTestTest extends AiSmokeTest {
 
 	@Test

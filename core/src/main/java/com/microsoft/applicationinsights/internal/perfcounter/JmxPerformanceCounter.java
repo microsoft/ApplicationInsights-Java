@@ -59,7 +59,10 @@ public final class JmxPerformanceCounter implements PerformanceCounter {
         Preconditions.checkArgument(!objectToAttributes.isEmpty(), "objectToAttributes should be not be empty");
 
         id = categoryName + "." + counterName;
-        telemetry = new PerformanceCounterTelemetry(categoryName, counterName, SystemInformation.INSTANCE.getProcessId(), Constants.DEFAULT_DOUBLE_VALUE);
+        telemetry = new PerformanceCounterTelemetry();
+        telemetry.setCategoryName(categoryName);
+        telemetry.setCounterName(counterName);
+        telemetry.setInstanceName(SystemInformation.INSTANCE.getProcessId());
         this.objectToAttributes = objectToAttributes;
     }
 

@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
@@ -9,6 +10,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
@@ -18,6 +20,7 @@ import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.*;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -121,19 +124,21 @@ public abstract class AiSmokeTest {
 	protected static String currentImageName;
 	protected static short appServerPort;
 	protected static String warFileName;
+	protected static String agentMode;
 	//endregion
 
 	//region: application fields
-
-
 	protected String targetUri;
 	protected String httpMethod;
+	protected long targetUriDelayMs;
 	protected boolean expectSomeTelemetry = true;
 	//endregion
 
 	//region: options
 	public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
 	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
+	public static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
+	public static final int HEALTH_CHECK_RETRIES = 4;
 	//endregion
 
 	private static final Properties testProps = new Properties();
@@ -154,13 +159,14 @@ public abstract class AiSmokeTest {
 			if (targetUri == null) {
 				thiz.targetUri = null;
 				thiz.httpMethod = null;
+				thiz.targetUriDelayMs = 0L;
 			} else {
 				thiz.targetUri = targetUri.value();
 				if (!thiz.targetUri.startsWith("/")) {
 					thiz.targetUri = "/"+thiz.targetUri;
 				}
-
 				thiz.httpMethod = targetUri.method().toUpperCase();
+				thiz.targetUriDelayMs = targetUri.delay();
 			}
 
 			ExpectSomeTelemetry expectSomeTelemetry = description.getAnnotation(ExpectSomeTelemetry.class);
@@ -216,30 +222,53 @@ public abstract class AiSmokeTest {
 		}));
 	}
 
+	@ClassRule
+	public static TestWatcher agentModeLoader = new TestWatcher() {
+		@Override
+		protected void starting(Description description) {
+			UseAgent ua = description.getAnnotation(UseAgent.class);
+			if (ua != null) {
+				agentMode = ua.value();
+				System.out.println("AGENT MODE: "+agentMode);
+			}
+		}
+
+		@Override
+		protected void finished(Description description) {
+			System.out.println("Finished test class. resetting AGENT MODE.");
+			agentMode = null;
+		}
+	};
+
 	@BeforeWithParams
 	public static void configureEnvironment(final String appServer, final String os, final String jreVersion) throws Exception {
 		System.out.println("Preparing environment...");
-		if (currentContainerInfo != null) {
-			// test cleanup didn't take...try to clean up
-			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
-				System.err.println("From last test run, container is still running: "+currentContainerInfo);
-				try {
-					docker.stopContainer(currentContainerInfo.getContainerId());
-				} catch (Exception e) {
-					System.err.println("Couldn't clean up environment. Must be done manually.");
-					throw e;
+		try {
+			if (currentContainerInfo != null) {
+				// test cleanup didn't take...try to clean up
+				if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
+					System.err.println("From last test run, container is still running: " + currentContainerInfo);
+					try {
+						docker.stopContainer(currentContainerInfo.getContainerId());
+					} catch (Exception e) {
+						System.err.println("Couldn't clean up environment. Must be done manually.");
+						throw e;
+					}
+				} else {
+					// container must have stopped after timeout reached.
+					currentContainerInfo = null;
 				}
-			} else {
-				// container must have stopped after timeout reached.
-				currentContainerInfo = null;
 			}
+			checkParams(appServer, os, jreVersion);
+			setupProperties(appServer, os, jreVersion);
+			startMockedIngestion();
+			startDockerContainer();
+			waitForApplicationToStart();
+			System.out.println("Environment preparation complete.");
+		} catch (Exception e) {
+			System.err.printf("Could not configure environment: %s%n", ExceptionUtils.getStackTrace(e));
+			throw e;
 		}
-		checkParams(appServer, os, jreVersion);
-		setupProperties(appServer, os, jreVersion);
-		startMockedIngestion();
-		startDockerContainer();
-		waitForApplicationToStart();
-		System.out.println("Environment preparation complete.");
 	}
 
 	
@@ -259,7 +288,7 @@ public abstract class AiSmokeTest {
 
 	protected static void waitForApplicationToStart() throws Exception {
 		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
-		waitForUrl(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext());
+		waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext(), HEALTH_CHECK_RETRIES);
 		System.out.println("Test app health check complete.");
 		System.out.printf("Waiting %ds for any request telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
@@ -272,7 +301,11 @@ public abstract class AiSmokeTest {
 			System.out.println("targetUri==null: automated testapp request disabled");
 			return;
 		}
-
+		if (targetUriDelayMs > 0) {
+			System.out.printf("Waiting %.3fs before calling uri...%n", targetUriDelayMs/1000.0);
+			System.out.flush();
+			TimeUnit.MILLISECONDS.sleep(targetUriDelayMs);
+		}
 		System.out.println("Calling "+targetUri+" ...");
 		String url = getBaseUrl()+targetUri;
 		final String content;
@@ -288,7 +321,7 @@ public abstract class AiSmokeTest {
 		assertNotNull(String.format("Null response from targetUri: '%s'. %s", targetUri, expectationMessage), content);
 		assertTrue(String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage), content.length() > 0);
 
-		System.out.printf("Waiting %ds for telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		System.out.printf("Waiting %ds for telemetry...%n", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
 		System.out.println("Finished waiting for telemetry.\nStarting validation...");
 
@@ -343,12 +376,12 @@ public abstract class AiSmokeTest {
 
 	protected static void startDockerContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
-		String containerId = docker.startContainer(currentImageName, appServerPort+":8080");
+		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", agentMode);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.println("Container started: "+containerId);
 
 		final int appServerDelayAfterStart_seconds = 5;
-		System.out.println("Waiting %d seconds for app server to startup...");
+		System.out.printf("Waiting %d seconds for app server to startup...%n", appServerDelayAfterStart_seconds);
 		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
 
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
@@ -356,7 +389,7 @@ public abstract class AiSmokeTest {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Verifying appserver has started (%s)...%n", url);
 
-			waitForUrl(url, 120, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName));
+			waitForUrlWithRetries(url, 120, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
 			System.out.println("App server is ready.");
 		}
 		catch (Exception e) {
@@ -390,6 +423,7 @@ public abstract class AiSmokeTest {
 		if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
 			currentContainerInfo = null;
 		}
+		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
 	}
 
 	//region: test helper methods
@@ -399,6 +433,10 @@ public abstract class AiSmokeTest {
 		String rval = testProps.getProperty(key);
 		if (rval == null) throw new RuntimeException(String.format("test property not found '%s'", key));
 		return rval;
+	}
+
+	protected static <T extends Domain> T getBaseData(Envelope envelope) {
+		return ((Data<T>)envelope.getData()).getBaseData();
 	}
 
 	protected static void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName) throws InterruptedException {
@@ -423,7 +461,23 @@ public abstract class AiSmokeTest {
 				rval = null;
 			}
 		} while (rval == null);
-		assertFalse(String.format("Empty response from '%s'. HealthCheck urls should return something non-empty", url), rval.isEmpty());
+		assertFalse(String.format("Empty response from '%s'. Health check urls should return something non-empty", url), rval.isEmpty());
+	}
+
+	protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) {
+		Preconditions.checkArgument(numberOfRetries >= 0, "numberOfRetries must be non-negative");
+		int triedCount = 0;
+		boolean success = false;
+		do {
+			try {
+				waitForUrl(url, timeout, timeoutUnit, appName);
+				success = true;
+			} catch (ThreadDeath td) {
+				throw td;
+			} catch (Throwable t) {
+				System.out.printf("WARNING: '%s' health check failed (%s). %d retries left. Exception: %s%n", appName, url, numberOfRetries-triedCount, t);
+			}
+		} while (!success && triedCount++ < numberOfRetries);
 	}
 
 	protected <T extends Domain> T getTelemetryDataForType(int index, String type) {

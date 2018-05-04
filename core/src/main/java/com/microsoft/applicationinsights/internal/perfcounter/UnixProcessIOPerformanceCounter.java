@@ -60,7 +60,10 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
     public void report(TelemetryClient telemetryClient) {
         long currentCollectionInNanos = System.nanoTime();
 
-        double processIO = getCurrentIOForCurrentProcess();
+        Double processIO = getCurrentIOForCurrentProcess();
+        if (processIO == null) {
+            return;
+        }
         if (lastCollectionInNanos != -1) {
             // Not the first time
 
@@ -83,10 +86,14 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
         lastCollectionInNanos = currentCollectionInNanos;
     }
 
-    public double getCurrentIOForCurrentProcess() {
+    /**
+     *
+     * @return the current IO for current process, or null if the datum could not be measured.
+     */
+    public Double getCurrentIOForCurrentProcess() {
         BufferedReader bufferedReader = null;
 
-        double result = Constants.DEFAULT_DOUBLE_VALUE;
+        Double result = null;
         UnixProcessIOtParser parser = new UnixProcessIOtParser();
         try {
             bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
@@ -97,15 +104,15 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
 
             result = parser.getValue();
         } catch (Exception e) {
-            result = Constants.DEFAULT_DOUBLE_VALUE;
-            logError("Error while parsing file: '%s'", getId(), e.toString());
+            result = null;
+            logPerfCounterErrorError("Error while parsing file: '%s'", getId());
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
-                    logError("Error while closing file : '%s'", e.toString());
+                    logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
                     InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
                 }
             }

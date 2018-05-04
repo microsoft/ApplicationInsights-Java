@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
@@ -42,16 +43,22 @@ import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
+import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.agent.AgentConnector;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 /**
  * Created by yonisha on 2/2/2015.
  */
 @WebFilter
 public final class WebRequestTrackingFilter implements Filter {
+    static {
+        WebReflectionUtils.initialize();
+    }
+    // region Members
     private final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
 
@@ -230,6 +237,7 @@ public final class WebRequestTrackingFilter implements Filter {
     }
 
     private synchronized void initialize(FilterConfig filterConfig) {
+        StopWatch sw = StopWatch.createStarted();
         try {
 
             //if agent is not installed (jar not loaded), can skip the entire registration process
@@ -255,14 +263,13 @@ public final class WebRequestTrackingFilter implements Filter {
             String key = registerWebApp(appName);
             setKey(key);
 
-            InternalLogger.INSTANCE.info("Successfully registered the filter '%s'", FILTER_NAME);
+            InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. getName=%s", FILTER_NAME, sw.getNanoTime()/1_000_000.0, name);
 
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", FILTER_NAME,
-                        ExceptionUtils.getStackTrace(t));
+                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", FILTER_NAME, ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

@@ -2,6 +2,10 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
+import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
+import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 
@@ -9,13 +13,13 @@ import org.junit.Assume;
 import org.junit.Test;
 
 public class TraceLog4j1_2Test extends AiSmokeTest {
+
     @Test
     @TargetUri("/traceLog4j1_2")
     public void testTraceLog4j1_2() {
         // this doesn't work with jbosseap6; under investigation
         Assume.assumeFalse(currentImageName.contains("jbosseap6"));
 
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(6, mockedIngestion.getCountForType("MessageData"));
 
         MessageData md1 = getTelemetryDataForType(0, "MessageData");
@@ -54,5 +58,21 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
         assertEquals(SeverityLevel.Critical, md6.getSeverityLevel());
         assertEquals("Log4j", md6.getProperties().get("SourceType"));
         assertEquals("FATAL", md6.getProperties().get("LoggingLevel"));
+    }
+
+    @Test
+    @TargetUri("traceLog4j1_2WithException")
+    public void testTraceLog4j1_2WithExeption() {
+        assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
+
+        ExceptionData ed1 = getTelemetryDataForType(0, "ExceptionData");
+        List<ExceptionDetails> details = ed1.getExceptions();
+        ExceptionDetails ex = details.get(0);
+
+        assertEquals("Fake Exception", ex.getMessage());
+        assertEquals(SeverityLevel.Error, ed1.getSeverityLevel());
+        assertEquals("This is an exception!", ed1.getProperties().get("Logger Message"));
+        assertEquals("Log4j", ed1.getProperties().get("SourceType"));
+        assertEquals("ERROR", ed1.getProperties().get("LoggingLevel"));
     }
 }

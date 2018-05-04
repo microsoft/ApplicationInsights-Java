@@ -5,4 +5,10 @@ if [ -z "$CATALINA_HOME" ]; then
 	exit 1
 fi
 
+if [ ! -z "$AI_AGENT_MODE" ]; then
+    echo "AI_AGENT_MODE=$AI_AGENT_MODE"
+    cp -f ./setenv.sh $CATALINA_HOME/bin/setenv.sh
+    cp -f ./${AI_AGENT_MODE}_AI-Agent.xml ./aiagent/AI-Agent.xml
+fi
+
 $CATALINA_HOME/bin/catalina.sh run

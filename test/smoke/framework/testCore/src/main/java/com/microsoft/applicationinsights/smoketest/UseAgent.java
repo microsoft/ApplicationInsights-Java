@@ -5,14 +5,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Indicates that this test class should use the agent.
+ */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface TargetUri {
-    String value();
-    String method() default "GET";
-
+@Target(ElementType.TYPE)
+public @interface UseAgent {
     /**
-     * The delay in milliseconds to wait before calling the target uri.
+     * Sets the agent mode; meaning which config file to use.
+     * @return
      */
-    long delay() default 0L;
+    String value() default "default";
 }
