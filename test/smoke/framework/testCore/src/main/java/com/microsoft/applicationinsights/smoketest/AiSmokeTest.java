@@ -224,8 +224,10 @@ public abstract class AiSmokeTest {
 		}));
 	}
 
+	private static List<DependencyContainer> dependencyImages = new ArrayList<>();
+
 	@ClassRule
-	public static TestWatcher agentModeLoader = new TestWatcher() {
+	public static TestWatcher classOptionsLoader = new TestWatcher() {
 		@Override
 		protected void starting(Description description) {
 			UseAgent ua = description.getAnnotation(UseAgent.class);
@@ -233,11 +235,29 @@ public abstract class AiSmokeTest {
 				agentMode = ua.value();
 				System.out.println("AGENT MODE: "+agentMode);
 			}
+			WithDependencyContainers wdc = description.getAnnotation(WithDependencyContainers.class);
+			if (wdc != null) {
+				for (DependencyContainer container : wdc.value()) {
+					if (container.value() == null || container.value().trim().isEmpty()) {
+						System.err.printf("WARNING: skipping dependency container with invalid name: '%s'%n", container);
+						continue;
+					}
+					dependencyImages.add(container);
+				}
+			}
 		}
 
 		@Override
 		protected void finished(Description description) {
-			System.out.println("Finished test class. resetting AGENT MODE.");
+			String message = "";
+			if (agentMode != null) {
+				message += "Resetting agentMode. ";
+			}
+			if (!dependencyImages.isEmpty()) {
+				message += "Clearing dependency images. ";
+			}
+			System.out.printf("Finished test class. %s%n", message);
+			dependencyImages.clear();
 			agentMode = null;
 		}
 	};
@@ -264,7 +284,7 @@ public abstract class AiSmokeTest {
 			checkParams(appServer, os, jreVersion);
 			setupProperties(appServer, os, jreVersion);
 			startMockedIngestion();
-			startDockerContainer();
+			startAllContainers();
 			waitForApplicationToStart();
 			System.out.println("Environment preparation complete.");
 		} catch (Exception e) {
@@ -376,7 +396,15 @@ public abstract class AiSmokeTest {
 		assertEquals(MockedAppInsightsIngestionServlet.PONG, postResponse);
 	}
 
-	protected static void startDockerContainer() throws Exception {
+	protected static void startAllContainers() throws Exception {
+		if (!dependencyImages.isEmpty()) {
+			for (DependencyContainer dc : dependencyImages) {
+				System.out.println("");
+			}
+		}
+	}
+
+	protected static void startTestApplicationContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
 		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", agentMode);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
