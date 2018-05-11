@@ -308,6 +308,7 @@ public abstract class AiSmokeTest {
 		}
 		System.out.println("Calling "+targetUri+" ...");
 		String url = getBaseUrl()+targetUri;
+    	System.out.println("calling " + url);
 		final String content;
 		switch(httpMethod) {
 			case "GET":

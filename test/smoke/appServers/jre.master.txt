@@ -1,2 +1,1 @@
-openjdk:7-jre
 openjdk:8-jre
