@@ -20,20 +20,20 @@ public class TestController {
 
 	@GetMapping("/basic/trackEvent")
 	public String trackEventSpringBoot() {
-//		Map<String, String> properties = new HashMap<String, String>() {
-//			{
-//				put("key", "value");
-//			}
-//		};
-//		Map<String, Double> metrics = new HashMap<String, Double>() {
-//			{
-//				put("key", 1d);
-//			}
-//		};
-//
-//		//Event
-//		client.trackEvent("EventDataTest");
-//		client.trackEvent("EventDataPropertyTest", properties, metrics);
+		Map<String, String> properties = new HashMap<String, String>() {
+			{
+				put("key", "value");
+			}
+		};
+		Map<String, Double> metrics = new HashMap<String, Double>() {
+			{
+				put("key", 1d);
+			}
+		};
+
+		//Event
+		client.trackEvent("EventDataTest");
+		client.trackEvent("EventDataPropertyTest", properties, metrics);
 		return "hello";
 	}
 }
