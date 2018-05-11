@@ -11,6 +11,9 @@ buildscript {
 
 apply plugin: 'org.springframework.boot'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 dependencies {
     compile springBootStarterJar
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.9.RELEASE'
