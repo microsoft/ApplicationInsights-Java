@@ -15,7 +15,7 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 		assertEquals(2, mockedIngestion.getCountForType("EventData"));
 		int totalItems = mockedIngestion.getItemCount();
-		int expectedItems = 1;
+		int expectedItems = 3;
 		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
 			expectedItems, totalItems);
 
