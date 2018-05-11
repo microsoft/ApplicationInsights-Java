@@ -132,7 +132,7 @@ public class AiDockerClient {
 		}
 		Process p = buildProcess(cmdList).start();
 		try {
-			waitAndCheckCodeForProcess(p, 50, TimeUnit.SECONDS, String.format("executing command on container: '%s'", id, Joiner.on(' ').join(cmdList)));
+			waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("executing command on container: '%s'", id, Joiner.on(' ').join(cmdList)));
 			flushStdout(p);
 		}
 		catch (Exception e) {
