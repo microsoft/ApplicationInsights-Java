@@ -1,0 +1,27 @@
+apply plugin: 'war'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE'
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    compile springBootStarterJar
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.9.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.9.RELEASE'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+configurations {
+    smokeTestCompile.exclude group:'org.springframework.boot'
+    smokeTestRuntime.exclude group:'org.springframework.boot'
+}
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName
