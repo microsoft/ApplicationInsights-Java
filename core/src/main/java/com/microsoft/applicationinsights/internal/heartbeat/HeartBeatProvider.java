@@ -86,7 +86,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     this.isEnabled = true;
     this.heartbeatsSent = 0;
     this.propertyUpdateService = Executors.newCachedThreadPool(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "propertyUpdateService"));
-    this.heartBeatSenderService = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
+    this.heartBeatSenderService = Executors.newSingleThreadScheduledExecutor( ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
     SDKShutdownActivity.INSTANCE.register(this);
   }
 
