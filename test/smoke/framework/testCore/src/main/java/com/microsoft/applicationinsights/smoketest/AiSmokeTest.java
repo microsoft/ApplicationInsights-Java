@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
+import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -41,9 +42,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -121,12 +125,16 @@ public abstract class AiSmokeTest {
 	}
 
 	protected static short currentPortNumber = BASE_PORT_NUMBER;
-	
+
+	private static List<DependencyContainer> dependencyImages = new ArrayList<>();
 	protected static ContainerInfo currentContainerInfo = null;
+	protected static Stack<ContainerInfo> allContainers = new Stack<>();
 	protected static String currentImageName;
 	protected static short appServerPort;
 	protected static String warFileName;
 	protected static String agentMode;
+	protected static String networkId;
+	protected static String networkName = "aismoke-net";
 	//endregion
 
 	//region: application fields
@@ -156,6 +164,7 @@ public abstract class AiSmokeTest {
 	public TestWatcher theWatchman = new TestWatcher() {
 		@Override
 		protected void starting(Description description) {
+			System.out.println("Configuring test...");
 			TargetUri targetUri = description.getAnnotation(TargetUri.class);
 			AiSmokeTest thiz = AiSmokeTest.this;
 			if (targetUri == null) {
@@ -224,12 +233,11 @@ public abstract class AiSmokeTest {
 		}));
 	}
 
-	private static List<DependencyContainer> dependencyImages = new ArrayList<>();
-
 	@ClassRule
 	public static TestWatcher classOptionsLoader = new TestWatcher() {
 		@Override
 		protected void starting(Description description) {
+			System.out.println("Configuring test class...");
 			UseAgent ua = description.getAnnotation(UseAgent.class);
 			if (ua != null) {
 				agentMode = ua.value();
@@ -284,6 +292,7 @@ public abstract class AiSmokeTest {
 			checkParams(appServer, os, jreVersion);
 			setupProperties(appServer, os, jreVersion);
 			startMockedIngestion();
+			createDockerNetwork();
 			startAllContainers();
 			waitForApplicationToStart();
 			System.out.println("Environment preparation complete.");
@@ -396,19 +405,62 @@ public abstract class AiSmokeTest {
 		assertEquals(MockedAppInsightsIngestionServlet.PONG, postResponse);
 	}
 
-	protected static void startAllContainers() throws Exception {
-		if (!dependencyImages.isEmpty()) {
-			for (DependencyContainer dc : dependencyImages) {
-				System.out.println("");
-			}
+	private static void createDockerNetwork() throws Exception {
+		try {
+			networkId = docker.createNetwork(networkName);
+		} catch (Exception e) {
+			System.err.printf("Error creating network named '%s'%n", networkName);
+			e.printStackTrace();
+			throw e;
 		}
 	}
 
-	protected static void startTestApplicationContainer() throws Exception {
+	private static void cleanUpDockerNetwork() throws Exception {
+		if (networkId == null) {
+			System.out.println("No network id....nothing to clean up");
+			return;
+		}
+		try {
+			docker.deleteNetwork(networkName);
+		} catch (Exception e) {
+			System.err.printf("Error deleting network named '%s' (%s)%n", networkName, networkId);
+			e.printStackTrace();
+		} finally {
+			networkId = null;
+		}
+	}
+
+	private static void startAllContainers() throws Exception {
+		startDependencyContainers();
+		startTestApplicationContainer();
+	}
+
+	private static void startDependencyContainers() throws IOException, InterruptedException {
+		if (dependencyImages.isEmpty()) {
+			System.out.println("No dependency containers to start.");
+			return;
+		}
+
+		for (DependencyContainer dc : dependencyImages) {
+			String containerName = dc.value()+appServerPort;
+			String imageName = Strings.isNullOrEmpty(dc.imageName()) ? dc.value() : dc.imageName();
+			System.out.printf("Starting container: %s%n", imageName);
+			final String containerId = docker.startContainer(imageName, dc.portMapping(), networkId, containerName, null);
+			assertFalse("'containerId' was null/empty attempting to start container: "+imageName, Strings.isNullOrEmpty(containerId));
+			System.out.printf("Dependency container started: %s (%s)%n", imageName, containerId);
+
+			ContainerInfo depConInfo = new ContainerInfo(containerId, containerName);
+			allContainers.push(depConInfo);
+			TimeUnit.MILLISECONDS.sleep(500); // wait a bit after starting a server.
+		}
+	}
+
+	private static void startTestApplicationContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
-		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", agentMode);
+		Map<String, String> envVars = generateAppContainerEnvVarMap();
+		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, "app-under-test-"+appServerPort, envVars);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
-		System.out.println("Container started: "+containerId);
+		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
 		final int appServerDelayAfterStart_seconds = 5;
 		System.out.printf("Waiting %d seconds for app server to startup...%n", appServerDelayAfterStart_seconds);
@@ -437,7 +489,22 @@ public abstract class AiSmokeTest {
 			System.err.println("Error deploying test application.");
 			throw e;
 		}
-		// TODO start application dependencies---container(s)
+		allContainers.push(currentContainerInfo);
+	}
+
+	private static Map<String, String> generateAppContainerEnvVarMap() {
+		Map<String, String> map = new HashMap<>();
+		if (agentMode != null) {
+			map.put("AI_AGENT_MODE", agentMode);
+		}
+		for (DependencyContainer dc : dependencyImages) {
+			String varname = dc.environmentVariable();
+			if (Strings.isNullOrEmpty(varname)) {
+				varname = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, dc.value());
+			}
+			map.put(varname, dc.value()+appServerPort);
+		}
+		return map;
 	}
 	//endregion
 
@@ -449,13 +516,49 @@ public abstract class AiSmokeTest {
 
 	@AfterWithParams
 	public static void tearDownContainer(final String appServer, final String os, final String jreVersion) throws Exception {
+		stopAllContainers();
+		cleanUpDockerNetwork();
+		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
+	}
+
+	public static void stopAllContainers() throws Exception {
+		if (allContainers.isEmpty()) {
+			System.out.println("No containers to stop");
+			return;
+		}
+
+		// TODO depdency containers can be stopped in parallel
+		System.out.printf("Stopping %d containers...", allContainers.size());
+		List<ContainerInfo> failedToStop = new ArrayList<>();
+		while (!allContainers.isEmpty()) {
+			ContainerInfo c = allContainers.pop();
+			if (currentContainerInfo == c) {
+				System.out.println("Cleaning up app container");
+				currentContainerInfo = null;
+			}
+			stopContainer(c);
+			if (docker.isContainerRunning(c.getContainerId())) {
+				System.err.printf("ERROR: Container failed to stop: %s%n", c.toString());
+				failedToStop.add(c);
+			}
+		}
+
 		if (currentContainerInfo != null) {
+			System.err.println("Could not find app container in stack. Stopping...");
 			stopContainer(currentContainerInfo);
-			if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) { // for good measure
+			if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) {
 				currentContainerInfo = null;
 			}
 		}
-		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
+
+		if (!failedToStop.isEmpty()) {
+			System.err.println("Some containers failed to stop. Subsequent tests may fail.");
+			for (ContainerInfo c : failedToStop) {
+				if (docker.isContainerRunning(c.getContainerId())) {
+					System.err.println("Failed to stop: "+c.toString());
+				}
+			}
+		}
 	}
 
 	//region: test helper methods

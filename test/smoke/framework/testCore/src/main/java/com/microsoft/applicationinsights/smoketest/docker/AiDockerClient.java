@@ -8,6 +8,8 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -76,32 +78,34 @@ public class AiDockerClient {
 		return new ProcessBuilder(cmdLine).redirectErrorStream(true);
 	}
 
-	public String startContainer(String image, String portMapping, String agentMode) throws IOException, InterruptedException {
+	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars) throws IOException, InterruptedException {
 		Preconditions.checkNotNull(image, "image");
 		Preconditions.checkNotNull(portMapping, "portMapping");
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
 		List<String> cmd = new ArrayList<>(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
-		if (agentMode != null) {
-			cmd.add("--env");
-			cmd.add("AI_AGENT_MODE="+agentMode);
-		}
+		if (!Strings.isNullOrEmpty(network)) {
+		    // TODO assert the network exists
+		    cmd.add("--network");
+		    cmd.add(network);
+        }
+        if (!Strings.isNullOrEmpty(containerName)) {
+		    cmd.add("--name");
+		    cmd.add(containerName);
+        }
+        if (envVars != null && !envVars.isEmpty()) {
+		    for (Entry<String, String> entry : envVars.entrySet()) {
+		        cmd.add("--env");
+		        cmd.add(String.format("%s=%s", entry.getKey(), entry.getValue()));
+            }
+        }
 		cmd.add(image);
-		Process p = buildProcess(cmd).start();
-		int timeout = 10;
-		TimeUnit unit = TimeUnit.SECONDS;
-		if (!p.waitFor(timeout, unit)) {
-			p.destroyForcibly();
-			flushStdout(p);
-			throw new TimeoutException("container, "+image, timeout, unit);
-		}
-		final int exitCode = p.exitValue();
-		if (exitCode != 0) {
-			flushStdout(p);
-			throw new SmokeTestException("Starting container exited with code "+exitCode);
-		}
-		List<String> lines = CharStreams.readLines(new InputStreamReader(p.getInputStream()));
-		return lines.get(0);
+		final Process p = buildProcess(cmd).start();
+		final int timeout = 10;
+		final TimeUnit unit = TimeUnit.SECONDS;
+		waitAndCheckCodeForProcess(p, timeout, unit, "starting container "+image);
+
+		return getFirstLineOfProcessOutput(p);
 	}
 
 	private static void flushStdout(Process p) throws IOException {
@@ -184,4 +188,21 @@ public class AiDockerClient {
 			sw.close();
 		}
 	}
+
+	public String createNetwork(String name) throws IOException, InterruptedException {
+	    Process p = buildProcess(dockerExePath, "network", "create", "--driver", "bridge", name).start();
+	    waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "creating network");
+	    return getFirstLineOfProcessOutput(p);
+    }
+
+	private static String getFirstLineOfProcessOutput(Process p) throws IOException {
+		List<String> lines = CharStreams.readLines(new InputStreamReader(p.getInputStream()));
+		return lines.get(0);
+	}
+
+	public String deleteNetwork(String nameOrId) throws IOException, InterruptedException {
+	    Process p = buildProcess(dockerExePath, "network", "rm", nameOrId).start();
+	    waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "deleting network");
+	    return getFirstLineOfProcessOutput(p);
+    }
 }

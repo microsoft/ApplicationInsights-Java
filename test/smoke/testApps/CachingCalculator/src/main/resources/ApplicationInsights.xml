@@ -4,7 +4,7 @@
 
 	<!-- The key from the portal: -->
 
-	<InstrumentationKey>c3cf9210-763f-4978-a782-bcfba91f2df6</InstrumentationKey>
+	<InstrumentationKey>00000000-0000-0000-0000-0FEEDDADBEEF</InstrumentationKey>
 
 	<SDKLogger type="CONSOLE">
 		<enabled>true</enabled>
@@ -30,4 +30,9 @@
 		<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer" />
 		<Add type="com.microsoft.applicationinsights.extensibility.initializer.docker.DockerContextInitializer" />
 	</TelemetryInitializers>
+
+	<Channel>
+		<!-- <EndpointAddress>http://localhost:60606/v2/track</EndpointAddress> -->
+		<EndpointAddress>http://fakeingestion:60606/v2/track</EndpointAddress>
+	</Channel>
 </ApplicationInsights>

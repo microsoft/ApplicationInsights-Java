@@ -24,4 +24,6 @@ public @interface DependencyContainer {
      * @return
      */
     String environmentVariable() default "";
+
+    String portMapping();
 }
