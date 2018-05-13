@@ -1,3 +1,5 @@
+import com.microsoft.applicationinsights.build.tasks.PropsFileGen
+
 /*
  * ApplicationInsights-Java
  * Copyright (c) Microsoft Corporation
@@ -23,7 +25,23 @@ apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
 archivesBaseName = 'applicationinsights-spring-boot-starter'
-version = '1.0.0-BETA'
+version = project.properties['spring.boot.starter.version-number']
+
+def starterVersionFileDir = "$project.buildDir/src/generated/main/resources"
+task generateVersionProperties(type: PropsFileGen) {
+    targetFile = new File(starterVersionFileDir, "starter-version.properties")
+    property "version", project.version
+}
+
+processResources.dependsOn generateVersionProperties
+
+sourceSets {
+    main {
+        resources {
+            srcDir starterVersionFileDir
+        }
+    }
+}
 
 dependencies {
     compile (project(':core'))

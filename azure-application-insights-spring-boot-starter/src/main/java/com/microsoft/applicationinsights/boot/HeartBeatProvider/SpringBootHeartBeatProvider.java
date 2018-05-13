@@ -4,8 +4,10 @@ import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatPayloadProv
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;
 import com.microsoft.applicationinsights.internal.heartbeat.MiscUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -39,6 +41,8 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
   private final String SPRING_BOOT_VERSION = "ai.spring-boot.version";
 
   private final String SPRING_VERSION = "ai.spring.version";
+
+  private final String SPRING_BOOT_STARTER_VERSION = "ai.spring.boot.starter.version";
 
 
 
@@ -79,6 +83,8 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
                 provider.addHeartBeatProperty(fieldName, getSpringVersion(), true);
                 hasSetValues = true;
                 break;
+              case SPRING_BOOT_STARTER_VERSION:
+                provider.addHeartBeatProperty(fieldName, getSpringBootStarterVersionNumber(), true);
               default:
                 //We won't accept unknown properties in default providers.
                 InternalLogger.INSTANCE.trace("Encountered unknown default property");
@@ -102,6 +108,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
   private void initializeDefaultFields(Set<String> defaultFields) {
     defaultFields.add(SPRING_BOOT_VERSION);
     defaultFields.add(SPRING_VERSION);
+    defaultFields.add(SPRING_BOOT_STARTER_VERSION);
   }
 
   /**
@@ -114,10 +121,22 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
 
   /**
    * Gets the Spring Framework version
-   * @return returns the SpringFrameWork version String
+   * @return the SpringFrameWork version String
    */
   private String getSpringVersion() {
     return SpringVersion.getVersion();
+  }
+
+  /**
+   * Gets the AI SpringBoot starter version number
+   * @return the AI SpringBoot starter version number
+   */
+  private String getSpringBootStarterVersionNumber() {
+    Properties starterVersionProperties = PropertyHelper.getStarterVersionProperties();
+    if (starterVersionProperties != null) {
+      return starterVersionProperties.getProperty("version");
+    }
+    return "undefined";
   }
 
 }
