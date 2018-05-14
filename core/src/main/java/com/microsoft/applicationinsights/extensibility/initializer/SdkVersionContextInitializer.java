@@ -21,9 +21,11 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer;
 
-import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+
 import java.util.Properties;
 
 /**

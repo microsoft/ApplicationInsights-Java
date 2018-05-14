@@ -84,18 +84,6 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
         this.samplingPercentage = DEFAULT_SAMPLING_PERCENTAGE;
         this.includedTypes = new HashSet<>();
         this.excludedTypes = new HashSet<>();
-        try {
-            this.allowedTypes = new HashMap<String, Class>() {{
-                put(dependencyTelemetryName, com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry.class);
-                put(eventTelemetryName, com.microsoft.applicationinsights.telemetry.EventTelemetry.class);
-                put(exceptionTelemetryName, com.microsoft.applicationinsights.telemetry.ExceptionTelemetry.class);
-                put(pageViewTelemetryName, com.microsoft.applicationinsights.telemetry.PageViewTelemetry.class);
-                put(requestTelemetryName, com.microsoft.applicationinsights.telemetry.RequestTelemetry.class);
-                put(traceTelemetryName, com.microsoft.applicationinsights.telemetry.TraceTelemetry.class);
-            }};
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.trace("Unable to locate telemetry classes. stack trace is %s", ExceptionUtils.getStackTrace(e));
-        }
     }
 
     /**
