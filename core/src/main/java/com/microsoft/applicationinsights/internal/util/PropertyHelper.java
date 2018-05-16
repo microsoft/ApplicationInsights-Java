@@ -33,6 +33,7 @@ import java.util.Properties;
  */
 public final class PropertyHelper {
     public final static String SDK_VERSION_FILE_NAME = "sdk-version.properties";
+    final static String STARTER_VERSION_FILE_NAME = "starter-version.properties";
 
     /**
      * Reads the properties from a properties file.
@@ -71,6 +72,21 @@ public final class PropertyHelper {
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
 
+        return null;
+    }
+
+    /**
+     * A method that loads the properties file that contains the AI SpringBootStarter version number
+     * @return The properties or null if not found.
+     */
+    public static Properties getStarterVersionProperties() {
+        try {
+            return getProperties(STARTER_VERSION_FILE_NAME);
+        }
+        catch (IOException e) {
+            InternalLogger.INSTANCE.trace("Could not find starter version file: %s,"
+                + "stack trace is: ", SDK_VERSION_FILE_NAME, ExceptionUtils.getStackTrace(e));
+        }
         return null;
     }
 

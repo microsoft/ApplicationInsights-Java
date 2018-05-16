@@ -63,7 +63,7 @@ public enum PerformanceCounterContainer implements Stoppable {
     private final static long START_DEFAULT_MIN_DELAY_IN_MILLIS = 20000;
 
     // By default the container will collect performance data every 1 minute.
-    private final static long DEFAULT_COLLECTION_FREQUENCY_IN_SEC = 60;
+    public final static long DEFAULT_COLLECTION_FREQUENCY_IN_SEC = 60;
     private final static long MIN_COLLECTION_FREQUENCY_IN_SEC = 1;
 
     private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<String, PerformanceCounter>();

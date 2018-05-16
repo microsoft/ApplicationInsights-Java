@@ -26,6 +26,7 @@ include 'logging:log4j1_2'
 include 'logging:log4j2'
 include 'logging:logback'
 include 'web'
+include 'azure-application-insights-spring-boot-starter'
 include 'distributions'
 include 'samples'
 include 'test:performance'
@@ -58,4 +59,7 @@ include ':test:smoke:testApps:HeartBeat'
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
+
+include ':test:smoke:testApps:SpringBootTest'
+
 

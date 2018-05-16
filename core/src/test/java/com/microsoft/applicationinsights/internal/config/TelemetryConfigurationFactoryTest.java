@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import com.google.common.base.Predicates;
@@ -398,6 +399,17 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(mockConfiguration.getChannel().isDeveloperMode(), false);
     }
 
+    @Test
+    public void testEmptyConfiguration() {
+        TelemetryConfiguration emptyConfig = TelemetryConfiguration.getActiveWithoutInitializingConfig();
+        Assert.assertEquals(null, emptyConfig.getInstrumentationKey());
+        Assert.assertEquals(null, emptyConfig.getChannel());
+        Assert.assertEquals(0, emptyConfig.getTelemetryModules().size());
+        Assert.assertEquals(false, emptyConfig.isTrackingDisabled());
+        Assert.assertEquals(0, emptyConfig.getContextInitializers().size());
+        Assert.assertEquals(0, emptyConfig.getTelemetryProcessors().size());
+    }
+
     private MockTelemetryModule generateTelemetryModules(boolean addParameter) {
         AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, false);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build(null);
@@ -566,5 +578,12 @@ public final class TelemetryConfigurationFactoryTest {
         initializeWithFactory(mockParser, mockConfiguration);
         assertEquals(mockConfiguration.getInstrumentationKey(), expectedIkey);
         assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
+        method.setAccessible(true);
+        method.invoke(null);
     }
 }
