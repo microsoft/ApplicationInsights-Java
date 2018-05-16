@@ -78,6 +78,10 @@ public class AiDockerClient {
 		return new ProcessBuilder(cmdLine).redirectErrorStream(true);
 	}
 
+	public String startContainer(String image, String portMapping, String network) throws IOException, InterruptedException {
+		return startContainer(image, portMapping, network, null, null);
+	}
+
 	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars) throws IOException, InterruptedException {
 		Preconditions.checkNotNull(image, "image");
 		Preconditions.checkNotNull(portMapping, "portMapping");
@@ -148,17 +152,21 @@ public class AiDockerClient {
 	}
 
 	private static void waitAndCheckCodeForProcess(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
+		waitForProcessToReturn(p, timeout, unit, actionName);
+		if (p.exitValue() != 0) {
+			flushStdout(p);
+			throw new SmokeTestException(String.format("Nonzero exit code (%d)%s", p.exitValue(),
+						Strings.isNullOrEmpty(actionName) ? "" : " trying to "+actionName));
+		}
+	}
+
+	private static void waitForProcessToReturn(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
 		if (!p.waitFor(timeout, unit)) {
 			p.destroyForcibly();
 			flushStdout(p);
 			throw new TimeoutException(
 					Strings.isNullOrEmpty(actionName) ? "process" : actionName,
 					timeout, unit);
-		}
-		if (p.exitValue() != 0) {
-			flushStdout(p);
-			throw new SmokeTestException(String.format("Nonzero exit code (%d)%s", p.exitValue(),
-						Strings.isNullOrEmpty(actionName) ? "" : " trying to "+actionName));
 		}
 	}
 
@@ -205,4 +213,20 @@ public class AiDockerClient {
 	    waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "deleting network");
 	    return getFirstLineOfProcessOutput(p);
     }
+
+	/**
+	 * Returns container name for a running container. If the container id is not running, it returns null.
+	 */
+    public String getRunningContainerName(String containerId) throws IOException, InterruptedException {
+		Process p = buildProcess(dockerExePath, "inspect", "--format","'{{.Name}}'", containerId).start();
+		waitForProcessToReturn(p, 10, TimeUnit.SECONDS, "inspect entity");
+		if (p.exitValue() == 1) {
+			return null;
+		}
+		String containerName = getFirstLineOfProcessOutput(p);
+		if (containerName.startsWith("/")) {
+			return containerName.substring(1); // this was found during testing; name is prefixed with '/'
+		}
+		return containerName;
+	}
 }
