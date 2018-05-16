@@ -136,6 +136,7 @@ public abstract class AiSmokeTest {
 	protected static String agentMode;
 	protected static String networkId;
 	protected static String networkName = "aismoke-net";
+	protected static int uniqueContinaerId = 0;
 	//endregion
 
 	//region: application fields
@@ -436,6 +437,7 @@ public abstract class AiSmokeTest {
 	private static void startAllContainers() throws Exception {
 		startDependencyContainers();
 		startTestApplicationContainer();
+		uniqueContinaerId++;
 	}
 
 	private static void startDependencyContainers() throws IOException, InterruptedException {
@@ -445,7 +447,7 @@ public abstract class AiSmokeTest {
 		}
 
 		for (DependencyContainer dc : dependencyImages) {
-			String containerName = String.format("%s%d_%s", dc.value(),appServerPort,currentImageName);
+			String containerName = String.format("%s%d", dc.value(),uniqueContinaerId);
 			String imageName = Strings.isNullOrEmpty(dc.imageName()) ? dc.value() : dc.imageName();
 			System.out.printf("Starting container: %s%n", imageName);
 			final String containerId = docker.startContainer(imageName, dc.portMapping(), networkId, containerName, null);
@@ -463,7 +465,7 @@ public abstract class AiSmokeTest {
 	private static void startTestApplicationContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
 		Map<String, String> envVars = generateAppContainerEnvVarMap();
-		String containerName = String.format("aitestapp%d_%s",appServerPort,currentImageName);
+		String containerName = String.format("aitestapp%d",uniqueContinaerId);
 		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, containerName, envVars);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
