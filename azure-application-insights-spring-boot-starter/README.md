@@ -129,6 +129,9 @@ azure.application-insights.logger.type=console
 # Logging level [all, trace, info, warn, error, off]. Default value: error.
 azure.application-insights.logger.level=error
 
+# Enable/Disable QuickPulse (Live Metrics). Default value: True
+azure.application-insights.quick-pulse.enabled=true
+
 # Enable/Disable developer mode, all telemetry will be sent immediately without batching. Significantly affects performance and should be used only in developer environment. Default value: false.
 azure.application-insights.channel.in-process.developer-mode=false
 # Endpoint address, Default value: https://dc.services.visualstudio.com/v2/track.
@@ -170,13 +173,29 @@ azure.application-insights.heart-beat.heart-beat-interval=900
 #If set of properties are specified they would be excluded from Heartbeat payload
 azure.application-insights.heart-beat.excluded-heart-beat-properties-list=
 #If set of HeartBeat providers are specified they would be excluded
-azure.application-insights.heart-beat.excluded-heart-beat-provider-list
+azure.application-insights.heart-beat.excluded-heart-beat-provider-list=
 ```
 
-###Completely disable Application Insights using `application.properties`
+### Completely disable Application Insights using `application.properties`
 ```properties
 azure.application-insights.enabled=false
 azure.application-insights.web.enabled=false
 ```
 Note: Do not configure `azure.application-insights.instrumentation-key` property for optimal performance
 and avoiding any Application Insights beans creation by Spring.
+
+
+## Migrating from XML based configuration ##
+1. Please remove ApplicationInsights.xml file from the project resources or class path.
+2. Add applicationinsights-spring-boot-starter-<version_number>.jar file to pom.xml or build.gradle (you do not need to specify applicationinsights-core and web jars independently).
+   The starter takes are of it for you.
+3. Please configure springboot Application.properties file with Application Insights Instrumentation key. 
+4. Compile the project and execute it from your IDE or command line using java -jar applicationjarname
+5. To specify AI properties using command line please refer to SpringBoot Documentation.
+6. To use [ApplicationInsigts Java agent](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-agent) please follow official documentation 
+4. To get an initialized instance of TelemetryClient please use Spring autowired annotation. This will provide a fully initialized instance of TelemetryClient.
+
+```Java
+@Autowired
+TelemetryClient client;
+```
