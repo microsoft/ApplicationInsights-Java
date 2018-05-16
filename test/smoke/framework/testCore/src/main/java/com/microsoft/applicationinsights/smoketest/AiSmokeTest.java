@@ -39,15 +39,16 @@ import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -128,7 +129,7 @@ public abstract class AiSmokeTest {
 
 	private static List<DependencyContainer> dependencyImages = new ArrayList<>();
 	protected static ContainerInfo currentContainerInfo = null;
-	protected static Stack<ContainerInfo> allContainers = new Stack<>();
+	protected static Deque<ContainerInfo> allContainers = new ArrayDeque<>();
 	protected static String currentImageName;
 	protected static short appServerPort;
 	protected static String warFileName;
@@ -407,6 +408,7 @@ public abstract class AiSmokeTest {
 
 	private static void createDockerNetwork() throws Exception {
 		try {
+			System.out.printf("Creating network '%s'...%n", networkName);
 			networkId = docker.createNetwork(networkName);
 		} catch (Exception e) {
 			System.err.printf("Error creating network named '%s'%n", networkName);
@@ -421,6 +423,7 @@ public abstract class AiSmokeTest {
 			return;
 		}
 		try {
+			System.out.printf("Deleting network '%s'...%n", networkName);
 			docker.deleteNetwork(networkName);
 		} catch (Exception e) {
 			System.err.printf("Error deleting network named '%s' (%s)%n", networkName, networkId);
@@ -442,7 +445,7 @@ public abstract class AiSmokeTest {
 		}
 
 		for (DependencyContainer dc : dependencyImages) {
-			String containerName = dc.value()+appServerPort;
+			String containerName = String.format("%s%d_%s", dc.value(),appServerPort,currentImageName);
 			String imageName = Strings.isNullOrEmpty(dc.imageName()) ? dc.value() : dc.imageName();
 			System.out.printf("Starting container: %s%n", imageName);
 			final String containerId = docker.startContainer(imageName, dc.portMapping(), networkId, containerName, null);
@@ -450,6 +453,8 @@ public abstract class AiSmokeTest {
 			System.out.printf("Dependency container started: %s (%s)%n", imageName, containerId);
 
 			ContainerInfo depConInfo = new ContainerInfo(containerId, containerName);
+			depConInfo.setContainerName(containerName);
+			depConInfo.setDependencyContainerInfo(dc);
 			allContainers.push(depConInfo);
 			TimeUnit.MILLISECONDS.sleep(500); // wait a bit after starting a server.
 		}
@@ -458,7 +463,8 @@ public abstract class AiSmokeTest {
 	private static void startTestApplicationContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
 		Map<String, String> envVars = generateAppContainerEnvVarMap();
-		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, "aitestapp"+appServerPort, envVars);
+		String containerName = "aitestapp"+appServerPort;
+		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, containerName, envVars);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
@@ -467,6 +473,7 @@ public abstract class AiSmokeTest {
 		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
 
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
+		currentContainerInfo.setContainerName(containerName);
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Verifying appserver has started (%s)...%n", url);
@@ -497,12 +504,20 @@ public abstract class AiSmokeTest {
 		if (agentMode != null) {
 			map.put("AI_AGENT_MODE", agentMode);
 		}
-		for (DependencyContainer dc : dependencyImages) {
+		for (ContainerInfo info : allContainers) {
+			if (!info.isDependency()) {
+				continue;
+			}
+			DependencyContainer dc = info.getDependencyContainerInfo();
 			String varname = dc.environmentVariable();
 			if (Strings.isNullOrEmpty(varname)) {
 				varname = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, dc.value());
 			}
-			map.put(varname, dc.value()+appServerPort);
+			String containerName = info.getContainerName();
+			if (Strings.isNullOrEmpty(containerName)) {
+				throw new SmokeTestException("Null/empty container name for dependency container");
+			}
+			map.put(varname, info.getContainerName());
 		}
 		return map;
 	}
