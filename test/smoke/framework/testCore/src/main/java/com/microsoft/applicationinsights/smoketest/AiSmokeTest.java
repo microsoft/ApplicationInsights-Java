@@ -23,6 +23,7 @@ import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.*;
 import org.junit.rules.TestWatcher;
@@ -248,8 +249,8 @@ public abstract class AiSmokeTest {
 			WithDependencyContainers wdc = description.getAnnotation(WithDependencyContainers.class);
 			if (wdc != null) {
 				for (DependencyContainer container : wdc.value()) {
-					if (container.value() == null || container.value().trim().isEmpty()) {
-						System.err.printf("WARNING: skipping dependency container with invalid name: '%s'%n", container);
+					if (StringUtils.isBlank(container.value())) { // checks for null
+						System.err.printf("WARNING: skipping dependency container with invalid name: '%s'%n", container.value());
 						continue;
 					}
 					dependencyImages.add(container);
