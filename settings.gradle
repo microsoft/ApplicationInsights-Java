@@ -60,3 +60,6 @@ if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
 
+include ':test:smoke:testApps:SpringBootTest'
+
+

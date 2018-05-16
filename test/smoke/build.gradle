@@ -22,6 +22,7 @@ subprojects {
 		aiLog4j1_2Jar = project(':logging:log4j1_2')
 		aiLo4j2Jar = project(':logging:log4j2')
 		aiLogbackJar = project(':logging:logback')
+		springBootStarterJar = project(':azure-application-insights-spring-boot-starter')
 	}
 }
 
