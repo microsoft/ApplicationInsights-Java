@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 2.1.1
-- Introducing support for SpringBoot via Application-Insights-SpringBoot-Starter. This is currently in beta.
+- Introducing support for SpringBoot via Application-Insights-SpringBoot-Starter [#646](https://github.com/Microsoft/ApplicationInsights-Java/pull/646). This is currently in beta.
 - In order to add support for SpringBoot starter some fields in core SDK are made public.
 - Introduced public constructor in `InProcessTelemetryChannel.java` class.
 - Introduced a public method `getActiveWithoutInitializingConfig()` in `TelemetryConfiguration.java` class.  
