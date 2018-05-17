@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 2.1.1
+- Introducing support for SpringBoot via Application-Insights-SpringBoot-Starter [#646](https://github.com/Microsoft/ApplicationInsights-Java/pull/646). This is currently in beta.
+- In order to add support for SpringBoot starter some fields in core SDK are made public.
+- Introduced public constructor in `InProcessTelemetryChannel.java` class.
+- Introduced a public method `getActiveWithoutInitializingConfig()` in `TelemetryConfiguration.java` class.  
+
 # Version 2.1.0
 - Introduced Heartbeat feature which sends periodic heartbeats with basic information about application and runtime to Application Insights.
 - Enable support for system properties in the instrumentation key resolving component.
@@ -98,7 +104,7 @@
 - Added sampling support. See [here](https://github.com/Microsoft/ApplicationInsights-Java/wiki/Sampling)
 - Allow changing the performance counter collection frequency and added hooks before and after sending the PC see [here](https://github.com/Microsoft/ApplicationInsights-Java/wiki/Perfomance-Counters-Collection:-Setting-collection-frequency) and [here](https://github.com/Microsoft/ApplicationInsights-Java/wiki/Perfomance-Counters-Collection:-Plugin)
 - Agent built-in types are now off by default. Support wildcard to monitor multiple classes in the agent.
-- Add depenecy type in the agent configuration see [here](https://github.com/Microsoft/ApplicationInsights-Java/wiki/Configure-Dependecy-Type-in-the-Agent-Configuration)
+- Add dependency type in the agent configuration see [here](https://github.com/Microsoft/ApplicationInsights-Java/wiki/Configure-Dependecy-Type-in-the-Agent-Configuration)
 
 
 ## Version 1.0.6
