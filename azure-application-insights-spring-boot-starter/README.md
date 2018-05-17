@@ -18,7 +18,7 @@ Maven:
 ```xml
 <dependency>
   <groupId>com.microsoft.azure</groupId>
-  <artifactId>azure-application-insights-spring-boot-starter</artifactId>
+  <artifactId>application-insights-spring-boot-starter</artifactId>
   <version>${version}</version>
 </dependency>
 ```
