@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="test" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender">
         <instrumentationKey>00000000-0000-0000-0000-0FEEDDADBEEF</instrumentationKey>

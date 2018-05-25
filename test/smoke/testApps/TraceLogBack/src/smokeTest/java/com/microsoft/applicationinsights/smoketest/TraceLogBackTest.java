@@ -17,7 +17,7 @@ public class TraceLogBackTest extends AiSmokeTest {
 
     @Before
     public void skipJbosseap6AndJbosseap7Image() {
-        // this doesn't work with jbosseap6 and jbosseap7; under investigation
+        // this doesn't work with jbosseap6 and jbosseap7;
         Assume.assumeFalse(currentImageName.contains("jbosseap6"));
         Assume.assumeFalse(currentImageName.contains("jbosseap7"));
     }
