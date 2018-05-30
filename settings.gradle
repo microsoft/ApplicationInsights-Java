@@ -51,6 +51,7 @@ include ':test:smoke:framework:fakeIngestion:standalone'
 
 include ':test:smoke:testApps:PerfTestApp'
 //include ':test:smoke:testApps:SimpleCalculator'
+include ':test:smoke:testApps:CachingCalculator'
 include ':test:smoke:testApps:CoreAndFilter'
 include ':test:smoke:testApps:AutoPerfCounters'
 include ':test:smoke:testApps:TraceLog4j1_2'
