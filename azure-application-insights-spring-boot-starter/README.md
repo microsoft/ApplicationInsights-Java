@@ -11,14 +11,14 @@ Spring Boot 1.5+ or 2.0+
 *1. Add dependency*
 Gradle:
 ```groovy
-compile "com.microsoft.azure:application-insights-spring-boot-starter:${version}"
+compile "com.microsoft.azure:applicationinsights-spring-boot-starter:${version}"
 ```
 
 Maven:
 ```xml
 <dependency>
   <groupId>com.microsoft.azure</groupId>
-  <artifactId>application-insights-spring-boot-starter</artifactId>
+  <artifactId>applicationinsights-spring-boot-starter</artifactId>
   <version>${version}</version>
 </dependency>
 ```
