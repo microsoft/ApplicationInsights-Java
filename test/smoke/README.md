@@ -102,6 +102,50 @@ In the current system, test cases are coupled with the test application. So, you
 	}
 	```
 
+#### Using the agent for a test class (Optional)
+The agent JAR is automatically included in each container. The start scripts will detect if the agent is to be used and update the application server configuration accordingly. The agent can only be attached at the class-level since container live for the duration of the test class.
+
+1. Ensure the desired agent configuration file is in `/test/smoke/appServers/global-resources/`_**`configName`**_`_AI-Agent.xml`. A default file is already included `default_AI-Agent.xml`. The _configName_ should be alphanumeric and without underscores. This name will be used in the next step to tell the framework which config file to use.
+2. Add the `@UseAgent("`_**`configName`**_`")` annotation to the test class. The parameter is the _configName_ from step 1; the prefix of the config file. For example, if the `default_AI-Agent.xml` is to be used then the class should be annotated with `@UseAgent("default")`. If no argument is given, the default config file is used.
+
+#### Using a depedency container in a test class (Optional)
+A dependency container is an additional container which is started just before the appServer container where the test app is deployed. Examples include a database server like MySQL or a redis cache. It is intended that the test application interact with the dependency containers while under test. Just like the agent annotation, dependency containers are a class-level construct.
+
+Any container which can be found on [hub.docker.com](dhub) can be used. Alternatively, a custom container could be built; as long as the docker client can locate the container.
+
+1. Add the `@WithDependencyContainers` annotation to the test class.
+	* This annotation requires at least one `@DependencyContainer` parameter, but can take any number of them.
+	* The parameters have the following form:
+	```java
+	@DependencyContainer(
+		value="name_of_container",
+		imageName="name_of_docker_image",
+		portMapping="host_port:docker_port", // or just "port_number" if both are the same
+		environmentVariable="env_variable_name_used_in_testapp"
+	)
+	```
+	Only `value` is required. If `imageName` and/or `environmentVariable` is missing, the value of `value` is used for those parameters as well (see note below).
+2. Use the environment variable in the test application. This will contain the hostname (the value of `value`) of the dependency container to configure a client in the test application via `System.getenv`.
+
+**NOTE:** If the `environmentVariable` parameter is given, it will be used exactly as given. If `value` is to be used for the environment variable name, it will be transformed to _UPPER_SNAKE_CASE_ to match the "normal" naming scheme for environment variables. It is reccommended that `environmentVariable` be given to avoid any issues.
+
+For example, the two configurations shown here produce the same result:
+```java
+// example 1
+@DependencyContainer(value="redis",portMapping="6379")
+```
+```java
+//example 2
+@DependencyContainer(value="redis",imageName="redis",portMapping="6379:6379",environmentVariable="REDIS")
+```
+This configuration does the following
+* Creates a shared (bridge) network in docker. All containers will use this network.
+* Starts the `redis` image found on [hub.docker.com](dhub) before starting the test application container.
+* Passes the environment variable `REDIS=redis` to the test application container using docker's `--env` parameter.
+* The test application should use `System.getenv("REDIS")` to retrieve the host name of the Redis server to configure the Java redis client.
+
+The example outlined here can be seen in action in `/test/smoke/testApps/CachingCalculator` which uses a Redis cache to test the AI Java agent dependency telemetry collection.
+
 ## Add an application server
 1. Create a subdirectory under `/test/smoke/appServers`. The subdirectory should be named the name of the app server and its version separated by a dot (`.`). For example, `/test/smoke/appServers/`_**`MyAppServer.1`**_ would represent and app server named _MyAppServer_ version _1_.
 
@@ -174,13 +218,10 @@ See [gradle documentation](gradledocs) for more information.
 
 # Future Plans
 * Run smoke tests against provided SDK JARs
-* Addional containers for test application dependencies, e.g. backend database.
-* Smoke test properties, e.g. configurable port for fake ingestion.
 * Start up a application server for manual testing
 * Build a docker image to be use as a base image for an application server.
 * Decouple tests from test applications (common schema? dynamic resources created by the test?).
 * Detect if the smokeTests are being run on a linux machine and only run the Linux tests. Same for Windows.
-* Add ability to vary the Linux OS?
 * gradle tasks for creating a new test application, new environment; maybe automating other things e.g. 'add jre'
 * Automate discovery of application servers.
 * Automate _appServerShortName_ to remove need for build.gralde only with variable name defined.
