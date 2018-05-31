@@ -550,6 +550,8 @@ public abstract class AiSmokeTest {
 
 	@Test
 	public void zzz_CheckForExceptionsInLogs() throws IOException, InterruptedException {
+	    Assume.assumeTrue("Test class opted to skip log scanner test.", shouldRunTheLogScannerTest());
+
 		Stopwatch sw = Stopwatch.createStarted();
 		System.out.println("\n-=== SCANNING LOGS FOR UNEXPECTED EXCEPTIONS ===-\n");
 		System.out.println("Gathering logs...");
@@ -640,6 +642,13 @@ public abstract class AiSmokeTest {
 		Assert.assertTrue(String.format("%d errors detected", detectedErrors.size()), detectedErrors.isEmpty());
 		System.out.println("No errors detected.");
 	}
+
+    /**
+     * Override this method if the smoketest class should not run the log scanner test.
+     */
+	protected boolean shouldRunTheLogScannerTest() {
+	    return true;
+    }
 
 	@After
 	public void resetMockedIngestion() throws Exception {
