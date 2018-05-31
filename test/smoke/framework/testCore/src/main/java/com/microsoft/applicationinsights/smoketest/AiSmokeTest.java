@@ -557,10 +557,12 @@ public abstract class AiSmokeTest {
 		System.out.println("Downloading zip...");
 		File logsZipFile = tempFolder.newFile();
 		docker.copyFromContainer(currentContainerInfo.getContainerId(), "/root/docker-stage/appServerLogs.zip", logsZipFile);
+		System.out.println("Zipfile downloaded: "+logsZipFile.getAbsolutePath());
 		ZipFile logsAsZip = new ZipFile(logsZipFile);
 
 		int fileCount = 0;
 		final AtomicInteger linesCount = new AtomicInteger();
+		final AtomicInteger suppressedCount = new AtomicInteger();
 
 		final Enumeration<? extends ZipEntry> entries = logsAsZip.entries();
 		List<String> exceptionTypeToTrace = new ArrayList<>();
@@ -576,14 +578,15 @@ public abstract class AiSmokeTest {
 				boolean lastOneWasSuppressed = false;
 
 				{ // <init>
-					errorPatterns.add(Pattern.compile(".*?ERROR\\s+.*"));
-					errorPatterns.add(Pattern.compile(".*Exception.*"));
+					errorPatterns.add(Pattern.compile(".*?ERROR\\s+.*Exception.*"));
 
 					stackTracePatterns.add(Pattern.compile("^\\s+at\\s+?(?:[A-Za-z][\\w$]+)(?:\\.(?:[A-Za-z][\\w$]+))*.*"));
+
+					suppressionPatterns.add(Pattern.compile("InstrumentationKeyResolver - failed to resolve instrumentation key:"));
 				}
 
 				@Override
-				public boolean processLine(final String line) throws IOException {
+				public boolean processLine(final String line) {
 					linesCount.incrementAndGet();
 					// check if line matches an exception pattern
 					if (anyPatternMatches(line, errorPatterns)) {
@@ -599,6 +602,7 @@ public abstract class AiSmokeTest {
 					}
 					if (anyPatternMatches(line, stackTracePatterns)) {
 						if (anyPatternMatches(line, suppressionPatterns)) {
+							suppressedCount.incrementAndGet();
 							return true;
 						}
 						String lastResult = result.remove(result.size()-1);
@@ -627,8 +631,9 @@ public abstract class AiSmokeTest {
 			}
 			fileCount++;
 		}
-		System.out.printf("Scanned %d lines in %d files in %.3fms%n", linesCount.get(), fileCount, sw.elapsed(TimeUnit.NANOSECONDS)/1_000_000.0);
+		System.out.printf("Scanned %d lines in %d files (%d suppressed). This took %.3fms%n", linesCount.get(), fileCount, suppressedCount.get(), sw.elapsed(TimeUnit.NANOSECONDS)/1_000_000.0);
 		Assert.assertTrue(String.format("%d errors detected", exceptionTypeToTrace.size()), exceptionTypeToTrace.isEmpty());
+		System.out.println("No errors detected.");
 	}
 
 	@After
