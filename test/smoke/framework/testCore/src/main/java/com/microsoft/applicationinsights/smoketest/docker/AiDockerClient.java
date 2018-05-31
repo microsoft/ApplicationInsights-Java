@@ -126,10 +126,45 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(id, "id");
 		Preconditions.checkNotNull(appArchive, "appArchive");
 		
-		Process p = buildProcess(dockerExePath, "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
-		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
+		copyToContainer(id, appArchive, "/root/docker-stage");
 		
 		execOnContainer(id, getShellExecutor(), "./deploy.sh", appArchive.getName());
+	}
+
+	public void copyToContainer(String id, File source, String dest) throws IOException, InterruptedException {
+		Preconditions.checkNotNull(id);
+		Preconditions.checkNotNull(source, "source");
+		Preconditions.checkNotNull(dest, "dest");
+		copy(id, source.getAbsolutePath(), dest, true);
+	}
+
+	public void copyFromContainer(String id, String source, File dest) throws IOException, InterruptedException {
+		Preconditions.checkNotNull(id);
+		Preconditions.checkNotNull(source, "source");
+		Preconditions.checkNotNull(dest, "dest");
+		copy(id, source, dest.getAbsolutePath(), false);
+	}
+
+	private void copy(String id, String source, String destination, boolean copyToContainer) throws IOException, InterruptedException {
+		Preconditions.checkNotNull(id);
+		Preconditions.checkNotNull(source);
+		Preconditions.checkNotNull(destination);
+
+		final String src;
+		final String dst;
+		if (copyToContainer) {
+			src = source;
+			dst = String.format("%s:%s", id, destination);
+		} else {
+			src = String.format("%s:%s", id, source);
+			dst = destination;
+		}
+
+		Process p = buildProcess(dockerExePath, "cp", src, dst).start();
+		waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s %s container %s",
+				source,
+				copyToContainer ? "to" : "from",
+				id));
 	}
 
 	public void execOnContainer(String id, String cmd, String... args) throws IOException, InterruptedException {
