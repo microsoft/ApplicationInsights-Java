@@ -565,7 +565,7 @@ public abstract class AiSmokeTest {
 		final AtomicInteger suppressedCount = new AtomicInteger();
 
 		final Enumeration<? extends ZipEntry> entries = logsAsZip.entries();
-		List<String> exceptionTypeToTrace = new ArrayList<>();
+		List<String> detectedErrors = new ArrayList<>();
 		while (entries.hasMoreElements()) {
 			ZipEntry entry = entries.nextElement();
 			List<String> fileResults = CharStreams.readLines(new BufferedReader(new InputStreamReader(logsAsZip.getInputStream(entry))), new LineProcessor<List<String>>() {
@@ -591,9 +591,11 @@ public abstract class AiSmokeTest {
 					// check if line matches an exception pattern
 					if (anyPatternMatches(line, errorPatterns)) {
 						if (anyPatternMatches(line, suppressionPatterns)) {
+						    lastOneWasSuppressed = true;
 							return true;
 						}
 						result.add(line);
+						lastOneWasSuppressed = false;
 						return true;
 					}
 
@@ -601,10 +603,6 @@ public abstract class AiSmokeTest {
 						return true;
 					}
 					if (anyPatternMatches(line, stackTracePatterns)) {
-						if (anyPatternMatches(line, suppressionPatterns)) {
-							suppressedCount.incrementAndGet();
-							return true;
-						}
 						String lastResult = result.remove(result.size()-1);
 						result.add(String.format("%s%n%s", lastResult, line));
 					}
@@ -627,12 +625,19 @@ public abstract class AiSmokeTest {
 				}
 			});
 			if (!fileResults.isEmpty()) {
-				exceptionTypeToTrace.addAll(fileResults);
+				detectedErrors.addAll(fileResults);
 			}
 			fileCount++;
 		}
 		System.out.printf("Scanned %d lines in %d files (%d suppressed). This took %.3fms%n", linesCount.get(), fileCount, suppressedCount.get(), sw.elapsed(TimeUnit.NANOSECONDS)/1_000_000.0);
-		Assert.assertTrue(String.format("%d errors detected", exceptionTypeToTrace.size()), exceptionTypeToTrace.isEmpty());
+		if (!detectedErrors.isEmpty()) {
+		    System.err.println("Errors detected:");
+            for (int i = 0; i < detectedErrors.size(); i++) {
+                String trace = detectedErrors.get(i);
+                System.err.printf("%n%d:%n%s%n", i, trace);
+            }
+        }
+		Assert.assertTrue(String.format("%d errors detected", detectedErrors.size()), detectedErrors.isEmpty());
 		System.out.println("No errors detected.");
 	}
 
