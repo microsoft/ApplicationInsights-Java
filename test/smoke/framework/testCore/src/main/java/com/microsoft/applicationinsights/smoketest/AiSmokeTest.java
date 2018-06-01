@@ -590,6 +590,9 @@ public abstract class AiSmokeTest {
 				@Override
 				public boolean processLine(final String line) {
 					linesCount.incrementAndGet();
+					if (StringUtils.isBlank(line)) {
+					    return true;
+                    }
 					// check if line matches an exception pattern
 					if (anyPatternMatches(line, errorPatterns)) {
 						if (anyPatternMatches(line, suppressionPatterns)) {
@@ -605,8 +608,13 @@ public abstract class AiSmokeTest {
 					if (lastOneWasSuppressed) { // then don't add the stack trace
 						return true;
 					}
+
 					if (anyPatternMatches(line, stackTracePatterns)) {
-						String lastResult = result.remove(result.size()-1);
+					    int lastIndex = result.size() - 1;
+					    if (lastIndex < 0 || lastIndex >= result.size()) {
+					        return true;
+                        }
+						String lastResult = result.remove(lastIndex);
 						result.add(String.format("%s%n%s", lastResult, line));
 					}
 					return true;
