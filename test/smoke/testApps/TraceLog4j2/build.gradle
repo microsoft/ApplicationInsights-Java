@@ -1,0 +1,24 @@
+apply plugin: 'war'
+
+dependencies {
+    compile aiCoreJar
+    compile aiWebJar
+    compile aiLo4j2Jar
+    compile 'com.google.guava:guava:20.0'
+    
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    smokeTestCompile 'com.google.guava:guava:23.0'
+
+    testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
+}
+
+compileJava.sourceCompatibility = 1.7
+compileJava.targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName
