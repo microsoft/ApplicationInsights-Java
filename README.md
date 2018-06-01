@@ -11,6 +11,7 @@ For more information please refer to:
 
 * [Getting started with Application Insights in a Java web project](https://azure.microsoft.com/documentation/articles/app-insights-java-get-started/) 
 * [Application Insights overview](https://azure.microsoft.com/services/application-insights/)
+* [Application Insights with SpringBoot](https://docs.microsoft.com/en-us/java/azure/spring-framework/configure-spring-boot-java-applicationinsights)
 
 The following packages are built in this repository:
 
