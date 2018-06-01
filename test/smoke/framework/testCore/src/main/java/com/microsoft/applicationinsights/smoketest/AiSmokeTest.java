@@ -10,6 +10,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.io.CharStreams;
+import com.google.common.io.LineProcessor;
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
@@ -26,6 +28,7 @@ import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIng
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -37,20 +40,29 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import javax.annotation.Nullable;
 import javax.transaction.NotSupportedException;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.junit.Assert.*;
 /**
@@ -532,6 +544,120 @@ public abstract class AiSmokeTest {
 		return map;
 	}
 	//endregion
+
+	@Rule
+	public TemporaryFolder tempFolder = new TemporaryFolder();
+
+	@Test
+	public void zzz_CheckForExceptionsInLogs() throws IOException, InterruptedException {
+	    Assume.assumeTrue("Test class opted to skip log scanner test.", shouldRunTheLogScannerTest());
+
+		Stopwatch sw = Stopwatch.createStarted();
+		System.out.println("\n-=== SCANNING LOGS FOR UNEXPECTED EXCEPTIONS ===-\n");
+		System.out.println("Gathering logs...");
+		docker.execOnContainer(currentContainerInfo.getContainerId(), "./gatherLogs.sh");
+		System.out.println("Downloading zip...");
+		File logsZipFile = tempFolder.newFile();
+		docker.copyFromContainer(currentContainerInfo.getContainerId(), "/root/docker-stage/appServerLogs.zip", logsZipFile);
+		System.out.println("Zipfile downloaded: "+logsZipFile.getAbsolutePath());
+		ZipFile logsAsZip = new ZipFile(logsZipFile);
+
+		int fileCount = 0;
+		final AtomicInteger linesCount = new AtomicInteger();
+		final AtomicInteger suppressedCount = new AtomicInteger();
+
+		final Enumeration<? extends ZipEntry> entries = logsAsZip.entries();
+		List<String> detectedErrors = new ArrayList<>();
+		while (entries.hasMoreElements()) {
+			ZipEntry entry = entries.nextElement();
+			List<String> fileResults = CharStreams.readLines(new BufferedReader(new InputStreamReader(logsAsZip.getInputStream(entry))), new LineProcessor<List<String>>() {
+				final List<String> result = new ArrayList<>();
+
+				final List<Pattern> errorPatterns = new LinkedList<>();
+				final List<Pattern> stackTracePatterns = new LinkedList<>();
+				final List<Pattern> suppressionPatterns = new LinkedList<>();
+
+				boolean lastOneWasSuppressed = false;
+
+				{ // <init>
+					errorPatterns.add(Pattern.compile(".*?ERROR\\s+.*Exception.*"));
+
+					stackTracePatterns.add(Pattern.compile(".*\\s+at\\s+?(?:[A-Za-z][\\w$]+)(?:\\.(?:[A-Za-z][\\w$]+))*.*"));
+
+					suppressionPatterns.add(Pattern.compile("failed to resolve instrumentation key"));
+				}
+
+				@Override
+				public boolean processLine(final String line) {
+					linesCount.incrementAndGet();
+					if (StringUtils.isBlank(line)) {
+					    return true;
+                    }
+					// check if line matches an exception pattern
+					if (anyPatternMatches(line, errorPatterns)) {
+						if (anyPatternMatches(line, suppressionPatterns)) {
+							suppressedCount.incrementAndGet();
+						    lastOneWasSuppressed = true;
+							return true;
+						}
+						result.add(line);
+						lastOneWasSuppressed = false;
+						return true;
+					}
+
+					if (lastOneWasSuppressed) { // then don't add the stack trace
+						return true;
+					}
+
+					if (anyPatternMatches(line, stackTracePatterns)) {
+					    int lastIndex = result.size() - 1;
+					    if (lastIndex < 0 || lastIndex >= result.size()) {
+					        return true;
+                        }
+						String lastResult = result.remove(lastIndex);
+						result.add(String.format("%s%n%s", lastResult, line));
+					}
+					return true;
+				}
+
+				private boolean anyPatternMatches(final String line, final List<Pattern> patterns) {
+					for (Pattern p : patterns) {
+						Matcher m = p.matcher(line);
+						if (m.matches()) {
+							return true;
+						}
+					}
+					return false;
+				}
+
+				@Override
+				public List<String> getResult() {
+					return result;
+				}
+			});
+			if (!fileResults.isEmpty()) {
+				detectedErrors.addAll(fileResults);
+			}
+			fileCount++;
+		}
+		System.out.printf("Scanned %d lines in %d files (%d suppressed). This took %.3fms%n", linesCount.get(), fileCount, suppressedCount.get(), sw.elapsed(TimeUnit.NANOSECONDS)/1_000_000.0);
+		if (!detectedErrors.isEmpty()) {
+		    System.err.println("Errors detected:");
+            for (int i = 0; i < detectedErrors.size(); i++) {
+                String trace = detectedErrors.get(i);
+                System.err.printf("%n%d:%n%s%n", i, trace);
+            }
+        }
+		Assert.assertTrue(String.format("%d errors detected", detectedErrors.size()), detectedErrors.isEmpty());
+		System.out.println("No errors detected.");
+	}
+
+    /**
+     * Override this method if the smoketest class should not run the log scanner test.
+     */
+	protected boolean shouldRunTheLogScannerTest() {
+	    return true;
+    }
 
 	@After
 	public void resetMockedIngestion() throws Exception {

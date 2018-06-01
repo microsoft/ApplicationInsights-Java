@@ -7,9 +7,7 @@ RUN mkdir /root/docker-stage
 
 # update packages and install dependencies: wget
 RUN apt-get update \
-	&& apt-get install -y wget
-
-RUN apt-get install -y procps
+	&& apt-get install -y wget procps zip
 
 
 ENV TOMCAT_MAJOR_VERSION 8
