@@ -55,6 +55,7 @@ include ':test:smoke:testApps:CachingCalculator'
 include ':test:smoke:testApps:CoreAndFilter'
 include ':test:smoke:testApps:AutoPerfCounters'
 include ':test:smoke:testApps:TraceLog4j1_2'
+include ':test:smoke:testApps:TraceLogBack'
 include ':test:smoke:testApps:TraceLog4j2'
 include ':test:smoke:testApps:HeartBeat'
 
