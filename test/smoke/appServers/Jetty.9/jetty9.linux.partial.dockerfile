@@ -16,7 +16,7 @@ RUN wget http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$J
 ENV JETTY_HOME /opt/jetty-distribution-$JETTY_FULL_VERSION
 
 RUN mkdir -p /opt/jetty-base
-ENV JETTY_BASE /opt/jetty-base/
+ENV JETTY_BASE /opt/jetty-base
 
 RUN mkdir -p /root/docker-stage
 ADD ./*.sh /root/docker-stage/
