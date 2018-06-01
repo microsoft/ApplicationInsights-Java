@@ -582,9 +582,9 @@ public abstract class AiSmokeTest {
 				{ // <init>
 					errorPatterns.add(Pattern.compile(".*?ERROR\\s+.*Exception.*"));
 
-					stackTracePatterns.add(Pattern.compile("^\\s+at\\s+?(?:[A-Za-z][\\w$]+)(?:\\.(?:[A-Za-z][\\w$]+))*.*"));
+					stackTracePatterns.add(Pattern.compile(".*\\s+at\\s+?(?:[A-Za-z][\\w$]+)(?:\\.(?:[A-Za-z][\\w$]+))*.*"));
 
-					suppressionPatterns.add(Pattern.compile("InstrumentationKeyResolver - failed to resolve instrumentation key:"));
+					suppressionPatterns.add(Pattern.compile("failed to resolve instrumentation key"));
 				}
 
 				@Override
@@ -593,6 +593,7 @@ public abstract class AiSmokeTest {
 					// check if line matches an exception pattern
 					if (anyPatternMatches(line, errorPatterns)) {
 						if (anyPatternMatches(line, suppressionPatterns)) {
+							suppressedCount.incrementAndGet();
 						    lastOneWasSuppressed = true;
 							return true;
 						}
