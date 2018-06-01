@@ -11,11 +11,13 @@ For more information please refer to:
 
 * [Getting started with Application Insights in a Java web project](https://azure.microsoft.com/documentation/articles/app-insights-java-get-started/) 
 * [Application Insights overview](https://azure.microsoft.com/services/application-insights/)
+* [Application Insights with SpringBoot](https://docs.microsoft.com/en-us/java/azure/spring-framework/configure-spring-boot-java-applicationinsights)
 
 The following packages are built in this repository:
 
 - Base API and channel: [![applicationinsights-core](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-core.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-core&v=latest)
 - Web applications instrumentation: [![applicationinsights-web](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-web.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-web&v=latest)
+- Application Insights SpringBoot Starter: [![applicationinsights-spring-boot-starter](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-spring-boot-starter.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-spring-boot-starter&v=latest)
 - Logback adaptor: [![applicationinsights-logging-logback](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-logback.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-logback&v=latest)
 - Log4J 2 adaptor: [![applicationinsights-logging-log4j2](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-log4j2.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-log4j2&v=latest)
 - Log4J 1.2 adaptor: [![applicationinsights-logging-log4j1_2](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-log4j1_2.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-log4j1_2&v=latest)
@@ -40,9 +42,6 @@ The Application Insights team have been hard at work to deliver the next wave of
 
 ### Documentation Improvements
 The Application Insights team believes that documentation is important to the overall successfulness of our users. As such, we strive to continually improve our documentation. The full list of [documentation changes](https://github.com/Microsoft/ApplicationInsights-Java/issues?q=is%3Aissue+is%3Aopen+label%3A%22Documentation+Changes%22) can be found in our [issue tracker](https://github.com/Microsoft/ApplicationInsights-Java/issues). Feel free to [open a new issue](https://github.com/Microsoft/ApplicationInsights-Java/issues/new) to report incorrect or unclear documentation.
-
-### Spring Boot Starter
-The Spring Boot framework is wildly popular, and while Application Insights for Java already supports Spring Boot, we'd like to make it easier to get started with. To do that, we're going to be releasing a [Spring Boot Starter](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#using-boot-starter) in the coming months.
 
 ### Adaptive Sampling
 While our 2.0 SDK will provide full support for fixed rate sampling, we plan to add support for adaptive sampling. Adaptive sampling provides fine-grained controls over a variable sampling rate when traffic to an application fluctuates and finding a fixed rate to sample with would otherwise be difficult.
