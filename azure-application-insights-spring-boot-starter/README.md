@@ -166,6 +166,13 @@ azure.application-insights.default-modules.WebSessionTelemetryInitializer.enable
 azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled=true
 azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled=true
 
+#Collect JMX Counters
+azure.application-insights.jmx.jmx-counters=\
+  java.lang:type=ClassLoading/LoadedClassCount/Current Loaded Class Count, \
+  java.lang:type=Memory/HeapMemoryUsage.init/Initial Heap Memory Usage/Composite
+# where the elements separated by / have the following order:
+# 1. objectName 2. AttributeName 3. Display Name and 4. Type  
+
 #Enable/Disable heartbeat module. Default value : true
 azure.application-insights.heart-beat.enabled=true
 #Default heartbeat interval is 15 minutes. Minimum heartbeat interval can be 30 seconds.
