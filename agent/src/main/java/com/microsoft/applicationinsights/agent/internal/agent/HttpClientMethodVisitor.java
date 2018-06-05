@@ -32,8 +32,8 @@ import org.objectweb.asm.Type;
  */
 public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
-    private final static String FINISH_DETECT_METHOD_NAME = "httpMethodFinishedWithPath";
-    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
+    private final static String FINISH_DETECT_METHOD_NAME = "httpMethodFinished";
+    private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
 
     public HttpClientMethodVisitor(int access,
                                    String desc,
@@ -50,8 +50,6 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
     private int childIdLocal;
     private int correlationContextLocal;
     private int appCorrelationId;
-    private int target;
-    private int path;
 
     @Override
     public void onMethodEnter() {
@@ -90,35 +88,22 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         mv.visitVarInsn(ALOAD, appCorrelationId);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
-        //Load HttpUriRequest instance into Local Array. Contains information of Path and Host
         mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/client/methods/HttpUriRequest", "getURI", "()Ljava/net/URI;", true);
-        int uri = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, uri);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "getRequestLine", "()Lorg/apache/http/RequestLine;", true);
+		int requestLineLocal = this.newLocal(Type.getType(Object.class));
+		mv.visitVarInsn(ASTORE, requestLineLocal);
 
-        //Get Method Name from HttpUriLRequest interface object
-        mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/client/methods/HttpUriRequest", "getMethod", "()Ljava/lang/String;", true);
-        methodLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, methodLocal);
-
-        //Use HttpUriRequest instance loaded to retrieve the target(aka host name) from java.net.URI class
-        mv.visitVarInsn(ALOAD, uri);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URI", "getHost", "()Ljava/lang/String;", false);
-        target = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, target);
-
-        //Get the URL String from URI object
-        mv.visitVarInsn(ALOAD, uri);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URI", "toString", "()Ljava/lang/String;", false);
+        //Load RequestLine instance into Local Array. It contains method name and URI as string which is extracted from it
+        mv.visitVarInsn(ALOAD, requestLineLocal);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/RequestLine", "getUri", "()Ljava/lang/String;", true);
         uriLocal = this.newLocal(Type.getType(Object.class));
         mv.visitVarInsn(ASTORE, uriLocal);
 
-        //Use HttpUriRequest instance loaded to retrieve the path(relative URL) from java.net.URI class
-        mv.visitVarInsn(ALOAD, uri);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URI", "getPath", "()Ljava/lang/String;", false);
-        path = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, path);
+        //Get Method Name from RequestLine interface object
+        mv.visitVarInsn(ALOAD, requestLineLocal);
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/RequestLine", "getMethod", "()Ljava/lang/String;", true);
+        methodLocal = this.newLocal(Type.getType(Object.class));
+        mv.visitVarInsn(ASTORE, methodLocal);
 
     }
 
@@ -178,7 +163,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
                 mv.visitLdcInsn(getMethodName());
                 mv.visitVarInsn(ALOAD, methodLocal);
-                mv.visitVarInsn(ALOAD, path); //load path parameter
+                //Path is populated in CoreAgentNotificationHandler httpMethodFinished() method
                 mv.visitVarInsn(ALOAD, childIdLocal);
                 mv.visitVarInsn(ALOAD, uriLocal);
                 mv.visitVarInsn(ALOAD, targetLocal); //using derived target
@@ -195,10 +180,10 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
                 mv.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");
                 mv.visitLdcInsn(getMethodName());
                 mv.visitVarInsn(ALOAD, methodLocal);
-                mv.visitVarInsn(ALOAD, path); //load path parameter
+                //Path is populated in CoreAgentNotificationHandler httpMethodFinished() method
                 mv.visitVarInsn(ALOAD, childIdLocal);
                 mv.visitVarInsn(ALOAD, uriLocal);
-                mv.visitVarInsn(ALOAD, target); //using the derived target from java.net.URI
+                mv.visitInsn(ACONST_NULL); //This target would be populated in the CoreAgentNotificationHandler httpMethodFinished() method
                 mv.visitVarInsn(ILOAD, statusCodeLocal);
                 mv.visitVarInsn(LLOAD, deltaInNS);
                 mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_RETURN_SIGNATURE, false);

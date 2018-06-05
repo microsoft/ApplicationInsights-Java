@@ -21,19 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
-import java.sql.Statement;
-import java.sql.PreparedStatement;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.LinkedList;
-
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
@@ -42,6 +32,16 @@ import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Date;
+import java.util.LinkedList;
 
 /**
  * The Core's implementation: the methods are called for instrumented methods.
@@ -142,18 +142,25 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void httpMethodFinished(String identifier, String method, String correlationId, String uri, String target, int result, long deltaInNS) {
+    public void httpMethodFinished(String identifier, String method, String correlationId, String uri, String target, int result, long deltaInNS)
+		throws URISyntaxException {
         if (!LocalStringsUtils.isNullOrEmpty(uri) && (uri.startsWith("https://dc.services.visualstudio.com") || uri.startsWith("https://rt.services.visualstudio.com"))) {
             return;
         }
         long deltaInMS = nanoToMilliseconds(deltaInNS);
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(identifier, null, new Duration(deltaInMS), true);
+        URI uriObject = convertUriStringToUrl(uri);
+        String name = method + " " + getRelativePath(uriObject);
+        if (target == null) {
+        	target = getTargetFromUri(uriObject);
+		}
+
+        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(name, uri, new Duration(deltaInMS), (result < 400));
+		Date dependencyStartTime = new Date(System.currentTimeMillis() - deltaInMS);
+		telemetry.setTimestamp(dependencyStartTime);
         telemetry.setId(correlationId);
         telemetry.setResultCode(Integer.toString(result));
         telemetry.setType("HTTP");
-        telemetry.getContext().getProperties().put("URI", uri);
-        telemetry.getContext().getProperties().put("Method", method);
-        
+
         if (target != null && !target.isEmpty()) {
             if (telemetry.getTarget() == null) {
                 telemetry.setTarget(target);
@@ -164,32 +171,6 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
        
         InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, deltaInMS);
         telemetryClient.track(telemetry);
-    }
-
-    @Override
-    public void httpMethodFinishedWithPath(String identifier, String method, String path, String correlationId, String uri, String target, int result, long delta) {
-        if (!LocalStringsUtils.isNullOrEmpty(uri) && (uri.startsWith("https://dc.services.visualstudio.com") || uri.startsWith("https://rt.services.visualstudio.com"))) {
-            return;
-        }
-        long deltaInMS = nanoToMilliseconds(delta);
-        String name = method + " " + path;
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(name, uri, new Duration(deltaInMS), (result < 400));
-        Date dependencyStartTime = new Date(System.currentTimeMillis() - deltaInMS);
-        telemetry.setTimestamp(dependencyStartTime);
-        telemetry.setId(correlationId);
-        telemetry.setResultCode(Integer.toString(result));
-        telemetry.setType("HTTP");
-        if (target != null && !target.isEmpty()) {
-            if (telemetry.getTarget() == null) {
-                telemetry.setTarget(target);
-            } else {
-                telemetry.setTarget(telemetry.getTarget() + " | " + target);
-            }
-        }
-
-        InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, deltaInMS);
-        telemetryClient.track(telemetry);
-
     }
 
     @Override
@@ -295,6 +276,24 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             localData.methods.remove(methodData);
         }
     }
+
+    private URI convertUriStringToUrl(String uri) throws URISyntaxException{
+    	return new URI(uri);
+	}
+
+	private String getRelativePath(URI uri) {
+    	if (uri == null) {
+    		return null;
+		}
+		return uri.getPath();
+	}
+
+	private String getTargetFromUri(URI uri) {
+    	if (uri == null) {
+    		return null;
+		}
+		return uri.getHost();
+	}
 
     private void startSqlMethod(Statement statement, String sqlStatement, Object[] additionalArgs) {
 
