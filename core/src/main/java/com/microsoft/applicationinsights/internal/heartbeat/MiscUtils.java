@@ -9,7 +9,7 @@ import java.util.Set;
  *
  * @author Dhaval Doshi
  */
-class MiscUtils {
+public class MiscUtils {
 
   /**
    * Returns a list which contains result of List - Set
@@ -17,7 +17,7 @@ class MiscUtils {
    * @param set
    * @return
    */
-   static Set<String> except(List<String> list2, Set<String> set) {
+   public static Set<String> except(List<String> list2, Set<String> set) {
     try {
       if (set == null) {
         throw new IllegalArgumentException("Input is null");

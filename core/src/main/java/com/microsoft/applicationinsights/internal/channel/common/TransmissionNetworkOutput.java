@@ -50,12 +50,12 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements TransmissionOutput {	
+public final class TransmissionNetworkOutput implements TransmissionOutput {
     private final static String CONTENT_TYPE_HEADER = "Content-Type";
     private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
 
-    private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
+    public final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
@@ -73,7 +73,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	 * Creates an instance of the network transmission class.
 	 * <p>
 	 * Will use the DEFAULT_SERVER_URI for the endpoint.
-	 * 
+	 *
 	 * @param transmissionPolicyManager
 	 *            The transmission policy used to mark this sender active or
 	 *            blocked.
@@ -85,7 +85,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
 	/**
 	 * Creates an instance of the network transmission class.
-	 * 
+	 *
 	 * @param endpoint
 	 *            The HTTP endpoint to send our telemetry too.
 	 * @param transmissionPolicyManager
@@ -103,7 +103,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	 * Private Ctor to initialize class.
 	 * <p>
 	 * Also creates the httpClient using the ApacheSender instance
-	 * 
+	 *
 	 * @param serverUri
 	 *            The HTTP endpoint to send our telemetry too.
 	 * @param transmissionPolicyManager
@@ -125,7 +125,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	/**
 	 * Used to inject the dispatcher used for this output so it can be injected to
 	 * the retry logic.
-	 * 
+	 *
 	 * @param transmissionDispatcher
 	 *            The dispatcher to be injected.
 	 */
@@ -135,7 +135,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     /**
      * Stops all threads from sending data.
-	 * 
+	 *
 	 * @param timeout
 	 *            The timeout to wait, which is not relevant here.
 	 * @param timeUnit
@@ -157,7 +157,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 	 * The thread that calls that method might be suspended if there is a throttling
 	 * issues, in any case the thread that enters this method is responsive for
 	 * 'stop' request that might be issued by the application.
-	 * 
+	 *
 	 * @param transmission
 	 *            The data to send
      * @return True when done.
@@ -259,7 +259,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
 	/**
 	 * Generates the HTTP POST to send to the endpoint.
-	 * 
+	 *
 	 * @param transmission
 	 *            The transmission to send.
 	 * @return The completed {@link HttpPost} object

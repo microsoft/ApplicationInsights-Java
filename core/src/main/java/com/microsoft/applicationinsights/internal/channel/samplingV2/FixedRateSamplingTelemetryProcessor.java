@@ -3,16 +3,21 @@ package com.microsoft.applicationinsights.internal.channel.samplingV2;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * This processor is used to Perform Sampling on User specified sampling rate
@@ -41,14 +46,24 @@ import org.apache.commons.lang3.StringUtils;
 @BuiltInProcessor("FixedRateSamplingTelemetryProcessor")
 public final class FixedRateSamplingTelemetryProcessor implements TelemetryProcessor {
 
-    private final String dependencyTelemetryName = "Dependency";
+    public static final double DEFAULT_SAMPLING_PERCENTAGE = 100.0;
+    private static Map<String, Class> allowedTypes = new HashMap<>();
+
+    private static final String dependencyTelemetryName = "Dependency";
     private static final String eventTelemetryName = "Event";
     private static final String exceptionTelemetryName = "Exception";
     private static final String pageViewTelemetryName = "PageView";
     private static final String requestTelemetryName = "Request";
     private static final String traceTelemetryName = "Trace";
 
-    private static Map<String, Class> allowedTypes;
+    static {
+        allowedTypes.put(dependencyTelemetryName, RemoteDependencyTelemetry.class);
+        allowedTypes.put(eventTelemetryName, EventTelemetry.class);
+        allowedTypes.put(exceptionTelemetryName, ExceptionTelemetry.class);
+        allowedTypes.put(pageViewTelemetryName, PageViewTelemetry.class);
+        allowedTypes.put(requestTelemetryName, RequestTelemetry.class);
+        allowedTypes.put(traceTelemetryName, TraceTelemetry.class);
+    }
 
     private Set<Class> excludedTypes;
 
@@ -65,21 +80,10 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      * to default settings
      */
     public FixedRateSamplingTelemetryProcessor() {
-        this.samplingPercentage = 100.00;
-        this.includedTypes = new HashSet<Class>();
-        this.excludedTypes = new HashSet<Class>();
-        try {
-            this.allowedTypes = new HashMap<String, Class>() {{
-                put(dependencyTelemetryName, com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry.class);
-                put(eventTelemetryName, com.microsoft.applicationinsights.telemetry.EventTelemetry.class);
-                put(exceptionTelemetryName, com.microsoft.applicationinsights.telemetry.ExceptionTelemetry.class);
-                put(pageViewTelemetryName, com.microsoft.applicationinsights.telemetry.PageViewTelemetry.class);
-                put(requestTelemetryName, com.microsoft.applicationinsights.telemetry.RequestTelemetry.class);
-                put(traceTelemetryName, com.microsoft.applicationinsights.telemetry.TraceTelemetry.class);
-            }};
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.trace("Unable to locate telemetry classes. stack trace is %s", ExceptionUtils.getStackTrace(e));
-        }
+
+        this.samplingPercentage = DEFAULT_SAMPLING_PERCENTAGE;
+        this.includedTypes = new HashSet<>();
+        this.excludedTypes = new HashSet<>();
     }
 
     /**
@@ -108,10 +112,10 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
             if (!StringUtils.isEmpty(value) && allowedTypes.containsKey(value)) {
                 typeSet.add(allowedTypes.get(value));
             } else {
-                InternalLogger.INSTANCE.error("Item is either not allowed to sample or is empty");
+                InternalLogger.INSTANCE.error("Item %s is either not allowed to sample or is empty", value);
             }
         } else {
-            InternalLogger.INSTANCE.error("Empty types cannot be considered");
+            InternalLogger.INSTANCE.error("Telemetry type %s is empty", value);
         }
     }
 
