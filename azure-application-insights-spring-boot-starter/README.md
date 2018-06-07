@@ -11,14 +11,14 @@ Spring Boot 1.5+ or 2.0+
 *1. Add dependency*
 Gradle:
 ```groovy
-compile "com.microsoft.azure:application-insights-spring-boot-starter:${version}"
+compile "com.microsoft.azure:applicationinsights-spring-boot-starter:${version}"
 ```
 
 Maven:
 ```xml
 <dependency>
   <groupId>com.microsoft.azure</groupId>
-  <artifactId>application-insights-spring-boot-starter</artifactId>
+  <artifactId>applicationinsights-spring-boot-starter</artifactId>
   <version>${version}</version>
 </dependency>
 ```
@@ -165,6 +165,13 @@ azure.application-insights.default-modules.WebOperationNameTelemetryInitializer.
 azure.application-insights.default-modules.WebSessionTelemetryInitializer.enabled=true
 azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled=true
 azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled=true
+
+#Collect JMX Counters
+azure.application-insights.jmx.jmx-counters=\
+  java.lang:type=ClassLoading/LoadedClassCount/Current Loaded Class Count, \
+  java.lang:type=Memory/HeapMemoryUsage.init/Initial Heap Memory Usage/Composite
+# where the elements separated by / have the following order:
+# 1. objectName 2. AttributeName 3. Display Name and 4. Type  
 
 #Enable/Disable heartbeat module. Default value : true
 azure.application-insights.heart-beat.enabled=true
