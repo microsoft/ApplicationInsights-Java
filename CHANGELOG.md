@@ -1,6 +1,9 @@
 # CHANGELOG
 
 # Version 2.1.2
+- Fix [#676](https://github.com/Microsoft/ApplicationInsights-Java/issues/676). This fixes the HTTP dependency collection when using NetFlix Zuul Library.
+- Remove the method `httpMethodFinishedWithPath` from the interface `ImplementationCoordinator.java` as the associated instrumentation
+  explicitly depended on `HttpUriRequest` class of ApacheHttpClient which is not always true.
 - Fix [#662](https://github.com/Microsoft/ApplicationInsights-Java/issues/662). Updated thread pool to properly shutdown all threads.
 
 # Version 2.1.1
