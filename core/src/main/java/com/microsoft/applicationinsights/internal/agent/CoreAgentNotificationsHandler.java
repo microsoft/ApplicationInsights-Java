@@ -161,6 +161,10 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         telemetry.setResultCode(Integer.toString(result));
         telemetry.setType("HTTP");
 
+        // For Backward Compatibility
+		telemetry.getContext().getProperties().put("URI", uri);
+		telemetry.getContext().getProperties().put("Method", method);
+
         if (target != null && !target.isEmpty()) {
             if (telemetry.getTarget() == null) {
                 telemetry.setTarget(target);
@@ -225,6 +229,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(classAndMethodNames, null, duration, throwable == null);
         telemetry.setTimestamp(dependencyStartTime);
         telemetry.setDependencyKind(DependencyKind.Other);
+
 
         if (args != null) {
             String argsAsString = new ArgsFormatter().format(args);
