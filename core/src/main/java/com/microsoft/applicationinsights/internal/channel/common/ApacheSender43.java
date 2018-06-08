@@ -24,12 +24,15 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -46,7 +49,9 @@ final class ApacheSender43 implements ApacheSender {
 
     private final AtomicReference<CloseableHttpClient> httpClientRef = new AtomicReference<>();
     private volatile boolean isClientInitialized = false;
-    private final ExecutorService initializer = Executors.newSingleThreadExecutor();
+    private final ExecutorService initializer = new ThreadPoolExecutor(0, 1, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(),
+            ThreadPoolUtils.createNamedDaemonThreadFactory(ApacheSender43.class.getSimpleName()+"_initializer"));
+
     public ApacheSender43() {
         initializer.execute(new Runnable() {
 
