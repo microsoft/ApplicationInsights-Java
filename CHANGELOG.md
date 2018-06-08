@@ -5,6 +5,7 @@
 - Remove the method `httpMethodFinishedWithPath` from the interface `ImplementationCoordinator.java` as the associated instrumentation
   explicitly depended on `HttpUriRequest` class of ApacheHttpClient which is not always true.
 - Fix [#662](https://github.com/Microsoft/ApplicationInsights-Java/issues/662). Updated thread pool to properly shutdown all threads.
+- Fix [#661](https://github.com/Microsoft/ApplicationInsights-Java/issues/661). We now properly shadow the com.google.thirdparty package.
 
 # Version 2.1.1
 - Introducing support for SpringBoot via Application-Insights-SpringBoot-Starter [#646](https://github.com/Microsoft/ApplicationInsights-Java/pull/646). This is currently in beta.
