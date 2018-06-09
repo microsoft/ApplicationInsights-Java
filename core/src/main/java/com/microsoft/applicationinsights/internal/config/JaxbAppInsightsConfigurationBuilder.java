@@ -24,11 +24,12 @@ package com.microsoft.applicationinsights.internal.config;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -47,7 +48,13 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFile);
+            XMLStreamReader resourceFileReader = getXmlStreamReader(resourceFile);
+            
+            if (resourceFileReader == null) {
+                return null;
+            }
+
+            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFileReader);
 
             return applicationInsights;
         } catch (JAXBException e) {
@@ -70,5 +77,22 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
 
         return null;
     }
+
+    /**
+     * Given an InputStream, returns an XMLStreamReader for it. Explicitly disables DTDs and external entities.
+     */
+    private XMLStreamReader getXmlStreamReader(InputStream input) {
+
+        try {
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+            factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+            
+            return factory.createXMLStreamReader(input);
+        } catch (Throwable t ) {
+            InternalLogger.INSTANCE.error("Failed to create stream reader for configuration file: '%s'", ExceptionUtils.getStackTrace(t));
+            return null;
+        }
+    } 
 }
 
