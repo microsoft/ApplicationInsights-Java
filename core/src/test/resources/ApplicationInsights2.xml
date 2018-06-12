@@ -1,0 +1,293 @@
+<ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings">
+	<!-- 
+	The channel is in charge of sending telemetry items to the cloud.
+	This showcases the default values.
+	-->
+	<Channel type="com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel">
+		<DeveloperMode>false</DeveloperMode>
+		<EndpointAddress>https://dc.services.visualstudio.com/v2/track</EndpointAddress>
+		<FlushIntervalInSeconds>5</FlushIntervalInSeconds><!-- must be between [1, 500]. values outside the bound will be rounded to nearest bound -->
+		<MaxInstantRetry>3</MaxInstantRetry><!-- must be between [0, 10] -->
+		<MaxTelemetryBufferCapacity>500</MaxTelemetryBufferCapacity><!-- units=number of telemetry items; must be between [1, 1000] -->
+		<MaxTransmissionStorageFilesCapacityInMB>10</MaxTransmissionStorageFilesCapacityInMB><!-- must be between [1, 1000] -->
+		<Throttling>true</Throttling>
+	</Channel>
+	
+	<!--
+	ContextInitializers add metadata to the telemetry context which is sent with each telemetry item as a property.
+	If a custom ContextInitializer is added, the metadata included should be static with respect to the application runtime.
+	Custom ContextInitializers must be implementations of com.microsoft.applicationinsights.extensibility.ContextInitializer
+	-->
+	<ContextInitializers>
+		<!-- These two initializers are commented out because they are included by default and cannot be removed. -->
+		<!--
+		This adds metadata regarding where the application is running, e.g. OS, hostname, etc. 
+		<Add type="DeviceInfoContextInitializer" />
+		
+		This adds metadata about the SDK version and language.
+		<Add type="SdkVersionContextInitializer" />
+		-->
+		<!-- Examples of custom initializers -->
+		<Add type="mypackage.MyCustomContextInitializer" />
+		
+		<!-- If you would like the initializer to be configurable, provide a constructor with a single parameter of type Map<String, String> -->
+		<Add type="mypackage.MyConfigurableContextInitializer">
+			<Param name="some_config_property" value="some_value" />
+		</Add>
+	</ContextInitializers>
+
+	<!-- This disables all telemetry when set to true -->
+	<DisableTelmetry>false</DisableTelmetry>
+	
+	<!-- The instrumentation key acquired from the Azure portal -->
+	<InstrumentationKey>myikey</InstrumentationKey>
+	
+	<!--
+	TelemetryModules are flexible components which can be used for a variety of purposes.
+	For example:
+		* They can be used by other components to send telemetry for a specific scenario, e.g. WebRequestTrackingTelemetryModule.
+		* They can be used to collect data to be used by telemetry initializers.
+	By default, there are no TelemetryModules configured.
+	Custom TelemetryModules must be implementations of com.microsoft.applicationinsights.extensibility.TelemetryModule
+	-->
+	<TelemetryModules>
+		<!-- These are described in detail in the minimal example above. -->
+		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule" />
+		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule" />
+		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule" />
+		
+		<!-- examples of custom modules -->
+		<Add type="mypackage.MyCustomModule" />
+		
+		<!-- If you would like the module to be configurable, provide a constructor with a single parameter of type Map<String, String> -->
+		<Add type="mypackage.MyConfigurableModule">
+			<Param name="some_config_property" value="some_value" />
+		</Add>
+	</TelemetryModules>
+	
+	<!-- 
+	PerformanceCounters are telemetry items sent at a regular frequency.
+	The collection frequency must be at least 1.
+	-->
+	<PerformanceCounters collectionFrequencyInSec="60">
+		<!--
+		Built-in performance counters include:
+			* Everything in the <Jvm /> section
+			* These system performance counters (collected on both Linux and Windows):
+				- category=Process, name=Private Bytes, instance="__SELF__"
+				- category=Process, name=% Processor Time, instance="__SELF__"
+				- category=Processor, name=% Processor Time, instance="_Total"
+				- category=Process, name=IO Data Bytes/sec, instance="__SELF__"
+				- category=Memory, name=Available Bytes, instance=""
+		-->
+		<UseBuiltIn>true</UseBuiltIn>
+		<!--
+		This controls the JvmPerformanceCountersModule.
+		It can be disabled, or each individual component can be disabled.
+		This is optional; the example below shows the defaults.
+		-->
+		<Jvm enabled="true">
+			<JvmPC name="GC" enabled="true" />
+			<JvmPC name="MemoryUsage" enabled="true" />
+			<JvmPC name="ThreadDeadLockDetector" enabled="true" />
+		</Jvm>
+		
+		<!-- 
+		Configures additional Windows performance counters. 
+		Additional Linux system metrics are configured using the collectd plugin.
+		-->
+		<Windows>
+			<!-- 
+			Here, you can add additional performance counters you'd like to collect.
+			The displayName will be the identified in Azure.
+			Normally, performance counters are in the form "\categoryName(instanceName)\counterName"; e.g. the output of TypePerf.
+			-->
+			<Add displayName="System Threads" 
+				categoryName="System"
+				instanceName=""
+				counterName="Threads" />
+				
+		</Windows>
+		
+		<!--
+		Below, you'll find some example JMX metrics.
+		There are three supported JMX metric attribute types: REGULAR (the default), COMPOSITE and TABULAR.
+			COMPOSITE attributes are of the form 'X.y' and TABULAR attributes are of the form 'X.y.z'.
+		-->
+		<Jmx>
+			<Add displayName="Thread Count"
+				objectName="java.lang:type=Threading"
+				attribute="ThreadCount" />
+			<Add displayName="Used Heap Memory"
+				objectName="java.lang:type=Memory"
+				attribute="HeapMemoryUsage.used"
+				type="COMPOSITE" />
+		</Jmx>
+	</PerformanceCounters>
+	
+	<!--
+	QuickPulse is the nickname for Live Metrics found in the Application Insights blade on the Azure portal.
+	By default, it is enabled.
+	-->
+	<QuickPulse enabled="true" />
+	
+	<!--
+	TelemetryInitializers can transform a Telemetry object before being sent.
+	They are called after the ContextInitializers and before the TelemetryProcessors.
+	They are very similar to the TelemetryProcessors, except they cannot prevent telemetry items from being sent.
+	TelemetryInitializers can only modify a Telemetry item before being passed to the TelemetryProcessors
+	-->
+	<TelemetryInitializers>
+		<!-- Examples of custom initializers -->
+		<Add type="mypackage.MyCustomTelemetryInitializer" />
+		
+		<!-- If you would like the initializer to be configurable, provide a constructor with a single parameter of type Map<String, String> -->
+		<Add type="mypackage.MyConfigurableTelemetryInitializer">
+			<Param name="some_config_property" value="some_value" />
+		</Add>
+	</TelemetryInitializers>
+	
+	<!--
+	TelemetryProcessors can be thought of as filters for telemetry items.
+	Telemetry items are sent to the TelemetryProcessors as the last step before sending.
+	The best example of this is sampling.
+	-->
+	<TelemetryProcessors>
+		<!--
+		In code, BuiltIn TelemetryProcessors are annotated with @BuiltInProcessor.
+		This section can be used to load and configure these processors.
+		By default, none of these are loaded.
+		
+		Both the BuiltInProcessors and CustomProcessors have the same child structure.
+		In each section, 'Processor' elements can be added with a required 'type' attribute specifying the FQCN of the TelemetryProcessor implementation.
+		This enables that processor and the child elements of Processor configure that class.
+		
+		The 'Add' elements call setters in the TelemetryProcessor implementation.
+		The implementation must have a setter defined matching the 'name' attribute.
+		See examples below.
+		
+		There are two other configuration elements available: ExcludedTypes and IncludedTypes.
+		These specify the Telemetry item types which should be handled by the TelemetryProcessor.
+		The TelemetryProcessor implementation should include these methods respectively: 'addToExcludedType(String value)' and 'addToIncludedType(String value)'.
+		Generally, a telemetry item will be processed if the item type is not in the ExcludedTypes and when the IncludedTypes set is non-empty, the item type is in the IncludedTypes.
+		However, it is up to the TelemetryProcessor implementation to enforce this contract.
+		-->
+		<BuiltInProcessors>
+			<Processor type="FixedRateSamplingTelemetryProcessor">
+				<!-- This calls setSamplingPercentage(100.0) -->
+				<Add name="SamplingPercentage" value="100.0" />
+				<!-- 
+				By default, nothing is excluded.
+				<ExcludedTypes>
+					<ExcludedType></ExcludedType>
+				</ExcludedTypes>
+				-->
+				<IncludedTypes>
+					<IncludedType>Dependency</IncludedType>
+					<IncludedType>Event</IncludedType>
+					<IncludedType>Exception</IncludedType>
+					<IncludedType>PageView</IncludedType>
+					<IncludedType>Request</IncludedType>
+					<IncludedType>Trace</IncludedType>
+					<!-- Metric telemetry is not sampled by this processor -->
+				</IncludedTypes>
+			</Processor>
+			
+			<!-- 
+			Configures a filter on RequestTelemetry.
+			This filter only applies to RequestTelemetry and filter out items with a duration less than a given minimum and having a response code in a given list.
+			-->
+			<Processor type="RequestTelemetryFilter">
+				<!--
+				If value > 0, this filters out any requests which have a duration less than this value.
+				A value <= 0 means there is no limit, i.e. telemetry will pass through regardless of duration.
+				-->
+				<Add name="MinimumDurationInMS" value="0" />
+				<!--
+				A list of response codes to exclude or ranges of response codes.
+				For example, value="401-403,405-499,502" will filter out all items with 4xx response codes except 400 and 404, and also filters out 502 responses.
+				By default, nothing is filtered by response code.
+				-->
+				<Add name="NotNeededResponseCodes" value="" />
+				<!-- include/exclude types are not applicable for this processor -->
+			</Processor>
+			
+			<!--
+			This processor checks the 'telemetry.getContext().getOperation().getSyntheticSource()'.
+			It filters out all items with a synthetic source or only the given set of sources.
+			-->
+			<Processor type="SyntheticSourceFilter">
+				<!-- A CSV of sources to filter out -->
+				<Add name="NotNeededSources" value="" />
+			</Processor>
+			
+			<!-- Filters out PageView telemetry with a specific duration, name or URI based on configuration. -->
+			<Processor type="PageViewTelemetryFilter">
+				<!-- Configures the threshold for filtering PageView items. Durations < this value are filtered out. -->
+				<Add name="DurationThresholdInMS" value="1" />
+				<!-- A CSV of page names to filter out. This is an exact match comparison. -->
+				<Add name="NotNeededNames" value="" />
+				<!--
+				A CSV of URIs to filter out. This is a contains comparison.
+				For example, if value="accounts,user/location" then these will be filtered out: '/accounts/my/join_date', '/list/all/accounts', '/users/user/location'
+				-->
+				<Add name="NotNeededUrls" value="" />
+			</Processor>
+			
+			<!-- Filters out EventTelemetry if its name is in the given list. -->
+			<Processor type="TelemetryEventFilter">
+				<!-- A CSV list of event names to filter out -->
+				<Add name="NotNeededNames" value="" />
+			</Processor>
+			
+			<!--
+			Filters out TraceTelemetry if its severity level is equal to or higher than the given level.
+			For example, if value="WARN" then WARN, ERROR and CRITICAL messages are sent; TRACE and INFO are filtered out.
+			
+			By default, all messages are filtered out.
+			-->
+			<Processor type="TraceTelemetryFilter">
+				<!-- The minimum level to send. If set to 'OFF', then all TraceTelemetry is filtered out. -->
+				<Add name="FromSeverityLevel" value="OFF" />
+			</Processor>
+			
+			<!-- Filters out MetricTelemetry items if their names are in the given set of names. -->
+			<Processor type="MetricTelemetryFilter">
+				<!-- A CSV of metric names to filter out -->
+				<Add name="NotNeeded" value="" />
+			</Processor>
+			
+		</BuiltInProcessors>
+		<CustomProcessors>
+			<!-- 
+			Any custom TelemetryProcessor implementations are specified here.
+			The structure is the same as BuiltInProcessors.
+			See comments above for more information on implementation and configuration.
+			-->
+		</CustomProcessors>
+	</TelemetryProcessors>
+	
+	<!--
+	Enables and configures the SDKLogger which writes diagnostic logging to the console or a file for debugging the SDK itself.
+	When this element is missing from the configuration, logging is off.
+	This is equivalent to <SDKLogger type="OFF" />
+	
+	When it is included, the default type="CONSOLE".
+	Possible values for type are 'CONSOLE', 'FILE' and 'OFF'.
+	-->
+	<SDKLogger type="CONSOLE">
+		<!-- Configures the minimum log level to display. TRACE is the default which includes log messages at all levels. Other possible levels in descending verbosity order are: INFO, WARN, ERROR  -->
+		<Level>TRACE</Level>
+		
+		<!-- The following elements only apply when type="FILE" -->
+		
+		<!-- Specifies the logfile filename prefix -->
+		<UniquePrefix><!-- REQUIRED; no default --></UniquePrefix>
+		<!-- Folder where logfiles will be written. -->
+		<BaseFolder><!-- System.getProperty("java.io.tmpdir")+"/javasdklogs" --></BaseFolder>
+		<!-- The number of logfiles to retain. When this number is exceeded, the oldest file is deleted. -->
+		<NumberOfFiles>2</NumberOfFiles>
+		<!-- The total size of all logfiles to retain. This is distributed evenly amongst the number of files. Once this size is exceeded, the oldest file is deleted. -->
+		<NumberOfTotalSizeInMB>5</NumberOfTotalSizeInMB>
+	</SDKLogger>
+</ApplicationInsights>
