@@ -200,7 +200,9 @@ public enum SDKShutdownActivity {
                 if (shutdownAction == null) {
                     try {
                         shutdownAction = new SDKShutdownAction();
-                        Runtime.getRuntime().addShutdownHook(new Thread(shutdownAction, SDKShutdownActivity.class.getSimpleName()));
+                        Thread t = new Thread(shutdownAction, SDKShutdownActivity.class.getSimpleName());
+                        t.setDaemon(true);
+                        Runtime.getRuntime().addShutdownHook(t);
                     } catch (Exception e) {
                         InternalLogger.INSTANCE.error("Error while adding shutdown hook in getShutDownThread call");
                         InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
