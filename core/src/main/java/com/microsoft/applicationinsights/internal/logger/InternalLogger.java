@@ -22,8 +22,10 @@
 package com.microsoft.applicationinsights.internal.logger;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import com.google.common.base.Strings;
 
@@ -41,7 +43,7 @@ public enum InternalLogger {
     INSTANCE;
 
     private final static String LOGGER_LEVEL = "Level";
-    private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSSZ");
+    private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
 
     public enum LoggingLevel {
         ALL(Integer.MIN_VALUE),
@@ -100,6 +102,13 @@ public enum InternalLogger {
                         // Failed
                         onInitializationError(String.format("Error: Illegal value '%s' for the SDK internal logger. Logging level is therefore set to 'OFF'", loggerLevel));
                     }
+                }
+
+                final String utcId = "UTC";
+                try {
+                    dateFormatter.setTimeZone(TimeZone.getTimeZone(utcId));
+                } catch (Exception e) {
+                    new ConsoleLoggerOutput().log(String.format("Failed to find timezone with id='%s'. Using default '%s'", utcId, dateFormatter.getTimeZone().getDisplayName()));
                 }
             } finally {
                 initialized = true;

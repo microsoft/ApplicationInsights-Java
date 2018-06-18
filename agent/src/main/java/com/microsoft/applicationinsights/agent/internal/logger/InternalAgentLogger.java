@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 
@@ -84,6 +85,12 @@ public enum InternalAgentLogger {
                 loggingLevel = LoggingLevel.TRACE;
             } else {
                 loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+            }
+            final String utcId = "UTC";
+            try {
+                dateFormatter.setTimeZone(TimeZone.getTimeZone(utcId));
+            } catch (Exception e) {
+                logAlways(LoggingLevel.WARN, "Failed to find timezone with id='%s'. Using default '%s'", utcId, dateFormatter.getTimeZone().getDisplayName());
             }
         } catch (Exception e) {
             logAlways(LoggingLevel.ERROR, "Failed to parse logging level, using OFF");
