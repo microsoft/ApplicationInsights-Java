@@ -180,7 +180,9 @@ public final class ConfigurationFileLocatorTest {
     private void eraseFromLibraryLocation() throws URISyntaxException {
         String jarFullPath = ConfigurationFileLocator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
         File configFile = new File(new File(jarFullPath).getParent(), MOCK_CONF_FILE);
-        configFile.delete();
+        if (configFile.exists()) {
+            configFile.delete();
+        }
     }
 
     private void eraseFromClassPath() throws URISyntaxException {
