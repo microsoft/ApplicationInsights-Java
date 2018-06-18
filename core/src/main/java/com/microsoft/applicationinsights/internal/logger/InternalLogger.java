@@ -42,7 +42,7 @@ public enum InternalLogger {
     INSTANCE;
 
     private final static String LOGGER_LEVEL = "Level";
-    private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
+    private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSSZ");
 
     public enum LoggingLevel {
         ALL(Integer.MIN_VALUE),
