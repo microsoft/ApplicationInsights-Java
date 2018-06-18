@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.internal.logger;
 
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
