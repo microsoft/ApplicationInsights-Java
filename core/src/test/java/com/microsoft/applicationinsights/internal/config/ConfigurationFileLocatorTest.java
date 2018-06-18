@@ -44,6 +44,12 @@ public final class ConfigurationFileLocatorTest {
         System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
     }
 
+    @After
+    public void clearMockFile() throws URISyntaxException {
+        eraseFromClassPath();
+        eraseFromLibraryLocation();
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testCtorWithNull() {
         new ConfigurationFileLocator(null);
