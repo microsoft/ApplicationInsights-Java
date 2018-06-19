@@ -52,8 +52,20 @@ import org.apache.commons.lang3.time.StopWatch;
 
 /**
  * Created by yonisha on 2/2/2015.
+ * <p>You may choose to override the urlPatterns using web.xml</p>
+ * <p>For example:</p>
+ *
+ * {@code
+ *  <filter-mapping>
+ *      <!-- you must use the same filterName -->
+ *      <filter-name>ApplicationInsightsWebFilter</filter-name>
+ *      <url-pattern>/onlyTrackThisPath/*</url-pattern>
+ *  </filter-mapping>
+ * }
  */
-@WebFilter
+@WebFilter(urlPatterns = {"/*"},
+        filterName = "ApplicationInsightsWebFilter",
+        description = "Reports request and exception telemetry")
 public final class WebRequestTrackingFilter implements Filter {
     static {
         WebReflectionUtils.initialize();
