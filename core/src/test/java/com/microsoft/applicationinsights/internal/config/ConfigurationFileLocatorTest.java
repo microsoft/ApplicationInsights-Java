@@ -181,7 +181,9 @@ public final class ConfigurationFileLocatorTest {
         String jarFullPath = ConfigurationFileLocator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
         File configFile = new File(new File(jarFullPath).getParent(), MOCK_CONF_FILE);
         if (configFile.exists()) {
-            configFile.delete();
+            if (!configFile.delete()) {
+                throw new RuntimeException(String.format("Could not delete '%s'", configFile.getAbsolutePath()));
+            }
         }
     }
 
@@ -193,7 +195,9 @@ public final class ConfigurationFileLocatorTest {
 
         File file = getMockApplicationFileFromClassPath(classLoader);
         if (file != null) {
-            file.delete();
+            if (!file.delete()) {
+                throw new RuntimeException(String.format("Could not delete '%s'", file.getAbsolutePath()));
+            }
         }
     }
 
@@ -214,7 +218,8 @@ public final class ConfigurationFileLocatorTest {
         return null;
     }
 
-    private void verifyFile(InputStream resourceFile) {
+    private void verifyFile(InputStream resourceFile) throws IOException {
         assertNotNull("Configuration file is not found in the jar location", resourceFile);
+        resourceFile.close();
     }
 }
