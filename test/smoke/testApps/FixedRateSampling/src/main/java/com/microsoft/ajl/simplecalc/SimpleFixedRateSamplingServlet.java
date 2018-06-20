@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.TelemetryClient;
 
 /**
- * Servlet implementation class SimpleTrackTraceServlet
+ * Servlet implementation class SimpleFixedRateSamplingServlet
  */
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/fixedRateSampling" })
 
