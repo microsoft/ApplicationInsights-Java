@@ -6,6 +6,6 @@
 <title>Simple Telemetry</title>
 </head>
 <body>
-<h1>Simple Telemetry</h1>
+    <h1>Simple Telemetry</h1>
 </body>
 </html>
