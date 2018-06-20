@@ -71,7 +71,7 @@ public final class ConfigurationFileLocatorTest {
         System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "src/test/resources");
 
         InputStream resourceFile = new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
-        verifyFile(resourceFile);
+        assertStreamNotNullAndCloseIt(resourceFile);
     }
 
     @Test
@@ -91,7 +91,7 @@ public final class ConfigurationFileLocatorTest {
         InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
         System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
 
-        verifyFile(resourceFile);
+        assertStreamNotNullAndCloseIt(resourceFile);
     }
 
     @Test
@@ -99,7 +99,7 @@ public final class ConfigurationFileLocatorTest {
         String configurationFileName = putConfigurationFileInLibraryLocationOnly();
 
         InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
-        verifyFile(resourceFile);
+        assertStreamNotNullAndCloseIt(resourceFile);
     }
 
     @Test
@@ -107,7 +107,7 @@ public final class ConfigurationFileLocatorTest {
         String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
 
         InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
-        verifyFile(resourceFile);
+        assertStreamNotNullAndCloseIt(resourceFile);
     }
 
     @Test
@@ -115,7 +115,7 @@ public final class ConfigurationFileLocatorTest {
         putConfigurationFileInClassPathAndJarLocation(MOCK_CONF_FILE, MOCK_CONF_FILE);
 
         InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
-        verifyFile(resourceFile);
+        assertStreamNotNullAndCloseIt(resourceFile);
     }
 
     @Test
@@ -123,7 +123,7 @@ public final class ConfigurationFileLocatorTest {
         putConfigurationFileInClassPathAndJarLocation("dontfind" + MOCK_CONF_FILE, MOCK_CONF_FILE);
 
         InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
-        verifyFile(resourceFile);
+        assertStreamNotNullAndCloseIt(resourceFile);
     }
 
     private void putFileInClassPath(String configurationFileName) throws URISyntaxException, NoSuchMethodException, IOException, InvocationTargetException, IllegalAccessException {
@@ -181,7 +181,9 @@ public final class ConfigurationFileLocatorTest {
         String jarFullPath = ConfigurationFileLocator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
         File configFile = new File(new File(jarFullPath).getParent(), MOCK_CONF_FILE);
         if (configFile.exists()) {
-            configFile.delete();
+            if (!configFile.delete()) {
+                throw new RuntimeException(String.format("Could not delete '%s'", configFile.getAbsolutePath()));
+            }
         }
     }
 
@@ -193,7 +195,9 @@ public final class ConfigurationFileLocatorTest {
 
         File file = getMockApplicationFileFromClassPath(classLoader);
         if (file != null) {
-            file.delete();
+            if (!file.delete()) {
+                throw new RuntimeException(String.format("Could not delete '%s'", file.getAbsolutePath()));
+            }
         }
     }
 
@@ -214,7 +218,8 @@ public final class ConfigurationFileLocatorTest {
         return null;
     }
 
-    private void verifyFile(InputStream resourceFile) {
+    private void assertStreamNotNullAndCloseIt(InputStream resourceFile) throws IOException {
         assertNotNull("Configuration file is not found in the jar location", resourceFile);
+        resourceFile.close();
     }
 }
