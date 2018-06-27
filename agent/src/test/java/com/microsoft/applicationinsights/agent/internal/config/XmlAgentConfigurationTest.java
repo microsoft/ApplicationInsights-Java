@@ -21,27 +21,29 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import java.util.HashMap;
 import org.junit.Test;
 
-import java.util.HashMap;
-
-import static org.junit.Assert.*;
-
 public final class XmlAgentConfigurationTest {
-    @Test
-    public void testCtor() {
-        AgentConfigurationDefaultImpl tested = new AgentConfigurationDefaultImpl();
-        assertFalse(tested.getBuiltInConfiguration().isEnabled());
-        assertNull(tested.getRequestedClassesToInstrument());
-    }
+  @Test
+  public void testCtor() {
+    AgentConfigurationDefaultImpl tested = new AgentConfigurationDefaultImpl();
+    assertFalse(tested.getBuiltInConfiguration().isEnabled());
+    assertNull(tested.getRequestedClassesToInstrument());
+  }
 
-    @Test
-    public void testSetters() {
-        AgentConfigurationDefaultImpl tested = new AgentConfigurationDefaultImpl();
-        HashMap<String, ClassInstrumentationData> classes = new HashMap<String, ClassInstrumentationData>();
-        tested.setRequestedClassesToInstrument(classes);
+  @Test
+  public void testSetters() {
+    AgentConfigurationDefaultImpl tested = new AgentConfigurationDefaultImpl();
+    HashMap<String, ClassInstrumentationData> classes =
+        new HashMap<String, ClassInstrumentationData>();
+    tested.setRequestedClassesToInstrument(classes);
 
-        assertSame(classes, tested.getRequestedClassesToInstrument());
-    }
+    assertSame(classes, tested.getRequestedClassesToInstrument());
+  }
 }

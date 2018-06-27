@@ -22,9 +22,10 @@
 package com.microsoft.applicationinsights.agent.internal.config;
 
 /**
- * Defines the interface for builders that know how to create {@link com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration}
- * Created by gupele on 5/19/2015.
+ * Defines the interface for builders that know how to create {@link
+ * com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration} Created by gupele on
+ * 5/19/2015.
  */
 public interface AgentConfigurationBuilder {
-    AgentConfiguration parseConfigurationFile(String baseFolder);
+  AgentConfiguration parseConfigurationFile(String baseFolder);
 }

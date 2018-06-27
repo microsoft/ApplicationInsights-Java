@@ -23,27 +23,25 @@ package com.microsoft.applicationinsights.agent.internal.agent.jmx;
 
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 
-/**
- * Created by gupele on 8/6/2015.
- */
+/** Created by gupele on 8/6/2015. */
 public class JmxConnectorMXBeanImpl implements JmxConnectorMXBean {
-    @Override
-    public long getQueryPlanThresholdInMS() {
-        return ImplementationsCoordinator.INSTANCE.getQueryPlanThresholdInMS();
-    }
+  @Override
+  public long getQueryPlanThresholdInMS() {
+    return ImplementationsCoordinator.INSTANCE.getQueryPlanThresholdInMS();
+  }
 
-    @Override
-    public void setQueryPlanThresholdInMS(long thresholdInMS) {
-        ImplementationsCoordinator.INSTANCE.setQueryPlanThresholdInMS(thresholdInMS);
-    }
+  @Override
+  public void setQueryPlanThresholdInMS(long thresholdInMS) {
+    ImplementationsCoordinator.INSTANCE.setQueryPlanThresholdInMS(thresholdInMS);
+  }
 
-    @Override
-    public long getRedisThresholdInMS() {
-        return ImplementationsCoordinator.INSTANCE.getRedisThresholdInNS() / 1000000;
-    }
+  @Override
+  public long getRedisThresholdInMS() {
+    return ImplementationsCoordinator.INSTANCE.getRedisThresholdInNS() / 1000000;
+  }
 
-    @Override
-    public void setRedisThresholdInMS(long thresholdInMS) {
-        ImplementationsCoordinator.INSTANCE.setRedisThresholdInMS(thresholdInMS);
-    }
+  @Override
+  public void setRedisThresholdInMS(long thresholdInMS) {
+    ImplementationsCoordinator.INSTANCE.setRedisThresholdInMS(thresholdInMS);
+  }
 }

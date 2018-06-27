@@ -22,50 +22,57 @@
 package com.microsoft.applicationinsights.agent.internal.agent.jmx;
 
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
-
-import javax.management.*;
 import java.lang.management.ManagementFactory;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 
-/**
- * Created by gupele on 8/6/2015.
- */
+/** Created by gupele on 8/6/2015. */
 public final class JmxConnectorLoader {
-    private JmxConnectorMXBean mxBean;
+  private static final String AI_SDK_JMX_NAME =
+      "com.microsoft.applicationinsights.java.sdk:type=AIJavaSDKAgent";
+  private JmxConnectorMXBean mxBean;
 
-    private final static String AI_SDK_JMX_NAME = "com.microsoft.applicationinsights.java.sdk:type=AIJavaSDKAgent";
+  public JmxConnectorLoader() {}
 
-    public JmxConnectorLoader() {
-	}
-	
-	public boolean initialize() {
-        try {
-            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            ObjectName name = new ObjectName(AI_SDK_JMX_NAME);
-            mxBean = new JmxConnectorMXBeanImpl();
-            mbs.registerMBean(mxBean, name);
+  public boolean initialize() {
+    try {
+      MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+      ObjectName name = new ObjectName(AI_SDK_JMX_NAME);
+      mxBean = new JmxConnectorMXBeanImpl();
+      mbs.registerMBean(mxBean, name);
 
-            InternalAgentLogger.INSTANCE.info("Successfully registered Jmx connector.");
-			
-			return true;
-        } catch (MalformedObjectNameException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MalformedObjectNameException': '%s'", e.toString());
-        } catch (NotCompliantMBeanException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'NotCompliantMBeanException': '%s'", e.toString());
-        } catch (InstanceAlreadyExistsException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'InstanceAlreadyExistsException': '%s'", e.toString());
-        } catch (MBeanRegistrationException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MBeanRegistrationException': '%s'", e.toString());
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            try {
-                InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.toString());            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-		
-		return false;
-	}
+      InternalAgentLogger.INSTANCE.info("Successfully registered Jmx connector.");
+
+      return true;
+    } catch (MalformedObjectNameException e) {
+      InternalAgentLogger.INSTANCE.error(
+          "Failed to register Jmx connector 'MalformedObjectNameException': '%s'", e.toString());
+    } catch (NotCompliantMBeanException e) {
+      InternalAgentLogger.INSTANCE.error(
+          "Failed to register Jmx connector 'NotCompliantMBeanException': '%s'", e.toString());
+    } catch (InstanceAlreadyExistsException e) {
+      InternalAgentLogger.INSTANCE.error(
+          "Failed to register Jmx connector 'InstanceAlreadyExistsException': '%s'", e.toString());
+    } catch (MBeanRegistrationException e) {
+      InternalAgentLogger.INSTANCE.error(
+          "Failed to register Jmx connector 'MBeanRegistrationException': '%s'", e.toString());
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalAgentLogger.INSTANCE.error(
+            "Failed to register Jmx connector 'Throwable': '%s'", t.toString());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+    }
+
+    return false;
+  }
 }

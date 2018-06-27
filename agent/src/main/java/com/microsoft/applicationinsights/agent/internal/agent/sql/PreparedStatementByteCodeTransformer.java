@@ -23,30 +23,29 @@ package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ByteCodeTransformer;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
 
-import org.objectweb.asm.*;
-
-/**
- * Created by gupele on 8/3/2015.
- */
+/** Created by gupele on 8/3/2015. */
 public final class PreparedStatementByteCodeTransformer implements ByteCodeTransformer {
-    private final ClassInstrumentationData classInstrumentationData;
+  private final ClassInstrumentationData classInstrumentationData;
 
-    PreparedStatementByteCodeTransformer(ClassInstrumentationData classInstrumentationData) {
-        this.classInstrumentationData = classInstrumentationData;
+  PreparedStatementByteCodeTransformer(ClassInstrumentationData classInstrumentationData) {
+    this.classInstrumentationData = classInstrumentationData;
+  }
+
+  @Override
+  public byte[] transform(byte[] originalBuffer, String className, ClassLoader loader) {
+    if (classInstrumentationData == null) {
+      return originalBuffer;
     }
 
-    @Override
-    public byte[] transform(byte[] originalBuffer, String className, ClassLoader loader) {
-        if (classInstrumentationData == null) {
-            return originalBuffer;
-        }
-
-        ClassReader cr = new ClassReader(originalBuffer);
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
-        cr.accept(dcv, ClassReader.EXPAND_FRAMES);
-        byte[] newBuffer = cw.toByteArray();
-        return newBuffer;
-    }
+    ClassReader cr = new ClassReader(originalBuffer);
+    ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+    ClassVisitor dcv = classInstrumentationData.getDefaultClassInstrumentor(cw);
+    cr.accept(dcv, ClassReader.EXPAND_FRAMES);
+    byte[] newBuffer = cw.toByteArray();
+    return newBuffer;
+  }
 }

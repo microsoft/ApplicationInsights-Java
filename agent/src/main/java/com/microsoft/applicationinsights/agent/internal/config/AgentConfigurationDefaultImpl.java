@@ -21,76 +21,74 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-
-/**
- * Created by gupele on 5/19/2015.
- */
+/** Created by gupele on 5/19/2015. */
 final class AgentConfigurationDefaultImpl implements AgentConfiguration {
-    private boolean selfRegistrationMode = false;
-    private boolean debugMode = false;
-    private String sdkPath;
-    private HashMap<String, ClassInstrumentationData> classesToInstrument;
-    private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
-    private Set<String> excludedPrefixes = new HashSet<String>();
+  private boolean selfRegistrationMode = false;
+  private boolean debugMode = false;
+  private String sdkPath;
+  private HashMap<String, ClassInstrumentationData> classesToInstrument;
+  private AgentBuiltInConfiguration builtInConfiguration =
+      new AgentBuiltInConfigurationBuilder().create();
+  private Set<String> excludedPrefixes = new HashSet<String>();
 
-    void setRequestedClassesToInstrument(HashMap<String, ClassInstrumentationData> classesToInstrument) {
-        this.classesToInstrument = classesToInstrument;
-    }
+  @Override
+  public Map<String, ClassInstrumentationData> getRequestedClassesToInstrument() {
+    return classesToInstrument;
+  }
 
-    @Override
-    public Map<String, ClassInstrumentationData> getRequestedClassesToInstrument() {
-        return classesToInstrument;
-    }
+  void setRequestedClassesToInstrument(
+      HashMap<String, ClassInstrumentationData> classesToInstrument) {
+    this.classesToInstrument = classesToInstrument;
+  }
 
-    @Override
-    public AgentBuiltInConfiguration getBuiltInConfiguration() {
-        return builtInConfiguration;
-    }
+  @Override
+  public AgentBuiltInConfiguration getBuiltInConfiguration() {
+    return builtInConfiguration;
+  }
 
-    @Override
-    public Set<String> getExcludedPrefixes() {
-        return excludedPrefixes;
-    }
+  @Override
+  public Set<String> getExcludedPrefixes() {
+    return excludedPrefixes;
+  }
 
-    @Override
-    public boolean isSelfRegistrationMode() {
-        return selfRegistrationMode;
-    }
+  public void setExcludedPrefixes(Set<String> excludedPrefixes) {
+    this.excludedPrefixes = excludedPrefixes;
+  }
 
-    @Override
-    public String getSdkPath() {
-        return sdkPath;
-    }
+  @Override
+  public boolean isSelfRegistrationMode() {
+    return selfRegistrationMode;
+  }
 
-    @Override
-    public boolean isDebugMode() {
-        return debugMode;
-    }
+  public void setSelfRegistrationMode(boolean selfRegistrationMode) {
+    this.selfRegistrationMode = selfRegistrationMode;
+  }
 
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
-    }
+  @Override
+  public String getSdkPath() {
+    return sdkPath;
+  }
 
-    public void setBuiltInData(AgentBuiltInConfiguration builtInData) {
-        this.builtInConfiguration = builtInData;
-    }
+  public void setSdkPath(String sdkPath) {
+    this.sdkPath = sdkPath;
+  }
 
-    public void setExcludedPrefixes(Set<String> excludedPrefixes) {
-        this.excludedPrefixes = excludedPrefixes;
-    }
+  @Override
+  public boolean isDebugMode() {
+    return debugMode;
+  }
 
+  public void setDebugMode(boolean debugMode) {
+    this.debugMode = debugMode;
+  }
 
-    public void setSelfRegistrationMode(boolean selfRegistrationMode) {
-        this.selfRegistrationMode = selfRegistrationMode;
-    }
-
-    public void setSdkPath(String sdkPath) {
-        this.sdkPath = sdkPath;
-    }
+  public void setBuiltInData(AgentBuiltInConfiguration builtInData) {
+    this.builtInConfiguration = builtInData;
+  }
 }

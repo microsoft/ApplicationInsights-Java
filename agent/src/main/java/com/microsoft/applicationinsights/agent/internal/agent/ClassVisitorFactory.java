@@ -24,9 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
-/**
- * Created by gupele on 7/27/2015.
- */
+/** Created by gupele on 7/27/2015. */
 public interface ClassVisitorFactory {
-    ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter);
+  ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter);
 }

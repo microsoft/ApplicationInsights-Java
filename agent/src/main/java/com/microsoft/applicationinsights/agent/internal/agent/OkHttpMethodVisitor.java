@@ -21,70 +21,88 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.net.URL;
-
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
+import java.net.URL;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-/**
- * Created by gupele on 7/27/2015.
- */
+/** Created by gupele on 7/27/2015. */
 public final class OkHttpMethodVisitor extends AbstractHttpMethodVisitor {
-    private final String fieldName;
+  private final String fieldName;
 
-    public OkHttpMethodVisitor(int access,
-                               String desc,
-                               String owner,
-                               String methodName,
-                               MethodVisitor methodVisitor,
-                               ClassToMethodTransformationData additionalData) {
-        super(access, desc, owner, methodName, methodVisitor, additionalData);
+  public OkHttpMethodVisitor(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(access, desc, owner, methodName, methodVisitor, additionalData);
 
-        this.fieldName = ((OkHttpClassToMethodTransformationData)additionalData).fieldName;
-    }
+    this.fieldName = ((OkHttpClassToMethodTransformationData) additionalData).fieldName;
+  }
 
-    @Override
-    public void onMethodEnter() {
+  @Override
+  public void onMethodEnter() {
 
-        int urlLocalIndex = this.newLocal(Type.getType(URL.class));
-        int stringLocalIndex = this.newLocal(Type.getType(String.class));
+    int urlLocalIndex = this.newLocal(Type.getType(URL.class));
+    int stringLocalIndex = this.newLocal(Type.getType(String.class));
 
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, "com/squareup/okhttp/Call", fieldName, "Lcom/squareup/okhttp/Request;");
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitFieldInsn(
+        GETFIELD, "com/squareup/okhttp/Call", fieldName, "Lcom/squareup/okhttp/Request;");
 
-        Label nullLabel = new Label();
-        mv.visitJumpInsn(IFNULL, nullLabel);
+    Label nullLabel = new Label();
+    mv.visitJumpInsn(IFNULL, nullLabel);
 
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, "com/squareup/okhttp/Call", fieldName, "Lcom/squareup/okhttp/Request;");
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitFieldInsn(
+        GETFIELD, "com/squareup/okhttp/Call", fieldName, "Lcom/squareup/okhttp/Request;");
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/squareup/okhttp/Request", "url", "()Ljava/net/URL;", false);
-        mv.visitVarInsn(ASTORE, urlLocalIndex);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL, "com/squareup/okhttp/Request", "url", "()Ljava/net/URL;", false);
+    mv.visitVarInsn(ASTORE, urlLocalIndex);
 
-        mv.visitVarInsn(ALOAD, urlLocalIndex);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URL", "toString", "()Ljava/lang/String;", false);
-        mv.visitVarInsn(ASTORE, stringLocalIndex);
+    mv.visitVarInsn(ALOAD, urlLocalIndex);
+    mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URL", "toString", "()Ljava/lang/String;", false);
+    mv.visitVarInsn(ASTORE, stringLocalIndex);
 
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
 
-        mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(ALOAD, stringLocalIndex);
+    mv.visitLdcInsn(getMethodName());
+    mv.visitVarInsn(ALOAD, stringLocalIndex);
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        ON_ENTER_METHOD_NAME,
+        ON_ENTER_METHOD_SIGNATURE,
+        false);
 
-        Label notNullLabel = new Label();
-        mv.visitJumpInsn(GOTO, notNullLabel);
+    Label notNullLabel = new Label();
+    mv.visitJumpInsn(GOTO, notNullLabel);
 
-        mv.visitLabel(nullLabel);
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitLdcInsn(getMethodName());
-        mv.visitInsn(ACONST_NULL);
+    mv.visitLabel(nullLabel);
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
+    mv.visitLdcInsn(getMethodName());
+    mv.visitInsn(ACONST_NULL);
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        ON_ENTER_METHOD_NAME,
+        ON_ENTER_METHOD_SIGNATURE,
+        false);
 
-        mv.visitLabel(notNullLabel);
-    }
+    mv.visitLabel(notNullLabel);
+  }
 }
-

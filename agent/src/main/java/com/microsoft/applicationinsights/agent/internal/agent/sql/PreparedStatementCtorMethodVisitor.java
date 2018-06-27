@@ -26,26 +26,29 @@ import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisit
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-/**
- * Created by gupele on 8/4/2015.
- */
+/** Created by gupele on 8/4/2015. */
 final class PreparedStatementCtorMethodVisitor extends DefaultMethodVisitor {
-    private final PreparedStatementMetaData metaData;
+  private final PreparedStatementMetaData metaData;
 
-    public PreparedStatementCtorMethodVisitor(int access, String desc, String owner, String methodName, MethodVisitor methodVisitor, ClassToMethodTransformationData additionalData) {
-        super(false, false, 0, access, desc, owner, methodName, methodVisitor, additionalData);
-        this.metaData = (PreparedStatementMetaData)additionalData;
-    }
+  public PreparedStatementCtorMethodVisitor(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(false, false, 0, access, desc, owner, methodName, methodVisitor, additionalData);
+    this.metaData = (PreparedStatementMetaData) additionalData;
+  }
 
-    @Override
-    public void visitCode() {
-        super.visitCode();
-        super.visitVarInsn(Opcodes.ALOAD, 0);
-        super.visitVarInsn(Opcodes.ALOAD, metaData.sqlStringInCtor);
-        super.visitFieldInsn(Opcodes.PUTFIELD, owner, metaData.fieldName, "Ljava/lang/String;");
-    }
+  @Override
+  public void visitCode() {
+    super.visitCode();
+    super.visitVarInsn(Opcodes.ALOAD, 0);
+    super.visitVarInsn(Opcodes.ALOAD, metaData.sqlStringInCtor);
+    super.visitFieldInsn(Opcodes.PUTFIELD, owner, metaData.fieldName, "Ljava/lang/String;");
+  }
 
-    @Override
-    protected void onMethodExit(int opcode) {
-    }
+  @Override
+  protected void onMethodExit(int opcode) {}
 }

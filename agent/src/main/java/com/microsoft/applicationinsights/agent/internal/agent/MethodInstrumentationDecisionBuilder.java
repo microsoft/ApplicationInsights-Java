@@ -21,39 +21,40 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-/**
- * Created by gupele on 6/2/2015.
- */
+/** Created by gupele on 6/2/2015. */
 final class MethodInstrumentationDecisionBuilder {
-    private boolean reportCaughtExceptions;
-    private boolean reportExecutionTime;
-    private long thresholdInMS;
-    private MethodVisitorFactory methodVisitorFactory;
+  private boolean reportCaughtExceptions;
+  private boolean reportExecutionTime;
+  private long thresholdInMS;
+  private MethodVisitorFactory methodVisitorFactory;
 
-    public MethodInstrumentationDecisionBuilder withReportCaughtExceptions(boolean reportCaughtExceptions) {
-        this.reportCaughtExceptions = reportCaughtExceptions;
-        return this;
-    }
+  public MethodInstrumentationDecisionBuilder withReportCaughtExceptions(
+      boolean reportCaughtExceptions) {
+    this.reportCaughtExceptions = reportCaughtExceptions;
+    return this;
+  }
 
-    public MethodInstrumentationDecisionBuilder withReportExecutionTime(boolean reportExecutionTime) {
-        this.reportExecutionTime = reportExecutionTime;
-        return this;
-    }
+  public MethodInstrumentationDecisionBuilder withReportExecutionTime(boolean reportExecutionTime) {
+    this.reportExecutionTime = reportExecutionTime;
+    return this;
+  }
 
-    public MethodInstrumentationDecisionBuilder withThresholdInMS(long thresholdInMS) {
-        this.thresholdInMS = thresholdInMS;
-        return this;
-    }
+  public MethodInstrumentationDecisionBuilder withThresholdInMS(long thresholdInMS) {
+    this.thresholdInMS = thresholdInMS;
+    return this;
+  }
 
-    public MethodInstrumentationDecisionBuilder withMethodVisitorFactory(MethodVisitorFactory methodVisitorFactory) {
-        this.methodVisitorFactory = methodVisitorFactory;
-        return this;
-    }
+  public MethodInstrumentationDecisionBuilder withMethodVisitorFactory(
+      MethodVisitorFactory methodVisitorFactory) {
+    this.methodVisitorFactory = methodVisitorFactory;
+    return this;
+  }
 
-    public MethodInstrumentationDecision create() {
-        if (methodVisitorFactory == null) {
-            throw new IllegalArgumentException("methodVisitorFactory must be non null");
-        }
-        return new MethodInstrumentationDecision(reportCaughtExceptions, reportExecutionTime, methodVisitorFactory, thresholdInMS);
+  public MethodInstrumentationDecision create() {
+    if (methodVisitorFactory == null) {
+      throw new IllegalArgumentException("methodVisitorFactory must be non null");
     }
+    return new MethodInstrumentationDecision(
+        reportCaughtExceptions, reportExecutionTime, methodVisitorFactory, thresholdInMS);
+  }
 }

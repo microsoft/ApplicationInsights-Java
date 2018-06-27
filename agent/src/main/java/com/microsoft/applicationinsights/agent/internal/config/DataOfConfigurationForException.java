@@ -23,44 +23,42 @@ package com.microsoft.applicationinsights.agent.internal.config;
 
 import java.util.HashSet;
 
-/**
- * Created by gupele on 8/18/2016.
- */
+/** Created by gupele on 8/18/2016. */
 public final class DataOfConfigurationForException {
-    private boolean enabled = false;
-    private int stackSize = Integer.MAX_VALUE;
-    private HashSet<String> suppressedExceptions = new HashSet<String>();
-    private HashSet<String> validPathForExceptions = new HashSet<String>();
+  private boolean enabled = false;
+  private int stackSize = Integer.MAX_VALUE;
+  private HashSet<String> suppressedExceptions = new HashSet<String>();
+  private HashSet<String> validPathForExceptions = new HashSet<String>();
 
-    public int getStackSize() {
-        return stackSize;
-    }
+  public int getStackSize() {
+    return stackSize;
+  }
 
-    public void setStackSize(int stackSize) {
-        this.stackSize = stackSize;
-    }
+  public void setStackSize(int stackSize) {
+    this.stackSize = stackSize;
+  }
 
-    public HashSet<String> getSuppressedExceptions() {
-        return suppressedExceptions;
-    }
+  public HashSet<String> getSuppressedExceptions() {
+    return suppressedExceptions;
+  }
 
-    public void setSuppressedExceptions(HashSet<String> suppressedExceptions) {
-        this.suppressedExceptions = suppressedExceptions;
-    }
+  public void setSuppressedExceptions(HashSet<String> suppressedExceptions) {
+    this.suppressedExceptions = suppressedExceptions;
+  }
 
-    public HashSet<String> getValidPathForExceptions() {
-        return validPathForExceptions;
-    }
+  public HashSet<String> getValidPathForExceptions() {
+    return validPathForExceptions;
+  }
 
-    public void setValidPathForExceptions(HashSet<String> validPathForExceptions) {
-        this.validPathForExceptions = validPathForExceptions;
-    }
+  public void setValidPathForExceptions(HashSet<String> validPathForExceptions) {
+    this.validPathForExceptions = validPathForExceptions;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 }

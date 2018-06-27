@@ -22,18 +22,15 @@
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
-
 import java.util.Set;
 
-/**
- * Created by gupele on 8/3/2015.
- */
+/** Created by gupele on 8/3/2015. */
 public class PreparedStatementMetaData implements ClassToMethodTransformationData {
-    public final String fieldName = SqlConstants.AI_SDK_SQL_STRING;
-    public final Set<String> ctorSignatures;
-    public int sqlStringInCtor;
+  public final String fieldName = SqlConstants.AI_SDK_SQL_STRING;
+  public final Set<String> ctorSignatures;
+  public int sqlStringInCtor;
 
-    public PreparedStatementMetaData(Set<String> ctorSignatures) {
-        this.ctorSignatures = ctorSignatures;
-    }
+  public PreparedStatementMetaData(Set<String> ctorSignatures) {
+    this.ctorSignatures = ctorSignatures;
+  }
 }

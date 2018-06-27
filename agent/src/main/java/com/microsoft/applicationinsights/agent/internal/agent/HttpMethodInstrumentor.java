@@ -21,57 +21,59 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.net.URL;
-
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-
+import java.net.URL;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 /**
- * The class is responsible for instrumenting the default Java class that is responsible for sending HTTP requests
+ * The class is responsible for instrumenting the default Java class that is responsible for sending
+ * HTTP requests
  *
- * Created by gupele on 5/20/2015.
+ * <p>Created by gupele on 5/20/2015.
  */
 final class HttpMethodInstrumentor extends DefaultMethodVisitor {
-    private final static String PARENT_NAME_IN_INSTANCE = "this$0";
-    private final static String PARENT_JAVA_NAME = "sun/net/www/protocol/http/HttpURLConnection";
-    private final static String PARENT_FULL_JAVA_NAME = "Lsun/net/www/protocol/http/HttpURLConnection;";
-    private final static String GET_URL_METHOD_NAME = "getURL";
-    private final static String GET_URL_METHOD_SIGNATURE = "()Ljava/net/URL;";
+  private static final String PARENT_NAME_IN_INSTANCE = "this$0";
+  private static final String PARENT_JAVA_NAME = "sun/net/www/protocol/http/HttpURLConnection";
+  private static final String PARENT_FULL_JAVA_NAME =
+      "Lsun/net/www/protocol/http/HttpURLConnection;";
+  private static final String GET_URL_METHOD_NAME = "getURL";
+  private static final String GET_URL_METHOD_SIGNATURE = "()Ljava/net/URL;";
 
-    private final static String ON_ENTER_METHOD_NAME = "httpMethodStarted";
-    private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/net/URL;)V";
+  private static final String ON_ENTER_METHOD_NAME = "httpMethodStarted";
+  private static final String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/net/URL;)V";
 
-    private final String owner;
+  private final String owner;
 
-    public HttpMethodInstrumentor(int access,
-                                  String desc,
-                                  String owner,
-                                  String methodName,
-                                  MethodVisitor methodVisitor,
-                                  ClassToMethodTransformationData additionalData) {
-        super(false, true, 0, access, desc, owner, methodName, methodVisitor, additionalData);
-        this.owner = owner;
-    }
+  public HttpMethodInstrumentor(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(false, true, 0, access, desc, owner, methodName, methodVisitor, additionalData);
+    this.owner = owner;
+  }
 
-    @Override
-    protected void onMethodEnter() {
-        int urlLocalIndex = this.newLocal(Type.getType(URL.class));
+  @Override
+  protected void onMethodEnter() {
+    int urlLocalIndex = this.newLocal(Type.getType(URL.class));
 
-        // "sun/net/www/protocol/http/HttpURLConnection"
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, owner, PARENT_NAME_IN_INSTANCE, PARENT_FULL_JAVA_NAME);
-        mv.visitMethodInsn(INVOKEVIRTUAL, PARENT_JAVA_NAME, GET_URL_METHOD_NAME, GET_URL_METHOD_SIGNATURE, false);
-        mv.visitVarInsn(ASTORE, urlLocalIndex);
+    // "sun/net/www/protocol/http/HttpURLConnection"
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitFieldInsn(GETFIELD, owner, PARENT_NAME_IN_INSTANCE, PARENT_FULL_JAVA_NAME);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL, PARENT_JAVA_NAME, GET_URL_METHOD_NAME, GET_URL_METHOD_SIGNATURE, false);
+    mv.visitVarInsn(ASTORE, urlLocalIndex);
 
-        mv.visitVarInsn(ALOAD, urlLocalIndex);
+    mv.visitVarInsn(ALOAD, urlLocalIndex);
 
-        activateEnumMethod(
-                ImplementationsCoordinator.class,
-                ON_ENTER_METHOD_NAME,
-                ON_ENTER_METHOD_SIGNATURE,
-                getMethodName(),
-                duplicateTopStackToTempVariable(Type.getType(URL.class)));
-    }
+    activateEnumMethod(
+        ImplementationsCoordinator.class,
+        ON_ENTER_METHOD_NAME,
+        ON_ENTER_METHOD_SIGNATURE,
+        getMethodName(),
+        duplicateTopStackToTempVariable(Type.getType(URL.class)));
+  }
 }

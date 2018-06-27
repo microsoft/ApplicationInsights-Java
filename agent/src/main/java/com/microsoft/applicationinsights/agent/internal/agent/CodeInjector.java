@@ -21,106 +21,109 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.lang.instrument.Instrumentation;
-import java.security.ProtectionDomain;
-
 import com.microsoft.applicationinsights.agent.internal.agent.jmx.JmxConnectorLoader;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
-import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
+import java.security.ProtectionDomain;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class is responsible for finding needed classes
- * <p>
- * Created by gupele on 5/11/2015.
+ *
+ * <p>Created by gupele on 5/11/2015.
  */
 public final class CodeInjector implements ClassFileTransformer {
 
-    private final ClassDataProvider classNamesProvider = new DefaultClassDataProvider();
-    private JmxConnectorLoader jmxConnectorLoader;
+  private final ClassDataProvider classNamesProvider = new DefaultClassDataProvider();
+  private JmxConnectorLoader jmxConnectorLoader;
 
-    /**
-     * The constructor will set all the data needed for the transformation
-     *
-     * @param agentConfiguration The configuration
-     */
-    public CodeInjector(AgentConfiguration agentConfiguration) {
+  /**
+   * The constructor will set all the data needed for the transformation
+   *
+   * @param agentConfiguration The configuration
+   */
+  public CodeInjector(AgentConfiguration agentConfiguration) {
+    try {
+      loadConfiguration(agentConfiguration);
+      InternalAgentLogger.INSTANCE.info("Agent is up");
+
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable throwable) {
+      try {
+        InternalAgentLogger.INSTANCE.error(
+            "Agent is NOT activated: failed to initialize CodeInjector: '%s'",
+            ExceptionUtils.getStackTrace(throwable));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+    }
+  }
+
+  /**
+   * Main method that transforms classes
+   *
+   * @param loader The class loader that loaded this class
+   * @param className The class name
+   * @param classBeingRedefined The class that is being redefined
+   * @param protectionDomain The protection domain
+   * @param originalBuffer The class that was loaded before transforming it
+   * @return A byte array that contains the transformed original class or the original one if
+   *     nothing was done.
+   * @throws IllegalClassFormatException Theoretical, since the following implementation won't
+   *     throw.
+   */
+  public byte[] transform(
+      ClassLoader loader,
+      String className,
+      Class classBeingRedefined,
+      ProtectionDomain protectionDomain,
+      byte[] originalBuffer)
+      throws IllegalClassFormatException {
+
+    DefaultByteCodeTransformer byteCodeTransformer = classNamesProvider.getAndRemove(className);
+    if (byteCodeTransformer != null) {
+      try {
+        return byteCodeTransformer.transform(originalBuffer, className, loader);
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable throwable) {
         try {
-            loadConfiguration(agentConfiguration);
-            InternalAgentLogger.INSTANCE.info("Agent is up");
-
+          InternalAgentLogger.INSTANCE.error(
+              "Failed to instrument '%s', " + "exception: '%s'",
+              className, ExceptionUtils.getStackTrace(throwable));
         } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable throwable) {
-            try {
-                InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to initialize CodeInjector: '%s'",
-                        ExceptionUtils.getStackTrace(throwable));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
+          throw td;
+        } catch (Throwable t2) {
+          // chomp
         }
+      }
     }
 
-    /**
-     * Main method that transforms classes
-     *
-     * @param loader              The class loader that loaded this class
-     * @param className           The class name
-     * @param classBeingRedefined The class that is being redefined
-     * @param protectionDomain    The protection domain
-     * @param originalBuffer      The class that was loaded before transforming it
-     * @return A byte array that contains the transformed original class or the original one if nothing was done.
-     * @throws IllegalClassFormatException Theoretical, since the following implementation won't throw.
-     */
-    public byte[] transform(
-            ClassLoader loader,
-            String className,
-            Class classBeingRedefined,
-            ProtectionDomain protectionDomain,
-            byte[] originalBuffer) throws IllegalClassFormatException {
+    return originalBuffer;
+  }
 
-        DefaultByteCodeTransformer byteCodeTransformer = classNamesProvider.getAndRemove(className);
-        if (byteCodeTransformer != null) {
-            try {
-                return byteCodeTransformer.transform(originalBuffer, className, loader);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable throwable) {
-                try {
-                    InternalAgentLogger.INSTANCE.error("Failed to instrument '%s', " +
-                            "exception: '%s'", className, ExceptionUtils.getStackTrace(throwable));
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
+  /**
+   * The method will try to load the configuration file for the Agent. The file is optional but is
+   * assumed to be located 'near' the agent jar. Failing to put the file there will cause the file
+   * not to be loaded
+   *
+   * @param agentConfiguration The configuration
+   */
+  private void loadConfiguration(AgentConfiguration agentConfiguration) {
+    classNamesProvider.setConfiguration(agentConfiguration);
+    ImplementationsCoordinator.INSTANCE.initialize(agentConfiguration);
 
-        return originalBuffer;
+    if (agentConfiguration.getBuiltInConfiguration().isJmxEnabled()) {
+      jmxConnectorLoader = new JmxConnectorLoader();
+      if (!jmxConnectorLoader.initialize()) {
+        jmxConnectorLoader = null;
+      }
     }
-
-    /**
-     * The method will try to load the configuration file for the Agent. The file is optional but
-     * is assumed to be located 'near' the agent jar. Failing to put the file there will cause the file not to be loaded
-     *
-     * @param agentConfiguration The configuration
-     */
-    private void loadConfiguration(AgentConfiguration agentConfiguration) {
-        classNamesProvider.setConfiguration(agentConfiguration);
-        ImplementationsCoordinator.INSTANCE.initialize(agentConfiguration);
-
-        if (agentConfiguration.getBuiltInConfiguration().isJmxEnabled()) {
-            jmxConnectorLoader = new JmxConnectorLoader();
-            if (!jmxConnectorLoader.initialize()) {
-                jmxConnectorLoader = null;
-            }
-        }
-    }
+  }
 }

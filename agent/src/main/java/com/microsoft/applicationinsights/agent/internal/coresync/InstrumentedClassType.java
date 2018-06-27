@@ -21,12 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.coresync;
 
-/**
- * Created by gupele on 5/17/2015.
- */
+/** Created by gupele on 5/17/2015. */
 public enum InstrumentedClassType {
-    SQL,
-    HTTP,
-    OTHER,
-    Redis
+  SQL,
+  HTTP,
+  OTHER,
+  Redis
 }

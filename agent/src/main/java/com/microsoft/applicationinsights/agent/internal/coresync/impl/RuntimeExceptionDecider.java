@@ -22,84 +22,84 @@
 package com.microsoft.applicationinsights.agent.internal.coresync.impl;
 
 import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
-
 import java.util.HashSet;
 
 /**
- * The class will evaluate exceptions and will decide whether or not they are 'interesting', i.e. valid
+ * The class will evaluate exceptions and will decide whether or not they are 'interesting', i.e.
+ * valid
  *
- * Created by gupele on 8/17/2016.
+ * <p>Created by gupele on 8/17/2016.
  */
 final class RuntimeExceptionDecider {
 
-    public static class ValidationResult {
-        public final boolean valid;
-        public final int stackSize;
+  public final HashSet<String> suppressStackExceptions = new HashSet<String>();
+  private final boolean blockInternalExceptions;
+  private DataOfConfigurationForException exceptionData;
+  public RuntimeExceptionDecider() {
+    this(true);
+  }
 
-        public static ValidationResult createValidResult(int stackSize) {
-            return new ValidationResult(true, stackSize);
-        }
+  public RuntimeExceptionDecider(boolean blockInternalExceptions) {
+    this.blockInternalExceptions = blockInternalExceptions;
+    suppressStackExceptions.add(
+        "com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter");
+  }
 
-        public static ValidationResult createNonValidResult() {
-            return new ValidationResult(false, -1);
-        }
-
-        private ValidationResult(boolean valid, int stackSize) {
-            this.valid = valid;
-            this.stackSize = stackSize;
-        }
+  public ValidationResult isValid(Exception e) {
+    if (exceptionData == null || !exceptionData.isEnabled()) {
+      return new ValidationResult(false, -1);
     }
 
-    public final HashSet<String> suppressStackExceptions = new HashSet<String>();
-    private final boolean blockInternalExceptions;
-    private DataOfConfigurationForException exceptionData;
-
-    public RuntimeExceptionDecider() {
-        this(true);
-    }
-
-    public RuntimeExceptionDecider(boolean blockInternalExceptions) {
-        this.blockInternalExceptions = blockInternalExceptions;
-        suppressStackExceptions.add("com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter");
-    }
-
-    public ValidationResult isValid(Exception e) {
-        if (exceptionData == null || !exceptionData.isEnabled()) {
-            return new ValidationResult(false, -1);
-        }
-
-        boolean valid = false;
-        StackTraceElement[] traces = e.getStackTrace();
-        for (StackTraceElement trace : traces) {
-            for (String nonValid : exceptionData.getSuppressedExceptions()) {
-                String traceClassName = trace.getClassName();
-                if (traceClassName.startsWith(nonValid)) {
-                    if (!suppressStackExceptions.contains(traceClassName)) {
-                        return ValidationResult.createNonValidResult();
-                    }
-                }
-            }
-            if (valid) {
-                continue;
-            }
-            if (exceptionData.getValidPathForExceptions().contains(trace.getClassName())) {
-                valid = true;
-            }
-        }
-
-        if (!exceptionData.getValidPathForExceptions().isEmpty() && !valid) {
+    boolean valid = false;
+    StackTraceElement[] traces = e.getStackTrace();
+    for (StackTraceElement trace : traces) {
+      for (String nonValid : exceptionData.getSuppressedExceptions()) {
+        String traceClassName = trace.getClassName();
+        if (traceClassName.startsWith(nonValid)) {
+          if (!suppressStackExceptions.contains(traceClassName)) {
             return ValidationResult.createNonValidResult();
+          }
         }
-
-        return ValidationResult.createValidResult(exceptionData.getStackSize());
+      }
+      if (valid) {
+        continue;
+      }
+      if (exceptionData.getValidPathForExceptions().contains(trace.getClassName())) {
+        valid = true;
+      }
     }
 
-    public void setExceptionData(DataOfConfigurationForException exceptionData) {
-        this.exceptionData = exceptionData;
-        if (exceptionData != null) {
-            if (blockInternalExceptions) {
-                exceptionData.getSuppressedExceptions().add("com.microsoft.applicationinsights");
-            }
-        }
+    if (!exceptionData.getValidPathForExceptions().isEmpty() && !valid) {
+      return ValidationResult.createNonValidResult();
     }
+
+    return ValidationResult.createValidResult(exceptionData.getStackSize());
+  }
+
+  public void setExceptionData(DataOfConfigurationForException exceptionData) {
+    this.exceptionData = exceptionData;
+    if (exceptionData != null) {
+      if (blockInternalExceptions) {
+        exceptionData.getSuppressedExceptions().add("com.microsoft.applicationinsights");
+      }
+    }
+  }
+
+  public static class ValidationResult {
+    public final boolean valid;
+    public final int stackSize;
+
+    private ValidationResult(boolean valid, int stackSize) {
+      this.valid = valid;
+      this.stackSize = stackSize;
+    }
+
+    public static ValidationResult createValidResult(int stackSize) {
+      return new ValidationResult(true, stackSize);
+    }
+
+    public static ValidationResult createNonValidResult() {
+      return new ValidationResult(false, -1);
+    }
+  }
 }

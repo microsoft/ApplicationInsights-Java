@@ -24,27 +24,25 @@ package com.microsoft.applicationinsights.agent.internal.config;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-/**
- * Created by gupele on 9/11/2016.
- */
+/** Created by gupele on 9/11/2016. */
 public class SelfCoreRegistrationModeBuilder {
-    private final static String SELF_MODE_TAG = "SelfMode";
-    private final static String SELF_MODE_SDK_PATH_ATTRIBUTE = "sdkPath";
+  private static final String SELF_MODE_TAG = "SelfMode";
+  private static final String SELF_MODE_SDK_PATH_ATTRIBUTE = "sdkPath";
 
-    public void create(AgentConfigurationDefaultImpl agentConfiguration, Element enclosingTag) {
-        NodeList nodes = enclosingTag.getElementsByTagName(SELF_MODE_TAG);
-        Element selfModeElement = XmlParserUtils.getFirst(nodes);
-        if (selfModeElement == null) {
-            agentConfiguration.setSelfRegistrationMode(false);
-            return;
-        }
-
-        boolean enabled = XmlParserUtils.getEnabled(selfModeElement, SELF_MODE_TAG, false);
-        agentConfiguration.setSelfRegistrationMode(enabled);
-
-        if (enabled) {
-            String sdkPath = XmlParserUtils.getAttribute(selfModeElement, SELF_MODE_SDK_PATH_ATTRIBUTE);
-            agentConfiguration.setSdkPath(sdkPath);
-        }
+  public void create(AgentConfigurationDefaultImpl agentConfiguration, Element enclosingTag) {
+    NodeList nodes = enclosingTag.getElementsByTagName(SELF_MODE_TAG);
+    Element selfModeElement = XmlParserUtils.getFirst(nodes);
+    if (selfModeElement == null) {
+      agentConfiguration.setSelfRegistrationMode(false);
+      return;
     }
+
+    boolean enabled = XmlParserUtils.getEnabled(selfModeElement, SELF_MODE_TAG, false);
+    agentConfiguration.setSelfRegistrationMode(enabled);
+
+    if (enabled) {
+      String sdkPath = XmlParserUtils.getAttribute(selfModeElement, SELF_MODE_SDK_PATH_ATTRIBUTE);
+      agentConfiguration.setSdkPath(sdkPath);
+    }
+  }
 }

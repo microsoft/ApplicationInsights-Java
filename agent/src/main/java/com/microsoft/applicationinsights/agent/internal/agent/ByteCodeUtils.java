@@ -24,42 +24,40 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-/**
- * Created by gupele on 5/11/2015.
- */
+/** Created by gupele on 5/11/2015. */
 public final class ByteCodeUtils {
-    private final static String BYTE_CODE_CTOR_NAME = "<init>";
-    private final static String BYTE_CODE_STATIC_CTOR_NAME = "<clinit>";
+  private static final String BYTE_CODE_CTOR_NAME = "<init>";
+  private static final String BYTE_CODE_STATIC_CTOR_NAME = "<clinit>";
 
-    public static boolean isInterface(int access) {
-        return (access & Opcodes.ACC_INTERFACE) != 0;
-    }
+  public static boolean isInterface(int access) {
+    return (access & Opcodes.ACC_INTERFACE) != 0;
+  }
 
-    public static boolean isAbstract(int access) {
-        return (access & Opcodes.ACC_ABSTRACT) != 0;
-    }
+  public static boolean isAbstract(int access) {
+    return (access & Opcodes.ACC_ABSTRACT) != 0;
+  }
 
-    public static boolean isPrivate(int access) {
-        return (access & Opcodes.ACC_PRIVATE) != 0;
-    }
+  public static boolean isPrivate(int access) {
+    return (access & Opcodes.ACC_PRIVATE) != 0;
+  }
 
-    public static boolean isStatic(int access) {
-        return (access & Opcodes.ACC_STATIC) != 0;
-    }
+  public static boolean isStatic(int access) {
+    return (access & Opcodes.ACC_STATIC) != 0;
+  }
 
-    public static boolean isAnyConstructor(String methodName) {
-        return isConstructor(methodName) || isStaticInitializer(methodName);
-    }
+  public static boolean isAnyConstructor(String methodName) {
+    return isConstructor(methodName) || isStaticInitializer(methodName);
+  }
 
-    public static boolean isStaticInitializer(String methodName) {
-        return BYTE_CODE_STATIC_CTOR_NAME.startsWith(methodName);
-    }
+  public static boolean isStaticInitializer(String methodName) {
+    return BYTE_CODE_STATIC_CTOR_NAME.startsWith(methodName);
+  }
 
-    public static boolean isConstructor(String methodName) {
-        return BYTE_CODE_CTOR_NAME.equals(methodName);
-    }
+  public static boolean isConstructor(String methodName) {
+    return BYTE_CODE_CTOR_NAME.equals(methodName);
+  }
 
-    public static boolean isLargeType(Type type) {
-        return type.getSize() == 2;
-    }
+  public static boolean isLargeType(Type type) {
+    return type.getSize() == 2;
+  }
 }

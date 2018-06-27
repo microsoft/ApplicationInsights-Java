@@ -21,135 +21,150 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-import java.util.*;
-
-import com.microsoft.applicationinsights.agent.internal.agent.*;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodVisitorFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import org.objectweb.asm.MethodVisitor;
 
-/**
- * Created by gupele on 8/3/2015.
- */
+/** Created by gupele on 8/3/2015. */
 public class StatementClassDataDataProvider {
-    private final static String[] JDBC_STATEMENT_WITH_POSSIBLE_EXPLAIN_CLASS_NAMES = new String[] {
-            "com/mysql/jdbc/StatementImpl"
-    };
+  private static final String[] JDBC_STATEMENT_WITH_POSSIBLE_EXPLAIN_CLASS_NAMES =
+      new String[] {"com/mysql/jdbc/StatementImpl"};
 
-    private final static String[] JDBC_STATEMENT_CLASS_NAMES = new String[] {
-            "org/hsqldb/jdbc/JDBCStatement",
-            "oracle/jdbc/driver/OracleStatement",
-            "com/microsoft/sqlserver/jdbc/SQLServerStatement",
-            "org/apache/derby/client/am/Statement",
-            "org/apache/derby/client/am/ClientStatement",
-            "org/sqlite/jdbc3/JDBC3Statement"
-    };
+  private static final String[] JDBC_STATEMENT_CLASS_NAMES =
+      new String[] {
+        "org/hsqldb/jdbc/JDBCStatement",
+        "oracle/jdbc/driver/OracleStatement",
+        "com/microsoft/sqlserver/jdbc/SQLServerStatement",
+        "org/apache/derby/client/am/Statement",
+        "org/apache/derby/client/am/ClientStatement",
+        "org/sqlite/jdbc3/JDBC3Statement"
+      };
 
-    private final Map<String, ClassInstrumentationData> classesToInstrument;
-    private final HashMap<String, List<String>> sqlSignatures = new HashMap<String, List<String>>();
+  private final Map<String, ClassInstrumentationData> classesToInstrument;
+  private final HashMap<String, List<String>> sqlSignatures = new HashMap<String, List<String>>();
 
-    public StatementClassDataDataProvider(Map<String, ClassInstrumentationData> classesToInstrument) {
-        this.classesToInstrument = classesToInstrument;
+  public StatementClassDataDataProvider(Map<String, ClassInstrumentationData> classesToInstrument) {
+    this.classesToInstrument = classesToInstrument;
+  }
+
+  public void add() {
+    try {
+      ArrayList<String> signatures = new ArrayList<String>();
+
+      signatures.add("(Ljava/lang/String;)Ljava/sql/ResultSet;");
+      sqlSignatures.put("executeQuery", signatures);
+
+      signatures = new ArrayList<String>();
+      signatures.add("(Ljava/lang/String;I)I");
+      signatures.add("(Ljava/lang/String;[I)I");
+      signatures.add("(Ljava/lang/String;[Ljava/lang/String;)I");
+      sqlSignatures.put("executeUpdate", signatures);
+
+      signatures = new ArrayList<String>();
+      signatures.add("(Ljava/lang/String;)Z");
+      signatures.add("((Ljava/lang/String;I)Z");
+      signatures.add("(Ljava/lang/String;[I)Z");
+      signatures.add("(Ljava/lang/String;[Ljava/lang/String;)Z");
+      sqlSignatures.put("execute", signatures);
+
+      addStatements();
+      addPossibleQueryLimit();
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalAgentLogger.INSTANCE.error(
+            "Exception while loading HTTP classes: '%s'", t.toString());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
+  }
 
-
-    public void add() {
-        try {
-            ArrayList<String> signatures = new ArrayList<String>();
-
-            signatures.add("(Ljava/lang/String;)Ljava/sql/ResultSet;");
-            sqlSignatures.put("executeQuery", signatures);
-
-            signatures = new ArrayList<String>();
-            signatures.add("(Ljava/lang/String;I)I");
-            signatures.add("(Ljava/lang/String;[I)I");
-            signatures.add("(Ljava/lang/String;[Ljava/lang/String;)I");
-            sqlSignatures.put("executeUpdate", signatures);
-
-            signatures = new ArrayList<String>();
-            signatures.add("(Ljava/lang/String;)Z");
-            signatures.add("((Ljava/lang/String;I)Z");
-            signatures.add("(Ljava/lang/String;[I)Z");
-            signatures.add("(Ljava/lang/String;[Ljava/lang/String;)Z");
-            sqlSignatures.put("execute", signatures);
-
-            addStatements();
-            addPossibleQueryLimit();
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            try {
-                InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
+  private void addPossibleQueryLimit() {
+    MethodVisitorFactory methodVisitorFactory =
+        new MethodVisitorFactory() {
+          @Override
+          public MethodVisitor create(
+              MethodInstrumentationDecision decision,
+              int access,
+              String desc,
+              String owner,
+              String methodName,
+              MethodVisitor methodVisitor,
+              ClassToMethodTransformationData additionalData) {
+            if (methodName.equals("executeQuery")) {
+              return new QueryStatementWithPossibleExplainMethodVisitor(
+                  access, desc, owner, methodName, methodVisitor);
             }
-        }
-    }
 
-    private void addPossibleQueryLimit() {
-        MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
-            @Override
-            public MethodVisitor create(MethodInstrumentationDecision decision,
-                                        int access,
-                                        String desc,
-                                        String owner,
-                                        String methodName,
-                                        MethodVisitor methodVisitor,
-                                        ClassToMethodTransformationData additionalData) {
-                if (methodName.equals("executeQuery")) {
-                    return new QueryStatementWithPossibleExplainMethodVisitor(access, desc, owner, methodName, methodVisitor);
-                }
-
-                return new StatementMethodVisitor(access, desc, owner, methodName, methodVisitor);
-            }
+            return new StatementMethodVisitor(access, desc, owner, methodName, methodVisitor);
+          }
         };
 
-        final HashSet<String> sqlClasses = new HashSet<String>(Arrays.asList(JDBC_STATEMENT_WITH_POSSIBLE_EXPLAIN_CLASS_NAMES));
+    final HashSet<String> sqlClasses =
+        new HashSet<String>(Arrays.asList(JDBC_STATEMENT_WITH_POSSIBLE_EXPLAIN_CLASS_NAMES));
 
-        for (String className : sqlClasses) {
-            ClassInstrumentationData data =
-                    new ClassInstrumentationData(className, InstrumentedClassType.SQL)
-                            .setReportCaughtExceptions(false)
-                            .setReportExecutionTime(true);
-            for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
-                for (String signature : methodAndSignature.getValue()) {
-                    data.addMethod(methodAndSignature.getKey(), signature, false, true, 0, methodVisitorFactory);
-                }
-            }
-
-            classesToInstrument.put(className, data);
+    for (String className : sqlClasses) {
+      ClassInstrumentationData data =
+          new ClassInstrumentationData(className, InstrumentedClassType.SQL)
+              .setReportCaughtExceptions(false)
+              .setReportExecutionTime(true);
+      for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
+        for (String signature : methodAndSignature.getValue()) {
+          data.addMethod(
+              methodAndSignature.getKey(), signature, false, true, 0, methodVisitorFactory);
         }
-    }
+      }
 
-    private void addStatements() {
-        MethodVisitorFactory methodVisitorFactory = new MethodVisitorFactory() {
-            @Override
-            public MethodVisitor create(MethodInstrumentationDecision decision,
-                                        int access,
-                                        String desc,
-                                        String owner,
-                                        String methodName,
-                                        MethodVisitor methodVisitor,
-                                        ClassToMethodTransformationData additionalData) {
-                return new StatementMethodVisitor(access, desc, owner, methodName, methodVisitor);
-            }
+      classesToInstrument.put(className, data);
+    }
+  }
+
+  private void addStatements() {
+    MethodVisitorFactory methodVisitorFactory =
+        new MethodVisitorFactory() {
+          @Override
+          public MethodVisitor create(
+              MethodInstrumentationDecision decision,
+              int access,
+              String desc,
+              String owner,
+              String methodName,
+              MethodVisitor methodVisitor,
+              ClassToMethodTransformationData additionalData) {
+            return new StatementMethodVisitor(access, desc, owner, methodName, methodVisitor);
+          }
         };
 
-        final HashSet<String> sqlClasses = new HashSet<String>(Arrays.asList(JDBC_STATEMENT_CLASS_NAMES));
+    final HashSet<String> sqlClasses =
+        new HashSet<String>(Arrays.asList(JDBC_STATEMENT_CLASS_NAMES));
 
-        for (String className : sqlClasses) {
-            ClassInstrumentationData data =
-                    new ClassInstrumentationData(className, InstrumentedClassType.SQL)
-                            .setReportCaughtExceptions(false)
-                            .setReportExecutionTime(true);
-            for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
-                for (String signature : methodAndSignature.getValue()) {
-                    data.addMethod(methodAndSignature.getKey(), signature, false, true, 0, methodVisitorFactory);
-                }
-            }
-
-            classesToInstrument.put(className, data);
+    for (String className : sqlClasses) {
+      ClassInstrumentationData data =
+          new ClassInstrumentationData(className, InstrumentedClassType.SQL)
+              .setReportCaughtExceptions(false)
+              .setReportExecutionTime(true);
+      for (Map.Entry<String, List<String>> methodAndSignature : sqlSignatures.entrySet()) {
+        for (String signature : methodAndSignature.getValue()) {
+          data.addMethod(
+              methodAndSignature.getKey(), signature, false, true, 0, methodVisitorFactory);
         }
+      }
+
+      classesToInstrument.put(className, data);
     }
+  }
 }

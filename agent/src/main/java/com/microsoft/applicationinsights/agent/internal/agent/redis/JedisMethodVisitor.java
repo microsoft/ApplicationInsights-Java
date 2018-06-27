@@ -30,278 +30,333 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-
 /**
  * Created by gupele on 8/6/2015.
+ *
  * @deprecated Replaced with JedisMethodVisitorV2
  */
-@Deprecated 
+@Deprecated
 final class JedisMethodVisitor extends DefaultMethodVisitor {
-    private final static String FINISH_DETECT_METHOD_NAME = "methodFinished";
-    private final static String FINISH_METHOD_DEFAULT_SIGNATURE = "(Ljava/lang/String;J[Ljava/lang/Object;Ljava/lang/Throwable;)V";
+  private static final String FINISH_DETECT_METHOD_NAME = "methodFinished";
+  private static final String FINISH_METHOD_DEFAULT_SIGNATURE =
+      "(Ljava/lang/String;J[Ljava/lang/Object;Ljava/lang/Throwable;)V";
 
-    private Type[] argumentTypes;
+  private Type[] argumentTypes;
 
-    private boolean isStatic;
-    private int firstEmptyIndexForLocalVariable;
+  private boolean isStatic;
+  private int firstEmptyIndexForLocalVariable;
+  private int localStart;
+  private int localFinish;
+  private int localDelta;
+  public JedisMethodVisitor(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(false, true, 0, access, desc, owner, methodName, methodVisitor, additionalData);
 
-    public JedisMethodVisitor(int access,
-                              String desc,
-                              String owner,
-                              String methodName,
-                              MethodVisitor methodVisitor,
-                              ClassToMethodTransformationData additionalData) {
-        super(false, true, 0, access, desc, owner, methodName, methodVisitor, additionalData);
-
-        argumentTypes = Type.getArgumentTypes(desc);
-        firstEmptyIndexForLocalVariable = argumentTypes.length;
-        for (Type tp : argumentTypes) {
-            if (tp.equals(Type.LONG_TYPE) || tp.equals(Type.DOUBLE_TYPE)) {
-                ++firstEmptyIndexForLocalVariable;
-            }
-        }
-
-        isStatic = ByteCodeUtils.isStatic(access);
-        if (!isStatic) {
-            ++firstEmptyIndexForLocalVariable;
-        }
+    argumentTypes = Type.getArgumentTypes(desc);
+    firstEmptyIndexForLocalVariable = argumentTypes.length;
+    for (Type tp : argumentTypes) {
+      if (tp.equals(Type.LONG_TYPE) || tp.equals(Type.DOUBLE_TYPE)) {
+        ++firstEmptyIndexForLocalVariable;
+      }
     }
 
-    private int localStart;
-    private int localFinish;
-    private int localDelta;
+    isStatic = ByteCodeUtils.isStatic(access);
+    if (!isStatic) {
+      ++firstEmptyIndexForLocalVariable;
+    }
+  }
 
-    @Override
-    public void onMethodEnter() {
-        localStart = this.newLocal(Type.getType(Long.class));
-        localFinish = this.newLocal(Type.getType(Long.class));
-        localDelta = this.newLocal(Type.getType(Long.class));
+  @Override
+  public void onMethodEnter() {
+    localStart = this.newLocal(Type.getType(Long.class));
+    localFinish = this.newLocal(Type.getType(Long.class));
+    localDelta = this.newLocal(Type.getType(Long.class));
 
-        mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
-        mv.visitVarInsn(LSTORE, localStart);
+    mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
+    mv.visitVarInsn(LSTORE, localStart);
+  }
+
+  @Override
+  protected void byteCodeForMethodExit(int opcode) {
+
+    switch (translateExitCode(opcode)) {
+      case EXIT_WITH_EXCEPTION:
+        TempVar throwable = duplicateTopStackToTempVariable(Type.getType(Throwable.class));
+        finished(throwable);
+        break;
+
+      case EXIT_WITH_RETURN_VALUE:
+      case EXIT_VOID:
+        finished(null);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  private void finished(TempVar throwable) {
+
+    mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
+    mv.visitVarInsn(LSTORE, localFinish);
+    mv.visitVarInsn(LLOAD, localFinish);
+    mv.visitVarInsn(LLOAD, localStart);
+    mv.visitInsn(LSUB);
+    mv.visitVarInsn(LSTORE, localDelta);
+    mv.visitVarInsn(LLOAD, localDelta);
+
+    mv.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        "getRedisThresholdInNS",
+        "()J",
+        false);
+
+    mv.visitInsn(LCMP);
+
+    Label l0 = new Label();
+    mv.visitJumpInsn(IFLE, l0);
+
+    reportFinishWithArgs(throwable);
+
+    Label l1 = new Label();
+    mv.visitJumpInsn(GOTO, l1);
+    mv.visitLabel(l0);
+
+    notifyEndOfMethod(null, throwable);
+
+    mv.visitLabel(l1);
+  }
+
+  private void reportFinishWithArgs(TempVar throwable) {
+
+    int boxedArgumentsIndex = 0;
+    int argumentIndex = isMethodStatic() ? 0 : 1;
+
+    TempArrayVar arrayOfArgumentsAfterBoxing;
+    arrayOfArgumentsAfterBoxing = createArray(numberOfArguments());
+
+    // Fill the array with method parameters after boxing the primitive ones.
+    for (Type argumentType : getArgumentTypes()) {
+      setBoxedValueIntoArray(
+          arrayOfArgumentsAfterBoxing, boxedArgumentsIndex, argumentType, argumentIndex);
+
+      boxedArgumentsIndex++;
+      if (ByteCodeUtils.isLargeType(argumentType)) {
+        argumentIndex += 2;
+      } else {
+        ++argumentIndex;
+      }
     }
 
-    @Override
-    protected void byteCodeForMethodExit(int opcode) {
+    notifyEndOfMethod(arrayOfArgumentsAfterBoxing, throwable);
+  }
 
-        switch (translateExitCode(opcode)) {
-            case EXIT_WITH_EXCEPTION:
-                TempVar throwable = duplicateTopStackToTempVariable(Type.getType(Throwable.class));
-                finished(throwable);
-                break;
+  private void notifyEndOfMethod(TempArrayVar arrayOfArgumentsAfterBoxing, TempVar throwable) {
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
 
-            case EXIT_WITH_RETURN_VALUE:
-            case EXIT_VOID:
-                finished(null);
-                break;
-
-            default:
-                break;
-        }
+    mv.visitLdcInsn(getMethodName());
+    mv.visitVarInsn(LLOAD, localDelta);
+    if (arrayOfArgumentsAfterBoxing != null) {
+      mv.visitVarInsn(Opcodes.ALOAD, arrayOfArgumentsAfterBoxing.tempVarIndex);
+    } else {
+      mv.visitInsn(ACONST_NULL);
+    }
+    if (throwable != null) {
+      loadLocal(throwable.tempVarIndex);
+    } else {
+      mv.visitInsn(ACONST_NULL);
     }
 
-    private void finished(TempVar throwable) {
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        FINISH_DETECT_METHOD_NAME,
+        FINISH_METHOD_DEFAULT_SIGNATURE,
+        false);
+  }
 
-        mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
-        mv.visitVarInsn(LSTORE, localFinish);
-        mv.visitVarInsn(LLOAD, localFinish);
-        mv.visitVarInsn(LLOAD, localStart);
-        mv.visitInsn(LSUB);
-        mv.visitVarInsn(LSTORE, localDelta);
-        mv.visitVarInsn(LLOAD, localDelta);
+  private void reportFinishWithNoArgs(TempVar throwable) {
 
-        mv.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, "getRedisThresholdInNS", "()J", false);
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
 
-        mv.visitInsn(LCMP);
+    mv.visitLdcInsn(getMethodName());
+    mv.visitVarInsn(LLOAD, localDelta);
+    mv.visitInsn(ACONST_NULL);
+    mv.visitInsn(ACONST_NULL);
 
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFLE, l0);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        FINISH_DETECT_METHOD_NAME,
+        FINISH_METHOD_DEFAULT_SIGNATURE,
+        false);
+  }
 
-        reportFinishWithArgs(throwable);
+  private void reportFinishWithArgs1(int opcode) {
 
-        Label l1 = new Label();
-        mv.visitJumpInsn(GOTO, l1);
-        mv.visitLabel(l0);
+    int resultIndex = this.newLocal(Type.getType(Integer.class));
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
 
-        notifyEndOfMethod(null, throwable);
+    mv.visitLdcInsn(getMethodName());
 
-        mv.visitLabel(l1);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        FINISH_DETECT_METHOD_NAME,
+        FINISH_METHOD_DEFAULT_SIGNATURE,
+        false);
+
+    mv.visitVarInsn(ISTORE, resultIndex);
+    mv.visitVarInsn(ILOAD, resultIndex);
+    Label ok = new Label();
+    mv.visitJumpInsn(IFEQ, ok);
+
+    int boxedArgumentsIndex = 0;
+    int argumentIndex = isMethodStatic() ? 0 : 1;
+
+    TempArrayVar arrayOfArgumentsAfterBoxing;
+    arrayOfArgumentsAfterBoxing = createArray(numberOfArguments());
+
+    // Fill the array with method parameters after boxing the primitive ones.
+    for (Type argumentType : getArgumentTypes()) {
+      setBoxedValueIntoArray(
+          arrayOfArgumentsAfterBoxing, boxedArgumentsIndex, argumentType, argumentIndex);
+
+      boxedArgumentsIndex++;
+      if (ByteCodeUtils.isLargeType(argumentType)) {
+        argumentIndex += 2;
+      } else {
+        ++argumentIndex;
+      }
     }
 
-    private void reportFinishWithArgs(TempVar throwable) {
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
 
-        int boxedArgumentsIndex = 0;
-        int argumentIndex = isMethodStatic() ? 0 : 1;
+    mv.visitLdcInsn(getMethodName());
+    mv.visitVarInsn(Opcodes.ALOAD, arrayOfArgumentsAfterBoxing.tempVarIndex);
 
-        TempArrayVar arrayOfArgumentsAfterBoxing;
-        arrayOfArgumentsAfterBoxing = createArray(numberOfArguments());
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        FINISH_DETECT_METHOD_NAME,
+        FINISH_METHOD_DEFAULT_SIGNATURE,
+        false);
 
-        // Fill the array with method parameters after boxing the primitive ones.
-        for (Type argumentType : getArgumentTypes()) {
-            setBoxedValueIntoArray(arrayOfArgumentsAfterBoxing, boxedArgumentsIndex, argumentType, argumentIndex);
+    mv.visitLabel(ok);
 
-            boxedArgumentsIndex++;
-            if (ByteCodeUtils.isLargeType(argumentType)) {
-                argumentIndex += 2;
-            } else {
-                ++argumentIndex;
-            }
-        }
+    super.byteCodeForMethodExit(opcode);
+  }
 
-        notifyEndOfMethod(arrayOfArgumentsAfterBoxing, throwable);
+  protected TempArrayVar createArray(int length, int extraArgs) {
+    firstEmptyIndexForLocalVariable += extraArgs;
+    return createArray(length);
+  }
+
+  protected TempArrayVar createArray(int length) {
+    mv.visitIntInsn(Opcodes.BIPUSH, length);
+    mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
+    mv.visitVarInsn(Opcodes.ASTORE, firstEmptyIndexForLocalVariable);
+
+    return new TempArrayVar(firstEmptyIndexForLocalVariable);
+  }
+
+  protected void boxVariable(Type argumentType, int argumentIndex) {
+    if (argumentType.equals(Type.BOOLEAN_TYPE)) {
+      mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
+      mv.visitMethodInsn(
+          Opcodes.INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
+    } else if (argumentType.equals(Type.BYTE_TYPE)) {
+      mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
+      mv.visitMethodInsn(
+          Opcodes.INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
+    } else if (argumentType.equals(Type.CHAR_TYPE)) {
+      mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
+      mv.visitMethodInsn(
+          Opcodes.INVOKESTATIC,
+          "java/lang/Character",
+          "valueOf",
+          "(C)Ljava/lang/Character;",
+          false);
+    } else if (argumentType.equals(Type.SHORT_TYPE)) {
+      mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
+      mv.visitMethodInsn(
+          Opcodes.INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
+    } else if (argumentType.equals(Type.INT_TYPE)) {
+      mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
+      mv.visitMethodInsn(
+          Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+    } else if (argumentType.equals(Type.LONG_TYPE)) {
+      mv.visitVarInsn(Opcodes.LLOAD, argumentIndex);
+      mv.visitMethodInsn(
+          Opcodes.INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
+    } else if (argumentType.equals(Type.FLOAT_TYPE)) {
+      mv.visitVarInsn(Opcodes.FLOAD, argumentIndex);
+      super.visitMethodInsn(
+          Opcodes.INVOKEVIRTUAL, "java/lang/Float", "valueOf", "(F)Ljava/lang/Long;", false);
+    } else if (argumentType.equals(Type.DOUBLE_TYPE)) {
+      mv.visitVarInsn(Opcodes.DLOAD, argumentIndex);
+      mv.visitMethodInsn(
+          Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+    } else {
+      mv.visitVarInsn(Opcodes.ALOAD, argumentIndex);
     }
+  }
 
-    private void notifyEndOfMethod(TempArrayVar arrayOfArgumentsAfterBoxing, TempVar throwable) {
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
+  protected void prepareArrayEntry(int arrayIndex, int entryIndex) {
+    mv.visitVarInsn(Opcodes.ALOAD, arrayIndex);
+    mv.visitIntInsn(Opcodes.BIPUSH, entryIndex);
+  }
 
-        mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(LLOAD, localDelta);
-        if (arrayOfArgumentsAfterBoxing != null) {
-            mv.visitVarInsn(Opcodes.ALOAD, arrayOfArgumentsAfterBoxing.tempVarIndex);
-        } else {
-            mv.visitInsn(ACONST_NULL);
-        }
-        if (throwable != null) {
-            loadLocal(throwable.tempVarIndex);
-        } else {
-            mv.visitInsn(ACONST_NULL);
-        }
+  protected void storeTopStackValueIntoArray() {
+    mv.visitInsn(Opcodes.AASTORE);
+  }
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_DEFAULT_SIGNATURE, false);
-    }
+  private void setBoxedValueIntoArray(
+      TempArrayVar arrayOfArgumentsAfterBoxing,
+      int boxedArgumentsIndex,
+      Type argumentType,
+      int argumentIndex) {
+    prepareArrayEntry(arrayOfArgumentsAfterBoxing.tempVarIndex, boxedArgumentsIndex);
+    boxVariable(argumentType, argumentIndex);
+    storeTopStackValueIntoArray();
+  }
 
-    private void reportFinishWithNoArgs(TempVar throwable) {
+  protected boolean isMethodStatic() {
+    return isStatic;
+  }
 
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
+  protected int numberOfArguments() {
+    return argumentTypes.length;
+  }
 
-        mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(LLOAD, localDelta);
-        mv.visitInsn(ACONST_NULL);
-        mv.visitInsn(ACONST_NULL);
-
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_DEFAULT_SIGNATURE, false);
-    }
-
-    private void reportFinishWithArgs1(int opcode) {
-
-        int resultIndex = this.newLocal(Type.getType(Integer.class));
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-
-        mv.visitLdcInsn(getMethodName());
-
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_DEFAULT_SIGNATURE, false);
-
-        mv.visitVarInsn(ISTORE, resultIndex);
-        mv.visitVarInsn(ILOAD, resultIndex);
-        Label ok = new Label();
-        mv.visitJumpInsn(IFEQ, ok);
-
-        int boxedArgumentsIndex = 0;
-        int argumentIndex = isMethodStatic() ? 0 : 1;
-
-        TempArrayVar arrayOfArgumentsAfterBoxing;
-        arrayOfArgumentsAfterBoxing = createArray(numberOfArguments());
-
-        // Fill the array with method parameters after boxing the primitive ones.
-        for (Type argumentType : getArgumentTypes()) {
-            setBoxedValueIntoArray(arrayOfArgumentsAfterBoxing, boxedArgumentsIndex, argumentType, argumentIndex);
-
-            boxedArgumentsIndex++;
-            if (ByteCodeUtils.isLargeType(argumentType)) {
-                argumentIndex += 2;
-            } else {
-                ++argumentIndex;
-            }
-        }
-
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-
-        mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(Opcodes.ALOAD, arrayOfArgumentsAfterBoxing.tempVarIndex);
-
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_DEFAULT_SIGNATURE, false);
-
-        mv.visitLabel(ok);
-
-        super.byteCodeForMethodExit(opcode);
-    }
-
-    protected TempArrayVar createArray(int length, int extraArgs) {
-        firstEmptyIndexForLocalVariable += extraArgs;
-        return createArray(length);
-    }
-
-    protected TempArrayVar createArray(int length) {
-        mv.visitIntInsn(Opcodes.BIPUSH, length);
-        mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
-        mv.visitVarInsn(Opcodes.ASTORE, firstEmptyIndexForLocalVariable);
-
-        return new TempArrayVar(firstEmptyIndexForLocalVariable);
-    }
-
-    protected void boxVariable(Type argumentType, int argumentIndex) {
-        if (argumentType.equals(Type.BOOLEAN_TYPE)) {
-            mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
-        }
-        else if (argumentType.equals(Type.BYTE_TYPE)) {
-            mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
-        }
-        else if (argumentType.equals(Type.CHAR_TYPE)) {
-            mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", false);
-        }
-        else if (argumentType.equals(Type.SHORT_TYPE)) {
-            mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
-        }
-        else if (argumentType.equals(Type.INT_TYPE)) {
-            mv.visitVarInsn(Opcodes.ILOAD, argumentIndex);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-        }
-        else if (argumentType.equals(Type.LONG_TYPE)) {
-            mv.visitVarInsn(Opcodes.LLOAD, argumentIndex);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
-        }
-        else if (argumentType.equals(Type.FLOAT_TYPE)) {
-            mv.visitVarInsn(Opcodes.FLOAD, argumentIndex);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Float", "valueOf", "(F)Ljava/lang/Long;", false);
-        }
-        else if (argumentType.equals(Type.DOUBLE_TYPE)) {
-            mv.visitVarInsn(Opcodes.DLOAD, argumentIndex);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
-        }
-        else {
-            mv.visitVarInsn(Opcodes.ALOAD, argumentIndex);
-        }
-    }
-
-    protected void prepareArrayEntry(int arrayIndex, int entryIndex) {
-        mv.visitVarInsn(Opcodes.ALOAD, arrayIndex);
-        mv.visitIntInsn(Opcodes.BIPUSH, entryIndex);
-    }
-
-    protected void storeTopStackValueIntoArray() {
-        mv.visitInsn(Opcodes.AASTORE);
-    }
-
-    private void setBoxedValueIntoArray(TempArrayVar arrayOfArgumentsAfterBoxing, int boxedArgumentsIndex, Type argumentType, int argumentIndex) {
-        prepareArrayEntry(arrayOfArgumentsAfterBoxing.tempVarIndex, boxedArgumentsIndex);
-        boxVariable(argumentType, argumentIndex);
-        storeTopStackValueIntoArray();
-    }
-
-    protected boolean isMethodStatic() {
-        return isStatic;
-    }
-
-    protected int numberOfArguments() {
-        return argumentTypes.length;
-    }
-
-    protected Type[] getArgumentTypes() {
-        return argumentTypes;
-    }
+  protected Type[] getArgumentTypes() {
+    return argumentTypes;
+  }
 }

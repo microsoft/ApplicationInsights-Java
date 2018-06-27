@@ -21,10 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 import java.util.Map;
 import java.util.Set;
-
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 
 /**
  * Defines the interface for concrete classes that represent configuration data for the Agent
@@ -32,15 +31,15 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentati
  */
 public interface AgentConfiguration {
 
-    AgentBuiltInConfiguration getBuiltInConfiguration();
+  AgentBuiltInConfiguration getBuiltInConfiguration();
 
-    Map<String, ClassInstrumentationData> getRequestedClassesToInstrument();
+  Map<String, ClassInstrumentationData> getRequestedClassesToInstrument();
 
-    Set<String> getExcludedPrefixes();
+  Set<String> getExcludedPrefixes();
 
-    boolean isSelfRegistrationMode();
+  boolean isSelfRegistrationMode();
 
-    String getSdkPath();
+  String getSdkPath();
 
-    boolean isDebugMode();
+  boolean isDebugMode();
 }

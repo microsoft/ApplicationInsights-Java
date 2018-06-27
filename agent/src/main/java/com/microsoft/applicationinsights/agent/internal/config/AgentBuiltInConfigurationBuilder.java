@@ -22,88 +22,89 @@
 package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-
 import java.util.List;
 
-/**
- * Created by gupele on 6/5/2015.
- */
+/** Created by gupele on 6/5/2015. */
 public class AgentBuiltInConfigurationBuilder {
-    private boolean enabled = false;
-    private boolean httpEnabled = false;
-    private boolean jdbcEnabled = false;
-    private boolean hibernateEnabled = false;
-    private boolean jedisEnabled = false;
-    private boolean jmxEnabled = false;
-    private long jedisThresholdInMS = 10000L;
-    private Long maxSqlQueryLimitInMS = 10000L;
-    private DataOfConfigurationForException dataOfConfigurationForException = new DataOfConfigurationForException();
-    private List<ClassInstrumentationData> simpleBuiltInClasses;
+  private boolean enabled = false;
+  private boolean httpEnabled = false;
+  private boolean jdbcEnabled = false;
+  private boolean hibernateEnabled = false;
+  private boolean jedisEnabled = false;
+  private boolean jmxEnabled = false;
+  private long jedisThresholdInMS = 10000L;
+  private Long maxSqlQueryLimitInMS = 10000L;
+  private DataOfConfigurationForException dataOfConfigurationForException =
+      new DataOfConfigurationForException();
+  private List<ClassInstrumentationData> simpleBuiltInClasses;
 
-    public AgentBuiltInConfiguration create() {
-        if (!enabled) {
-            this.dataOfConfigurationForException.setEnabled(false);
-        }
-
-        return new AgentBuiltInConfiguration(enabled,
-                                             simpleBuiltInClasses,
-                                             httpEnabled && enabled,
-                                             jdbcEnabled && enabled,
-                                             hibernateEnabled && enabled,
-                                             jedisEnabled && enabled,
-                                             enabled && jmxEnabled,
-                                             maxSqlQueryLimitInMS,
-                                             jedisThresholdInMS,
-                                             dataOfConfigurationForException);
+  public AgentBuiltInConfiguration create() {
+    if (!enabled) {
+      this.dataOfConfigurationForException.setEnabled(false);
     }
 
-    public AgentBuiltInConfigurationBuilder setEnabled(boolean enabled) {
-        this.enabled = enabled;
-        return this;
-    }
+    return new AgentBuiltInConfiguration(
+        enabled,
+        simpleBuiltInClasses,
+        httpEnabled && enabled,
+        jdbcEnabled && enabled,
+        hibernateEnabled && enabled,
+        jedisEnabled && enabled,
+        enabled && jmxEnabled,
+        maxSqlQueryLimitInMS,
+        jedisThresholdInMS,
+        dataOfConfigurationForException);
+  }
 
-    public AgentBuiltInConfigurationBuilder setHttpEnabled(boolean httpEnabled) {
-        this.httpEnabled = httpEnabled;
-        return this;
-    }
+  public AgentBuiltInConfigurationBuilder setEnabled(boolean enabled) {
+    this.enabled = enabled;
+    return this;
+  }
 
-    public AgentBuiltInConfigurationBuilder setJdbcEnabled(boolean jdbcEnabled) {
-        this.jdbcEnabled = jdbcEnabled;
-        return this;
-    }
+  public AgentBuiltInConfigurationBuilder setHttpEnabled(boolean httpEnabled) {
+    this.httpEnabled = httpEnabled;
+    return this;
+  }
 
-    public AgentBuiltInConfigurationBuilder setHibernateEnabled(boolean hibernateEnabled) {
-        this.hibernateEnabled = hibernateEnabled;
-        return this;
-    }
+  public AgentBuiltInConfigurationBuilder setJdbcEnabled(boolean jdbcEnabled) {
+    this.jdbcEnabled = jdbcEnabled;
+    return this;
+  }
 
-    public AgentBuiltInConfigurationBuilder setJmxEnabled(boolean jmxEnabled) {
-        this.jmxEnabled = jmxEnabled;
-        return this;
-    }
+  public AgentBuiltInConfigurationBuilder setHibernateEnabled(boolean hibernateEnabled) {
+    this.hibernateEnabled = hibernateEnabled;
+    return this;
+  }
 
-    public AgentBuiltInConfigurationBuilder setSqlMaxQueryLimitInMS(Long maxSqlQueryLimitInMS) {
-        if (maxSqlQueryLimitInMS == null) {
-            this.maxSqlQueryLimitInMS = 10000L;
-        } else {
-            this.maxSqlQueryLimitInMS = maxSqlQueryLimitInMS;
-        }
-        return this;
-    }
+  public AgentBuiltInConfigurationBuilder setJmxEnabled(boolean jmxEnabled) {
+    this.jmxEnabled = jmxEnabled;
+    return this;
+  }
 
-    public AgentBuiltInConfigurationBuilder setJedisValues(boolean jedisEnabled, long jedisThresholdInMS) {
-        this.jedisEnabled = jedisEnabled;
-        this.jedisThresholdInMS = jedisThresholdInMS < 0 ? 0 : jedisThresholdInMS;
-        return this;
+  public AgentBuiltInConfigurationBuilder setSqlMaxQueryLimitInMS(Long maxSqlQueryLimitInMS) {
+    if (maxSqlQueryLimitInMS == null) {
+      this.maxSqlQueryLimitInMS = 10000L;
+    } else {
+      this.maxSqlQueryLimitInMS = maxSqlQueryLimitInMS;
     }
+    return this;
+  }
 
-    public void setDataOfConfigurationForException(DataOfConfigurationForException dataOfConfigurationForException) {
-        if (dataOfConfigurationForException != null) {
-            this.dataOfConfigurationForException = dataOfConfigurationForException;
-        }
-    }
+  public AgentBuiltInConfigurationBuilder setJedisValues(
+      boolean jedisEnabled, long jedisThresholdInMS) {
+    this.jedisEnabled = jedisEnabled;
+    this.jedisThresholdInMS = jedisThresholdInMS < 0 ? 0 : jedisThresholdInMS;
+    return this;
+  }
 
-    public void setSimpleBuiltInClasses(List<ClassInstrumentationData> simpleBuiltInClasses) {
-        this.simpleBuiltInClasses = simpleBuiltInClasses;
+  public void setDataOfConfigurationForException(
+      DataOfConfigurationForException dataOfConfigurationForException) {
+    if (dataOfConfigurationForException != null) {
+      this.dataOfConfigurationForException = dataOfConfigurationForException;
     }
+  }
+
+  public void setSimpleBuiltInClasses(List<ClassInstrumentationData> simpleBuiltInClasses) {
+    this.simpleBuiltInClasses = simpleBuiltInClasses;
+  }
 }

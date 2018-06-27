@@ -21,12 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.microsoft.applicationinsights.agent.internal.agent.exceptions.RuntimeExceptionProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.http.HttpClassDataProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.redis.JedisClassDataProvider;
@@ -35,13 +29,16 @@ import com.microsoft.applicationinsights.agent.internal.agent.sql.StatementClass
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by gupele on 5/11/2015.
- */
+/** Created by gupele on 5/11/2015. */
 class DefaultClassDataProvider implements ClassDataProvider {
 
-    private final static String[] EXCLUDED_CLASS_PREFIXES = new String[] {
+  private static final String[] EXCLUDED_CLASS_PREFIXES =
+      new String[] {
         "java/",
         "javax/",
         "org/apache",
@@ -56,141 +53,161 @@ class DefaultClassDataProvider implements ClassDataProvider {
         "com/sun/jmx/",
         "sun/net/www/http/KeepAlive",
         "com.google"
-    };
+      };
 
-    private final HashSet<String> excludedPaths;
+  private final HashSet<String> excludedPaths;
 
-    private final ConcurrentHashMap<String, ClassInstrumentationData> classesToInstrument = new ConcurrentHashMap<String, ClassInstrumentationData>();
-    private final ConcurrentHashMap<String, ClassInstrumentationData> regExpClassesToInstrument = new ConcurrentHashMap<String, ClassInstrumentationData>();
+  private final ConcurrentHashMap<String, ClassInstrumentationData> classesToInstrument =
+      new ConcurrentHashMap<String, ClassInstrumentationData>();
+  private final ConcurrentHashMap<String, ClassInstrumentationData> regExpClassesToInstrument =
+      new ConcurrentHashMap<String, ClassInstrumentationData>();
 
-    private boolean builtInEnabled = true;
+  private boolean builtInEnabled = true;
 
-    private boolean debugMode = false;
+  private boolean debugMode = false;
 
-    public DefaultClassDataProvider() {
-        excludedPaths = new HashSet<String>((Arrays.asList(EXCLUDED_CLASS_PREFIXES)));
+  public DefaultClassDataProvider() {
+    excludedPaths = new HashSet<String>((Arrays.asList(EXCLUDED_CLASS_PREFIXES)));
+  }
+
+  @Override
+  public void setConfiguration(AgentConfiguration agentConfiguration) {
+    debugMode = agentConfiguration.isDebugMode();
+
+    setBuiltInDataFlag(agentConfiguration);
+
+    if (builtInEnabled) {
+      InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
+
+      if (agentConfiguration.getBuiltInConfiguration().isJdbcEnabled()) {
+        InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Statements instrumentation");
+        new StatementClassDataDataProvider(classesToInstrument).add();
+
+        InternalAgentLogger.INSTANCE.trace(
+            "Adding built-in JDBC Prepared Statements instrumentation");
+        new PreparedStatementClassDataProvider(classesToInstrument).add();
+      }
+
+      if (agentConfiguration.getBuiltInConfiguration().isHttpEnabled()) {
+        InternalAgentLogger.INSTANCE.trace("Adding built-in HTTP instrumentation");
+        new HttpClassDataProvider(classesToInstrument).add();
+      }
+
+      if (agentConfiguration.getBuiltInConfiguration().isRedisEnabled()) {
+        InternalAgentLogger.INSTANCE.trace("Adding built-in Jedis instrumentation");
+        new JedisClassDataProvider(classesToInstrument).add();
+      }
+
+      if (agentConfiguration
+          .getBuiltInConfiguration()
+          .getDataOfConfigurationForException()
+          .isEnabled()) {
+        InternalAgentLogger.INSTANCE.trace("Adding built-in Runtime instrumentation");
+        new RuntimeExceptionProvider(classesToInstrument).add();
+      }
+
+      addConfigurationData(agentConfiguration.getBuiltInConfiguration().getSimpleBuiltInClasses());
     }
 
-    @Override
-    public void setConfiguration(AgentConfiguration agentConfiguration) {
-        debugMode = agentConfiguration.isDebugMode();
+    Collection<ClassInstrumentationData> requestedClsssesToInstrument =
+        agentConfiguration.getRequestedClassesToInstrument().values();
+    addConfigurationData(requestedClsssesToInstrument);
 
-        setBuiltInDataFlag(agentConfiguration);
+    excludedPaths.addAll(agentConfiguration.getExcludedPrefixes());
+  }
 
-        if (builtInEnabled) {
-            InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
-
-            if (agentConfiguration.getBuiltInConfiguration().isJdbcEnabled()) {
-				InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Statements instrumentation");
-                new StatementClassDataDataProvider(classesToInstrument).add();
-
-				InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Prepared Statements instrumentation");
-                new PreparedStatementClassDataProvider(classesToInstrument).add();
-            }
-
-            if (agentConfiguration.getBuiltInConfiguration().isHttpEnabled()) {
-				InternalAgentLogger.INSTANCE.trace("Adding built-in HTTP instrumentation");
-                new HttpClassDataProvider(classesToInstrument).add();
-            }
-
-            if (agentConfiguration.getBuiltInConfiguration().isRedisEnabled()) {
-				InternalAgentLogger.INSTANCE.trace("Adding built-in Jedis instrumentation");
-                new JedisClassDataProvider(classesToInstrument).add();
-            }
-
-            if (agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException().isEnabled()) {
-				InternalAgentLogger.INSTANCE.trace("Adding built-in Runtime instrumentation");
-                new RuntimeExceptionProvider(classesToInstrument).add();
-            }
-
-            addConfigurationData(agentConfiguration.getBuiltInConfiguration().getSimpleBuiltInClasses());
-        }
-
-        Collection<ClassInstrumentationData> requestedClsssesToInstrument = agentConfiguration.getRequestedClassesToInstrument().values();
-        addConfigurationData(requestedClsssesToInstrument);
-
-        excludedPaths.addAll(agentConfiguration.getExcludedPrefixes());
-    }
-
-    /**
-     * Gets the {@link ClassInstrumentationData} that is associated
-     * with the argument 'className', and removes that entry from the container once this is found
-     * If not found, the method will try to find a match using a regular expression in the regex container
-     * @param className The class name to search for
-     * @return The {@link ClassInstrumentationData}
-     */
-    @Override
-    public DefaultByteCodeTransformer getAndRemove(String className) {
-        ClassInstrumentationData classInstrumentationData = classesToInstrument.remove(className);
-        if (classInstrumentationData == null) {
-            if (!regExpClassesToInstrument.isEmpty()) {
-                int index = className.lastIndexOf('/');
-                if (index != -1) {
-                    String fullPackageName = className.substring(0, index + 1);
-                    String onlycClassName = className.substring(index + 1);
-                    classInstrumentationData = regExpClassesToInstrument.get(fullPackageName);
-                    if (classInstrumentationData == null) {
-                        return null;
-                    }
-					if (!classInstrumentationData.isClassNameMatches(onlycClassName)) {
-						return null;
-					}
-
-					ClassInstrumentationData newClassInstrumentationData = new ClassInstrumentationData(className, classInstrumentationData.getClassType(), classInstrumentationData.getClassVisitorFactory());
-					newClassInstrumentationData.setMethodInstrumentationInfo(classInstrumentationData.getMethodInstrumentationInfo());
-					classInstrumentationData = newClassInstrumentationData;
-					InternalAgentLogger.INSTANCE.trace("Adding %s", classInstrumentationData.getFullPackageName());
-               }
-            }
-        }
-
-        if (classInstrumentationData == null) {
+  /**
+   * Gets the {@link ClassInstrumentationData} that is associated with the argument 'className', and
+   * removes that entry from the container once this is found If not found, the method will try to
+   * find a match using a regular expression in the regex container
+   *
+   * @param className The class name to search for
+   * @return The {@link ClassInstrumentationData}
+   */
+  @Override
+  public DefaultByteCodeTransformer getAndRemove(String className) {
+    ClassInstrumentationData classInstrumentationData = classesToInstrument.remove(className);
+    if (classInstrumentationData == null) {
+      if (!regExpClassesToInstrument.isEmpty()) {
+        int index = className.lastIndexOf('/');
+        if (index != -1) {
+          String fullPackageName = className.substring(0, index + 1);
+          String onlycClassName = className.substring(index + 1);
+          classInstrumentationData = regExpClassesToInstrument.get(fullPackageName);
+          if (classInstrumentationData == null) {
             return null;
+          }
+          if (!classInstrumentationData.isClassNameMatches(onlycClassName)) {
+            return null;
+          }
+
+          ClassInstrumentationData newClassInstrumentationData =
+              new ClassInstrumentationData(
+                  className,
+                  classInstrumentationData.getClassType(),
+                  classInstrumentationData.getClassVisitorFactory());
+          newClassInstrumentationData.setMethodInstrumentationInfo(
+              classInstrumentationData.getMethodInstrumentationInfo());
+          classInstrumentationData = newClassInstrumentationData;
+          InternalAgentLogger.INSTANCE.trace(
+              "Adding %s", classInstrumentationData.getFullPackageName());
         }
-
-        ImplementationsCoordinator.INSTANCE.addClassNameToType(classInstrumentationData.getClassName(), classInstrumentationData.getClassType());
-        DefaultByteCodeTransformer transformer = new DefaultByteCodeTransformer(classInstrumentationData, debugMode);
-
-        return transformer;
+      }
     }
 
-    private boolean isExcluded(String className) {
-        for (String f : excludedPaths) {
-            if (className.startsWith(f)) {
-                return true;
-            }
-        }
-        return false;
+    if (classInstrumentationData == null) {
+      return null;
     }
 
-    private void addConfigurationData(Collection<ClassInstrumentationData> requestedClassesToInstrument) {
-        if (requestedClassesToInstrument == null) {
-            return;
-        }
+    ImplementationsCoordinator.INSTANCE.addClassNameToType(
+        classInstrumentationData.getClassName(), classInstrumentationData.getClassType());
+    DefaultByteCodeTransformer transformer =
+        new DefaultByteCodeTransformer(classInstrumentationData, debugMode);
 
-        for (ClassInstrumentationData classInstrumentationData : requestedClassesToInstrument) {
-            if (!classInstrumentationData.isRegExp()) {
-                if (isExcluded(classInstrumentationData.getClassName())) {
-                    InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
-                    continue;
-                }
-                InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
-            } else {
-                InternalAgentLogger.INSTANCE.trace("Adding regex classes in package'%s'", classInstrumentationData.getFullPackageName());
-            }
+    return transformer;
+  }
 
-            if (classInstrumentationData.isRegExp()) {
-                regExpClassesToInstrument.put(classInstrumentationData.getFullPackageName(), classInstrumentationData);
-            } else {
-                classesToInstrument.put(classInstrumentationData.getClassName(), classInstrumentationData);
-            }
-        }
+  private boolean isExcluded(String className) {
+    for (String f : excludedPaths) {
+      if (className.startsWith(f)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void addConfigurationData(
+      Collection<ClassInstrumentationData> requestedClassesToInstrument) {
+    if (requestedClassesToInstrument == null) {
+      return;
     }
 
-    private void setBuiltInDataFlag(AgentConfiguration agentConfiguration) {
-        if (agentConfiguration == null) {
-            return;
+    for (ClassInstrumentationData classInstrumentationData : requestedClassesToInstrument) {
+      if (!classInstrumentationData.isRegExp()) {
+        if (isExcluded(classInstrumentationData.getClassName())) {
+          InternalAgentLogger.INSTANCE.trace(
+              "'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
+          continue;
         }
-        builtInEnabled = agentConfiguration.getBuiltInConfiguration().isEnabled();
+        InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
+      } else {
+        InternalAgentLogger.INSTANCE.trace(
+            "Adding regex classes in package'%s'", classInstrumentationData.getFullPackageName());
+      }
+
+      if (classInstrumentationData.isRegExp()) {
+        regExpClassesToInstrument.put(
+            classInstrumentationData.getFullPackageName(), classInstrumentationData);
+      } else {
+        classesToInstrument.put(classInstrumentationData.getClassName(), classInstrumentationData);
+      }
     }
+  }
+
+  private void setBuiltInDataFlag(AgentConfiguration agentConfiguration) {
+    if (agentConfiguration == null) {
+      return;
+    }
+    builtInEnabled = agentConfiguration.getBuiltInConfiguration().isEnabled();
+  }
 }

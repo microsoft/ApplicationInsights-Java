@@ -23,35 +23,30 @@ package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
 import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
-/**
- * Created by gupele on 8/5/2015.
- */
+/** Created by gupele on 8/5/2015. */
 final class PreparedStatementForAddBatchMethodVisitor extends DefaultMethodVisitor {
-    public PreparedStatementForAddBatchMethodVisitor(int access,
-                                                     String desc,
-                                                     String owner,
-                                                     String methodName,
-                                                     MethodVisitor methodVisitor,
-                                                     ClassToMethodTransformationData additionalData) {
-        super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
-    }
+  public PreparedStatementForAddBatchMethodVisitor(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
+  }
 
-    @Override
-    protected void onMethodEnter() {
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitInsn(DUP);
-        mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_BATCH_COUNTER, "I");
-        mv.visitInsn(ICONST_1);
-        mv.visitInsn(IADD);
-        mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_BATCH_COUNTER, "I");
-    }
+  @Override
+  protected void onMethodEnter() {
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitInsn(DUP);
+    mv.visitFieldInsn(GETFIELD, owner, SqlConstants.AI_SDK_BATCH_COUNTER, "I");
+    mv.visitInsn(ICONST_1);
+    mv.visitInsn(IADD);
+    mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_BATCH_COUNTER, "I");
+  }
 
-    @Override
-    protected void byteCodeForMethodExit(int opcode) {
-    }
+  @Override
+  protected void byteCodeForMethodExit(int opcode) {}
 }

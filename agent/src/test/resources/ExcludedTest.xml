@@ -20,9 +20,9 @@
   -->
 
 <ApplicationInsightsAgent>
-    <ExcludedPrefixes>
-        <Prefix>a.AClass1</Prefix>
-        <Prefix>a.AClass1</Prefix>
-        <Prefix>a.b.AClass1</Prefix>
-    </ExcludedPrefixes>
+  <ExcludedPrefixes>
+    <Prefix>a.AClass1</Prefix>
+    <Prefix>a.AClass1</Prefix>
+    <Prefix>a.b.AClass1</Prefix>
+  </ExcludedPrefixes>
 </ApplicationInsightsAgent>

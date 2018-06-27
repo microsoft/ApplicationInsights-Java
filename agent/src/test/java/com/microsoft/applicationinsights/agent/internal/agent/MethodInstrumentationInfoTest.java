@@ -21,185 +21,225 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.*;
-
 public final class MethodInstrumentationInfoTest {
-    private final static String MOCK_METHOD_NAME_1 = "mock_method_1";
-    private final static String MOCK_METHOD_SIGNATURE_1 = "mock_signature_1";
-    private final static String MOCK_METHOD_SIGNATURE_2 = "mock_signature_2";
+  private static final String MOCK_METHOD_NAME_1 = "mock_method_1";
+  private static final String MOCK_METHOD_SIGNATURE_1 = "mock_signature_1";
+  private static final String MOCK_METHOD_SIGNATURE_2 = "mock_signature_2";
 
-    private final static String MOCK_METHOD_NAME_2 = "mock_method_2";
+  private static final String MOCK_METHOD_NAME_2 = "mock_method_2";
 
-    private final MethodVisitorFactory methodVisitorFactory = Mockito.mock(MethodVisitorFactory.class);
+  private final MethodVisitorFactory methodVisitorFactory =
+      Mockito.mock(MethodVisitorFactory.class);
 
-    @Test
-    public void testEmpty() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        assertTrue(info.isEmpty());
-    }
+  private static MethodInstrumentationRequest createRequest(
+      String methodName, boolean reportCaughtExceptions, boolean reportExecutionTime) {
+    return createRequest(methodName, null, reportCaughtExceptions, reportExecutionTime);
+  }
 
-    @Test
-    public void testAddOneMethodWithSignature() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, false, true), methodVisitorFactory);
+  private static MethodInstrumentationRequest createRequest(
+      String methodName,
+      String signature,
+      boolean reportCaughtExceptions,
+      boolean reportExecutionTime) {
+    MethodInstrumentationRequest request =
+        new MethodInstrumentationRequestBuilder()
+            .withMethodName(methodName)
+            .withMethodSignature(signature)
+            .withReportCaughtExceptions(reportCaughtExceptions)
+            .withReportExecutionTime(reportExecutionTime)
+            .create();
 
-        assertFalse(info.isEmpty());
+    return request;
+  }
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
-    }
+  @Test
+  public void testEmpty() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    assertTrue(info.isEmpty());
+  }
 
-    @Test
-    public void testAddTwoMethodsWithSignature() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
-        info.addMethod(createRequest(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2, true, false), methodVisitorFactory);
+  @Test
+  public void testAddOneMethodWithSignature() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addMethod(createRequest(MOCK_METHOD_NAME_1, false, true), methodVisitorFactory);
 
-        assertFalse(info.isEmpty());
+    assertFalse(info.isEmpty());
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
-        verifyDecision(info, MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2, true, false);
-    }
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
+  }
 
-    @Test
-    public void testAddOneMethodsWithTwoSignatures() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, false), methodVisitorFactory);
+  @Test
+  public void testAddTwoMethodsWithSignature() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true),
+        methodVisitorFactory);
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2, true, false),
+        methodVisitorFactory);
 
-        assertFalse(info.isEmpty());
+    assertFalse(info.isEmpty());
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, false);
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
+    verifyDecision(info, MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2, true, false);
+  }
 
-        MethodInstrumentationDecision decision = info.getDecision(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_1);
-        assertNull(decision);
+  @Test
+  public void testAddOneMethodsWithTwoSignatures() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true),
+        methodVisitorFactory);
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, false),
+        methodVisitorFactory);
 
-        decision = info.getDecision(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2);
-        assertNull(decision);
-    }
+    assertFalse(info.isEmpty());
 
-    @Test
-    public void testAddOneMethodsWithAllSignaturesEnabled() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, false, true), methodVisitorFactory);
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, false);
 
-        assertFalse(info.isEmpty());
+    MethodInstrumentationDecision decision =
+        info.getDecision(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_1);
+    assertNull(decision);
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, false, true);
-    }
+    decision = info.getDecision(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2);
+    assertNull(decision);
+  }
 
-    @Test
-    public void testAddMethodsWithDifferentKindOfSignatures() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+  @Test
+  public void testAddOneMethodsWithAllSignaturesEnabled() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addMethod(createRequest(MOCK_METHOD_NAME_1, false, true), methodVisitorFactory);
 
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, true, true), methodVisitorFactory);
+    assertFalse(info.isEmpty());
 
-        assertFalse(info.isEmpty());
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, false, true);
+  }
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, true);
-    }
+  @Test
+  public void testAddMethodsWithDifferentKindOfSignatures() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
 
-    @Test(expected = IllegalStateException.class)
-    public void testAddAllMethodsWhileThereAreMethods() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true),
+        methodVisitorFactory);
+    info.addMethod(createRequest(MOCK_METHOD_NAME_1, true, true), methodVisitorFactory);
 
-        info.addAllMethods(true, false, methodVisitorFactory);
-    }
+    assertFalse(info.isEmpty());
 
-    @Test(expected = IllegalStateException.class)
-    public void testAddMethodAfterAllMethodsCalled() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addAllMethods(true, false, methodVisitorFactory);
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, true);
+  }
 
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
-    }
+  @Test(expected = IllegalStateException.class)
+  public void testAddAllMethodsWhileThereAreMethods() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true),
+        methodVisitorFactory);
 
-    @Test
-    public void testAddAllMethods() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addAllMethods(true, false, methodVisitorFactory);
+    info.addAllMethods(true, false, methodVisitorFactory);
+  }
 
-        assertFalse(info.isEmpty());
+  @Test(expected = IllegalStateException.class)
+  public void testAddMethodAfterAllMethodsCalled() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addAllMethods(true, false, methodVisitorFactory);
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, true, false);
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, false);
-        verifyDecision(info, MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2, true, false);
-    }
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true),
+        methodVisitorFactory);
+  }
 
-    @Test
-    public void testAddMethodWithAllFalseReportsAttribute() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addAllMethods(false, false, methodVisitorFactory);
+  @Test
+  public void testAddAllMethods() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addAllMethods(true, false, methodVisitorFactory);
 
-        assertTrue(info.isEmpty());
+    assertFalse(info.isEmpty());
 
-        MethodInstrumentationDecision decision = info.getDecision(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1);
-        assertNull(decision);
-    }
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, true, false);
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_2, true, false);
+    verifyDecision(info, MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2, true, false);
+  }
 
-    @Test
-    public void testAddMethodsOneWithAllFalse() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
-        info.addMethod(createRequest(MOCK_METHOD_NAME_2, false, false), methodVisitorFactory);
+  @Test
+  public void testAddMethodWithAllFalseReportsAttribute() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addAllMethods(false, false, methodVisitorFactory);
 
-        assertFalse(info.isEmpty());
+    assertTrue(info.isEmpty());
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
+    MethodInstrumentationDecision decision =
+        info.getDecision(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1);
+    assertNull(decision);
+  }
 
-        MethodInstrumentationDecision decision = info.getDecision(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2);
-        assertNull(decision);
-    }
+  @Test
+  public void testAddMethodsOneWithAllFalse() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true),
+        methodVisitorFactory);
+    info.addMethod(createRequest(MOCK_METHOD_NAME_2, false, false), methodVisitorFactory);
 
-    @Test
-    public void testAddMethodsTwiceWithDifferentAttributes() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, false), methodVisitorFactory);
+    assertFalse(info.isEmpty());
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
-    }
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
 
-    @Test
-    public void testAddMethodsTwiceWithDifferentAttributesFirstWithAllFalse() {
-        MethodInstrumentationInfo info = new MethodInstrumentationInfo();
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, false), methodVisitorFactory);
-        info.addMethod(createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true), methodVisitorFactory);
+    MethodInstrumentationDecision decision =
+        info.getDecision(MOCK_METHOD_NAME_2, MOCK_METHOD_SIGNATURE_2);
+    assertNull(decision);
+  }
 
-        verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
-    }
+  @Test
+  public void testAddMethodsTwiceWithDifferentAttributes() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true),
+        methodVisitorFactory);
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, false),
+        methodVisitorFactory);
 
-    private void verifyDecision(MethodInstrumentationInfo info,
-                                       String methodName,
-                                       String methodSignature,
-                                       boolean expectedReportCaughtExceptions,
-                                       boolean expectedReportExecutionTime) {
-        MethodInstrumentationDecision decision = info.getDecision(methodName, methodSignature);
-        assertNotNull(decision);
-        assertEquals(decision.isReportExecutionTime(), expectedReportExecutionTime);
-        assertEquals(decision.isReportCaughtExceptions(), expectedReportCaughtExceptions);
-        assertSame(decision.getMethodVisitorFactory(), methodVisitorFactory);
-    }
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
+  }
 
-    private static MethodInstrumentationRequest createRequest(String methodName, boolean reportCaughtExceptions, boolean reportExecutionTime) {
-        return createRequest(methodName, null, reportCaughtExceptions, reportExecutionTime);
-    }
+  @Test
+  public void testAddMethodsTwiceWithDifferentAttributesFirstWithAllFalse() {
+    MethodInstrumentationInfo info = new MethodInstrumentationInfo();
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, false),
+        methodVisitorFactory);
+    info.addMethod(
+        createRequest(MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true),
+        methodVisitorFactory);
 
-    private static MethodInstrumentationRequest createRequest(String methodName, String signature, boolean reportCaughtExceptions, boolean reportExecutionTime) {
-        MethodInstrumentationRequest request =
-                new MethodInstrumentationRequestBuilder()
-                        .withMethodName(methodName)
-                        .withMethodSignature(signature)
-                        .withReportCaughtExceptions(reportCaughtExceptions)
-                        .withReportExecutionTime(reportExecutionTime).create();
+    verifyDecision(info, MOCK_METHOD_NAME_1, MOCK_METHOD_SIGNATURE_1, false, true);
+  }
 
-        return request;
-    }
+  private void verifyDecision(
+      MethodInstrumentationInfo info,
+      String methodName,
+      String methodSignature,
+      boolean expectedReportCaughtExceptions,
+      boolean expectedReportExecutionTime) {
+    MethodInstrumentationDecision decision = info.getDecision(methodName, methodSignature);
+    assertNotNull(decision);
+    assertEquals(decision.isReportExecutionTime(), expectedReportExecutionTime);
+    assertEquals(decision.isReportCaughtExceptions(), expectedReportCaughtExceptions);
+    assertSame(decision.getMethodVisitorFactory(), methodVisitorFactory);
+  }
 }

@@ -25,51 +25,57 @@ import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisit
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
 
-/**
- * Created by gupele on 8/4/2015.
- */
+/** Created by gupele on 8/4/2015. */
 public class QueryStatementWithPossibleExplainMethodVisitor extends DefaultMethodVisitor {
-    private final static String ON_ENTER_METHOD_NANE = "sqlStatementExecuteQueryPossibleQueryPlan";
-    private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/Statement;Ljava/lang/String;)V";
+  private static final String ON_ENTER_METHOD_NANE = "sqlStatementExecuteQueryPossibleQueryPlan";
+  private static final String ON_ENTER_METHOD_SIGNATURE =
+      "(Ljava/lang/String;Ljava/sql/Statement;Ljava/lang/String;)V";
 
-    public QueryStatementWithPossibleExplainMethodVisitor(int access,
-                                                          String desc,
-                                                          String owner,
-                                                          String methodName,
-                                                          MethodVisitor methodVisitor) {
-        super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
-    }
+  public QueryStatementWithPossibleExplainMethodVisitor(
+      int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+    super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
+  }
 
-    @Override
-    protected void onMethodEnter() {
+  @Override
+  protected void onMethodEnter() {
 
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitLdcInsn("EXPLAIN");
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFNE, l0);
+    mv.visitVarInsn(ALOAD, 1);
+    mv.visitLdcInsn("EXPLAIN");
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
+    Label l0 = new Label();
+    mv.visitJumpInsn(IFNE, l0);
 
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
+    mv.visitLdcInsn(getMethodName());
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitVarInsn(ALOAD, 1);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        ON_ENTER_METHOD_NANE,
+        ON_ENTER_METHOD_SIGNATURE,
+        false);
 
-        mv.visitLabel(l0);
-    }
+    mv.visitLabel(l0);
+  }
 
-    @Override
-    protected void byteCodeForMethodExit(int opcode) {
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitLdcInsn("EXPLAIN");
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
-        Label l0 = new Label();
-        mv.visitJumpInsn(IFNE, l0);
+  @Override
+  protected void byteCodeForMethodExit(int opcode) {
+    mv.visitVarInsn(ALOAD, 1);
+    mv.visitLdcInsn("EXPLAIN");
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
+    Label l0 = new Label();
+    mv.visitJumpInsn(IFNE, l0);
 
-        super.byteCodeForMethodExit(opcode);
+    super.byteCodeForMethodExit(opcode);
 
-        mv.visitLabel(l0);
-    }
+    mv.visitLabel(l0);
+  }
 }

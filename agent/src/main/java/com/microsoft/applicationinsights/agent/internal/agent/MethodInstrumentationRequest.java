@@ -24,56 +24,62 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 
 /**
- * Represents a request for instrumenting a method.
- * methodName: Must be a non-null non empty value
- * methodSignature: If null then all methods with 'methodName' are qualified
- * reportCaughtExceptions: If true will report caught exceptions within the method
- * reportExecutionTime: If true will report the time to execute the method
+ * Represents a request for instrumenting a method. methodName: Must be a non-null non empty value
+ * methodSignature: If null then all methods with 'methodName' are qualified reportCaughtExceptions:
+ * If true will report caught exceptions within the method reportExecutionTime: If true will report
+ * the time to execute the method
  *
- * Note, it is recommended to build an instance with {@link com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationRequestBuilder}
+ * <p>Note, it is recommended to build an instance with {@link
+ * com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationRequestBuilder}
  *
- * Created by gupele on 5/31/2015.
+ * <p>Created by gupele on 5/31/2015.
  */
 final class MethodInstrumentationRequest {
-    private final String methodName;
-    private final String methodSignature;
-    private final boolean reportCaughtExceptions;
-    private final boolean reportExecutionTime;
-    private final long thresholdInMS;
+  private final String methodName;
+  private final String methodSignature;
+  private final boolean reportCaughtExceptions;
+  private final boolean reportExecutionTime;
+  private final long thresholdInMS;
 
-    public MethodInstrumentationRequest(String methodName, String methodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime, long thresholdInMS) {
-        if (StringUtils.isNullOrEmpty(methodName)) {
-            throw new IllegalArgumentException("methodName must be non-null non-empty value.");
-        }
-
-        this.reportCaughtExceptions = reportCaughtExceptions;
-        this.reportExecutionTime = reportExecutionTime;
-        this.methodName = methodName;
-        this.methodSignature = methodSignature;
-        this.thresholdInMS = thresholdInMS;
+  public MethodInstrumentationRequest(
+      String methodName,
+      String methodSignature,
+      boolean reportCaughtExceptions,
+      boolean reportExecutionTime,
+      long thresholdInMS) {
+    if (StringUtils.isNullOrEmpty(methodName)) {
+      throw new IllegalArgumentException("methodName must be non-null non-empty value.");
     }
 
-    public MethodInstrumentationRequest(String methodName, boolean reportCaughtExceptions, boolean reportExecutionTime) {
-        this(methodName, null, reportCaughtExceptions, reportExecutionTime, 0);
-    }
+    this.reportCaughtExceptions = reportCaughtExceptions;
+    this.reportExecutionTime = reportExecutionTime;
+    this.methodName = methodName;
+    this.methodSignature = methodSignature;
+    this.thresholdInMS = thresholdInMS;
+  }
 
-    public String getMethodName() {
-        return methodName;
-    }
+  public MethodInstrumentationRequest(
+      String methodName, boolean reportCaughtExceptions, boolean reportExecutionTime) {
+    this(methodName, null, reportCaughtExceptions, reportExecutionTime, 0);
+  }
 
-    public String getMethodSignature() {
-        return methodSignature;
-    }
+  public String getMethodName() {
+    return methodName;
+  }
 
-    public boolean isReportCaughtExceptions() {
-        return reportCaughtExceptions;
-    }
+  public String getMethodSignature() {
+    return methodSignature;
+  }
 
-    public boolean isReportExecutionTime() {
-        return reportExecutionTime;
-    }
+  public boolean isReportCaughtExceptions() {
+    return reportCaughtExceptions;
+  }
 
-    public long getThresholdInMS() {
-        return thresholdInMS;
-    }
+  public boolean isReportExecutionTime() {
+    return reportExecutionTime;
+  }
+
+  public long getThresholdInMS() {
+    return thresholdInMS;
+  }
 }

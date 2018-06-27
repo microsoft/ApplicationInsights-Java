@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 /**
  * A marker to allow Class Visitors to pass data to Method Visitors
  *
- * Created by gupele on 7/27/2015.
+ * <p>Created by gupele on 7/27/2015.
  */
-public interface ClassToMethodTransformationData {
-}
+public interface ClassToMethodTransformationData {}

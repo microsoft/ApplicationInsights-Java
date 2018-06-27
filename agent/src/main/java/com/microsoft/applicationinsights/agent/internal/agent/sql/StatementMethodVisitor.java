@@ -23,34 +23,37 @@ package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
 
-/**
- * Created by gupele on 5/20/2015.
- */
+/** Created by gupele on 5/20/2015. */
 final class StatementMethodVisitor extends DefaultMethodVisitor {
-    private final static String ON_ENTER_METHOD_NANE = "sqlStatementMethodStarted";
-    private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/sql/Statement;Ljava/lang/String;)V";
+  private static final String ON_ENTER_METHOD_NANE = "sqlStatementMethodStarted";
+  private static final String ON_ENTER_METHOD_SIGNATURE =
+      "(Ljava/lang/String;Ljava/sql/Statement;Ljava/lang/String;)V";
 
-    public StatementMethodVisitor(int access,
-                                  String desc,
-                                  String owner,
-                                  String methodName,
-                                  MethodVisitor methodVisitor) {
-        super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
-//        numberOfArgs = Type.getArgumentTypes(desc).length;
-    }
+  public StatementMethodVisitor(
+      int access, String desc, String owner, String methodName, MethodVisitor methodVisitor) {
+    super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
+    //        numberOfArgs = Type.getArgumentTypes(desc).length;
+  }
 
-    @Override
-    protected void onMethodEnter() {
+  @Override
+  protected void onMethodEnter() {
 
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
 
-        mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NANE, ON_ENTER_METHOD_SIGNATURE, false);
-    }
+    mv.visitLdcInsn(getMethodName());
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitVarInsn(ALOAD, 1);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        ON_ENTER_METHOD_NANE,
+        ON_ENTER_METHOD_SIGNATURE,
+        false);
+  }
 }

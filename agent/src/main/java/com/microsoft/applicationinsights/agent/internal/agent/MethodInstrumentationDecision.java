@@ -22,42 +22,47 @@
 package com.microsoft.applicationinsights.agent.internal.agent;
 
 /**
- * The class holds the type of actions that should be done on an instrumented method
- * The class is the 'decision' for the method after taking into consideration init/configuration data
+ * The class holds the type of actions that should be done on an instrumented method The class is
+ * the 'decision' for the method after taking into consideration init/configuration data
  *
- * Note, it is recommended to build an instance with {@link com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecisionBuilder}
+ * <p>Note, it is recommended to build an instance with {@link
+ * com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecisionBuilder}
  *
- * Created by gupele on 5/31/2015.
+ * <p>Created by gupele on 5/31/2015.
  */
 public final class MethodInstrumentationDecision {
-    private final boolean reportCaughtExceptions;
-    private final boolean reportExecutionTime;
-    private final long thresholdInMS;
-    private final MethodVisitorFactory methodVisitorFactory;
+  private final boolean reportCaughtExceptions;
+  private final boolean reportExecutionTime;
+  private final long thresholdInMS;
+  private final MethodVisitorFactory methodVisitorFactory;
 
-    public MethodInstrumentationDecision(boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory, long thresholdInMS) {
-        if (methodVisitorFactory == null) {
-            throw new IllegalArgumentException("methodVisitorFactory must be not null");
-        }
-        this.reportCaughtExceptions = reportCaughtExceptions;
-        this.reportExecutionTime = reportExecutionTime;
-        this.thresholdInMS = thresholdInMS;
-        this.methodVisitorFactory = methodVisitorFactory;
+  public MethodInstrumentationDecision(
+      boolean reportCaughtExceptions,
+      boolean reportExecutionTime,
+      MethodVisitorFactory methodVisitorFactory,
+      long thresholdInMS) {
+    if (methodVisitorFactory == null) {
+      throw new IllegalArgumentException("methodVisitorFactory must be not null");
     }
+    this.reportCaughtExceptions = reportCaughtExceptions;
+    this.reportExecutionTime = reportExecutionTime;
+    this.thresholdInMS = thresholdInMS;
+    this.methodVisitorFactory = methodVisitorFactory;
+  }
 
-    public boolean isReportCaughtExceptions() {
-        return reportCaughtExceptions;
-    }
+  public boolean isReportCaughtExceptions() {
+    return reportCaughtExceptions;
+  }
 
-    public boolean isReportExecutionTime() {
-        return reportExecutionTime;
-    }
+  public boolean isReportExecutionTime() {
+    return reportExecutionTime;
+  }
 
-    public long getThresholdInMS() {
-        return thresholdInMS;
-    }
+  public long getThresholdInMS() {
+    return thresholdInMS;
+  }
 
-    public MethodVisitorFactory getMethodVisitorFactory() {
-        return methodVisitorFactory;
-    }
+  public MethodVisitorFactory getMethodVisitorFactory() {
+    return methodVisitorFactory;
+  }
 }

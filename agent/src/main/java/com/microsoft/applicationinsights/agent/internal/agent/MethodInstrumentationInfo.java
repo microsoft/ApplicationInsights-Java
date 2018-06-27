@@ -21,129 +21,142 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import java.util.HashMap;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
-
 /**
- * The class holds the data for methods.
- * The class should collect data for methods of one class.
+ * The class holds the data for methods. The class should collect data for methods of one class.
  *
- * For each method the class holds a {@link com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision}
- * that will be used later on if the method of the class is found in runtime.
+ * <p>For each method the class holds a {@link
+ * com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision} that will
+ * be used later on if the method of the class is found in runtime.
  *
- * The class knows how to 'merge' the information of methods so methods without signatures
- * mean that all methods with that name qualify. to mark all the methods, set priority between methods
+ * <p>The class knows how to 'merge' the information of methods so methods without signatures mean
+ * that all methods with that name qualify. to mark all the methods, set priority between methods
  *
- * Created by gupele on 5/29/2015.
+ * <p>Created by gupele on 5/29/2015.
  */
 public final class MethodInstrumentationInfo {
-    private final static String ANY_SIGNATURE_MARKER = "";
-    private MethodInstrumentationDecision allClassMethods = null;
+  private static final String ANY_SIGNATURE_MARKER = "";
+  private MethodInstrumentationDecision allClassMethods = null;
+  private HashMap<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
 
-    private static class MethodInfo {
+  public void addMethod(MethodInstrumentationRequest methodInstrumentationRequest) {
+    addMethod(methodInstrumentationRequest, null);
+  }
 
-        public HashMap<String, MethodInstrumentationDecision> methodsInstrumentationData = new HashMap<String, MethodInstrumentationDecision>();
-
-        public MethodInfo(MethodInstrumentationRequest methodInstrumentationRequest, MethodVisitorFactory methodVisitorFactory) {
-            if (StringUtils.isNullOrEmpty(methodInstrumentationRequest.getMethodSignature())) {
-                MethodInstrumentationDecision decision =
-                        new MethodInstrumentationDecisionBuilder()
-                                .withReportCaughtExceptions(methodInstrumentationRequest.isReportCaughtExceptions())
-                                .withReportExecutionTime(methodInstrumentationRequest.isReportExecutionTime())
-                                .withMethodVisitorFactory(methodVisitorFactory)
-                                .create();
-                methodsInstrumentationData.put(ANY_SIGNATURE_MARKER, decision);
-            }
-        }
-
-        public void add(String requestedMethodSignature, boolean reportCaughtExceptions, boolean reportExecutionTime, long thresholdInMS, MethodVisitorFactory methodVisitorFactory) {
-            String methodSignature = requestedMethodSignature;
-            if (StringUtils.isNullOrEmpty(methodSignature)) {
-                methodSignature = ANY_SIGNATURE_MARKER;
-            }
-
-            MethodInstrumentationDecision decision =
-                    new MethodInstrumentationDecisionBuilder()
-                            .withReportCaughtExceptions(reportCaughtExceptions)
-                            .withReportExecutionTime(reportExecutionTime)
-                            .withThresholdInMS(thresholdInMS)
-                            .withMethodVisitorFactory(methodVisitorFactory)
-                            .create();
-            methodsInstrumentationData.put(methodSignature, decision);
-        }
+  public void addMethod(
+      MethodInstrumentationRequest methodInstrumentationRequest,
+      MethodVisitorFactory methodVisitorFactory) {
+    if (allClassMethods != null) {
+      throw new IllegalStateException();
     }
 
-    private HashMap<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
-
-    public void addMethod(MethodInstrumentationRequest methodInstrumentationRequest) {
-        addMethod(methodInstrumentationRequest, null);
+    if (!methodInstrumentationRequest.isReportCaughtExceptions()
+        && !methodInstrumentationRequest.isReportExecutionTime()) {
+      return;
     }
 
-    public void addMethod(MethodInstrumentationRequest methodInstrumentationRequest, MethodVisitorFactory methodVisitorFactory) {
-        if (allClassMethods != null) {
-            throw new IllegalStateException();
-        }
-
-        if (!methodInstrumentationRequest.isReportCaughtExceptions() && !methodInstrumentationRequest.isReportExecutionTime()) {
-            return;
-        }
-
-        MethodInfo info = methods.get(methodInstrumentationRequest.getMethodName());
-        if (info == null) {
-            info = new MethodInfo(methodInstrumentationRequest, methodVisitorFactory);
-            methods.put(methodInstrumentationRequest.getMethodName(), info);
-        }
-
-        info.add(methodInstrumentationRequest.getMethodSignature(),
-                methodInstrumentationRequest.isReportCaughtExceptions(),
-                methodInstrumentationRequest.isReportExecutionTime(),
-                methodInstrumentationRequest.getThresholdInMS(),
-                methodVisitorFactory);
+    MethodInfo info = methods.get(methodInstrumentationRequest.getMethodName());
+    if (info == null) {
+      info = new MethodInfo(methodInstrumentationRequest, methodVisitorFactory);
+      methods.put(methodInstrumentationRequest.getMethodName(), info);
     }
 
-    public MethodInstrumentationDecision getDecision(String methodName, String methodSignature) {
-        if (StringUtils.isNullOrEmpty(methodName)) {
-            return null;
-        }
+    info.add(
+        methodInstrumentationRequest.getMethodSignature(),
+        methodInstrumentationRequest.isReportCaughtExceptions(),
+        methodInstrumentationRequest.isReportExecutionTime(),
+        methodInstrumentationRequest.getThresholdInMS(),
+        methodVisitorFactory);
+  }
 
-        if (allClassMethods != null) {
-            return allClassMethods;
-        }
-
-        MethodInfo info = methods.get(methodName);
-        if (info == null) {
-            return null;
-        }
-
-        if (info.methodsInstrumentationData.containsKey(methodSignature)) {
-            return info.methodsInstrumentationData.get(methodSignature);
-        }
-
-        return info.methodsInstrumentationData.get(ANY_SIGNATURE_MARKER);
+  public MethodInstrumentationDecision getDecision(String methodName, String methodSignature) {
+    if (StringUtils.isNullOrEmpty(methodName)) {
+      return null;
     }
 
-    public void addAllMethods(boolean reportCaughtExceptions, boolean reportExecutionTime, MethodVisitorFactory methodVisitorFactory) {
-        if (!methods.isEmpty()) {
-            throw new IllegalStateException();
-        }
-
-        if (!reportCaughtExceptions && !reportExecutionTime) {
-            return;
-        }
-
-        if (allClassMethods == null) {
-            MethodInstrumentationDecision decision =
-                    new MethodInstrumentationDecisionBuilder()
-                            .withReportCaughtExceptions(reportCaughtExceptions)
-                            .withReportExecutionTime(reportExecutionTime)
-                            .withMethodVisitorFactory(methodVisitorFactory)
-                            .create();
-            allClassMethods = decision;
-        }
+    if (allClassMethods != null) {
+      return allClassMethods;
     }
 
-    public boolean isEmpty() {
-        return methods.isEmpty() && allClassMethods == null;
+    MethodInfo info = methods.get(methodName);
+    if (info == null) {
+      return null;
     }
+
+    if (info.methodsInstrumentationData.containsKey(methodSignature)) {
+      return info.methodsInstrumentationData.get(methodSignature);
+    }
+
+    return info.methodsInstrumentationData.get(ANY_SIGNATURE_MARKER);
+  }
+
+  public void addAllMethods(
+      boolean reportCaughtExceptions,
+      boolean reportExecutionTime,
+      MethodVisitorFactory methodVisitorFactory) {
+    if (!methods.isEmpty()) {
+      throw new IllegalStateException();
+    }
+
+    if (!reportCaughtExceptions && !reportExecutionTime) {
+      return;
+    }
+
+    if (allClassMethods == null) {
+      MethodInstrumentationDecision decision =
+          new MethodInstrumentationDecisionBuilder()
+              .withReportCaughtExceptions(reportCaughtExceptions)
+              .withReportExecutionTime(reportExecutionTime)
+              .withMethodVisitorFactory(methodVisitorFactory)
+              .create();
+      allClassMethods = decision;
+    }
+  }
+
+  public boolean isEmpty() {
+    return methods.isEmpty() && allClassMethods == null;
+  }
+
+  private static class MethodInfo {
+
+    public HashMap<String, MethodInstrumentationDecision> methodsInstrumentationData =
+        new HashMap<String, MethodInstrumentationDecision>();
+
+    public MethodInfo(
+        MethodInstrumentationRequest methodInstrumentationRequest,
+        MethodVisitorFactory methodVisitorFactory) {
+      if (StringUtils.isNullOrEmpty(methodInstrumentationRequest.getMethodSignature())) {
+        MethodInstrumentationDecision decision =
+            new MethodInstrumentationDecisionBuilder()
+                .withReportCaughtExceptions(methodInstrumentationRequest.isReportCaughtExceptions())
+                .withReportExecutionTime(methodInstrumentationRequest.isReportExecutionTime())
+                .withMethodVisitorFactory(methodVisitorFactory)
+                .create();
+        methodsInstrumentationData.put(ANY_SIGNATURE_MARKER, decision);
+      }
+    }
+
+    public void add(
+        String requestedMethodSignature,
+        boolean reportCaughtExceptions,
+        boolean reportExecutionTime,
+        long thresholdInMS,
+        MethodVisitorFactory methodVisitorFactory) {
+      String methodSignature = requestedMethodSignature;
+      if (StringUtils.isNullOrEmpty(methodSignature)) {
+        methodSignature = ANY_SIGNATURE_MARKER;
+      }
+
+      MethodInstrumentationDecision decision =
+          new MethodInstrumentationDecisionBuilder()
+              .withReportCaughtExceptions(reportCaughtExceptions)
+              .withReportExecutionTime(reportExecutionTime)
+              .withThresholdInMS(thresholdInMS)
+              .withMethodVisitorFactory(methodVisitorFactory)
+              .create();
+      methodsInstrumentationData.put(methodSignature, decision);
+    }
+  }
 }

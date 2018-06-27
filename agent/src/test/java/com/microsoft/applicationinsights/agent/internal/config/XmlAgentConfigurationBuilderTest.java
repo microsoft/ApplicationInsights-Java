@@ -21,104 +21,107 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.*;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.Assert.*;
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
 
 public final class XmlAgentConfigurationBuilderTest {
-    private final static String TEMP_TEST_FOLDER = "AgentTests";
-    private final static String TEMP_CONF_FILE = "AI-Agent.xml";
+  private static final String TEMP_TEST_FOLDER = "AgentTests";
+  private static final String TEMP_CONF_FILE = "AI-Agent.xml";
 
-    @Test
-    public void testForbiddenSection() throws IOException {
-        AgentConfiguration configuration = testConfiguration("ExcludedTest.xml");
+  @Test
+  public void testForbiddenSection() throws IOException {
+    AgentConfiguration configuration = testConfiguration("ExcludedTest.xml");
 
-        assertNotNull(configuration);
+    assertNotNull(configuration);
 
-        Set<String> excludedPrefixes = configuration.getExcludedPrefixes();
+    Set<String> excludedPrefixes = configuration.getExcludedPrefixes();
 
-        assertNotNull(excludedPrefixes);
-        assertEquals(excludedPrefixes.size(), 2);
-        assertTrue(excludedPrefixes.contains("a.AClass1"));
-        assertTrue(excludedPrefixes.contains("a.b.AClass1"));
+    assertNotNull(excludedPrefixes);
+    assertEquals(excludedPrefixes.size(), 2);
+    assertTrue(excludedPrefixes.contains("a.AClass1"));
+    assertTrue(excludedPrefixes.contains("a.b.AClass1"));
+  }
+
+  @Test
+  public void testMalformedConfiguration() throws IOException {
+    AgentConfiguration configuration = testConfiguration("MalformedTest.xml");
+    assertNull(configuration);
+  }
+
+  @Test
+  public void testClassesConfiguration() throws IOException {
+    AgentConfiguration configuration = testConfiguration("InstrumentationTest.xml");
+    Map<String, ClassInstrumentationData> classes = configuration.getRequestedClassesToInstrument();
+    assertNotNull(classes);
+    assertEquals(classes.size(), 2);
+  }
+
+  @Test
+  public void testBuiltInConfiguration() throws IOException {
+    AgentConfiguration configuration = testConfiguration("BuiltInTest.xml");
+    AgentBuiltInConfiguration builtInConfiguration = configuration.getBuiltInConfiguration();
+    assertEquals(builtInConfiguration.isEnabled(), true);
+    assertEquals(builtInConfiguration.isHttpEnabled(), true);
+    assertEquals(builtInConfiguration.isJdbcEnabled(), true);
+    assertEquals(builtInConfiguration.isJdbcEnabled(), true);
+    assertEquals(builtInConfiguration.isHibernateEnabled(), false);
+  }
+
+  private AgentConfiguration testConfiguration(String testFileName) throws IOException {
+    File folder = null;
+    try {
+      folder = createFolder();
+      ClassLoader classLoader = getClass().getClassLoader();
+      URL testFileUrl = classLoader.getResource(testFileName);
+      File sourceFile = new File(testFileUrl.toURI());
+      File destinationFile = new File(folder, TEMP_CONF_FILE);
+      FileUtils.copyFile(sourceFile, destinationFile);
+      return new XmlAgentConfigurationBuilder().parseConfigurationFile(folder.toString());
+    } catch (java.net.URISyntaxException e) {
+      return null;
+    } finally {
+      cleanFolder(folder);
+    }
+  }
+
+  private File createFolder() throws IOException {
+    File folder;
+    String filesPath = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
+    folder = new File(filesPath);
+    if (folder.exists()) {
+      try {
+        FileUtils.deleteDirectory(folder);
+      } catch (Exception e) {
+      }
+    }
+    if (!folder.exists()) {
+      folder.mkdir();
     }
 
-    @Test
-    public void testMalformedConfiguration() throws IOException {
-        AgentConfiguration configuration = testConfiguration("MalformedTest.xml");
-        assertNull(configuration);
-    }
+    return folder;
+  }
 
-    @Test
-    public void testClassesConfiguration() throws IOException {
-        AgentConfiguration configuration = testConfiguration("InstrumentationTest.xml");
-        Map<String, ClassInstrumentationData> classes = configuration.getRequestedClassesToInstrument();
-        assertNotNull(classes);
-        assertEquals(classes.size(), 2);
-    }
-
-    @Test
-    public void testBuiltInConfiguration() throws IOException {
-        AgentConfiguration configuration = testConfiguration("BuiltInTest.xml");
-        AgentBuiltInConfiguration builtInConfiguration = configuration.getBuiltInConfiguration();
-        assertEquals(builtInConfiguration.isEnabled(), true);
-        assertEquals(builtInConfiguration.isHttpEnabled(), true);
-        assertEquals(builtInConfiguration.isJdbcEnabled(), true);
-        assertEquals(builtInConfiguration.isJdbcEnabled(), true);
-        assertEquals(builtInConfiguration.isHibernateEnabled(), false);
-    }
-
-    private AgentConfiguration testConfiguration(String testFileName) throws IOException {
-        File folder = null;
-        try {
-            folder = createFolder();
-            ClassLoader classLoader = getClass().getClassLoader();
-            URL testFileUrl = classLoader.getResource(testFileName);
-            File sourceFile = new File(testFileUrl.toURI());
-            File destinationFile = new File(folder, TEMP_CONF_FILE);
-            FileUtils.copyFile(sourceFile, destinationFile);
-            return new XmlAgentConfigurationBuilder().parseConfigurationFile(folder.toString());
-        } catch (java.net.URISyntaxException e) {
-            return null;
-        } finally {
-            cleanFolder(folder);
+  private void cleanFolder(File folder) {
+    if (folder != null && folder.exists()) {
+      try {
+        File file = new File(folder, TEMP_CONF_FILE);
+        if (file.exists()) {
+          file.delete();
         }
+        FileUtils.deleteDirectory(folder);
+      } catch (IOException e) {
+      }
     }
-
-    private File createFolder() throws IOException {
-        File folder;
-        String filesPath = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
-        folder = new File(filesPath);
-        if (folder.exists()) {
-            try {
-                FileUtils.deleteDirectory(folder);
-            } catch (Exception e) {
-            }
-        }
-        if (!folder.exists()) {
-            folder.mkdir();
-        }
-
-        return folder;
-    }
-
-    private void cleanFolder(File folder) {
-        if (folder != null && folder.exists()) {
-            try {
-                File file = new File(folder, TEMP_CONF_FILE);
-                if (file.exists()) {
-                    file.delete();
-                }
-                FileUtils.deleteDirectory(folder);
-            } catch (IOException e) {
-            }
-        }
-    }
+  }
 }

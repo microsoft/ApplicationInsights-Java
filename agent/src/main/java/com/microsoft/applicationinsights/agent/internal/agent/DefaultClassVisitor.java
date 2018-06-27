@@ -28,38 +28,47 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 /**
- * The class is responsible for identifying public methods on non-interface classes.
- * When a method is found the class will call the {@link DefaultMethodVisitor}
+ * The class is responsible for identifying public methods on non-interface classes. When a method
+ * is found the class will call the {@link DefaultMethodVisitor}
  *
- * Created by gupele on 5/11/2015.
+ * <p>Created by gupele on 5/11/2015.
  */
 public class DefaultClassVisitor extends ClassVisitor {
-    private boolean isInterface;
-    protected final ClassInstrumentationData instrumentationData;
+  protected final ClassInstrumentationData instrumentationData;
+  private boolean isInterface;
 
-    public DefaultClassVisitor(ClassInstrumentationData instrumentationData, ClassWriter classWriter) {
-        super(Opcodes.ASM5, classWriter);
-        this.instrumentationData = instrumentationData;
+  public DefaultClassVisitor(
+      ClassInstrumentationData instrumentationData, ClassWriter classWriter) {
+    super(Opcodes.ASM5, classWriter);
+    this.instrumentationData = instrumentationData;
+  }
+
+  @Override
+  public void visit(
+      int version,
+      int access,
+      String name,
+      String signature,
+      String superName,
+      String[] interfaces) {
+    cv.visit(version, access, name, signature, superName, interfaces);
+    isInterface = ByteCodeUtils.isInterface(access);
+  }
+
+  @Override
+  public MethodVisitor visitMethod(
+      int access, String name, String desc, String signature, String[] exceptions) {
+    MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
+    originalMV = new JSRInlinerAdapter(originalMV, access, name, desc, signature, exceptions);
+    if (isInterface || ByteCodeUtils.isStaticInitializer(name) || ByteCodeUtils.isPrivate(access)) {
+      return originalMV;
     }
 
-    @Override
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        cv.visit(version, access, name, signature, superName, interfaces);
-        isInterface = ByteCodeUtils.isInterface(access);
-    }
+    return getMethodVisitor(access, name, desc, originalMV);
+  }
 
-    @Override
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
-        originalMV = new JSRInlinerAdapter(originalMV, access, name, desc, signature, exceptions);
-        if (isInterface || ByteCodeUtils.isStaticInitializer(name) || ByteCodeUtils.isPrivate(access)) {
-            return originalMV;
-        }
-
-        return getMethodVisitor(access, name, desc, originalMV);
-    }
-
-    protected MethodVisitor getMethodVisitor(int access, String name, String desc, MethodVisitor originalMV) {
-        return instrumentationData.getMethodVisitor(access, name, desc, originalMV);
-    }
+  protected MethodVisitor getMethodVisitor(
+      int access, String name, String desc, MethodVisitor originalMV) {
+    return instrumentationData.getMethodVisitor(access, name, desc, originalMV);
+  }
 }

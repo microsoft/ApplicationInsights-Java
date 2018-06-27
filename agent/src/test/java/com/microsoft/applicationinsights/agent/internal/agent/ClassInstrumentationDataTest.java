@@ -21,95 +21,102 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
+import org.junit.Test;
+
 public final class ClassInstrumentationDataTest {
-    private final static String MOCK_CLASS_NAME = "ClassName";
-    private final static String MOCK_METHOD = "Method";
-    private final static String MOCK_SIGNATURE_1 = "Signature1";
-    private final static String MOCK_SIGNATURE_2 = "Signature2";
-    private final static String MOCK_SIGNATURE_3 = "Signature3";
+  private static final String MOCK_CLASS_NAME = "ClassName";
+  private static final String MOCK_METHOD = "Method";
+  private static final String MOCK_SIGNATURE_1 = "Signature1";
+  private static final String MOCK_SIGNATURE_2 = "Signature2";
+  private static final String MOCK_SIGNATURE_3 = "Signature3";
 
-    @Test
-    public void testCtor() throws Exception {
-        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
-                .setReportCaughtExceptions(true)
-                .setReportExecutionTime(false);
-        assertTrue(test.getMethodInstrumentationInfo().isEmpty());
-        assertEquals(test.getClassType(), InstrumentedClassType.HTTP.toString());
-        assertEquals(test.getClassName(), MOCK_CLASS_NAME);
-        assertEquals(test.isReportCaughtExceptions(), true);
-        assertEquals(test.isReportExecutionTime(), false);
-    }
+  @Test
+  public void testCtor() throws Exception {
+    ClassInstrumentationData test =
+        new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
+            .setReportCaughtExceptions(true)
+            .setReportExecutionTime(false);
+    assertTrue(test.getMethodInstrumentationInfo().isEmpty());
+    assertEquals(test.getClassType(), InstrumentedClassType.HTTP.toString());
+    assertEquals(test.getClassName(), MOCK_CLASS_NAME);
+    assertEquals(test.isReportCaughtExceptions(), true);
+    assertEquals(test.isReportExecutionTime(), false);
+  }
 
-    @Test
-    public void testAddMethodOverridesBooleanValues() throws Exception {
-        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
-                .setReportCaughtExceptions(false)
-                .setReportExecutionTime(false);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
+  @Test
+  public void testAddMethodOverridesBooleanValues() throws Exception {
+    ClassInstrumentationData test =
+        new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
+            .setReportCaughtExceptions(false)
+            .setReportExecutionTime(false);
+    test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
 
-//        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
+    //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD,
+    // MOCK_SIGNATURE_1);
 
-//        assertNotNull(decision);
-//        assertEquals(decision.isReportCaughtExceptions(), true);
-//        assertEquals(decision.isReportExecutionTime(), true);
-//
-//        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
-//
-//        assertNull(decision);
-    }
+    //        assertNotNull(decision);
+    //        assertEquals(decision.isReportCaughtExceptions(), true);
+    //        assertEquals(decision.isReportExecutionTime(), true);
+    //
+    //        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
+    //
+    //        assertNull(decision);
+  }
 
-    @Test
-    public void testAddMethodsWithDistinctSignatures() throws Exception {
-        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
-                .setReportCaughtExceptions(false)
-                .setReportExecutionTime(false);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
+  @Test
+  public void testAddMethodsWithDistinctSignatures() throws Exception {
+    ClassInstrumentationData test =
+        new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
+            .setReportCaughtExceptions(false)
+            .setReportExecutionTime(false);
+    test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
+    test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
 
-//        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
-//
-//        assertNotNull(decision);
-//        assertEquals(decision.isReportCaughtExceptions(), true);
-//        assertEquals(decision.isReportExecutionTime(), true);
-//
-//        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
-//
-//        assertNotNull(decision);
-//        assertEquals(decision.isReportCaughtExceptions(), false);
-//        assertEquals(decision.isReportExecutionTime(), true);
-    }
+    //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD,
+    // MOCK_SIGNATURE_1);
+    //
+    //        assertNotNull(decision);
+    //        assertEquals(decision.isReportCaughtExceptions(), true);
+    //        assertEquals(decision.isReportExecutionTime(), true);
+    //
+    //        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
+    //
+    //        assertNotNull(decision);
+    //        assertEquals(decision.isReportCaughtExceptions(), false);
+    //        assertEquals(decision.isReportExecutionTime(), true);
+  }
 
-    @Test
-    public void testAddMethodsWithDistinctSignaturesAndOneWithNoSignature() throws Exception {
-        ClassInstrumentationData test = new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
-                .setReportCaughtExceptions(true)
-                .setReportExecutionTime(false);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
-        test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
-        test.addMethod(MOCK_METHOD, null, false, true, 0);
+  @Test
+  public void testAddMethodsWithDistinctSignaturesAndOneWithNoSignature() throws Exception {
+    ClassInstrumentationData test =
+        new ClassInstrumentationData(MOCK_CLASS_NAME, InstrumentedClassType.HTTP)
+            .setReportCaughtExceptions(true)
+            .setReportExecutionTime(false);
+    test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_1, true, true, 0);
+    test.addMethod(MOCK_METHOD, MOCK_SIGNATURE_2, false, true, 0);
+    test.addMethod(MOCK_METHOD, null, false, true, 0);
 
-//        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_1);
-//
-//        assertNotNull(decision);
-//        assertEquals(decision.isReportCaughtExceptions(), true);
-//        assertEquals(decision.isReportExecutionTime(), true);
-//
-//        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
-//
-//        assertNotNull(decision);
-//        assertEquals(decision.isReportCaughtExceptions(), false);
-//        assertEquals(decision.isReportExecutionTime(), true);
-//
-//        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_3);
-//
-//        assertNotNull(decision);
-//        assertEquals(decision.isReportCaughtExceptions(), false);
-//        assertEquals(decision.isReportExecutionTime(), true);
-    }
+    //        MethodInstrumentationDecision decision = test.getDecisionForMethod(MOCK_METHOD,
+    // MOCK_SIGNATURE_1);
+    //
+    //        assertNotNull(decision);
+    //        assertEquals(decision.isReportCaughtExceptions(), true);
+    //        assertEquals(decision.isReportExecutionTime(), true);
+    //
+    //        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_2);
+    //
+    //        assertNotNull(decision);
+    //        assertEquals(decision.isReportCaughtExceptions(), false);
+    //        assertEquals(decision.isReportExecutionTime(), true);
+    //
+    //        decision = test.getDecisionForMethod(MOCK_METHOD, MOCK_SIGNATURE_3);
+    //
+    //        assertNotNull(decision);
+    //        assertEquals(decision.isReportCaughtExceptions(), false);
+    //        assertEquals(decision.isReportExecutionTime(), true);
+  }
 }

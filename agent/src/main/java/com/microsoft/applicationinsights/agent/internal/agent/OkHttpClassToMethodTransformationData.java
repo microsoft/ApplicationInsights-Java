@@ -21,13 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-/**
- * Created by gupele on 7/27/2015.
- */
+/** Created by gupele on 7/27/2015. */
 final class OkHttpClassToMethodTransformationData implements ClassToMethodTransformationData {
-    public final String fieldName;
+  public final String fieldName;
 
-    OkHttpClassToMethodTransformationData(String fieldName) {
-        this.fieldName = fieldName;
-    }
+  OkHttpClassToMethodTransformationData(String fieldName) {
+    this.fieldName = fieldName;
+  }
 }

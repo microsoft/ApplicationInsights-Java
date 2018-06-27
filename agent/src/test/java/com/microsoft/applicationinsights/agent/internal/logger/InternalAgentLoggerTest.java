@@ -21,96 +21,102 @@
 
 package com.microsoft.applicationinsights.agent.internal.logger;
 
-import org.junit.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
-
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public final class InternalAgentLoggerTest {
 
-    private static PrintStream REAL_SYSOUT;
-    private static ByteArrayOutputStream baos = new ByteArrayOutputStream();
+  private static PrintStream REAL_SYSOUT;
+  private static ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    @BeforeClass
-    public static void setupSysout() {
-        REAL_SYSOUT = System.out;
-        System.setOut(new PrintStream(baos, true));
-    }
+  @BeforeClass
+  public static void setupSysout() {
+    REAL_SYSOUT = System.out;
+    System.setOut(new PrintStream(baos, true));
+  }
 
-    @AfterClass
-    public static void restoreSysout() {
-        System.setOut(REAL_SYSOUT);
-    }
+  @AfterClass
+  public static void restoreSysout() {
+    System.setOut(REAL_SYSOUT);
+  }
 
-    @Before
-    public void preTest() throws NoSuchFieldException, IllegalAccessException {
-        Field field = InternalAgentLogger.class.getDeclaredField("initialized");
-        field.setAccessible(true);
-        field.set(InternalAgentLogger.INSTANCE, false);
+  @Before
+  public void preTest() throws NoSuchFieldException, IllegalAccessException {
+    Field field = InternalAgentLogger.class.getDeclaredField("initialized");
+    field.setAccessible(true);
+    field.set(InternalAgentLogger.INSTANCE, false);
 
-        field = InternalAgentLogger.class.getDeclaredField("loggingLevel");
-        field.setAccessible(true);
-        field.set(InternalAgentLogger.INSTANCE, InternalAgentLogger.LoggingLevel.OFF);
-    }
+    field = InternalAgentLogger.class.getDeclaredField("loggingLevel");
+    field.setAccessible(true);
+    field.set(InternalAgentLogger.INSTANCE, InternalAgentLogger.LoggingLevel.OFF);
+  }
 
-    @After
-    public void postTest() {
-        baos.reset();
-    }
+  @After
+  public void postTest() {
+    baos.reset();
+  }
 
-    @Test
-    public void testInitializeWithBadValue() {
-        InternalAgentLogger.INSTANCE.initialize("asdf");
+  @Test
+  public void testInitializeWithBadValue() {
+    InternalAgentLogger.INSTANCE.initialize("asdf");
 
-        assertFalse(InternalAgentLogger.INSTANCE.isTraceEnabled());
-    }
+    assertFalse(InternalAgentLogger.INSTANCE.isTraceEnabled());
+  }
 
-    @Test
-    public void testInitializeWithEmptyValue() {
-        InternalAgentLogger.INSTANCE.initialize("");
+  @Test
+  public void testInitializeWithEmptyValue() {
+    InternalAgentLogger.INSTANCE.initialize("");
 
-        assertTrue(InternalAgentLogger.INSTANCE.isTraceEnabled());
-    }
+    assertTrue(InternalAgentLogger.INSTANCE.isTraceEnabled());
+  }
 
-    @Test
-    public void testInitializeWithNullyValue() {
-        InternalAgentLogger.INSTANCE.initialize(null);
+  @Test
+  public void testInitializeWithNullyValue() {
+    InternalAgentLogger.INSTANCE.initialize(null);
 
-        assertTrue(InternalAgentLogger.INSTANCE.isTraceEnabled());
-    }
+    assertTrue(InternalAgentLogger.INSTANCE.isTraceEnabled());
+  }
 
-    @Test
-    public void testNotInitialized() {
-        assertFalse(InternalAgentLogger.INSTANCE.isTraceEnabled());
-    }
+  @Test
+  public void testNotInitialized() {
+    assertFalse(InternalAgentLogger.INSTANCE.isTraceEnabled());
+  }
 
-    @Test
-    public void testInitializedTwice() {
-        InternalAgentLogger.INSTANCE.initialize("WARN");
-        InternalAgentLogger.INSTANCE.initialize("TRACE");
+  @Test
+  public void testInitializedTwice() {
+    InternalAgentLogger.INSTANCE.initialize("WARN");
+    InternalAgentLogger.INSTANCE.initialize("TRACE");
 
-        assertTrue(InternalAgentLogger.INSTANCE.isWarnEnabled());
-        assertTrue(InternalAgentLogger.INSTANCE.isErrorEnabled());
-        assertFalse(InternalAgentLogger.INSTANCE.isTraceEnabled());
-    }
+    assertTrue(InternalAgentLogger.INSTANCE.isWarnEnabled());
+    assertTrue(InternalAgentLogger.INSTANCE.isErrorEnabled());
+    assertFalse(InternalAgentLogger.INSTANCE.isTraceEnabled());
+  }
 
-    @Test // this is very dependent on the format string.
-    public void loggerDateFormatIncludesMilliseconds() throws NoSuchFieldException, IllegalAccessException {
-        InternalAgentLogger.INSTANCE.initialize("TRACE");
-        InternalAgentLogger.INSTANCE.info("T3$t");
-        String message = baos.toString();
-        REAL_SYSOUT.println(message);
-        assertTrue(message.contains("T3$t"));
+  @Test // this is very dependent on the format string.
+  public void loggerDateFormatIncludesMilliseconds()
+      throws NoSuchFieldException, IllegalAccessException {
+    InternalAgentLogger.INSTANCE.initialize("TRACE");
+    InternalAgentLogger.INSTANCE.info("T3$t");
+    String message = baos.toString();
+    REAL_SYSOUT.println(message);
+    assertTrue(message.contains("T3$t"));
 
-        String[] parts = message.split("\\s+");
-        String time = parts[3];
-        String[] timeParts = time.split(":");
-        assertEquals(3, timeParts.length);
+    String[] parts = message.split("\\s+");
+    String time = parts[3];
+    String[] timeParts = time.split(":");
+    assertEquals(3, timeParts.length);
 
-        int dotIndex = timeParts[2].indexOf('.');
-        assertEquals(2, dotIndex);
-    }
+    int dotIndex = timeParts[2].indexOf('.');
+    assertEquals(2, dotIndex);
+  }
 }

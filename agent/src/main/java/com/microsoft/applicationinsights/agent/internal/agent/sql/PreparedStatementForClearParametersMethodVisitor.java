@@ -23,34 +23,28 @@ package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
 import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
-/**
- * Created by gupele on 8/5/2015.
- */
+/** Created by gupele on 8/5/2015. */
 final class PreparedStatementForClearParametersMethodVisitor extends DefaultMethodVisitor {
 
-    public PreparedStatementForClearParametersMethodVisitor(int access,
-                                                            String desc,
-                                                            String owner,
-                                                            String methodName,
-                                                            MethodVisitor methodVisitor,
-                                                            ClassToMethodTransformationData additionalData) {
-        super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
-    }
+  public PreparedStatementForClearParametersMethodVisitor(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
+  }
 
-    @Override
-    protected void onMethodEnter() {
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitInsn(ACONST_NULL);
-        mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
-    }
+  @Override
+  protected void onMethodEnter() {
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitInsn(ACONST_NULL);
+    mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_ARGS_ARRAY, "[Ljava/lang/Object;");
+  }
 
-    @Override
-    protected void byteCodeForMethodExit(int opcode) {
-    }
+  @Override
+  protected void byteCodeForMethodExit(int opcode) {}
 }

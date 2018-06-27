@@ -21,15 +21,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.jmx;
 
-/**
- * Created by gupele on 8/6/2015.
- */
+/** Created by gupele on 8/6/2015. */
 public interface JmxConnectorMXBean {
-    public long getQueryPlanThresholdInMS();
+  public long getQueryPlanThresholdInMS();
 
-    public void setQueryPlanThresholdInMS(long thresholdInMS);
+  public void setQueryPlanThresholdInMS(long thresholdInMS);
 
-    public long getRedisThresholdInMS();
+  public long getRedisThresholdInMS();
 
-    public void setRedisThresholdInMS(long thresholdInMS);
+  public void setRedisThresholdInMS(long thresholdInMS);
 }

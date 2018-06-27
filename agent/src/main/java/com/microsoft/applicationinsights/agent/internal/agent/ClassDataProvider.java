@@ -24,24 +24,26 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 
 /**
- * Defines the interface for classes that know to supply
- * The needed classes that can be instrumented by the agent
+ * Defines the interface for classes that know to supply The needed classes that can be instrumented
+ * by the agent
  *
- * Created by gupele on 5/11/2015.
+ * <p>Created by gupele on 5/11/2015.
  */
 interface ClassDataProvider {
-    /**
-     * The configuration that might add extra information
-     * @param agentConfiguration The configuration
-     */
-    void setConfiguration(AgentConfiguration agentConfiguration);
+  /**
+   * The configuration that might add extra information
+   *
+   * @param agentConfiguration The configuration
+   */
+  void setConfiguration(AgentConfiguration agentConfiguration);
 
-    /**
-     * Get the {@link ClassInstrumentationData}
-     * that is associated with the class name, if such information is found it is removed from the container
-     * @param className The class name to search
-     * @return {@link DefaultByteCodeTransformer} that is
-     * associated with the class name, null otherwise
-     */
-    DefaultByteCodeTransformer getAndRemove(String className);
+  /**
+   * Get the {@link ClassInstrumentationData} that is associated with the class name, if such
+   * information is found it is removed from the container
+   *
+   * @param className The class name to search
+   * @return {@link DefaultByteCodeTransformer} that is associated with the class name, null
+   *     otherwise
+   */
+  DefaultByteCodeTransformer getAndRemove(String className);
 }

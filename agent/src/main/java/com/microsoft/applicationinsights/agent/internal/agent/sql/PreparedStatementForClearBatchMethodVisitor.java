@@ -21,32 +21,29 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-import org.objectweb.asm.MethodVisitor;
-
 import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
 import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
+import org.objectweb.asm.MethodVisitor;
 
-/**
- * Created by gupele on 8/5/2015.
- */
+/** Created by gupele on 8/5/2015. */
 final class PreparedStatementForClearBatchMethodVisitor extends DefaultMethodVisitor {
-    public PreparedStatementForClearBatchMethodVisitor(int access,
-                                                       String desc,
-                                                       String owner,
-                                                       String methodName,
-                                                       MethodVisitor methodVisitor,
-                                                       ClassToMethodTransformationData additionalData) {
-        super(false, true, 0 ,access, desc, owner, methodName, methodVisitor, null);
-    }
+  public PreparedStatementForClearBatchMethodVisitor(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(false, true, 0, access, desc, owner, methodName, methodVisitor, null);
+  }
 
-    @Override
-    protected void onMethodEnter() {
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitInsn(ICONST_0);
-        mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_BATCH_COUNTER, "I");
-    }
+  @Override
+  protected void onMethodEnter() {
+    mv.visitVarInsn(ALOAD, 0);
+    mv.visitInsn(ICONST_0);
+    mv.visitFieldInsn(PUTFIELD, owner, SqlConstants.AI_SDK_BATCH_COUNTER, "I");
+  }
 
-    @Override
-    protected void byteCodeForMethodExit(int opcode) {
-    }
+  @Override
+  protected void byteCodeForMethodExit(int opcode) {}
 }

@@ -26,49 +26,65 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-/**
- * Created by gupele on 8/2/2015.
- */
+/** Created by gupele on 8/2/2015. */
 public final class RestTemplateMethodVisitor extends AbstractHttpMethodVisitor {
 
-    public RestTemplateMethodVisitor(int access,
-                                     String desc,
-                                     String owner,
-                                     String methodName,
-                                     MethodVisitor methodVisitor,
-                                     ClassToMethodTransformationData additionalData) {
-        super(access, desc, owner, methodName, methodVisitor, additionalData);
-    }
+  public RestTemplateMethodVisitor(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(access, desc, owner, methodName, methodVisitor, additionalData);
+  }
 
-    @Override
-    public void onMethodEnter() {
-        int stringLocalIndex = this.newLocal(Type.getType(String.class));
+  @Override
+  public void onMethodEnter() {
+    int stringLocalIndex = this.newLocal(Type.getType(String.class));
 
-        mv.visitVarInsn(ALOAD, 1);
-        Label nullLabel = new Label();
+    mv.visitVarInsn(ALOAD, 1);
+    Label nullLabel = new Label();
 
-        mv.visitJumpInsn(IFNULL, nullLabel);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URI", "toString", "()Ljava/lang/String;", false);
-        mv.visitVarInsn(ASTORE, stringLocalIndex);
+    mv.visitJumpInsn(IFNULL, nullLabel);
+    mv.visitVarInsn(ALOAD, 1);
+    mv.visitMethodInsn(INVOKEVIRTUAL, "java/net/URI", "toString", "()Ljava/lang/String;", false);
+    mv.visitVarInsn(ASTORE, stringLocalIndex);
 
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitLdcInsn(getMethodName());
-        mv.visitVarInsn(ALOAD, stringLocalIndex);
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
+    mv.visitLdcInsn(getMethodName());
+    mv.visitVarInsn(ALOAD, stringLocalIndex);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        ON_ENTER_METHOD_NAME,
+        ON_ENTER_METHOD_SIGNATURE,
+        false);
 
-        Label notNullLabel = new Label();
-        mv.visitJumpInsn(GOTO, notNullLabel);
+    Label notNullLabel = new Label();
+    mv.visitJumpInsn(GOTO, notNullLabel);
 
-        mv.visitLabel(nullLabel);
+    mv.visitLabel(nullLabel);
 
-        super.visitFieldInsn(GETSTATIC, ImplementationsCoordinator.internalName, "INSTANCE", ImplementationsCoordinator.internalNameAsJavaName);
-        mv.visitLdcInsn(getMethodName());
-        mv.visitInsn(ACONST_NULL);
+    super.visitFieldInsn(
+        GETSTATIC,
+        ImplementationsCoordinator.internalName,
+        "INSTANCE",
+        ImplementationsCoordinator.internalNameAsJavaName);
+    mv.visitLdcInsn(getMethodName());
+    mv.visitInsn(ACONST_NULL);
 
-        mv.visitMethodInsn(INVOKEVIRTUAL, ImplementationsCoordinator.internalName, ON_ENTER_METHOD_NAME, ON_ENTER_METHOD_SIGNATURE, false);
+    mv.visitMethodInsn(
+        INVOKEVIRTUAL,
+        ImplementationsCoordinator.internalName,
+        ON_ENTER_METHOD_NAME,
+        ON_ENTER_METHOD_SIGNATURE,
+        false);
 
-        mv.visitLabel(notNullLabel);
-    }
+    mv.visitLabel(notNullLabel);
+  }
 }
-

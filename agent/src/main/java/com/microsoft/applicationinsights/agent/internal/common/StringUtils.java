@@ -21,11 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
-/**
- * Created by gupele on 5/31/2015.
- */
+/** Created by gupele on 5/31/2015. */
 public final class StringUtils {
-    public static boolean isNullOrEmpty(String string) {
-        return string == null || string.length() == 0;
-    }
+  public static boolean isNullOrEmpty(String string) {
+    return string == null || string.length() == 0;
+  }
 }

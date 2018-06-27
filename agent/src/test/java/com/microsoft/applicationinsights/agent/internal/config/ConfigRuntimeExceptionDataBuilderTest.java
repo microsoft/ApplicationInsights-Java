@@ -21,163 +21,179 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import static org.mockito.Mockito.mock;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import static org.mockito.Mockito.mock;
-
-/**
- * Created by gupele on 8/18/2016.
- */
+/** Created by gupele on 8/18/2016. */
 public class ConfigRuntimeExceptionDataBuilderTest {
-    @Test
-    public void testEnabledExceptionWithSuppressedAndValidDataTag() {
-        final Element suppressedElement = createMockElement("name", "aa.aa");
-        final Element validElement = createMockElement("name", "bb.bb");
-
-        final NodeList suppressedNodeList = createMockNodeList(suppressedElement);
-        final NodeList validNodeList = createMockNodeList(validElement);
-
-        final Element exceptionTag = createMockElement("enabled", "true");
-        addAttribute(exceptionTag, "stackSize", " 1 ");
-        addMockNodeList(exceptionTag, "Suppress", suppressedNodeList);
-        addMockNodeList(exceptionTag, "Valid", validNodeList);
-
-        final NodeList nodeList = createMockNodeList(exceptionTag);
-
-        Element mainTag = createMockElementWithNodeList(nodeList);
-
-        ConfigRuntimeExceptionDataBuilder tested = new ConfigRuntimeExceptionDataBuilder();
-
-        AgentBuiltInConfigurationBuilder builder = new AgentBuiltInConfigurationBuilder();
-        builder.setEnabled(true);
-
-        tested.setRuntimeExceptionData(mainTag, builder);
-
-        AgentBuiltInConfiguration confData = builder.create();
-
-        Assert.assertTrue(confData.isEnabled());
-        DataOfConfigurationForException exceptionData = confData.getDataOfConfigurationForException();
-
-        Assert.assertNotNull(exceptionData);
-
-        Assert.assertTrue(exceptionData.isEnabled());
-        Assert.assertEquals(exceptionData.getSuppressedExceptions().size(), 1);
-        Assert.assertEquals(exceptionData.getSuppressedExceptions().iterator().next(), "aa.aa");
-
-        Assert.assertEquals(exceptionData.getValidPathForExceptions().size(), 1);
-        Assert.assertEquals(exceptionData.getValidPathForExceptions().iterator().next(), "bb.bb");
-
-        Assert.assertEquals(exceptionData.getStackSize(), 1);
-    }
-
-    @Test
-    public void testNoExceptionTag() {
-        Element mainTag = mock(Element.class);
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                return null;
-            }
-        }).when(mainTag).getElementsByTagName("RuntimeException");
-
-        ConfigRuntimeExceptionDataBuilder tested = new ConfigRuntimeExceptionDataBuilder();
-
-        AgentBuiltInConfigurationBuilder builder = new AgentBuiltInConfigurationBuilder();
-        tested.setRuntimeExceptionData(mainTag, builder);
-
-        AgentBuiltInConfiguration confData = builder.create();
-
-        DataOfConfigurationForException exceptionData = confData.getDataOfConfigurationForException();
-
-        Assert.assertNotNull(exceptionData);
-
-        Assert.assertFalse(exceptionData.isEnabled());
-    }
-
-    @Test
-    public void testNotEnabledExceptionTag() {
-        final Element exceptionTag = createMockElement("enabled", "false");
-
-        final NodeList nodeList = createMockNodeList(exceptionTag);
-
-        Element mainTag = createMockElementWithNodeList(nodeList);
-
-        ConfigRuntimeExceptionDataBuilder tested = new ConfigRuntimeExceptionDataBuilder();
-
-        AgentBuiltInConfigurationBuilder builder = new AgentBuiltInConfigurationBuilder();
-        tested.setRuntimeExceptionData(mainTag, builder);
-
-        AgentBuiltInConfiguration confData = builder.create();
-
-        DataOfConfigurationForException exceptionData = confData.getDataOfConfigurationForException();
-
-        Assert.assertNotNull(exceptionData);
-
-        Assert.assertFalse(exceptionData.isEnabled());
-    }
-
-    private static Element createMockElement(String attributeName, final String attributeValue) {
-        final Element mockElement = mock(Element.class);
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+  private static Element createMockElement(String attributeName, final String attributeValue) {
+    final Element mockElement = mock(Element.class);
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 return Node.ELEMENT_NODE;
-            }
-        }).when(mockElement).getNodeType();
-        addAttribute(mockElement, attributeName, attributeValue);
+              }
+            })
+        .when(mockElement)
+        .getNodeType();
+    addAttribute(mockElement, attributeName, attributeValue);
 
-        return mockElement;
-    }
+    return mockElement;
+  }
 
-    private static NodeList createMockNodeList(final Element element) {
-        final NodeList nodeList = mock(NodeList.class);
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+  private static NodeList createMockNodeList(final Element element) {
+    final NodeList nodeList = mock(NodeList.class);
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 return 1;
-            }
-        }).when(nodeList).getLength();
+              }
+            })
+        .when(nodeList)
+        .getLength();
 
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 return element;
-            }
-        }).when(nodeList).item(0);
+              }
+            })
+        .when(nodeList)
+        .item(0);
 
-        return nodeList;
-    }
+    return nodeList;
+  }
 
-    private static Element createMockElementWithNodeList(final NodeList nodeList) {
-        Element mockElement = mock(Element.class);
-        addMockNodeList(mockElement, "RuntimeException", nodeList);
+  private static Element createMockElementWithNodeList(final NodeList nodeList) {
+    Element mockElement = mock(Element.class);
+    addMockNodeList(mockElement, "RuntimeException", nodeList);
 
-        return mockElement;
-    }
+    return mockElement;
+  }
 
-    private static void addMockNodeList(Element element, String name, final NodeList nodeList) {
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+  private static void addMockNodeList(Element element, String name, final NodeList nodeList) {
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 return nodeList;
-            }
-        }).when(element).getElementsByTagName(name);
-    }
+              }
+            })
+        .when(element)
+        .getElementsByTagName(name);
+  }
 
-    private static void addAttribute(final Element element, final String attributeName, final String attributeValue) {
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+  private static void addAttribute(
+      final Element element, final String attributeName, final String attributeValue) {
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 return attributeValue;
-            }
-        }).when(element).getAttribute(attributeName);
-    }
+              }
+            })
+        .when(element)
+        .getAttribute(attributeName);
+  }
+
+  @Test
+  public void testEnabledExceptionWithSuppressedAndValidDataTag() {
+    final Element suppressedElement = createMockElement("name", "aa.aa");
+    final Element validElement = createMockElement("name", "bb.bb");
+
+    final NodeList suppressedNodeList = createMockNodeList(suppressedElement);
+    final NodeList validNodeList = createMockNodeList(validElement);
+
+    final Element exceptionTag = createMockElement("enabled", "true");
+    addAttribute(exceptionTag, "stackSize", " 1 ");
+    addMockNodeList(exceptionTag, "Suppress", suppressedNodeList);
+    addMockNodeList(exceptionTag, "Valid", validNodeList);
+
+    final NodeList nodeList = createMockNodeList(exceptionTag);
+
+    Element mainTag = createMockElementWithNodeList(nodeList);
+
+    ConfigRuntimeExceptionDataBuilder tested = new ConfigRuntimeExceptionDataBuilder();
+
+    AgentBuiltInConfigurationBuilder builder = new AgentBuiltInConfigurationBuilder();
+    builder.setEnabled(true);
+
+    tested.setRuntimeExceptionData(mainTag, builder);
+
+    AgentBuiltInConfiguration confData = builder.create();
+
+    Assert.assertTrue(confData.isEnabled());
+    DataOfConfigurationForException exceptionData = confData.getDataOfConfigurationForException();
+
+    Assert.assertNotNull(exceptionData);
+
+    Assert.assertTrue(exceptionData.isEnabled());
+    Assert.assertEquals(exceptionData.getSuppressedExceptions().size(), 1);
+    Assert.assertEquals(exceptionData.getSuppressedExceptions().iterator().next(), "aa.aa");
+
+    Assert.assertEquals(exceptionData.getValidPathForExceptions().size(), 1);
+    Assert.assertEquals(exceptionData.getValidPathForExceptions().iterator().next(), "bb.bb");
+
+    Assert.assertEquals(exceptionData.getStackSize(), 1);
+  }
+
+  @Test
+  public void testNoExceptionTag() {
+    Element mainTag = mock(Element.class);
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
+                return null;
+              }
+            })
+        .when(mainTag)
+        .getElementsByTagName("RuntimeException");
+
+    ConfigRuntimeExceptionDataBuilder tested = new ConfigRuntimeExceptionDataBuilder();
+
+    AgentBuiltInConfigurationBuilder builder = new AgentBuiltInConfigurationBuilder();
+    tested.setRuntimeExceptionData(mainTag, builder);
+
+    AgentBuiltInConfiguration confData = builder.create();
+
+    DataOfConfigurationForException exceptionData = confData.getDataOfConfigurationForException();
+
+    Assert.assertNotNull(exceptionData);
+
+    Assert.assertFalse(exceptionData.isEnabled());
+  }
+
+  @Test
+  public void testNotEnabledExceptionTag() {
+    final Element exceptionTag = createMockElement("enabled", "false");
+
+    final NodeList nodeList = createMockNodeList(exceptionTag);
+
+    Element mainTag = createMockElementWithNodeList(nodeList);
+
+    ConfigRuntimeExceptionDataBuilder tested = new ConfigRuntimeExceptionDataBuilder();
+
+    AgentBuiltInConfigurationBuilder builder = new AgentBuiltInConfigurationBuilder();
+    tested.setRuntimeExceptionData(mainTag, builder);
+
+    AgentBuiltInConfiguration confData = builder.create();
+
+    DataOfConfigurationForException exceptionData = confData.getDataOfConfigurationForException();
+
+    Assert.assertNotNull(exceptionData);
+
+    Assert.assertFalse(exceptionData.isEnabled());
+  }
 }

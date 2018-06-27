@@ -21,42 +21,42 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-/**
- * Created by gupele on 6/2/2015.
- */
+/** Created by gupele on 6/2/2015. */
 final class MethodInstrumentationRequestBuilder {
-    private String methodName;
-    public String methodSignature;
-    public boolean reportCaughtExceptions;
-    public boolean reportExecutionTime;
-    public long thresholdInMS;
+  public String methodSignature;
+  public boolean reportCaughtExceptions;
+  public boolean reportExecutionTime;
+  public long thresholdInMS;
+  private String methodName;
 
-    public MethodInstrumentationRequestBuilder withMethodName(String methodName) {
-        this.methodName = methodName;
-        return this;
-    }
+  public MethodInstrumentationRequestBuilder withMethodName(String methodName) {
+    this.methodName = methodName;
+    return this;
+  }
 
-    public MethodInstrumentationRequestBuilder withMethodSignature(String methodSignature) {
-        this.methodSignature = methodSignature;
-        return this;
-    }
+  public MethodInstrumentationRequestBuilder withMethodSignature(String methodSignature) {
+    this.methodSignature = methodSignature;
+    return this;
+  }
 
-    public MethodInstrumentationRequestBuilder withReportCaughtExceptions(boolean reportCaughtExceptions) {
-        this.reportCaughtExceptions = reportCaughtExceptions;
-        return this;
-    }
+  public MethodInstrumentationRequestBuilder withReportCaughtExceptions(
+      boolean reportCaughtExceptions) {
+    this.reportCaughtExceptions = reportCaughtExceptions;
+    return this;
+  }
 
-    public MethodInstrumentationRequestBuilder withReportExecutionTime(boolean reportExecutionTime) {
-        this.reportExecutionTime = reportExecutionTime;
-        return this;
-    }
+  public MethodInstrumentationRequestBuilder withReportExecutionTime(boolean reportExecutionTime) {
+    this.reportExecutionTime = reportExecutionTime;
+    return this;
+  }
 
-    public MethodInstrumentationRequestBuilder withThresholdInMS(long thresholdInMS) {
-        this.thresholdInMS = thresholdInMS;
-        return this;
-    }
+  public MethodInstrumentationRequestBuilder withThresholdInMS(long thresholdInMS) {
+    this.thresholdInMS = thresholdInMS;
+    return this;
+  }
 
-    public MethodInstrumentationRequest create() {
-        return new MethodInstrumentationRequest(methodName, methodSignature, reportCaughtExceptions, reportExecutionTime, thresholdInMS);
-    }
+  public MethodInstrumentationRequest create() {
+    return new MethodInstrumentationRequest(
+        methodName, methodSignature, reportCaughtExceptions, reportExecutionTime, thresholdInMS);
+  }
 }

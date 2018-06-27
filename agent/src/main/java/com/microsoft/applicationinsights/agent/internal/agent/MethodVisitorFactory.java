@@ -23,15 +23,14 @@ package com.microsoft.applicationinsights.agent.internal.agent;
 
 import org.objectweb.asm.MethodVisitor;
 
-/**
- * Created by gupele on 7/27/2015.
- */
+/** Created by gupele on 7/27/2015. */
 public interface MethodVisitorFactory {
-    MethodVisitor create(MethodInstrumentationDecision decision,
-                         int access,
-                         String desc,
-                         String owner,
-                         String methodName,
-                         MethodVisitor methodVisitor,
-                         ClassToMethodTransformationData additionalData);
+  MethodVisitor create(
+      MethodInstrumentationDecision decision,
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData);
 }

@@ -21,79 +21,79 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.objectweb.asm.Opcodes;
-
 import org.objectweb.asm.Type;
-
-import static org.junit.Assert.*;
 
 public final class ByteCodeUtilsTest {
 
-    @Test
-    public void testIsInterface() throws Exception {
-        assertTrue(ByteCodeUtils.isInterface(Opcodes.ACC_INTERFACE));
-    }
+  @Test
+  public void testIsInterface() throws Exception {
+    assertTrue(ByteCodeUtils.isInterface(Opcodes.ACC_INTERFACE));
+  }
 
-    @Test
-    public void testNotIsInterface() throws Exception {
-        assertFalse(ByteCodeUtils.isInterface(~Opcodes.ACC_INTERFACE));
-    }
+  @Test
+  public void testNotIsInterface() throws Exception {
+    assertFalse(ByteCodeUtils.isInterface(~Opcodes.ACC_INTERFACE));
+  }
 
-    @Test
-    public void testIsAbstract() throws Exception {
-        assertTrue(ByteCodeUtils.isAbstract(Opcodes.ACC_ABSTRACT));
-    }
+  @Test
+  public void testIsAbstract() throws Exception {
+    assertTrue(ByteCodeUtils.isAbstract(Opcodes.ACC_ABSTRACT));
+  }
 
-    @Test
-    public void testNotIsAbstract() throws Exception {
-        assertFalse(ByteCodeUtils.isAbstract(~Opcodes.ACC_ABSTRACT));
-    }
+  @Test
+  public void testNotIsAbstract() throws Exception {
+    assertFalse(ByteCodeUtils.isAbstract(~Opcodes.ACC_ABSTRACT));
+  }
 
-    @Test
-    public void testIsPrivate() throws Exception {
-        assertTrue(ByteCodeUtils.isPrivate(Opcodes.ACC_PRIVATE));
-    }
+  @Test
+  public void testIsPrivate() throws Exception {
+    assertTrue(ByteCodeUtils.isPrivate(Opcodes.ACC_PRIVATE));
+  }
 
-    @Test
-    public void testNotIsPrivate() throws Exception {
-        assertFalse(ByteCodeUtils.isPrivate(~Opcodes.ACC_PRIVATE));
-    }
+  @Test
+  public void testNotIsPrivate() throws Exception {
+    assertFalse(ByteCodeUtils.isPrivate(~Opcodes.ACC_PRIVATE));
+  }
 
-    @Test
-    public void testIsStatic() throws Exception {
-        assertTrue(ByteCodeUtils.isStatic(Opcodes.ACC_STATIC));
-    }
+  @Test
+  public void testIsStatic() throws Exception {
+    assertTrue(ByteCodeUtils.isStatic(Opcodes.ACC_STATIC));
+  }
 
-    @Test
-    public void testNotIsStatic() throws Exception {
-        assertFalse(ByteCodeUtils.isStatic(~Opcodes.ACC_STATIC));
-    }
+  @Test
+  public void testNotIsStatic() throws Exception {
+    assertFalse(ByteCodeUtils.isStatic(~Opcodes.ACC_STATIC));
+  }
 
-    @Test
-    public void testIsConstructorInit() throws Exception {
-        assertTrue(ByteCodeUtils.isAnyConstructor("<init>"));
-    }
+  @Test
+  public void testIsConstructorInit() throws Exception {
+    assertTrue(ByteCodeUtils.isAnyConstructor("<init>"));
+  }
 
-    @Test
-    public void testIsConstructorCinit() throws Exception {
-        assertTrue(ByteCodeUtils.isAnyConstructor("<clinit>"));
-    }
+  @Test
+  public void testIsConstructorCinit() throws Exception {
+    assertTrue(ByteCodeUtils.isAnyConstructor("<clinit>"));
+  }
 
-    @Test
-    public void testIsNonConstructor() throws Exception {
-        assertFalse(ByteCodeUtils.isAnyConstructor("bafsd"));
-    }
+  @Test
+  public void testIsNonConstructor() throws Exception {
+    assertFalse(ByteCodeUtils.isAnyConstructor("bafsd"));
+  }
 
-    @Test
-    public void testIsLargeType() throws Exception {
-        assertTrue(ByteCodeUtils.isLargeType(Type.LONG_TYPE));
-        assertTrue(ByteCodeUtils.isLargeType(Type.DOUBLE_TYPE));
-    }
+  @Test
+  public void testIsLargeType() throws Exception {
+    assertTrue(ByteCodeUtils.isLargeType(Type.LONG_TYPE));
+    assertTrue(ByteCodeUtils.isLargeType(Type.DOUBLE_TYPE));
+  }
 
-    @Test
-    public void testIsShortType() throws Exception {
-        assertFalse(ByteCodeUtils.isLargeType(Type.INT_TYPE));
-        assertFalse(ByteCodeUtils.isLargeType(Type.VOID_TYPE));
-    }
+  @Test
+  public void testIsShortType() throws Exception {
+    assertFalse(ByteCodeUtils.isLargeType(Type.INT_TYPE));
+    assertFalse(ByteCodeUtils.isLargeType(Type.VOID_TYPE));
+  }
 }

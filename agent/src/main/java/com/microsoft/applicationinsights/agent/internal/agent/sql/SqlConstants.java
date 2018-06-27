@@ -21,15 +21,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-/**
- * Created by gupele on 8/5/2015.
- */
+/** Created by gupele on 8/5/2015. */
 final class SqlConstants {
-    final static String AI_SDK_ARGS_ARRAY = "__aijdk_sql_args__";
+  static final String AI_SDK_ARGS_ARRAY = "__aijdk_sql_args__";
 
-    final static String AI_SDK_BATCH_COUNTER = "__aijdk_sql_batch_counter__";
+  static final String AI_SDK_BATCH_COUNTER = "__aijdk_sql_batch_counter__";
 
-    final static String AI_SDK_SQL_STRING = "__aijdk_sql_string__";
+  static final String AI_SDK_SQL_STRING = "__aijdk_sql_string__";
 
-    private SqlConstants() {}
+  private SqlConstants() {}
 }

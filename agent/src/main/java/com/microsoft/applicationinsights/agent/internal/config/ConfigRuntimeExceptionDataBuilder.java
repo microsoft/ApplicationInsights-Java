@@ -23,117 +23,119 @@ package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import java.util.HashSet;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.HashSet;
-
 /**
  * The class fetches the data from the Agent's configuration file
  *
- * Created by gupele on 8/17/2016.
+ * <p>Created by gupele on 8/17/2016.
  */
 final class ConfigRuntimeExceptionDataBuilder {
 
-    private final static int MAX_STACK_SIZE = Integer.MAX_VALUE;
+  private static final int MAX_STACK_SIZE = Integer.MAX_VALUE;
 
-    private final static String FULL_STACK_SIZE_NAME_VALUE = "FULL";
+  private static final String FULL_STACK_SIZE_NAME_VALUE = "FULL";
 
-    private final static String NAME_ATTRIBUTE = "name";
-    private final static String SUPPRESS_TAG = "Suppress";
-    private final static String VALID_TAG = "Valid";
-    private final static String MAX_STACK_SIZE_ATTRIBUTE = "stackSize";
-    private final static String RUNTIME_EXCEPTION_TAG = "RuntimeException";
+  private static final String NAME_ATTRIBUTE = "name";
+  private static final String SUPPRESS_TAG = "Suppress";
+  private static final String VALID_TAG = "Valid";
+  private static final String MAX_STACK_SIZE_ATTRIBUTE = "stackSize";
+  private static final String RUNTIME_EXCEPTION_TAG = "RuntimeException";
 
-    public void setRuntimeExceptionData(Element enclosingTag, AgentBuiltInConfigurationBuilder builtInConfigurationBuilder) {
-        DataOfConfigurationForException data = new DataOfConfigurationForException();
-        builtInConfigurationBuilder.setDataOfConfigurationForException(data);
+  public void setRuntimeExceptionData(
+      Element enclosingTag, AgentBuiltInConfigurationBuilder builtInConfigurationBuilder) {
+    DataOfConfigurationForException data = new DataOfConfigurationForException();
+    builtInConfigurationBuilder.setDataOfConfigurationForException(data);
 
-        Element rtExceptionElement = fetchMainTag(enclosingTag, data);
-        if (rtExceptionElement == null) {
-            return;
-        }
-
-        FetchStackSize(rtExceptionElement, data);
-        FetchSupressedExceptions(rtExceptionElement, data);
-        FetchValidPaths(rtExceptionElement, data);
+    Element rtExceptionElement = fetchMainTag(enclosingTag, data);
+    if (rtExceptionElement == null) {
+      return;
     }
 
-    private Element fetchMainTag(Element enclosingTag, DataOfConfigurationForException data) {
-        NodeList nodes = enclosingTag.getElementsByTagName(RUNTIME_EXCEPTION_TAG);
-        Element rtExceptionElement = XmlParserUtils.getFirst(nodes);
-        if (rtExceptionElement == null) {
-            data.setEnabled(false);
-            return null;
-        }
+    FetchStackSize(rtExceptionElement, data);
+    FetchSupressedExceptions(rtExceptionElement, data);
+    FetchValidPaths(rtExceptionElement, data);
+  }
 
-        boolean enabled = XmlParserUtils.getEnabled(rtExceptionElement, RUNTIME_EXCEPTION_TAG);
-        if (!enabled) {
-            data.setEnabled(false);
-            return null;
-        }
-
-        data.setEnabled(true);
-        return rtExceptionElement;
+  private Element fetchMainTag(Element enclosingTag, DataOfConfigurationForException data) {
+    NodeList nodes = enclosingTag.getElementsByTagName(RUNTIME_EXCEPTION_TAG);
+    Element rtExceptionElement = XmlParserUtils.getFirst(nodes);
+    if (rtExceptionElement == null) {
+      data.setEnabled(false);
+      return null;
     }
 
-    private void FetchValidPaths(Element rtExceptionElement, DataOfConfigurationForException data) {
-        HashSet<String> suppressedExceptions = fetchSet(rtExceptionElement, VALID_TAG);
-        data.setValidPathForExceptions(suppressedExceptions);
+    boolean enabled = XmlParserUtils.getEnabled(rtExceptionElement, RUNTIME_EXCEPTION_TAG);
+    if (!enabled) {
+      data.setEnabled(false);
+      return null;
     }
 
-    private void FetchSupressedExceptions(Element rtExceptionElement, DataOfConfigurationForException data) {
-        HashSet<String> validPaths = fetchSet(rtExceptionElement, SUPPRESS_TAG);
-        data.setSuppressedExceptions(validPaths);
+    data.setEnabled(true);
+    return rtExceptionElement;
+  }
+
+  private void FetchValidPaths(Element rtExceptionElement, DataOfConfigurationForException data) {
+    HashSet<String> suppressedExceptions = fetchSet(rtExceptionElement, VALID_TAG);
+    data.setValidPathForExceptions(suppressedExceptions);
+  }
+
+  private void FetchSupressedExceptions(
+      Element rtExceptionElement, DataOfConfigurationForException data) {
+    HashSet<String> validPaths = fetchSet(rtExceptionElement, SUPPRESS_TAG);
+    data.setSuppressedExceptions(validPaths);
+  }
+
+  private void FetchStackSize(Element rtExceptionElement, DataOfConfigurationForException data) {
+    int stackSize = MAX_STACK_SIZE;
+
+    String maxStackSizeAsString = rtExceptionElement.getAttribute(MAX_STACK_SIZE_ATTRIBUTE);
+    if (StringUtils.isNullOrEmpty(maxStackSizeAsString)) {
+      data.setStackSize(stackSize);
+      return;
     }
 
-    private void FetchStackSize(Element rtExceptionElement, DataOfConfigurationForException data) {
-        int stackSize = MAX_STACK_SIZE;
+    String preparedValue = maxStackSizeAsString.trim().toUpperCase();
+    if (!FULL_STACK_SIZE_NAME_VALUE.equals(preparedValue)) {
+      try {
+        int maxStackSize = Integer.parseInt(preparedValue);
+        stackSize = maxStackSize;
+      } catch (Exception e) {
+        InternalAgentLogger.INSTANCE.error(
+            "Failed to parse attribute %s with value %s, will send full stack" + "exception : %s",
+            MAX_STACK_SIZE, maxStackSizeAsString, ExceptionUtils.getStackTrace(e));
+      }
+    }
 
-        String maxStackSizeAsString = rtExceptionElement.getAttribute(MAX_STACK_SIZE_ATTRIBUTE);
-        if (StringUtils.isNullOrEmpty(maxStackSizeAsString)) {
-            data.setStackSize(stackSize);
-            return;
+    data.setStackSize(stackSize);
+  }
+
+  private HashSet<String> fetchSet(Element rtExceptionElement, String tagName) {
+    HashSet<String> exceptions = new HashSet<String>();
+    if (rtExceptionElement != null) {
+      NodeList nodes = rtExceptionElement.getElementsByTagName(tagName);
+
+      if (nodes != null && nodes.getLength() > 0) {
+        for (int suppressIndex = 0; suppressIndex < nodes.getLength(); ++suppressIndex) {
+          Node suppressNode = nodes.item(suppressIndex);
+          if (suppressNode.getNodeType() != Node.ELEMENT_NODE) {
+            continue;
+          }
+
+          Element suppressElement = (Element) suppressNode;
+
+          String exceptionName = suppressElement.getAttribute(NAME_ATTRIBUTE);
+          if (!StringUtils.isNullOrEmpty(exceptionName)) {
+            exceptions.add(exceptionName);
+          }
         }
-
-        String preparedValue = maxStackSizeAsString.trim().toUpperCase();
-        if (!FULL_STACK_SIZE_NAME_VALUE.equals(preparedValue)) {
-            try {
-                int maxStackSize = Integer.parseInt(preparedValue);
-                stackSize = maxStackSize;
-            } catch (Exception e) {
-                InternalAgentLogger.INSTANCE.error("Failed to parse attribute %s with value %s, will send full stack" +
-                        "exception : %s", MAX_STACK_SIZE, maxStackSizeAsString, ExceptionUtils.getStackTrace(e));
-            }
-        }
-
-        data.setStackSize(stackSize);
+      }
     }
 
-    private HashSet<String> fetchSet(Element rtExceptionElement, String tagName) {
-        HashSet<String> exceptions = new HashSet<String>();
-        if (rtExceptionElement != null) {
-            NodeList nodes = rtExceptionElement.getElementsByTagName(tagName);
-
-            if (nodes != null && nodes.getLength() > 0) {
-                for (int suppressIndex = 0; suppressIndex < nodes.getLength(); ++suppressIndex) {
-                    Node suppressNode = nodes.item(suppressIndex);
-                    if (suppressNode.getNodeType() != Node.ELEMENT_NODE) {
-                        continue;
-                    }
-
-                    Element suppressElement = (Element)suppressNode;
-
-                    String exceptionName = suppressElement.getAttribute(NAME_ATTRIBUTE);
-                    if (!StringUtils.isNullOrEmpty(exceptionName)) {
-                        exceptions.add(exceptionName);
-                    }
-                }
-            }
-        }
-
-        return exceptions;
-    }
+    return exceptions;
+  }
 }

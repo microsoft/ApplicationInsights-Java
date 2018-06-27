@@ -21,81 +21,81 @@
 
 package com.microsoft.applicationinsights.agent.internal.coresync.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
-import junit.framework.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by gupele on 8/18/2016.
- */
+/** Created by gupele on 8/18/2016. */
 public class RuntimeExceptionDeciderTest {
-    @Test
-    public void testNullConfData() {
-        RuntimeExceptionDecider tested = new RuntimeExceptionDecider();
+  @Test
+  public void testNullConfData() {
+    RuntimeExceptionDecider tested = new RuntimeExceptionDecider();
 
-        RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
+    RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
 
-        assertNotNull(result);
-        assertFalse(result.valid);
-    }
+    assertNotNull(result);
+    assertFalse(result.valid);
+  }
 
-    @Test
-    public void testConfDataDisabled() {
-        RuntimeExceptionDecider tested = new RuntimeExceptionDecider();
-        DataOfConfigurationForException data = new DataOfConfigurationForException();
-        data.setEnabled(false);
-        tested.setExceptionData(data);
+  @Test
+  public void testConfDataDisabled() {
+    RuntimeExceptionDecider tested = new RuntimeExceptionDecider();
+    DataOfConfigurationForException data = new DataOfConfigurationForException();
+    data.setEnabled(false);
+    tested.setExceptionData(data);
 
-        RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
+    RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
 
-        assertNotNull(result);
-        assertFalse(result.valid);
-    }
+    assertNotNull(result);
+    assertFalse(result.valid);
+  }
 
-    @Test
-    public void testConfDataEnabled() {
-        RuntimeExceptionDecider tested = new RuntimeExceptionDecider(false);
-        DataOfConfigurationForException data = new DataOfConfigurationForException();
-        data.setEnabled(true);
-        tested.setExceptionData(data);
+  @Test
+  public void testConfDataEnabled() {
+    RuntimeExceptionDecider tested = new RuntimeExceptionDecider(false);
+    DataOfConfigurationForException data = new DataOfConfigurationForException();
+    data.setEnabled(true);
+    tested.setExceptionData(data);
 
-        RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
+    RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
 
-        assertNotNull(result);
-        assertTrue(result.valid);
-        assertEquals(result.stackSize, Integer.MAX_VALUE);
-    }
+    assertNotNull(result);
+    assertTrue(result.valid);
+    assertEquals(result.stackSize, Integer.MAX_VALUE);
+  }
 
-    @Test
-    public void testConfDataEnabledWithSuppressedData() {
-        RuntimeExceptionDecider tested = new RuntimeExceptionDecider();
-        DataOfConfigurationForException data = new DataOfConfigurationForException();
-        data.setEnabled(true);
-        data.setStackSize(1);
-        data.getSuppressedExceptions().add("java.lang.RuntimeException");
-        tested.setExceptionData(data);
+  @Test
+  public void testConfDataEnabledWithSuppressedData() {
+    RuntimeExceptionDecider tested = new RuntimeExceptionDecider();
+    DataOfConfigurationForException data = new DataOfConfigurationForException();
+    data.setEnabled(true);
+    data.setStackSize(1);
+    data.getSuppressedExceptions().add("java.lang.RuntimeException");
+    tested.setExceptionData(data);
 
-        RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
+    RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
 
-        assertNotNull(result);
-        assertFalse(result.valid);
-    }
+    assertNotNull(result);
+    assertFalse(result.valid);
+  }
 
-    @Test
-    public void testConfDataEnabledWithSuppressedDataNotRelevant() {
-        RuntimeExceptionDecider tested = new RuntimeExceptionDecider(false);
-        DataOfConfigurationForException data = new DataOfConfigurationForException();
-        data.setEnabled(true);
-        data.setStackSize(1);
-        data.getSuppressedExceptions().add("aa.aa");
-        tested.setExceptionData(data);
+  @Test
+  public void testConfDataEnabledWithSuppressedDataNotRelevant() {
+    RuntimeExceptionDecider tested = new RuntimeExceptionDecider(false);
+    DataOfConfigurationForException data = new DataOfConfigurationForException();
+    data.setEnabled(true);
+    data.setStackSize(1);
+    data.getSuppressedExceptions().add("aa.aa");
+    tested.setExceptionData(data);
 
-        RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
+    RuntimeExceptionDecider.ValidationResult result = tested.isValid(new RuntimeException());
 
-        assertNotNull(result);
-        assertTrue(result.valid);
-        assertEquals(result.stackSize, 1);
-    }
+    assertNotNull(result);
+    assertTrue(result.valid);
+    assertEquals(result.stackSize, 1);
+  }
 }

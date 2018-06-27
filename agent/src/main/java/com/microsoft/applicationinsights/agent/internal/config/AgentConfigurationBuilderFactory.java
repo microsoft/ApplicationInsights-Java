@@ -25,35 +25,37 @@ import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
 
 /**
- * The factory is responsible for creating the correct {@link com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilder}
+ * The factory is responsible for creating the correct {@link
+ * com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilder}
  *
- * Created by gupele on 5/19/2015.
+ * <p>Created by gupele on 5/19/2015.
  */
 public class AgentConfigurationBuilderFactory {
-    public AgentConfigurationBuilder createBuilder(String builderClassName) {
-        if (StringUtils.isNullOrEmpty(builderClassName)) {
-            return createDefaultBuilder();
-        }
-        try {
-            Object builder = Class.forName(builderClassName).newInstance();
-            if (builder instanceof AgentConfigurationBuilder) {
-                return (AgentConfigurationBuilder)builder;
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            try {
-                InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'", t.toString());            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
-        return null;
+  public AgentConfigurationBuilder createBuilder(String builderClassName) {
+    if (StringUtils.isNullOrEmpty(builderClassName)) {
+      return createDefaultBuilder();
+    }
+    try {
+      Object builder = Class.forName(builderClassName).newInstance();
+      if (builder instanceof AgentConfigurationBuilder) {
+        return (AgentConfigurationBuilder) builder;
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'", t.toString());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
 
-    public AgentConfigurationBuilder createDefaultBuilder() {
-        return new XmlAgentConfigurationBuilder();
-    }
+    return null;
+  }
+
+  public AgentConfigurationBuilder createDefaultBuilder() {
+    return new XmlAgentConfigurationBuilder();
+  }
 }

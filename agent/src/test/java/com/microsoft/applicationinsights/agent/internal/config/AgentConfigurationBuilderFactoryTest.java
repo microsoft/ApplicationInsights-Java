@@ -21,37 +21,44 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public final class AgentConfigurationBuilderFactoryTest {
-    @Test
-    public void testCreateDefaultBuilder() {
-        AgentConfigurationBuilder builder = new AgentConfigurationBuilderFactory().createDefaultBuilder();
-        verifyXmlBuilder(builder);
-    }
+  private static void verifyXmlBuilder(AgentConfigurationBuilder builder) {
+    assertNotNull(builder);
+    assertTrue(builder instanceof XmlAgentConfigurationBuilder);
+  }
 
-    @Test
-    public void testCreateXmlBuilder() {
-        AgentConfigurationBuilder builder = new AgentConfigurationBuilderFactory().createBuilder("com.microsoft.applicationinsights.agent.internal.config.XmlAgentConfigurationBuilder");
-        verifyXmlBuilder(builder);
-    }
+  @Test
+  public void testCreateDefaultBuilder() {
+    AgentConfigurationBuilder builder =
+        new AgentConfigurationBuilderFactory().createDefaultBuilder();
+    verifyXmlBuilder(builder);
+  }
 
-    @Test
-    public void testCreateNullBuilder() {
-        AgentConfigurationBuilder builder = new AgentConfigurationBuilderFactory().createBuilder(null);
-        verifyXmlBuilder(builder);
-    }
+  @Test
+  public void testCreateXmlBuilder() {
+    AgentConfigurationBuilder builder =
+        new AgentConfigurationBuilderFactory()
+            .createBuilder(
+                "com.microsoft.applicationinsights.agent.internal.config.XmlAgentConfigurationBuilder");
+    verifyXmlBuilder(builder);
+  }
 
-    @Test
-    public void testCreateBadBuilder() {
-        AgentConfigurationBuilder builder = new AgentConfigurationBuilderFactory().createBuilder("java/lang/Object");
-        assertNull(builder);
-    }
+  @Test
+  public void testCreateNullBuilder() {
+    AgentConfigurationBuilder builder = new AgentConfigurationBuilderFactory().createBuilder(null);
+    verifyXmlBuilder(builder);
+  }
 
-    private static void verifyXmlBuilder(AgentConfigurationBuilder builder) {
-        assertNotNull(builder);
-        assertTrue(builder instanceof XmlAgentConfigurationBuilder);
-    }
+  @Test
+  public void testCreateBadBuilder() {
+    AgentConfigurationBuilder builder =
+        new AgentConfigurationBuilderFactory().createBuilder("java/lang/Object");
+    assertNull(builder);
+  }
 }

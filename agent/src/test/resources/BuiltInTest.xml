@@ -20,10 +20,10 @@
   -->
 
 <ApplicationInsightsAgent>
-    <Instrumentation>
-        <BuiltIn>
-            <HIBERNATE enabled="false"/>
-            <HTTP enabled="true"/>
-        </BuiltIn>
-    </Instrumentation>
+  <Instrumentation>
+    <BuiltIn>
+      <HIBERNATE enabled="false"/>
+      <HTTP enabled="true"/>
+    </BuiltIn>
+  </Instrumentation>
 </ApplicationInsightsAgent>

@@ -21,35 +21,32 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.redis;
 
-import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
-
+import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
 import org.objectweb.asm.MethodVisitor;
 
-/**
- * The class is responsible for instrumenting Jedis client methods.
- */
+/** The class is responsible for instrumenting Jedis client methods. */
 final class JedisMethodVisitorV2 extends DefaultMethodVisitor {
-    private final static String ON_ENTER_METHOD_NAME = "jedisMethodStarted";
-    private final static String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;)V";
+  private static final String ON_ENTER_METHOD_NAME = "jedisMethodStarted";
+  private static final String ON_ENTER_METHOD_SIGNATURE = "(Ljava/lang/String;)V";
 
-    public JedisMethodVisitorV2(int access,
-                                  String desc,
-                                  String owner,
-                                  String methodName,
-                                  MethodVisitor methodVisitor,
-                                  ClassToMethodTransformationData additionalData) {
-        super(false, true, 0, access, desc, owner, methodName, methodVisitor, additionalData);
-    }
+  public JedisMethodVisitorV2(
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(false, true, 0, access, desc, owner, methodName, methodVisitor, additionalData);
+  }
 
-    @Override
-    protected String getOnEnterMethodName() {
-        return ON_ENTER_METHOD_NAME;
-    }
+  @Override
+  protected String getOnEnterMethodName() {
+    return ON_ENTER_METHOD_NAME;
+  }
 
-    @Override
-    protected String getOnEnterMethodSignature() {
-        return ON_ENTER_METHOD_SIGNATURE;
-    }
-
+  @Override
+  protected String getOnEnterMethodSignature() {
+    return ON_ENTER_METHOD_SIGNATURE;
+  }
 }

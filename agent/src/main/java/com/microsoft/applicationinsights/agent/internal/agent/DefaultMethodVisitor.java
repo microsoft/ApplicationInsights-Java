@@ -21,11 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.util.HashSet;
-
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-
+import java.util.HashSet;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -33,138 +31,154 @@ import org.objectweb.asm.Type;
 /**
  * This class is responsible for finding where the method starts and ends.
  *
- * When the method starts, the class will inject byte code that will call our code with the class name
- * method name and the arguments, and when the method ends will call again with the method name and the result
- * or exception if there is one, the class will make sure that the original code's behavior is not changed
+ * <p>When the method starts, the class will inject byte code that will call our code with the class
+ * name method name and the arguments, and when the method ends will call again with the method name
+ * and the result or exception if there is one, the class will make sure that the original code's
+ * behavior is not changed
  *
- * Created by gupele on 5/11/2015.
+ * <p>Created by gupele on 5/11/2015.
  */
 public class DefaultMethodVisitor extends AdvancedAdviceAdapter {
 
-    private final static String THROWABLE_METHOD_NAME = "exceptionCaught";
-    private final static String EXCEPTION_METHOD_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
+  private static final String THROWABLE_METHOD_NAME = "exceptionCaught";
+  private static final String EXCEPTION_METHOD_SIGNATURE =
+      "(Ljava/lang/String;Ljava/lang/Throwable;)V";
 
-    private final static String START_DETECT_METHOD_NAME = "methodStarted";
-    private final static String START_DETECT_METHOD_SIGNATURE = "(Ljava/lang/String;)V";
+  private static final String START_DETECT_METHOD_NAME = "methodStarted";
+  private static final String START_DETECT_METHOD_SIGNATURE = "(Ljava/lang/String;)V";
 
-    private final static String FINISH_DETECT_METHOD_NAME = "methodFinished";
-    private final static String FINISH_METHOD_DEFAULT_SIGNATURE = "(Ljava/lang/String;J)V";
-    private final static String FINISH_METHOD_EXCEPTION_SIGNATURE = "(Ljava/lang/String;Ljava/lang/Throwable;)V";
+  private static final String FINISH_DETECT_METHOD_NAME = "methodFinished";
+  private static final String FINISH_METHOD_DEFAULT_SIGNATURE = "(Ljava/lang/String;J)V";
+  private static final String FINISH_METHOD_EXCEPTION_SIGNATURE =
+      "(Ljava/lang/String;Ljava/lang/Throwable;)V";
+  protected final String owner;
+  private final boolean reportCaughtExceptions;
+  private final long thresholdInMS;
+  private HashSet<Label> labels = null;
 
-    private final boolean reportCaughtExceptions;
-    private final long thresholdInMS;
-    private HashSet<Label> labels = null;
+  public DefaultMethodVisitor(
+      boolean reportCaughtExceptions,
+      boolean reportExecutionTime,
+      long thresholdInMS,
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
+    this.reportCaughtExceptions = reportCaughtExceptions;
+    this.thresholdInMS = thresholdInMS;
+    this.owner = owner;
+  }
 
-    protected final String owner;
+  public DefaultMethodVisitor(
+      MethodInstrumentationDecision decision,
+      int access,
+      String desc,
+      String owner,
+      String methodName,
+      MethodVisitor methodVisitor,
+      ClassToMethodTransformationData additionalData) {
+    this(
+        decision.isReportCaughtExceptions(),
+        decision.isReportExecutionTime(),
+        decision.getThresholdInMS(),
+        access,
+        desc,
+        owner,
+        methodName,
+        methodVisitor,
+        additionalData);
+  }
 
-    public DefaultMethodVisitor(boolean reportCaughtExceptions,
-                                boolean reportExecutionTime,
-                                long thresholdInMS,
-                                int access,
-                                String desc,
-                                String owner,
-                                String methodName,
-                                MethodVisitor methodVisitor,
-                                ClassToMethodTransformationData additionalData) {
-        super(reportExecutionTime, ASM5, methodVisitor, access, owner, methodName, desc);
-        this.reportCaughtExceptions = reportCaughtExceptions;
-        this.thresholdInMS = thresholdInMS;
-        this.owner = owner;
+  @Override
+  protected void byteCodeForMethodExit(int opcode) {
+
+    Object[] args = null;
+    String methodSignature = getOnExitMethodDefaultSignature();
+    switch (translateExitCode(opcode)) {
+      case EXIT_WITH_EXCEPTION:
+        args =
+            new Object[] {
+              getMethodName(), duplicateTopStackToTempVariable(Type.getType(Throwable.class))
+            };
+        methodSignature = getOnExitMethodExceptionSignature();
+        break;
+
+      case EXIT_WITH_RETURN_VALUE:
+      case EXIT_VOID:
+        args = new Object[] {getMethodName(), thresholdInMS};
+        break;
+
+      default:
+        break;
     }
 
-    public DefaultMethodVisitor(MethodInstrumentationDecision decision,
-                                int access,
-                                String desc,
-                                String owner,
-                                String methodName,
-                                MethodVisitor methodVisitor,
-                                ClassToMethodTransformationData additionalData) {
-        this(decision.isReportCaughtExceptions(), decision.isReportExecutionTime(), decision.getThresholdInMS(), access, desc, owner, methodName, methodVisitor, additionalData);
+    if (args != null) {
+      activateEnumMethod(
+          ImplementationsCoordinator.class, getOnExitMethodName(), methodSignature, args);
+    }
+  }
+
+  @Override
+  public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+    super.visitTryCatchBlock(start, end, handler, type);
+    if (!reportCaughtExceptions || StringUtils.isNullOrEmpty(type)) {
+      return;
     }
 
-    @Override
-    protected void byteCodeForMethodExit(int opcode) {
+    if (labels == null) {
+      labels = new HashSet<Label>();
+    }
+    labels.add(handler);
+  }
 
-        Object[] args = null;
-        String methodSignature = getOnExitMethodDefaultSignature();
-        switch (translateExitCode(opcode)) {
-            case EXIT_WITH_EXCEPTION:
-                args = new Object[] { getMethodName(), duplicateTopStackToTempVariable(Type.getType(Throwable.class)) };
-                methodSignature = getOnExitMethodExceptionSignature();
-                break;
-
-            case EXIT_WITH_RETURN_VALUE:
-            case EXIT_VOID:
-                args = new Object[] { getMethodName(), thresholdInMS };
-                break;
-
-            default:
-                break;
-        }
-
-        if (args != null) {
-            activateEnumMethod(ImplementationsCoordinator.class, getOnExitMethodName(), methodSignature, args);
-        }
+  @Override
+  public void visitLabel(Label label) {
+    super.visitLabel(label);
+    if (!reportCaughtExceptions || labels == null || !labels.contains(label)) {
+      return;
     }
 
-    @Override
-    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-        super.visitTryCatchBlock(start, end, handler, type);
-        if (!reportCaughtExceptions || StringUtils.isNullOrEmpty(type)) {
-            return;
-        }
+    activateEnumMethod(
+        ImplementationsCoordinator.class,
+        THROWABLE_METHOD_NAME,
+        EXCEPTION_METHOD_SIGNATURE,
+        getMethodName(),
+        duplicateTopStackToTempVariable(Type.getType(Exception.class)));
+  }
 
-        if (labels == null) {
-            labels = new HashSet<Label>();
-        }
-        labels.add(handler);
+  @Override
+  protected void onMethodEnter() {
+    if (!reportExecutionTime) {
+      return;
     }
 
-    @Override
-    public void visitLabel(Label label) {
-        super.visitLabel(label);
-        if (!reportCaughtExceptions || labels == null || !labels.contains(label)) {
-            return;
-        }
+    activateEnumMethod(
+        ImplementationsCoordinator.class,
+        getOnEnterMethodName(),
+        getOnEnterMethodSignature(),
+        getMethodName());
+  }
 
-        activateEnumMethod(
-                ImplementationsCoordinator.class,
-                THROWABLE_METHOD_NAME,
-                EXCEPTION_METHOD_SIGNATURE,
-                getMethodName(),
-                duplicateTopStackToTempVariable(Type.getType(Exception.class)));
-    }
+  protected String getOnEnterMethodName() {
+    return START_DETECT_METHOD_NAME;
+  }
 
-    @Override
-    protected void onMethodEnter() {
-        if (!reportExecutionTime) {
-            return;
-        }
+  protected String getOnEnterMethodSignature() {
+    return START_DETECT_METHOD_SIGNATURE;
+  }
 
-        activateEnumMethod(
-                ImplementationsCoordinator.class,
-                getOnEnterMethodName(),
-                getOnEnterMethodSignature(),
-                getMethodName());
-    }
+  protected String getOnExitMethodName() {
+    return FINISH_DETECT_METHOD_NAME;
+  }
 
-    protected String getOnEnterMethodName() {
-        return START_DETECT_METHOD_NAME;
-    } 
+  protected String getOnExitMethodDefaultSignature() {
+    return FINISH_METHOD_DEFAULT_SIGNATURE;
+  }
 
-    protected String getOnEnterMethodSignature() {
-        return START_DETECT_METHOD_SIGNATURE;
-    }
-
-    protected String getOnExitMethodName() {
-        return FINISH_DETECT_METHOD_NAME;
-    }
-
-    protected String getOnExitMethodDefaultSignature() {
-        return FINISH_METHOD_DEFAULT_SIGNATURE;
-    }
-
-    protected String getOnExitMethodExceptionSignature() {
-        return FINISH_METHOD_EXCEPTION_SIGNATURE;
-    }
+  protected String getOnExitMethodExceptionSignature() {
+    return FINISH_METHOD_EXCEPTION_SIGNATURE;
+  }
 }

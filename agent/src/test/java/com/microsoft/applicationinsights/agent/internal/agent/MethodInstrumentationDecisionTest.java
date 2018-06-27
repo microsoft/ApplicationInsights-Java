@@ -21,23 +21,26 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.*;
-
 public final class MethodInstrumentationDecisionTest {
-    @Test(expected = IllegalArgumentException.class)
-    public void testIllegalCtor() {
-        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, null, 0);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testIllegalCtor() {
+    MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, null, 0);
+  }
 
-    @Test
-    public void testCtor() {
-        MethodVisitorFactory mockFactory = Mockito.mock(MethodVisitorFactory.class);
-        MethodInstrumentationDecision test = new MethodInstrumentationDecision(true, false, mockFactory, 0);
-        assertTrue(test.isReportCaughtExceptions());
-        assertFalse(test.isReportExecutionTime());
-        assertSame(test.getMethodVisitorFactory(), mockFactory);
-    }
+  @Test
+  public void testCtor() {
+    MethodVisitorFactory mockFactory = Mockito.mock(MethodVisitorFactory.class);
+    MethodInstrumentationDecision test =
+        new MethodInstrumentationDecision(true, false, mockFactory, 0);
+    assertTrue(test.isReportCaughtExceptions());
+    assertFalse(test.isReportExecutionTime());
+    assertSame(test.getMethodVisitorFactory(), mockFactory);
+  }
 }

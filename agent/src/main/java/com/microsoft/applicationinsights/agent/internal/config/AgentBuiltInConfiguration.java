@@ -22,86 +22,84 @@
 package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-
 import java.util.List;
 
-/**
- * Created by gupele on 6/5/2015.
- */
+/** Created by gupele on 6/5/2015. */
 public class AgentBuiltInConfiguration {
-    private final boolean enabled;
-    private final boolean httpEnabled;
-    private final boolean jdbcEnabled;
-    private final boolean hibernateEnabled;
-    private final boolean jedisEnabled;
-    private final boolean jmxEnabled;
-    private final long maxSqlQueryLimitInMS;
-    private final long redisThresholdInMS;
-    private final DataOfConfigurationForException dataOfConfigurationForException;
-    private final List<ClassInstrumentationData> simpleBuiltInClasses;
+  private final boolean enabled;
+  private final boolean httpEnabled;
+  private final boolean jdbcEnabled;
+  private final boolean hibernateEnabled;
+  private final boolean jedisEnabled;
+  private final boolean jmxEnabled;
+  private final long maxSqlQueryLimitInMS;
+  private final long redisThresholdInMS;
+  private final DataOfConfigurationForException dataOfConfigurationForException;
+  private final List<ClassInstrumentationData> simpleBuiltInClasses;
 
-    public AgentBuiltInConfiguration(boolean enabled,
-                                     List<ClassInstrumentationData> simpleBuiltInClasses,
-                                     boolean httpEnabled,
-                                     boolean jdbcEnabled,
-                                     boolean hibernateEnabled,
-                                     boolean jedisEnabled,
-                                     boolean jmxEnabled,
-                                     Long maxSqlQueryLimitInMS,
-                                     long redisThresholdInMS,
-                                     DataOfConfigurationForException dataOfConfigurationForException) {
-        this.simpleBuiltInClasses = simpleBuiltInClasses;
-        this.enabled = enabled;
-        this.httpEnabled = httpEnabled;
-        this.jdbcEnabled = jdbcEnabled;
-        this.hibernateEnabled = hibernateEnabled;
-        this.jmxEnabled = jmxEnabled;
-        if (maxSqlQueryLimitInMS == null) {
-            throw new IllegalArgumentException("maxSqlQueryLimit cannot be null");
-        }
-        this.redisThresholdInMS = redisThresholdInMS;
-        this.jedisEnabled = jedisEnabled;
-        this.maxSqlQueryLimitInMS = maxSqlQueryLimitInMS;
-        this.dataOfConfigurationForException = dataOfConfigurationForException;
+  public AgentBuiltInConfiguration(
+      boolean enabled,
+      List<ClassInstrumentationData> simpleBuiltInClasses,
+      boolean httpEnabled,
+      boolean jdbcEnabled,
+      boolean hibernateEnabled,
+      boolean jedisEnabled,
+      boolean jmxEnabled,
+      Long maxSqlQueryLimitInMS,
+      long redisThresholdInMS,
+      DataOfConfigurationForException dataOfConfigurationForException) {
+    this.simpleBuiltInClasses = simpleBuiltInClasses;
+    this.enabled = enabled;
+    this.httpEnabled = httpEnabled;
+    this.jdbcEnabled = jdbcEnabled;
+    this.hibernateEnabled = hibernateEnabled;
+    this.jmxEnabled = jmxEnabled;
+    if (maxSqlQueryLimitInMS == null) {
+      throw new IllegalArgumentException("maxSqlQueryLimit cannot be null");
     }
+    this.redisThresholdInMS = redisThresholdInMS;
+    this.jedisEnabled = jedisEnabled;
+    this.maxSqlQueryLimitInMS = maxSqlQueryLimitInMS;
+    this.dataOfConfigurationForException = dataOfConfigurationForException;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    public boolean isHttpEnabled() {
-        return httpEnabled;
-    }
+  public boolean isHttpEnabled() {
+    return httpEnabled;
+  }
 
-    public boolean isJdbcEnabled() {
-        return jdbcEnabled;
-    }
+  public boolean isJdbcEnabled() {
+    return jdbcEnabled;
+  }
 
-    public boolean isHibernateEnabled() {
-        return hibernateEnabled;
-    }
+  public boolean isHibernateEnabled() {
+    return hibernateEnabled;
+  }
 
-    public long getSqlMaxQueryLimitInMS() {
-        return maxSqlQueryLimitInMS;
-    }
+  public long getSqlMaxQueryLimitInMS() {
+    return maxSqlQueryLimitInMS;
+  }
 
-    public boolean isRedisEnabled() {
-        return jedisEnabled;
-    }
+  public boolean isRedisEnabled() {
+    return jedisEnabled;
+  }
 
-    public long getRedisThresholdInMS() {
-        return redisThresholdInMS;
-    }
+  public long getRedisThresholdInMS() {
+    return redisThresholdInMS;
+  }
 
-    public boolean isJmxEnabled() {
-        return jmxEnabled;
-    }
+  public boolean isJmxEnabled() {
+    return jmxEnabled;
+  }
 
-    public DataOfConfigurationForException getDataOfConfigurationForException() {
-        return dataOfConfigurationForException;
-    }
+  public DataOfConfigurationForException getDataOfConfigurationForException() {
+    return dataOfConfigurationForException;
+  }
 
-    public List<ClassInstrumentationData> getSimpleBuiltInClasses() {
-        return simpleBuiltInClasses;
-    }
+  public List<ClassInstrumentationData> getSimpleBuiltInClasses() {
+    return simpleBuiltInClasses;
+  }
 }

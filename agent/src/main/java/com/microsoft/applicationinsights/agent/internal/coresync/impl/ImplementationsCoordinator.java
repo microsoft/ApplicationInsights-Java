@@ -21,360 +21,374 @@
 
 package com.microsoft.applicationinsights.agent.internal.coresync.impl;
 
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
-import org.objectweb.asm.Type;
-
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
+import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.concurrent.ConcurrentHashMap;
+import org.objectweb.asm.Type;
 
 /**
- * The class serves as the contact point between injected code and its real implementation.
- * Injected code will notify on various events in the class, calling this class, the class
- * will then delegate the call to the relevant 'client' by consulting the data on the Thread's TLS
+ * The class serves as the contact point between injected code and its real implementation. Injected
+ * code will notify on various events in the class, calling this class, the class will then delegate
+ * the call to the relevant 'client' by consulting the data on the Thread's TLS
  *
- * Note that the called methods should not throw any exception or error otherwise that might affect user's code
+ * <p>Note that the called methods should not throw any exception or error otherwise that might
+ * affect user's code
  *
- * Created by gupele on 5/6/2015.
+ * <p>Created by gupele on 5/6/2015.
  */
 public enum ImplementationsCoordinator implements AgentNotificationsHandler {
-    INSTANCE;
+  INSTANCE;
 
-    public final static String internalName = Type.getInternalName(ImplementationsCoordinator.class);
-    public final static String internalNameAsJavaName = "L" + internalName + ";";
+  public static final String internalName = Type.getInternalName(ImplementationsCoordinator.class);
+  public static final String internalNameAsJavaName = "L" + internalName + ";";
+  private static RuntimeExceptionDecider runtimeExceptionDecider;
+  private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData =
+      new ConcurrentHashMap<String, RegistrationData>();
+  private volatile long maxSqlMaxQueryThresholdInMS = 10000L;
+  private volatile long redisThresholdInNS = 10000L * 1000000;
+  private AgentNotificationsHandler mainHandler;
+  private ConcurrentHashMap<String, String> classNameToType =
+      new ConcurrentHashMap<String, String>();
 
-    private volatile long maxSqlMaxQueryThresholdInMS = 10000L;
-    private volatile long redisThresholdInNS = 10000L * 1000000;
+  public void initialize(AgentConfiguration configurationData) {
+    maxSqlMaxQueryThresholdInMS =
+        configurationData.getBuiltInConfiguration().getSqlMaxQueryLimitInMS();
+    setRedisThresholdInMS(configurationData.getBuiltInConfiguration().getRedisThresholdInMS());
+    runtimeExceptionDecider = new RuntimeExceptionDecider();
+  }
 
-    private static RuntimeExceptionDecider runtimeExceptionDecider;
+  public void addClassNameToType(String className, String classType) {
+    classNameToType.put(className, classType);
+  }
 
-    private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
-
-    private AgentNotificationsHandler mainHandler;
-    private ConcurrentHashMap<String, String> classNameToType = new ConcurrentHashMap<String, String>();
-
-    public void initialize(AgentConfiguration configurationData) {
-        maxSqlMaxQueryThresholdInMS = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimitInMS();
-        setRedisThresholdInMS(configurationData.getBuiltInConfiguration().getRedisThresholdInMS());
-        runtimeExceptionDecider = new RuntimeExceptionDecider();
+  @Override
+  public void httpMethodFinished(
+      String identifier,
+      String method,
+      String correlationId,
+      String uri,
+      String target,
+      int result,
+      long delta) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.httpMethodFinished(
+            identifier, method, correlationId, uri, target, result, delta);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
     }
+  }
 
-    /**
-     * The data we expect to have for every thread
-     */
-    public static class RegistrationData {
-        public final ClassLoader classLoader;
-        public final AgentNotificationsHandler handler;
-        public final String key;
+  @Override
+  public void exceptionCaught(String classAndMethodNames, Throwable throwable) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.exceptionCaught(classAndMethodNames, throwable);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
 
-        public RegistrationData(ClassLoader classLoader, AgentNotificationsHandler handler, String key) {
-            this.classLoader = classLoader;
-            this.handler = handler;
-            this.key = key;
+  @Override
+  public void httpMethodStarted(String classAndMethodName, String url) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.httpMethodStarted(classAndMethodName, url);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void preparedStatementMethodStarted(
+      String classAndMethodName, PreparedStatement statement, String sqlStatement, Object[] args) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.preparedStatementMethodStarted(
+            classAndMethodName, statement, sqlStatement, args);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void methodFinished(
+      String classAndMethodName, long deltaInNS, Object[] args, Throwable throwable) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.methodFinished(classAndMethodName, deltaInNS, args, throwable);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        t.printStackTrace();
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+    }
+  }
+
+  @Override
+  public void preparedStatementExecuteBatchMethodStarted(
+      String name, PreparedStatement statement, String sqlStatement, int batchCounter) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.preparedStatementExecuteBatchMethodStarted(
+            name, statement, sqlStatement, batchCounter);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void sqlStatementExecuteQueryPossibleQueryPlan(
+      String name, Statement statement, String sqlStatement) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.sqlStatementExecuteQueryPossibleQueryPlan(name, statement, sqlStatement);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void sqlStatementMethodStarted(String name, Statement statement, String sqlStatement) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.sqlStatementMethodStarted(name, statement, sqlStatement);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+  }
+
+  @Override
+  public void jedisMethodStarted(String name) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.jedisMethodStarted(name);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void methodStarted(String name) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      String classType;
+      if (implementation != null) {
+        if (!StringUtils.isNullOrEmpty(name)) {
+          int index = name.lastIndexOf(".");
+          if (index != -1) {
+            String className = name.substring(0, index);
+            classType = classNameToType.get(className);
+            name = name + '#' + classType;
+          }
         }
+        implementation.methodStarted(name);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void methodFinished(String name, Throwable throwable) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.methodFinished(name, throwable);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void methodFinished(String name, long thresholdInMS) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation != null) {
+        implementation.methodFinished(name, thresholdInMS);
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void exceptionThrown(Exception e) {
+    try {
+      AgentNotificationsHandler implementation = getImplementation();
+      if (implementation == null) {
+        return;
+      }
+
+      RuntimeExceptionDecider.ValidationResult decision = runtimeExceptionDecider.isValid(e);
+      if (!decision.valid) {
+        return;
+      }
+
+      implementation.exceptionThrown(e, decision.stackSize);
+
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+    }
+  }
+
+  @Override
+  public void exceptionThrown(Exception e, int i) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Will return null since this is only the coordinator and not a real SDK handler.
+   *
+   * @return null.
+   */
+  @Override
+  public String getName() {
+    return null;
+  }
+
+  public String register(ClassLoader classLoader, AgentNotificationsHandler handler) {
+    try {
+      if (handler == null) {
+        throw new IllegalArgumentException("AgentNotificationsHandler must be a non-null value");
+      }
+
+      String implementationName = handler.getName();
+      if (StringUtils.isNullOrEmpty(implementationName)) {
+        throw new IllegalArgumentException(
+            "AgentNotificationsHandler name must have be a non-null non empty value");
+      }
+
+      notificationHandlersData.put(
+          implementationName, new RegistrationData(classLoader, handler, implementationName));
+
+      return implementationName;
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable throwable) {
+      try {
+        InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+      return null;
+    }
+  }
+
+  public void registerSelf(AgentNotificationsHandler handler) {
+    try {
+      if (handler == null) {
+        throw new IllegalArgumentException(
+            "registerSelf: AgentNotificationsHandler must be a non-null value");
+      }
+
+      mainHandler = handler;
+      InternalAgentLogger.INSTANCE.trace("Setting main handler");
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable throwable) {
+      try {
+        InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+    }
+  }
+
+  public void setRedisThresholdInMS(long thresholdInMS) {
+    redisThresholdInNS = thresholdInMS * 1000000;
+    if (redisThresholdInNS < 0) {
+      redisThresholdInNS = 0;
+    }
+  }
+
+  public long getRedisThresholdInNS() {
+    return redisThresholdInNS;
+  }
+
+  public long getQueryPlanThresholdInMS() {
+    return maxSqlMaxQueryThresholdInMS;
+  }
+
+  public void setQueryPlanThresholdInMS(long maxSqlMaxQueryThresholdInMS) {
+    if (maxSqlMaxQueryThresholdInMS >= 0) {
+      this.maxSqlMaxQueryThresholdInMS = maxSqlMaxQueryThresholdInMS;
+    }
+  }
+
+  public void setExceptionData(DataOfConfigurationForException exceptionData) {
+    this.runtimeExceptionDecider.setExceptionData(exceptionData);
+  }
+
+  private AgentNotificationsHandler getImplementation() {
+    String key = AgentTLS.getTLSKey();
+    if (key != null && key.length() > 0) {
+      RegistrationData implementation = notificationHandlersData.get(key);
+      if (implementation != null) {
+        return implementation.handler;
+      }
     }
 
-    public void addClassNameToType(String className, String classType) {
-        classNameToType.put(className, classType);
+    return mainHandler;
+  }
+
+  /** The data we expect to have for every thread */
+  public static class RegistrationData {
+    public final ClassLoader classLoader;
+    public final AgentNotificationsHandler handler;
+    public final String key;
+
+    public RegistrationData(
+        ClassLoader classLoader, AgentNotificationsHandler handler, String key) {
+      this.classLoader = classLoader;
+      this.handler = handler;
+      this.key = key;
     }
-
-    @Override
-    public void httpMethodFinished(String identifier, String method, String correlationId, String uri, String target, int result, long delta) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.httpMethodFinished(identifier, method, correlationId, uri, target, result, delta);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-
-    @Override
-    public void exceptionCaught(String classAndMethodNames, Throwable throwable) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.exceptionCaught(classAndMethodNames, throwable);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void httpMethodStarted(String classAndMethodName, String url) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.httpMethodStarted(classAndMethodName, url);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void preparedStatementMethodStarted(String classAndMethodName, PreparedStatement statement, String sqlStatement, Object[] args) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.preparedStatementMethodStarted(classAndMethodName, statement, sqlStatement, args);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void methodFinished(String classAndMethodName, long deltaInNS, Object[] args, Throwable throwable) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.methodFinished(classAndMethodName, deltaInNS, args, throwable);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            try {
-                t.printStackTrace();
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-    }
-
-    @Override
-    public void preparedStatementExecuteBatchMethodStarted(String name, PreparedStatement statement, String sqlStatement, int batchCounter) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.preparedStatementExecuteBatchMethodStarted(name, statement, sqlStatement, batchCounter);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void sqlStatementExecuteQueryPossibleQueryPlan(String name, Statement statement, String sqlStatement) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.sqlStatementExecuteQueryPossibleQueryPlan(name, statement, sqlStatement);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void sqlStatementMethodStarted(String name, Statement statement, String sqlStatement) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.sqlStatementMethodStarted(name, statement, sqlStatement);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    @Override
-    public void jedisMethodStarted(String name) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.jedisMethodStarted(name);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void methodStarted(String name) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            String classType;
-            if (implementation != null) {
-                if (!StringUtils.isNullOrEmpty(name)) {
-                    int index = name.lastIndexOf(".");
-                    if (index != -1) {
-                        String className = name.substring(0, index);
-                        classType = classNameToType.get(className);
-                        name = name + '#' + classType;
-                    }
-                }
-                implementation.methodStarted(name);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void methodFinished(String name, Throwable throwable) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.methodFinished(name, throwable);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-     @Override
-    public void methodFinished(String name, long thresholdInMS) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation != null) {
-                implementation.methodFinished(name, thresholdInMS);
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void exceptionThrown(Exception e) {
-        try {
-            AgentNotificationsHandler implementation = getImplementation();
-            if (implementation == null) {
-                return;
-            }
-
-            RuntimeExceptionDecider.ValidationResult decision = runtimeExceptionDecider.isValid(e);
-            if (!decision.valid) {
-                return;
-            }
-
-            implementation.exceptionThrown(e, decision.stackSize);
-
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    @Override
-    public void exceptionThrown(Exception e, int i) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Will return null since this is only the coordinator and not a real SDK handler.
-     * @return null.
-     */
-    @Override
-    public String getName() {
-        return null;
-    }
-
-    public String register(ClassLoader classLoader, AgentNotificationsHandler handler) {
-        try {
-            if (handler == null) {
-                throw new IllegalArgumentException("AgentNotificationsHandler must be a non-null value");
-            }
-
-            String implementationName = handler.getName();
-            if (StringUtils.isNullOrEmpty(implementationName)) {
-                throw new IllegalArgumentException("AgentNotificationsHandler name must have be a non-null non empty value");
-            }
-
-            notificationHandlersData.put(implementationName, new RegistrationData(classLoader, handler, implementationName));
-
-            return implementationName;
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable throwable) {
-            try {
-                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-            return null;
-        }
-    }
-
-    public void registerSelf(AgentNotificationsHandler handler) {
-        try {
-            if (handler == null) {
-                throw new IllegalArgumentException("registerSelf: AgentNotificationsHandler must be a non-null value");
-            }
-
-            mainHandler = handler;
-            InternalAgentLogger.INSTANCE.trace("Setting main handler");
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable throwable) {
-            try {
-                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-    }
-
-    public void setRedisThresholdInMS(long thresholdInMS) {
-        redisThresholdInNS = thresholdInMS * 1000000;
-        if (redisThresholdInNS < 0) {
-            redisThresholdInNS = 0;
-        }
-    }
-
-    public long getRedisThresholdInNS() {
-        return redisThresholdInNS;
-    }
-
-    public long getQueryPlanThresholdInMS() {
-        return maxSqlMaxQueryThresholdInMS;
-    }
-
-    public void setQueryPlanThresholdInMS(long maxSqlMaxQueryThresholdInMS) {
-        if (maxSqlMaxQueryThresholdInMS >= 0) {
-            this.maxSqlMaxQueryThresholdInMS = maxSqlMaxQueryThresholdInMS;
-        }
-    }
-
-    public void setExceptionData    (DataOfConfigurationForException exceptionData) {
-        this.runtimeExceptionDecider.setExceptionData(exceptionData);
-    }
-
-    private AgentNotificationsHandler getImplementation() {
-        String key = AgentTLS.getTLSKey();
-        if (key != null && key.length() > 0) {
-            RegistrationData implementation = notificationHandlersData.get(key);
-            if (implementation != null) {
-                return implementation.handler;
-            }
-        }
-
-        return mainHandler;
-    }
+  }
 }

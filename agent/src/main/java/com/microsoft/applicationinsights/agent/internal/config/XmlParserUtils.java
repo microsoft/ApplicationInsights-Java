@@ -27,96 +27,100 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/**
- * Created by gupele on 8/17/2016.
- */
+/** Created by gupele on 8/17/2016. */
 final class XmlParserUtils {
-    private final static String ENABLED_ATTRIBUTE = "enabled";
+  private static final String ENABLED_ATTRIBUTE = "enabled";
 
-    public static Element getFirst(NodeList nodes) {
-        if (nodes == null || nodes.getLength() == 0) {
-            return null;
-        }
-
-        Node node = nodes.item(0);
-        if (node.getNodeType() != Node.ELEMENT_NODE) {
-            return null;
-        }
-
-        return (Element)node;
+  public static Element getFirst(NodeList nodes) {
+    if (nodes == null || nodes.getLength() == 0) {
+      return null;
     }
 
-    public static String getAttribute(Element element, String attributeName) {
-        if (element == null) {
-            return null;
-        }
-
-        String attributeValue = element.getAttribute(attributeName);
-        return attributeValue;
+    Node node = nodes.item(0);
+    if (node.getNodeType() != Node.ELEMENT_NODE) {
+      return null;
     }
 
-    public static boolean getEnabled(Element element, String attributeName) {
-        return getEnabled(element, attributeName, true);
+    return (Element) node;
+  }
+
+  public static String getAttribute(Element element, String attributeName) {
+    if (element == null) {
+      return null;
     }
 
-    public static boolean getEnabled(Element element, String elementName, boolean defaultValue) {
-        if (element == null) {
-            return true;
-        }
+    String attributeValue = element.getAttribute(attributeName);
+    return attributeValue;
+  }
 
-        try {
-            String strValue = element.getAttribute(ENABLED_ATTRIBUTE);
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                boolean value = Boolean.valueOf(strValue);
-                return value;
-            }
-            return defaultValue;
-        } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%b) will be used.", ENABLED_ATTRIBUTE, elementName, defaultValue);
-        }
+  public static boolean getEnabled(Element element, String attributeName) {
+    return getEnabled(element, attributeName, true);
+  }
 
-        return defaultValue;
+  public static boolean getEnabled(Element element, String elementName, boolean defaultValue) {
+    if (element == null) {
+      return true;
     }
 
-    public static long getLongAttribute(Element element, String elementName, String attributeName, long defaultValue) {
-        if (element == null) {
-            return defaultValue;
-        }
-
-        try {
-            String strValue = element.getAttribute(attributeName);
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                long value = Long.valueOf(strValue);
-                return value;
-            }
-            return defaultValue;
-        } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%d) will be used.", attributeName, elementName, defaultValue);
-        }
-
-        return defaultValue;
+    try {
+      String strValue = element.getAttribute(ENABLED_ATTRIBUTE);
+      if (!StringUtils.isNullOrEmpty(strValue)) {
+        boolean value = Boolean.valueOf(strValue);
+        return value;
+      }
+      return defaultValue;
+    } catch (Exception e) {
+      InternalAgentLogger.INSTANCE.error(
+          "Failed to parse attribute '%s' of '%s', default value (%b) will be used.",
+          ENABLED_ATTRIBUTE, elementName, defaultValue);
     }
 
-    public static Long getLong(Element element, String elementName) {
-        if (element == null) {
-            return null;
-        }
+    return defaultValue;
+  }
 
-        try {
-            Node node = element.getFirstChild();
-            if (node == null) {
-                return null;
-            }
-            String strValue = node.getTextContent();
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                Long value = Long.valueOf(strValue);
-                return value;
-            }
-            return null;
-        } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s'", ENABLED_ATTRIBUTE, elementName);
-        }
+  public static long getLongAttribute(
+      Element element, String elementName, String attributeName, long defaultValue) {
+    if (element == null) {
+      return defaultValue;
+    }
 
+    try {
+      String strValue = element.getAttribute(attributeName);
+      if (!StringUtils.isNullOrEmpty(strValue)) {
+        long value = Long.valueOf(strValue);
+        return value;
+      }
+      return defaultValue;
+    } catch (Exception e) {
+      InternalAgentLogger.INSTANCE.error(
+          "Failed to parse attribute '%s' of '%s', default value (%d) will be used.",
+          attributeName, elementName, defaultValue);
+    }
+
+    return defaultValue;
+  }
+
+  public static Long getLong(Element element, String elementName) {
+    if (element == null) {
+      return null;
+    }
+
+    try {
+      Node node = element.getFirstChild();
+      if (node == null) {
         return null;
+      }
+      String strValue = node.getTextContent();
+      if (!StringUtils.isNullOrEmpty(strValue)) {
+        Long value = Long.valueOf(strValue);
+        return value;
+      }
+      return null;
+    } catch (Exception e) {
+      InternalAgentLogger.INSTANCE.error(
+          "Failed to parse attribute '%s' of '%s'", ENABLED_ATTRIBUTE, elementName);
     }
+
+    return null;
+  }
 }

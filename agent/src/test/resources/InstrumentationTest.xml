@@ -20,22 +20,22 @@
   -->
 
 <ApplicationInsightsAgent>
-<Instrumentation>
+  <Instrumentation>
 
     <Class name="a.AClass1">
-        <Method name="method1" reportExecutionTime="true"/>
-        <Method name="method2" enabled="false" reportExecutionTime="true"/>
-        <Method name="method3" reportCaughtExceptions="true"/>
+      <Method name="method1" reportExecutionTime="true"/>
+      <Method enabled="false" name="method2" reportExecutionTime="true"/>
+      <Method name="method3" reportCaughtExceptions="true"/>
     </Class>
 
     <Class name="a.AClass2">
     </Class>
 
-    <Class name="a.AClass3" enabled="false">
-        <Method name="method1" reportExecutionTime="true"/>
-        <Method name="method2" enabled="true" reportExecutionTime="true"/>
-        <Method name="method3" reportCaughtExceptions="true"/>
+    <Class enabled="false" name="a.AClass3">
+      <Method name="method1" reportExecutionTime="true"/>
+      <Method enabled="true" name="method2" reportExecutionTime="true"/>
+      <Method name="method3" reportCaughtExceptions="true"/>
     </Class>
 
-</Instrumentation>
+  </Instrumentation>
 </ApplicationInsightsAgent>
