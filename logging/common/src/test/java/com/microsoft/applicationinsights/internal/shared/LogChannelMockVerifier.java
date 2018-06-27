@@ -22,23 +22,20 @@
 package com.microsoft.applicationinsights.internal.shared;
 
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by gupele on 1/18/2015.
- */
+/** Created by gupele on 1/18/2015. */
 public enum LogChannelMockVerifier {
-    INSTANCE;
+  INSTANCE;
 
-    private ArrayList<Telemetry> telemetryCollection = new ArrayList<Telemetry>();
+  private ArrayList<Telemetry> telemetryCollection = new ArrayList<Telemetry>();
 
-    public void add(Telemetry item) {
-        telemetryCollection.add(item);
-    }
+  public void add(Telemetry item) {
+    telemetryCollection.add(item);
+  }
 
-    public List<Telemetry> getTelemetryCollection() {
-        return telemetryCollection;
-    }
+  public List<Telemetry> getTelemetryCollection() {
+    return telemetryCollection;
+  }
 }

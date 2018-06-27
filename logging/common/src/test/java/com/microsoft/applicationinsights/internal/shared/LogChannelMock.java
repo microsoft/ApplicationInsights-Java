@@ -21,45 +21,36 @@
 
 package com.microsoft.applicationinsights.internal.shared;
 
-import java.lang.Override;
+import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.channel.TelemetrySampler;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-
-/**
- * Created by gupele on 1/18/2015.
- */
+/** Created by gupele on 1/18/2015. */
 public final class LogChannelMock implements TelemetryChannel {
 
-    public LogChannelMock(Map<String, String> properties) {
-    }
+  public LogChannelMock(Map<String, String> properties) {}
 
-    @Override
-    public boolean isDeveloperMode() {
-        return false;
-    }
+  @Override
+  public boolean isDeveloperMode() {
+    return false;
+  }
 
-    @Override
-    public void setDeveloperMode(boolean value) {
-    }
+  @Override
+  public void setDeveloperMode(boolean value) {}
 
-    @Override
-    public void send(Telemetry item) {
-        LogChannelMockVerifier.INSTANCE.add(item);
-    }
+  @Override
+  public void send(Telemetry item) {
+    LogChannelMockVerifier.INSTANCE.add(item);
+  }
 
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-    }
+  @Override
+  public void stop(long timeout, TimeUnit timeUnit) {}
 
-    @Override
-    public void flush() {
-    }
+  @Override
+  public void flush() {}
 
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
-    }
+  @Override
+  public void setSampler(TelemetrySampler telemetrySampler) {}
 }

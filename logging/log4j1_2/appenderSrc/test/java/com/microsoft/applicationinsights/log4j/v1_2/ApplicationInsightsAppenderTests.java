@@ -21,108 +21,126 @@
 
 package com.microsoft.applicationinsights.log4j.v1_2;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.*;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
-import com.google.common.collect.Maps;
 import com.microsoft.applicationinsights.internal.shared.LogChannelMockVerifier;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 public class ApplicationInsightsAppenderTests {
 
-    // region Consts
+  // region Consts
 
-    private static final String TestInstrumentationKey = "c9341531-05ac-4d8c-972e-36e97601d5ff";
+  private static final String TestInstrumentationKey = "c9341531-05ac-4d8c-972e-36e97601d5ff";
 
-    // endregion Consts
+  // endregion Consts
 
-    // region Initialization & cleanup
-
-    @Before
-    public void setup() {
-        setMockTelemetryChannelToAIAppender();
-        Assert.assertTrue("MockTelemetryChannel not clear....", LogChannelMockVerifier.INSTANCE.getTelemetryCollection().isEmpty());
-    }
-
-    @Rule
-    public TestWatcher watcher = new TestWatcher() {
+  // region Initialization & cleanup
+  @Rule
+  public TestWatcher watcher =
+      new TestWatcher() {
         @Override
         protected void failed(Throwable e, Description description) {
-            System.out.println("Failure detected. Printing found telemetry:");
-            List<Telemetry> telemetries = LogChannelMockVerifier.INSTANCE.getTelemetryCollection();
-            for (Telemetry t : telemetries) {
-                String tname = t.getClass().getSimpleName();
-                String tinfo = tname;
-                if (t instanceof TraceTelemetry) {
-                    TraceTelemetry trct = (TraceTelemetry)t;
-                    tinfo = String.format("%s{message='%s'}", tname, trct.getMessage());
-                } else if (t instanceof ExceptionTelemetry) {
-                    ExceptionTelemetry ext = (ExceptionTelemetry)t;
-                    tinfo = String.format("%s{%s[message='%s']}", tname, ext.getException().getClass().getSimpleName(), ext.getException().getMessage());
-                }
-                System.out.println(" - "+tinfo);
+          System.out.println("Failure detected. Printing found telemetry:");
+          List<Telemetry> telemetries = LogChannelMockVerifier.INSTANCE.getTelemetryCollection();
+          for (Telemetry t : telemetries) {
+            String tname = t.getClass().getSimpleName();
+            String tinfo = tname;
+            if (t instanceof TraceTelemetry) {
+              TraceTelemetry trct = (TraceTelemetry) t;
+              tinfo = String.format("%s{message='%s'}", tname, trct.getMessage());
+            } else if (t instanceof ExceptionTelemetry) {
+              ExceptionTelemetry ext = (ExceptionTelemetry) t;
+              tinfo =
+                  String.format(
+                      "%s{%s[message='%s']}",
+                      tname,
+                      ext.getException().getClass().getSimpleName(),
+                      ext.getException().getMessage());
             }
-            System.out.printf("%d total telemetries collected.%n", telemetries.size());
+            System.out.println(" - " + tinfo);
+          }
+          System.out.printf("%d total telemetries collected.%n", telemetries.size());
         }
-    };
+      };
 
-    // endregion Initialization & cleanup
+  @Before
+  public void setup() {
+    setMockTelemetryChannelToAIAppender();
+    Assert.assertTrue(
+        "MockTelemetryChannel not clear....",
+        LogChannelMockVerifier.INSTANCE.getTelemetryCollection().isEmpty());
+  }
 
-    // region Tests
+  // endregion Initialization & cleanup
 
-    @Test
-    public void testInstrumentationKeyIsLoadedFromConfiguration() {
-        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+  // region Tests
 
-        String configurationKey = appender.getTelemetryClientProxy().getTelemetryClient().getContext().getInstrumentationKey();
-        Assert.assertEquals(TestInstrumentationKey, configurationKey);
-    }
+  @Test
+  public void testInstrumentationKeyIsLoadedFromConfiguration() {
+    ApplicationInsightsAppender appender = getApplicationInsightsAppender();
 
-    @Test
-    public void testAppenderSendsGivenEvent() throws Exception {
-        Logger logger = LogManager.getRootLogger();
-        logger.trace("New event!");
-        TimeUnit.SECONDS.sleep(1);
+    String configurationKey =
+        appender
+            .getTelemetryClientProxy()
+            .getTelemetryClient()
+            .getContext()
+            .getInstrumentationKey();
+    Assert.assertEquals(TestInstrumentationKey, configurationKey);
+  }
 
-        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
-    }
+  @Test
+  public void testAppenderSendsGivenEvent() throws Exception {
+    Logger logger = LogManager.getRootLogger();
+    logger.trace("New event!");
+    TimeUnit.SECONDS.sleep(1);
 
-    @Test
-    public void testLoggerMessageIsRetainedWhenReportingException() throws Exception {
-        Logger logger = LogManager.getRootLogger();
-        logger.error("This is an exception", new Exception("Fake Exception"));
-        TimeUnit.SECONDS.sleep(1);
+    Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
+  }
 
-        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
-        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().containsKey("Logger Message"));
-        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().get("Logger Message").equals("This is an exception"));
-    }
+  @Test
+  public void testLoggerMessageIsRetainedWhenReportingException() throws Exception {
+    Logger logger = LogManager.getRootLogger();
+    logger.error("This is an exception", new Exception("Fake Exception"));
+    TimeUnit.SECONDS.sleep(1);
 
-    // endregion Tests
+    Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
+    Assert.assertTrue(
+        LogChannelMockVerifier.INSTANCE
+            .getTelemetryCollection()
+            .get(0)
+            .getProperties()
+            .containsKey("Logger Message"));
+    Assert.assertTrue(
+        LogChannelMockVerifier.INSTANCE
+            .getTelemetryCollection()
+            .get(0)
+            .getProperties()
+            .get("Logger Message")
+            .equals("This is an exception"));
+  }
 
-    // region Private methods
+  // endregion Tests
 
-    private ApplicationInsightsAppender getApplicationInsightsAppender() {
-        Logger logger = LogManager.getRootLogger();
-        ApplicationInsightsAppender appender = (ApplicationInsightsAppender)logger.getAppender("test");
+  // region Private methods
 
-        return appender;
-    }
+  private ApplicationInsightsAppender getApplicationInsightsAppender() {
+    Logger logger = LogManager.getRootLogger();
+    ApplicationInsightsAppender appender = (ApplicationInsightsAppender) logger.getAppender("test");
 
-    private void setMockTelemetryChannelToAIAppender() {
-        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
-        appender.activateOptions();
-        LogChannelMockVerifier.INSTANCE.getTelemetryCollection().clear();
-    }
+    return appender;
+  }
 
-    // endregion Private methods
+  private void setMockTelemetryChannelToAIAppender() {
+    ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+    appender.activateOptions();
+    LogChannelMockVerifier.INSTANCE.getTelemetryCollection().clear();
+  }
+
+  // endregion Private methods
 }

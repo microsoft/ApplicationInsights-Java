@@ -21,100 +21,100 @@
 
 package com.microsoft.applicationinsights.internal.common;
 
-import java.util.Map;
-
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import java.util.Map;
 
 /**
- * This class encapsulates all the common logic for sending AI telemetry.
- * This class is used by all Appenders, Listeners etc and therefore keeping them without
- * any logic.
+ * This class encapsulates all the common logic for sending AI telemetry. This class is used by all
+ * Appenders, Listeners etc and therefore keeping them without any logic.
  */
 public class LogTelemetryClientProxy implements TelemetryClientProxy {
 
-    // region Members
+  // region Members
 
-    private boolean isInitialized = false;
-    private TelemetryClient telemetryClient;
+  private boolean isInitialized = false;
+  private TelemetryClient telemetryClient;
 
-    // endregion Members
+  // endregion Members
 
-    // region Constructor
+  // region Constructor
 
-    /**
-     * Constructs new telemetry client proxy instance with the given client.
-     * @param telemetryClient The telemetry client.
-     * @param instrumentationKey The instrumentation key.
-     */
-    public LogTelemetryClientProxy(TelemetryClient telemetryClient, String instrumentationKey) {
-        try {
-            this.telemetryClient = telemetryClient;
-            if (!LocalStringsUtils.isNullOrEmpty(instrumentationKey)) {
-                this.telemetryClient.getContext().setInstrumentationKey(instrumentationKey);
-            }
+  /**
+   * Constructs new telemetry client proxy instance with the given client.
+   *
+   * @param telemetryClient The telemetry client.
+   * @param instrumentationKey The instrumentation key.
+   */
+  public LogTelemetryClientProxy(TelemetryClient telemetryClient, String instrumentationKey) {
+    try {
+      this.telemetryClient = telemetryClient;
+      if (!LocalStringsUtils.isNullOrEmpty(instrumentationKey)) {
+        this.telemetryClient.getContext().setInstrumentationKey(instrumentationKey);
+      }
 
-            this.isInitialized = true;
-        } catch (Exception e) {
-            // Catching all exceptions so in case of a failure the calling appender won't throw exception.
-            // TODO: Assert.Debug/warning on exception?
-        }
+      this.isInitialized = true;
+    } catch (Exception e) {
+      // Catching all exceptions so in case of a failure the calling appender won't throw exception.
+      // TODO: Assert.Debug/warning on exception?
+    }
+  }
+
+  /**
+   * Constructs new telemetry client proxy instance.
+   *
+   * @param instrumentationKey The instrumentation key for sending the events.
+   */
+  public LogTelemetryClientProxy(String instrumentationKey) {
+    this(new TelemetryClient(), instrumentationKey);
+  }
+
+  // endregion Constructor
+
+  // region Public methods
+
+  public boolean isInitialized() {
+    return this.isInitialized;
+  }
+
+  /**
+   * Sends the given event to AI.
+   *
+   * @param event The event to send.
+   */
+  public void sendEvent(ApplicationInsightsEvent event) {
+
+    String formattedMessage = event.getMessage();
+
+    Map<String, String> customParameters = event.getCustomParameters();
+
+    Telemetry telemetry;
+    if (event.isException()) {
+      ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(event.getException());
+      exceptionTelemetry.setSeverityLevel(event.getNormalizedSeverityLevel());
+      telemetry = exceptionTelemetry;
+    } else {
+      TraceTelemetry traceTelemetry = new TraceTelemetry(formattedMessage);
+      traceTelemetry.setSeverityLevel(event.getNormalizedSeverityLevel());
+      telemetry = traceTelemetry;
     }
 
-    /**
-     * Constructs new telemetry client proxy instance.
-     * @param instrumentationKey The instrumentation key for sending the events.
-     */
-    public LogTelemetryClientProxy(String instrumentationKey) {
-        this(new TelemetryClient(), instrumentationKey);
-    }
+    telemetry.getContext().getProperties().putAll(customParameters);
 
-    // endregion Constructor
+    telemetryClient.track(telemetry);
+  }
 
-    // region Public methods
+  /**
+   * Gets the telemetry client.
+   *
+   * @return Telemetry client
+   */
+  public TelemetryClient getTelemetryClient() {
+    return this.telemetryClient;
+  }
 
-    public boolean isInitialized() {
-        return this.isInitialized;
-    }
-
-    /**
-     * Sends the given event to AI.
-     *
-     * @param event The event to send.
-     */
-    public void sendEvent(ApplicationInsightsEvent event) {
-
-        String formattedMessage = event.getMessage();
-
-        Map<String, String> customParameters = event.getCustomParameters();
-
-        Telemetry telemetry;
-        if (event.isException()) {
-            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(event.getException());
-            exceptionTelemetry.setSeverityLevel(event.getNormalizedSeverityLevel());
-            telemetry = exceptionTelemetry;
-        } else {
-            TraceTelemetry traceTelemetry = new TraceTelemetry(formattedMessage);
-            traceTelemetry.setSeverityLevel(event.getNormalizedSeverityLevel());
-            telemetry = traceTelemetry;
-        }
-
-        telemetry.getContext().getProperties().putAll(customParameters);
-
-        telemetryClient.track(telemetry);
-    }
-
-    /**
-     * Gets the telemetry client.
-     *
-     * @return Telemetry client
-     */
-    public TelemetryClient getTelemetryClient() {
-        return this.telemetryClient;
-    }
-
-    // endregion Public methods
+  // endregion Public methods
 }

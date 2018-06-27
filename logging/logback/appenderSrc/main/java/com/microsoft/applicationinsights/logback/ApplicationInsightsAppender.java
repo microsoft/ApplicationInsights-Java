@@ -28,64 +28,62 @@ import com.microsoft.applicationinsights.internal.common.TelemetryClientProxy;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.logback.internal.ApplicationInsightsLogEvent;
 
-/**
- * LOGBack appender.
- */
+/** LOGBack appender. */
 public class ApplicationInsightsAppender extends AppenderBase<ILoggingEvent> {
 
-    // region Members
+  // region Members
 
-    private boolean isInitialized = false;
-    private LogTelemetryClientProxy logTelemetryClientProxy;
-    private String instrumentationKey;
+  private boolean isInitialized = false;
+  private LogTelemetryClientProxy logTelemetryClientProxy;
+  private String instrumentationKey;
 
-    // endregion Members
+  // endregion Members
 
-    // region Public methods
+  // region Public methods
 
-    public TelemetryClientProxy getTelemetryClientProxy() {
-        return this.logTelemetryClientProxy;
+  public TelemetryClientProxy getTelemetryClientProxy() {
+    return this.logTelemetryClientProxy;
+  }
+
+  /**
+   * Sets the instrumentation key.
+   *
+   * @param instrumentationKey The instrumentation key.
+   */
+  public void setInstrumentationKey(String instrumentationKey) {
+    this.instrumentationKey = instrumentationKey;
+  }
+
+  /**
+   * Appends the new event. Catching exceptions and check if the appender has been started is not
+   * necessary as it all taken care by the AppenderBase class.
+   *
+   * @param eventObject The event to append.
+   */
+  @Override
+  protected void append(ILoggingEvent eventObject) {
+    if (!this.isStarted() || !this.isInitialized) {
+
+      // TODO: trace not started or not initialized.
+      return;
     }
 
-    /**
-     * Sets the instrumentation key.
-     *
-     * @param instrumentationKey The instrumentation key.
-     */
-    public void setInstrumentationKey(String instrumentationKey) {
-        this.instrumentationKey = instrumentationKey;
+    ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(eventObject);
+    this.logTelemetryClientProxy.sendEvent(aiEvent);
+  }
+
+  @Override
+  public void start() {
+    super.start();
+
+    try {
+      logTelemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
+      this.isInitialized = true;
+    } catch (Exception e) {
+      // Appender failure must not fail the running application.
+      this.isInitialized = false;
+      InternalLogger.INSTANCE.error(
+          "Failed to initialize appender with exception: %s.", e.toString());
     }
-
-    /**
-     * Appends the new event.
-     * Catching exceptions and check if the appender has been started is not necessary
-     * as it all taken care by the AppenderBase class.
-     *
-     * @param eventObject The event to append.
-     */
-    @Override
-    protected void append(ILoggingEvent eventObject) {
-        if (!this.isStarted() || !this.isInitialized) {
-
-            // TODO: trace not started or not initialized.
-            return;
-        }
-
-        ApplicationInsightsLogEvent aiEvent = new ApplicationInsightsLogEvent(eventObject);
-        this.logTelemetryClientProxy.sendEvent(aiEvent);
-    }
-
-    @Override
-    public void start() {
-        super.start();
-
-        try {
-            logTelemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
-            this.isInitialized = true;
-        } catch (Exception e) {
-            // Appender failure must not fail the running application.
-            this.isInitialized = false;
-            InternalLogger.INSTANCE.error("Failed to initialize appender with exception: %s.", e.toString());
-        }
-    }
+  }
 }

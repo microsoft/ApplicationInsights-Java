@@ -20,23 +20,24 @@
   ~ DEALINGS IN THE SOFTWARE.
   -->
 
-<ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" schemaVersion="2014-05-30">
-    <!--
-      Learn more about Application Insights configuration with ApplicationInsights.config here:
-      http://go.microsoft.com/fwlink/?LinkID=513840
-    -->
-    <InstrumentationKey>
-        A-test-instrumentation-key
-    </InstrumentationKey>
-    <TelemetryModules>
-    </TelemetryModules>
-    <ContextInitializers>
-    </ContextInitializers>
-    <TelemetryInitializers>
-    </TelemetryInitializers>
-    <Channel type="com.microsoft.applicationinsights.internal.shared.LogChannelMock">
-        <EndpointAddress>
-            test-endpoint
-        </EndpointAddress>
-    </Channel>
+<ApplicationInsights schemaVersion="2014-05-30"
+  xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings">
+  <!--
+    Learn more about Application Insights configuration with ApplicationInsights.config here:
+    http://go.microsoft.com/fwlink/?LinkID=513840
+  -->
+  <InstrumentationKey>
+    A-test-instrumentation-key
+  </InstrumentationKey>
+  <TelemetryModules>
+  </TelemetryModules>
+  <ContextInitializers>
+  </ContextInitializers>
+  <TelemetryInitializers>
+  </TelemetryInitializers>
+  <Channel type="com.microsoft.applicationinsights.internal.shared.LogChannelMock">
+    <EndpointAddress>
+      test-endpoint
+    </EndpointAddress>
+  </Channel>
 </ApplicationInsights>

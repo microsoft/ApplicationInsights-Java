@@ -22,34 +22,33 @@
 package com.microsoft.applicationinsights.internal.common;
 
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Interface for
- */
+/** Interface for */
 public abstract class ApplicationInsightsEvent {
 
-    public abstract String getMessage();
-
-    public abstract boolean isException();
-
-    public abstract Exception getException();
-
-    public abstract Map<String, String> getCustomParameters();
-
-    public abstract SeverityLevel getNormalizedSeverityLevel();
-
-    protected static void addLogEventProperty(String key, String value, Map<String, String> metaData) {
-        if (value != null) {
-            metaData.put(key, value);
-        }
+  protected static void addLogEventProperty(
+      String key, String value, Map<String, String> metaData) {
+    if (value != null) {
+      metaData.put(key, value);
     }
+  }
 
-    protected static String getFormattedDate(long dateInMilliseconds) {
-        return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).format(new Date(dateInMilliseconds));
-    }
+  protected static String getFormattedDate(long dateInMilliseconds) {
+    return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US)
+        .format(new Date(dateInMilliseconds));
+  }
+
+  public abstract String getMessage();
+
+  public abstract boolean isException();
+
+  public abstract Exception getException();
+
+  public abstract Map<String, String> getCustomParameters();
+
+  public abstract SeverityLevel getNormalizedSeverityLevel();
 }

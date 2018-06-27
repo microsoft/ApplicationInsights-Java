@@ -21,14 +21,15 @@
   -->
 
 <Configuration packages="com.microsoft.applicationinsights.log4j">
-    <Appenders>
-        <ApplicationInsightsAppender name="test" instrumentationKey="c9341531-05ac-4d8c-972e-36e97601d5ff" ignoreExceptions = "true">
-            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
-        </ApplicationInsightsAppender>
-    </Appenders>
-    <Loggers>
-        <Root level="trace">
-            <AppenderRef ref="test"/>
-        </Root>
-    </Loggers>
+  <Appenders>
+    <ApplicationInsightsAppender ignoreExceptions="true"
+      instrumentationKey="c9341531-05ac-4d8c-972e-36e97601d5ff" name="test">
+      <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+    </ApplicationInsightsAppender>
+  </Appenders>
+  <Loggers>
+    <Root level="trace">
+      <AppenderRef ref="test"/>
+    </Root>
+  </Loggers>
 </Configuration>

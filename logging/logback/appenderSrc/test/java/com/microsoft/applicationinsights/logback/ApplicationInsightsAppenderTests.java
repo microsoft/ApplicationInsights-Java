@@ -21,91 +21,107 @@
 
 package com.microsoft.applicationinsights.logback;
 
+import ch.qos.logback.classic.Logger;
+import com.microsoft.applicationinsights.internal.shared.LogChannelMockVerifier;
+import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import com.microsoft.applicationinsights.internal.shared.LogChannelMockVerifier;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-
-import ch.qos.logback.classic.Logger;
-
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 public class ApplicationInsightsAppenderTests {
 
-    // region Consts
+  // region Consts
 
-    private static final String TestInstrumentationKey = "c9341531-05ac-4d8c-972e-36e97601d5ff";
+  private static final String TestInstrumentationKey = "c9341531-05ac-4d8c-972e-36e97601d5ff";
 
-    // endregion Consts
+  // endregion Consts
 
-    // region Initialization & cleanup
+  // region Initialization & cleanup
 
-    @Before
-    public void setup() {
-        setMockTelemetryChannelToAIAppender();
-    }
+  @Before
+  public void setup() {
+    setMockTelemetryChannelToAIAppender();
+  }
 
-    // endregion Initialization & cleanup
+  // endregion Initialization & cleanup
 
-    // region Tests
+  // region Tests
 
-    @Test
-    public void testInstrumentationKeyIsLoadedFromConfiguration() {
-        ApplicationInsightsAppender appender = getApplicationInsightsAppender();
+  @Test
+  public void testInstrumentationKeyIsLoadedFromConfiguration() {
+    ApplicationInsightsAppender appender = getApplicationInsightsAppender();
 
-        String configurationKey = appender.getTelemetryClientProxy().getTelemetryClient().getContext().getInstrumentationKey();
-        Assert.assertEquals(TestInstrumentationKey, configurationKey);
-    }
+    String configurationKey =
+        appender
+            .getTelemetryClientProxy()
+            .getTelemetryClient()
+            .getContext()
+            .getInstrumentationKey();
+    Assert.assertEquals(TestInstrumentationKey, configurationKey);
+  }
 
-    @Test
-    public void testAppenderSendsGivenEvent() {
-        Logger logger = (Logger) LoggerFactory.getLogger("root");
-        logger.trace("Hello");
+  @Test
+  public void testAppenderSendsGivenEvent() {
+    Logger logger = (Logger) LoggerFactory.getLogger("root");
+    logger.trace("Hello");
 
-        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
-    }
+    Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
+  }
 
-    // endregion Tests
+  // endregion Tests
 
-    // region Private methods
+  // region Private methods
 
-    private ApplicationInsightsAppender getApplicationInsightsAppender() {
-        Logger logger = (Logger) LoggerFactory.getLogger("root");
-        ApplicationInsightsAppender appender = (ApplicationInsightsAppender) logger.getAppender("test");
+  private ApplicationInsightsAppender getApplicationInsightsAppender() {
+    Logger logger = (Logger) LoggerFactory.getLogger("root");
+    ApplicationInsightsAppender appender = (ApplicationInsightsAppender) logger.getAppender("test");
 
-        return appender;
-    }
+    return appender;
+  }
 
-    @Test
-    public void testLoggerMessageIsRetainedWhenReportingException() throws Exception {
-        Logger logger = (Logger) LoggerFactory.getLogger("root");
-        logger.error("This is an exception", new Exception("Fake Exception"));
-        TimeUnit.SECONDS.sleep(1);
+  @Test
+  public void testLoggerMessageIsRetainedWhenReportingException() throws Exception {
+    Logger logger = (Logger) LoggerFactory.getLogger("root");
+    logger.error("This is an exception", new Exception("Fake Exception"));
+    TimeUnit.SECONDS.sleep(1);
 
-        Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
-        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().containsKey("Logger Message"));
-        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().get("Logger Message").equals("This is an exception"));
-    }
+    Assert.assertEquals(1, LogChannelMockVerifier.INSTANCE.getTelemetryCollection().size());
+    Assert.assertTrue(
+        LogChannelMockVerifier.INSTANCE
+            .getTelemetryCollection()
+            .get(0)
+            .getProperties()
+            .containsKey("Logger Message"));
+    Assert.assertTrue(
+        LogChannelMockVerifier.INSTANCE
+            .getTelemetryCollection()
+            .get(0)
+            .getProperties()
+            .get("Logger Message")
+            .equals("This is an exception"));
+  }
 
-    @Test
-    public void testMDCPropertiesAreBeingSetAsCustomDimensions() throws Exception {
-        Logger logger = (Logger) LoggerFactory.getLogger("root");
-        MDC.put("key", "value");
-        logger.error("This is an exception", new Exception("Fake Exception"));
-        TimeUnit.SECONDS.sleep(1);
+  @Test
+  public void testMDCPropertiesAreBeingSetAsCustomDimensions() throws Exception {
+    Logger logger = (Logger) LoggerFactory.getLogger("root");
+    MDC.put("key", "value");
+    logger.error("This is an exception", new Exception("Fake Exception"));
+    TimeUnit.SECONDS.sleep(1);
 
-        Assert.assertTrue(LogChannelMockVerifier.INSTANCE.getTelemetryCollection().get(0).getProperties().get("key").equals("value"));
-    }
+    Assert.assertTrue(
+        LogChannelMockVerifier.INSTANCE
+            .getTelemetryCollection()
+            .get(0)
+            .getProperties()
+            .get("key")
+            .equals("value"));
+  }
 
-    private void setMockTelemetryChannelToAIAppender() {
-        LogChannelMockVerifier.INSTANCE.getTelemetryCollection().clear();
-    }
+  private void setMockTelemetryChannelToAIAppender() {
+    LogChannelMockVerifier.INSTANCE.getTelemetryCollection().clear();
+  }
 
-    // endregion Private methods
+  // endregion Private methods
 }

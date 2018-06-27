@@ -21,108 +21,112 @@
 
 package com.microsoft.applicationinsights.log4j.v2.internal;
 
-import java.util.HashMap;
-import java.util.Map;
 import com.microsoft.applicationinsights.internal.common.ApplicationInsightsEvent;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.spi.StandardLevel;
 
 public final class ApplicationInsightsLogEvent extends ApplicationInsightsEvent {
 
-    private LogEvent logEvent;
+  private LogEvent logEvent;
 
-    public ApplicationInsightsLogEvent(LogEvent logEvent) {
-        this.logEvent = logEvent;
+  public ApplicationInsightsLogEvent(LogEvent logEvent) {
+    this.logEvent = logEvent;
+  }
+
+  @Override
+  public String getMessage() {
+    String message =
+        this.logEvent.getMessage() != null
+            ? this.logEvent.getMessage().getFormattedMessage()
+            : "Log4j Trace";
+
+    return message;
+  }
+
+  @Override
+  public boolean isException() {
+    return this.logEvent.getThrown() != null;
+  }
+
+  @Override
+  public Exception getException() {
+    Exception exception = null;
+
+    if (isException()) {
+      Throwable throwable = this.logEvent.getThrown();
+      exception = throwable instanceof Exception ? (Exception) throwable : new Exception(throwable);
     }
 
-    @Override
-    public String getMessage() {
-        String message = this.logEvent.getMessage() != null ?
-                this.logEvent.getMessage().getFormattedMessage() :
-                "Log4j Trace";
+    return exception;
+  }
 
-        return message;
+  @Override
+  public Map<String, String> getCustomParameters() {
+
+    Map<String, String> metaData = new HashMap<String, String>();
+
+    metaData.put("SourceType", "Log4j");
+
+    addLogEventProperty("LoggerName", logEvent.getLoggerName(), metaData);
+    addLogEventProperty(
+        "LoggingLevel", logEvent.getLevel() != null ? logEvent.getLevel().name() : null, metaData);
+    addLogEventProperty("ThreadName", logEvent.getThreadName(), metaData);
+    addLogEventProperty("TimeStamp", getFormattedDate(logEvent.getTimeMillis()), metaData);
+
+    if (isException()) {
+      addLogEventProperty("Logger Message", getMessage(), metaData);
     }
 
-    @Override
-    public boolean isException() {
-        return this.logEvent.getThrown() != null;
+    if (logEvent.isIncludeLocation()) {
+      StackTraceElement stackTraceElement = logEvent.getSource();
+
+      addLogEventProperty("ClassName", stackTraceElement.getClassName(), metaData);
+      addLogEventProperty("FileName", stackTraceElement.getFileName(), metaData);
+      addLogEventProperty("MethodName", stackTraceElement.getMethodName(), metaData);
+      addLogEventProperty(
+          "LineNumber", String.valueOf(stackTraceElement.getLineNumber()), metaData);
     }
 
-    @Override
-    public Exception getException() {
-        Exception exception = null;
-
-        if (isException()) {
-            Throwable throwable = this.logEvent.getThrown();
-            exception = throwable instanceof Exception ? (Exception) throwable : new Exception(throwable);
-        }
-
-        return exception;
+    for (Map.Entry<String, String> entry : logEvent.getContextMap().entrySet()) {
+      addLogEventProperty(entry.getKey(), entry.getValue(), metaData);
     }
 
-    @Override
-    public Map<String, String> getCustomParameters() {
+    // TODO: Username, domain and identity should be included as in .NET version.
+    // TODO: Should check, seems that it is not included in Log4j2.
 
-        Map<String, String> metaData = new HashMap<String, String>();
+    return metaData;
+  }
 
-        metaData.put("SourceType", "Log4j");
+  @Override
+  public SeverityLevel getNormalizedSeverityLevel() {
+    int log4jLevelAsInt = logEvent.getLevel().intLevel();
 
-        addLogEventProperty("LoggerName", logEvent.getLoggerName(), metaData);
-        addLogEventProperty("LoggingLevel", logEvent.getLevel() != null ? logEvent.getLevel().name() : null, metaData);
-        addLogEventProperty("ThreadName", logEvent.getThreadName(), metaData);
-        addLogEventProperty("TimeStamp", getFormattedDate(logEvent.getTimeMillis()), metaData);
+    switch (StandardLevel.getStandardLevel(log4jLevelAsInt)) {
+      case FATAL:
+        return SeverityLevel.Critical;
 
-        if (isException()) {
-            addLogEventProperty("Logger Message", getMessage(), metaData);
-        }
+      case ERROR:
+        return SeverityLevel.Error;
 
-        if (logEvent.isIncludeLocation()) {
-            StackTraceElement stackTraceElement = logEvent.getSource();
+      case WARN:
+        return SeverityLevel.Warning;
 
-            addLogEventProperty("ClassName", stackTraceElement.getClassName(), metaData);
-            addLogEventProperty("FileName", stackTraceElement.getFileName(), metaData);
-            addLogEventProperty("MethodName", stackTraceElement.getMethodName(), metaData);
-            addLogEventProperty("LineNumber", String.valueOf(stackTraceElement.getLineNumber()), metaData);
-        }
+      case INFO:
+        return SeverityLevel.Information;
 
-        for (Map.Entry<String, String> entry : logEvent.getContextMap().entrySet()) {
-            addLogEventProperty(entry.getKey(), entry.getValue(), metaData);
-        }
+      case TRACE:
+      case DEBUG:
+      case ALL:
+        return SeverityLevel.Verbose;
 
-        // TODO: Username, domain and identity should be included as in .NET version.
-        // TODO: Should check, seems that it is not included in Log4j2.
-
-        return metaData;
+      default:
+        InternalLogger.INSTANCE.error(
+            "Unknown Log4j v2 option, %d, using TRACE level as default", log4jLevelAsInt);
+        return SeverityLevel.Verbose;
     }
-
-    @Override
-    public SeverityLevel getNormalizedSeverityLevel() {
-        int log4jLevelAsInt = logEvent.getLevel().intLevel();
-
-        switch (StandardLevel.getStandardLevel(log4jLevelAsInt)) {
-            case FATAL:
-                return SeverityLevel.Critical;
-
-            case ERROR:
-                return SeverityLevel.Error;
-
-            case WARN:
-                return SeverityLevel.Warning;
-
-            case INFO:
-                return SeverityLevel.Information;
-
-            case TRACE:
-            case DEBUG:
-            case ALL:
-                return SeverityLevel.Verbose;
-
-            default:
-                InternalLogger.INSTANCE.error("Unknown Log4j v2 option, %d, using TRACE level as default", log4jLevelAsInt);
-                return SeverityLevel.Verbose;
-        }
-    }
+  }
 }
