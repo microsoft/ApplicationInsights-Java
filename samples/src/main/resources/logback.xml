@@ -20,8 +20,9 @@
   -->
 
 <configuration>
-    <appender name="aiAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender" />
-    <root level="trace">
-        <appender-ref ref="aiAppender" />
-    </root>
+  <appender class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender"
+    name="aiAppender"/>
+  <root level="trace">
+    <appender-ref ref="aiAppender"/>
+  </root>
 </configuration>

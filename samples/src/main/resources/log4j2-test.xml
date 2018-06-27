@@ -21,12 +21,12 @@
   -->
 
 <Configuration packages="com.microsoft.applicationinsights.log4j">
-    <Appenders>
-        <ApplicationInsightsAppender name="aiAppender" />
-    </Appenders>
-    <Loggers>
-        <Root level="trace">
-            <AppenderRef ref="aiAppender"/>
-        </Root>
-    </Loggers>
+  <Appenders>
+    <ApplicationInsightsAppender name="aiAppender"/>
+  </Appenders>
+  <Loggers>
+    <Root level="trace">
+      <AppenderRef ref="aiAppender"/>
+    </Root>
+  </Loggers>
 </Configuration>

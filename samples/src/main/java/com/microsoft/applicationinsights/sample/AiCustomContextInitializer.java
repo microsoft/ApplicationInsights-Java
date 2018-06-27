@@ -24,41 +24,40 @@ package com.microsoft.applicationinsights.sample;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.sample.plugins.GitBuildInfoContextInitializer;
-
 import java.io.IOException;
 
-/**
- * Created by gupele on 7/15/2015.
- */
+/** Created by gupele on 7/15/2015. */
 public class AiCustomContextInitializer {
-    public static void main(String[] args) throws IOException {
-        System.out.println("This program sends application insights telemetry event using custom context initializer.");
+  public static void main(String[] args) throws IOException {
+    System.out.println(
+        "This program sends application insights telemetry event using custom context initializer.");
 
-        TelemetryClient appInsights = new TelemetryClient();
+    TelemetryClient appInsights = new TelemetryClient();
 
-        if (args.length > 0) {
-            appInsights.getContext().setInstrumentationKey(args[0]);
-        }
-        appInsights.getContext().setInstrumentationKey("your-ikey");
+    if (args.length > 0) {
+      appInsights.getContext().setInstrumentationKey(args[0]);
+    }
+    appInsights.getContext().setInstrumentationKey("your-ikey");
 
-        String iKey = appInsights.getContext().getInstrumentationKey();
-        if (iKey == null) {
-            System.out.println("Error: no iKey set in ApplicationInsights.xml or as a parameter for this program.");
-            return;
-        }
-
-        GitBuildInfoContextInitializer customContextInitializer = new GitBuildInfoContextInitializer();
-        TelemetryConfiguration.getActive().getContextInitializers().add(customContextInitializer);
-        System.out.println("Custom context initializer added to configuration");
-
-        // Trace telemetry
-        appInsights.trackTrace("Things seem to be going well");
-        System.out.println("[3] Trace                 -- text=\"Things seem to be going well\"");
-
-        System.out.println();
-        System.out.println("Press any key to exit");
-        System.in.read();
+    String iKey = appInsights.getContext().getInstrumentationKey();
+    if (iKey == null) {
+      System.out.println(
+          "Error: no iKey set in ApplicationInsights.xml or as a parameter for this program.");
+      return;
     }
 
-    // endregion Core
+    GitBuildInfoContextInitializer customContextInitializer = new GitBuildInfoContextInitializer();
+    TelemetryConfiguration.getActive().getContextInitializers().add(customContextInitializer);
+    System.out.println("Custom context initializer added to configuration");
+
+    // Trace telemetry
+    appInsights.trackTrace("Things seem to be going well");
+    System.out.println("[3] Trace                 -- text=\"Things seem to be going well\"");
+
+    System.out.println();
+    System.out.println("Press any key to exit");
+    System.in.read();
+  }
+
+  // endregion Core
 }

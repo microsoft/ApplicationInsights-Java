@@ -21,34 +21,32 @@
 
 package com.microsoft.applicationinsights.sample.plugins;
 
+import static org.junit.Assert.assertEquals;
+
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import com.microsoft.applicationinsights.sample.plugins.GitBuildInfoContextInitializerTest;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public final class GitBuildInfoContextInitializerTest {
-    private final static String TEST_GIT_BRANCH_VALUE = "features/my-branch";
-    private final static String TEST_GIT_COMMIT_VALUE = "commit-value";
-    private final static String TEST_GIT_REPO_VALUE = "https://github.com/MyCompany/MyProject.git";
-    private final static String TEST_GIT_URL_VALUE = "https://github.com/MyCompany/MyProject/commit/commit-value";
+  private static final String TEST_GIT_BRANCH_VALUE = "features/my-branch";
+  private static final String TEST_GIT_COMMIT_VALUE = "commit-value";
+  private static final String TEST_GIT_REPO_VALUE = "https://github.com/MyCompany/MyProject.git";
+  private static final String TEST_GIT_URL_VALUE =
+      "https://github.com/MyCompany/MyProject/commit/commit-value";
 
-    @Test
-    public void loadSourcePropertiesTest() {
-        GitBuildInfoContextInitializer initializer = new GitBuildInfoContextInitializer();
-        TelemetryContext context = new TelemetryContext();
-        initializer.initialize(context);
+  private static void verify(TelemetryContext context, String key, String expectedValue) {
+    String value = context.getProperties().get(key);
+    assertEquals(expectedValue, value);
+  }
 
-        verify(context, GitBuildInfoContextInitializer.GIT_REPO_KEY, TEST_GIT_REPO_VALUE);
-        verify(context, GitBuildInfoContextInitializer.GIT_COMMIT_KEY, TEST_GIT_COMMIT_VALUE);
-        verify(context, GitBuildInfoContextInitializer.GIT_BRANCH_KEY, TEST_GIT_BRANCH_VALUE);
-        verify(context, GitBuildInfoContextInitializer.GIT_COMMIT_URL_KEY, TEST_GIT_URL_VALUE);
-    }
+  @Test
+  public void loadSourcePropertiesTest() {
+    GitBuildInfoContextInitializer initializer = new GitBuildInfoContextInitializer();
+    TelemetryContext context = new TelemetryContext();
+    initializer.initialize(context);
 
-    private static void verify(TelemetryContext context,
-                               String key,
-                               String expectedValue) {
-        String value = context.getProperties().get(key);
-        assertEquals(expectedValue, value);
-    }
+    verify(context, GitBuildInfoContextInitializer.GIT_REPO_KEY, TEST_GIT_REPO_VALUE);
+    verify(context, GitBuildInfoContextInitializer.GIT_COMMIT_KEY, TEST_GIT_COMMIT_VALUE);
+    verify(context, GitBuildInfoContextInitializer.GIT_BRANCH_KEY, TEST_GIT_BRANCH_VALUE);
+    verify(context, GitBuildInfoContextInitializer.GIT_COMMIT_URL_KEY, TEST_GIT_URL_VALUE);
+  }
 }

@@ -21,92 +21,85 @@
 
 package com.microsoft.applicationinsights.sample.plugins;
 
-import java.io.InputStream;
-import java.util.Properties;
-
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import java.io.InputStream;
+import java.util.Properties;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * An initializer to fetch Git data from a properties file
- * Note: the file with its full package name should appear in the 'ApplicationInsights.xml':
- *{@code
- * <ContextInitializers>
- *   <Add type="com.microsoft.applicationinsights.sample.plugins.GitBuildInfoContextInitializer" />
- * </ContextInitializers>
- * }
+ * An initializer to fetch Git data from a properties file Note: the file with its full package name
+ * should appear in the 'ApplicationInsights.xml': {@code <ContextInitializers> <Add
+ * type="com.microsoft.applicationinsights.sample.plugins.GitBuildInfoContextInitializer" />
+ * </ContextInitializers> }
  */
 public final class GitBuildInfoContextInitializer implements ContextInitializer {
-    private final static String BUILD_INFO_FILE_NAME = "source-origin.properties";
+  static final String GIT_REPO_KEY = "git.repo";
+  static final String GIT_BRANCH_KEY = "git.branch";
+  static final String GIT_COMMIT_KEY = "git.commit";
+  static final String GIT_COMMIT_URL_KEY = "git.commit.url";
+  static final String GIT_REPO_SUFFIX = ".git";
+  static final String GIT_COMMIT_URL_PART = "/commit/";
+  static final String UNKNOWN_SOURCE_VALUE = "unknown";
+  private static final String BUILD_INFO_FILE_NAME = "source-origin.properties";
+  private String gitBranch;
+  private String gitCommit;
+  private String gitRepo;
+  private String gitCommitUrl;
+  private boolean hasBuildData;
 
-    final static String GIT_REPO_KEY = "git.repo";
-    final static String GIT_BRANCH_KEY = "git.branch";
-    final static String GIT_COMMIT_KEY = "git.commit";
-    final static String GIT_COMMIT_URL_KEY = "git.commit.url";
+  public GitBuildInfoContextInitializer() {
+    try {
+      InputStream inputStream =
+          getClass().getClassLoader().getResourceAsStream(BUILD_INFO_FILE_NAME);
+      if (inputStream == null) {
+        hasBuildData = false;
+        return;
+      }
 
-    final static String GIT_REPO_SUFFIX = ".git";
-    final static String GIT_COMMIT_URL_PART = "/commit/";
+      Properties buildProperties = new Properties();
+      buildProperties.load(inputStream);
 
-    final static String UNKNOWN_SOURCE_VALUE = "unknown";
+      gitRepo = buildProperties.getProperty(GIT_REPO_KEY, UNKNOWN_SOURCE_VALUE);
+      gitBranch = buildProperties.getProperty(GIT_BRANCH_KEY, UNKNOWN_SOURCE_VALUE);
+      gitCommit = buildProperties.getProperty(GIT_COMMIT_KEY, UNKNOWN_SOURCE_VALUE);
 
-    private String gitBranch;
-    private String gitCommit;
-    private String gitRepo;
-    private String gitCommitUrl;
-    private boolean hasBuildData;
+      gitCommitUrl = UNKNOWN_SOURCE_VALUE;
+      if (!gitRepo.equals(UNKNOWN_SOURCE_VALUE) && !gitCommit.equals(UNKNOWN_SOURCE_VALUE)) {
 
-    public GitBuildInfoContextInitializer() {
-        try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(BUILD_INFO_FILE_NAME);
-            if (inputStream == null) {
-                hasBuildData = false;
-                return;
-            }
-
-            Properties buildProperties = new Properties();
-            buildProperties.load(inputStream);
-
-            gitRepo = buildProperties.getProperty(GIT_REPO_KEY, UNKNOWN_SOURCE_VALUE);
-            gitBranch = buildProperties.getProperty(GIT_BRANCH_KEY, UNKNOWN_SOURCE_VALUE);
-            gitCommit = buildProperties.getProperty(GIT_COMMIT_KEY, UNKNOWN_SOURCE_VALUE);
-
-            gitCommitUrl = UNKNOWN_SOURCE_VALUE;
-            if (!gitRepo.equals(UNKNOWN_SOURCE_VALUE) &&
-                    !gitCommit.equals(UNKNOWN_SOURCE_VALUE)) {
-
-                int index = gitRepo.indexOf(GIT_REPO_SUFFIX);
-                if (index != -1) {
-                    gitCommitUrl = gitRepo.substring(0, index) + GIT_COMMIT_URL_PART + gitCommit;
-                }
-            }
-
-            hasBuildData = true;
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                hasBuildData = false;
-                InternalLogger.INSTANCE.error("Error while initializaing GitBuildInfoContextInitializer");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
+        int index = gitRepo.indexOf(GIT_REPO_SUFFIX);
+        if (index != -1) {
+          gitCommitUrl = gitRepo.substring(0, index) + GIT_COMMIT_URL_PART + gitCommit;
         }
+      }
+
+      hasBuildData = true;
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        hasBuildData = false;
+        InternalLogger.INSTANCE.error("Error while initializaing GitBuildInfoContextInitializer");
+        InternalLogger.INSTANCE.trace(
+            "Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+    }
+  }
+
+  @Override
+  public void initialize(TelemetryContext context) {
+    if (!hasBuildData) {
+      return;
     }
 
-    @Override
-    public void initialize(TelemetryContext context) {
-        if (!hasBuildData) {
-            return;
-        }
-
-        context.getProperties().put(GIT_BRANCH_KEY, gitBranch);
-        context.getProperties().put(GIT_COMMIT_KEY, gitCommit);
-        context.getProperties().put(GIT_REPO_KEY, gitRepo);
-        context.getProperties().put(GIT_COMMIT_URL_KEY, gitCommitUrl);
-    }
+    context.getProperties().put(GIT_BRANCH_KEY, gitBranch);
+    context.getProperties().put(GIT_COMMIT_KEY, gitCommit);
+    context.getProperties().put(GIT_REPO_KEY, gitRepo);
+    context.getProperties().put(GIT_COMMIT_URL_KEY, gitCommitUrl);
+  }
 }

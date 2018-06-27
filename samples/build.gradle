@@ -22,7 +22,7 @@
 apply from: "$buildScriptsDir/common-java.gradle"
 
 archivesBaseName = 'applicationinsights-samples'
-version=""
+version = ""
 
 task generateSourceOriginProperties() {
     // Place source properties in a Properties object
