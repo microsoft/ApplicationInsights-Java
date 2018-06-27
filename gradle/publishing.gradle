@@ -136,12 +136,12 @@ def updatePomWithGeneralProjectInformation(pomObject) {
         withXml {
             // Append license text to pom.xml
             def pomText = asString()
-             def licenseComment = new StringBuilder()
+            def licenseComment = new StringBuilder()
             licenseComment.append("<!--\n")
             licenseComment.append(rootProject.file("LICENSE.txt").text)
             licenseComment.append("\n-->\n")
             // insert in pom.xml after the first row (xml declaration)
-            pomText.insert(pomText.indexOf(String.valueOf((char)'\n')) + 1, licenseComment)
+            pomText.insert(pomText.indexOf(String.valueOf((char) '\n')) + 1, licenseComment)
         }
 
         whenConfigured whenPomConfigured
@@ -161,7 +161,7 @@ task prepareSourcesArchive(type: Jar) {
     }
 }
 
-task prepareJavadocArchive(type: Jar){
+task prepareJavadocArchive(type: Jar) {
     classifier = 'javadoc'
     from "$docsDir/javadoc"
     doFirst {

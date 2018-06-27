@@ -58,8 +58,7 @@ ext {
     requiredPropertiesExist = this.&requiredPropertiesExist
 }
 
-def requiredPropertiesExist(requiredPropertiesNames)
-{
+def requiredPropertiesExist(requiredPropertiesNames) {
     return !(requiredPropertiesNames.any { prop ->
         !this.hasProperty(prop)
     })
@@ -69,8 +68,7 @@ def requiredPropertiesExist(requiredPropertiesNames)
 
 // region Private methods
 
-def verifyProjectPropertyExists(propertyName, taskName)
-{
+def verifyProjectPropertyExists(propertyName, taskName) {
     if (!this.hasProperty(propertyName)) {
         throw new GroovyRuntimeException("Property '$propertyName' must be defined for task '$taskName'")
     }

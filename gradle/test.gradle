@@ -77,12 +77,10 @@ task remoteTest {
         logger.info("User: $userName")
         logger.info("Test output folder: $localTestOutputFolderName")
 
-        try
-        {
+        try {
             runRemoteCommand("Executing tests remotely", "cd $remoteDirectory && ./gradlew cleanTest testAndCollect -x compileJava -x compileTestJava -PoutputFolderName=$localTestOutputFolderName")
         }
-        finally
-        {
+        finally {
             def testResultsArchiveName = "testResults.jar"
             def remoteTestResultsArchiveLocation = "$remoteDirectory/build/$testResultsArchiveName"
 
@@ -139,7 +137,7 @@ def runRemoteCommand(description, command) {
 }
 
 def getWebAppPath(webAppName) {
-    def webAppProjectsPath=":test:webapps"
+    def webAppProjectsPath = ":test:webapps"
     def projectLibsDir = project("$webAppProjectsPath:$webAppName").libsDir
     def projectWarPath = "$projectLibsDir/${webAppName}.war"
 

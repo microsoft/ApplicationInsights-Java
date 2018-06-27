@@ -21,9 +21,9 @@
 
 // region Shared java configuration
 
-import org.gradle.internal.os.OperatingSystem;
-import org.gradle.api.tasks.testing.logging.TestLogEvent;
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.internal.os.OperatingSystem
 
 apply plugin: 'java'
 apply plugin: 'checkstyle'
@@ -43,7 +43,7 @@ if (hasProperty("JDKToUse")) {
     def javaExecutablesPath = new File(JDKToUse, 'bin')
     def javaExecutables = [:].withDefault { execName ->
         def execNameToUse = execName
-        if (OperatingSystem.current().isWindows()){
+        if (OperatingSystem.current().isWindows()) {
             execNameToUse = execName + ".exe"
         }
         def executable = new File(javaExecutablesPath, execNameToUse)
@@ -77,7 +77,7 @@ def isJava7 = JavaVersion.current().isJava7()
 def isJava7Compatible = JavaVersion.current().isJava7Compatible()
 
 if (!isJava7Compatible) {
-    logger.error "The current JDK version isn't compatible with Java 7: "+JavaVersion.current()+". Please upgrade JDK 1.7+"
+    logger.error "The current JDK version isn't compatible with Java 7: " + JavaVersion.current() + ". Please upgrade JDK 1.7+"
     if (isBuildServer || isRelease) {
         throw new GradleException("incompatible JDK version: ${JavaVersion.current()}; needs 1.7+")
     }
@@ -151,7 +151,9 @@ task vscodeClasspathFile {
     ext.destFile = file("$buildDir/classpath.txt")
     outputs.file destFile
     doLast {
-        def classpathString = configurations.compile.collect{ it.absolutePath }.join(File.pathSeparator)
+        def classpathString = configurations.compile.collect {
+            it.absolutePath
+        }.join(File.pathSeparator)
         if (!destFile.parentFile.exists()) {
             destFile.parentFile.mkdirs()
         }
@@ -168,9 +170,11 @@ task vscodeJavaconfigFile(dependsOn: vscodeClasspathFile) {
     }
     ext.destFile = file("javaconfig.json")
     ext.config = [
-        sourcePath: sourceSets.collect{ it.java.srcDirs }.flatten().collect{ relativePath(it) },
-        classPathFile: relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
-        outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
+            sourcePath     : sourceSets.collect { it.java.srcDirs }.flatten().collect {
+                relativePath(it)
+            },
+            classPathFile  : relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
+            outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
     ]
     doLast {
         def jsonContent = groovy.json.JsonOutput.toJson(ext.config)
@@ -185,14 +189,14 @@ task vscode(dependsOn: vscodeJavaconfigFile) {
 
 tasks.withType(Test) {
     testLogging {
-        afterSuite { desc, result -> 
+        afterSuite { desc, result ->
             if (!desc.parent) { // only print when the top-level test suite completes
                 logger.lifecycle("${desc.name} complete. Ran ${result.testCount} tests. ${result.failedTestCount} failed, ${result.skippedTestCount} skipped.")
             }
         }
 
         info {
-            events  TestLogEvent.FAILED,
+            events TestLogEvent.FAILED,
                     TestLogEvent.PASSED,
                     TestLogEvent.SKIPPED,
                     TestLogEvent.STANDARD_ERROR
@@ -207,7 +211,7 @@ tasks.withType(Test) {
             events = info.events
             events << TestLogEvent.STARTED
             events << TestLogEvent.STANDARD_OUT
-            
+
             exceptionFormat = info.exceptionFormat
             showExceptions = info.showExceptions
             showCauses = info.showCauses
@@ -215,7 +219,6 @@ tasks.withType(Test) {
         }
     }
 }
-
 
 // endregion Shared java configuration
 
