@@ -23,74 +23,75 @@ package com.microsoft.applicationinsights.collectd.internal;
 
 import org.collectd.api.Collectd;
 
-/**
- * Created by yonisha on 5/4/2015.
- */
+/** Created by yonisha on 5/4/2015. */
 public class ApplicationInsightsWriterLogger {
 
-    private static final String MESSAGE_PREFIX = "[Application Insights Java Plugin] ";
-    private boolean enabled;
+  private static final String MESSAGE_PREFIX = "[Application Insights Java Plugin] ";
+  private boolean enabled;
 
-    /**
-     * Constructs new instance of @ApplicationInsightsWriterLogger
-     */
-    public ApplicationInsightsWriterLogger() {
-        this.enabled = true;
+  /** Constructs new instance of @ApplicationInsightsWriterLogger */
+  public ApplicationInsightsWriterLogger() {
+    this.enabled = true;
+  }
+
+  /**
+   * Constructs new instance of @ApplicationInsightsWriterLogger
+   *
+   * @param enabled True to enable the plugin, false otherwise.
+   */
+  public ApplicationInsightsWriterLogger(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  /**
+   * Log message in debug level.
+   *
+   * @param message The message to log.
+   */
+  public void logDebug(String message) {
+    if (!this.enabled) {
+      return;
     }
 
-    /**
-     * Constructs new instance of @ApplicationInsightsWriterLogger
-     * @param enabled True to enable the plugin, false otherwise.
-     */
-    public ApplicationInsightsWriterLogger(boolean enabled) {
-        this.enabled = enabled;
+    Collectd.logDebug(MESSAGE_PREFIX + message);
+  }
+
+  /**
+   * Log message in info level.
+   *
+   * @param message The message to log.
+   */
+  public void logInfo(String message) {
+    if (!this.enabled) {
+      return;
     }
 
-    /**
-     * Log message in debug level.
-     * @param message The message to log.
-     */
-    public void logDebug(String message) {
-        if (!this.enabled) {
-            return;
-        }
+    Collectd.logInfo(MESSAGE_PREFIX + message);
+  }
 
-        Collectd.logDebug(MESSAGE_PREFIX + message);
+  /**
+   * Log message in warning level.
+   *
+   * @param message The message to log.
+   */
+  public void logWarning(String message) {
+    if (!this.enabled) {
+      return;
     }
 
-    /**
-     * Log message in info level.
-     * @param message The message to log.
-     */
-    public void logInfo(String message) {
-        if (!this.enabled) {
-            return;
-        }
+    Collectd.logWarning(MESSAGE_PREFIX + message);
+  }
 
-        Collectd.logInfo(MESSAGE_PREFIX + message);
+  /**
+   * Log message in error level.
+   *
+   * @param message The message to log.
+   */
+  public void logError(String message) {
+    if (!this.enabled) {
+      return;
     }
 
-    /**
-     * Log message in warning level.
-     * @param message The message to log.
-     */
-    public void logWarning(String message) {
-        if (!this.enabled) {
-            return;
-        }
-
-        Collectd.logWarning(MESSAGE_PREFIX + message);
-    }
-
-    /**
-     * Log message in error level.
-     * @param message The message to log.
-     */
-    public void logError(String message) {
-        if (!this.enabled) {
-            return;
-        }
-
-        Collectd.logError(MESSAGE_PREFIX + message);
-    }
+    Collectd.logError(MESSAGE_PREFIX + message);
+  }
 }

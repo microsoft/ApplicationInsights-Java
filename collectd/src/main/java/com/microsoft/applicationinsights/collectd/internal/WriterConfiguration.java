@@ -21,138 +21,149 @@
 
 package com.microsoft.applicationinsights.collectd.internal;
 
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.naming.ConfigurationException;
-
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.collectd.api.OConfigItem;
 import org.collectd.api.OConfigValue;
 
 /**
  * Created by yonisha on 5/5/2015.
  *
- * This class purpose is to parse configuration passed from CollectD framework.
+ * <p>This class purpose is to parse configuration passed from CollectD framework.
  */
 public class WriterConfiguration {
 
-    // region Consts
+  // region Consts
 
-    public static final String EXCLUDE_CONFIGURATION_KEY = "Exclude";
-    public static final String INSTRUMENTATION_KEY_CONFIGURATION_KEY = "InstrumentationKey";
-    public static final String SDK_LOGGER_CONFIGURATION_KEY = "SDKLogger";
+  public static final String EXCLUDE_CONFIGURATION_KEY = "Exclude";
+  public static final String INSTRUMENTATION_KEY_CONFIGURATION_KEY = "InstrumentationKey";
+  public static final String SDK_LOGGER_CONFIGURATION_KEY = "SDKLogger";
 
-    // endregion Consts
+  // endregion Consts
 
-    // region Members
+  // region Members
 
-    private static ApplicationInsightsWriterLogger logger = new ApplicationInsightsWriterLogger();
-    private Map<String, PluginExclusion> pluginExclusions = new HashMap<String, PluginExclusion>();
-    private String instrumentationKey;
-    private boolean isLoggerEnabled;
+  private static ApplicationInsightsWriterLogger logger = new ApplicationInsightsWriterLogger();
+  private Map<String, PluginExclusion> pluginExclusions = new HashMap<String, PluginExclusion>();
+  private String instrumentationKey;
+  private boolean isLoggerEnabled;
 
-    // endregion Members
+  // endregion Members
 
-    /**
-     * Gets the instrumentation key.
-     * @return The instrumentation key.
-     */
-    public String getInstrumentationKey() {
-        return this.instrumentationKey;
-    }
+  /**
+   * Builds @WriterConfiguration from the given CollectD configuration object.
+   *
+   * @param configuration The CollectD configuration.
+   * @return The configuration for Application Insights writer plugin.
+   * @throws ConfigurationException Thrown if the configuration is invalid.
+   */
+  public static WriterConfiguration buildConfiguration(OConfigItem configuration)
+      throws ConfigurationException {
+    logger.logDebug("Parsing configuration: " + configuration);
 
-    /**
-     * Gets a value indicating whether the logger is enabled or not.
-     * @return True if the logger is enabled, false otherwise.
-     */
-    public boolean getIsLoggerEnabled() {
-        return this.isLoggerEnabled;
-    }
+    WriterConfiguration writerConfiguration = new WriterConfiguration();
+    List<OConfigItem> children = configuration.getChildren();
 
-    /**
-     * Gets a dictionary of excluded plugins and data sources.
-     * @return Dictionary of excluded plugins and data sources.
-     */
-    public Map<String, PluginExclusion> getPluginExclusions() {
-        return this.pluginExclusions;
-    }
+    for (OConfigItem child : children) {
+      String key = child.getKey();
 
-    /**
-     * Builds @WriterConfiguration from the given CollectD configuration object.
-     * @param configuration The CollectD configuration.
-     * @return The configuration for Application Insights writer plugin.
-     * @throws ConfigurationException Thrown if the configuration is invalid.
-     */
-    public static WriterConfiguration buildConfiguration(OConfigItem configuration) throws ConfigurationException {
-        logger.logDebug("Parsing configuration: " + configuration);
+      if (key.equalsIgnoreCase(INSTRUMENTATION_KEY_CONFIGURATION_KEY)) {
+        List<OConfigValue> values = child.getValues();
+        if (values.size() != 1) {
+          String errorMessage = key + " configuration option needs exactly 1 argument.";
+          logger.logError(errorMessage);
 
-        WriterConfiguration writerConfiguration = new WriterConfiguration();
-        List<OConfigItem> children = configuration.getChildren();
-
-        for (OConfigItem child : children) {
-            String key = child.getKey();
-
-            if (key.equalsIgnoreCase(INSTRUMENTATION_KEY_CONFIGURATION_KEY)) {
-                List<OConfigValue> values = child.getValues();
-                if (values.size() != 1) {
-                    String errorMessage = key + " configuration option needs exactly 1 argument.";
-                    logger.logError(errorMessage);
-
-                    throw new ConfigurationException(errorMessage);
-                }
-
-                String instrumentationKey = values.get(0).toString();
-                if (LocalStringsUtils.isNullOrEmpty(instrumentationKey)) {
-
-                    String errorMessage = INSTRUMENTATION_KEY_CONFIGURATION_KEY + "' configuration option is mandatory, plugin will be disabled";
-                    logger.logError(errorMessage);
-
-                    throw new ConfigurationException(errorMessage);
-                }
-
-                writerConfiguration.instrumentationKey = instrumentationKey;
-            } else if (key.equalsIgnoreCase(SDK_LOGGER_CONFIGURATION_KEY)) {
-                List<OConfigValue> values = child.getValues();
-                if (values.size() != 1) {
-                    String errorMessage = key + " configuration option needs exactly 1 argument [true/false].";
-                    logger.logError(errorMessage);
-
-                    throw new ConfigurationException(errorMessage);
-                }
-
-                writerConfiguration.isLoggerEnabled = Boolean.parseBoolean(values.get(0).toString());
-            } else if (key.equalsIgnoreCase(EXCLUDE_CONFIGURATION_KEY)) {
-                List<OConfigValue> excludes = child.getValues();
-
-                for (OConfigValue value : excludes) {
-                    PluginExclusion pluginExclusion = PluginExclusion.buildPluginExclusion(value.toString());
-
-                    if (pluginExclusion != null) {
-                        writerConfiguration.pluginExclusions.put(pluginExclusion.getPluginName(), pluginExclusion);
-                    }
-                }
-            } else {
-                logger.logWarning("Unknown configuration option '" + key + "'.");
-            }
+          throw new ConfigurationException(errorMessage);
         }
 
-        verifyMandatoryConfigurations(writerConfiguration);
+        String instrumentationKey = values.get(0).toString();
+        if (LocalStringsUtils.isNullOrEmpty(instrumentationKey)) {
 
-        return writerConfiguration;
-    }
+          String errorMessage =
+              INSTRUMENTATION_KEY_CONFIGURATION_KEY
+                  + "' configuration option is mandatory, plugin will be disabled";
+          logger.logError(errorMessage);
 
-    /**
-     * Sets the logger for this @WriterConfiguration
-     * @param newLogger The logger to use.
-     */
-    public static void setLogger(ApplicationInsightsWriterLogger newLogger) {
-        logger = newLogger;
-    }
-
-    private static void verifyMandatoryConfigurations(WriterConfiguration writerConfiguration) throws ConfigurationException {
-        if (LocalStringsUtils.isNullOrEmpty(writerConfiguration.getInstrumentationKey())) {
-            throw new ConfigurationException("Mandatory configuration " + INSTRUMENTATION_KEY_CONFIGURATION_KEY + " wasn't found");
+          throw new ConfigurationException(errorMessage);
         }
+
+        writerConfiguration.instrumentationKey = instrumentationKey;
+      } else if (key.equalsIgnoreCase(SDK_LOGGER_CONFIGURATION_KEY)) {
+        List<OConfigValue> values = child.getValues();
+        if (values.size() != 1) {
+          String errorMessage =
+              key + " configuration option needs exactly 1 argument [true/false].";
+          logger.logError(errorMessage);
+
+          throw new ConfigurationException(errorMessage);
+        }
+
+        writerConfiguration.isLoggerEnabled = Boolean.parseBoolean(values.get(0).toString());
+      } else if (key.equalsIgnoreCase(EXCLUDE_CONFIGURATION_KEY)) {
+        List<OConfigValue> excludes = child.getValues();
+
+        for (OConfigValue value : excludes) {
+          PluginExclusion pluginExclusion = PluginExclusion.buildPluginExclusion(value.toString());
+
+          if (pluginExclusion != null) {
+            writerConfiguration.pluginExclusions.put(
+                pluginExclusion.getPluginName(), pluginExclusion);
+          }
+        }
+      } else {
+        logger.logWarning("Unknown configuration option '" + key + "'.");
+      }
     }
+
+    verifyMandatoryConfigurations(writerConfiguration);
+
+    return writerConfiguration;
+  }
+
+  /**
+   * Sets the logger for this @WriterConfiguration
+   *
+   * @param newLogger The logger to use.
+   */
+  public static void setLogger(ApplicationInsightsWriterLogger newLogger) {
+    logger = newLogger;
+  }
+
+  private static void verifyMandatoryConfigurations(WriterConfiguration writerConfiguration)
+      throws ConfigurationException {
+    if (LocalStringsUtils.isNullOrEmpty(writerConfiguration.getInstrumentationKey())) {
+      throw new ConfigurationException(
+          "Mandatory configuration " + INSTRUMENTATION_KEY_CONFIGURATION_KEY + " wasn't found");
+    }
+  }
+
+  /**
+   * Gets the instrumentation key.
+   *
+   * @return The instrumentation key.
+   */
+  public String getInstrumentationKey() {
+    return this.instrumentationKey;
+  }
+
+  /**
+   * Gets a value indicating whether the logger is enabled or not.
+   *
+   * @return True if the logger is enabled, false otherwise.
+   */
+  public boolean getIsLoggerEnabled() {
+    return this.isLoggerEnabled;
+  }
+
+  /**
+   * Gets a dictionary of excluded plugins and data sources.
+   *
+   * @return Dictionary of excluded plugins and data sources.
+   */
+  public Map<String, PluginExclusion> getPluginExclusions() {
+    return this.pluginExclusions;
+  }
 }

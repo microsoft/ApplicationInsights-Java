@@ -21,104 +21,109 @@
 
 package com.microsoft.applicationinsights.collectd.internal;
 
+import java.util.Arrays;
+import javax.naming.ConfigurationException;
+import org.collectd.api.OConfigItem;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import javax.naming.ConfigurationException;
-import java.util.Arrays;
 
-import org.collectd.api.OConfigItem;
-
-/**
- * Created by yonisha on 5/6/2015.
- */
+/** Created by yonisha on 5/6/2015. */
 public class WriterConfigurationTests {
 
-    private static final String DEFAULT_INSTRUMENTATION_KEY = "00000000-0000-0000-0000-000000000000";
-    private static OConfigItem defaultConfiguration;
+  private static final String DEFAULT_INSTRUMENTATION_KEY = "00000000-0000-0000-0000-000000000000";
+  private static OConfigItem defaultConfiguration;
 
-    @BeforeClass
-    public static void classInitialize() {
-        WriterConfiguration.setLogger(new ApplicationInsightsWriterLogger(false));
-    }
+  @BeforeClass
+  public static void classInitialize() {
+    WriterConfiguration.setLogger(new ApplicationInsightsWriterLogger(false));
+  }
 
-    @Before
-    public void testInitialize() {
-        defaultConfiguration = createDefaultConfiguration();
-    }
+  private static OConfigItem createDefaultConfiguration() {
+    OConfigItem instrumentationKeyConfigItem =
+        new OConfigItem(WriterConfiguration.INSTRUMENTATION_KEY_CONFIGURATION_KEY);
+    instrumentationKeyConfigItem.addValue(DEFAULT_INSTRUMENTATION_KEY);
 
-    @Test
-    public void testInstrumentationKeyParsedCorrectly() throws ConfigurationException {
-        WriterConfiguration writerConfiguration = WriterConfiguration.buildConfiguration(defaultConfiguration);
+    OConfigItem config = new OConfigItem("");
+    config.addChild(instrumentationKeyConfigItem);
 
-        Assert.assertEquals(DEFAULT_INSTRUMENTATION_KEY, writerConfiguration.getInstrumentationKey());
-    }
+    return config;
+  }
 
-    @Test(expected = ConfigurationException.class)
-    public void testInstrumentationKeyConfigurationWithNoActualValueThrowsException() throws ConfigurationException {
-        OConfigItem instrumentationKeyConfigItem = new OConfigItem(WriterConfiguration.INSTRUMENTATION_KEY_CONFIGURATION_KEY);
+  @Before
+  public void testInitialize() {
+    defaultConfiguration = createDefaultConfiguration();
+  }
 
-        OConfigItem config = new OConfigItem("");
-        config.addChild(instrumentationKeyConfigItem);
+  @Test
+  public void testInstrumentationKeyParsedCorrectly() throws ConfigurationException {
+    WriterConfiguration writerConfiguration =
+        WriterConfiguration.buildConfiguration(defaultConfiguration);
 
-        WriterConfiguration.buildConfiguration(config);
-    }
+    Assert.assertEquals(DEFAULT_INSTRUMENTATION_KEY, writerConfiguration.getInstrumentationKey());
+  }
 
-    @Test(expected = ConfigurationException.class)
-    public void testIfInstrumentationKeyNotProvidedThenExceptionIsThrown() throws ConfigurationException {
-        WriterConfiguration.buildConfiguration(new OConfigItem(""));
-    }
+  @Test(expected = ConfigurationException.class)
+  public void testInstrumentationKeyConfigurationWithNoActualValueThrowsException()
+      throws ConfigurationException {
+    OConfigItem instrumentationKeyConfigItem =
+        new OConfigItem(WriterConfiguration.INSTRUMENTATION_KEY_CONFIGURATION_KEY);
 
-    @Test
-    public void testPluginAndDataSourceExclusions() throws ConfigurationException {
-        String excludedPlugin = "Plugin";
-        String excludedDS1 = "DS1";
-        String excludedDS2 = "DS2";
+    OConfigItem config = new OConfigItem("");
+    config.addChild(instrumentationKeyConfigItem);
 
-        String excludeConfiguration = String.format("%s:%s,%s", excludedPlugin, excludedDS1, excludedDS2);
+    WriterConfiguration.buildConfiguration(config);
+  }
 
-        OConfigItem exclude = new OConfigItem(WriterConfiguration.EXCLUDE_CONFIGURATION_KEY);
-        exclude.addValue(excludeConfiguration);
+  @Test(expected = ConfigurationException.class)
+  public void testIfInstrumentationKeyNotProvidedThenExceptionIsThrown()
+      throws ConfigurationException {
+    WriterConfiguration.buildConfiguration(new OConfigItem(""));
+  }
 
-        defaultConfiguration.addChild(exclude);
-        WriterConfiguration writerConfiguration = WriterConfiguration.buildConfiguration(defaultConfiguration);
+  @Test
+  public void testPluginAndDataSourceExclusions() throws ConfigurationException {
+    String excludedPlugin = "Plugin";
+    String excludedDS1 = "DS1";
+    String excludedDS2 = "DS2";
 
-        PluginExclusion pluginExclusion = writerConfiguration.getPluginExclusions().get(excludedPlugin);
+    String excludeConfiguration =
+        String.format("%s:%s,%s", excludedPlugin, excludedDS1, excludedDS2);
 
-        Assert.assertTrue(pluginExclusion.isDataSourceExcluded(excludedDS1));
-        Assert.assertTrue(pluginExclusion.isDataSourceExcluded(excludedDS2));
-    }
+    OConfigItem exclude = new OConfigItem(WriterConfiguration.EXCLUDE_CONFIGURATION_KEY);
+    exclude.addValue(excludeConfiguration);
 
-    @Test
-    public void testNoDataSourceProvidedForExclusion() throws ConfigurationException {
-        String excludedPlugin = "Plugin";
+    defaultConfiguration.addChild(exclude);
+    WriterConfiguration writerConfiguration =
+        WriterConfiguration.buildConfiguration(defaultConfiguration);
 
-        OConfigItem exclude = new OConfigItem(WriterConfiguration.EXCLUDE_CONFIGURATION_KEY);
-        exclude.addValue(excludedPlugin);
+    PluginExclusion pluginExclusion = writerConfiguration.getPluginExclusions().get(excludedPlugin);
 
-        defaultConfiguration.addChild(exclude);
-        WriterConfiguration writerConfiguration = WriterConfiguration.buildConfiguration(defaultConfiguration);
+    Assert.assertTrue(pluginExclusion.isDataSourceExcluded(excludedDS1));
+    Assert.assertTrue(pluginExclusion.isDataSourceExcluded(excludedDS2));
+  }
 
-        PluginExclusion pluginExclusion = writerConfiguration.getPluginExclusions().get(excludedPlugin);
+  @Test
+  public void testNoDataSourceProvidedForExclusion() throws ConfigurationException {
+    String excludedPlugin = "Plugin";
 
-        Assert.assertTrue(pluginExclusion.isDataSourceExcluded("DS"));
-    }
+    OConfigItem exclude = new OConfigItem(WriterConfiguration.EXCLUDE_CONFIGURATION_KEY);
+    exclude.addValue(excludedPlugin);
 
-    @Test
-    public void testLegitimateDataSourcesNotExcluded() {
-        PluginExclusion pluginExclusion = new PluginExclusion("Plugin1", Arrays.asList("DS1", "DS2"));
+    defaultConfiguration.addChild(exclude);
+    WriterConfiguration writerConfiguration =
+        WriterConfiguration.buildConfiguration(defaultConfiguration);
 
-        Assert.assertFalse(pluginExclusion.isDataSourceExcluded("DS3"));
-    }
+    PluginExclusion pluginExclusion = writerConfiguration.getPluginExclusions().get(excludedPlugin);
 
-    private static OConfigItem createDefaultConfiguration() {
-        OConfigItem instrumentationKeyConfigItem = new OConfigItem(WriterConfiguration.INSTRUMENTATION_KEY_CONFIGURATION_KEY);
-        instrumentationKeyConfigItem.addValue(DEFAULT_INSTRUMENTATION_KEY);
+    Assert.assertTrue(pluginExclusion.isDataSourceExcluded("DS"));
+  }
 
-        OConfigItem config = new OConfigItem("");
-        config.addChild(instrumentationKeyConfigItem);
+  @Test
+  public void testLegitimateDataSourcesNotExcluded() {
+    PluginExclusion pluginExclusion = new PluginExclusion("Plugin1", Arrays.asList("DS1", "DS2"));
 
-        return config;
-    }
+    Assert.assertFalse(pluginExclusion.isDataSourceExcluded("DS3"));
+  }
 }
