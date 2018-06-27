@@ -36,8 +36,7 @@ ext {
     isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
     if (isBuildServer) {
         logger.lifecycle "Building on SERVER"
-    }
-    else {
+    } else {
         logger.lifecycle "Building on DESKTOP"
     }
 }
