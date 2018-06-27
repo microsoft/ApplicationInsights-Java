@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
 import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.config.JvmXmlElement;
 import com.microsoft.applicationinsights.internal.config.PerformanceCounterJvmSectionXmlElement;
@@ -31,91 +28,89 @@ import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlE
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The class loads the relevant Jvm PCs
  *
- * By default the class will create all the JVM PC
+ * <p>By default the class will create all the JVM PC
  *
- * The class will not be activated if the enclosing XML tag will have the 'UseBuiltIn' tag set to false:
+ * <p>The class will not be activated if the enclosing XML tag will have the 'UseBuiltIn' tag set to
+ * false:
  *
- * <pre>
- * {@code
- *     <PerformanceCounters>
- *         <UseBuiltIn>false</UseBuiltIn>
- *     </PerformanceCounters>
- * }
- * </pre>
+ * <pre>{@code
+ * <PerformanceCounters>
+ *     <UseBuiltIn>false</UseBuiltIn>
+ * </PerformanceCounters>
+ * }</pre>
  *
  * All Jvm PCs can be disabled like this, without disabling the other built in performance counters:
  *
- * <pre>
- * {@code
- *     <PerformanceCounters>
+ * <pre>{@code
+ * <PerformanceCounters>
  *
- *         <Jvm enabled="false"/>
+ *     <Jvm enabled="false"/>
  *
- *     </PerformanceCounters>
- * }
- * </pre>
+ * </PerformanceCounters>
+ * }</pre>
  *
  * A specific Jvm counter can be disabled like this:
  *
- * <pre>
- * {@code
- *     <PerformanceCounters>
- *         <Jvm>
- *             <JvmPC name="ThreadDeadLockDetector" enabled="false"/>
- *         </Jvm>
- *     </PerformanceCounters>
- * }
- * </pre>
+ * <pre>{@code
+ * <PerformanceCounters>
+ *     <Jvm>
+ *         <JvmPC name="ThreadDeadLockDetector" enabled="false"/>
+ *     </Jvm>
+ * </PerformanceCounters>
+ * }</pre>
  *
  * Created by gupele on 8/7/2016.
  */
 @PerformanceModule("BuiltIn")
-public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule implements PerformanceCounterConfigurationAware {
+public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule
+    implements PerformanceCounterConfigurationAware {
 
-    private String[] JvmPCNames = {
-            DeadLockDetectorPerformanceCounter.NAME,
-            JvmHeapMemoryUsedPerformanceCounter.NAME,
-            GCPerformanceCounter.NAME
-    };
+  private String[] JvmPCNames = {
+    DeadLockDetectorPerformanceCounter.NAME,
+    JvmHeapMemoryUsedPerformanceCounter.NAME,
+    GCPerformanceCounter.NAME
+  };
 
-    public JvmPerformanceCountersModule() throws Exception {
-        this(new JvmPerformanceCountersFactory());
+  public JvmPerformanceCountersModule() throws Exception {
+    this(new JvmPerformanceCountersFactory());
+  }
+
+  public JvmPerformanceCountersModule(PerformanceCountersFactory factory) throws Exception {
+    super(factory);
+
+    if (!(factory instanceof JvmPerformanceCountersFactory)) {
+      throw new Exception("Factory must implement windows capabilities.");
+    }
+  }
+
+  @Override
+  public void addConfigurationData(PerformanceCountersXmlElement configuration) {
+    JvmPerformanceCountersFactory f = (JvmPerformanceCountersFactory) factory;
+    PerformanceCounterJvmSectionXmlElement jvmSection = configuration.getJvmSection();
+    if (jvmSection == null) {
+      return;
     }
 
-    public JvmPerformanceCountersModule(PerformanceCountersFactory factory) throws Exception {
-        super(factory);
-
-        if (!(factory instanceof JvmPerformanceCountersFactory)) {
-            throw new Exception("Factory must implement windows capabilities.");
-        }
+    if (!jvmSection.isEnabled()) {
+      f.setIsEnabled(false);
+      return;
     }
 
-    @Override
-    public void addConfigurationData(PerformanceCountersXmlElement configuration) {
-        JvmPerformanceCountersFactory f = (JvmPerformanceCountersFactory) factory;
-        PerformanceCounterJvmSectionXmlElement jvmSection = configuration.getJvmSection();
-        if (jvmSection == null) {
-            return;
-        }
+    HashMap<String, JvmXmlElement> jvmPcsMap = jvmSection.getJvmXmlElementsMap();
+    HashSet<String> disabledJvmPCs = new HashSet<String>();
 
-        if (!jvmSection.isEnabled()) {
-            f.setIsEnabled(false);
-            return;
-        }
-
-        HashMap<String, JvmXmlElement> jvmPcsMap = jvmSection.getJvmXmlElementsMap();
-        HashSet<String> disabledJvmPCs = new HashSet<String>();
-
-        for (String jvmPcName : JvmPCNames) {
-            JvmXmlElement pc = jvmPcsMap.get(jvmPcName);
-            if (pc != null && !pc.isEnabled()) {
-                disabledJvmPCs.add(jvmPcName);
-            }
-        }
-        f.setDisabledJvmPCs(disabledJvmPCs);
+    for (String jvmPcName : JvmPCNames) {
+      JvmXmlElement pc = jvmPcsMap.get(jvmPcName);
+      if (pc != null && !pc.isEnabled()) {
+        disabledJvmPCs.add(jvmPcName);
+      }
     }
+    f.setDisabledJvmPCs(disabledJvmPCs);
+  }
 }

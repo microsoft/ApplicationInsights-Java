@@ -25,132 +25,131 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.PerformanceCounterData;
 
-/**
- * The class that represents information about performance counters.
- */
+/** The class that represents information about performance counters. */
 public final class PerformanceCounterTelemetry extends BaseTelemetry<PerformanceCounterData> {
-    private final PerformanceCounterData data;
+  /** Envelope Name for this telemetry. */
+  private static final String ENVELOPE_NAME = "PerformanceCounter";
+  /** Base Type for this telemetry. */
+  private static final String BASE_TYPE = "PerformanceCounterData";
+  private final PerformanceCounterData data;
 
-    /**
-     * Envelope Name for this telemetry.
-     */
-    private static final String ENVELOPE_NAME = "PerformanceCounter";
+  public PerformanceCounterTelemetry() {
+    data = new PerformanceCounterData();
+    initialize(data.getProperties());
+  }
 
+  /**
+   * Initializes the instance with all the needed data.
+   *
+   * @param categoryName Must be non null, non empty value.
+   * @param counterName Must be non null, non empty value.
+   * @param instanceName The instance name.
+   * @param value The value of the performance counter.
+   */
+  public PerformanceCounterTelemetry(
+      String categoryName, String counterName, String instanceName, double value) {
+    Preconditions.checkArgument(
+        !Strings.isNullOrEmpty(categoryName), "categoryName must be non null, non empty value");
+    Preconditions.checkArgument(
+        !Strings.isNullOrEmpty(counterName), "counterName must be non null, non empty value");
 
-    /**
-     * Base Type for this telemetry.
-     */
-    private static final String BASE_TYPE = "PerformanceCounterData";
+    data = new PerformanceCounterData();
+    initialize(data.getProperties());
 
+    data.setCategoryName(categoryName);
+    data.setCounterName(counterName);
+    data.setInstanceName(instanceName);
+    data.setValue(value);
+  }
 
-    public PerformanceCounterTelemetry() {
-        data = new PerformanceCounterData();
-        initialize(data.getProperties());
-    }
+  /**
+   * Gets the category name of the performance counter.
+   *
+   * @return The category name.
+   */
+  public String getCategoryName() {
+    return data.getCategoryName();
+  }
 
-    /**
-     * Initializes the instance with all the needed data.
-     * @param categoryName Must be non null, non empty value.
-     * @param counterName Must be non null, non empty value.
-     * @param instanceName The instance name.
-     * @param value The value of the performance counter.
-     */
-    public PerformanceCounterTelemetry(String categoryName, String counterName, String instanceName, double value) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(categoryName), "categoryName must be non null, non empty value");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(counterName), "counterName must be non null, non empty value");
+  /**
+   * Sets the category name of the performance counter.
+   *
+   * @param categoryName The category name.
+   */
+  public void setCategoryName(String categoryName) {
+    data.setCategoryName(categoryName);
+  }
 
-        data = new PerformanceCounterData();
-        initialize(data.getProperties());
+  /**
+   * Gets the counter name of the performance counter.
+   *
+   * @return The counter name.
+   */
+  public String getCounterName() {
+    return data.getCounterName();
+  }
 
-        data.setCategoryName(categoryName);
-        data.setCounterName(counterName);
-        data.setInstanceName(instanceName);
-        data.setValue(value);
-    }
+  /**
+   * Sets the counter name of the performance counter.
+   *
+   * @param counterName The counter name.
+   */
+  public void setCounterName(String counterName) {
+    data.setCounterName(counterName);
+  }
 
-    /**
-     * Sets the category name of the performance counter.
-     * @param categoryName The category name.
-     */
-    public void setCategoryName(String categoryName) {
-        data.setCategoryName(categoryName);
-    }
+  /**
+   * Gets the instance name of the performance counter.
+   *
+   * @return The instance name.
+   */
+  public String getInstanceName() {
+    return data.getInstanceName();
+  }
 
-    /**
-     * Gets the category name of the performance counter.
-     * @return The category name.
-     */
-    public String getCategoryName() {
-        return data.getCategoryName();
-    }
+  /**
+   * Sets the instance name of the performance counter.
+   *
+   * @param instanceName The instance name.
+   */
+  public void setInstanceName(String instanceName) {
+    data.setInstanceName(instanceName);
+  }
 
-    /**
-     * Sets the counter name of the performance counter.
-     * @param counterName The counter name.
-     */
-    public void setCounterName(String counterName) {
-        data.setCounterName(counterName);
-    }
+  /**
+   * Gets the value of the performance counter.
+   *
+   * @return The value.
+   */
+  public double getValue() {
+    return data.getValue();
+  }
 
-    /**
-     * Gets the counter name of the performance counter.
-     * @return The counter name.
-     */
-    public String getCounterName() {
-        return data.getCounterName();
-    }
+  /**
+   * Sets the value of the performance counter.
+   *
+   * @param value The value.
+   */
+  public void setValue(double value) {
+    data.setValue(value);
+  }
 
-    /**
-     * Sets the instance name of the performance counter.
-     * @param instanceName The instance name.
-     */
-    public void setInstanceName(String instanceName) {
-        data.setInstanceName(instanceName);
-    }
+  @Override
+  @Deprecated
+  protected void additionalSanitize() {}
 
-    /**
-     * Gets the instance name of the performance counter.
-     * @return The instance name.
-     */
-    public String getInstanceName() {
-        return data.getInstanceName();
-    }
+  @Override
+  protected PerformanceCounterData getData() {
+    return data;
+  }
 
-    /**
-     * Sets the value of the performance counter.
-     * @param value The value.
-     */
-    public void setValue(double value) {
-        data.setValue(value);
-    }
+  @Override
+  public String getEnvelopName() {
+    return ENVELOPE_NAME;
+  }
 
-    /**
-     * Gets the value of the performance counter.
-     * @return The value.
-     */
-    public double getValue() {
-        return data.getValue();
-    }
-
-    @Override
-    @Deprecated
-    protected void additionalSanitize() {
-
-    }
-
-    @Override
-    protected PerformanceCounterData getData() {
-        return data;
-    }
-
-    @Override
-    public String getEnvelopName() {
-        return ENVELOPE_NAME;
-    }
-
-    @Override
-    public String getBaseTypeName() {
-        return BASE_TYPE;
-    }
-
+  @Override
+  public String getBaseTypeName() {
+    return BASE_TYPE;
+  }
 }

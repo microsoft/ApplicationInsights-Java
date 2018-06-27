@@ -21,40 +21,41 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.io.File;
-
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
+import java.io.File;
 
 /**
  * A base class for Unix performance counters who uses the '/proc/' filesystem for their work.
  *
- * Created by gupele on 3/8/2015.
+ * <p>Created by gupele on 3/8/2015.
  */
 abstract class AbstractUnixPerformanceCounter extends AbstractPerformanceCounter {
-    private final File processFile;
-    private final String path;
+  private final File processFile;
+  private final String path;
 
-    protected AbstractUnixPerformanceCounter(String path) {
-        Preconditions.checkArgument(SystemInformation.INSTANCE.isUnix(), "This performance counter must be activated in Unix environment.");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(path), "path should be non null, non empty value.");
+  protected AbstractUnixPerformanceCounter(String path) {
+    Preconditions.checkArgument(
+        SystemInformation.INSTANCE.isUnix(),
+        "This performance counter must be activated in Unix environment.");
+    Preconditions.checkArgument(
+        !Strings.isNullOrEmpty(path), "path should be non null, non empty value.");
 
-        this.path = path;
-        processFile = new File(path);
-        if (!processFile.canRead()) {
-            logPerfCounterErrorError("Can not read");
-        }
+    this.path = path;
+    processFile = new File(path);
+    if (!processFile.canRead()) {
+      logPerfCounterErrorError("Can not read");
     }
+  }
 
-    protected void logPerfCounterErrorError(String format, Object... args) {
-        format = "Performance Counter " + getId() + ": Error in file '" + path + "': " + format;
-        InternalLogger.INSTANCE.error(format, args);
-    }
+  protected void logPerfCounterErrorError(String format, Object... args) {
+    format = "Performance Counter " + getId() + ": Error in file '" + path + "': " + format;
+    InternalLogger.INSTANCE.error(format, args);
+  }
 
-    protected File getProcessFile() {
-        return processFile;
-    }
+  protected File getProcessFile() {
+    return processFile;
+  }
 }

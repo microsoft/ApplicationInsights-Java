@@ -21,467 +21,513 @@
 
 package com.microsoft.applicationinsights;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
-import com.microsoft.applicationinsights.telemetry.*;
-
-import org.junit.Before;
-import org.junit.Test;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.SessionState;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
-
+import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-
-// TODO: Some of the tests should be expanded. currently we just doing sanity checks by verified that
+// TODO: Some of the tests should be expanded. currently we just doing sanity checks by verified
+// that
 // all events are sent, without validating their values that added by the client.
-/**
- * Tests the interface of the telemetry client.
- */
+/** Tests the interface of the telemetry client. */
 public final class TelemetryClientTests {
 
-    // region Members
+  // region Members
 
-    private TelemetryConfiguration configuration;
-    private List<Telemetry> eventsSent;
-    private TelemetryClient client;
-    private TelemetryChannel channel;
+  private TelemetryConfiguration configuration;
+  private List<Telemetry> eventsSent;
+  private TelemetryClient client;
+  private TelemetryChannel channel;
 
-    // endregion Members
+  // endregion Members
 
-    // region Initialization
+  // region Initialization
 
-    @Before
-    public void testInitialize() {
-        configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey("00000000-0000-0000-0000-000000000000");
-        channel = mock(TelemetryChannel.class);
-        configuration.setChannel(channel);
+  private static void verifyTraceTelemetry(
+      Telemetry telemetry,
+      SeverityLevel expectedSeverityLevel,
+      Map<String, String> expectedProperties) {
+    assertNotNull(telemetry);
+    assertTrue(telemetry instanceof TraceTelemetry);
 
-        eventsSent = new LinkedList<Telemetry>();
-        // Setting the channel to add the sent telemetries to a collection, so they could be verified in tests.
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+    TraceTelemetry traceTelemetry = (TraceTelemetry) telemetry;
+    assertEquals(traceTelemetry.getSeverityLevel(), expectedSeverityLevel);
+    if (expectedProperties != null) {
+      assertEquals(traceTelemetry.getContext().getProperties(), expectedProperties);
+    }
+  }
+
+  // endregion Initialization
+
+  // region Track tests
+
+  @Before
+  public void testInitialize() {
+    configuration = new TelemetryConfiguration();
+    configuration.setInstrumentationKey("00000000-0000-0000-0000-000000000000");
+    channel = mock(TelemetryChannel.class);
+    configuration.setChannel(channel);
+
+    eventsSent = new LinkedList<Telemetry>();
+    // Setting the channel to add the sent telemetries to a collection, so they could be verified in
+    // tests.
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 Telemetry telemetry = ((Telemetry) invocation.getArguments()[0]);
                 eventsSent.add(telemetry);
 
                 return null;
-            }
-        }).when(channel).send(Matchers.any(Telemetry.class));
+              }
+            })
+        .when(channel)
+        .send(Matchers.any(Telemetry.class));
 
-        client = new TelemetryClient(configuration);
-    }
+    client = new TelemetryClient(configuration);
+  }
 
-    // endregion Initialization
+  @Test
+  public void testNodeNameExists() {
+    String nodeName = client.getContext().getInternal().getNodeName();
+    Assert.assertFalse(nodeName == null || nodeName.length() == 0);
+  }
 
-    // region Track tests
+  @Test
+  public void testNodeNameSent() {
+    client.trackEvent("Event");
 
-    @Test
-    public void testNodeNameExists()
-    {
-        String nodeName = client.getContext().getInternal().getNodeName();
-        Assert.assertFalse(nodeName == null || nodeName.length()==0);
-    }
+    EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
+    String nodeName = telemetry.getContext().getInternal().getNodeName();
+    Assert.assertFalse(nodeName == null || nodeName.length() == 0);
+  }
 
-    @Test
-    public void testNodeNameSent() {
-        client.trackEvent("Event");
+  @Test
+  public void testOverideNodeName() {
+    String overrideNode = "NewNodeName";
+    client.getContext().getInternal().setNodeName(overrideNode);
+    client.trackEvent("Event");
+    EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
+    String nodeName = telemetry.getContext().getInternal().getNodeName();
+    Assert.assertTrue("NodeName was not overriden", nodeName.equals(overrideNode));
+  }
 
-        EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
-        String nodeName = telemetry.getContext().getInternal().getNodeName();
-        Assert.assertFalse(nodeName == null || nodeName.length()==0);
-    }
+  @Test
+  public void testChannelSendException() {
+    TelemetryChannel mockChannel =
+        new TelemetryChannel() {
+          @Override
+          public boolean isDeveloperMode() {
+            return false;
+          }
 
-    @Test
-    public void testOverideNodeName(){
-        String overrideNode = "NewNodeName";
-        client.getContext().getInternal().setNodeName(overrideNode);
-        client.trackEvent("Event");
-        EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
-        String nodeName = telemetry.getContext().getInternal().getNodeName();
-        Assert.assertTrue("NodeName was not overriden", nodeName.equals(overrideNode));
-    }
+          @Override
+          public void setDeveloperMode(boolean value) {}
 
-    @Test
-    public void testChannelSendException() {
-        TelemetryChannel mockChannel = new TelemetryChannel() {
-            @Override
-            public boolean isDeveloperMode() {
-                return false;
-            }
+          @Override
+          public void send(Telemetry item) {
+            throw new RuntimeException();
+          }
 
-            @Override
-            public void setDeveloperMode(boolean value) {
+          @Override
+          public void stop(long timeout, TimeUnit timeUnit) {}
 
-            }
+          @Override
+          public void flush() {}
 
-            @Override
-            public void send(Telemetry item) {
-                throw new RuntimeException();
-            }
-
-            @Override
-            public void stop(long timeout, TimeUnit timeUnit) {
-
-            }
-
-            @Override
-            public void flush() {
-
-            }
-
-            @Override
-            public void setSampler(TelemetrySampler telemetrySampler) {
-            }
+          @Override
+          public void setSampler(TelemetrySampler telemetrySampler) {}
         };
 
-        configuration.setChannel(mockChannel);
-        client.trackEvent("Mock");
-    }
+    configuration.setChannel(mockChannel);
+    client.trackEvent("Mock");
+  }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNullTrackTelemetry() {
-        client.track(null);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testNullTrackTelemetry() {
+    client.track(null);
+  }
 
-    @Test
-    public void testTrackTelemetryWithDisabled() {
-        configuration.setTrackingIsDisabled(true);
-        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+  @Test
+  public void testTrackTelemetryWithDisabled() {
+    configuration.setTrackingIsDisabled(true);
+    Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
 
-        client.track(mockTelemetry);
+    client.track(mockTelemetry);
 
-        Mockito.verifyZeroInteractions(channel, mockTelemetry);
-    }
+    Mockito.verifyZeroInteractions(channel, mockTelemetry);
+  }
 
-    @Test
-    public void testUseConfigurationInstrumentationKeyWithNull() {
-        testUseConfigurationInstrumentatonKey(null);
-    }
+  @Test
+  public void testUseConfigurationInstrumentationKeyWithNull() {
+    testUseConfigurationInstrumentatonKey(null);
+  }
 
-    @Test
-    public void testUseConfigurationInstrumentationKeyWithEmpty() {
-        testUseConfigurationInstrumentatonKey("");
-    }
+  @Test
+  public void testUseConfigurationInstrumentationKeyWithEmpty() {
+    testUseConfigurationInstrumentatonKey("");
+  }
 
-    @Test
-    public void testMethodsOnTelemetryAreCalledWhenTracking() {
-        TelemetryChannel mockChannel = Mockito.mock(TelemetryChannel.class);
-        configuration.setChannel(mockChannel);
+  @Test
+  public void testMethodsOnTelemetryAreCalledWhenTracking() {
+    TelemetryChannel mockChannel = Mockito.mock(TelemetryChannel.class);
+    configuration.setChannel(mockChannel);
 
-        TelemetryContext mockContext = new TelemetryContext();
-        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
-        Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
+    TelemetryContext mockContext = new TelemetryContext();
+    Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+    Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
 
-        TelemetryClient telemetryClient = new TelemetryClient(configuration);
+    TelemetryClient telemetryClient = new TelemetryClient(configuration);
 
-        telemetryClient.track(mockTelemetry);
+    telemetryClient.track(mockTelemetry);
 
-        Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
+    Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
 
-        Mockito.verify(mockTelemetry, Mockito.times(1)).setTimestamp(any(Date.class));
-    }
+    Mockito.verify(mockTelemetry, Mockito.times(1)).setTimestamp(any(Date.class));
+  }
 
-    @Test
-    public void testTelemetryContextsAreCalled() {
-        ContextInitializer mockContextInitializer = Mockito.mock(ContextInitializer.class);
-        configuration.getContextInitializers().add(mockContextInitializer);
-        TelemetryInitializer mockTelemetryInitializer = Mockito.mock(TelemetryInitializer.class);
-        configuration.getTelemetryInitializers().add(mockTelemetryInitializer);
+  @Test
+  public void testTelemetryContextsAreCalled() {
+    ContextInitializer mockContextInitializer = Mockito.mock(ContextInitializer.class);
+    configuration.getContextInitializers().add(mockContextInitializer);
+    TelemetryInitializer mockTelemetryInitializer = Mockito.mock(TelemetryInitializer.class);
+    configuration.getTelemetryInitializers().add(mockTelemetryInitializer);
 
-        TelemetryContext mockContext = new TelemetryContext();
-        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
-        Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
-        client.track(mockTelemetry);
+    TelemetryContext mockContext = new TelemetryContext();
+    Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+    Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
+    client.track(mockTelemetry);
 
-        Mockito.verify(mockContextInitializer, Mockito.times(1)).initialize(any(TelemetryContext.class));
-        Mockito.verify(mockTelemetryInitializer, Mockito.times(1)).initialize(mockTelemetry);
-    }
+    Mockito.verify(mockContextInitializer, Mockito.times(1))
+        .initialize(any(TelemetryContext.class));
+    Mockito.verify(mockTelemetryInitializer, Mockito.times(1)).initialize(mockTelemetry);
+  }
 
-    @Test
-    public void testTrackEventWithPropertiesAndMetrics() {
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        Map<String, Double> metrics = new HashMap<String, Double>() {{ put("key", 1d); }};
-
-        client.trackEvent("Event", properties, metrics);
-
-        EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
-        Assert.assertTrue("Expected telemetry property not found", telemetry.getProperties().get("key").equalsIgnoreCase("value"));
-        Assert.assertTrue("Expected telemetry property not found", 1d == telemetry.getMetrics().get("key"));
-    }
-
-    @Test
-    public void testTrackEventWithName() {
-        client.trackEvent("Event");
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackEventWithEventTelemetry() {
-        EventTelemetry eventTelemetry = new EventTelemetry("Event");
-        client.trackEvent(eventTelemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackSessionState() {
-        client.trackSessionState(SessionState.End);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackTraceAll() {
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        client.trackTrace("Trace", SeverityLevel.Error, properties);
-
-        Telemetry telemetry = verifyAndGetLastEventSent();
-        verifyTraceTelemetry(telemetry, SeverityLevel.Error, properties);
-    }
-
-    @Test
-    public void testTrackTraceWithProperties() {
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        client.trackTrace("Trace", null, properties);
-
-        Telemetry telemetry = verifyAndGetLastEventSent();
-        verifyTraceTelemetry(telemetry, null, properties);
-    }
-
-    @Test
-    public void testTrackTraceWithSeverityLevel() {
-        client.trackTrace("Trace", SeverityLevel.Critical);
-
-        Telemetry telemetry = verifyAndGetLastEventSent();
-        verifyTraceTelemetry(telemetry, SeverityLevel.Critical, null);
-    }
-
-    @Test
-    public void testTrackTraceWithName() {
-        client.trackTrace("Trace");
-
-        verifyAndGetLastEventSent();}
-
-    @Test
-    public void testTrackTraceWithTraceTelemetry() {
-        TraceTelemetry telemetry = new TraceTelemetry("Trace");
-        client.trackTrace(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackMetricWithExpandedValues() {
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        client.trackMetric("Metric", 1, 1, 1, 1, properties);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackMetricWithNameAndValue() {
-        client.trackMetric("Metric", 1);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackMetricWithMetricTelemetry() {
-        MetricTelemetry telemetry = new MetricTelemetry("Metric", 1);
-        client.trackMetric(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackExceptionWithPropertiesAndMetrics() {
-        Exception exception = new Exception("Exception");
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        Map<String, Double> metrics = new HashMap<String, Double>() {{ put("key", 1d); }};
-
-        client.trackException(exception, properties, metrics);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackExceptionWithExceptionTelemetry() {
-        ExceptionTelemetry telemetry = new ExceptionTelemetry(new Exception("Exception"));
-
-        client.trackException(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackException() {
-        Exception exception = new Exception("Exception");
-
-        client.trackException(exception);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackHttpRequest() {
-        client.trackHttpRequest("Name", new Date(), 1, "200", true);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackHttpRequestWithHttpRequestTelemetry() {
-        RequestTelemetry telemetry = new RequestTelemetry("Name", new Date(), 1, "200", true);
-        client.trackRequest(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    @Ignore("Not supported yet.")
-    public void testTrackRemoteDependency(){ }
-
-    @Test
-    public void testTrackPageViewWithName() {
-        client.trackPageView("PageName");
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackPageViewWithPageViewTelemetry() {
-        PageViewTelemetry telemetry = new PageViewTelemetry("PageName");
-        client.trackPageView(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackWithCustomTelemetryTimestamp() {
-        Date timestamp = new Date(10000);
-        client.track(new RequestTelemetry("Name", timestamp, 1, "200", true));
-
-        Telemetry telemetry = verifyAndGetLastEventSent();
-        assertEquals(telemetry.getTimestamp(), timestamp);
-    }
-
-    @Test
-    public void testTrack() {
-        TraceTelemetry telemetry = new TraceTelemetry("test");
-        client.track(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testContextThrowsInInitialize() {
-        ContextInitializer mockContextInitializer = new ContextInitializer() {
-            @Override
-            public void initialize(TelemetryContext context) {
-                throw new RuntimeException();
-            }
+  @Test
+  public void testTrackEventWithPropertiesAndMetrics() {
+    Map<String, String> properties =
+        new HashMap<String, String>() {
+          {
+            put("key", "value");
+          }
+        };
+    Map<String, Double> metrics =
+        new HashMap<String, Double>() {
+          {
+            put("key", 1d);
+          }
         };
 
-        configuration.getContextInitializers().add(mockContextInitializer);
+    client.trackEvent("Event", properties, metrics);
 
-        TraceTelemetry telemetry = new TraceTelemetry("test");
-        client.track(telemetry);
-    }
+    EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
+    Assert.assertTrue(
+        "Expected telemetry property not found",
+        telemetry.getProperties().get("key").equalsIgnoreCase("value"));
+    Assert.assertTrue(
+        "Expected telemetry property not found", 1d == telemetry.getMetrics().get("key"));
+  }
 
-    @Test
-    public void testFlush() {
-        client.flush();
+  @Test
+  public void testTrackEventWithName() {
+    client.trackEvent("Event");
 
-        Mockito.verify(channel, Mockito.times(1)).flush();
-    }
+    verifyAndGetLastEventSent();
+  }
 
-    @Test
-    public void testFilterOutTelemetry() throws Throwable {
-        RequestTelemetryFilter filter = new RequestTelemetryFilter();
-        filter.setNotNeededResponseCodes("200-400");
-        configuration.getTelemetryProcessors().add(filter);
+  @Test
+  public void testTrackEventWithEventTelemetry() {
+    EventTelemetry eventTelemetry = new EventTelemetry("Event");
+    client.trackEvent(eventTelemetry);
 
-        RequestTelemetry rt = new RequestTelemetry();
-        rt.setUrl(new URL("http:///www.microsoft.com/"));
-        client.trackRequest(rt);
+    verifyAndGetLastEventSent();
+  }
 
-        Mockito.verify(channel, Mockito.never()).send(rt);
-    }
+  @Test
+  public void testTrackSessionState() {
+    client.trackSessionState(SessionState.End);
 
-    @Test
-    public void testDontFilterOutTelemetry() throws Throwable {
-        RequestTelemetryFilter filter = new RequestTelemetryFilter();
-        filter.setNotNeededResponseCodes("201-400");
-        RequestTelemetry rt = new RequestTelemetry();
-        rt.setUrl(new URL("http:///www.microsoft.com/"));
-        client.trackRequest(rt);
+    verifyAndGetLastEventSent();
+  }
 
-        Mockito.verify(channel, Mockito.times(1)).send(rt);
-    }
+  @Test
+  public void testTrackTraceAll() {
+    Map<String, String> properties =
+        new HashMap<String, String>() {
+          {
+            put("key", "value");
+          }
+        };
+    client.trackTrace("Trace", SeverityLevel.Error, properties);
 
-    // endregion Track tests
+    Telemetry telemetry = verifyAndGetLastEventSent();
+    verifyTraceTelemetry(telemetry, SeverityLevel.Error, properties);
+  }
 
-    // region Private methods
+  @Test
+  public void testTrackTraceWithProperties() {
+    Map<String, String> properties =
+        new HashMap<String, String>() {
+          {
+            put("key", "value");
+          }
+        };
+    client.trackTrace("Trace", null, properties);
 
-    private static void verifyTraceTelemetry(Telemetry telemetry, SeverityLevel expectedSeverityLevel, Map<String, String> expectedProperties) {
-        assertNotNull(telemetry);
-        assertTrue(telemetry instanceof TraceTelemetry);
+    Telemetry telemetry = verifyAndGetLastEventSent();
+    verifyTraceTelemetry(telemetry, null, properties);
+  }
 
-        TraceTelemetry traceTelemetry = (TraceTelemetry)telemetry;
-        assertEquals(traceTelemetry.getSeverityLevel(), expectedSeverityLevel);
-        if (expectedProperties != null) {
-            assertEquals(traceTelemetry.getContext().getProperties(), expectedProperties);
-        }
-    }
+  @Test
+  public void testTrackTraceWithSeverityLevel() {
+    client.trackTrace("Trace", SeverityLevel.Critical);
 
-    private void testUseConfigurationInstrumentatonKey(String contextInstrumentationKey) {
-        TelemetryConfiguration configuration = new TelemetryConfiguration();
-        TelemetryChannel mockChannel = Mockito.mock(TelemetryChannel.class);
-        configuration.setChannel(mockChannel);
-        configuration.setInstrumentationKey("00000000-0000-0000-0000-000000000000");
+    Telemetry telemetry = verifyAndGetLastEventSent();
+    verifyTraceTelemetry(telemetry, SeverityLevel.Critical, null);
+  }
 
-        TelemetryContext mockContext = new TelemetryContext();
-        mockContext.setInstrumentationKey(contextInstrumentationKey);
-        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
-        Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
+  @Test
+  public void testTrackTraceWithName() {
+    client.trackTrace("Trace");
 
-        TelemetryClient telemetryClient = new TelemetryClient(configuration);
+    verifyAndGetLastEventSent();
+  }
 
-        telemetryClient.track(mockTelemetry);
+  @Test
+  public void testTrackTraceWithTraceTelemetry() {
+    TraceTelemetry telemetry = new TraceTelemetry("Trace");
+    client.trackTrace(telemetry);
 
-        Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
-        assertEquals(mockContext.getInstrumentationKey(), "00000000-0000-0000-0000-000000000000");
-    }
+    verifyAndGetLastEventSent();
+  }
 
-    private Telemetry verifyAndGetLastEventSent() {
-        verify(channel, times(1)).send(any(Telemetry.class));
+  @Test
+  public void testTrackMetricWithExpandedValues() {
+    Map<String, String> properties =
+        new HashMap<String, String>() {
+          {
+            put("key", "value");
+          }
+        };
+    client.trackMetric("Metric", 1, 1, 1, 1, properties);
 
-        return eventsSent.get(0);
-    }
+    verifyAndGetLastEventSent();
+  }
 
-    // endregion Private methods
+  @Test
+  public void testTrackMetricWithNameAndValue() {
+    client.trackMetric("Metric", 1);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testTrackMetricWithMetricTelemetry() {
+    MetricTelemetry telemetry = new MetricTelemetry("Metric", 1);
+    client.trackMetric(telemetry);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testTrackExceptionWithPropertiesAndMetrics() {
+    Exception exception = new Exception("Exception");
+    Map<String, String> properties =
+        new HashMap<String, String>() {
+          {
+            put("key", "value");
+          }
+        };
+    Map<String, Double> metrics =
+        new HashMap<String, Double>() {
+          {
+            put("key", 1d);
+          }
+        };
+
+    client.trackException(exception, properties, metrics);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testTrackExceptionWithExceptionTelemetry() {
+    ExceptionTelemetry telemetry = new ExceptionTelemetry(new Exception("Exception"));
+
+    client.trackException(telemetry);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testTrackException() {
+    Exception exception = new Exception("Exception");
+
+    client.trackException(exception);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testTrackHttpRequest() {
+    client.trackHttpRequest("Name", new Date(), 1, "200", true);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testTrackHttpRequestWithHttpRequestTelemetry() {
+    RequestTelemetry telemetry = new RequestTelemetry("Name", new Date(), 1, "200", true);
+    client.trackRequest(telemetry);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  @Ignore("Not supported yet.")
+  public void testTrackRemoteDependency() {}
+
+  @Test
+  public void testTrackPageViewWithName() {
+    client.trackPageView("PageName");
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testTrackPageViewWithPageViewTelemetry() {
+    PageViewTelemetry telemetry = new PageViewTelemetry("PageName");
+    client.trackPageView(telemetry);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testTrackWithCustomTelemetryTimestamp() {
+    Date timestamp = new Date(10000);
+    client.track(new RequestTelemetry("Name", timestamp, 1, "200", true));
+
+    Telemetry telemetry = verifyAndGetLastEventSent();
+    assertEquals(telemetry.getTimestamp(), timestamp);
+  }
+
+  @Test
+  public void testTrack() {
+    TraceTelemetry telemetry = new TraceTelemetry("test");
+    client.track(telemetry);
+
+    verifyAndGetLastEventSent();
+  }
+
+  @Test
+  public void testContextThrowsInInitialize() {
+    ContextInitializer mockContextInitializer =
+        new ContextInitializer() {
+          @Override
+          public void initialize(TelemetryContext context) {
+            throw new RuntimeException();
+          }
+        };
+
+    configuration.getContextInitializers().add(mockContextInitializer);
+
+    TraceTelemetry telemetry = new TraceTelemetry("test");
+    client.track(telemetry);
+  }
+
+  @Test
+  public void testFlush() {
+    client.flush();
+
+    Mockito.verify(channel, Mockito.times(1)).flush();
+  }
+
+  @Test
+  public void testFilterOutTelemetry() throws Throwable {
+    RequestTelemetryFilter filter = new RequestTelemetryFilter();
+    filter.setNotNeededResponseCodes("200-400");
+    configuration.getTelemetryProcessors().add(filter);
+
+    RequestTelemetry rt = new RequestTelemetry();
+    rt.setUrl(new URL("http:///www.microsoft.com/"));
+    client.trackRequest(rt);
+
+    Mockito.verify(channel, Mockito.never()).send(rt);
+  }
+
+  // endregion Track tests
+
+  // region Private methods
+
+  @Test
+  public void testDontFilterOutTelemetry() throws Throwable {
+    RequestTelemetryFilter filter = new RequestTelemetryFilter();
+    filter.setNotNeededResponseCodes("201-400");
+    RequestTelemetry rt = new RequestTelemetry();
+    rt.setUrl(new URL("http:///www.microsoft.com/"));
+    client.trackRequest(rt);
+
+    Mockito.verify(channel, Mockito.times(1)).send(rt);
+  }
+
+  private void testUseConfigurationInstrumentatonKey(String contextInstrumentationKey) {
+    TelemetryConfiguration configuration = new TelemetryConfiguration();
+    TelemetryChannel mockChannel = Mockito.mock(TelemetryChannel.class);
+    configuration.setChannel(mockChannel);
+    configuration.setInstrumentationKey("00000000-0000-0000-0000-000000000000");
+
+    TelemetryContext mockContext = new TelemetryContext();
+    mockContext.setInstrumentationKey(contextInstrumentationKey);
+    Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
+    Mockito.doReturn(mockContext).when(mockTelemetry).getContext();
+
+    TelemetryClient telemetryClient = new TelemetryClient(configuration);
+
+    telemetryClient.track(mockTelemetry);
+
+    Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
+    assertEquals(mockContext.getInstrumentationKey(), "00000000-0000-0000-0000-000000000000");
+  }
+
+  private Telemetry verifyAndGetLastEventSent() {
+    verify(channel, times(1)).send(any(Telemetry.class));
+
+    return eventsSent.get(0);
+  }
+
+  // endregion Private methods
 }

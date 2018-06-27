@@ -21,141 +21,143 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.TreeMap;
 import java.util.List;
-
-import static org.junit.Assert.*;
+import java.util.TreeMap;
+import org.junit.Test;
 
 public final class ArgsFormatterTest {
-    @Test
-    public void arrayTest() {
-        String s = new ArgsFormatter().format(new Object[] {null, new Integer[]{new Integer(1), null, new Integer(122)}});
+  @Test
+  public void arrayTest() {
+    String s =
+        new ArgsFormatter()
+            .format(new Object[] {null, new Integer[] {new Integer(1), null, new Integer(122)}});
 
-        assertNotNull(s);
-        assertEquals(s, "null,[1,null,122]");
-    }
+    assertNotNull(s);
+    assertEquals(s, "null,[1,null,122]");
+  }
 
-    @Test
-    public void nullObjectAndObjectTest() {
-        String s = new ArgsFormatter().format(new Object[] {null, new Integer(1)});
+  @Test
+  public void nullObjectAndObjectTest() {
+    String s = new ArgsFormatter().format(new Object[] {null, new Integer(1)});
 
-        assertNotNull(s);
-        assertEquals(s, "null,1");
-    }
+    assertNotNull(s);
+    assertEquals(s, "null,1");
+  }
 
-    @Test
-    public void nullObjectTest() {
-        String s = new ArgsFormatter().format(new Object[] {null});
+  @Test
+  public void nullObjectTest() {
+    String s = new ArgsFormatter().format(new Object[] {null});
 
-        assertNotNull(s);
-        assertEquals(s, "null");
-    }
+    assertNotNull(s);
+    assertEquals(s, "null");
+  }
 
-    @Test
-    public void twoNullsObjectTest() {
-        String s = new ArgsFormatter().format(new Object[] {null, null});
+  @Test
+  public void twoNullsObjectTest() {
+    String s = new ArgsFormatter().format(new Object[] {null, null});
 
-        assertNotNull(s);
-        assertEquals(s, "null,null");
-    }
+    assertNotNull(s);
+    assertEquals(s, "null,null");
+  }
 
-    @Test
-    public void twoObjectsTest() {
-        String s1 = "tutorial-list";
-        String s2 = "Mysql";
-        String s = new ArgsFormatter().format(new Object[] {s1, s2});
+  @Test
+  public void twoObjectsTest() {
+    String s1 = "tutorial-list";
+    String s2 = "Mysql";
+    String s = new ArgsFormatter().format(new Object[] {s1, s2});
 
-        assertNotNull(s);
-        assertEquals(s, "tutorial-list,Mysql");
-    }
+    assertNotNull(s);
+    assertEquals(s, "tutorial-list,Mysql");
+  }
 
-    @Test
-    public void oneObjectTest() {
-        String s1 = "1";
-        String s = new ArgsFormatter().format(new Object[] {s1});
+  @Test
+  public void oneObjectTest() {
+    String s1 = "1";
+    String s = new ArgsFormatter().format(new Object[] {s1});
 
-        assertNotNull(s);
-        assertEquals(s, "1");
-    }
+    assertNotNull(s);
+    assertEquals(s, "1");
+  }
 
-    @Test
-    public void twoObjectsAndCollectionTest() {
-        String s1 = "1";
-        String s2 = "2";
-        ArrayList<String> strings = new ArrayList<String>();
-        strings.add("a");
-        strings.add("a1");
-        String s = new ArgsFormatter().format(new Object[] {s1, s2, strings});
+  @Test
+  public void twoObjectsAndCollectionTest() {
+    String s1 = "1";
+    String s2 = "2";
+    ArrayList<String> strings = new ArrayList<String>();
+    strings.add("a");
+    strings.add("a1");
+    String s = new ArgsFormatter().format(new Object[] {s1, s2, strings});
 
-        assertNotNull(s);
-        assertEquals(s, "1,2,[a,a1]");
-    }
+    assertNotNull(s);
+    assertEquals(s, "1,2,[a,a1]");
+  }
 
-    @Test
-    public void collectionAndTwoObjectsTest() {
-        String s1 = "1";
-        String s2 = "2";
-        ArrayList<String> strings = new ArrayList<String>();
-        strings.add("a");
-        strings.add("a1");
-        String s = new ArgsFormatter().format(new Object[] {strings, s1, s2});
+  @Test
+  public void collectionAndTwoObjectsTest() {
+    String s1 = "1";
+    String s2 = "2";
+    ArrayList<String> strings = new ArrayList<String>();
+    strings.add("a");
+    strings.add("a1");
+    String s = new ArgsFormatter().format(new Object[] {strings, s1, s2});
 
-        assertNotNull(s);
-        assertEquals(s, "[a,a1],1,2");
-    }
+    assertNotNull(s);
+    assertEquals(s, "[a,a1],1,2");
+  }
 
-    @Test
-    public void twoObjectsAndMapTest() {
-        String s1 = "1";
-        String s2 = "2";
-        TreeMap<String, String> strings = new TreeMap<String, String>();
-        strings.put("a", "object");
-        strings.put("a1", "object1");
-        String s = new ArgsFormatter().format(new Object[] {s1, s2, strings});
+  @Test
+  public void twoObjectsAndMapTest() {
+    String s1 = "1";
+    String s2 = "2";
+    TreeMap<String, String> strings = new TreeMap<String, String>();
+    strings.put("a", "object");
+    strings.put("a1", "object1");
+    String s = new ArgsFormatter().format(new Object[] {s1, s2, strings});
 
-        assertNotNull(s);
-        assertEquals(s, "1,2,[a:object,a1:object1]");
-    }
+    assertNotNull(s);
+    assertEquals(s, "1,2,[a:object,a1:object1]");
+  }
 
-    @Test
-    public void mapOfCollectionsTest() {
-        TreeMap<String, List<String>> mapOfStrings = new TreeMap<String,  List<String>>();
-        ArrayList<String> strings = new ArrayList<String>();
-        strings.add("a");
-        strings.add("a1");
-        mapOfStrings.put("a", strings);
-        strings = new ArrayList<String>();
-        strings.add("a_");
-        strings.add("a_1");
-        mapOfStrings.put("a1", strings);
-        String s = new ArgsFormatter().format(new Object[] {mapOfStrings});
+  @Test
+  public void mapOfCollectionsTest() {
+    TreeMap<String, List<String>> mapOfStrings = new TreeMap<String, List<String>>();
+    ArrayList<String> strings = new ArrayList<String>();
+    strings.add("a");
+    strings.add("a1");
+    mapOfStrings.put("a", strings);
+    strings = new ArrayList<String>();
+    strings.add("a_");
+    strings.add("a_1");
+    mapOfStrings.put("a1", strings);
+    String s = new ArgsFormatter().format(new Object[] {mapOfStrings});
 
-        assertNotNull(s);
-        assertEquals(s, "[a:[a,a1],a1:[a_,a_1]]");
-    }
+    assertNotNull(s);
+    assertEquals(s, "[a:[a,a1],a1:[a_,a_1]]");
+  }
 
-    @Test
-    public void collectionTest() {
-        ArrayList<String> strings = new ArrayList<String>();
-        strings.add("a");
-        strings.add("a1");
-        String s = new ArgsFormatter().format(new Object[] {strings});
+  @Test
+  public void collectionTest() {
+    ArrayList<String> strings = new ArrayList<String>();
+    strings.add("a");
+    strings.add("a1");
+    String s = new ArgsFormatter().format(new Object[] {strings});
 
-        assertNotNull(s);
-        assertEquals(s, "[a,a1]");
-    }
+    assertNotNull(s);
+    assertEquals(s, "[a,a1]");
+  }
 
-    @Test
-    public void mapTest() {
-        TreeMap<String, String> strings = new TreeMap<String, String>();
-        strings.put("a", "object");
-        strings.put("a1", "object1");
-        String s = new ArgsFormatter().format(new Object[] {strings});
+  @Test
+  public void mapTest() {
+    TreeMap<String, String> strings = new TreeMap<String, String>();
+    strings.put("a", "object");
+    strings.put("a1", "object1");
+    String s = new ArgsFormatter().format(new Object[] {strings});
 
-        assertNotNull(s);
-        assertEquals(s, "[a:object,a1:object1]");
-    }
+    assertNotNull(s);
+    assertEquals(s, "[a:object,a1:object1]");
+  }
 }

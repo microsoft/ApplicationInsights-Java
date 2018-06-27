@@ -21,27 +21,27 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import org.junit.Test;
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public final class ExponentialBackOffTimesPolicyTest {
-    @Test
-    public void testBackOffs() {
-        long[] backOffs = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInMillis();
-        assertNotNull(backOffs);
-        assertTrue(backOffs.length % 2 == 1);
-        int couples = backOffs.length / 2;
-        long lastEventValue = BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS;
-        for (int i = 0; i < couples; ++i) {
-            if (i % 2 == 0) {
-                assertEquals(backOffs[i], BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS);
-            } else {
-                assertTrue(lastEventValue < backOffs[i]);
-                lastEventValue = backOffs[i];
-            }
-        }
+  @Test
+  public void testBackOffs() {
+    long[] backOffs = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInMillis();
+    assertNotNull(backOffs);
+    assertTrue(backOffs.length % 2 == 1);
+    int couples = backOffs.length / 2;
+    long lastEventValue = BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS;
+    for (int i = 0; i < couples; ++i) {
+      if (i % 2 == 0) {
+        assertEquals(backOffs[i], BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS);
+      } else {
+        assertTrue(lastEventValue < backOffs[i]);
+        lastEventValue = backOffs[i];
+      }
     }
+  }
 }

@@ -21,59 +21,59 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
+
 public final class PerformanceCounterDataTest {
-    private final static String MOCK_CATEGORY = "Mock_Category";
-    private final static String MOCK_COUNTER = "Mock_Counter";
-    private final static String MOCK_INSTANCE = "Mock_Instance";
-    private final static double MOCK_VALUE = 222.1;
+  private static final String MOCK_CATEGORY = "Mock_Category";
+  private static final String MOCK_COUNTER = "Mock_Counter";
+  private static final String MOCK_INSTANCE = "Mock_Instance";
+  private static final double MOCK_VALUE = 222.1;
 
-    @Test
-    public void testStateAfterEmptyCtor() {
-        PerformanceCounterData data = new PerformanceCounterData();
+  @Test
+  public void testStateAfterEmptyCtor() {
+    PerformanceCounterData data = new PerformanceCounterData();
 
-        assertEquals(2, data.getVer());
-        assertNull(data.getCategoryName());
-        assertNull(data.getCounterName());
-        assertNull(data.getInstanceName());
-        assertEquals(0, data.getValue(), 0.0);
-        assertTrue(data.getProperties().isEmpty());
-    }
+    assertEquals(2, data.getVer());
+    assertNull(data.getCategoryName());
+    assertNull(data.getCounterName());
+    assertNull(data.getInstanceName());
+    assertEquals(0, data.getValue(), 0.0);
+    assertTrue(data.getProperties().isEmpty());
+  }
 
-    @Test
-    public void testCategoryName() {
-        PerformanceCounterData data = new PerformanceCounterData();
+  @Test
+  public void testCategoryName() {
+    PerformanceCounterData data = new PerformanceCounterData();
 
-        data.setCategoryName(MOCK_CATEGORY);
-        assertEquals(MOCK_CATEGORY, data.getCategoryName());
-    }
+    data.setCategoryName(MOCK_CATEGORY);
+    assertEquals(MOCK_CATEGORY, data.getCategoryName());
+  }
 
-    @Test
-    public void testCounterName() {
-        PerformanceCounterData data = new PerformanceCounterData();
+  @Test
+  public void testCounterName() {
+    PerformanceCounterData data = new PerformanceCounterData();
 
-        data.setCounterName(MOCK_COUNTER);
-        assertEquals(MOCK_COUNTER, data.getCounterName());
-    }
+    data.setCounterName(MOCK_COUNTER);
+    assertEquals(MOCK_COUNTER, data.getCounterName());
+  }
 
-    @Test
-    public void testInstanceName() {
-        PerformanceCounterData data = new PerformanceCounterData();
+  @Test
+  public void testInstanceName() {
+    PerformanceCounterData data = new PerformanceCounterData();
 
-        data.setInstanceName(MOCK_INSTANCE);
-        assertEquals(MOCK_INSTANCE, data.getInstanceName());
-    }
+    data.setInstanceName(MOCK_INSTANCE);
+    assertEquals(MOCK_INSTANCE, data.getInstanceName());
+  }
 
-    @Test
-    public void testValue() {
-        PerformanceCounterData data = new PerformanceCounterData();
+  @Test
+  public void testValue() {
+    PerformanceCounterData data = new PerformanceCounterData();
 
-        data.setValue(MOCK_VALUE);
-        assertEquals(MOCK_VALUE, data.getValue(), 0.0);
-    }
+    data.setValue(MOCK_VALUE);
+    assertEquals(MOCK_VALUE, data.getValue(), 0.0);
+  }
 }

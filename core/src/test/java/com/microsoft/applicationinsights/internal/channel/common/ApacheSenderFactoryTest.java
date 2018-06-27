@@ -21,46 +21,45 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.anyString;
+
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
+import java.lang.reflect.Field;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-
 public final class ApacheSenderFactoryTest {
-	/*
-    @Test
-    public void testOldVersion() throws NoSuchFieldException, IllegalAccessException {
-        ApacheSender sender = createApacheSender(false);
+  /*
+     @Test
+     public void testOldVersion() throws NoSuchFieldException, IllegalAccessException {
+         ApacheSender sender = createApacheSender(false);
 
-        assertEquals(sender.getHttpClient().getClass(), DefaultHttpClient.class);
-    }
-	*/
+         assertEquals(sender.getHttpClient().getClass(), DefaultHttpClient.class);
+     }
+  */
 
-    @Test
-    public void testNewVersion() throws NoSuchFieldException, IllegalAccessException {
-        ApacheSender sender = createApacheSender(true);
+  private static ApacheSender createApacheSender(boolean isNewVersion)
+      throws NoSuchFieldException, IllegalAccessException {
+    Field field = ClassDataUtils.class.getDeclaredField("verifier");
+    field.setAccessible(true);
 
-        CloseableHttpClient httpClient = (CloseableHttpClient)sender.getHttpClient();
-        assertNotNull(httpClient);
-    }
+    ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
+    Mockito.doReturn(isNewVersion).when(mockVerifier).verifyClassExists(anyString());
+    field.set(ClassDataUtils.INSTANCE, mockVerifier);
 
-    private static ApacheSender createApacheSender(boolean isNewVersion) throws NoSuchFieldException, IllegalAccessException {
-        Field field = ClassDataUtils.class.getDeclaredField("verifier");
-        field.setAccessible(true);
+    ApacheSender sender = ApacheSenderFactory.INSTANCE.create();
+    assertNotNull(sender);
+    return sender;
+  }
 
-        ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-        Mockito.doReturn(isNewVersion).when(mockVerifier).verifyClassExists(anyString());
-        field.set(ClassDataUtils.INSTANCE, mockVerifier);
+  @Test
+  public void testNewVersion() throws NoSuchFieldException, IllegalAccessException {
+    ApacheSender sender = createApacheSender(true);
 
-        ApacheSender sender = ApacheSenderFactory.INSTANCE.create();
-        assertNotNull(sender);
-        return sender;
-    }
+    CloseableHttpClient httpClient = (CloseableHttpClient) sender.getHttpClient();
+    assertNotNull(httpClient);
+  }
 }

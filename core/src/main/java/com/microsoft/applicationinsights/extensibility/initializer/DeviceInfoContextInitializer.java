@@ -21,28 +21,24 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer;
 
-import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
+import com.microsoft.applicationinsights.internal.util.DeviceInfo;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 
-/**
- * Initializer class for device context information.
- */
-public final class DeviceInfoContextInitializer implements ContextInitializer
-{
-    @Override
-    public void initialize(TelemetryContext context)
-    {
-        DeviceContext device = context.getDevice();
-        device.setOperatingSystem(DeviceInfo.getOperatingSystem());
-        device.setOperatingSystemVersion(DeviceInfo.getOperatingSystemVersion());
-        device.setId(DeviceInfo.getHostName());
-        device.setLocale(DeviceInfo.getLocale());
-        String hostName = CommonUtils.getHostName();
-        if (!CommonUtils.isNullOrEmpty(hostName)) {
-            device.setRoleInstance(hostName);
-        }
+/** Initializer class for device context information. */
+public final class DeviceInfoContextInitializer implements ContextInitializer {
+  @Override
+  public void initialize(TelemetryContext context) {
+    DeviceContext device = context.getDevice();
+    device.setOperatingSystem(DeviceInfo.getOperatingSystem());
+    device.setOperatingSystemVersion(DeviceInfo.getOperatingSystemVersion());
+    device.setId(DeviceInfo.getHostName());
+    device.setLocale(DeviceInfo.getLocale());
+    String hostName = CommonUtils.getHostName();
+    if (!CommonUtils.isNullOrEmpty(hostName)) {
+      device.setRoleInstance(hostName);
     }
+  }
 }

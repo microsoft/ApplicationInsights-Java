@@ -23,32 +23,28 @@ package com.microsoft.applicationinsights.internal.config;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-
 import java.util.Map;
 
-/**
- * Created by yonisha on 3/16/2015.
- */
+/** Created by yonisha on 3/16/2015. */
 public class MockTelemetryModule implements TelemetryModule {
 
-    private String param1;
+  private String param1;
 
-    public MockTelemetryModule() {}
+  public MockTelemetryModule() {}
 
-    public MockTelemetryModule(Map<String, String> argumentsMap) {
-        param1 = argumentsMap.get("param1");
-    }
+  public MockTelemetryModule(Map<String, String> argumentsMap) {
+    param1 = argumentsMap.get("param1");
+  }
 
-    public String getParam1() {
-        return param1;
-    }
+  public String getParam1() {
+    return param1;
+  }
 
-    /**
-     * Initializes the telemetry module.
-     *
-     * @param configuration The configuration to used to initialize the module.
-     */
-    @Override
-    public void initialize(TelemetryConfiguration configuration) {
-    }
+  /**
+   * Initializes the telemetry module.
+   *
+   * @param configuration The configuration to used to initialize the module.
+   */
+  @Override
+  public void initialize(TelemetryConfiguration configuration) {}
 }

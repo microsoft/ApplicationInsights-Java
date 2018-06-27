@@ -21,41 +21,37 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import java.util.List;
+import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by gupele on 9/8/2016.
- */
+/** Created by gupele on 9/8/2016. */
 public class ContextInitializersInitializerTest {
 
-    @Test
-    public void testInitialize() {
-        ContextInitializersXmlElement xmlElement = new ContextInitializersXmlElement();
+  @Test
+  public void testInitialize() {
+    ContextInitializersXmlElement xmlElement = new ContextInitializersXmlElement();
 
-        TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
+    TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
-        ContextInitializersInitializer tested = new ContextInitializersInitializer();
-        tested.initialize(xmlElement, mockConfiguration);
+    ContextInitializersInitializer tested = new ContextInitializersInitializer();
+    tested.initialize(xmlElement, mockConfiguration);
 
-        List<ContextInitializer> initializerList = mockConfiguration.getContextInitializers();
-        assertEquals(initializerList.size(), 2);
+    List<ContextInitializer> initializerList = mockConfiguration.getContextInitializers();
+    assertEquals(initializerList.size(), 2);
 
-        ContextInitializer initializer = initializerList.get(0);
-        if (initializer instanceof SdkVersionContextInitializer) {
-            assertTrue(initializerList.get(1) instanceof DeviceInfoContextInitializer);
-        } else {
-            assertTrue(initializer instanceof DeviceInfoContextInitializer);
-            assertTrue(initializerList.get(1) instanceof SdkVersionContextInitializer);
-        }
+    ContextInitializer initializer = initializerList.get(0);
+    if (initializer instanceof SdkVersionContextInitializer) {
+      assertTrue(initializerList.get(1) instanceof DeviceInfoContextInitializer);
+    } else {
+      assertTrue(initializer instanceof DeviceInfoContextInitializer);
+      assertTrue(initializerList.get(1) instanceof SdkVersionContextInitializer);
     }
-
+  }
 }

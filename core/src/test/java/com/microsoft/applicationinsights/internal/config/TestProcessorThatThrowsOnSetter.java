@@ -24,16 +24,14 @@ package com.microsoft.applicationinsights.internal.config;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
-/**
- * Created by gupele on 8/7/2016.
- */
+/** Created by gupele on 8/7/2016. */
 public class TestProcessorThatThrowsOnSetter implements TelemetryProcessor {
-    @Override
-    public boolean process(Telemetry telemetry) {
-        return false;
-    }
+  @Override
+  public boolean process(Telemetry telemetry) {
+    return false;
+  }
 
-    public boolean setProperty(String value) throws Throwable {
-        throw new Throwable();
-    }
+  public boolean setProperty(String value) throws Throwable {
+    throw new Throwable();
+  }
 }

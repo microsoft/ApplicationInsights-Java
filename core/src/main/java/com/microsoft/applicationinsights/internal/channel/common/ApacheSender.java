@@ -22,26 +22,23 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 
-/**
- * Created by gupele on 6/4/2015.
- */
+/** Created by gupele on 6/4/2015. */
 public interface ApacheSender {
-    final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
-    final static int REQUEST_TIMEOUT_IN_MILLIS = 60000;
-    final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
+  static final int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
+  static final int REQUEST_TIMEOUT_IN_MILLIS = 60000;
+  static final int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
 
-    HttpResponse sendPostRequest(HttpPost post) throws IOException;
+  HttpResponse sendPostRequest(HttpPost post) throws IOException;
 
-    void dispose(HttpResponse response);
+  void dispose(HttpResponse response);
 
-    void close();
+  void close();
 
-    HttpClient getHttpClient();
+  HttpClient getHttpClient();
 
-    void enhanceRequest(HttpPost request);
+  void enhanceRequest(HttpPost request);
 }

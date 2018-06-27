@@ -28,189 +28,206 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Encapsulates the global telemetry configuration typically loaded from the ApplicationInsights.xml file.
+ * Encapsulates the global telemetry configuration typically loaded from the ApplicationInsights.xml
+ * file.
  *
- * All {@link com.microsoft.applicationinsights.telemetry.TelemetryContext} objects are initialized using the
- * 'Active' (returned by the 'getActive' static method) telemetry configuration provided by this class.
+ * <p>All {@link com.microsoft.applicationinsights.telemetry.TelemetryContext} objects are
+ * initialized using the 'Active' (returned by the 'getActive' static method) telemetry
+ * configuration provided by this class.
  */
 public final class TelemetryConfiguration {
 
-    // Synchronization for instance initialization
-    private final static Object s_lock = new Object();
-    private static volatile TelemetryConfiguration active;
+  // Synchronization for instance initialization
+  private static final Object s_lock = new Object();
+  private static volatile TelemetryConfiguration active;
+  private final ArrayList<ContextInitializer> contextInitializers =
+      new ArrayList<ContextInitializer>();
+  private final ArrayList<TelemetryInitializer> telemetryInitializers =
+      new ArrayList<TelemetryInitializer>();
+  private final ArrayList<TelemetryModule> telemetryModules = new ArrayList<TelemetryModule>();
+  private final ArrayList<TelemetryProcessor> telemetryProcessors =
+      new ArrayList<TelemetryProcessor>();
+  private String instrumentationKey;
+  private TelemetryChannel channel;
 
-    private String instrumentationKey;
+  private boolean trackingIsDisabled = false;
 
-    private final ArrayList<ContextInitializer> contextInitializers = new   ArrayList<ContextInitializer>();
-    private final ArrayList<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
-    private final ArrayList<TelemetryModule> telemetryModules = new ArrayList<TelemetryModule>();
-    private final ArrayList<TelemetryProcessor> telemetryProcessors = new ArrayList<TelemetryProcessor>();
-
-    private TelemetryChannel channel;
-
-    private boolean trackingIsDisabled = false;
-
-    /**
-     * Gets the active {@link com.microsoft.applicationinsights.TelemetryConfiguration} instance loaded from the
-     * ApplicationInsights.xml file. If the configuration file does not exist, the active configuration instance is
-     * initialized with minimum defaults needed to send telemetry to Application Insights.
-     * @return The 'Active' instance
-     */
-    public static TelemetryConfiguration getActive() {
+  /**
+   * Gets the active {@link com.microsoft.applicationinsights.TelemetryConfiguration} instance
+   * loaded from the ApplicationInsights.xml file. If the configuration file does not exist, the
+   * active configuration instance is initialized with minimum defaults needed to send telemetry to
+   * Application Insights.
+   *
+   * @return The 'Active' instance
+   */
+  public static TelemetryConfiguration getActive() {
+    if (active == null) {
+      synchronized (s_lock) {
         if (active == null) {
-            synchronized (s_lock) {
-                if (active == null) {
-                    active = new TelemetryConfiguration();
-                    TelemetryConfigurationFactory.INSTANCE.initialize(active);
-                }
-            }
+          active = new TelemetryConfiguration();
+          TelemetryConfigurationFactory.INSTANCE.initialize(active);
         }
-
-        return active;
+      }
     }
 
-    /**
-     * This method provides the new instance of TelmetryConfiguration without loading the configuration
-     * from configuration file. This will just give a plain bare bone instance. Typically used when
-     * performing configuration programatically by creating beans, using @Beans tags. This is a common
-     * scenario in SpringBoot.
-     * @return {@link com.microsoft.applicationinsights.TelemetryConfiguration}
-     */
-    public static TelemetryConfiguration getActiveWithoutInitializingConfig() {
+    return active;
+  }
+
+  /**
+   * This method provides the new instance of TelmetryConfiguration without loading the
+   * configuration from configuration file. This will just give a plain bare bone instance.
+   * Typically used when performing configuration programatically by creating beans, using @Beans
+   * tags. This is a common scenario in SpringBoot.
+   *
+   * @return {@link com.microsoft.applicationinsights.TelemetryConfiguration}
+   */
+  public static TelemetryConfiguration getActiveWithoutInitializingConfig() {
+    if (active == null) {
+      synchronized (s_lock) {
         if (active == null) {
-            synchronized (s_lock) {
-                if (active == null) {
-                    active = new TelemetryConfiguration();
-                }
-            }
+          active = new TelemetryConfiguration();
         }
-        return active;
+      }
+    }
+    return active;
+  }
+
+  /**
+   * Creates a new instance loaded from the ApplicationInsights.xml file. If the configuration file
+   * does not exist, the new configuration instance is initialized with minimum defaults needed to
+   * send telemetry to Application Insights.
+   *
+   * @return Telemetry Configuration instance.
+   */
+  public static TelemetryConfiguration createDefault() {
+    TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration();
+    TelemetryConfigurationFactory.INSTANCE.initialize(telemetryConfiguration);
+    return telemetryConfiguration;
+  }
+
+  /** Method for tear down in tests */
+  private static void setActiveAsNull() {
+    active = null;
+  }
+
+  /**
+   * Gets the telemetry channel.
+   *
+   * @return An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
+   */
+  public TelemetryChannel getChannel() {
+    return channel;
+  }
+
+  /**
+   * Sets the telemetry channel.
+   *
+   * @param channel An instance of {@link
+   *     com.microsoft.applicationinsights.channel.TelemetryChannel}
+   */
+  public void setChannel(TelemetryChannel channel) {
+    this.channel = channel;
+  }
+
+  /**
+   * Gets value indicating whether sending of telemetry to Application Insights is disabled.
+   *
+   * <p>This disable tracking setting value is used by default by all {@link
+   * com.microsoft.applicationinsights.TelemetryClient} instances created in the application.
+   *
+   * @return True if tracking is disabled.
+   */
+  public boolean isTrackingDisabled() {
+    return trackingIsDisabled;
+  }
+
+  /**
+   * Sets value indicating whether sending of telemetry to Application Insights is disabled.
+   *
+   * <p>This disable tracking setting value is used by default by all {@link
+   * com.microsoft.applicationinsights.TelemetryClient} instances created in the application.
+   *
+   * @param disable True to disable tracking.
+   */
+  public void setTrackingIsDisabled(boolean disable) {
+    trackingIsDisabled = disable;
+  }
+
+  /**
+   * Gets the list of {@link ContextInitializer} objects that supply additional information about
+   * application.
+   *
+   * <p>Context initializers extend Application Insights telemetry collection by supplying
+   * additional information about application environment, such as 'User' information (in
+   * TelemetryContext.getUser or Device (in TelemetryContext.getDevice invokes telemetry
+   * initializers each time the TelemetryClient's 'track' method is called
+   *
+   * <p>The default list of telemetry initializers is provided by the SDK and can also be set from
+   * the ApplicationInsights.xml.
+   *
+   * @return Collection of Context Initializers
+   */
+  public List<ContextInitializer> getContextInitializers() {
+    return contextInitializers;
+  }
+
+  /**
+   * Gets the list of modules that automatically generate application telemetry.
+   *
+   * <p>Telemetry modules automatically send telemetry describing the application to Application
+   * Insights. For example, a telemetry module can handle application exception events and
+   * automatically send
+   *
+   * @return List of Telemetry Initializers
+   */
+  public List<TelemetryInitializer> getTelemetryInitializers() {
+    return telemetryInitializers;
+  }
+
+  public List<TelemetryModule> getTelemetryModules() {
+    return telemetryModules;
+  }
+
+  public List<TelemetryProcessor> getTelemetryProcessors() {
+    return telemetryProcessors;
+  }
+
+  /**
+   * Gets or sets the default instrumentation key for the application.
+   *
+   * <p>This instrumentation key value is used by default by all {@link
+   * com.microsoft.applicationinsights.TelemetryClient} instances created in the application. This
+   * value can be overwritten by setting the Instrumentation Key in {@link
+   * com.microsoft.applicationinsights.telemetry.TelemetryContext} class
+   *
+   * @return The instrumentation key
+   */
+  public String getInstrumentationKey() {
+    return instrumentationKey;
+  }
+
+  /**
+   * Gets or sets the default instrumentation key for the application.
+   *
+   * <p>This instrumentation key value is used by default by all {@link
+   * com.microsoft.applicationinsights.TelemetryClient} instances created in the application. This
+   * value can be overwritten by setting the Instrumentation Key in {@link
+   * com.microsoft.applicationinsights.telemetry.TelemetryContext} class
+   *
+   * @param key The instrumentation key
+   * @throws IllegalArgumentException when the new value is null or empty
+   */
+  public void setInstrumentationKey(String key) {
+
+    // A non null, non empty instrumentation key is a must
+    if (Strings.isNullOrEmpty(key)) {
+      throw new IllegalArgumentException("key");
     }
 
-    /**
-     * Creates a new instance loaded from the ApplicationInsights.xml file.
-     * If the configuration file does not exist, the new configuration instance is initialized with minimum defaults
-     * needed to send telemetry to Application Insights.
-     * @return Telemetry Configuration instance.
-     */
-    public static TelemetryConfiguration createDefault() {
-        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration();
-        TelemetryConfigurationFactory.INSTANCE.initialize(telemetryConfiguration);
-        return telemetryConfiguration;
-    }
-
-    /**
-     * Gets the telemetry channel.
-     * @return An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
-     */
-    public TelemetryChannel getChannel() {
-        return channel;
-    }
-
-    /**
-     * Sets the telemetry channel.
-     * @param channel An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
-     */
-    public void setChannel(TelemetryChannel channel) {
-        this.channel = channel;
-    }
-
-    /**
-     * Gets value indicating whether sending of telemetry to Application Insights is disabled.
-     *
-     * This disable tracking setting value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application.
-     *
-     * @return True if tracking is disabled.
-     */
-    public boolean isTrackingDisabled() {
-        return trackingIsDisabled;
-    }
-
-    /**
-     * Sets value indicating whether sending of telemetry to Application Insights is disabled.
-     *
-     * This disable tracking setting value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application.
-     * @param disable True to disable tracking.
-     */
-    public void setTrackingIsDisabled(boolean disable) {
-        trackingIsDisabled = disable;
-    }
-
-    /**
-     * Gets the list of {@link ContextInitializer} objects that supply additional information about application.
-     *
-     * Context initializers extend Application Insights telemetry collection by supplying additional information
-     * about application environment, such as 'User' information (in TelemetryContext.getUser or Device (in TelemetryContext.getDevice
-     * invokes telemetry initializers each time the TelemetryClient's 'track' method is called
-     *
-     * The default list of telemetry initializers is provided by the SDK and can also be set from the ApplicationInsights.xml.
-     * @return Collection of Context Initializers
-     */
-    public List<ContextInitializer> getContextInitializers() {
-        return contextInitializers;
-    }
-
-    /**
-     * Gets the list of modules that automatically generate application telemetry.
-     *
-     * Telemetry modules automatically send telemetry describing the application to Application Insights. For example, a telemetry
-     * module can handle application exception events and automatically send
-     * @return List of Telemetry Initializers
-     */
-    public List<TelemetryInitializer> getTelemetryInitializers() {
-        return telemetryInitializers;
-    }
-
-    public List<TelemetryModule> getTelemetryModules() {
-        return telemetryModules;
-    }
-
-    public List<TelemetryProcessor> getTelemetryProcessors() {
-        return telemetryProcessors;
-    }
-
-    /**
-     * Gets or sets the default instrumentation key for the application.
-     *
-     * This instrumentation key value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application. This value can be overwritten by setting the Instrumentation Key in
-     * {@link com.microsoft.applicationinsights.telemetry.TelemetryContext} class
-     * @return The instrumentation key
-     */
-    public String getInstrumentationKey() {
-        return instrumentationKey;
-    }
-
-    /**
-     * Gets or sets the default instrumentation key for the application.
-     *
-     * This instrumentation key value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application. This value can be overwritten by setting the Instrumentation Key in
-     * {@link com.microsoft.applicationinsights.telemetry.TelemetryContext} class
-     * @param key The instrumentation key
-     * @throws IllegalArgumentException when the new value is null or empty
-     */
-    public void setInstrumentationKey(String key) {
-
-        // A non null, non empty instrumentation key is a must
-        if (Strings.isNullOrEmpty(key)) {
-            throw new IllegalArgumentException("key");
-        }
-
-        instrumentationKey = key;
-    }
-
-    /**
-     * Method for tear down in tests
-     */
-    private static void setActiveAsNull() {
-        active = null;
-    }
+    instrumentationKey = key;
+  }
 }

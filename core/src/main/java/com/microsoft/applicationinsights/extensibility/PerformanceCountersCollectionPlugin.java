@@ -21,11 +21,9 @@
 
 package com.microsoft.applicationinsights.extensibility;
 
-/**
- * Created by gupele on 9/13/2016.
- */
+/** Created by gupele on 9/13/2016. */
 public interface PerformanceCountersCollectionPlugin {
-    void preCollection();
+  void preCollection();
 
-    void postCollection();
+  void postCollection();
 }

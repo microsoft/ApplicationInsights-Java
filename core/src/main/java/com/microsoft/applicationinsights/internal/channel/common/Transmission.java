@@ -21,83 +21,81 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.io.Serializable;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import java.io.Serializable;
 
 /**
- * Holds the stuff that defines a transmission of data to the server.
- * It also holds the meta data that describes the content, for example encoding type
+ * Holds the stuff that defines a transmission of data to the server. It also holds the meta data
+ * that describes the content, for example encoding type
  *
- * Created by gupele on 12/17/2014.
+ * <p>Created by gupele on 12/17/2014.
  */
 public final class Transmission implements Serializable {
-    private int version;
+  private final byte[] content;
+  private final String webContentType;
+  private final String webContentEncodingType;
+  private int version;
+  private int numberOfSends;
+  private int numberOfPersistence;
 
-    private int numberOfSends;
+  public Transmission(
+      byte[] content, String webContentType, String webContentEncodingType, int version) {
+    Preconditions.checkNotNull(content, "Content must be non-null value");
+    Preconditions.checkArgument(
+        !Strings.isNullOrEmpty(webContentType), "webContentType must be a non empty string");
+    Preconditions.checkArgument(
+        !Strings.isNullOrEmpty(webContentEncodingType),
+        "webContentEncodingType must be a non empty string");
 
-    private int numberOfPersistence;
+    numberOfSends = numberOfPersistence = 0;
+    this.version = version;
+    this.content = content;
+    this.webContentType = webContentType;
+    this.webContentEncodingType = webContentEncodingType;
+  }
 
-    private final byte[] content;
+  public Transmission(byte[] content, String webContentType, String webContentEncodingType) {
+    this(content, webContentType, webContentEncodingType, 1);
+  }
 
-    private final String webContentType;
+  public byte[] getContent() {
+    return content;
+  }
 
-    private final String webContentEncodingType;
+  public String getWebContentType() {
+    return webContentType;
+  }
 
-    public Transmission(byte[] content, String webContentType, String webContentEncodingType, int version) {
-        Preconditions.checkNotNull(content, "Content must be non-null value");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(webContentType), "webContentType must be a non empty string");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(webContentEncodingType), "webContentEncodingType must be a non empty string");
+  public String getWebContentEncodingType() {
+    return webContentEncodingType;
+  }
 
-        numberOfSends = numberOfPersistence = 0;
-        this.version = version;
-        this.content = content;
-        this.webContentType = webContentType;
-        this.webContentEncodingType = webContentEncodingType;
-    }
+  public void incrementNumberOfSends() {
+    ++numberOfSends;
+  }
 
-    public Transmission(byte[] content, String webContentType, String webContentEncodingType) {
-        this(content, webContentType, webContentEncodingType, 1);
-    }
+  public void incrementNumberOfPersistence() {
+    ++numberOfPersistence;
+  }
 
-    public byte[] getContent() {
-        return content;
-    }
+  public int getNumberOfSends() {
+    return numberOfSends;
+  }
 
-    public String getWebContentType() {
-        return webContentType;
-    }
+  public void setNumberOfSends(int numberOfSends) {
+    this.numberOfSends = numberOfSends;
+  }
 
-    public String getWebContentEncodingType() {
-        return webContentEncodingType;
-    }
+  public int getNumberOfPersistence() {
+    return numberOfPersistence;
+  }
 
-    public void incrementNumberOfSends() {
-        ++numberOfSends;
-    }
+  public void setNumberOfPersistence(int numberOfPersistence) {
+    this.numberOfPersistence = numberOfPersistence;
+  }
 
-    public void incrementNumberOfPersistence() {
-        ++numberOfPersistence;
-    }
-
-    public int getNumberOfSends() {
-        return numberOfSends;
-    }
-
-    public void setNumberOfSends(int numberOfSends) {
-        this.numberOfSends = numberOfSends;
-    }
-
-    public int getNumberOfPersistence() {
-        return numberOfPersistence;
-    }
-
-    public void setNumberOfPersistence(int numberOfPersistence) {
-        this.numberOfPersistence = numberOfPersistence;
-    }
-
-    public int getVersion() {
-        return version;
-    }
+  public int getVersion() {
+    return version;
+  }
 }

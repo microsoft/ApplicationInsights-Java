@@ -21,259 +21,313 @@
 
 package com.microsoft.applicationinsights.internal.channel.sampling;
 
-import java.util.Date;
-import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This sampler will keep the outgoing telemetries within the limit that was decided by the user.
  *
- * This sampler will change the sampling rate as needed to keep up in the pace, as opposed to the 'FixedRateTelemetrySampler'
- * This sampler employs the {@link FixedRateTelemetrySampler} for doing the actual sampling and a timer for re-evaluating the sampling percentage.
+ * <p>This sampler will change the sampling rate as needed to keep up in the pace, as opposed to the
+ * 'FixedRateTelemetrySampler' This sampler employs the {@link FixedRateTelemetrySampler} for doing
+ * the actual sampling and a timer for re-evaluating the sampling percentage.
  *
- * Created by gupele on 11/9/2016.
+ * <p>Created by gupele on 11/9/2016.
  */
 public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampler {
-    private final static int DEFAULT_MAX_TELEMETRIES_PER_SECOND = 100;
-    private final static int DEFAULT_EVALUATION_INTERVAL_IN_SECONDS = 900;
-    private final static int DEFAULT_SAMPLING_PERCENTAGE_DECREASE_TIMEOUT_IN_SECONDS = 120;
-    private final static int DEFAULT_SAMPLING_PERCENTAGE_INCREASE_TIMEOUT_IN_SECONDS = 900;
-    private final static int DEFAULT_MIN_SAMPLING_PERCENTAGE = 1;
-    private final static int DEFAULT_MAX_SAMPLING_PERCENTAGE = 100;
-    private final static int DEFAULT_INITIAL_SAMPLING_PERCENTAGE = 100;
-    private final static double DEFAULT_MOVING_AVERAGE_RATIO = 0.25;
+  private static final int DEFAULT_MAX_TELEMETRIES_PER_SECOND = 100;
+  private static final int DEFAULT_EVALUATION_INTERVAL_IN_SECONDS = 900;
+  private static final int DEFAULT_SAMPLING_PERCENTAGE_DECREASE_TIMEOUT_IN_SECONDS = 120;
+  private static final int DEFAULT_SAMPLING_PERCENTAGE_INCREASE_TIMEOUT_IN_SECONDS = 900;
+  private static final int DEFAULT_MIN_SAMPLING_PERCENTAGE = 1;
+  private static final int DEFAULT_MAX_SAMPLING_PERCENTAGE = 100;
+  private static final int DEFAULT_INITIAL_SAMPLING_PERCENTAGE = 100;
+  private static final double DEFAULT_MOVING_AVERAGE_RATIO = 0.25;
+  private final AtomicLong counter = new AtomicLong(0);;
+  // We use the 'FixedRateTelemetrySampler' to do the actual sampling
+  private final FixedRateTelemetrySampler sampler = new FixedRateTelemetrySampler();
+  // Max telemetries per second, the instance will
+  // try to keep up by adjusting the sampling percentage
+  private double maxTelemetriesPerSecond;
 
-    private enum ChangeDirection {
-        Up,
-        Down,
-        None
-    };
+  // How much time to wait between evaluations of the sampling percentage
+  private int evaluationIntervalInSec;
 
-    private class SamplingRangeEvaluator implements Runnable {
-        private boolean first = true;
-        private double average = 0.0;
+  // How much time to wait between successive increases of the sampling percentage
+  private int samplingPercentageDecreaseTimeoutInSec;
 
-        @Override
-        public void run() {
-            double telemetriesPerSecond = (double)counter.get() / (double)evaluationIntervalInSec;
-            counter.set(0);
-            if (!first) {
-                average = average * (1 - movingAverageRatio) + telemetriesPerSecond * movingAverageRatio;
-            } else {
-                first = false;
-                average = telemetriesPerSecond;
-            }
+  // How much time to wait between successive decreases of the sampling percentage
+  private int samplingPercentageIncreaseTimeoutInSec;
 
-            InternalLogger.INSTANCE.trace("Average for sampling is %s", average);
+  private int minSamplingPercentage;
+  private int maxSamplingPercentage;
 
-            double suggestedSamplingPercentage;
-            if (average > maxTelemetriesPerSecond) {
-                suggestedSamplingPercentage = 100.0 - (average - maxTelemetriesPerSecond) * 100.0 / maxTelemetriesPerSecond;
-            } else {
-                suggestedSamplingPercentage = 100;
-            }
-            if (suggestedSamplingPercentage > maxSamplingPercentage) {
-                suggestedSamplingPercentage = maxSamplingPercentage;
-            }
-            if (suggestedSamplingPercentage < minSamplingPercentage) {
-                suggestedSamplingPercentage = minSamplingPercentage;
-            }
+  // The weigh given to the last telemetries count within 'evaluationIntervalInSeconds'
+  private double movingAverageRatio = 0.25;
 
-            boolean samplingPercentageChangeNeeded = suggestedSamplingPercentage != currentSamplingPercentage;
-            if (samplingPercentageChangeNeeded) {
-                Date currentDate = new Date();
-                long duration = currentDate.getTime() - lastChangedDate.getTime();
+  private double currentSamplingPercentage;
+  private Date lastChangedDate;
 
-                long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration);
-                if (suggestedSamplingPercentage > currentSamplingPercentage) {
-                    if (lastChangeDirection != ChangeDirection.Up || diffInSeconds >= samplingPercentageIncreaseTimeoutInSec) {
-                        updateSamplingData(suggestedSamplingPercentage, ChangeDirection.Up, currentDate);
-                    }
-                } else {
-                    if (lastChangeDirection != ChangeDirection.Down || diffInSeconds >= samplingPercentageDecreaseTimeoutInSec) {
-                        updateSamplingData(suggestedSamplingPercentage, ChangeDirection.Down, currentDate);
-                    }
-                }
-            }
-        }
+  // This is for working with 'samplingPercentageDecreaseTimeoutInSeconds' and ...Increase....
+  private ChangeDirection lastChangeDirection = ChangeDirection.None;
+  private ScheduledThreadPoolExecutor threads;
 
-        private void updateSamplingData(double suggestedSamplingPercentage, ChangeDirection direction, Date currentDate) {
-            InternalLogger.INSTANCE.trace("Updating sampling percentage from %s to %s", currentSamplingPercentage, suggestedSamplingPercentage);
-            currentSamplingPercentage = suggestedSamplingPercentage;
-            lastChangeDirection = direction;
-            lastChangedDate = currentDate;
-            sampler.setSamplingPercentage((double) suggestedSamplingPercentage);
-        }
+  @Override
+  public synchronized void stop(long timeout, TimeUnit timeUnit) {
+    ThreadPoolUtils.stop(threads, timeout, timeUnit);
+  }
+
+  /**
+   * This method must be called prior to any use of the instance
+   *
+   * @param maxTelemetriesPerSecond maxTelemetriesPerSecond
+   * @param evaluationIntervalInSeconds evaluationIntervalInSeconds
+   * @param samplingPercentageDecreaseTimeoutInSeconds samplingPercentageDecreaseTimeoutInSeconds
+   * @param samplingPercentageIncreaseTimeoutInSeconds samplingPercentageIncreaseTimeoutInSeconds
+   * @param minSamplingPercentage minSamplingPercentage
+   * @param maxSamplingPercentage maxSamplingPercentage
+   * @param initialSamplingPercentage initialSamplingPercentage
+   * @param movingAverageRatio movingAverageRatio
+   */
+  public void initialize(
+      String maxTelemetriesPerSecond,
+      String evaluationIntervalInSeconds,
+      String samplingPercentageDecreaseTimeoutInSeconds,
+      String samplingPercentageIncreaseTimeoutInSeconds,
+      String minSamplingPercentage,
+      String maxSamplingPercentage,
+      String initialSamplingPercentage,
+      String movingAverageRatio) {
+    this.maxTelemetriesPerSecond =
+        getIntValueOrDefault(
+            "maxTelemetriesPerSecond",
+            maxTelemetriesPerSecond,
+            DEFAULT_MAX_TELEMETRIES_PER_SECOND,
+            0,
+            Integer.MAX_VALUE);
+    this.evaluationIntervalInSec =
+        getIntValueOrDefault(
+            "evaluationIntervalInSec",
+            evaluationIntervalInSeconds,
+            DEFAULT_EVALUATION_INTERVAL_IN_SECONDS,
+            0,
+            Integer.MAX_VALUE);
+    this.samplingPercentageDecreaseTimeoutInSec =
+        getIntValueOrDefault(
+            "samplingPercentageDecreaseTimeoutInSec",
+            samplingPercentageDecreaseTimeoutInSeconds,
+            DEFAULT_SAMPLING_PERCENTAGE_DECREASE_TIMEOUT_IN_SECONDS,
+            0,
+            Integer.MAX_VALUE);
+    this.samplingPercentageIncreaseTimeoutInSec =
+        getIntValueOrDefault(
+            "samplingPercentageIncreaseTimeoutInSec",
+            samplingPercentageIncreaseTimeoutInSeconds,
+            DEFAULT_SAMPLING_PERCENTAGE_INCREASE_TIMEOUT_IN_SECONDS,
+            0,
+            Integer.MAX_VALUE);
+    this.minSamplingPercentage =
+        getIntValueOrDefault(
+            "minSamplingPercentage",
+            minSamplingPercentage,
+            DEFAULT_MIN_SAMPLING_PERCENTAGE,
+            0,
+            100);
+    this.maxSamplingPercentage =
+        getIntValueOrDefault(
+            "maxSamplingPercentage",
+            maxSamplingPercentage,
+            DEFAULT_MAX_SAMPLING_PERCENTAGE,
+            0,
+            100);
+    this.currentSamplingPercentage =
+        getDoubleValueOrDefault(
+            "initialSamplingPercentage",
+            initialSamplingPercentage,
+            DEFAULT_INITIAL_SAMPLING_PERCENTAGE,
+            0.0,
+            100.0);
+    this.movingAverageRatio =
+        getDoubleValueOrDefault(
+            "movingAverageRatio", movingAverageRatio, DEFAULT_MOVING_AVERAGE_RATIO, 0.0, 100.0);
+
+    createTimerThread();
+
+    lastChangedDate = new Date();
+    sampler.setSamplingPercentage(this.currentSamplingPercentage);
+    threads.scheduleAtFixedRate(
+        new SamplingRangeEvaluator(),
+        this.evaluationIntervalInSec,
+        this.evaluationIntervalInSec,
+        TimeUnit.SECONDS);
+    SDKShutdownActivity.INSTANCE.register(this);
+  }
+
+  @Override
+  public Set<Class> getExcludeTypes() {
+    return sampler.getExcludeTypes();
+  }
+
+  @Override
+  public void setExcludeTypes(String types) {
+    sampler.setExcludeTypes(types);
+  }
+
+  @Override
+  public Set<Class> getIncludeTypes() {
+    return sampler.getIncludeTypes();
+  }
+
+  @Override
+  public void setIncludeTypes(String types) {
+    sampler.setIncludeTypes(types);
+  }
+
+  @Override
+  public Double getSamplingPercentage() {
+    return sampler.getSamplingPercentage();
+  }
+
+  @Override
+  public void setSamplingPercentage(Double samplingPercentage) {
+    sampler.setSamplingPercentage(samplingPercentage);
+  }
+
+  @Override
+  public boolean isSampledIn(Telemetry telemetry) {
+    if (sampler.isSampledIn(telemetry)) {
+      counter.incrementAndGet();
+      return true;
     }
 
-    // Max telemetries per second, the instance will
-    // try to keep up by adjusting the sampling percentage
-    private double maxTelemetriesPerSecond;
+    return false;
+  }
 
-    // How much time to wait between evaluations of the sampling percentage
-    private int evaluationIntervalInSec;
+  private void createTimerThread() {
+    threads = new ScheduledThreadPoolExecutor(1);
+    threads.setThreadFactory(
+        ThreadPoolUtils.createDaemonThreadFactory(AdaptiveTelemetrySampler.class));
+  }
 
-    // How much time to wait between successive increases of the sampling percentage
-    private int samplingPercentageDecreaseTimeoutInSec;
+  private int getIntValueOrDefault(
+      String name, String valueAsString, int defaultValue, int minValue, int maxValue) {
+    int result = defaultValue;
+    try {
+      int value = Integer.valueOf(valueAsString);
+      if (value > 0) {
+        result = value;
+      }
+    } catch (Exception e) {
+    }
 
-    // How much time to wait between successive decreases of the sampling percentage
-    private int samplingPercentageIncreaseTimeoutInSec;
+    if (result > maxValue) {
+      result = maxValue;
+    }
+    if (result < minValue) {
+      result = minValue;
+    }
 
-    private int minSamplingPercentage;
-    private int maxSamplingPercentage;
+    InternalLogger.INSTANCE.trace("%s is set to %s", name, defaultValue);
+    return result;
+  }
 
-    // The weigh given to the last telemetries count within 'evaluationIntervalInSeconds'
-    private double movingAverageRatio = 0.25;
+  private double getDoubleValueOrDefault(
+      String name, String valueAsString, double defaultValue, double minValue, double maxValue) {
+    double result = defaultValue;
+    try {
+      double value = Double.valueOf(valueAsString);
+      if (value > 0) {
+        result = value;
+      }
+    } catch (Exception e) {
+    }
 
-    private double currentSamplingPercentage;
-    private Date lastChangedDate;
+    if (result > maxValue) {
+      result = maxValue;
+    }
+    if (result < minValue) {
+      result = minValue;
+    }
 
-    // This is for working with 'samplingPercentageDecreaseTimeoutInSeconds' and ...Increase....
-    private ChangeDirection lastChangeDirection = ChangeDirection.None;
+    InternalLogger.INSTANCE.trace("%s is set to %s", name, defaultValue);
+    return result;
+  }
 
-    private final AtomicLong counter = new AtomicLong(0);
+private enum ChangeDirection {
+    Up,
+    Down,
+    None
+  }
 
-    private ScheduledThreadPoolExecutor threads;
-
-    // We use the 'FixedRateTelemetrySampler' to do the actual sampling
-    private final FixedRateTelemetrySampler sampler = new FixedRateTelemetrySampler();
+  private class SamplingRangeEvaluator implements Runnable {
+    private boolean first = true;
+    private double average = 0.0;
 
     @Override
-    public synchronized void stop(long timeout, TimeUnit timeUnit) {
-        ThreadPoolUtils.stop(threads, timeout, timeUnit);
-    }
+    public void run() {
+      double telemetriesPerSecond = (double) counter.get() / (double) evaluationIntervalInSec;
+      counter.set(0);
+      if (!first) {
+        average = average * (1 - movingAverageRatio) + telemetriesPerSecond * movingAverageRatio;
+      } else {
+        first = false;
+        average = telemetriesPerSecond;
+      }
 
-    /**
-     * This method must be called prior to any use of the instance
-     *
-      * @param maxTelemetriesPerSecond  maxTelemetriesPerSecond
-     * @param evaluationIntervalInSeconds evaluationIntervalInSeconds
-     * @param samplingPercentageDecreaseTimeoutInSeconds samplingPercentageDecreaseTimeoutInSeconds
-     * @param samplingPercentageIncreaseTimeoutInSeconds samplingPercentageIncreaseTimeoutInSeconds
-     * @param minSamplingPercentage minSamplingPercentage
-     * @param maxSamplingPercentage maxSamplingPercentage
-     * @param initialSamplingPercentage initialSamplingPercentage
-     * @param movingAverageRatio movingAverageRatio
-     */
-    public void initialize(String maxTelemetriesPerSecond,
-                           String evaluationIntervalInSeconds,
-                           String samplingPercentageDecreaseTimeoutInSeconds,
-                           String samplingPercentageIncreaseTimeoutInSeconds,
-                           String minSamplingPercentage,
-                           String maxSamplingPercentage,
-                           String initialSamplingPercentage,
-                           String movingAverageRatio) {
-        this.maxTelemetriesPerSecond = getIntValueOrDefault("maxTelemetriesPerSecond", maxTelemetriesPerSecond, DEFAULT_MAX_TELEMETRIES_PER_SECOND, 0, Integer.MAX_VALUE);
-        this.evaluationIntervalInSec = getIntValueOrDefault("evaluationIntervalInSec", evaluationIntervalInSeconds, DEFAULT_EVALUATION_INTERVAL_IN_SECONDS, 0, Integer.MAX_VALUE);
-        this.samplingPercentageDecreaseTimeoutInSec = getIntValueOrDefault("samplingPercentageDecreaseTimeoutInSec", samplingPercentageDecreaseTimeoutInSeconds, DEFAULT_SAMPLING_PERCENTAGE_DECREASE_TIMEOUT_IN_SECONDS, 0, Integer.MAX_VALUE);
-        this.samplingPercentageIncreaseTimeoutInSec = getIntValueOrDefault("samplingPercentageIncreaseTimeoutInSec", samplingPercentageIncreaseTimeoutInSeconds, DEFAULT_SAMPLING_PERCENTAGE_INCREASE_TIMEOUT_IN_SECONDS, 0, Integer.MAX_VALUE);
-        this.minSamplingPercentage = getIntValueOrDefault("minSamplingPercentage", minSamplingPercentage, DEFAULT_MIN_SAMPLING_PERCENTAGE, 0, 100);
-        this.maxSamplingPercentage = getIntValueOrDefault("maxSamplingPercentage", maxSamplingPercentage, DEFAULT_MAX_SAMPLING_PERCENTAGE, 0, 100);
-        this.currentSamplingPercentage = getDoubleValueOrDefault("initialSamplingPercentage", initialSamplingPercentage, DEFAULT_INITIAL_SAMPLING_PERCENTAGE, 0.0, 100.0);
-        this.movingAverageRatio = getDoubleValueOrDefault("movingAverageRatio", movingAverageRatio, DEFAULT_MOVING_AVERAGE_RATIO, 0.0, 100.0);
+      InternalLogger.INSTANCE.trace("Average for sampling is %s", average);
 
-        createTimerThread();
+      double suggestedSamplingPercentage;
+      if (average > maxTelemetriesPerSecond) {
+        suggestedSamplingPercentage =
+            100.0 - (average - maxTelemetriesPerSecond) * 100.0 / maxTelemetriesPerSecond;
+      } else {
+        suggestedSamplingPercentage = 100;
+      }
+      if (suggestedSamplingPercentage > maxSamplingPercentage) {
+        suggestedSamplingPercentage = maxSamplingPercentage;
+      }
+      if (suggestedSamplingPercentage < minSamplingPercentage) {
+        suggestedSamplingPercentage = minSamplingPercentage;
+      }
 
-        lastChangedDate = new Date();
-        sampler.setSamplingPercentage(this.currentSamplingPercentage);
-        threads.scheduleAtFixedRate(new SamplingRangeEvaluator(), this.evaluationIntervalInSec, this.evaluationIntervalInSec, TimeUnit.SECONDS);
-        SDKShutdownActivity.INSTANCE.register(this);
-    }
+      boolean samplingPercentageChangeNeeded =
+          suggestedSamplingPercentage != currentSamplingPercentage;
+      if (samplingPercentageChangeNeeded) {
+        Date currentDate = new Date();
+        long duration = currentDate.getTime() - lastChangedDate.getTime();
 
-    @Override
-    public Set<Class> getExcludeTypes() {
-        return sampler.getExcludeTypes();
-    }
-
-    @Override
-    public void setExcludeTypes(String types) {
-        sampler.setExcludeTypes(types);
-    }
-
-    @Override
-    public Set<Class> getIncludeTypes() {
-        return sampler.getIncludeTypes();
-    }
-
-    @Override
-    public void setIncludeTypes(String types) {
-        sampler.setIncludeTypes(types);
-    }
-
-    @Override
-    public Double getSamplingPercentage() {
-        return sampler.getSamplingPercentage();
-    }
-
-    @Override
-    public void setSamplingPercentage(Double samplingPercentage) {
-        sampler.setSamplingPercentage(samplingPercentage);
-    }
-
-    @Override
-    public boolean isSampledIn(Telemetry telemetry) {
-        if (sampler.isSampledIn(telemetry)) {
-            counter.incrementAndGet();
-            return true;
+        long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration);
+        if (suggestedSamplingPercentage > currentSamplingPercentage) {
+          if (lastChangeDirection != ChangeDirection.Up
+              || diffInSeconds >= samplingPercentageIncreaseTimeoutInSec) {
+            updateSamplingData(suggestedSamplingPercentage, ChangeDirection.Up, currentDate);
+          }
+        } else {
+          if (lastChangeDirection != ChangeDirection.Down
+              || diffInSeconds >= samplingPercentageDecreaseTimeoutInSec) {
+            updateSamplingData(suggestedSamplingPercentage, ChangeDirection.Down, currentDate);
+          }
         }
-
-        return false;
+      }
     }
 
-    private void createTimerThread() {
-        threads = new ScheduledThreadPoolExecutor(1);
-        threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(AdaptiveTelemetrySampler.class));
+    private void updateSamplingData(
+        double suggestedSamplingPercentage, ChangeDirection direction, Date currentDate) {
+      InternalLogger.INSTANCE.trace(
+          "Updating sampling percentage from %s to %s",
+          currentSamplingPercentage, suggestedSamplingPercentage);
+      currentSamplingPercentage = suggestedSamplingPercentage;
+      lastChangeDirection = direction;
+      lastChangedDate = currentDate;
+      sampler.setSamplingPercentage((double) suggestedSamplingPercentage);
     }
-
-    private int getIntValueOrDefault(String name, String valueAsString, int defaultValue, int minValue, int maxValue) {
-        int result = defaultValue;
-        try {
-            int value = Integer.valueOf(valueAsString);
-            if (value > 0) {
-                result = value;
-            }
-        } catch (Exception e) {
-        }
-
-        if (result > maxValue) {
-            result = maxValue;
-        }
-        if (result < minValue) {
-            result = minValue;
-        }
-
-        InternalLogger.INSTANCE.trace("%s is set to %s", name, defaultValue);
-        return result;
-    }
-
-    private double getDoubleValueOrDefault(String name, String valueAsString, double defaultValue, double minValue, double maxValue) {
-        double result = defaultValue;
-        try {
-            double value = Double.valueOf(valueAsString);
-            if (value > 0) {
-                result = value;
-            }
-        } catch (Exception e) {
-        }
-
-        if (result > maxValue) {
-            result = maxValue;
-        }
-        if (result < minValue) {
-            result = minValue;
-        }
-
-        InternalLogger.INSTANCE.trace("%s is set to %s", name, defaultValue);
-        return result;
-    }
+  }
 }
-

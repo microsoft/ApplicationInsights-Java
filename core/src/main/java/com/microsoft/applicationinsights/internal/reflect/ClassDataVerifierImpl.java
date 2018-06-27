@@ -23,34 +23,32 @@ package com.microsoft.applicationinsights.internal.reflect;
 
 import java.lang.reflect.Method;
 
-/**
- * Created by gupele on 5/26/2015.
- */
+/** Created by gupele on 5/26/2015. */
 final class ClassDataVerifierImpl implements ClassDataVerifier {
-    @Override
-    public boolean verifyClassExists(String className) {
-        try {
-            Class<?> result = Class.forName(className);
-            if (result != null) {
-                return true;
-            }
-        } catch (ClassNotFoundException e) {
-        }
-
-        return false;
+  @Override
+  public boolean verifyClassExists(String className) {
+    try {
+      Class<?> result = Class.forName(className);
+      if (result != null) {
+        return true;
+      }
+    } catch (ClassNotFoundException e) {
     }
 
-    @Override
-    public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
-        Method method;
-        try {
-            method = clazz.getMethod(methodName, parameterTypes);
-            if (method != null) {
-                return true;
-            }
-        } catch (NoSuchMethodException e) {
-        }
+    return false;
+  }
 
-        return false;
+  @Override
+  public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+    Method method;
+    try {
+      method = clazz.getMethod(methodName, parameterTypes);
+      if (method != null) {
+        return true;
+      }
+    } catch (NoSuchMethodException e) {
     }
+
+    return false;
+  }
 }

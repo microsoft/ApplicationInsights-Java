@@ -21,37 +21,32 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by gupele on 8/7/2016.
- */
+/** Created by gupele on 8/7/2016. */
 public class MetricTelemetryFilterTest {
-    @Test
-    public void testNonMetricTelemetry() throws Exception {
-        MetricTelemetryFilter tested = new MetricTelemetryFilter();
-        boolean result = tested.process(new PageViewTelemetry());
-        Assert.assertTrue(result);
-    }
+  @Test
+  public void testNonMetricTelemetry() throws Exception {
+    MetricTelemetryFilter tested = new MetricTelemetryFilter();
+    boolean result = tested.process(new PageViewTelemetry());
+    Assert.assertTrue(result);
+  }
 
-    @Test
-    public void testNeededTelemetry() throws Throwable {
-        MetricTelemetryFilter tested = new MetricTelemetryFilter();
-        tested.setNotNeeded("name");
-        boolean result = tested.process(new PageViewTelemetry("name111"));
-        Assert.assertTrue(result);
-    }
+  @Test
+  public void testNeededTelemetry() throws Throwable {
+    MetricTelemetryFilter tested = new MetricTelemetryFilter();
+    tested.setNotNeeded("name");
+    boolean result = tested.process(new PageViewTelemetry("name111"));
+    Assert.assertTrue(result);
+  }
 
-    @Test
-    public void testNotNeededTelemetry() throws Throwable {
-        MetricTelemetryFilter tested = new MetricTelemetryFilter();
-        tested.setNotNeeded("name");
-        boolean result = tested.process(new PageViewTelemetry("name"));
-        Assert.assertTrue(result);
-    }
+  @Test
+  public void testNotNeededTelemetry() throws Throwable {
+    MetricTelemetryFilter tested = new MetricTelemetryFilter();
+    tested.setNotNeeded("name");
+    boolean result = tested.process(new PageViewTelemetry("name"));
+    Assert.assertTrue(result);
+  }
 }

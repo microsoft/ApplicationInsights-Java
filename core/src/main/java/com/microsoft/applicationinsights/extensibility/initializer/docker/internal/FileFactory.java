@@ -21,16 +21,13 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker.internal;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
+import org.apache.commons.io.FileUtils;
 
-/**
- * Created by yonisha on 8/3/2015.
- */
+/** Created by yonisha on 8/3/2015. */
 public class FileFactory {
-    public void create(String filePath, String data) throws IOException {
-        FileUtils.writeStringToFile(new File(filePath), data);
-    }
+  public void create(String filePath, String data) throws IOException {
+    FileUtils.writeStringToFile(new File(filePath), data);
+  }
 }

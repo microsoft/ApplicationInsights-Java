@@ -28,95 +28,92 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * The class can filter out TraceTelemetries ('LOG' telemetries) that have 'lower' severity level than needed
- * The possible values are:
- * OFF             - Filter out ALL traces
- * TRACE           - No filtering. equals to Trace level
- * INFO            - Filter out TRACE level
- * WARN            - Filter out TRACE and INFO
- * ERROR           - Filter out WARN, INFO, TRACE
- * CRITICAL        - filter out all but CRITICAL
- * <p>
- * Illegal value will prevent from the filter from being used.
- * <p>
- * Created by gupele on 7/26/2016.
+ * The class can filter out TraceTelemetries ('LOG' telemetries) that have 'lower' severity level
+ * than needed The possible values are: OFF - Filter out ALL traces TRACE - No filtering. equals to
+ * Trace level INFO - Filter out TRACE level WARN - Filter out TRACE and INFO ERROR - Filter out
+ * WARN, INFO, TRACE CRITICAL - filter out all but CRITICAL
+ *
+ * <p>Illegal value will prevent from the filter from being used.
+ *
+ * <p>Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("TraceTelemetryFilter")
 public final class TraceTelemetryFilter implements TelemetryProcessor {
-    private SeverityLevel fromSeverityLevel = null;
+  private SeverityLevel fromSeverityLevel = null;
 
-    public TraceTelemetryFilter() {
+  public TraceTelemetryFilter() {}
+
+  @Override
+  public boolean process(Telemetry telemetry) {
+    if (telemetry == null) {
+      return true;
     }
 
-    @Override
-    public boolean process(Telemetry telemetry) {
-        if (telemetry == null) {
-            return true;
-        }
-
-        if (!(telemetry instanceof TraceTelemetry)) {
-            return true;
-        }
-
-        if (fromSeverityLevel == null) {
-            return false;
-        }
-
-        TraceTelemetry tt = (TraceTelemetry) telemetry;
-        String message = tt.getMessage();
-        if (LocalStringsUtils.isNullOrEmpty(message)) {
-            return true;
-        }
-        if (tt.getSeverityLevel() == null) {
-            return true;
-        }
-
-        if (tt.getSeverityLevel().compareTo(this.fromSeverityLevel) < 0) {
-            return false;
-        }
-
-        return true;
+    if (!(telemetry instanceof TraceTelemetry)) {
+      return true;
     }
 
-    public void setFromSeverityLevel(String fromSeverityLevel) throws Throwable {
-        try {
-            String trimmed = fromSeverityLevel.trim();
-            if (trimmed.toUpperCase().equals("OFF")) {
-                fromSeverityLevel = null;
-            } else {
-                final Map<String, SeverityLevel> severityLevels = new HashMap<String, SeverityLevel>();
-                severityLevels.put("TRACE", SeverityLevel.Verbose);
-                severityLevels.put("INFO", SeverityLevel.Information);
-                severityLevels.put("WARN", SeverityLevel.Warning);
-                severityLevels.put("ERROR", SeverityLevel.Error);
-                severityLevels.put("CRITICAL", SeverityLevel.Critical);
-                SeverityLevel sl = severityLevels.get(trimmed.toUpperCase());
-                if (sl == null) {
-                    throw new IllegalArgumentException(String.format("Unknown option: %s", fromSeverityLevel));
-                }
-                this.fromSeverityLevel = sl;
-            }
-            InternalLogger.INSTANCE.trace(String.format("TraceTelemetryFilter: set severity level to %s", this.fromSeverityLevel));
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                this.fromSeverityLevel = SeverityLevel.Verbose;
-                InternalLogger.INSTANCE.error("TraceTelemetryFilter: failed to parse: %s, Exception : %s", fromSeverityLevel,
-                        ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            } finally {
-                throw t;
-            }
-        }
+    if (fromSeverityLevel == null) {
+      return false;
     }
+
+    TraceTelemetry tt = (TraceTelemetry) telemetry;
+    String message = tt.getMessage();
+    if (LocalStringsUtils.isNullOrEmpty(message)) {
+      return true;
+    }
+    if (tt.getSeverityLevel() == null) {
+      return true;
+    }
+
+    if (tt.getSeverityLevel().compareTo(this.fromSeverityLevel) < 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public void setFromSeverityLevel(String fromSeverityLevel) throws Throwable {
+    try {
+      String trimmed = fromSeverityLevel.trim();
+      if (trimmed.toUpperCase().equals("OFF")) {
+        fromSeverityLevel = null;
+      } else {
+        final Map<String, SeverityLevel> severityLevels = new HashMap<String, SeverityLevel>();
+        severityLevels.put("TRACE", SeverityLevel.Verbose);
+        severityLevels.put("INFO", SeverityLevel.Information);
+        severityLevels.put("WARN", SeverityLevel.Warning);
+        severityLevels.put("ERROR", SeverityLevel.Error);
+        severityLevels.put("CRITICAL", SeverityLevel.Critical);
+        SeverityLevel sl = severityLevels.get(trimmed.toUpperCase());
+        if (sl == null) {
+          throw new IllegalArgumentException(
+              String.format("Unknown option: %s", fromSeverityLevel));
+        }
+        this.fromSeverityLevel = sl;
+      }
+      InternalLogger.INSTANCE.trace(
+          String.format("TraceTelemetryFilter: set severity level to %s", this.fromSeverityLevel));
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        this.fromSeverityLevel = SeverityLevel.Verbose;
+        InternalLogger.INSTANCE.error(
+            "TraceTelemetryFilter: failed to parse: %s, Exception : %s",
+            fromSeverityLevel, ExceptionUtils.getStackTrace(t));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      } finally {
+        throw t;
+      }
+    }
+  }
 }

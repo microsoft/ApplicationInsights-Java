@@ -22,50 +22,47 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * Created by gupele on 3/30/2015.
- */
+/** Created by gupele on 3/30/2015. */
 public class WindowsPerformanceCounterXmlElement {
-    private String displayName;
-    private String categoryName;
-    private String counterName;
-    private String instanceName;
+  private String displayName;
+  private String categoryName;
+  private String counterName;
+  private String instanceName;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+  public String getDisplayName() {
+    return displayName;
+  }
 
-    @XmlAttribute
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+  @XmlAttribute
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
 
-    public String getCategoryName() {
-        return categoryName;
-    }
+  public String getCategoryName() {
+    return categoryName;
+  }
 
-    @XmlAttribute
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
+  @XmlAttribute
+  public void setCategoryName(String categoryName) {
+    this.categoryName = categoryName;
+  }
 
-    public String getCounterName() {
-        return counterName;
-    }
+  public String getCounterName() {
+    return counterName;
+  }
 
-    @XmlAttribute
-    public void setCounterName(String counterName) {
-        this.counterName = counterName;
-    }
+  @XmlAttribute
+  public void setCounterName(String counterName) {
+    this.counterName = counterName;
+  }
 
-    public String getInstanceName() {
-        return instanceName;
-    }
+  public String getInstanceName() {
+    return instanceName;
+  }
 
-    @XmlAttribute
-    public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
-    }
+  @XmlAttribute
+  public void setInstanceName(String instanceName) {
+    this.instanceName = instanceName;
+  }
 }

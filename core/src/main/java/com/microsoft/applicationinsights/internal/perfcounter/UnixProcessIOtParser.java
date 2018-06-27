@@ -24,54 +24,53 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-/**
- * Created by gupele on 3/16/2015.
- */
+/** Created by gupele on 3/16/2015. */
 final class UnixProcessIOtParser {
-    private final static String READ_BYTES_PART = "read_bytes:";
-    private final static String WRITE_BYTES_PART = "write_bytes:";
+  private static final String READ_BYTES_PART = "read_bytes:";
+  private static final String WRITE_BYTES_PART = "write_bytes:";
 
-    UnixParsingState state = new UnixParsingState(2);
-    boolean readBytesDone = false;
-    boolean writeBytesDone = false;
+  UnixParsingState state = new UnixParsingState(2);
+  boolean readBytesDone = false;
+  boolean writeBytesDone = false;
 
-    boolean done() {
-        return state.doneCounter == 0;
+  boolean done() {
+    return state.doneCounter == 0;
+  }
+
+  double getValue() {
+    return state.returnValue;
+  }
+
+  void process(String line) {
+    if (!readBytesDone) {
+      if (parseValue(line, READ_BYTES_PART)) {
+        readBytesDone = true;
+        return;
+      }
+    }
+    if (!writeBytesDone) {
+      if (parseValue(line, WRITE_BYTES_PART)) {
+        writeBytesDone = true;
+        return;
+      }
+    }
+  }
+
+  private boolean parseValue(String line, String part) {
+    int index = line.indexOf(part);
+    if (index != -1) {
+      String doubleValueAsString = line.substring(index + part.length());
+      try {
+        state.returnValue += Double.valueOf(doubleValueAsString.trim());
+        --(state.doneCounter);
+        return true;
+      } catch (Exception e) {
+        InternalLogger.INSTANCE.error("Error in parsing value of UnixProcess counter");
+        InternalLogger.INSTANCE.trace(
+            "Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+      }
     }
 
-    double getValue() {
-        return state.returnValue;
-    }
-
-    void process(String line) {
-        if (!readBytesDone) {
-            if (parseValue(line, READ_BYTES_PART)) {
-                readBytesDone = true;
-                return;
-            }
-        }
-        if (!writeBytesDone) {
-            if (parseValue(line, WRITE_BYTES_PART)) {
-                writeBytesDone = true;
-                return;
-            }
-        }
-    }
-
-    private boolean parseValue(String line, String part) {
-        int index = line.indexOf(part);
-        if (index != -1) {
-            String doubleValueAsString = line.substring(index + part.length());
-            try {
-                state.returnValue += Double.valueOf(doubleValueAsString.trim());
-                --(state.doneCounter);
-                return true;
-            } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Error in parsing value of UnixProcess counter");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-            }
-        }
-
-        return false;
-    }
+    return false;
+  }
 }

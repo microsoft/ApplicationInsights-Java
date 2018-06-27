@@ -24,25 +24,35 @@ package com.microsoft.applicationinsights.extensibility.initializer.docker.inter
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Created by yonisha on 7/29/2015.
- */
+/** Created by yonisha on 7/29/2015. */
 public class DockerContextTests {
-    private static final String CONTEXT_FILE_PATTERN = "Docker host=%s,Docker image=%s,Docker container name=%s,Docker container id=%s";
-    private static final String DEFAULT_HOST = "docker_host";
-    private static final String DEFAULT_IMAGE = "docker_image";
-    private static final String DEFAULT_CONTAINER_NAME = "docker_container";
-    private static final String DEFAULT_CONTAINER_ID = "docker_container_id";
+  private static final String CONTEXT_FILE_PATTERN =
+      "Docker host=%s,Docker image=%s,Docker container name=%s,Docker container id=%s";
+  private static final String DEFAULT_HOST = "docker_host";
+  private static final String DEFAULT_IMAGE = "docker_image";
+  private static final String DEFAULT_CONTAINER_NAME = "docker_container";
+  private static final String DEFAULT_CONTAINER_ID = "docker_container_id";
 
-    @Test
-    public void testContextJsonParsedCorrectly() throws Exception {
-        String content = String.format(CONTEXT_FILE_PATTERN, DEFAULT_HOST, DEFAULT_IMAGE, DEFAULT_CONTAINER_NAME, DEFAULT_CONTAINER_ID);
+  @Test
+  public void testContextJsonParsedCorrectly() throws Exception {
+    String content =
+        String.format(
+            CONTEXT_FILE_PATTERN,
+            DEFAULT_HOST,
+            DEFAULT_IMAGE,
+            DEFAULT_CONTAINER_NAME,
+            DEFAULT_CONTAINER_ID);
 
-        DockerContext dockerContext = new DockerContext(content);
+    DockerContext dockerContext = new DockerContext(content);
 
-        Assert.assertEquals(DEFAULT_HOST, dockerContext.getHostName());
-        Assert.assertEquals(DEFAULT_IMAGE, dockerContext.getProperties().get(Constants.DOCKER_IMAGE_PROPERTY_KEY));
-        Assert.assertEquals(DEFAULT_CONTAINER_NAME, dockerContext.getProperties().get(Constants.DOCKER_CONTAINER_NAME_PROPERTY_KEY));
-        Assert.assertEquals(DEFAULT_CONTAINER_ID, dockerContext.getProperties().get(Constants.DOCKER_CONTAINER_ID_PROPERTY_KEY));
-    }
+    Assert.assertEquals(DEFAULT_HOST, dockerContext.getHostName());
+    Assert.assertEquals(
+        DEFAULT_IMAGE, dockerContext.getProperties().get(Constants.DOCKER_IMAGE_PROPERTY_KEY));
+    Assert.assertEquals(
+        DEFAULT_CONTAINER_NAME,
+        dockerContext.getProperties().get(Constants.DOCKER_CONTAINER_NAME_PROPERTY_KEY));
+    Assert.assertEquals(
+        DEFAULT_CONTAINER_ID,
+        dockerContext.getProperties().get(Constants.DOCKER_CONTAINER_ID_PROPERTY_KEY));
+  }
 }

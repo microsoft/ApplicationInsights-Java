@@ -21,96 +21,94 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.junit.Test;
-
-import java.net.URI;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import java.net.URI;
+import org.junit.Test;
+
 public final class SanitizerTest {
-    private final static String VALID_URL = "http://wwww.microsoft.com/";
-    private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
+  private static final String VALID_URL = "http://wwww.microsoft.com/";
+  private static final String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
 
-    // No need for UUID tests as we no longer constrain to UUID
-//    @Test
-//    public void testNonValidEmptyUUID() {
-//        boolean valid = Sanitizer.isUUID("");
-//        assertFalse(valid);
-//    }
-//
-//    @Test
-//    public void testNonValidNullUUID() {
-//        boolean valid = Sanitizer.isUUID(null);
-//        assertFalse(valid);
-//    }
-//
-//    @Test
-//    public void testNonValidBadFormat1UUID() {
-//        boolean valid = Sanitizer.isUUID("sadfsa");
-//        assertFalse(valid);
-//    }
-//
-//    @Test
-//    public void testNonValidBadFormat2UUID() {
-//        boolean valid = Sanitizer.isUUID("c934153105ac4d8c972e36e97601d5ffc934153105ac4d8c972e36e97601d5ff");
-//        assertFalse(valid);
-//    }
-//
-//    @Test
-//    public void testValidUUIDWithComma() {
-////      boolean valid = Sanitizer.isUUID("c9341531-05ac-4d8c-972e-36e97601d5ff");
-//        boolean valid = Sanitizer.isUUID("00000000-0000-0000-0000-000000000000");
-//        assertTrue(valid);
-//    }
-//
-//    @Test
-//    public void testValidUUIDWithoutComma() {
-//        boolean valid = Sanitizer.isUUID("c934153105ac4d8c972e36e97601d5ff");
-//        assertFalse(valid);
-//    }
+  // No need for UUID tests as we no longer constrain to UUID
+  //    @Test
+  //    public void testNonValidEmptyUUID() {
+  //        boolean valid = Sanitizer.isUUID("");
+  //        assertFalse(valid);
+  //    }
+  //
+  //    @Test
+  //    public void testNonValidNullUUID() {
+  //        boolean valid = Sanitizer.isUUID(null);
+  //        assertFalse(valid);
+  //    }
+  //
+  //    @Test
+  //    public void testNonValidBadFormat1UUID() {
+  //        boolean valid = Sanitizer.isUUID("sadfsa");
+  //        assertFalse(valid);
+  //    }
+  //
+  //    @Test
+  //    public void testNonValidBadFormat2UUID() {
+  //        boolean valid =
+  // Sanitizer.isUUID("c934153105ac4d8c972e36e97601d5ffc934153105ac4d8c972e36e97601d5ff");
+  //        assertFalse(valid);
+  //    }
+  //
+  //    @Test
+  //    public void testValidUUIDWithComma() {
+  ////      boolean valid = Sanitizer.isUUID("c9341531-05ac-4d8c-972e-36e97601d5ff");
+  //        boolean valid = Sanitizer.isUUID("00000000-0000-0000-0000-000000000000");
+  //        assertTrue(valid);
+  //    }
+  //
+  //    @Test
+  //    public void testValidUUIDWithoutComma() {
+  //        boolean valid = Sanitizer.isUUID("c934153105ac4d8c972e36e97601d5ff");
+  //        assertFalse(valid);
+  //    }
 
+  @Test
+  public void testSanitizeNullUri() throws Exception {
+    Sanitizer.sanitizeUri(null);
+  }
 
-    @Test
-    public void testSanitizeNullUri() throws Exception {
-        Sanitizer.sanitizeUri(null);
-    }
+  @Test
+  public void testSanitizeNonValidUri() throws Exception {
+    URI uri = Sanitizer.sanitizeUri(NON_VALID_URL);
+    assertNull(uri);
+  }
 
-    @Test
-    public void testSanitizeNonValidUri() throws Exception {
-        URI uri = Sanitizer.sanitizeUri(NON_VALID_URL);
-        assertNull(uri);
-    }
+  @Test
+  public void testSanitizeValidUri() throws Exception {
+    URI uri = Sanitizer.sanitizeUri(VALID_URL);
+    assertNotNull(uri);
+  }
 
-    @Test
-    public void testSanitizeValidUri() throws Exception {
-        URI uri = Sanitizer.sanitizeUri(VALID_URL);
-        assertNotNull(uri);
-    }
+  @Test
+  public void testSafeStringToUrlWithNull() throws Exception {
+    URI url = Sanitizer.safeStringToUri(null);
+    assertNull(url);
+  }
 
-    @Test
-    public void testSafeStringToUrlWithNull() throws Exception {
-        URI url = Sanitizer.safeStringToUri(null);
-        assertNull(url);
-    }
+  @Test
+  public void testSafeStringToUrlWithEmpty() throws Exception {
+    URI uri = Sanitizer.sanitizeUri("");
+    assertNull(uri);
+  }
 
-    @Test
-    public void testSafeStringToUrlWithEmpty() throws Exception {
-        URI uri = Sanitizer.sanitizeUri("");
-        assertNull(uri);
-    }
+  @Test
+  public void testSafeStringToUrlWithValid() throws Exception {
+    URI uri = Sanitizer.sanitizeUri(VALID_URL);
+    assertNotNull(uri);
+  }
 
-    @Test
-    public void testSafeStringToUrlWithValid() throws Exception {
-        URI uri = Sanitizer.sanitizeUri(VALID_URL);
-        assertNotNull(uri);
-    }
-
-    @Test
-    public void testSafeStringToUrlWithNonValid() throws Exception {
-        URI uri = Sanitizer.sanitizeUri(NON_VALID_URL);
-        assertNull(uri);
-    }
-
+  @Test
+  public void testSafeStringToUrlWithNonValid() throws Exception {
+    URI uri = Sanitizer.sanitizeUri(NON_VALID_URL);
+    assertNull(uri);
+  }
 }

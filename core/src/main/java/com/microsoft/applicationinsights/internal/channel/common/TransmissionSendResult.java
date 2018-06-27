@@ -21,15 +21,13 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-/**
- * Created by gupele on 2/10/2015.
- */
+/** Created by gupele on 2/10/2015. */
 final class TransmissionSendResult {
-	public final static int SENT_SUCCESSFULLY = 200;
-	public final static int PARTIAL_SUCCESS = 206;
-	public final static int REQUEST_TIMEOUT = 408;
-	public final static int THROTTLED = 429;
-	public final static int THROTTLED_OVER_EXTENDED_TIME = 439;
-	public final static int INTERNAL_SERVER_ERROR = 500;
-	public final static int SERVICE_UNAVAILABLE = 503;
+  public static final int SENT_SUCCESSFULLY = 200;
+  public static final int PARTIAL_SUCCESS = 206;
+  public static final int REQUEST_TIMEOUT = 408;
+  public static final int THROTTLED = 429;
+  public static final int THROTTLED_OVER_EXTENDED_TIME = 439;
+  public static final int INTERNAL_SERVER_ERROR = 500;
+  public static final int SERVICE_UNAVAILABLE = 503;
 }

@@ -26,14 +26,14 @@ import com.microsoft.applicationinsights.TelemetryClient;
 /**
  * PerformanceCounter interface.
  *
- * Every concrete class should have a unique id and
- * it should be able to collect data send that data using a {@link com.microsoft.applicationinsights.TelemetryClient}
+ * <p>Every concrete class should have a unique id and it should be able to collect data send that
+ * data using a {@link com.microsoft.applicationinsights.TelemetryClient}
  *
- * Created by gupele on 3/3/2015.
+ * <p>Created by gupele on 3/3/2015.
  */
 public interface PerformanceCounter {
 
-    String getId();
+  String getId();
 
-    void report(TelemetryClient telemetryClient);
+  void report(TelemetryClient telemetryClient);
 }

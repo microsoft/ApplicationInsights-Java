@@ -21,6 +21,13 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker.internal;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,52 +35,49 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.File;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-/**
- * Created by yonisha on 7/29/2015.
- */
+/** Created by yonisha on 7/29/2015. */
 public class DockerContextPollerTests {
 
-    private static File contextFileMock = mock(File.class);
-    private static DockerContextFactory dockerContextFactoryMock = mock(DockerContextFactory.class);
-    private static DockerContextPoller contextPollerUnderTest;
-    private static DockerContext dockerContextMock = mock(DockerContext.class);
+  private static File contextFileMock = mock(File.class);
+  private static DockerContextFactory dockerContextFactoryMock = mock(DockerContextFactory.class);
+  private static DockerContextPoller contextPollerUnderTest;
+  private static DockerContext dockerContextMock = mock(DockerContext.class);
 
-    @Before
-    public void testInit() throws Exception {
-        when(dockerContextFactoryMock.createDockerContext(any(File.class))).thenReturn(dockerContextMock);
+  @Before
+  public void testInit() throws Exception {
+    when(dockerContextFactoryMock.createDockerContext(any(File.class)))
+        .thenReturn(dockerContextMock);
 
-        contextPollerUnderTest = new DockerContextPoller(contextFileMock, dockerContextFactoryMock);
-        contextPollerUnderTest.THREAD_POLLING_INTERVAL_MS = 0;
-    }
+    contextPollerUnderTest = new DockerContextPoller(contextFileMock, dockerContextFactoryMock);
+    contextPollerUnderTest.THREAD_POLLING_INTERVAL_MS = 0;
+  }
 
-    @Test
-    public void testDockerContextInitializedIfFileExists() {
-        when(contextFileMock.exists()).thenReturn(true);
-        contextPollerUnderTest.run();
+  @Test
+  public void testDockerContextInitializedIfFileExists() {
+    when(contextFileMock.exists()).thenReturn(true);
+    contextPollerUnderTest.run();
 
-        DockerContext dockerContext = contextPollerUnderTest.getDockerContext();
+    DockerContext dockerContext = contextPollerUnderTest.getDockerContext();
 
-        Assert.assertEquals(dockerContextMock, dockerContext);
-    }
+    Assert.assertEquals(dockerContextMock, dockerContext);
+  }
 
-    @Test
-    public void testIfContextFileNotExistThenPollerTryAgain() {
-        final int numberOfRetries = 10;
-        final int[] count = {0};
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                return ++count[0] == numberOfRetries ;
-            }
-        }).when(contextFileMock).exists();
+  @Test
+  public void testIfContextFileNotExistThenPollerTryAgain() {
+    final int numberOfRetries = 10;
+    final int[] count = {0};
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
+                return ++count[0] == numberOfRetries;
+              }
+            })
+        .when(contextFileMock)
+        .exists();
 
-        contextPollerUnderTest.run();
+    contextPollerUnderTest.run();
 
-        verify(contextFileMock, times(numberOfRetries)).exists();
-    }
+    verify(contextFileMock, times(numberOfRetries)).exists();
+  }
 }

@@ -21,66 +21,72 @@
 
 package com.microsoft.applicationinsights.extensibility.context;
 
+import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.concurrent.ConcurrentMap;
 
-import com.microsoft.applicationinsights.internal.util.MapUtil;
-
 public final class SessionContext {
-    private final ConcurrentMap<String, String> tags;
+  private final ConcurrentMap<String, String> tags;
 
-    /**
-     * Constructs a SessionContext objects with the given tags.
-     * @param tags The tags
-     */
-    public SessionContext(ConcurrentMap<String, String> tags) {
-        this.tags = tags;
-    }
+  /**
+   * Constructs a SessionContext objects with the given tags.
+   *
+   * @param tags The tags
+   */
+  public SessionContext(ConcurrentMap<String, String> tags) {
+    this.tags = tags;
+  }
 
-    /**
-     * Gets the session ID
-     * @return Session ID
-     */
-    public String getId() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getSessionId());
-    }
+  /**
+   * Gets the session ID
+   *
+   * @return Session ID
+   */
+  public String getId() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getSessionId());
+  }
 
-    /**
-     * Sets the session ID.
-     * @param id the session ID.
-     */
-    public void setId(String id) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getSessionId(), id);
-    }
+  /**
+   * Sets the session ID.
+   *
+   * @param id the session ID.
+   */
+  public void setId(String id) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getSessionId(), id);
+  }
 
-    /**
-     * Gets a value indicating whether it is the first session.
-     * @return True if first session, false otherwise.
-     */
-    public Boolean getIsFirst() {
-        return MapUtil.getBoolValueOrNull(tags, ContextTagKeys.getKeys().getSessionIsFirst());
-    }
+  /**
+   * Gets a value indicating whether it is the first session.
+   *
+   * @return True if first session, false otherwise.
+   */
+  public Boolean getIsFirst() {
+    return MapUtil.getBoolValueOrNull(tags, ContextTagKeys.getKeys().getSessionIsFirst());
+  }
 
-    /**
-     * Sets whether it is the first session.
-     * @param isFirst a value indicating whether it is the first session.
-     */
-    public void setIsFirst(Boolean isFirst) {
-        MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsFirst(), isFirst);
-    }
+  /**
+   * Sets whether it is the first session.
+   *
+   * @param isFirst a value indicating whether it is the first session.
+   */
+  public void setIsFirst(Boolean isFirst) {
+    MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsFirst(), isFirst);
+  }
 
-    /**
-     * Gets a value indicating whether it is a new session.
-     * @return True if new session, false otherwise.
-     */
-    public Boolean getIsNewSession() {
-        return MapUtil.getBoolValueOrNull(tags, ContextTagKeys.getKeys().getSessionIsNew());
-    }
+  /**
+   * Gets a value indicating whether it is a new session.
+   *
+   * @return True if new session, false otherwise.
+   */
+  public Boolean getIsNewSession() {
+    return MapUtil.getBoolValueOrNull(tags, ContextTagKeys.getKeys().getSessionIsNew());
+  }
 
-    /**
-     * Sets a value indicating whether it is a new session.
-     * @param isNewSession A value indicating whether it is a new session.
-     */
-    public void setIsNewSession(Boolean isNewSession) {
-        MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsNew(), isNewSession);
-    }
+  /**
+   * Sets a value indicating whether it is a new session.
+   *
+   * @param isNewSession A value indicating whether it is a new session.
+   */
+  public void setIsNewSession(Boolean isNewSession) {
+    MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsNew(), isNewSession);
+  }
 }

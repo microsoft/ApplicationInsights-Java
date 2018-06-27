@@ -21,33 +21,34 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 
-/**
- * Created by gupele on 7/26/2016.
- */
+/** Created by gupele on 7/26/2016. */
 public class TelemetryProcessorsXmlElement {
-    private ArrayList<TelemetryProcessorXmlElement> custom = new ArrayList<TelemetryProcessorXmlElement>();
-    private ArrayList<TelemetryProcessorXmlElement> builtIn = new ArrayList<TelemetryProcessorXmlElement>();
+  private ArrayList<TelemetryProcessorXmlElement> custom =
+      new ArrayList<TelemetryProcessorXmlElement>();
+  private ArrayList<TelemetryProcessorXmlElement> builtIn =
+      new ArrayList<TelemetryProcessorXmlElement>();
 
-    public ArrayList<TelemetryProcessorXmlElement> getBuiltInTelemetryProcessors() {
-        return builtIn;
-    }
+  public ArrayList<TelemetryProcessorXmlElement> getBuiltInTelemetryProcessors() {
+    return builtIn;
+  }
 
-    @XmlElementWrapper(name="BuiltInProcessors")
-    @XmlElement(name="Processor")
-    public void setBuiltInTelemetryProcessors(ArrayList<TelemetryProcessorXmlElement> builtIn) {
-        this.builtIn = builtIn;
-    }
+  @XmlElementWrapper(name = "BuiltInProcessors")
+  @XmlElement(name = "Processor")
+  public void setBuiltInTelemetryProcessors(ArrayList<TelemetryProcessorXmlElement> builtIn) {
+    this.builtIn = builtIn;
+  }
 
-    public ArrayList<TelemetryProcessorXmlElement> getCustomTelemetryProcessors() {
-        return custom;
-    }
+  public ArrayList<TelemetryProcessorXmlElement> getCustomTelemetryProcessors() {
+    return custom;
+  }
 
-    @XmlElementWrapper(name="CustomProcessors")
-    @XmlElement(name="Processor")
-    public void setCustomTelemetryProcessors(ArrayList<TelemetryProcessorXmlElement> custom) {
-        this.custom = custom;
-    }
+  @XmlElementWrapper(name = "CustomProcessors")
+  @XmlElement(name = "Processor")
+  public void setCustomTelemetryProcessors(ArrayList<TelemetryProcessorXmlElement> custom) {
+    this.custom = custom;
+  }
 }

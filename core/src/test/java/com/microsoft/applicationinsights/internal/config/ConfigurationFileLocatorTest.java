@@ -21,7 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import org.junit.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,194 +33,229 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public final class ConfigurationFileLocatorTest {
-    private final static String MOCK_CONF_FILE = "MockApplicationInsights.xml";
-    private final static String EXISTING_CONF_TEST_FILE = "ApplicationInsights.xml";
+  private static final String MOCK_CONF_FILE = "MockApplicationInsights.xml";
+  private static final String EXISTING_CONF_TEST_FILE = "ApplicationInsights.xml";
 
-    @Before
-    public void clearProp() {
-        System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
+  @Before
+  public void clearProp() {
+    System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
+  }
+
+  @After
+  public void clearMockFile() throws URISyntaxException {
+    eraseFromClassPath();
+    eraseFromLibraryLocation();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorWithNull() {
+    new ConfigurationFileLocator(null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorWithEmpty() {
+    new ConfigurationFileLocator("");
+  }
+
+  @Test
+  public void testNoConfigurationFound() throws Exception {
+    InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
+    assertNull(resourceFile);
+  }
+
+  @Test
+  public void testGetConfigurationFileWhereDirIsFromProperty() throws Exception {
+    System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "src/test/resources");
+
+    InputStream resourceFile =
+        new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
+    assertStreamNotNullAndCloseIt(resourceFile);
+  }
+
+  @Test
+  public void testNoConfigurationFoundWhereDirPropertySetWrong() throws Exception {
+    System.setProperty(
+        ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "this-directory-does-not-exist");
+
+    InputStream resourceFile =
+        new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
+    System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
+
+    assertNull(resourceFile);
+  }
+
+  @Test
+  public void testGetConfigurationFileWhereFileIsResource() throws Exception {
+    String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
+
+    InputStream resourceFile =
+        new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
+    System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
+
+    assertStreamNotNullAndCloseIt(resourceFile);
+  }
+
+  @Test
+  public void testGetConfigurationFileWhereFileIsJarLocationOnly() throws Exception {
+    String configurationFileName = putConfigurationFileInLibraryLocationOnly();
+
+    InputStream resourceFile =
+        new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
+    assertStreamNotNullAndCloseIt(resourceFile);
+  }
+
+  @Test
+  public void testGetConfigurationFileWhereFileIsInClassPathOnly() throws Exception {
+    String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
+
+    InputStream resourceFile =
+        new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
+    assertStreamNotNullAndCloseIt(resourceFile);
+  }
+
+  @Test
+  public void testGetConfigurationFileWhereFileInBothClassPathAndJarLocation() throws Exception {
+    putConfigurationFileInClassPathAndJarLocation(MOCK_CONF_FILE, MOCK_CONF_FILE);
+
+    InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
+    assertStreamNotNullAndCloseIt(resourceFile);
+  }
+
+  @Test
+  public void testGetConfigurationFileJarLocationIsfoundFirst() throws Exception {
+    putConfigurationFileInClassPathAndJarLocation("dontfind" + MOCK_CONF_FILE, MOCK_CONF_FILE);
+
+    InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
+    assertStreamNotNullAndCloseIt(resourceFile);
+  }
+
+  private void putFileInClassPath(String configurationFileName)
+      throws URISyntaxException, NoSuchMethodException, IOException, InvocationTargetException,
+          IllegalAccessException {
+    ClassLoader classLoader = ConfigurationFileLocator.class.getClassLoader();
+    if (!(classLoader instanceof URLClassLoader)) {
+      return;
     }
 
-    @After
-    public void clearMockFile() throws URISyntaxException {
-        eraseFromClassPath();
-        eraseFromLibraryLocation();
+    File file = getMockApplicationFileFromClassPath(classLoader);
+    if (file == null) {
+      String path =
+          ConfigurationFileLocator.class
+              .getProtectionDomain()
+              .getCodeSource()
+              .getLocation()
+              .toURI()
+              .getPath();
+
+      Method addURLMethod =
+          URLClassLoader.class.getDeclaredMethod("addURL", new Class[] {URL.class});
+      addURLMethod.setAccessible(true);
+      addURLMethod.invoke(classLoader, new Object[] {new File(path).toURI().toURL()});
+
+      file = new File(path, configurationFileName);
+      file.createNewFile();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCtorWithNull() {
-        new ConfigurationFileLocator(null);
+    file.deleteOnExit();
+  }
+
+  private String putConfigurationFileInLibraryLocationOnly()
+      throws URISyntaxException, IOException {
+    eraseFromClassPath();
+
+    putConfigurationInLibraryLocation(MOCK_CONF_FILE);
+
+    return MOCK_CONF_FILE;
+  }
+
+  private void putConfigurationInLibraryLocation(String configurationFileName)
+      throws URISyntaxException, IOException {
+    String jarFullPath =
+        ConfigurationFileLocator.class
+            .getProtectionDomain()
+            .getCodeSource()
+            .getLocation()
+            .toURI()
+            .getPath();
+    File configFile = new File(new File(jarFullPath).getParent(), configurationFileName);
+
+    configFile.createNewFile();
+
+    configFile.deleteOnExit();
+  }
+
+  private void putConfigurationFileInClassPathAndJarLocation(
+      String confForClassPath, String confForJarLocation)
+      throws URISyntaxException, InvocationTargetException, NoSuchMethodException,
+          IllegalAccessException, IOException {
+    putFileInClassPath(confForClassPath);
+    putConfigurationInLibraryLocation(confForJarLocation);
+  }
+
+  private String putConfigurationFileAsResourceInCurrentClassLoaderOnly()
+      throws URISyntaxException {
+    eraseFromLibraryLocation();
+    eraseFromClassPath();
+
+    return EXISTING_CONF_TEST_FILE;
+  }
+
+  private void eraseFromLibraryLocation() throws URISyntaxException {
+    String jarFullPath =
+        ConfigurationFileLocator.class
+            .getProtectionDomain()
+            .getCodeSource()
+            .getLocation()
+            .toURI()
+            .getPath();
+    File configFile = new File(new File(jarFullPath).getParent(), MOCK_CONF_FILE);
+    if (configFile.exists()) {
+      if (!configFile.delete()) {
+        throw new RuntimeException(
+            String.format("Could not delete '%s'", configFile.getAbsolutePath()));
+      }
+    }
+  }
+
+  private void eraseFromClassPath() throws URISyntaxException {
+    ClassLoader classLoader = ConfigurationFileLocator.class.getClassLoader();
+    if (!(classLoader instanceof URLClassLoader)) {
+      return;
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCtorWithEmpty() {
-        new ConfigurationFileLocator("");
+    File file = getMockApplicationFileFromClassPath(classLoader);
+    if (file != null) {
+      if (!file.delete()) {
+        throw new RuntimeException(String.format("Could not delete '%s'", file.getAbsolutePath()));
+      }
+    }
+  }
+
+  private File getMockApplicationFileFromClassPath(ClassLoader classLoader)
+      throws URISyntaxException {
+    URL[] urls = ((URLClassLoader) classLoader).getURLs();
+    for (URL url : urls) {
+      URI uri = url.toURI();
+      File file = new File(uri.getSchemeSpecificPart());
+      if (file.isDirectory()) {
+        continue;
+      }
+
+      if (MOCK_CONF_FILE.equals(file.getName())) {
+        return file;
+      }
     }
 
-    @Test
-    public void testNoConfigurationFound() throws Exception {
-        InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
-        assertNull(resourceFile);
-    }
+    return null;
+  }
 
-    @Test
-    public void testGetConfigurationFileWhereDirIsFromProperty() throws Exception {
-        System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "src/test/resources");
-
-        InputStream resourceFile = new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
-        assertStreamNotNullAndCloseIt(resourceFile);
-    }
-
-    @Test
-    public void testNoConfigurationFoundWhereDirPropertySetWrong() throws Exception {
-        System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "this-directory-does-not-exist");
-
-        InputStream resourceFile = new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
-        System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
-
-        assertNull(resourceFile);
-    }
-
-    @Test
-    public void testGetConfigurationFileWhereFileIsResource() throws Exception {
-        String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
-
-        InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
-        System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
-
-        assertStreamNotNullAndCloseIt(resourceFile);
-    }
-
-    @Test
-    public void testGetConfigurationFileWhereFileIsJarLocationOnly() throws Exception {
-        String configurationFileName = putConfigurationFileInLibraryLocationOnly();
-
-        InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
-        assertStreamNotNullAndCloseIt(resourceFile);
-    }
-
-    @Test
-    public void testGetConfigurationFileWhereFileIsInClassPathOnly() throws Exception {
-        String configurationFileName = putConfigurationFileAsResourceInCurrentClassLoaderOnly();
-
-        InputStream resourceFile = new ConfigurationFileLocator(configurationFileName).getConfigurationFile();
-        assertStreamNotNullAndCloseIt(resourceFile);
-    }
-
-    @Test
-    public void testGetConfigurationFileWhereFileInBothClassPathAndJarLocation() throws Exception {
-        putConfigurationFileInClassPathAndJarLocation(MOCK_CONF_FILE, MOCK_CONF_FILE);
-
-        InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
-        assertStreamNotNullAndCloseIt(resourceFile);
-    }
-
-    @Test
-    public void testGetConfigurationFileJarLocationIsfoundFirst() throws Exception {
-        putConfigurationFileInClassPathAndJarLocation("dontfind" + MOCK_CONF_FILE, MOCK_CONF_FILE);
-
-        InputStream resourceFile = new ConfigurationFileLocator(MOCK_CONF_FILE).getConfigurationFile();
-        assertStreamNotNullAndCloseIt(resourceFile);
-    }
-
-    private void putFileInClassPath(String configurationFileName) throws URISyntaxException, NoSuchMethodException, IOException, InvocationTargetException, IllegalAccessException {
-        ClassLoader classLoader = ConfigurationFileLocator.class.getClassLoader();
-        if (!(classLoader instanceof URLClassLoader)) {
-            return;
-        }
-
-        File file = getMockApplicationFileFromClassPath(classLoader);
-        if (file == null) {
-            String path = ConfigurationFileLocator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-
-            Method addURLMethod = URLClassLoader.class.getDeclaredMethod("addURL",new Class[]{URL.class});
-            addURLMethod.setAccessible(true);
-            addURLMethod.invoke(classLoader, new Object[]{new File(path).toURI().toURL()});
-
-            file = new File(path, configurationFileName);
-            file.createNewFile();
-        }
-
-        file.deleteOnExit();
-    }
-
-    private String putConfigurationFileInLibraryLocationOnly() throws URISyntaxException, IOException {
-        eraseFromClassPath();
-
-        putConfigurationInLibraryLocation(MOCK_CONF_FILE);
-
-        return MOCK_CONF_FILE;
-    }
-
-    private void putConfigurationInLibraryLocation(String configurationFileName) throws URISyntaxException, IOException {
-        String jarFullPath = ConfigurationFileLocator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-        File configFile = new File(new File(jarFullPath).getParent(), configurationFileName);
-
-        configFile.createNewFile();
-
-        configFile.deleteOnExit();
-    }
-
-    private void putConfigurationFileInClassPathAndJarLocation(String confForClassPath, String confForJarLocation)
-            throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        putFileInClassPath(confForClassPath);
-        putConfigurationInLibraryLocation(confForJarLocation);
-    }
-
-    private String putConfigurationFileAsResourceInCurrentClassLoaderOnly() throws URISyntaxException {
-        eraseFromLibraryLocation();
-        eraseFromClassPath();
-
-        return EXISTING_CONF_TEST_FILE;
-    }
-
-    private void eraseFromLibraryLocation() throws URISyntaxException {
-        String jarFullPath = ConfigurationFileLocator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-        File configFile = new File(new File(jarFullPath).getParent(), MOCK_CONF_FILE);
-        if (configFile.exists()) {
-            if (!configFile.delete()) {
-                throw new RuntimeException(String.format("Could not delete '%s'", configFile.getAbsolutePath()));
-            }
-        }
-    }
-
-    private void eraseFromClassPath() throws URISyntaxException {
-        ClassLoader classLoader = ConfigurationFileLocator.class.getClassLoader();
-        if (!(classLoader instanceof URLClassLoader)) {
-            return;
-        }
-
-        File file = getMockApplicationFileFromClassPath(classLoader);
-        if (file != null) {
-            if (!file.delete()) {
-                throw new RuntimeException(String.format("Could not delete '%s'", file.getAbsolutePath()));
-            }
-        }
-    }
-
-    private File getMockApplicationFileFromClassPath(ClassLoader classLoader) throws URISyntaxException {
-        URL[] urls = ((URLClassLoader) classLoader).getURLs();
-        for (URL url : urls) {
-            URI uri = url.toURI();
-            File file = new File(uri.getSchemeSpecificPart());
-            if (file.isDirectory()) {
-                continue;
-            }
-
-            if (MOCK_CONF_FILE.equals(file.getName())) {
-                return file;
-            }
-        }
-
-        return null;
-    }
-
-    private void assertStreamNotNullAndCloseIt(InputStream resourceFile) throws IOException {
-        assertNotNull("Configuration file is not found in the jar location", resourceFile);
-        resourceFile.close();
-    }
+  private void assertStreamNotNullAndCloseIt(InputStream resourceFile) throws IOException {
+    assertNotNull("Configuration file is not found in the jar location", resourceFile);
+    resourceFile.close();
+  }
 }

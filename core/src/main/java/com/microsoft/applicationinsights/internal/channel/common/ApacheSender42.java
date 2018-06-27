@@ -21,9 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.io.IOException;
-
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.io.IOException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -32,54 +31,49 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
-/**
- * Created by gupele on 6/4/2015.
- */
+/** Created by gupele on 6/4/2015. */
 final class ApacheSender42 implements ApacheSender {
 
-    private final PoolingClientConnectionManager cm;
-    private final HttpClient httpClient;
+  private final PoolingClientConnectionManager cm;
+  private final HttpClient httpClient;
 
-    public ApacheSender42() {
-        cm = new PoolingClientConnectionManager();
-        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
-        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-        
-        httpClient = new DefaultHttpClient(cm);
+  public ApacheSender42() {
+    cm = new PoolingClientConnectionManager();
+    cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
+    cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
 
-        HttpParams params = httpClient.getParams();
-        HttpConnectionParams.setConnectionTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
-        HttpConnectionParams.setSoTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
+    httpClient = new DefaultHttpClient(cm);
 
-        InternalLogger.INSTANCE.info("Using Apache HttpClient 4.2");
+    HttpParams params = httpClient.getParams();
+    HttpConnectionParams.setConnectionTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
+    HttpConnectionParams.setSoTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
+
+    InternalLogger.INSTANCE.info("Using Apache HttpClient 4.2");
+  }
+
+  @Override
+  public HttpResponse sendPostRequest(HttpPost post) throws IOException {
+    HttpResponse response = httpClient.execute(post);
+    return response;
+  }
+
+  @Override
+  public void dispose(HttpResponse response) {}
+
+  @Override
+  public void close() {
+    try {
+      cm.shutdown();
+    } catch (Exception e) {
+      // chomp
     }
+  }
 
-    @Override
-    public HttpResponse sendPostRequest(HttpPost post) throws IOException {
-        HttpResponse response = httpClient.execute(post);
-        return response;
-    }
+  @Override
+  public HttpClient getHttpClient() {
+    return httpClient;
+  }
 
-    @Override
-    public void dispose(HttpResponse response) {
-    }
-
-    @Override
-    public void close() {
-        try {
-            cm.shutdown();
-        } catch (Exception e) {
-            // chomp
-        }
-    }
-
-    @Override
-    public HttpClient getHttpClient() {
-        return httpClient;
-    }
-
-    @Override
-    public void enhanceRequest(HttpPost request) {
-    }
+  @Override
+  public void enhanceRequest(HttpPost request) {}
 }
-

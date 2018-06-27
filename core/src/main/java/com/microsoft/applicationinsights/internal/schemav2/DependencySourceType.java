@@ -23,22 +23,20 @@ package com.microsoft.applicationinsights.internal.schemav2;
 
 import org.apache.http.annotation.Obsolete;
 
-/**
- * Enum DependencySourceType.
- */
+/** Enum DependencySourceType. */
 @Obsolete
 public enum DependencySourceType {
-    Undefined(0),
-    Aic(1),
-    Apmc(2);
+  Undefined(0),
+  Aic(1),
+  Apmc(2);
 
-    private final int id;
+  private final int id;
 
-    public int getValue() {
-        return id;
-    }
+  DependencySourceType(int id) {
+    this.id = id;
+  }
 
-    DependencySourceType(int id) {
-        this.id = id;
-    }
+  public int getValue() {
+    return id;
+  }
 }

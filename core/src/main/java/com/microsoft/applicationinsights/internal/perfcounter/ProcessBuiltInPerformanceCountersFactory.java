@@ -21,123 +21,132 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-
 /**
  * The class will create the 'built-in'/default performance counters.
  *
- * Created by gupele on 3/3/2015.
+ * <p>Created by gupele on 3/3/2015.
  */
-final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory, WindowsPerformanceCountersFactory {
-    private Iterable<WindowsPerformanceCounterData> windowsPCsData;
+final class ProcessBuiltInPerformanceCountersFactory
+    implements PerformanceCountersFactory, WindowsPerformanceCountersFactory {
+  private Iterable<WindowsPerformanceCounterData> windowsPCsData;
 
-    /**
-     * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter} that are
-     * the 'built-in' performance counters of the process.
-     *
-     * Note: The method should not throw
-     *
-     * @return A collection of {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
-     */
-    public Collection<PerformanceCounter> getPerformanceCounters() {
-        try {
-            if (SystemInformation.INSTANCE.isWindows()) {
-                return getWindowsPerformanceCounters();
-            } else if (SystemInformation.INSTANCE.isUnix()) {
-                return getUnixPerformanceCounters();
-            } else {
-                InternalLogger.INSTANCE.error("Unknown OS, performance counters are not created.");
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.toString());            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
-        return Collections.emptyList();
+  /**
+   * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
+   * that are the 'built-in' performance counters of the process.
+   *
+   * <p>Note: The method should not throw
+   *
+   * @return A collection of {@link
+   *     com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
+   */
+  public Collection<PerformanceCounter> getPerformanceCounters() {
+    try {
+      if (SystemInformation.INSTANCE.isWindows()) {
+        return getWindowsPerformanceCounters();
+      } else if (SystemInformation.INSTANCE.isUnix()) {
+        return getUnixPerformanceCounters();
+      } else {
+        InternalLogger.INSTANCE.error("Unknown OS, performance counters are not created.");
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "Error while creating performance counters: '%s'", t.toString());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
 
-    /**
-     * Creates the performance counters that are suitable for all supported OSs.
-     * @return An array of generic performance counters.
-     */
-    private ArrayList<PerformanceCounter> getMutualPerformanceCounters() {
-        ArrayList<PerformanceCounter> performanceCounters = new ArrayList<PerformanceCounter>();
+    return Collections.emptyList();
+  }
 
-        performanceCounters.add(new ProcessMemoryPerformanceCounter());
-        performanceCounters.add(new ProcessCpuPerformanceCounter());
+  /**
+   * Creates the performance counters that are suitable for all supported OSs.
+   *
+   * @return An array of generic performance counters.
+   */
+  private ArrayList<PerformanceCounter> getMutualPerformanceCounters() {
+    ArrayList<PerformanceCounter> performanceCounters = new ArrayList<PerformanceCounter>();
 
-        return performanceCounters;
+    performanceCounters.add(new ProcessMemoryPerformanceCounter());
+    performanceCounters.add(new ProcessCpuPerformanceCounter());
+
+    return performanceCounters;
+  }
+
+  /**
+   * Returns the performance counters that are useful for Unix OS.
+   *
+   * @return Collection of Windows performance counters.
+   */
+  private Collection<PerformanceCounter> getUnixPerformanceCounters() {
+    ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
+    performanceCounters.add(new UnixProcessIOPerformanceCounter());
+    performanceCounters.add(new UnixTotalCpuPerformanceCounter());
+    performanceCounters.add(new UnixTotalMemoryPerformanceCounter());
+
+    return performanceCounters;
+  }
+
+  /**
+   * Returns the performance counters that are useful for Windows OSs.
+   *
+   * @return Collection of Unix performance counters.
+   */
+  private Collection<PerformanceCounter> getWindowsPerformanceCounters() {
+    ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
+
+    try {
+      if (windowsPCsData != null) {
+        WindowsPerformanceCounterAsMetric pcWindowsMetric =
+            new WindowsPerformanceCounterAsMetric(windowsPCsData);
+        performanceCounters.add(pcWindowsMetric);
+        windowsPCsData = null;
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable e) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.toString());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
 
-    /**
-     * Returns the performance counters that are useful for Unix OS.
-     * @return Collection of Windows performance counters.
-     */
-    private Collection<PerformanceCounter> getUnixPerformanceCounters() {
-        ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
-        performanceCounters.add(new UnixProcessIOPerformanceCounter());
-        performanceCounters.add(new UnixTotalCpuPerformanceCounter());
-        performanceCounters.add(new UnixTotalMemoryPerformanceCounter());
-
-        return performanceCounters;
+    try {
+      WindowsPerformanceCounterAsPC pcWindowsPCs = new WindowsPerformanceCounterAsPC();
+      performanceCounters.add(pcWindowsPCs);
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable e) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "Failed to create WindowsPerformanceCounterAsPC: '%s'", e.toString());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
 
-    /**
-     * Returns the performance counters that are useful for Windows OSs.
-     * @return Collection of Unix performance counters.
-     */
-    private Collection<PerformanceCounter> getWindowsPerformanceCounters() {
-        ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
+    return performanceCounters;
+  }
 
-        try {
-            if (windowsPCsData != null) {
-                WindowsPerformanceCounterAsMetric pcWindowsMetric = new WindowsPerformanceCounterAsMetric(windowsPCsData);
-                performanceCounters.add(pcWindowsMetric);
-                windowsPCsData = null;
-            }
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable e) {
-            try {
-                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.toString());
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
-        try {
-            WindowsPerformanceCounterAsPC pcWindowsPCs = new WindowsPerformanceCounterAsPC();
-            performanceCounters.add(pcWindowsPCs);
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable e) {
-            try {
-                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.toString());
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
-        return performanceCounters;
-    }
-
-    @Override
-    public void setWindowsPCs(Iterable<WindowsPerformanceCounterData> windowsPCsData) {
-        this.windowsPCsData = windowsPCsData;
-    }
+  @Override
+  public void setWindowsPCs(Iterable<WindowsPerformanceCounterData> windowsPCsData) {
+    this.windowsPCsData = windowsPCsData;
+  }
 }

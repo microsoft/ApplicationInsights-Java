@@ -21,62 +21,62 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public final class BackOffTimesContainerFactoryTest {
-    @Test
-    public void testEmptyString() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("");
-        assertTrue(container instanceof ExponentialBackOffTimesPolicy);
-    }
+  @Test
+  public void testEmptyString() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("");
+    assertTrue(container instanceof ExponentialBackOffTimesPolicy);
+  }
 
-    @Test
-    public void testNullString() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create(null);
-        assertTrue(container instanceof ExponentialBackOffTimesPolicy);
-    }
+  @Test
+  public void testNullString() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create(null);
+    assertTrue(container instanceof ExponentialBackOffTimesPolicy);
+  }
 
-    @Test
-    public void testWrongString() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("exponentiall");
-        assertTrue(container instanceof ExponentialBackOffTimesPolicy);
-    }
+  @Test
+  public void testWrongString() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("exponentiall");
+    assertTrue(container instanceof ExponentialBackOffTimesPolicy);
+  }
 
-    @Test
-    public void testExponentialLowerCase() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("exponential");
-        assertTrue(container instanceof ExponentialBackOffTimesPolicy);
-    }
+  @Test
+  public void testExponentialLowerCase() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("exponential");
+    assertTrue(container instanceof ExponentialBackOffTimesPolicy);
+  }
 
-    @Test
-    public void testExponentialUpperCase() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("EXPONENTIAL");
-        assertTrue(container instanceof ExponentialBackOffTimesPolicy);
-    }
+  @Test
+  public void testExponentialUpperCase() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("EXPONENTIAL");
+    assertTrue(container instanceof ExponentialBackOffTimesPolicy);
+  }
 
-    @Test
-    public void testExponentialDifferentCase() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("EXpoNENTIAL");
-        assertTrue(container instanceof ExponentialBackOffTimesPolicy);
-    }
+  @Test
+  public void testExponentialDifferentCase() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("EXpoNENTIAL");
+    assertTrue(container instanceof ExponentialBackOffTimesPolicy);
+  }
 
-    @Test
-    public void testStaticLowerCase() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("static");
-        assertTrue(container instanceof StaticBackOffTimesPolicy);
-    }
+  @Test
+  public void testStaticLowerCase() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("static");
+    assertTrue(container instanceof StaticBackOffTimesPolicy);
+  }
 
-    @Test
-    public void testStaticUpperCase() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("STATIC");
-        assertTrue(container instanceof StaticBackOffTimesPolicy);
-    }
+  @Test
+  public void testStaticUpperCase() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("STATIC");
+    assertTrue(container instanceof StaticBackOffTimesPolicy);
+  }
 
-    @Test
-    public void testStaticDifferentCase() {
-        BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("stAtic");
-        assertTrue(container instanceof StaticBackOffTimesPolicy);
-    }
+  @Test
+  public void testStaticDifferentCase() {
+    BackOffTimesPolicy container = new BackOffTimesPolicyFactory().create("stAtic");
+    assertTrue(container instanceof StaticBackOffTimesPolicy);
+  }
 }

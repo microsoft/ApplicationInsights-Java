@@ -22,20 +22,17 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * Created by gupele on 12/13/2016.
- */
+/** Created by gupele on 12/13/2016. */
 public class QuickPulseXmlElement {
-    private boolean enabled = true;
+  private boolean enabled = true;
 
-    @XmlAttribute(name="enabled")
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  @XmlAttribute(name = "enabled")
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 }

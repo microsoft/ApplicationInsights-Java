@@ -21,71 +21,69 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by gupele on 7/26/2016.
- */
+/** Created by gupele on 7/26/2016. */
 public class SyntheticSourceFilterTest {
 
-    @Test
-    public void testNullSources() {
-        SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        boolean result = tested.process(new PageViewTelemetry());
+  @Test
+  public void testNullSources() {
+    SyntheticSourceFilter tested = new SyntheticSourceFilter();
+    boolean result = tested.process(new PageViewTelemetry());
 
-        assertTrue(result);
-    }
+    assertTrue(result);
+  }
 
-    @Test
-    public void testEmptySources() throws Throwable {
-        SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        boolean result = tested.process(new PageViewTelemetry());
+  @Test
+  public void testEmptySources() throws Throwable {
+    SyntheticSourceFilter tested = new SyntheticSourceFilter();
+    boolean result = tested.process(new PageViewTelemetry());
 
-        assertTrue(result);
-    }
+    assertTrue(result);
+  }
 
-    @Test
-    public void testNullTelemetry() throws Throwable {
-        SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        boolean result = tested.process(null);
+  @Test
+  public void testNullTelemetry() throws Throwable {
+    SyntheticSourceFilter tested = new SyntheticSourceFilter();
+    boolean result = tested.process(null);
 
-        assertTrue(result);
-    }
+    assertTrue(result);
+  }
 
+  @Test
+  public void testOneSourceThatIsFound() throws Throwable {
+    SyntheticSourceFilter tested = new SyntheticSourceFilter();
+    Telemetry telemetry = new PageViewTelemetry();
+    telemetry.getContext().getOperation().setSyntheticSource("A");
+    boolean result = tested.process(telemetry);
 
-    @Test
-    public void testOneSourceThatIsFound() throws Throwable {
-        SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        Telemetry telemetry = new PageViewTelemetry();
-        telemetry.getContext().getOperation().setSyntheticSource("A");
-        boolean result = tested.process(telemetry);
+    assertFalse(result);
+  }
 
-        assertFalse(result);
-    }
+  @Test
+  public void testSourcesThatIsDeclaredAndFound() throws Throwable {
+    SyntheticSourceFilter tested = new SyntheticSourceFilter();
+    tested.setNotNeededSources("A, B");
+    Telemetry telemetry = new PageViewTelemetry();
+    telemetry.getContext().getOperation().setSyntheticSource("A");
+    boolean result = tested.process(telemetry);
 
-    @Test
-    public void testSourcesThatIsDeclaredAndFound() throws Throwable {
-        SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        tested.setNotNeededSources("A, B");
-        Telemetry telemetry = new PageViewTelemetry();
-        telemetry.getContext().getOperation().setSyntheticSource("A");
-        boolean result = tested.process(telemetry);
+    assertFalse(result);
+  }
 
-        assertFalse(result);
-    }
+  @Test
+  public void testSourcesThatIsDeclaredAndNOTFound() throws Throwable {
+    SyntheticSourceFilter tested = new SyntheticSourceFilter();
+    tested.setNotNeededSources("A, B");
+    Telemetry telemetry = new PageViewTelemetry();
+    telemetry.getContext().getOperation().setSyntheticSource("A1");
+    boolean result = tested.process(telemetry);
 
-    @Test
-    public void testSourcesThatIsDeclaredAndNOTFound() throws Throwable {
-        SyntheticSourceFilter tested = new SyntheticSourceFilter();
-        tested.setNotNeededSources("A, B");
-        Telemetry telemetry = new PageViewTelemetry();
-        telemetry.getContext().getOperation().setSyntheticSource("A1");
-        boolean result = tested.process(telemetry);
-
-        assertTrue(result);
-    }
+    assertTrue(result);
+  }
 }

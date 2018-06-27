@@ -21,132 +21,137 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-
-import com.google.common.base.Strings;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class supplies the overall cpu usage of the machine.
  *
- * Created by gupele on 3/8/2015.
+ * <p>Created by gupele on 3/8/2015.
  */
 final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounter {
-    private final static String STAT_FILE = "/proc/stat";
+  private static final String STAT_FILE = "/proc/stat";
 
-    private long[] prevCpuCounters;
-    private long prevTotalCpuValue;
+  private long[] prevCpuCounters;
+  private long prevTotalCpuValue;
 
-    public UnixTotalCpuPerformanceCounter() {
-        super(STAT_FILE);
-        prevCpuCounters = null;
-    }
+  public UnixTotalCpuPerformanceCounter() {
+    super(STAT_FILE);
+    prevCpuCounters = null;
+  }
 
-    @Override
-    public String getId() {
-        return Constants.TOTAL_CPU_PC_ID;
-    }
+  @Override
+  public String getId() {
+    return Constants.TOTAL_CPU_PC_ID;
+  }
 
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        String line = getLineOfData();
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    String line = getLineOfData();
 
-        if (!Strings.isNullOrEmpty(line)) {
-            String[] rawStringValues = line.split(" ");
+    if (!Strings.isNullOrEmpty(line)) {
+      String[] rawStringValues = line.split(" ");
 
-            ArrayList<String> stringValues = new ArrayList<String>(rawStringValues.length - 1);
-            for (int i = 1; i < rawStringValues.length; ++i) {
-                String stringValue = rawStringValues[i];
-                if (Strings.isNullOrEmpty(stringValue)) {
-                    continue;
-                }
-
-                stringValues.add(stringValue);
-            }
-
-            String[] array = stringValues.toArray(new String[stringValues.size()]);
-
-            if (prevCpuCounters == null) {
-                getCountersForTheFirstTime(array);
-                return;
-            }
-
-            double totalCpuUsage = calculateTotalCpuUsage(array);
-
-            InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s %s: %s", Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, Constants.INSTANCE_NAME_TOTAL, totalCpuUsage);
-            Telemetry telemetry = new PerformanceCounterTelemetry(
-                    Constants.TOTAL_CPU_PC_CATEGORY_NAME,
-                    Constants.CPU_PC_COUNTER_NAME,
-                    Constants.INSTANCE_NAME_TOTAL,
-                    totalCpuUsage);
-
-            telemetryClient.track(telemetry);
+      ArrayList<String> stringValues = new ArrayList<String>(rawStringValues.length - 1);
+      for (int i = 1; i < rawStringValues.length; ++i) {
+        String stringValue = rawStringValues[i];
+        if (Strings.isNullOrEmpty(stringValue)) {
+          continue;
         }
+
+        stringValues.add(stringValue);
+      }
+
+      String[] array = stringValues.toArray(new String[stringValues.size()]);
+
+      if (prevCpuCounters == null) {
+        getCountersForTheFirstTime(array);
+        return;
+      }
+
+      double totalCpuUsage = calculateTotalCpuUsage(array);
+
+      InternalLogger.INSTANCE.trace(
+          "Sending Performance Counter: %s %s %s: %s",
+          Constants.TOTAL_CPU_PC_CATEGORY_NAME,
+          Constants.CPU_PC_COUNTER_NAME,
+          Constants.INSTANCE_NAME_TOTAL,
+          totalCpuUsage);
+      Telemetry telemetry =
+          new PerformanceCounterTelemetry(
+              Constants.TOTAL_CPU_PC_CATEGORY_NAME,
+              Constants.CPU_PC_COUNTER_NAME,
+              Constants.INSTANCE_NAME_TOTAL,
+              totalCpuUsage);
+
+      telemetryClient.track(telemetry);
     }
+  }
 
-    private String getLineOfData() {
-        BufferedReader bufferedReader = null;
+  private String getLineOfData() {
+    BufferedReader bufferedReader = null;
 
-        String line = null;
+    String line = null;
+    try {
+      bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
+      line = bufferedReader.readLine();
+    } catch (Exception e) {
+      logPerfCounterErrorError("Error while parsing file: '%s'", e.toString());
+      InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+    } finally {
+      if (bufferedReader != null) {
         try {
-            bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
-            line = bufferedReader.readLine();
+          bufferedReader.close();
         } catch (Exception e) {
-            logPerfCounterErrorError("Error while parsing file: '%s'", e.toString());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-        } finally {
-            if (bufferedReader != null ) {
-                try {
-                    bufferedReader.close();
-                } catch (Exception e) {
-                    logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-                }
-            }
+          logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
+          InternalLogger.INSTANCE.trace(
+              "Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
-
-        return line;
+      }
     }
 
-    private void getCountersForTheFirstTime(String[] stringValues) {
-        prevCpuCounters = new long[stringValues.length];
-        prevTotalCpuValue = 0;
-        for (int i = 0; i < stringValues.length; ++i) {
-            String stringValue = stringValues[i];
-            long value = Long.parseLong(stringValue);
-            prevCpuCounters[i] = value;
-            prevTotalCpuValue += value;
-        }
+    return line;
+  }
+
+  private void getCountersForTheFirstTime(String[] stringValues) {
+    prevCpuCounters = new long[stringValues.length];
+    prevTotalCpuValue = 0;
+    for (int i = 0; i < stringValues.length; ++i) {
+      String stringValue = stringValues[i];
+      long value = Long.parseLong(stringValue);
+      prevCpuCounters[i] = value;
+      prevTotalCpuValue += value;
+    }
+  }
+
+  private double calculateTotalCpuUsage(String[] stringValues) {
+    long[] cpuCounters = new long[stringValues.length];
+    long totalCpuValue = 0;
+    double diffIdle = 0.0;
+    for (int i = 0; i < stringValues.length; ++i) {
+      String stringValue = stringValues[i];
+      long value = Long.parseLong(stringValue);
+      cpuCounters[i] = value - prevCpuCounters[i];
+      prevCpuCounters[i] = value;
+
+      totalCpuValue += value;
+      if (i == 3) {
+        diffIdle = cpuCounters[i];
+      }
     }
 
-    private double calculateTotalCpuUsage(String[] stringValues) {
-        long[] cpuCounters = new long[stringValues.length];
-        long totalCpuValue = 0;
-        double diffIdle = 0.0;
-        for (int i = 0; i < stringValues.length; ++i) {
-            String stringValue = stringValues[i];
-            long value = Long.parseLong(stringValue);
-            cpuCounters[i] = value - prevCpuCounters[i];
-            prevCpuCounters[i] = value;
+    double totalDiff = totalCpuValue - prevTotalCpuValue;
+    double result = 100 * ((totalDiff - diffIdle) / (totalDiff));
 
-            totalCpuValue += value;
-            if (i == 3) {
-                diffIdle = cpuCounters[i];
-            }
-        }
+    prevTotalCpuValue = totalCpuValue;
 
-        double totalDiff = totalCpuValue - prevTotalCpuValue;
-        double result = 100 * ((totalDiff - diffIdle) / (totalDiff));
-
-        prevTotalCpuValue = totalCpuValue;
-
-        return result;
-    }
+    return result;
+  }
 }

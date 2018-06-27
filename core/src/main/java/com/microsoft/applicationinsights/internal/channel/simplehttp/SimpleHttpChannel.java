@@ -21,17 +21,15 @@
 
 package com.microsoft.applicationinsights.internal.channel.simplehttp;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -40,94 +38,74 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-/**
- * A simple HTTP channel, using no buffering, batching, or asynchrony.
- */
-final class SimpleHttpChannel implements TelemetryChannel
-{
-    private final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
+/** A simple HTTP channel, using no buffering, batching, or asynchrony. */
+final class SimpleHttpChannel implements TelemetryChannel {
+  private static final String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
+  private boolean developerMode = false;
 
-    @Override
-    public boolean isDeveloperMode()
-    {
-        return developerMode;
-    }
+  public SimpleHttpChannel(Map<String, String> namesAndValues) {}
 
-    @Override
-    public void setDeveloperMode(boolean value)
-    {
-        developerMode = value;
-    }
+  @Override
+  public boolean isDeveloperMode() {
+    return developerMode;
+  }
 
-    public SimpleHttpChannel(Map<String, String> namesAndValues) {
-    }
+  @Override
+  public void setDeveloperMode(boolean value) {
+    developerMode = value;
+  }
 
-    @Override
-    public void send(Telemetry item)
-    {
-        try
-        {
-            // Establish the payload.
-            StringWriter writer = new StringWriter();
-//            item.serialize(new JsonWriter(writer));
-            item.serialize(new JsonTelemetryDataSerializer(writer));
+  @Override
+  public void send(Telemetry item) {
+    try {
+      // Establish the payload.
+      StringWriter writer = new StringWriter();
+      //            item.serialize(new JsonWriter(writer));
+      item.serialize(new JsonTelemetryDataSerializer(writer));
 
-            // Send it.
+      // Send it.
 
-            String payload = writer.toString();
+      String payload = writer.toString();
 
-            if (developerMode) {
-                InternalLogger.INSTANCE.trace("SimpleHttpChannel, payload: %s", payload);
-            }
+      if (developerMode) {
+        InternalLogger.INSTANCE.trace("SimpleHttpChannel, payload: %s", payload);
+      }
 
-            HttpPost request = new HttpPost(DEFAULT_SERVER_URI);
-            StringEntity body = new StringEntity(payload, ContentType.create("application/x-json-stream"));
-            request.setEntity(body);
+      HttpPost request = new HttpPost(DEFAULT_SERVER_URI);
+      StringEntity body =
+          new StringEntity(payload, ContentType.create("application/x-json-stream"));
+      request.setEntity(body);
 
-            CloseableHttpClient httpClient = HttpClients.createDefault();
+      CloseableHttpClient httpClient = HttpClients.createDefault();
 
-            CloseableHttpResponse response = null;
-            try
-            {
-                response = httpClient.execute(request);
-                HttpEntity respEntity = response.getEntity();
-                if (respEntity != null)
-                    respEntity.getContent().close();
+      CloseableHttpResponse response = null;
+      try {
+        response = httpClient.execute(request);
+        HttpEntity respEntity = response.getEntity();
+        if (respEntity != null) respEntity.getContent().close();
 
-                if (developerMode) {
-                    InternalLogger.INSTANCE.trace("SimpleHttpChannel, response: %s", response.getStatusLine());
-                }
-            }
-            catch (IOException ioe)
-            {
-                try
-                {
-                    if (response != null)
-                    {
-                        response.close();
-                    }
-                }
-                catch (IOException ioeIn)
-                {
-                }
-            }
+        if (developerMode) {
+          InternalLogger.INSTANCE.trace(
+              "SimpleHttpChannel, response: %s", response.getStatusLine());
         }
-        catch (IOException ioe)
-        {
+      } catch (IOException ioe) {
+        try {
+          if (response != null) {
+            response.close();
+          }
+        } catch (IOException ioeIn) {
         }
+      }
+    } catch (IOException ioe) {
     }
+  }
 
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-    }
+  @Override
+  public void stop(long timeout, TimeUnit timeUnit) {}
 
-    @Override
-    public void flush() {
-    }
+  @Override
+  public void flush() {}
 
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
-    }
-
-    private boolean developerMode = false;
+  @Override
+  public void setSampler(TelemetrySampler telemetrySampler) {}
 }

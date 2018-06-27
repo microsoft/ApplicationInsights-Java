@@ -23,109 +23,106 @@ package com.microsoft.applicationinsights.internal.processor;
 
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import java.net.URI;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.net.URI;
-
-/**
- * Created by gupele on 7/26/2016.
- */
+/** Created by gupele on 7/26/2016. */
 public class PageViewTelemetryFilterTest {
 
-    @Test
-    public void testProcessNotPageViewTelemetry() throws Exception {
-        PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
-        boolean result = tested.process(new MetricTelemetry());
-        Assert.assertTrue(result);
+  @Test
+  public void testProcessNotPageViewTelemetry() throws Exception {
+    PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
+    boolean result = tested.process(new MetricTelemetry());
+    Assert.assertTrue(result);
+  }
+
+  @Test
+  public void testProcessWithNull() throws Throwable {
+    PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
+    boolean result = tested.process(null);
+    Assert.assertTrue(result);
+  }
+
+  @Test
+  public void testSetNotNeededNames() throws Throwable {
+    PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
+    tested.setNotNeededNames("1, 2   , 3,4");
+
+    PageViewTelemetry pvt = new PageViewTelemetry();
+    pvt.setUrl(new URI("http://www.microsoft.com/"));
+
+    for (int i = 1; i < 5; ++i) {
+      pvt.setName(String.valueOf(i));
+      boolean result = tested.process(pvt);
+      Assert.assertFalse(result);
     }
+  }
 
-    @Test
-    public void testProcessWithNull() throws Throwable {
-        PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
-        boolean result = tested.process(null);
-        Assert.assertTrue(result);
-    }
+  @Test
+  public void testSetNotNeededUrls() throws Throwable {
+    PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
+    tested.setNotNeededUrls("url1, url2/2, url3,url4");
+    PageViewTelemetry pvt = new PageViewTelemetry();
 
-    @Test
-    public void testSetNotNeededNames() throws Throwable {
-        PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
-        tested.setNotNeededNames("1, 2   , 3,4");
+    pvt.setUrl(new URI("http://wwww.url1.com/asdf"));
+    boolean result = tested.process(pvt);
+    Assert.assertFalse(result);
 
-        PageViewTelemetry pvt = new PageViewTelemetry();
-        pvt.setUrl(new URI("http://www.microsoft.com/"));
+    pvt.setUrl(new URI("http://www.aaa.com/asdf/url2/2/a"));
+    result = tested.process(pvt);
+    Assert.assertFalse(result);
 
-        for (int i = 1; i < 5; ++i) {
-            pvt.setName(String.valueOf(i));
-            boolean result = tested.process(pvt);
-            Assert.assertFalse(result);
-        }
-    }
+    pvt.setUrl(new URI("http://www.aaa.com/asdf/url32/2/a"));
+    result = tested.process(pvt);
+    Assert.assertFalse(result);
 
-    @Test
-    public void testSetNotNeededUrls() throws Throwable {
-        PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
-        tested.setNotNeededUrls("url1, url2/2, url3,url4");
-        PageViewTelemetry pvt = new PageViewTelemetry();
+    pvt.setUrl(new URI("http://www.aaa.com/asdf/url4/2/a"));
+    result = tested.process(pvt);
+    Assert.assertFalse(result);
 
-        pvt.setUrl(new URI("http://wwww.url1.com/asdf"));
-        boolean result = tested.process(pvt);
-        Assert.assertFalse(result);
+    pvt.setUrl(new URI("http://www.aaa.com/asdf/url5/2/a"));
+    result = tested.process(pvt);
+    Assert.assertTrue(result);
+  }
 
-        pvt.setUrl(new URI("http://www.aaa.com/asdf/url2/2/a"));
-        result = tested.process(pvt);
-        Assert.assertFalse(result);
+  @Test
+  public void testSetDuration() throws Exception {
+    PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
+    tested.setDurationThresholdInMS("1000");
+    PageViewTelemetry pvt = new PageViewTelemetry();
+    pvt.setUrl(new URI("http://www.microsoft.com/"));
 
-        pvt.setUrl(new URI("http://www.aaa.com/asdf/url32/2/a"));
-        result = tested.process(pvt);
-        Assert.assertFalse(result);
+    pvt.setDuration(1000);
+    boolean result = tested.process(pvt);
+    Assert.assertTrue(result);
 
-        pvt.setUrl(new URI("http://www.aaa.com/asdf/url4/2/a"));
-        result = tested.process(pvt);
-        Assert.assertFalse(result);
+    pvt.setDuration(1001);
+    result = tested.process(pvt);
+    Assert.assertTrue(result);
 
-        pvt.setUrl(new URI("http://www.aaa.com/asdf/url5/2/a"));
-        result = tested.process(pvt);
-        Assert.assertTrue(result);
-    }
+    pvt.setDuration(999);
+    result = tested.process(pvt);
+    Assert.assertFalse(result);
+  }
 
-    @Test
-    public void testSetDuration() throws Exception {
-        PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
-        tested.setDurationThresholdInMS("1000");
-        PageViewTelemetry pvt = new PageViewTelemetry();
-        pvt.setUrl(new URI("http://www.microsoft.com/"));
+  @Test
+  public void testSetBadDuration() throws Exception {
+    PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
+    tested.setDurationThresholdInMS("1000");
+    PageViewTelemetry pvt = new PageViewTelemetry();
+    pvt.setUrl(new URI("http://www.microsoft.com/"));
+    pvt.setDuration(1000);
 
-        pvt.setDuration(1000);
-        boolean result = tested.process(pvt);
-        Assert.assertTrue(result);
+    boolean result = tested.process(pvt);
+    Assert.assertTrue(result);
 
-        pvt.setDuration(1001);
-        result = tested.process(pvt);
-        Assert.assertTrue(result);
+    pvt.setDuration(1001);
+    result = tested.process(pvt);
+    Assert.assertTrue(result);
 
-        pvt.setDuration(999);
-        result = tested.process(pvt);
-        Assert.assertFalse(result);
-    }
-
-    @Test
-    public void testSetBadDuration() throws Exception {
-        PageViewTelemetryFilter tested = new PageViewTelemetryFilter();
-        tested.setDurationThresholdInMS("1000");
-        PageViewTelemetry pvt = new PageViewTelemetry();
-        pvt.setUrl(new URI("http://www.microsoft.com/"));
-        pvt.setDuration(1000);
-
-        boolean result = tested.process(pvt);
-        Assert.assertTrue(result);
-
-        pvt.setDuration(1001);
-        result = tested.process(pvt);
-        Assert.assertTrue(result);
-
-        pvt.setDuration(999);
-        result = tested.process(pvt);
-        Assert.assertFalse(result);
-    }
+    pvt.setDuration(999);
+    result = tested.process(pvt);
+    Assert.assertFalse(result);
+  }
 }

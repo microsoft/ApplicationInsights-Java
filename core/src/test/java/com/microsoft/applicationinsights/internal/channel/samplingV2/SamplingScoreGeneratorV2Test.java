@@ -3,90 +3,112 @@ package com.microsoft.applicationinsights.internal.channel.samplingV2;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class SamplingScoreGeneratorV2Test {
 
-    private static Random random = new Random();
+  private static Random random = new Random();
 
-    @Test
-    public void samplingScoreGeneratedUsingOperationIdIfPresent() {
-
-        String operationId = generateRandomOperationId();
-
-        Telemetry eventTelemetry = new EventTelemetry();
-        eventTelemetry.getContext().getOperation().setId(operationId);
-
-        Telemetry requestTelemetry = new RequestTelemetry();
-        requestTelemetry.getContext().getOperation().setId(operationId);
-
-        double eventTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(eventTelemetry);
-        double requestTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(requestTelemetry);
-
-        Assert.assertEquals(eventTelemetrySamplingScore, requestTelemetrySamplingScore, 0.0);
+  private static String generateRandomUserId() {
+    int max = 12;
+    int min = 3;
+    int userIdLength = getRandomInRange(min, max);
+    StringBuffer userId = new StringBuffer();
+    for (int i = 0; i < userIdLength; ++i) {
+      userId.append((char) ('a' + getRandomInRange(0, 25)));
     }
+    return userId.toString();
+  }
 
-    @Test
-    public void samplingScoreIsNotAffectedByPresenceOfUserId() {
+  private static String generateRandomOperationId() {
+    return String.valueOf(random.nextLong());
+  }
 
-        String userId1 = generateRandomUserId();
-        String userId2 = generateRandomUserId();
-        String operationId = generateRandomOperationId();
+  private static int getRandomInRange(int min, int max) {
+    return random.nextInt((max - min) + 1) + min;
+  }
 
-        Telemetry eventTelemetry = new EventTelemetry();
-        eventTelemetry.getContext().getUser().setId(userId1);
-        eventTelemetry.getContext().getOperation().setId(operationId);
+  @Test
+  public void samplingScoreGeneratedUsingOperationIdIfPresent() {
 
-        Telemetry requestTelemetry = new RequestTelemetry();
-        requestTelemetry.getContext().getUser().setId(userId2);
-        requestTelemetry.getContext().getOperation().setId(operationId);
+    String operationId = generateRandomOperationId();
 
-        double eventTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(eventTelemetry);
-        double requestTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(requestTelemetry);
+    Telemetry eventTelemetry = new EventTelemetry();
+    eventTelemetry.getContext().getOperation().setId(operationId);
 
-        Assert.assertEquals(eventTelemetrySamplingScore, requestTelemetrySamplingScore, 0.0);
+    Telemetry requestTelemetry = new RequestTelemetry();
+    requestTelemetry.getContext().getOperation().setId(operationId);
 
-    }
+    double eventTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(eventTelemetry);
+    double requestTelemetrySamplingScore =
+        SamplingScoreGeneratorV2.getSamplingScore(requestTelemetry);
 
-    @Test
-    public void samplingScoreIsRandomIfOperationIdIsNotPresent() {
+    Assert.assertEquals(eventTelemetrySamplingScore, requestTelemetrySamplingScore, 0.0);
+  }
 
-        Telemetry eventTelemetry = new EventTelemetry();
-        Telemetry requestTelemetry = new RequestTelemetry();
-        double eventTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(eventTelemetry);
-        double requestTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(requestTelemetry);
-        Assert.assertNotEquals(eventTelemetrySamplingScore, requestTelemetrySamplingScore, 0.0);
+  @Test
+  public void samplingScoreIsNotAffectedByPresenceOfUserId() {
 
-    }
+    String userId1 = generateRandomUserId();
+    String userId2 = generateRandomUserId();
+    String operationId = generateRandomOperationId();
 
-    @Test
-    public void samplingScoreIsRandomIfUserIdIsPresentWithoutOperationId() {
+    Telemetry eventTelemetry = new EventTelemetry();
+    eventTelemetry.getContext().getUser().setId(userId1);
+    eventTelemetry.getContext().getOperation().setId(operationId);
 
-        String userId = generateRandomUserId();
-        Telemetry eventTelemetry = new EventTelemetry();
-        eventTelemetry.getContext().getUser().setId(userId);
+    Telemetry requestTelemetry = new RequestTelemetry();
+    requestTelemetry.getContext().getUser().setId(userId2);
+    requestTelemetry.getContext().getOperation().setId(operationId);
 
-        Telemetry requestTelemetry = new RequestTelemetry();
-        requestTelemetry.getContext().getUser().setId(userId);
+    double eventTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(eventTelemetry);
+    double requestTelemetrySamplingScore =
+        SamplingScoreGeneratorV2.getSamplingScore(requestTelemetry);
 
-        double eventTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(eventTelemetry);
-        double requestTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(requestTelemetry);
-        Assert.assertNotEquals(eventTelemetrySamplingScore, requestTelemetrySamplingScore, 0.0);
-    }
+    Assert.assertEquals(eventTelemetrySamplingScore, requestTelemetrySamplingScore, 0.0);
+  }
 
-    @Test
-    public void stringSamplingHashCodeProducesConsistentValues() {
+  @Test
+  public void samplingScoreIsRandomIfOperationIdIsNotPresent() {
 
-        // we have a predefined set of strings and their hash values
-        // the test allows us to make sure we can produce the same hashing
-        // results in different versions of sdk
+    Telemetry eventTelemetry = new EventTelemetry();
+    Telemetry requestTelemetry = new RequestTelemetry();
+    double eventTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(eventTelemetry);
+    double requestTelemetrySamplingScore =
+        SamplingScoreGeneratorV2.getSamplingScore(requestTelemetry);
+    Assert.assertNotEquals(eventTelemetrySamplingScore, requestTelemetrySamplingScore, 0.0);
+  }
 
-        Map<String, Integer> stringHashMap = new HashMap<String, Integer>() {{
+  @Test
+  public void samplingScoreIsRandomIfUserIdIsPresentWithoutOperationId() {
+
+    String userId = generateRandomUserId();
+    Telemetry eventTelemetry = new EventTelemetry();
+    eventTelemetry.getContext().getUser().setId(userId);
+
+    Telemetry requestTelemetry = new RequestTelemetry();
+    requestTelemetry.getContext().getUser().setId(userId);
+
+    double eventTelemetrySamplingScore = SamplingScoreGeneratorV2.getSamplingScore(eventTelemetry);
+    double requestTelemetrySamplingScore =
+        SamplingScoreGeneratorV2.getSamplingScore(requestTelemetry);
+    Assert.assertNotEquals(eventTelemetrySamplingScore, requestTelemetrySamplingScore, 0.0);
+  }
+
+  @Test
+  public void stringSamplingHashCodeProducesConsistentValues() {
+
+    // we have a predefined set of strings and their hash values
+    // the test allows us to make sure we can produce the same hashing
+    // results in different versions of sdk
+
+    Map<String, Integer> stringHashMap =
+        new HashMap<String, Integer>() {
+          {
             put("ss", 1179811869);
             put("kxi", 168993463);
             put("wr", 1281077591);
@@ -127,33 +149,12 @@ public class SamplingScoreGeneratorV2Test {
             put("lisvmmug", 822987687);
             put("mmntilfbmxwuyij", 882214597);
             put("hqmyv", 1510970959);
-        }};
+          }
+        };
 
-        for (String key : stringHashMap.keySet()) {
-            int calculatedHash = SamplingScoreGeneratorV2.getSamplingHashCode(key);
-            Assert.assertTrue(stringHashMap.get(key) == calculatedHash);
-        }
-
+    for (String key : stringHashMap.keySet()) {
+      int calculatedHash = SamplingScoreGeneratorV2.getSamplingHashCode(key);
+      Assert.assertTrue(stringHashMap.get(key) == calculatedHash);
     }
-
-    private static String generateRandomUserId() {
-        int max = 12;
-        int min = 3;
-        int userIdLength = getRandomInRange(min, max);
-        StringBuffer userId = new StringBuffer();
-        for (int i = 0; i < userIdLength; ++i) {
-            userId.append((char)('a' + getRandomInRange(0, 25)));
-        }
-        return userId.toString();
-
-    }
-
-    private static String generateRandomOperationId() {
-        return String.valueOf(random.nextLong());
-    }
-
-
-    private static int getRandomInRange(int min, int max) {
-        return random.nextInt((max - min) + 1) + min;
-    }
+  }
 }

@@ -21,11 +21,9 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-/**
- * Created by gupele on 11/2/2016.
- */
+/** Created by gupele on 11/2/2016. */
 public interface SupportSampling {
-    Double getSamplingPercentage();
+  Double getSamplingPercentage();
 
-    void setSamplingPercentage(Double samplingPercentage);
+  void setSamplingPercentage(Double samplingPercentage);
 }

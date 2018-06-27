@@ -21,106 +21,119 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 public final class PerformanceCounterTelemetryTest {
-    private final static String MOCK_CATEGORY = "Mock_Category";
-    private final static String MOCK_COUNTER = "Mock_Counter";
-    private final static String MOCK_INSTANCE = "Mock_Instance";
-    private final static double MOCK_VALUE = 222.1;
+  private static final String MOCK_CATEGORY = "Mock_Category";
+  private static final String MOCK_COUNTER = "Mock_Counter";
+  private static final String MOCK_INSTANCE = "Mock_Instance";
+  private static final double MOCK_VALUE = 222.1;
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNullCategoryName() throws IOException {
-        new PerformanceCounterTelemetry(null, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
-    }
+  private static void verifyJson(
+      PerformanceCounterTelemetry telemetry,
+      String expectedCategory,
+      String expectedCounter,
+      String expectedInstance,
+      double expectedValue)
+      throws IOException {
+    telemetry.setTimestamp(new Date());
+    StringWriter writer = new StringWriter();
+    JsonTelemetryDataSerializer jsonWriter = null;
+    jsonWriter = new JsonTelemetryDataSerializer(writer);
+    telemetry.serialize(jsonWriter);
+    jsonWriter.close();
+    String asJson = writer.toString();
+    String expectedPerformanceDataPartFormat =
+        "\"baseData\":{\"ver\":2,\"categoryName\":\"%s\",\"counterName\":\"%s\",\"instanceName\":\"%s\",\"value\":%.1f,\"properties\":null}}}";
+    String expected =
+        String.format(
+            expectedPerformanceDataPartFormat,
+            expectedCategory,
+            expectedCounter,
+            expectedInstance,
+            expectedValue);
+    assertTrue(asJson.indexOf(expected) != -1);
+  }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testEmptyCategoryName() throws IOException {
-        new PerformanceCounterTelemetry("", MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testNullCategoryName() throws IOException {
+    new PerformanceCounterTelemetry(null, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+  }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNullCounterName() throws IOException {
-        new PerformanceCounterTelemetry(MOCK_CATEGORY, null, MOCK_INSTANCE, MOCK_VALUE);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyCategoryName() throws IOException {
+    new PerformanceCounterTelemetry("", MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+  }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testEmptyCounterName() throws IOException {
-        new PerformanceCounterTelemetry(MOCK_CATEGORY, "", MOCK_INSTANCE, MOCK_VALUE);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testNullCounterName() throws IOException {
+    new PerformanceCounterTelemetry(MOCK_CATEGORY, null, MOCK_INSTANCE, MOCK_VALUE);
+  }
 
-    @Test
-    public void testStateAfterCtor() throws IOException {
-        PerformanceCounterTelemetry telemetry = new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyCounterName() throws IOException {
+    new PerformanceCounterTelemetry(MOCK_CATEGORY, "", MOCK_INSTANCE, MOCK_VALUE);
+  }
 
-        assertEquals(MOCK_CATEGORY, telemetry.getCategoryName());
-        assertEquals(MOCK_COUNTER, telemetry.getCounterName());
-        assertEquals(MOCK_INSTANCE, telemetry.getInstanceName());
-        assertEquals(MOCK_VALUE, telemetry.getValue(), 0.0);
-        verifyJson(telemetry, MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
-    }
+  @Test
+  public void testStateAfterCtor() throws IOException {
+    PerformanceCounterTelemetry telemetry =
+        new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
 
-    @Test
-    public void testCategoryName() throws IOException {
-        PerformanceCounterTelemetry telemetry = new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+    assertEquals(MOCK_CATEGORY, telemetry.getCategoryName());
+    assertEquals(MOCK_COUNTER, telemetry.getCounterName());
+    assertEquals(MOCK_INSTANCE, telemetry.getInstanceName());
+    assertEquals(MOCK_VALUE, telemetry.getValue(), 0.0);
+    verifyJson(telemetry, MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+  }
 
-        String newValue = MOCK_CATEGORY + "new";
-        telemetry.setCategoryName(newValue);
-        assertEquals(newValue, telemetry.getCategoryName());
-        verifyJson(telemetry, newValue, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
-    }
+  @Test
+  public void testCategoryName() throws IOException {
+    PerformanceCounterTelemetry telemetry =
+        new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
 
-    @Test
-    public void testCounterName() throws IOException {
-        PerformanceCounterTelemetry telemetry = new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+    String newValue = MOCK_CATEGORY + "new";
+    telemetry.setCategoryName(newValue);
+    assertEquals(newValue, telemetry.getCategoryName());
+    verifyJson(telemetry, newValue, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+  }
 
-        String newValue = MOCK_COUNTER + "new";
-        telemetry.setCounterName(newValue);
-        assertEquals(newValue, telemetry.getCounterName());
-        verifyJson(telemetry, MOCK_CATEGORY, newValue, MOCK_INSTANCE, MOCK_VALUE);
-    }
+  @Test
+  public void testCounterName() throws IOException {
+    PerformanceCounterTelemetry telemetry =
+        new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
 
-    @Test
-    public void testInstanceName() throws IOException {
-        PerformanceCounterTelemetry telemetry = new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+    String newValue = MOCK_COUNTER + "new";
+    telemetry.setCounterName(newValue);
+    assertEquals(newValue, telemetry.getCounterName());
+    verifyJson(telemetry, MOCK_CATEGORY, newValue, MOCK_INSTANCE, MOCK_VALUE);
+  }
 
-        String newValue = MOCK_INSTANCE + "new";
-        telemetry.setInstanceName(newValue);
-        assertEquals(newValue, telemetry.getInstanceName());
-        verifyJson(telemetry, MOCK_CATEGORY, MOCK_COUNTER, newValue, MOCK_VALUE);
-    }
+  @Test
+  public void testInstanceName() throws IOException {
+    PerformanceCounterTelemetry telemetry =
+        new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
 
-    @Test
-    public void testValue() throws IOException {
-        PerformanceCounterTelemetry telemetry = new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
+    String newValue = MOCK_INSTANCE + "new";
+    telemetry.setInstanceName(newValue);
+    assertEquals(newValue, telemetry.getInstanceName());
+    verifyJson(telemetry, MOCK_CATEGORY, MOCK_COUNTER, newValue, MOCK_VALUE);
+  }
 
-        double newValue = MOCK_VALUE + 1;
-        telemetry.setValue(newValue);
-        assertEquals(newValue, telemetry.getValue(), 0.0);
-        verifyJson(telemetry, MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, newValue);
-    }
+  @Test
+  public void testValue() throws IOException {
+    PerformanceCounterTelemetry telemetry =
+        new PerformanceCounterTelemetry(MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, MOCK_VALUE);
 
-    private static void verifyJson(
-            PerformanceCounterTelemetry telemetry,
-            String expectedCategory,
-            String expectedCounter,
-            String expectedInstance,
-            double expectedValue) throws IOException {
-        telemetry.setTimestamp(new Date());
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = null;
-        jsonWriter = new JsonTelemetryDataSerializer(writer);
-        telemetry.serialize(jsonWriter);
-        jsonWriter.close();
-        String asJson = writer.toString();
-        String expectedPerformanceDataPartFormat = "\"baseData\":{\"ver\":2,\"categoryName\":\"%s\",\"counterName\":\"%s\",\"instanceName\":\"%s\",\"value\":%.1f,\"properties\":null}}}";
-        String expected = String.format(expectedPerformanceDataPartFormat, expectedCategory, expectedCounter, expectedInstance, expectedValue);
-        assertTrue(asJson.indexOf(expected) != -1);
-    }
+    double newValue = MOCK_VALUE + 1;
+    telemetry.setValue(newValue);
+    assertEquals(newValue, telemetry.getValue(), 0.0);
+    verifyJson(telemetry, MOCK_CATEGORY, MOCK_COUNTER, MOCK_INSTANCE, newValue);
+  }
 }

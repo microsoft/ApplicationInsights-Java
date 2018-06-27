@@ -21,12 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -34,139 +28,150 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * The class can filter out RequestTelemetries that
- * have a duration which is less than a predefined value
- * have http codes that are not needed based on configuration
- * <p>
- * Illegal value will prevent from the filter from being used.
- * <p>
- * Created by gupele on 7/26/2016.
+ * The class can filter out RequestTelemetries that have a duration which is less than a predefined
+ * value have http codes that are not needed based on configuration
+ *
+ * <p>Illegal value will prevent from the filter from being used.
+ *
+ * <p>Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("RequestTelemetryFilter")
 public final class RequestTelemetryFilter implements TelemetryProcessor {
-    private final class FromTo {
-        public final int from;
-        public final int to;
+  private final Set<String> exactBadResponseCodes = new HashSet<String>();
+  private final List<FromTo> ignoredResponseCodeRange = new ArrayList<FromTo>();
+  private long minimumDurationInMS = 0;
+  private boolean hasBlocked;
+  public RequestTelemetryFilter() {}
 
-        private FromTo(int from, int to) {
-            this.from = from;
-            this.to = to;
-        }
+  @Override
+  public boolean process(Telemetry telemetry) {
+    if (telemetry == null) {
+      return true;
     }
 
-    private long minimumDurationInMS = 0;
-    private boolean hasBlocked;
-    private final Set<String> exactBadResponseCodes = new HashSet<String>();
-    private final List<FromTo> ignoredResponseCodeRange = new ArrayList<FromTo>();
-
-    public RequestTelemetryFilter() {
+    if (!hasBlocked && minimumDurationInMS <= 0) {
+      return true;
     }
 
-    @Override
-    public boolean process(Telemetry telemetry) {
-        if (telemetry == null) {
-            return true;
+    if (telemetry instanceof RequestTelemetry) {
+      RequestTelemetry requestTelemetry = (RequestTelemetry) telemetry;
+      String responseCode = requestTelemetry.getResponseCode();
+
+      if (exactBadResponseCodes.contains(requestTelemetry.getResponseCode())) {
+        return false;
+      }
+
+      int asInt = Integer.valueOf(responseCode);
+      for (FromTo fromTo : ignoredResponseCodeRange) {
+        if (fromTo.from <= asInt && fromTo.to >= asInt) {
+          return false;
         }
+      }
 
-        if (!hasBlocked && minimumDurationInMS <= 0) {
-            return true;
-        }
+      Duration requestDuration = requestTelemetry.getDuration();
+      if (requestDuration != null && requestDuration.getTotalMilliseconds() < minimumDurationInMS) {
+        return false;
+      }
 
-        if (telemetry instanceof RequestTelemetry) {
-            RequestTelemetry requestTelemetry = (RequestTelemetry) telemetry;
-            String responseCode = requestTelemetry.getResponseCode();
-
-            if (exactBadResponseCodes.contains(requestTelemetry.getResponseCode())) {
-                return false;
-            }
-
-            int asInt = Integer.valueOf(responseCode);
-            for (FromTo fromTo : ignoredResponseCodeRange) {
-                if (fromTo.from <= asInt && fromTo.to >= asInt) {
-                    return false;
-                }
-            }
-
-            Duration requestDuration = requestTelemetry.getDuration();
-            if (requestDuration != null && requestDuration.getTotalMilliseconds() < minimumDurationInMS) {
-                return false;
-            }
-
-            if (LocalStringsUtils.isNullOrEmpty(requestTelemetry.getResponseCode())) {
-                return true;
-            }
-        }
-
+      if (LocalStringsUtils.isNullOrEmpty(requestTelemetry.getResponseCode())) {
         return true;
+      }
     }
 
-    public void setMinimumDurationInMS(String minimumDurationInMS) throws Throwable {
-        try {
-            this.minimumDurationInMS = Long.valueOf(minimumDurationInMS);
-            InternalLogger.INSTANCE.trace("RequestTelemetryFilter: successfully set MinimumDurationInMS = %d", this.minimumDurationInMS);
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("RequestTelemetryFilter: failed to set minimum duration: %s, Exception : %s", minimumDurationInMS
-                        , ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            } finally {
-                throw t;
-            }
+    return true;
+  }
+
+  public void setMinimumDurationInMS(String minimumDurationInMS) throws Throwable {
+    try {
+      this.minimumDurationInMS = Long.valueOf(minimumDurationInMS);
+      InternalLogger.INSTANCE.trace(
+          "RequestTelemetryFilter: successfully set MinimumDurationInMS = %d",
+          this.minimumDurationInMS);
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "RequestTelemetryFilter: failed to set minimum duration: %s, Exception : %s",
+            minimumDurationInMS, ExceptionUtils.getStackTrace(t));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      } finally {
+        throw t;
+      }
+    }
+  }
+
+  public void setNotNeededResponseCodes(String notNeededResponseCodes) throws Throwable {
+    try {
+      if (LocalStringsUtils.isNullOrEmpty(notNeededResponseCodes)) {
+        hasBlocked = false;
+      } else {
+        List<String> exclusions = Arrays.asList(notNeededResponseCodes.split(","));
+        for (String ex : exclusions) {
+          ex = ex.trim();
+          if (LocalStringsUtils.isNullOrEmpty(ex)) {
+            continue;
+          }
+
+          List<String> fromTo = Arrays.asList(ex.split("-"));
+          if (fromTo.size() == 1) {
+            exactBadResponseCodes.add(ex);
+            continue;
+          }
+          if (fromTo.size() != 2) {
+            continue;
+          }
+          if (LocalStringsUtils.isNullOrEmpty(fromTo.get(0))
+              || LocalStringsUtils.isNullOrEmpty(fromTo.get(1))) {
+            continue;
+          }
+          int f = Integer.valueOf(fromTo.get(0));
+          int t = Integer.valueOf(fromTo.get(1));
+          ignoredResponseCodeRange.add(new FromTo(f, t));
         }
+        hasBlocked = !exactBadResponseCodes.isEmpty() || !ignoredResponseCodeRange.isEmpty();
+      }
+
+      InternalLogger.INSTANCE.trace(
+          String.format(
+              "ResponseCodeFilter: successfully set non needed response codes: %s",
+              notNeededResponseCodes));
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "RequestTelemetryFilter: failed to parse NotNeededResponseCodes: %s, "
+                + "Exception : %s",
+            notNeededResponseCodes, ExceptionUtils.getStackTrace(t));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      } finally {
+        throw t;
+      }
     }
+  }
 
-    public void setNotNeededResponseCodes(String notNeededResponseCodes) throws Throwable {
-        try {
-            if (LocalStringsUtils.isNullOrEmpty(notNeededResponseCodes)) {
-                hasBlocked = false;
-            } else {
-                List<String> exclusions = Arrays.asList(notNeededResponseCodes.split(","));
-                for (String ex : exclusions) {
-                    ex = ex.trim();
-                    if (LocalStringsUtils.isNullOrEmpty(ex)) {
-                        continue;
-                    }
+  private final class FromTo {
+    public final int from;
+    public final int to;
 
-                    List<String> fromTo = Arrays.asList(ex.split("-"));
-                    if (fromTo.size() == 1) {
-                        exactBadResponseCodes.add(ex);
-                        continue;
-                    }
-                    if (fromTo.size() != 2) {
-                        continue;
-                    }
-                    if (LocalStringsUtils.isNullOrEmpty(fromTo.get(0)) || LocalStringsUtils.isNullOrEmpty(fromTo.get(1))) {
-                        continue;
-                    }
-                    int f = Integer.valueOf(fromTo.get(0));
-                    int t = Integer.valueOf(fromTo.get(1));
-                    ignoredResponseCodeRange.add(new FromTo(f, t));
-                }
-                hasBlocked = !exactBadResponseCodes.isEmpty() || !ignoredResponseCodeRange.isEmpty();
-            }
-
-            InternalLogger.INSTANCE.trace(String.format("ResponseCodeFilter: successfully set non needed response codes: %s", notNeededResponseCodes));
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("RequestTelemetryFilter: failed to parse NotNeededResponseCodes: %s, " +
-                        "Exception : %s", notNeededResponseCodes, ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            } finally {
-                throw t;
-            }
-        }
+    private FromTo(int from, int to) {
+      this.from = from;
+      this.to = to;
     }
+  }
 }

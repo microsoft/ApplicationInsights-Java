@@ -30,14 +30,8 @@ buildscript {
     }
 }
 
+
 import org.apache.commons.io.FilenameUtils
-import org.gradle.nativeplatform.BuildType
-import org.gradle.nativeplatform.NativeBinarySpec
-import org.gradle.nativeplatform.NativeLibrarySpec
-import org.gradle.nativeplatform.SharedLibraryBinarySpec
-import org.gradle.nativeplatform.StaticLibraryBinarySpec
-import org.gradle.nativeplatform.platform.NativePlatform
-import org.gradle.nativeplatform.toolchain.VisualCpp
 
 def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)'
@@ -174,10 +168,10 @@ def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform t
 
     def bitnessPart = ""
     switch (targetPlatform.name) {
-        case "x86" :
+        case "x86":
             bitnessPart = "32"
             break;
-        case "x64" :
+        case "x64":
             bitnessPart = "64"
             break;
         default:

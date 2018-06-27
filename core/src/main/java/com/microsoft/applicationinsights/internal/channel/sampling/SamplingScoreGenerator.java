@@ -21,55 +21,58 @@
 
 package com.microsoft.applicationinsights.internal.channel.sampling;
 
-import java.util.Random;
-
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.util.Random;
 
 /**
  * Created by gupele on 11/2/2016.
  *
- * Utility class for sampling score generation.
+ * <p>Utility class for sampling score generation.
  */
 final class SamplingScoreGenerator {
-    private static Random rand = new Random();
+  private static Random rand = new Random();
 
-    public static double getSamplingScore(Telemetry telemetry) {
-        double samplingScore = 0;
+  public static double getSamplingScore(Telemetry telemetry) {
+    double samplingScore = 0;
 
-        try {
-            if (telemetry.getContext().getUser().getId() != null) {
-                samplingScore = (double) getSamplingHashCode(telemetry.getContext().getUser().getId()) / Integer.MAX_VALUE;
-            } else if (telemetry.getContext().getOperation().getId() != null) {
-                samplingScore = (double) getSamplingHashCode(telemetry.getContext().getOperation().getId()) / Integer.MAX_VALUE;
-            } else {
-                samplingScore = rand.nextDouble();
-            }
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to fetch sample number for telemetry, using default");
-            samplingScore = rand.nextDouble();
-        }
-
-        samplingScore *= 100;
-        return samplingScore;
+    try {
+      if (telemetry.getContext().getUser().getId() != null) {
+        samplingScore =
+            (double) getSamplingHashCode(telemetry.getContext().getUser().getId())
+                / Integer.MAX_VALUE;
+      } else if (telemetry.getContext().getOperation().getId() != null) {
+        samplingScore =
+            (double) getSamplingHashCode(telemetry.getContext().getOperation().getId())
+                / Integer.MAX_VALUE;
+      } else {
+        samplingScore = rand.nextDouble();
+      }
+    } catch (Exception e) {
+      InternalLogger.INSTANCE.error("Failed to fetch sample number for telemetry, using default");
+      samplingScore = rand.nextDouble();
     }
 
-    private static int getSamplingHashCode(String input) {
-        if (input == null) {
-            return 0;
-        }
+    samplingScore *= 100;
+    return samplingScore;
+  }
 
-        while (input.length() < 8) {
-            input = input + input;
-        }
-
-        int hash = 5381;
-
-        char[] asChars = input.toCharArray();
-        for (int i = 0; i < asChars.length; i++) {
-            hash = ((hash << 5) + hash) + (int)asChars[i];
-        }
-
-        return hash == Integer.MIN_VALUE ? Integer.MAX_VALUE : Math.abs(hash);
+  private static int getSamplingHashCode(String input) {
+    if (input == null) {
+      return 0;
     }
+
+    while (input.length() < 8) {
+      input = input + input;
+    }
+
+    int hash = 5381;
+
+    char[] asChars = input.toCharArray();
+    for (int i = 0; i < asChars.length; i++) {
+      hash = ((hash << 5) + hash) + (int) asChars[i];
+    }
+
+    return hash == Integer.MIN_VALUE ? Integer.MAX_VALUE : Math.abs(hash);
+  }
 }

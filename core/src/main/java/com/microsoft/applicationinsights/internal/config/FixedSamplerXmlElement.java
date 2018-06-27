@@ -21,40 +21,38 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlElement;
 
-/**
- * Created by gupele on 11/14/2016.
- */
+/** Created by gupele on 11/14/2016. */
 public class FixedSamplerXmlElement {
-    private String includeTypes;
-    private String excludeTypes;
-    private String samplingPercentage;
+  private String includeTypes;
+  private String excludeTypes;
+  private String samplingPercentage;
 
-    public String getSamplingPercentage() {
-        return samplingPercentage;
-    }
+  public String getSamplingPercentage() {
+    return samplingPercentage;
+  }
 
-    @XmlElement(name="SamplingPercentage")
-    public void setSamplingPercentage(String samplingPercentage) {
-        this.samplingPercentage = samplingPercentage;
-    }
+  @XmlElement(name = "SamplingPercentage")
+  public void setSamplingPercentage(String samplingPercentage) {
+    this.samplingPercentage = samplingPercentage;
+  }
 
-    public String getIncludeTypes() {
-        return includeTypes;
-    }
+  public String getIncludeTypes() {
+    return includeTypes;
+  }
 
-    @XmlElement(name="IncludeTypes")
-    public void setIncludeTypes(String includeTypes) {
-        this.includeTypes = includeTypes;
-    }
+  @XmlElement(name = "IncludeTypes")
+  public void setIncludeTypes(String includeTypes) {
+    this.includeTypes = includeTypes;
+  }
 
-    public String getExcludeTypes() {
-        return excludeTypes;
-    }
+  public String getExcludeTypes() {
+    return excludeTypes;
+  }
 
-    @XmlElement(name="ExcludeTypes")
-    public void setExcludeTypes(String excludeTypes) {
-        this.excludeTypes = excludeTypes;
-    }
+  @XmlElement(name = "ExcludeTypes")
+  public void setExcludeTypes(String excludeTypes) {
+    this.excludeTypes = excludeTypes;
+  }
 }

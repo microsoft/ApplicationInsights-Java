@@ -21,103 +21,105 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class knows how to supply the io usage of the current process under the Unix OS.
  *
- * When activated the class will calculate the io usage based on the data under /proc/[pid]/io
- * file and will create a {@link com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry}
- * that will contain that data per the amount of time elapsed from the last check in seconds.
+ * <p>When activated the class will calculate the io usage based on the data under /proc/[pid]/io
+ * file and will create a {@link
+ * com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry} that will contain that
+ * data per the amount of time elapsed from the last check in seconds.
  *
- * Created by gupele on 3/8/2015.
+ * <p>Created by gupele on 3/8/2015.
  */
 final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCounter {
-    private final static double NANOS_IN_SECOND = 1000000000.0;
+  private static final double NANOS_IN_SECOND = 1000000000.0;
 
-    private double prevProcessIO;
+  private double prevProcessIO;
 
-    private long lastCollectionInNanos = -1;
+  private long lastCollectionInNanos = -1;
 
-    public UnixProcessIOPerformanceCounter() {
-        super("/proc/" + SystemInformation.INSTANCE.getProcessId() + "/io");
+  public UnixProcessIOPerformanceCounter() {
+    super("/proc/" + SystemInformation.INSTANCE.getProcessId() + "/io");
+  }
+
+  @Override
+  public String getId() {
+    return Constants.PROCESS_IO_PC_ID;
+  }
+
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    long currentCollectionInNanos = System.nanoTime();
+
+    Double processIO = getCurrentIOForCurrentProcess();
+    if (processIO == null) {
+      return;
+    }
+    if (lastCollectionInNanos != -1) {
+      // Not the first time
+
+      double timeElapsedInSeconds =
+          ((double) (currentCollectionInNanos - lastCollectionInNanos)) / NANOS_IN_SECOND;
+
+      double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
+      prevProcessIO = processIO;
+
+      InternalLogger.INSTANCE.trace(
+          "Sending Performance Counter: %s %s: %s",
+          getProcessCategoryName(), Constants.PROCESS_IO_PC_COUNTER_NAME, value);
+      Telemetry telemetry =
+          new PerformanceCounterTelemetry(
+              getProcessCategoryName(),
+              Constants.PROCESS_IO_PC_COUNTER_NAME,
+              SystemInformation.INSTANCE.getProcessId(),
+              value);
+
+      telemetryClient.track(telemetry);
     }
 
-    @Override
-    public String getId() {
-        return Constants.PROCESS_IO_PC_ID;
-    }
+    prevProcessIO = processIO;
+    lastCollectionInNanos = currentCollectionInNanos;
+  }
 
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        long currentCollectionInNanos = System.nanoTime();
+  /** @return the current IO for current process, or null if the datum could not be measured. */
+  public Double getCurrentIOForCurrentProcess() {
+    BufferedReader bufferedReader = null;
 
-        Double processIO = getCurrentIOForCurrentProcess();
-        if (processIO == null) {
-            return;
-        }
-        if (lastCollectionInNanos != -1) {
-            // Not the first time
+    Double result = null;
+    UnixProcessIOtParser parser = new UnixProcessIOtParser();
+    try {
+      bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
+      String line;
+      while (!parser.done() && (line = bufferedReader.readLine()) != null) {
+        parser.process(line);
+      }
 
-            double timeElapsedInSeconds = ((double)(currentCollectionInNanos - lastCollectionInNanos)) / NANOS_IN_SECOND;
-
-            double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
-            prevProcessIO = processIO;
-
-            InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_IO_PC_COUNTER_NAME, value);
-            Telemetry telemetry = new PerformanceCounterTelemetry(
-                    getProcessCategoryName(),
-                    Constants.PROCESS_IO_PC_COUNTER_NAME,
-                    SystemInformation.INSTANCE.getProcessId(),
-                    value);
-
-            telemetryClient.track(telemetry);
-        }
-
-        prevProcessIO = processIO;
-        lastCollectionInNanos = currentCollectionInNanos;
-    }
-
-    /**
-     *
-     * @return the current IO for current process, or null if the datum could not be measured.
-     */
-    public Double getCurrentIOForCurrentProcess() {
-        BufferedReader bufferedReader = null;
-
-        Double result = null;
-        UnixProcessIOtParser parser = new UnixProcessIOtParser();
+      result = parser.getValue();
+    } catch (Exception e) {
+      result = null;
+      logPerfCounterErrorError("Error while parsing file: '%s'", getId());
+      InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+    } finally {
+      if (bufferedReader != null) {
         try {
-            bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
-            String line;
-            while (!parser.done() && (line = bufferedReader.readLine()) != null) {
-                parser.process(line);
-            }
-
-            result = parser.getValue();
+          bufferedReader.close();
         } catch (Exception e) {
-            result = null;
-            logPerfCounterErrorError("Error while parsing file: '%s'", getId());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-        } finally {
-            if (bufferedReader != null ) {
-                try {
-                    bufferedReader.close();
-                } catch (Exception e) {
-                    logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-                }
-            }
+          logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
+          InternalLogger.INSTANCE.trace(
+              "Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
-
-        return result;
+      }
     }
+
+    return result;
+  }
 }

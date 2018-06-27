@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-/**
- * Created by gupele on 6/29/2015.
- */
+/** Created by gupele on 6/29/2015. */
 interface TransmissionPolicyStateSetter {
-    void setCurrentState(TransmissionPolicy currentState);
+  void setCurrentState(TransmissionPolicy currentState);
 }

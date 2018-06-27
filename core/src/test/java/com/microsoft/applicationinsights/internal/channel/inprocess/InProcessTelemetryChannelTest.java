@@ -22,47 +22,52 @@
 package com.microsoft.applicationinsights.internal.channel.inprocess;
 
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.HashMap;
+import org.junit.Test;
 
 public class InProcessTelemetryChannelTest {
 
-  private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
-  private final static String INSTANT_RETRY_NAME = "MaxInstantRetry";
-	private final static int DEFAULT_MAX_INSTANT_RETRY = 3;
+  private static final String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
+  private static final String INSTANT_RETRY_NAME = "MaxInstantRetry";
+  private static final int DEFAULT_MAX_INSTANT_RETRY = 3;
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNotValidEndpointAddressAsMapValue() {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("EndpointAddress", NON_VALID_URL);
-        new InProcessTelemetryChannel(map);
-    }
-    @Test()
-    public void testStringIntegerMaxInstanceRetry() {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put(INSTANT_RETRY_NAME, "AABB");
-        new InProcessTelemetryChannel(map);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testNotValidEndpointAddressAsMapValue() {
+    HashMap<String, String> map = new HashMap<String, String>();
+    map.put("EndpointAddress", NON_VALID_URL);
+    new InProcessTelemetryChannel(map);
+  }
 
-    @Test()
-    public void testValidIntegerMaxInstanceRetry() {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put(INSTANT_RETRY_NAME, "4");
-        new InProcessTelemetryChannel(map);
-    }
+  @Test()
+  public void testStringIntegerMaxInstanceRetry() {
+    HashMap<String, String> map = new HashMap<String, String>();
+    map.put(INSTANT_RETRY_NAME, "AABB");
+    new InProcessTelemetryChannel(map);
+  }
 
-    @Test()
-    public void testInvalidIntegerMaxInstanceRetry() {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put(INSTANT_RETRY_NAME, "-1");
-        new InProcessTelemetryChannel(map);
-    }
+  @Test()
+  public void testValidIntegerMaxInstanceRetry() {
+    HashMap<String, String> map = new HashMap<String, String>();
+    map.put(INSTANT_RETRY_NAME, "4");
+    new InProcessTelemetryChannel(map);
+  }
 
-    @Test
-    public void testInProcessTelemetryChannelWithDefaultSpringBootParameters() {
-        new InProcessTelemetryChannel("https://dc.services.visualstudio.com/v2/track", "10",
-                false, 500, 5, true, DEFAULT_MAX_INSTANT_RETRY);
-    }
+  @Test()
+  public void testInvalidIntegerMaxInstanceRetry() {
+    HashMap<String, String> map = new HashMap<String, String>();
+    map.put(INSTANT_RETRY_NAME, "-1");
+    new InProcessTelemetryChannel(map);
+  }
+
+  @Test
+  public void testInProcessTelemetryChannelWithDefaultSpringBootParameters() {
+    new InProcessTelemetryChannel(
+        "https://dc.services.visualstudio.com/v2/track",
+        "10",
+        false,
+        500,
+        5,
+        true,
+        DEFAULT_MAX_INSTANT_RETRY);
+  }
 }

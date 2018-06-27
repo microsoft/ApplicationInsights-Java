@@ -21,46 +21,51 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.Collection;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.Collection;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * A base class for performance modules.
  *
- * Created by gupele on 3/12/2015.
+ * <p>Created by gupele on 3/12/2015.
  */
 public abstract class AbstractPerformanceCounterModule implements TelemetryModule {
-    protected final PerformanceCountersFactory factory;
+  protected final PerformanceCountersFactory factory;
 
-    protected AbstractPerformanceCounterModule(PerformanceCountersFactory factory) {
-        this.factory = factory;
-    }
+  protected AbstractPerformanceCounterModule(PerformanceCountersFactory factory) {
+    this.factory = factory;
+  }
 
-    /**
-     * The main method will use the factory to fetch the performance counters and register them for work.
-     * @param configuration The configuration to used to initialize the module.
-     */
-    @Override
-    public void initialize(TelemetryConfiguration configuration) {
-        Collection<PerformanceCounter> performanceCounters = factory.getPerformanceCounters();
-        for (PerformanceCounter performanceCounter : performanceCounters) {
-            try {
-                PerformanceCounterContainer.INSTANCE.register(performanceCounter);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                try {
-                    InternalLogger.INSTANCE.error("Failed to register performance counter '%s': '%s'", performanceCounter.getId(), e.toString());                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
+  /**
+   * The main method will use the factory to fetch the performance counters and register them for
+   * work.
+   *
+   * @param configuration The configuration to used to initialize the module.
+   */
+  @Override
+  public void initialize(TelemetryConfiguration configuration) {
+    Collection<PerformanceCounter> performanceCounters = factory.getPerformanceCounters();
+    for (PerformanceCounter performanceCounter : performanceCounters) {
+      try {
+        PerformanceCounterContainer.INSTANCE.register(performanceCounter);
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable e) {
+        try {
+          InternalLogger.INSTANCE.error(
+              "Failed to register performance counter '%s': '%s'",
+              performanceCounter.getId(), e.toString());
+          InternalLogger.INSTANCE.trace(
+              "Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+        } catch (ThreadDeath td) {
+          throw td;
+        } catch (Throwable t2) {
+          // chomp
         }
+      }
     }
+  }
 }

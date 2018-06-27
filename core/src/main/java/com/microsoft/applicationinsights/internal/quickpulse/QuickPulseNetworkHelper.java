@@ -22,43 +22,40 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.Date;
-
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 
-/**
- * Created by gupele on 12/12/2016.
- */
+/** Created by gupele on 12/12/2016. */
 final class QuickPulseNetworkHelper {
-    private final static long TICKS_AT_EPOCH = 621355968000000000L;
-    private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";
-    private final static String QP_STATUS_HEADER = "x-ms-qps-subscribed";
+  private static final long TICKS_AT_EPOCH = 621355968000000000L;
+  private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";
+  private static final String QP_STATUS_HEADER = "x-ms-qps-subscribed";
 
-    public HttpPost buildRequest(Date currentDate, String address) {
-        final long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
+  public HttpPost buildRequest(Date currentDate, String address) {
+    final long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
 
-        HttpPost request = new HttpPost(address);
-        request.addHeader(HEADER_TRANSMISSION_TIME, String.valueOf(ticks));
-        return request;
+    HttpPost request = new HttpPost(address);
+    request.addHeader(HEADER_TRANSMISSION_TIME, String.valueOf(ticks));
+    return request;
+  }
+
+  public boolean isSuccess(HttpResponse response) {
+    final int responseCode = response.getStatusLine().getStatusCode();
+    return responseCode == 200;
+  }
+
+  public QuickPulseStatus getQuickPulseStatus(HttpResponse response) {
+    Header header = response.getFirstHeader(QP_STATUS_HEADER);
+    if (header != null) {
+      final String toPost = header.getValue();
+      if ("true".equalsIgnoreCase(toPost)) {
+        return QuickPulseStatus.QP_IS_ON;
+      } else {
+        return QuickPulseStatus.QP_IS_OFF;
+      }
     }
 
-    public boolean isSuccess(HttpResponse response) {
-        final int responseCode = response.getStatusLine().getStatusCode();
-        return responseCode == 200;
-    }
-
-    public QuickPulseStatus getQuickPulseStatus(HttpResponse response) {
-        Header header = response.getFirstHeader(QP_STATUS_HEADER);
-        if (header != null) {
-            final String toPost = header.getValue();
-            if ("true".equalsIgnoreCase(toPost)) {
-                return QuickPulseStatus.QP_IS_ON;
-            } else {
-                return QuickPulseStatus.QP_IS_OFF;
-            }
-        }
-
-        return QuickPulseStatus.ERROR;
-    }
+    return QuickPulseStatus.ERROR;
+  }
 }

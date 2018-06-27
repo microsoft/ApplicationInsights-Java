@@ -21,83 +21,91 @@
 
 package com.microsoft.applicationinsights.extensibility.context;
 
-import java.util.Map;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
+import java.util.Map;
 
 public final class OperationContext {
-    private final Map<String, String> tags;
+  private final Map<String, String> tags;
 
-    /**
-     * Constructs new OperationContext object with the given tags.
-     * @param tags The OperationContext tags.
-     */
-    public OperationContext(Map<String, String> tags) {
-        this.tags = tags;
-    }
+  /**
+   * Constructs new OperationContext object with the given tags.
+   *
+   * @param tags The OperationContext tags.
+   */
+  public OperationContext(Map<String, String> tags) {
+    this.tags = tags;
+  }
 
-    /**
-     * Gets the operation id.
-     * @return Operation id.
-     */
-    public String getId() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationId());
-    }
+  /**
+   * Gets the operation id.
+   *
+   * @return Operation id.
+   */
+  public String getId() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationId());
+  }
 
-    /**
-     * Sets the operation id.
-     * @param id The operation id.
-     */
-    public void setId(String id) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationId(), id);
-    }
+  /**
+   * Sets the operation id.
+   *
+   * @param id The operation id.
+   */
+  public void setId(String id) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationId(), id);
+  }
 
-    /**
-     * Set the Operation Parent id
-     * @param parentId
-     */
-    public void setParentId(String parentId) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationParentId(), parentId);
-    }
+  /**
+   * Get the operation parent id
+   *
+   * @return
+   */
+  public String getParentId() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationParentId());
+  }
 
+  /**
+   * Set the Operation Parent id
+   *
+   * @param parentId
+   */
+  public void setParentId(String parentId) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationParentId(), parentId);
+  }
 
-    /**
-     * Get the operation parent id
-     * @return
-     */
+  /**
+   * Gets the operation name.
+   *
+   * @return Operation name.
+   */
+  public String getName() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationName());
+  }
 
-    public String getParentId() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationParentId());
-    }
+  /**
+   * Sets the operation name.
+   *
+   * @param name Operation name.
+   */
+  public void setName(String name) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationName(), name);
+  }
 
-    /**
-     * Gets the operation name.
-     * @return Operation name.
-     */
-    public String getName() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationName());
-    }
+  /**
+   * Gets the synthetic source.
+   *
+   * @return The synthetic source.
+   */
+  public String getSyntheticSource() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getSyntheticSource());
+  }
 
-    /**
-     * Sets the operation name.
-     * @param name Operation name.
-     */
-    public void setName(String name) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationName(), name);
-    }
-
-    /**
-     * Gets the synthetic source.
-     * @return The synthetic source.
-     */
-    public String getSyntheticSource() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getSyntheticSource());
-    }
-
-    /**
-     * Sets the synthetic source.
-     * @param syntheticSource The synthetic source.
-     */
-    public void setSyntheticSource(String syntheticSource) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getSyntheticSource(), syntheticSource);
-    }
+  /**
+   * Sets the synthetic source.
+   *
+   * @param syntheticSource The synthetic source.
+   */
+  public void setSyntheticSource(String syntheticSource) {
+    MapUtil.setStringValueOrRemove(
+        tags, ContextTagKeys.getKeys().getSyntheticSource(), syntheticSource);
+  }
 }

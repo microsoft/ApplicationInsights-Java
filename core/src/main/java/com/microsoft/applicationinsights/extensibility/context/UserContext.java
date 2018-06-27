@@ -21,48 +21,48 @@
 
 package com.microsoft.applicationinsights.extensibility.context;
 
+import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.Date;
 import java.util.concurrent.ConcurrentMap;
 
-import com.microsoft.applicationinsights.internal.util.MapUtil;
-
 public final class UserContext {
-    private final ConcurrentMap<String,String> tags;
+  private final ConcurrentMap<String, String> tags;
 
-    public UserContext(ConcurrentMap<String, String> tags)
-    {
-        this.tags = tags;
-    }
+  public UserContext(ConcurrentMap<String, String> tags) {
+    this.tags = tags;
+  }
 
-    public String getId() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserId());
-    }
+  public String getId() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserId());
+  }
 
-    public void setId(String version) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserId(), version);
-    }
+  public void setId(String version) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserId(), version);
+  }
 
-    String getAccountId() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserAccountId());
-    }
+  String getAccountId() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserAccountId());
+  }
 
-    public void setAccountId(String version) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserAccountId(), version);
-    }
+  public void setAccountId(String version) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserAccountId(), version);
+  }
 
-    public String getUserAgent() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserAgent());
-    }
+  public String getUserAgent() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getUserAgent());
+  }
 
-    public void setUserAgent(String version) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserAgent(), version);
-    }
+  public void setUserAgent(String version) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getUserAgent(), version);
+  }
 
-    public Date getAcquisitionDate() {
-        return MapUtil.getDateValueOrNull(tags, ContextTagKeys.getKeys().getUserAccountAcquisitionDate());
-    }
+  public Date getAcquisitionDate() {
+    return MapUtil.getDateValueOrNull(
+        tags, ContextTagKeys.getKeys().getUserAccountAcquisitionDate());
+  }
 
-    public void setAcquisitionDate(Date version) {
-        MapUtil.setDateValueOrRemove(tags, ContextTagKeys.getKeys().getUserAccountAcquisitionDate(), version);
-    }
+  public void setAcquisitionDate(Date version) {
+    MapUtil.setDateValueOrRemove(
+        tags, ContextTagKeys.getKeys().getUserAccountAcquisitionDate(), version);
+  }
 }

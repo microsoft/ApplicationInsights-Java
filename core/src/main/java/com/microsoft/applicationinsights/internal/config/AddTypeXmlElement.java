@@ -21,45 +21,42 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
-/**
- * Created by gupele on 3/15/2015.
- */
+/** Created by gupele on 3/15/2015. */
 public class AddTypeXmlElement {
-    private String type;
-    private ArrayList<ParamXmlElement> paramElements = new ArrayList<ParamXmlElement>();
+  private String type;
+  private ArrayList<ParamXmlElement> paramElements = new ArrayList<ParamXmlElement>();
 
-    public String getType() {
-        return type;
+  public String getType() {
+    return type;
+  }
+
+  @XmlAttribute
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public ArrayList<ParamXmlElement> getParameters() {
+    return paramElements;
+  }
+
+  @XmlElement(name = "Param")
+  public void setParameters(ArrayList<ParamXmlElement> paramElements) {
+    this.paramElements = paramElements;
+  }
+
+  public Map<String, String> getData() {
+    Map<String, String> map = new HashMap<String, String>();
+
+    for (ParamXmlElement element : getParameters()) {
+      map.put(element.getName(), element.getValue());
     }
 
-    public ArrayList<ParamXmlElement> getParameters() {
-        return paramElements;
-    }
-
-    @XmlAttribute
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    @XmlElement(name="Param")
-    public void setParameters(ArrayList<ParamXmlElement> paramElements) {
-        this.paramElements = paramElements;
-    }
-
-    public Map<String, String> getData() {
-        Map<String, String> map = new HashMap<String, String>();
-
-        for (ParamXmlElement element : getParameters()) {
-            map.put(element.getName(), element.getValue());
-        }
-
-        return map;
-    }
+    return map;
+  }
 }

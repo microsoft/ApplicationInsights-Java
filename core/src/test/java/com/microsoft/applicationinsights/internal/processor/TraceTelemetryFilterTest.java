@@ -21,79 +21,77 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-/**
- * Created by gupele on 7/26/2016.
- */
+/** Created by gupele on 7/26/2016. */
 public class TraceTelemetryFilterTest {
-    @Test(expected = Throwable.class)
-    public void testProcessWithNullData() throws Throwable {
-        TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromSeverityLevel(null);
-        TraceTelemetry traceTelemetry = new TraceTelemetry();
-        traceTelemetry.setMessage("A A 1");
-        boolean result = tested.process(traceTelemetry);
+  @Test(expected = Throwable.class)
+  public void testProcessWithNullData() throws Throwable {
+    TraceTelemetryFilter tested = new TraceTelemetryFilter();
+    tested.setFromSeverityLevel(null);
+    TraceTelemetry traceTelemetry = new TraceTelemetry();
+    traceTelemetry.setMessage("A A 1");
+    boolean result = tested.process(traceTelemetry);
 
+    assertTrue(result);
+  }
+
+  @Test(expected = Throwable.class)
+  public void testProcessWithEmptyData() throws Throwable {
+    TraceTelemetryFilter tested = new TraceTelemetryFilter();
+    tested.setFromSeverityLevel("");
+    TraceTelemetry traceTelemetry = new TraceTelemetry();
+    traceTelemetry.setMessage("A A 1");
+    boolean result = tested.process(traceTelemetry);
+
+    assertTrue(result);
+  }
+
+  @Test
+  public void testProcessOffSeverityLevel() throws Throwable {
+    TraceTelemetryFilter tested = new TraceTelemetryFilter();
+    tested.setFromSeverityLevel(" off");
+
+    for (SeverityLevel sl : SeverityLevel.values()) {
+      TraceTelemetry traceTelemetry = new TraceTelemetry();
+      traceTelemetry.setSeverityLevel(sl);
+      traceTelemetry.setMessage("A A 1");
+      boolean result = tested.process(traceTelemetry);
+
+      assertFalse(result);
+    }
+  }
+
+  @Test
+  public void testProcessWarningLevel() throws Throwable {
+    TraceTelemetryFilter tested = new TraceTelemetryFilter();
+    tested.setFromSeverityLevel(" Warn");
+
+    for (SeverityLevel sl : SeverityLevel.values()) {
+      TraceTelemetry traceTelemetry = new TraceTelemetry();
+      traceTelemetry.setSeverityLevel(sl);
+      traceTelemetry.setMessage("A A 1");
+      boolean result = tested.process(traceTelemetry);
+
+      if (sl.equals(SeverityLevel.Verbose) || sl.equals(SeverityLevel.Information)) {
+        assertFalse(result);
+      } else {
         assertTrue(result);
+      }
     }
+  }
 
-    @Test(expected = Throwable.class)
-    public void testProcessWithEmptyData() throws Throwable {
-        TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromSeverityLevel("");
-        TraceTelemetry traceTelemetry = new TraceTelemetry();
-        traceTelemetry.setMessage("A A 1");
-        boolean result = tested.process(traceTelemetry);
-
-        assertTrue(result);
-    }
-
-    @Test
-    public void testProcessOffSeverityLevel() throws Throwable {
-        TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromSeverityLevel(" off");
-
-        for (SeverityLevel sl : SeverityLevel.values()) {
-            TraceTelemetry traceTelemetry = new TraceTelemetry();
-            traceTelemetry.setSeverityLevel(sl);
-            traceTelemetry.setMessage("A A 1");
-            boolean result = tested.process(traceTelemetry);
-
-            assertFalse(result);
-        }
-    }
-
-    @Test
-    public void testProcessWarningLevel() throws Throwable {
-        TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromSeverityLevel(" Warn");
-
-        for (SeverityLevel sl : SeverityLevel.values()) {
-            TraceTelemetry traceTelemetry = new TraceTelemetry();
-            traceTelemetry.setSeverityLevel(sl);
-            traceTelemetry.setMessage("A A 1");
-            boolean result = tested.process(traceTelemetry);
-
-            if (sl.equals(SeverityLevel.Verbose) || sl.equals(SeverityLevel.Information)) {
-                assertFalse(result);
-            } else {
-                assertTrue(result);
-            }
-        }
-    }
-
-    @Test
-    public void testProcessWithMetricTelemetry() throws Throwable {
-        TraceTelemetryFilter tested = new TraceTelemetryFilter();
-        tested.setFromSeverityLevel(" trace ");
-        boolean result = tested.process(new MetricTelemetry());
-        assertTrue(result);
-    }
+  @Test
+  public void testProcessWithMetricTelemetry() throws Throwable {
+    TraceTelemetryFilter tested = new TraceTelemetryFilter();
+    tested.setFromSeverityLevel(" trace ");
+    boolean result = tested.process(new MetricTelemetry());
+    assertTrue(result);
+  }
 }

@@ -22,47 +22,47 @@
 package com.microsoft.applicationinsights.channel;
 
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-
 import java.util.concurrent.TimeUnit;
 
-/**
- * Represents a communication channel for sending telemetry to Azure Application Insights.
- */
+/** Represents a communication channel for sending telemetry to Azure Application Insights. */
 public interface TelemetryChannel {
 
-    /**
-     *  Gets value indicating whether this channel is in developer mode.
-     * @return The developer mode.
-     */
-    boolean isDeveloperMode();
+  /**
+   * Gets value indicating whether this channel is in developer mode.
+   *
+   * @return The developer mode.
+   */
+  boolean isDeveloperMode();
 
-    /**
-     *  Sets value indicating whether this channel is in developer mode.
-     * @param value True for applying develoer mode
-     */
-    void setDeveloperMode(boolean value);
+  /**
+   * Sets value indicating whether this channel is in developer mode.
+   *
+   * @param value True for applying develoer mode
+   */
+  void setDeveloperMode(boolean value);
 
-    /**
-     *  Sends a Telemetry instance through the channel.
-     * @param item The Telemetry item to send.
-     */
-    void send(Telemetry item);
+  /**
+   * Sends a Telemetry instance through the channel.
+   *
+   * @param item The Telemetry item to send.
+   */
+  void send(Telemetry item);
 
-    /**
-     * Stops on going work
-     * @param timeout Time to try and stop
-     * @param timeUnit The units of the 'timeout' parameter
-     */
-    void stop(long timeout, TimeUnit timeUnit);
+  /**
+   * Stops on going work
+   *
+   * @param timeout Time to try and stop
+   * @param timeUnit The units of the 'timeout' parameter
+   */
+  void stop(long timeout, TimeUnit timeUnit);
 
-    /**
-     * Flushes the data that the channel might have internally.
-     */
-    void flush();
+  /** Flushes the data that the channel might have internally. */
+  void flush();
 
-    /**
-     * Sets an optional Sampler that can sample out telemetries
-     * @param telemetrySampler - The sampler
-     */
-    void setSampler(TelemetrySampler telemetrySampler);
+  /**
+   * Sets an optional Sampler that can sample out telemetries
+   *
+   * @param telemetrySampler - The sampler
+   */
+  void setSampler(TelemetrySampler telemetrySampler);
 }

@@ -21,146 +21,147 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public final class RemoteDependencyTelemetryTest {
 
-    @Test
-    public void testEmptyCtor() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
+  @Test
+  public void testEmptyCtor() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
 
-        assertNull(telemetry.getName());
-        assertNull(telemetry.getCount());
-        assertNull(telemetry.getMin());
-        assertNull(telemetry.getMax());
-        assertNull(telemetry.getStdDev());
-        assertEquals(telemetry.getDependencyKind(), DependencyKind.Other);
-        assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
-        assertTrue(telemetry.getProperties().isEmpty());
-    }
+    assertNull(telemetry.getName());
+    assertNull(telemetry.getCount());
+    assertNull(telemetry.getMin());
+    assertNull(telemetry.getMax());
+    assertNull(telemetry.getStdDev());
+    assertEquals(telemetry.getDependencyKind(), DependencyKind.Other);
+    assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
+    assertTrue(telemetry.getProperties().isEmpty());
+  }
 
-    @Test
-    public void testCtorWithNameParameter() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
+  @Test
+  public void testCtorWithNameParameter() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        assertEquals(telemetry.getName(), "MockName");
-        assertNull(telemetry.getCount());
-        assertNull(telemetry.getMin());
-        assertNull(telemetry.getMax());
-        assertNull(telemetry.getStdDev());
-        assertEquals(telemetry.getDependencyKind(), DependencyKind.Other);
-        assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
-        assertTrue(telemetry.getProperties().isEmpty());
-    }
+    assertEquals(telemetry.getName(), "MockName");
+    assertNull(telemetry.getCount());
+    assertNull(telemetry.getMin());
+    assertNull(telemetry.getMax());
+    assertNull(telemetry.getStdDev());
+    assertEquals(telemetry.getDependencyKind(), DependencyKind.Other);
+    assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
+    assertTrue(telemetry.getProperties().isEmpty());
+  }
 
-    @Test
-    public void testCtorWithAllParameter() {
-        String dependencyName = "DepName";
-        String commandName = "Query1";
-        Duration duration = new Duration(12345);
-        boolean success = false;
+  @Test
+  public void testCtorWithAllParameter() {
+    String dependencyName = "DepName";
+    String commandName = "Query1";
+    Duration duration = new Duration(12345);
+    boolean success = false;
 
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(dependencyName, commandName, duration, success);
+    RemoteDependencyTelemetry telemetry =
+        new RemoteDependencyTelemetry(dependencyName, commandName, duration, success);
 
-        assertEquals(dependencyName, telemetry.getName());
-        assertEquals(commandName, telemetry.getCommandName());
-        assertEquals(duration, telemetry.getDuration());
-        assertEquals(success, telemetry.getSuccess());
+    assertEquals(dependencyName, telemetry.getName());
+    assertEquals(commandName, telemetry.getCommandName());
+    assertEquals(duration, telemetry.getDuration());
+    assertEquals(success, telemetry.getSuccess());
 
-        assertNull(telemetry.getCount());
-        assertNull(telemetry.getMin());
-        assertNull(telemetry.getMax());
-        assertNull(telemetry.getStdDev());
-        assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
-        assertTrue(telemetry.getProperties().isEmpty());
-    }
+    assertNull(telemetry.getCount());
+    assertNull(telemetry.getMin());
+    assertNull(telemetry.getMax());
+    assertNull(telemetry.getStdDev());
+    assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
+    assertTrue(telemetry.getProperties().isEmpty());
+  }
 
-    @Test
-    public void testCommandName() {
-        String commandName = "command";
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
-        telemetry.setCommandName(commandName);
+  @Test
+  public void testCommandName() {
+    String commandName = "command";
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
+    telemetry.setCommandName(commandName);
 
-        assertEquals(commandName, telemetry.getCommandName());
-    }
+    assertEquals(commandName, telemetry.getCommandName());
+  }
 
-    @Test
-    public void testDuration() {
-        Duration duration = new Duration(1234);
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
-        telemetry.setDuration(duration);
+  @Test
+  public void testDuration() {
+    Duration duration = new Duration(1234);
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
+    telemetry.setDuration(duration);
 
-        assertEquals(duration, telemetry.getDuration());
-    }
+    assertEquals(duration, telemetry.getDuration());
+  }
 
-    @Test
-    public void testSuccess() {
-        boolean success = true;
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
-        telemetry.setSuccess(success);
+  @Test
+  public void testSuccess() {
+    boolean success = true;
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
+    telemetry.setSuccess(success);
 
-        assertEquals(success, telemetry.getSuccess());
-    }
+    assertEquals(success, telemetry.getSuccess());
+  }
 
-    @Test
-    public void testSetName() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
+  @Test
+  public void testSetName() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        telemetry.setName("MockName1");
-        assertEquals(telemetry.getName(), "MockName1");
-    }
+    telemetry.setName("MockName1");
+    assertEquals(telemetry.getName(), "MockName1");
+  }
 
-    @Test
-    public void getAndSetCountDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
+  @Test
+  public void getAndSetCountDoNotThrow() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        telemetry.setCount(new Integer(1));
-        telemetry.getCount();
-    }
+    telemetry.setCount(new Integer(1));
+    telemetry.getCount();
+  }
 
-    @Test
-    public void getAndSetMinDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
+  @Test
+  public void getAndSetMinDoNotThrow() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        telemetry.setMin(new Double(1));
-        telemetry.getMin();
-    }
+    telemetry.setMin(new Double(1));
+    telemetry.getMin();
+  }
 
-    @Test
-    public void getAndSetMaxDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
+  @Test
+  public void getAndSetMaxDoNotThrow() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        telemetry.setMax(new Double(1));
-        telemetry.getMax();
-    }
+    telemetry.setMax(new Double(1));
+    telemetry.getMax();
+  }
 
-    @Test
-    public void getAndSetStdDevDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
+  @Test
+  public void getAndSetStdDevDoNotThrow() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        telemetry.setStdDev(new Double(1));
-        telemetry.getStdDev();
-    }
+    telemetry.setStdDev(new Double(1));
+    telemetry.getStdDev();
+  }
 
-    @Test
-    public void testDependencyKind() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
+  @Test
+  public void testDependencyKind() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        telemetry.setDependencyKind(DependencyKind.Http);
-        assertEquals(telemetry.getDependencyKind(), DependencyKind.Http);
-    }
+    telemetry.setDependencyKind(DependencyKind.Http);
+    assertEquals(telemetry.getDependencyKind(), DependencyKind.Http);
+  }
 
-    @Test
-    public void getAndSetDependencySourceDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
+  @Test
+  public void getAndSetDependencySourceDoNotThrow() {
+    RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        telemetry.setDependencySource(DependencySourceType.Aic);
-        telemetry.getDependencySource();
-    }
+    telemetry.setDependencySource(DependencySourceType.Aic);
+    telemetry.getDependencySource();
+  }
 }

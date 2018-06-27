@@ -25,27 +25,27 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
-
 import java.util.List;
 
-/**
- * Created by gupele on 9/8/2016.
- */
+/** Created by gupele on 9/8/2016. */
 final class ContextInitializersInitializer {
-    /**
-     * Sets the configuration data of Context Initializers in configuration class.
-     * @param contextInitializers The configuration data.
-     * @param configuration The configuration class.
-     */
-    public void initialize(ContextInitializersXmlElement contextInitializers, TelemetryConfiguration configuration) {
-        List<ContextInitializer> initializerList = configuration.getContextInitializers();
+  /**
+   * Sets the configuration data of Context Initializers in configuration class.
+   *
+   * @param contextInitializers The configuration data.
+   * @param configuration The configuration class.
+   */
+  public void initialize(
+      ContextInitializersXmlElement contextInitializers, TelemetryConfiguration configuration) {
+    List<ContextInitializer> initializerList = configuration.getContextInitializers();
 
-        // To keep with prev version. A few will probably be moved to the configuration
-        initializerList.add(new SdkVersionContextInitializer());
-        initializerList.add(new DeviceInfoContextInitializer());
+    // To keep with prev version. A few will probably be moved to the configuration
+    initializerList.add(new SdkVersionContextInitializer());
+    initializerList.add(new DeviceInfoContextInitializer());
 
-        if (contextInitializers != null) {
-            ReflectionUtils.loadComponents(ContextInitializer.class, initializerList, contextInitializers.getAdds());
-        }
+    if (contextInitializers != null) {
+      ReflectionUtils.loadComponents(
+          ContextInitializer.class, initializerList, contextInitializers.getAdds());
     }
+  }
 }

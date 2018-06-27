@@ -21,41 +21,38 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.File;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-
-/**
- * Created by gupele on 12/15/2016.
- */
+/** Created by gupele on 12/15/2016. */
 public class QuickPulseNetworkHelperTest {
-    @Test
-    public void testIsSuccessWith200() {
-        final HttpResponse response = mock(HttpResponse.class);
-        final StatusLine statusLine = mock(StatusLine.class);
+  @Test
+  public void testIsSuccessWith200() {
+    final HttpResponse response = mock(HttpResponse.class);
+    final StatusLine statusLine = mock(StatusLine.class);
 
-        Mockito.doReturn(statusLine).when(response).getStatusLine();
-        Mockito.doReturn(200).when(statusLine).getStatusCode();
+    Mockito.doReturn(statusLine).when(response).getStatusLine();
+    Mockito.doReturn(200).when(statusLine).getStatusCode();
 
-        final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
-        assertTrue(result);
-    }
+    final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+    assertTrue(result);
+  }
 
-    @Test
-    public void testIsSuccessWith500() {
-        final HttpResponse response = mock(HttpResponse.class);
-        final StatusLine statusLine = mock(StatusLine.class);
+  @Test
+  public void testIsSuccessWith500() {
+    final HttpResponse response = mock(HttpResponse.class);
+    final StatusLine statusLine = mock(StatusLine.class);
 
-        Mockito.doReturn(statusLine).when(response).getStatusLine();
-        Mockito.doReturn(500).when(statusLine).getStatusCode();
+    Mockito.doReturn(statusLine).when(response).getStatusLine();
+    Mockito.doReturn(500).when(statusLine).getStatusCode();
 
-        final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
-        assertFalse(result);
-    }
+    final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+    assertFalse(result);
+  }
 }

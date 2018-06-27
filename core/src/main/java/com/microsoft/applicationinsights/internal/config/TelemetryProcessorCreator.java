@@ -26,135 +26,145 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * The class will try to create the {@link TelemetryProcessor}
- * and will activate any 'setXXX' method based on the configuration. It will also populate the included
- * and excluded types if present.
- * <p>
- * Any exception thrown, or any setter method returns false will cause the processor to be ignored.
- * <p>
- * Created by gupele on 8/7/2016.
+ * The class will try to create the {@link TelemetryProcessor} and will activate any 'setXXX' method
+ * based on the configuration. It will also populate the included and excluded types if present.
+ *
+ * <p>Any exception thrown, or any setter method returns false will cause the processor to be
+ * ignored.
+ *
+ * <p>Created by gupele on 8/7/2016.
  */
 public final class TelemetryProcessorCreator {
 
-    public TelemetryProcessor Create(TelemetryProcessorXmlElement confClass) {
-        if (confClass == null) {
-            return null;
-        }
-
-        TelemetryProcessor processor = null;
-
-        processor = ReflectionUtils.createInstance(confClass.getType(), TelemetryProcessor.class);
-        if (processor == null) {
-            return null;
-        }
-
-
-        // If the <ExcludedTypes> tag is not empty
-
-        try {
-            if (confClass.getExcludedTypes() != null) {
-                if (confClass.getExcludedTypes().getExcludedType() != null) {
-                    for (String paramExcluded : confClass.getExcludedTypes().getExcludedType()) {
-                        try {
-                            if (!ReflectionUtils.activateMethod(processor, "addToExcludedType", paramExcluded, String.class)) {
-                                InternalLogger.INSTANCE.error("%s: method 'addToExcludedType' failed, the class will not be used.",
-                                        confClass.getType());
-                                return null;
-                            }
-                        } catch (ThreadDeath td) {
-                            throw td;
-                        } catch (Throwable t) {
-                            try {
-                                InternalLogger.INSTANCE.error("%s: failed to activate method 'methodName', " +
-                                                "the class will not be used. Exception : %s",
-                                        confClass.getType(), ExceptionUtils.getStackTrace(t));
-                                return null;
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t2) {
-                                // chomp
-                            }
-                        }
-                    }
-                } else {
-                    InternalLogger.INSTANCE.error("Empty list of Excluded Types");
-                }
-
-            } else {
-                InternalLogger.INSTANCE.info("Excluded types not specified falling back to default");
-            }
-
-            //If the <IncludedTypes> tag is not empty
-
-
-            if (confClass.getIncludedTypes() != null) {
-
-                if (confClass.getIncludedTypes().getIncludedType() != null) {
-                    for (String paramIncluded : confClass.getIncludedTypes().getIncludedType()) {
-                        try {
-                            if (!ReflectionUtils.activateMethod(processor, "addToIncludedType", paramIncluded, String.class)) {
-                                InternalLogger.INSTANCE.error("%s: method 'addToIncludeType' failed, the class will not be used.",
-                                        confClass.getType());
-                                return null;
-                            }
-                        } catch (ThreadDeath td) {
-                            throw td;
-                        } catch (Throwable t) {
-                            try {
-                                InternalLogger.INSTANCE.error("%s: failed to activate method 'methodName', " +
-                                        "the class will not be used. Exception : %s", confClass.getType(), ExceptionUtils.getStackTrace(t));
-
-                                return null;
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t2) {
-                                // chomp
-                            }
-                        }
-                    }
-                } else {
-                    InternalLogger.INSTANCE.error("Empty list of Included Types");
-                }
-
-            } else {
-                InternalLogger.INSTANCE.info("Included types not specified falling back to default");
-            }
-
-            for (ParamXmlElement param : confClass.getAdds()) {
-                String methodName = "set" + param.getName();
-                try {
-                    if (!ReflectionUtils.activateMethod(processor, methodName, param.getValue(), String.class)) {
-                        InternalLogger.INSTANCE.error("%s: method %s failed, the class will not be used.", confClass.getType(), methodName);
-                        return null;
-                    }
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t) {
-                    try {
-                        InternalLogger.INSTANCE.error("%s: failed to activate method %s,  the class will not be used. Exception : %s",
-                                confClass.getType(), methodName, ExceptionUtils.getStackTrace(t));
-                        return null;
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable t2) {
-                        // chomp
-                    }
-                }
-            }
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable throwable) {
-            try {
-                InternalLogger.INSTANCE.error("%s: unexpected exception while creating processor %s, the class will not be used. Exception : %s",
-                        confClass.getType(), confClass.getType(), ExceptionUtils.getStackTrace(throwable));
-                return null;
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
-        return processor;
+  public TelemetryProcessor Create(TelemetryProcessorXmlElement confClass) {
+    if (confClass == null) {
+      return null;
     }
+
+    TelemetryProcessor processor = null;
+
+    processor = ReflectionUtils.createInstance(confClass.getType(), TelemetryProcessor.class);
+    if (processor == null) {
+      return null;
+    }
+
+    // If the <ExcludedTypes> tag is not empty
+
+    try {
+      if (confClass.getExcludedTypes() != null) {
+        if (confClass.getExcludedTypes().getExcludedType() != null) {
+          for (String paramExcluded : confClass.getExcludedTypes().getExcludedType()) {
+            try {
+              if (!ReflectionUtils.activateMethod(
+                  processor, "addToExcludedType", paramExcluded, String.class)) {
+                InternalLogger.INSTANCE.error(
+                    "%s: method 'addToExcludedType' failed, the class will not be used.",
+                    confClass.getType());
+                return null;
+              }
+            } catch (ThreadDeath td) {
+              throw td;
+            } catch (Throwable t) {
+              try {
+                InternalLogger.INSTANCE.error(
+                    "%s: failed to activate method 'methodName', "
+                        + "the class will not be used. Exception : %s",
+                    confClass.getType(), ExceptionUtils.getStackTrace(t));
+                return null;
+              } catch (ThreadDeath td) {
+                throw td;
+              } catch (Throwable t2) {
+                // chomp
+              }
+            }
+          }
+        } else {
+          InternalLogger.INSTANCE.error("Empty list of Excluded Types");
+        }
+
+      } else {
+        InternalLogger.INSTANCE.info("Excluded types not specified falling back to default");
+      }
+
+      // If the <IncludedTypes> tag is not empty
+
+      if (confClass.getIncludedTypes() != null) {
+
+        if (confClass.getIncludedTypes().getIncludedType() != null) {
+          for (String paramIncluded : confClass.getIncludedTypes().getIncludedType()) {
+            try {
+              if (!ReflectionUtils.activateMethod(
+                  processor, "addToIncludedType", paramIncluded, String.class)) {
+                InternalLogger.INSTANCE.error(
+                    "%s: method 'addToIncludeType' failed, the class will not be used.",
+                    confClass.getType());
+                return null;
+              }
+            } catch (ThreadDeath td) {
+              throw td;
+            } catch (Throwable t) {
+              try {
+                InternalLogger.INSTANCE.error(
+                    "%s: failed to activate method 'methodName', "
+                        + "the class will not be used. Exception : %s",
+                    confClass.getType(), ExceptionUtils.getStackTrace(t));
+
+                return null;
+              } catch (ThreadDeath td) {
+                throw td;
+              } catch (Throwable t2) {
+                // chomp
+              }
+            }
+          }
+        } else {
+          InternalLogger.INSTANCE.error("Empty list of Included Types");
+        }
+
+      } else {
+        InternalLogger.INSTANCE.info("Included types not specified falling back to default");
+      }
+
+      for (ParamXmlElement param : confClass.getAdds()) {
+        String methodName = "set" + param.getName();
+        try {
+          if (!ReflectionUtils.activateMethod(
+              processor, methodName, param.getValue(), String.class)) {
+            InternalLogger.INSTANCE.error(
+                "%s: method %s failed, the class will not be used.",
+                confClass.getType(), methodName);
+            return null;
+          }
+        } catch (ThreadDeath td) {
+          throw td;
+        } catch (Throwable t) {
+          try {
+            InternalLogger.INSTANCE.error(
+                "%s: failed to activate method %s,  the class will not be used. Exception : %s",
+                confClass.getType(), methodName, ExceptionUtils.getStackTrace(t));
+            return null;
+          } catch (ThreadDeath td) {
+            throw td;
+          } catch (Throwable t2) {
+            // chomp
+          }
+        }
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable throwable) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "%s: unexpected exception while creating processor %s, the class will not be used. Exception : %s",
+            confClass.getType(), confClass.getType(), ExceptionUtils.getStackTrace(throwable));
+        return null;
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+    }
+
+    return processor;
+  }
 }

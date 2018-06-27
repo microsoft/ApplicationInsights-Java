@@ -21,36 +21,38 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public final class ProcessCpuPerformanceCounterTest {
-    private static final class TelemetryClassStub extends TelemetryClient {
-        private final PerformanceCounter performanceCounter;
+  @Test
+  public void testGetId() {
+    ProcessCpuPerformanceCounter pc = new ProcessCpuPerformanceCounter();
+    assertEquals(pc.getId(), Constants.PROCESS_CPU_PC_ID);
+  }
 
-        public TelemetryClassStub(PerformanceCounter performanceCounter) {
-            this.performanceCounter = performanceCounter;
-        }
+  private static final class TelemetryClassStub extends TelemetryClient {
+    private final PerformanceCounter performanceCounter;
 
-        public void track(Telemetry telemetry) {
-            if (!(telemetry instanceof PerformanceCounterTelemetry)) {
-                assertFalse(true);
-            }
-
-            PerformanceCounterTelemetry pct = (PerformanceCounterTelemetry)telemetry;
-            assertTrue(pct.getCategoryName().startsWith("Process("));
-            assertEquals(pct.getCounterName(), Constants.PROCESS_MEM_PC_COUNTER_NAME);
-            assertEquals(pct.getInstanceName(), "");
-        }
+    public TelemetryClassStub(PerformanceCounter performanceCounter) {
+      this.performanceCounter = performanceCounter;
     }
 
-    @Test
-    public void testGetId() {
-        ProcessCpuPerformanceCounter pc = new ProcessCpuPerformanceCounter();
-        assertEquals(pc.getId(), Constants.PROCESS_CPU_PC_ID);
+    public void track(Telemetry telemetry) {
+      if (!(telemetry instanceof PerformanceCounterTelemetry)) {
+        assertFalse(true);
+      }
+
+      PerformanceCounterTelemetry pct = (PerformanceCounterTelemetry) telemetry;
+      assertTrue(pct.getCategoryName().startsWith("Process("));
+      assertEquals(pct.getCounterName(), Constants.PROCESS_MEM_PC_COUNTER_NAME);
+      assertEquals(pct.getInstanceName(), "");
     }
+  }
 }

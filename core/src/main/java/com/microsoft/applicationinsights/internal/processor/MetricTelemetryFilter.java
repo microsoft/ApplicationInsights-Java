@@ -21,68 +21,68 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class can filter out MetricTelemetries with configurable names
- * <p>
- * Invalid values would prevent the filter from being used.
- * <p>
- * Created by gupele on 8/7/2016.
+ *
+ * <p>Invalid values would prevent the filter from being used.
+ *
+ * <p>Created by gupele on 8/7/2016.
  */
 public final class MetricTelemetryFilter implements TelemetryProcessor {
-    private HashSet<String> notNeeded = new HashSet<String>();
+  private HashSet<String> notNeeded = new HashSet<String>();
 
-    public void setNotNeeded(String allNotNeeded) throws Throwable {
-        try {
-            List<String> notNeededAsList = Arrays.asList(allNotNeeded.split(","));
-            for (String notNeeded : notNeededAsList) {
-                String ready = notNeeded.trim();
-                if (LocalStringsUtils.isNullOrEmpty(ready)) {
-                    continue;
-                }
-
-                this.notNeeded.add(ready);
-            }
-            InternalLogger.INSTANCE.trace(String.format("MetricTelemetryFilter: set NotNeeded: %s", notNeeded));
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("MetricTelemetryFilter: failed to parse NotNeededNames: %s, Exception : %s",
-                        allNotNeeded, ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            } finally {
-                throw t;
-            }
-
+  public void setNotNeeded(String allNotNeeded) throws Throwable {
+    try {
+      List<String> notNeededAsList = Arrays.asList(allNotNeeded.split(","));
+      for (String notNeeded : notNeededAsList) {
+        String ready = notNeeded.trim();
+        if (LocalStringsUtils.isNullOrEmpty(ready)) {
+          continue;
         }
+
+        this.notNeeded.add(ready);
+      }
+      InternalLogger.INSTANCE.trace(
+          String.format("MetricTelemetryFilter: set NotNeeded: %s", notNeeded));
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "MetricTelemetryFilter: failed to parse NotNeededNames: %s, Exception : %s",
+            allNotNeeded, ExceptionUtils.getStackTrace(t));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      } finally {
+        throw t;
+      }
+    }
+  }
+
+  @Override
+  public boolean process(Telemetry telemetry) {
+    if (telemetry == null) {
+      return true;
     }
 
-    @Override
-    public boolean process(Telemetry telemetry) {
-        if (telemetry == null) {
-            return true;
-        }
-
-        if (telemetry instanceof MetricTelemetry) {
-            MetricTelemetry mt = (MetricTelemetry) telemetry;
-            if (notNeeded.contains(mt.getName())) {
-                return false;
-            }
-        }
-        return true;
+    if (telemetry instanceof MetricTelemetry) {
+      MetricTelemetry mt = (MetricTelemetry) telemetry;
+      if (notNeeded.contains(mt.getName())) {
+        return false;
+      }
     }
+    return true;
+  }
 }

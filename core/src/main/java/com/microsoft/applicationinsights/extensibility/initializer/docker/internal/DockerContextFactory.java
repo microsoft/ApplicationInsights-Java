@@ -21,17 +21,14 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker.internal;
 
+import java.io.File;
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-
-/**
- * Created by yonisha on 7/29/2015.
- */
+/** Created by yonisha on 7/29/2015. */
 public class DockerContextFactory {
-    public DockerContext createDockerContext(File contextFile) throws Exception {
-        String json = FileUtils.readLines(contextFile, "utf-8").get(0);
+  public DockerContext createDockerContext(File contextFile) throws Exception {
+    String json = FileUtils.readLines(contextFile, "utf-8").get(0);
 
-        return new DockerContext(json);
-    }
+    return new DockerContext(json);
+  }
 }

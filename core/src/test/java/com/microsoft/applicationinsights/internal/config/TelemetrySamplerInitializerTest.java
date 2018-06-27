@@ -21,49 +21,48 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.sampling.AdaptiveTelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.sampling.FixedRateTelemetrySampler;
-import junit.framework.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by gupele on 11/14/2016.
- */
+/** Created by gupele on 11/14/2016. */
 public class TelemetrySamplerInitializerTest {
-    @Test
-    public void testFixed() {
-        SamplerXmlElement configuration = new SamplerXmlElement();
-        FixedSamplerXmlElement fixedSamplerXmlElement = new FixedSamplerXmlElement();
-        fixedSamplerXmlElement.setIncludeTypes("include");
-        fixedSamplerXmlElement.setExcludeTypes("exclude");
-        fixedSamplerXmlElement.setSamplingPercentage("99.9");
-        configuration.setFixedSamplerXmlElement(fixedSamplerXmlElement);
+  @Test
+  public void testFixed() {
+    SamplerXmlElement configuration = new SamplerXmlElement();
+    FixedSamplerXmlElement fixedSamplerXmlElement = new FixedSamplerXmlElement();
+    fixedSamplerXmlElement.setIncludeTypes("include");
+    fixedSamplerXmlElement.setExcludeTypes("exclude");
+    fixedSamplerXmlElement.setSamplingPercentage("99.9");
+    configuration.setFixedSamplerXmlElement(fixedSamplerXmlElement);
 
-        TelemetrySamplerInitializer tested = new TelemetrySamplerInitializer();
-        TelemetrySampler sampler = tested.getSampler(configuration);
+    TelemetrySamplerInitializer tested = new TelemetrySamplerInitializer();
+    TelemetrySampler sampler = tested.getSampler(configuration);
 
-        assertNotNull(sampler);
-        assertTrue(sampler instanceof FixedRateTelemetrySampler);
-        assertEquals(sampler.getSamplingPercentage(), 99.9, 0.0);
-    }
+    assertNotNull(sampler);
+    assertTrue(sampler instanceof FixedRateTelemetrySampler);
+    assertEquals(sampler.getSamplingPercentage(), 99.9, 0.0);
+  }
 
-    @Test
-    public void testAdaptive() {
-        SamplerXmlElement configuration = new SamplerXmlElement();
-        AdaptiveSamplerXmlElement adaptiveSamplerXmlElement = new AdaptiveSamplerXmlElement();
-        adaptiveSamplerXmlElement.setIncludeTypes("include");
-        adaptiveSamplerXmlElement.setExcludeTypes("exclude");
-        adaptiveSamplerXmlElement.setInitialSamplingPercentage("99.9");
-        configuration.setAdaptiveSamplerXmlElement(adaptiveSamplerXmlElement);
+  @Test
+  public void testAdaptive() {
+    SamplerXmlElement configuration = new SamplerXmlElement();
+    AdaptiveSamplerXmlElement adaptiveSamplerXmlElement = new AdaptiveSamplerXmlElement();
+    adaptiveSamplerXmlElement.setIncludeTypes("include");
+    adaptiveSamplerXmlElement.setExcludeTypes("exclude");
+    adaptiveSamplerXmlElement.setInitialSamplingPercentage("99.9");
+    configuration.setAdaptiveSamplerXmlElement(adaptiveSamplerXmlElement);
 
-        TelemetrySamplerInitializer tested = new TelemetrySamplerInitializer();
-        TelemetrySampler sampler = tested.getSampler(configuration);
+    TelemetrySamplerInitializer tested = new TelemetrySamplerInitializer();
+    TelemetrySampler sampler = tested.getSampler(configuration);
 
-        assertNotNull(sampler);
-        assertTrue(sampler instanceof AdaptiveTelemetrySampler);
-        assertEquals(sampler.getSamplingPercentage(), 99.9, 0.0);
-    }
+    assertNotNull(sampler);
+    assertTrue(sampler instanceof AdaptiveTelemetrySampler);
+    assertEquals(sampler.getSamplingPercentage(), 99.9, 0.0);
+  }
 }

@@ -21,54 +21,53 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Test;
+
 public final class TraceTelemetryTest {
-    @Test
-    public void testEmptyCtor() {
-        TraceTelemetry telemetry = new TraceTelemetry();
+  private static void testSeverityLevel(SeverityLevel severityLevel) {
+    TraceTelemetry telemetry = new TraceTelemetry("Mock");
 
-        assertEquals("", telemetry.getMessage());
-    }
+    telemetry.setSeverityLevel(severityLevel);
+    assertEquals(telemetry.getSeverityLevel(), severityLevel);
+  }
 
-    @Test
-    public void testCtor() {
-        TraceTelemetry telemetry = new TraceTelemetry("MockMessage");
+  @Test
+  public void testEmptyCtor() {
+    TraceTelemetry telemetry = new TraceTelemetry();
 
-        assertEquals(telemetry.getMessage(), "MockMessage");
-    }
+    assertEquals("", telemetry.getMessage());
+  }
 
-    @Test
-    public void testSetMessage() {
-        TraceTelemetry telemetry = new TraceTelemetry("MockMessage");
+  @Test
+  public void testCtor() {
+    TraceTelemetry telemetry = new TraceTelemetry("MockMessage");
 
-        telemetry.setMessage("MockMessage1");
-        assertEquals(telemetry.getMessage(), "MockMessage1");
-    }
+    assertEquals(telemetry.getMessage(), "MockMessage");
+  }
 
-    @Test
-    public void testSetSeverityLevel() {
-        testSeverityLevel(SeverityLevel.Error);
-    }
+  @Test
+  public void testSetMessage() {
+    TraceTelemetry telemetry = new TraceTelemetry("MockMessage");
 
-    @Test
-    public void testSetSeverityLevelWithNull() {
-        testSeverityLevel(null);
-    }
+    telemetry.setMessage("MockMessage1");
+    assertEquals(telemetry.getMessage(), "MockMessage1");
+  }
 
-    @Test
-    public void testFirstValueIsNull() {
-        TraceTelemetry telemetry = new TraceTelemetry("Mock");
-        assertEquals(telemetry.getSeverityLevel(), null);
-    }
+  @Test
+  public void testSetSeverityLevel() {
+    testSeverityLevel(SeverityLevel.Error);
+  }
 
-    private static void testSeverityLevel(SeverityLevel severityLevel) {
-        TraceTelemetry telemetry = new TraceTelemetry("Mock");
+  @Test
+  public void testSetSeverityLevelWithNull() {
+    testSeverityLevel(null);
+  }
 
-        telemetry.setSeverityLevel(severityLevel);
-        assertEquals(telemetry.getSeverityLevel(), severityLevel);
-    }
+  @Test
+  public void testFirstValueIsNull() {
+    TraceTelemetry telemetry = new TraceTelemetry("Mock");
+    assertEquals(telemetry.getSeverityLevel(), null);
+  }
 }

@@ -21,13 +21,11 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-/**
- * Session states.
- */
+/** Session states. */
 public enum SessionState {
-    /// Indicates that a user session started.
-    Start,
+  /// Indicates that a user session started.
+  Start,
 
-    /// Indicates that a user session ended.
-    End
+  /// Indicates that a user session ended.
+  End
 }

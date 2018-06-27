@@ -21,21 +21,17 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
-/**
- * Created by gupele on 1/14/2015.
- */
+/** Created by gupele on 1/14/2015. */
 public final class ConsoleLoggerOutput implements LoggerOutput {
-    private final static String PREFIX = "AI: ";
+  private static final String PREFIX = "AI: ";
 
-    ConsoleLoggerOutput() {
-    }
+  ConsoleLoggerOutput() {}
 
-    @Override
-    public void log(String message) {
-        System.err.println(PREFIX + message);
-    }
+  @Override
+  public void log(String message) {
+    System.err.println(PREFIX + message);
+  }
 
-    @Override
-    public void close() {
-    }
+  @Override
+  public void close() {}
 }

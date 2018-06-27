@@ -26,11 +26,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Created by gupele on 7/26/2016.
- */
+/** Created by gupele on 7/26/2016. */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BuiltInProcessor {
-    String value();
+  String value();
 }

@@ -23,17 +23,15 @@ package com.microsoft.applicationinsights.internal.logger;
 
 import java.io.IOException;
 
-/**
- * Created by gupele on 2/1/2015.
- */
+/** Created by gupele on 2/1/2015. */
 public interface LogFileProxy {
-    void close() throws IOException;
+  void close() throws IOException;
 
-    void delete();
+  void delete();
 
-    void writeLine(String line) throws IOException;
+  void writeLine(String line) throws IOException;
 
-    boolean isFull();
+  boolean isFull();
 
-    void flush();
+  void flush();
 }

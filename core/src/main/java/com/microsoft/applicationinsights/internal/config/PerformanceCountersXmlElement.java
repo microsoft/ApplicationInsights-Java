@@ -21,74 +21,74 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 
-/**
- * Created by gupele on 3/15/2015.
- */
+/** Created by gupele on 3/15/2015. */
 public class PerformanceCountersXmlElement {
-    private boolean useBuiltIn = true;
-    private long collectionFrequencyInSec = 60;
-    private PerformanceCounterJvmSectionXmlElement jvmSection;
-    private String plugin;
+  private boolean useBuiltIn = true;
+  private long collectionFrequencyInSec = 60;
+  private PerformanceCounterJvmSectionXmlElement jvmSection;
+  private String plugin;
 
-    private ArrayList<JmxXmlElement> jmxXmlElements;
-    private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
+  private ArrayList<JmxXmlElement> jmxXmlElements;
+  private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
 
-    public ArrayList<JmxXmlElement> getJmxXmlElements() {
-        return jmxXmlElements;
-    }
+  public ArrayList<JmxXmlElement> getJmxXmlElements() {
+    return jmxXmlElements;
+  }
 
-    @XmlElementWrapper(name="Jmx")
-    @XmlElement(name="Add")
-    public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
-        this.jmxXmlElements = jmxXmlElements;
-    }
+  @XmlElementWrapper(name = "Jmx")
+  @XmlElement(name = "Add")
+  public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
+    this.jmxXmlElements = jmxXmlElements;
+  }
 
-    public boolean isUseBuiltIn() {
-        return useBuiltIn;
-    }
+  public boolean isUseBuiltIn() {
+    return useBuiltIn;
+  }
 
-    @XmlElement(name="UseBuiltIn")
-    public void setUseBuiltIn(boolean useBuiltIn) {
-        this.useBuiltIn = useBuiltIn;
-    }
+  @XmlElement(name = "UseBuiltIn")
+  public void setUseBuiltIn(boolean useBuiltIn) {
+    this.useBuiltIn = useBuiltIn;
+  }
 
-    public ArrayList<WindowsPerformanceCounterXmlElement> getWindowsPCs() {
-        return windowsPCs;
-    }
+  public ArrayList<WindowsPerformanceCounterXmlElement> getWindowsPCs() {
+    return windowsPCs;
+  }
 
-    @XmlElementWrapper(name="Windows")
-    @XmlElement(name="Add")
-    public void setWindowsPCs(ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs) {
-        this.windowsPCs = windowsPCs;
-    }
+  @XmlElementWrapper(name = "Windows")
+  @XmlElement(name = "Add")
+  public void setWindowsPCs(ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs) {
+    this.windowsPCs = windowsPCs;
+  }
 
-    public long getCollectionFrequencyInSec() {
-        return collectionFrequencyInSec;
-    }
+  public long getCollectionFrequencyInSec() {
+    return collectionFrequencyInSec;
+  }
 
-    @XmlAttribute
-    public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
-        this.collectionFrequencyInSec = collectionFrequencyInSec;
-    }
+  @XmlAttribute
+  public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
+    this.collectionFrequencyInSec = collectionFrequencyInSec;
+  }
 
-    public PerformanceCounterJvmSectionXmlElement getJvmSection() {
-        return jvmSection;
-    }
+  public PerformanceCounterJvmSectionXmlElement getJvmSection() {
+    return jvmSection;
+  }
 
-    @XmlElement(name="Jvm")
-    public void setJvmSection(PerformanceCounterJvmSectionXmlElement jvmSection) {
-        this.jvmSection = jvmSection;
-    }
+  @XmlElement(name = "Jvm")
+  public void setJvmSection(PerformanceCounterJvmSectionXmlElement jvmSection) {
+    this.jvmSection = jvmSection;
+  }
 
-    public String getPlugin() {
-        return plugin;
-    }
+  public String getPlugin() {
+    return plugin;
+  }
 
-    @XmlElement(name="Plugin")
-    public void setPlugin(String plugin) {
-        this.plugin = plugin;
-    }
+  @XmlElement(name = "Plugin")
+  public void setPlugin(String plugin) {
+    this.plugin = plugin;
+  }
 }

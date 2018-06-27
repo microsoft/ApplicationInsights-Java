@@ -21,68 +21,69 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker.internal;
 
-import java.io.File;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.io.File;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-/**
- * Created by yonisha on 7/29/2015.
- */
+/** Created by yonisha on 7/29/2015. */
 public class DockerContextPoller extends Thread {
-    private static final String CONTEXT_FILE_NAME = "docker.info";
-    private File contextFile;
-    private DockerContextFactory dockerContextFactory;
-    private volatile DockerContext dockerContext;
-    protected int THREAD_POLLING_INTERVAL_MS = 2 * 1000; // 2 Seconds.
+  private static final String CONTEXT_FILE_NAME = "docker.info";
+  protected int THREAD_POLLING_INTERVAL_MS = 2 * 1000; // 2 Seconds.
+  private File contextFile;
+  private DockerContextFactory dockerContextFactory;
+  private volatile DockerContext dockerContext;
 
-    protected DockerContextPoller(File contextFile, DockerContextFactory dockerContextFactory) {
-        this.contextFile = contextFile;
-        this.dockerContextFactory = dockerContextFactory;
-    }
+  protected DockerContextPoller(File contextFile, DockerContextFactory dockerContextFactory) {
+    this.contextFile = contextFile;
+    this.dockerContextFactory = dockerContextFactory;
+  }
 
-    public DockerContextPoller(String contextFileDirectory) {
-        this(new File(contextFileDirectory + "/" + CONTEXT_FILE_NAME), new DockerContextFactory());
-        this.setDaemon(true);
-        this.setName(DockerContextPoller.class.getSimpleName());
-    }
+  public DockerContextPoller(String contextFileDirectory) {
+    this(new File(contextFileDirectory + "/" + CONTEXT_FILE_NAME), new DockerContextFactory());
+    this.setDaemon(true);
+    this.setName(DockerContextPoller.class.getSimpleName());
+  }
 
-    @Override
-    public void run() {
-        InternalLogger.INSTANCE.info("Starting to poll for Docker context file under: %s", this.contextFile.getAbsolutePath());
+  @Override
+  public void run() {
+    InternalLogger.INSTANCE.info(
+        "Starting to poll for Docker context file under: %s", this.contextFile.getAbsolutePath());
 
-        boolean fileExists = false;
-        while (!fileExists){
-            fileExists = contextFile.exists();
+    boolean fileExists = false;
+    while (!fileExists) {
+      fileExists = contextFile.exists();
 
-            if (!fileExists) {
-                try {
-                    Thread.sleep(THREAD_POLLING_INTERVAL_MS);
-
-                    continue;
-                } catch (InterruptedException e) {
-                    InternalLogger.INSTANCE.error("Error while executing docker context poller");
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-                }
-            }
-        }
-
+      if (!fileExists) {
         try {
-            InternalLogger.INSTANCE.info("Docker context file has been found.");
-            this.dockerContext = this.dockerContextFactory.createDockerContext(this.contextFile);
-            InternalLogger.INSTANCE.info("Docker context file has been deserialized successfully");
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Docker context file failed to be parsed with error: %s",  e.toString());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+          Thread.sleep(THREAD_POLLING_INTERVAL_MS);
+
+          continue;
+        } catch (InterruptedException e) {
+          InternalLogger.INSTANCE.error("Error while executing docker context poller");
+          InternalLogger.INSTANCE.trace(
+              "Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
         }
-
-        InternalLogger.INSTANCE.info("Docker context poller finished polling for context file.");
+      }
     }
 
-    public boolean isCompleted() {
-        return !this.isAlive();
+    try {
+      InternalLogger.INSTANCE.info("Docker context file has been found.");
+      this.dockerContext = this.dockerContextFactory.createDockerContext(this.contextFile);
+      InternalLogger.INSTANCE.info("Docker context file has been deserialized successfully");
+    } catch (Exception e) {
+      InternalLogger.INSTANCE.error(
+          "Docker context file failed to be parsed with error: %s", e.toString());
+      InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
     }
 
-    public DockerContext getDockerContext() {
-        return this.dockerContext;
-    }
+    InternalLogger.INSTANCE.info("Docker context poller finished polling for context file.");
+  }
+
+  public boolean isCompleted() {
+    return !this.isAlive();
+  }
+
+  public DockerContext getDockerContext() {
+    return this.dockerContext;
+  }
 }

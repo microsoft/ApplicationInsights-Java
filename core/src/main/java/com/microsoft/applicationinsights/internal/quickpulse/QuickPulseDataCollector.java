@@ -21,178 +21,179 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-/**
- * Created by gupele on 12/5/2016.
- */
+/** Created by gupele on 12/5/2016. */
 public enum QuickPulseDataCollector {
-    INSTANCE;
+  INSTANCE;
 
-    private String ikey;
+  private final MemoryMXBean memory;
+  private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+  private String ikey;
+  private AtomicReference<Counters> counters = new AtomicReference<Counters>(null);
 
-    static class FinalCounters {
-        public final double exceptions;
-        public final long requests;
-        public final double requestsDuration;
-        public final long unsuccessfulRequests;
-        public final long rdds;
-        public final double rddsDuration;
-        public final long unsuccessfulRdds;
-        public final long memoryCommitted;
-        public final double cpuUsage;
+  QuickPulseDataCollector() {
+    CpuPerformanceCounterCalculator temp;
+    try {
+      temp = new CpuPerformanceCounterCalculator();
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalLogger.INSTANCE.trace(
+            "Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+      temp = null;
+    }
+    cpuPerformanceCounterCalculator = temp;
+    memory = ManagementFactory.getMemoryMXBean();
+  }
 
-        public FinalCounters(Counters currentCounters, MemoryMXBean memory, CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator) {
-            if (memory != null && memory.getHeapMemoryUsage() != null) {
-                memoryCommitted = memory.getHeapMemoryUsage().getCommitted();
-            } else {
-                memoryCommitted = -1;
-            }
-            if (cpuPerformanceCounterCalculator != null) {
-                cpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
-            } else {
-                cpuUsage = -1;
-            }
-            exceptions = currentCounters.exceptions.get();
+  public synchronized void disable() {
+    counters.set(null);
+  }
 
-            CountAndDuration countAndDuration = currentCounters.decodeCountAndDuration(currentCounters.requestsAndDurations.get());
-            requests = countAndDuration.count;
-            this.requestsDuration = countAndDuration.duration;
-            this.unsuccessfulRequests = currentCounters.unsuccessfulRequests.get();
+  public synchronized void enable(final String ikey) {
+    this.ikey = ikey;
+    counters.set(new Counters());
+  }
 
-            countAndDuration = currentCounters.decodeCountAndDuration(currentCounters.rddsAndDuations.get());
-            this.rdds = countAndDuration.count;
-            this.rddsDuration = countAndDuration.duration;
-            this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
-        }
+  public FinalCounters getAndRestart() {
+    final Counters currentCounters = counters.getAndSet(new Counters());
+    if (currentCounters != null) {
+      return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
     }
 
-    private static class CountAndDuration {
-        public final long count;
-        public final long duration;
+    return null;
+  }
 
-        private CountAndDuration(long count, long duration) {
-            this.count = count;
-            this.duration = duration;
-        }
+  public void add(Telemetry telemetry) {
+    if (!telemetry.getContext().getInstrumentationKey().equals(ikey)) {
+      return;
     }
 
-    private static class Counters {
-        private final static long MAX_COUNT = 524287L;
-        private final static long MAX_DURATION = 17592186044415L;
+    if (telemetry instanceof RequestTelemetry) {
+      RequestTelemetry requestTelemetry = (RequestTelemetry) telemetry;
+      addRequest(requestTelemetry);
+    } else if (telemetry instanceof RemoteDependencyTelemetry) {
+      addDependency((RemoteDependencyTelemetry) telemetry);
+    } else if (telemetry instanceof ExceptionTelemetry) {
+      addException();
+    }
+  }
 
-        public AtomicInteger exceptions = new AtomicInteger(0);
+  private void addDependency(RemoteDependencyTelemetry telemetry) {}
 
-        public AtomicLong requestsAndDurations = new AtomicLong(0);
-        public AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
-
-        public AtomicLong rddsAndDuations = new AtomicLong(0);
-        public AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
-
-        public static long encodeCountAndDuration(long  count, long duration) {
-            if (count > MAX_COUNT || duration > MAX_DURATION) {
-                return 0;
-            }
-
-            return (count << 44) + duration;
-        }
-
-        public static CountAndDuration decodeCountAndDuration(long countAndDuration) {
-            return new CountAndDuration(countAndDuration >> 44, countAndDuration & MAX_DURATION);
-        }
+  private void addException() {
+    Counters counters = this.counters.get();
+    if (counters == null) {
+      return;
     }
 
-    private AtomicReference<Counters> counters = new AtomicReference<Counters>(null);
-    private final MemoryMXBean memory;
-    private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+    counters.exceptions.incrementAndGet();
+  }
 
-    QuickPulseDataCollector() {
-        CpuPerformanceCounterCalculator temp;
-        try {
-            temp = new CpuPerformanceCounterCalculator();
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-            temp = null;
-        }
-        cpuPerformanceCounterCalculator = temp;
-        memory = ManagementFactory.getMemoryMXBean();
+  private void addRequest(RequestTelemetry requestTelemetry) {
+    Counters counters = this.counters.get();
+    if (counters == null) {
+      return;
     }
 
-    public synchronized void disable() {
-        counters.set(null);
+    counters.requestsAndDurations.addAndGet(
+        Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getMilliseconds()));
+    if (!requestTelemetry.isSuccess()) {
+      counters.unsuccessfulRequests.incrementAndGet();
+    }
+  }
+
+  static class FinalCounters {
+    public final double exceptions;
+    public final long requests;
+    public final double requestsDuration;
+    public final long unsuccessfulRequests;
+    public final long rdds;
+    public final double rddsDuration;
+    public final long unsuccessfulRdds;
+    public final long memoryCommitted;
+    public final double cpuUsage;
+
+    public FinalCounters(
+        Counters currentCounters,
+        MemoryMXBean memory,
+        CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator) {
+      if (memory != null && memory.getHeapMemoryUsage() != null) {
+        memoryCommitted = memory.getHeapMemoryUsage().getCommitted();
+      } else {
+        memoryCommitted = -1;
+      }
+      if (cpuPerformanceCounterCalculator != null) {
+        cpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
+      } else {
+        cpuUsage = -1;
+      }
+      exceptions = currentCounters.exceptions.get();
+
+      CountAndDuration countAndDuration =
+          currentCounters.decodeCountAndDuration(currentCounters.requestsAndDurations.get());
+      requests = countAndDuration.count;
+      this.requestsDuration = countAndDuration.duration;
+      this.unsuccessfulRequests = currentCounters.unsuccessfulRequests.get();
+
+      countAndDuration =
+          currentCounters.decodeCountAndDuration(currentCounters.rddsAndDuations.get());
+      this.rdds = countAndDuration.count;
+      this.rddsDuration = countAndDuration.duration;
+      this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
+    }
+  }
+
+  private static class CountAndDuration {
+    public final long count;
+    public final long duration;
+
+    private CountAndDuration(long count, long duration) {
+      this.count = count;
+      this.duration = duration;
+    }
+  }
+
+  private static class Counters {
+    private static final long MAX_COUNT = 524287L;
+    private static final long MAX_DURATION = 17592186044415L;
+
+    public AtomicInteger exceptions = new AtomicInteger(0);
+
+    public AtomicLong requestsAndDurations = new AtomicLong(0);
+    public AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
+
+    public AtomicLong rddsAndDuations = new AtomicLong(0);
+    public AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
+
+    public static long encodeCountAndDuration(long count, long duration) {
+      if (count > MAX_COUNT || duration > MAX_DURATION) {
+        return 0;
+      }
+
+      return (count << 44) + duration;
     }
 
-    public synchronized void enable(final String ikey) {
-        this.ikey = ikey;
-        counters.set(new Counters());
+    public static CountAndDuration decodeCountAndDuration(long countAndDuration) {
+      return new CountAndDuration(countAndDuration >> 44, countAndDuration & MAX_DURATION);
     }
-
-    public FinalCounters getAndRestart() {
-        final Counters currentCounters = counters.getAndSet(new Counters());
-        if (currentCounters != null) {
-            return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
-        }
-
-        return null;
-    }
-
-    public void add(Telemetry telemetry) {
-        if (!telemetry.getContext().getInstrumentationKey().equals(ikey)) {
-            return;
-        }
-
-        if (telemetry instanceof RequestTelemetry) {
-            RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
-            addRequest(requestTelemetry);
-        } else if (telemetry instanceof RemoteDependencyTelemetry) {
-            addDependency((RemoteDependencyTelemetry) telemetry);
-        } else if (telemetry instanceof ExceptionTelemetry) {
-            addException();
-        }
-    }
-
-    private void addDependency(RemoteDependencyTelemetry telemetry) {
-    }
-
-    private void addException() {
-        Counters counters = this.counters.get();
-        if (counters == null) {
-            return;
-        }
-
-        counters.exceptions.incrementAndGet();
-    }
-
-    private void addRequest(RequestTelemetry requestTelemetry) {
-        Counters counters = this.counters.get();
-        if (counters == null) {
-            return;
-        }
-
-        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getMilliseconds()));
-        if (!requestTelemetry.isSuccess()) {
-            counters.unsuccessfulRequests.incrementAndGet();
-        }
-    }
+  }
 }

@@ -21,88 +21,97 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public final class SenderThreadLocalDataTest {
-    @Test(expected = NullPointerException.class)
-    public void testNotSupplyingBackOffTimesContainer() {
-        new SenderThreadLocalBackOffData(null, 0);
+  private static void verifyBackOff(
+      SenderThreadLocalBackOffData sender, int backOffTimes, int expectedSeconds) {
+    long started = System.nanoTime();
+    for (int i = 0; i < backOffTimes; ++i) {
+      sender.backOff();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testWithEmptyBackOffTimesContainer() {
-        new SenderThreadLocalBackOffData(new long[]{}, 0);
-    }
+    int elapsed = (int) ((double) (System.nanoTime() - started) / 1000000000.0);
+    assertTrue(
+        String.format("BackOff lasted %d which is less than expected %d", elapsed, expectedSeconds),
+        elapsed >= expectedSeconds);
+    assertTrue(
+        String.format("BackOff lasted %d which is more than expected %d", elapsed, expectedSeconds),
+        elapsed <= expectedSeconds + 2);
+    assertTrue(sender.isTryingToSend());
+  }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testWithEmptyNegativeAddSeconds() {
-        new SenderThreadLocalBackOffData(new long[]{1000}, -1);
-    }
+  private static void verifyOnDoneSending(SenderThreadLocalBackOffData sender) {
+    sender.onDoneSending();
 
-    @Test
-    public void testStateAfterCtor() {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000});
+    assertFalse(sender.isTryingToSend());
+  }
 
-        assertFalse(sender.isTryingToSend());
-    }
+  @Test(expected = NullPointerException.class)
+  public void testNotSupplyingBackOffTimesContainer() {
+    new SenderThreadLocalBackOffData(null, 0);
+  }
 
-    @Test
-    public void testMultipleOnFailedSending() {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000,2000,1000});
-        verifyBackOff(sender, 3, 4);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testWithEmptyBackOffTimesContainer() {
+    new SenderThreadLocalBackOffData(new long[] {}, 0);
+  }
 
-    @Test
-    public void testOnDoneSending() {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000});
-        verifyOnDoneSending(sender);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testWithEmptyNegativeAddSeconds() {
+    new SenderThreadLocalBackOffData(new long[] {1000}, -1);
+  }
 
-    @Test
-    public void testDoneSendingAfterFailedSending() {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[]{1000});
-        verifyBackOff(sender, 1, 1);
-        verifyOnDoneSending(sender);
-    }
+  @Test
+  public void testStateAfterCtor() {
+    final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000});
 
-    @Test
-    public void testStopWhileWaiting() throws InterruptedException {
-        final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[]{10000});
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+    assertFalse(sender.isTryingToSend());
+  }
+
+  @Test
+  public void testMultipleOnFailedSending() {
+    final SenderThreadLocalBackOffData sender =
+        createSenderThreadLocalData(new long[] {1000, 2000, 1000});
+    verifyBackOff(sender, 3, 4);
+  }
+
+  @Test
+  public void testOnDoneSending() {
+    final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000});
+    verifyOnDoneSending(sender);
+  }
+
+  @Test
+  public void testDoneSendingAfterFailedSending() {
+    final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {1000});
+    verifyBackOff(sender, 1, 1);
+    verifyOnDoneSending(sender);
+  }
+
+  @Test
+  public void testStopWhileWaiting() throws InterruptedException {
+    final SenderThreadLocalBackOffData sender = createSenderThreadLocalData(new long[] {10000});
+    Thread thread =
+        new Thread(
+            new Runnable() {
+              @Override
+              public void run() {
                 sender.stop();
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
-        sender.backOff();
-        verifyOnDoneSending(sender);
-        thread.join();
-    }
+              }
+            });
+    thread.setDaemon(true);
+    thread.start();
+    sender.backOff();
+    verifyOnDoneSending(sender);
+    thread.join();
+  }
 
-    private SenderThreadLocalBackOffData createSenderThreadLocalData(long[] backOffs) {
-        SenderThreadLocalBackOffData sender = new SenderThreadLocalBackOffData(backOffs, 0);
-        return sender;
-    }
-
-    private static void verifyBackOff(SenderThreadLocalBackOffData sender, int backOffTimes, int expectedSeconds) {
-        long started = System.nanoTime();
-        for (int i = 0; i < backOffTimes; ++i) {
-            sender.backOff();
-        }
-
-        int elapsed = (int)((double)(System.nanoTime() - started) / 1000000000.0);
-        assertTrue(String.format("BackOff lasted %d which is less than expected %d", elapsed, expectedSeconds), elapsed >= expectedSeconds);
-        assertTrue(String.format("BackOff lasted %d which is more than expected %d", elapsed, expectedSeconds), elapsed <= expectedSeconds + 2);
-        assertTrue(sender.isTryingToSend());
-    }
-
-    private static void verifyOnDoneSending(SenderThreadLocalBackOffData sender) {
-        sender.onDoneSending();
-
-        assertFalse(sender.isTryingToSend());
-    }
+  private SenderThreadLocalBackOffData createSenderThreadLocalData(long[] backOffs) {
+    SenderThreadLocalBackOffData sender = new SenderThreadLocalBackOffData(backOffs, 0);
+    return sender;
+  }
 }

@@ -24,16 +24,14 @@ package com.microsoft.applicationinsights.internal.config;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
-/**
- * Created by gupele on 8/7/2016.
- */
+/** Created by gupele on 8/7/2016. */
 public class TestProcessorThatFailsOnCtor implements TelemetryProcessor {
-    public TestProcessorThatFailsOnCtor() {
-        throw new RuntimeException();
-    }
+  public TestProcessorThatFailsOnCtor() {
+    throw new RuntimeException();
+  }
 
-    @Override
-    public boolean process(Telemetry telemetry) {
-        return false;
-    }
+  @Override
+  public boolean process(Telemetry telemetry) {
+    return false;
+  }
 }

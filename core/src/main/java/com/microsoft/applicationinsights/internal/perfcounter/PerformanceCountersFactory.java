@@ -24,18 +24,19 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import java.util.Collection;
 
 /**
- * Defines the interface that concrete factories should follow.
- * The major method is the one that will be able create the needed Performance Counters.
+ * Defines the interface that concrete factories should follow. The major method is the one that
+ * will be able create the needed Performance Counters.
  *
- * Created by gupele on 3/3/2015.
+ * <p>Created by gupele on 3/3/2015.
  */
 public interface PerformanceCountersFactory {
-    /**
-     * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
-     *
-     * Note: The method should not throw
-     *
-     * @return A collection of {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
-     */
-    Collection<PerformanceCounter> getPerformanceCounters();
+  /**
+   * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
+   *
+   * <p>Note: The method should not throw
+   *
+   * @return A collection of {@link
+   *     com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
+   */
+  Collection<PerformanceCounter> getPerformanceCounters();
 }

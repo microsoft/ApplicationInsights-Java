@@ -21,85 +21,84 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.io.IOException;
-
-import org.junit.Test;
-
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import org.junit.Test;
 
 public final class ExceptionTelemetryTest {
 
-    @Test
-    public void testSetException() {
-        NullPointerException exception = new NullPointerException("mock");
-        ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
+  private static void testSeverityLevel(SeverityLevel severityLevel) {
+    ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
 
-        NullPointerException exception1 = new NullPointerException("mock");
-        exceptionTelemetry.setException(exception1);
+    telemetry.setSeverityLevel(severityLevel);
+    assertEquals(telemetry.getSeverityLevel(), severityLevel);
+  }
 
-        assertSame(exception1, exceptionTelemetry.getException());
-    }
+  @Test
+  public void testSetException() {
+    NullPointerException exception = new NullPointerException("mock");
+    ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
 
-    @Test
-    public void testCtor() {
-        NullPointerException exception = new NullPointerException("mock");
-        ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
+    NullPointerException exception1 = new NullPointerException("mock");
+    exceptionTelemetry.setException(exception1);
 
-        assertSame(exception, exceptionTelemetry.getException());
-        assertTrue(exceptionTelemetry.getProperties().isEmpty());
-        assertTrue(exceptionTelemetry.getMetrics().isEmpty());
-        assertEquals(exceptionTelemetry.getExceptions().size(), 1);
-    }
+    assertSame(exception1, exceptionTelemetry.getException());
+  }
 
-    @Test
-    public void testExceptions() {
-        Exception exception = new IOException("mocka", new IllegalArgumentException("mockb"));
-        ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
+  @Test
+  public void testCtor() {
+    NullPointerException exception = new NullPointerException("mock");
+    ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
 
-        assertEquals(exceptionTelemetry.getExceptions().size(), 2);
-    }
+    assertSame(exception, exceptionTelemetry.getException());
+    assertTrue(exceptionTelemetry.getProperties().isEmpty());
+    assertTrue(exceptionTelemetry.getMetrics().isEmpty());
+    assertEquals(exceptionTelemetry.getExceptions().size(), 1);
+  }
 
-    @Test
-    public void testSetSeverityLevel() {
-        testSeverityLevel(SeverityLevel.Error);
-    }
+  @Test
+  public void testExceptions() {
+    Exception exception = new IOException("mocka", new IllegalArgumentException("mockb"));
+    ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
 
-    @Test
-    public void testSetSeverityLevelWithNull() {
-        testSeverityLevel(null);
-    }
+    assertEquals(exceptionTelemetry.getExceptions().size(), 2);
+  }
 
-    @Test
-    public void testFirstValueIsNull() {
-        ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
-        assertEquals(telemetry.getSeverityLevel(), null);
-    }
+  @Test
+  public void testSetSeverityLevel() {
+    testSeverityLevel(SeverityLevel.Error);
+  }
 
-    @Test
-    public void testGetThrowableOnException() {
-        IOException exception = new IOException("mock");
-        ExceptionTelemetry telemetry = new ExceptionTelemetry(exception);
+  @Test
+  public void testSetSeverityLevelWithNull() {
+    testSeverityLevel(null);
+  }
 
-        assertSame(exception, telemetry.getThrowable());
-        assertSame(exception, telemetry.getException());
-    }
+  @Test
+  public void testFirstValueIsNull() {
+    ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
+    assertEquals(telemetry.getSeverityLevel(), null);
+  }
 
-    @Test
-    public void testError() {
-        Error error = new NoSuchMethodError("Method");
-        ExceptionTelemetry telemetry = new ExceptionTelemetry(error);
+  @Test
+  public void testGetThrowableOnException() {
+    IOException exception = new IOException("mock");
+    ExceptionTelemetry telemetry = new ExceptionTelemetry(exception);
 
-        assertNull(telemetry.getException());
-        assertSame(error, telemetry.getThrowable());
-    }
+    assertSame(exception, telemetry.getThrowable());
+    assertSame(exception, telemetry.getException());
+  }
 
-    private static void testSeverityLevel(SeverityLevel severityLevel) {
-        ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
+  @Test
+  public void testError() {
+    Error error = new NoSuchMethodError("Method");
+    ExceptionTelemetry telemetry = new ExceptionTelemetry(error);
 
-        telemetry.setSeverityLevel(severityLevel);
-        assertEquals(telemetry.getSeverityLevel(), severityLevel);
-    }
+    assertNull(telemetry.getException());
+    assertSame(error, telemetry.getThrowable());
+  }
 }

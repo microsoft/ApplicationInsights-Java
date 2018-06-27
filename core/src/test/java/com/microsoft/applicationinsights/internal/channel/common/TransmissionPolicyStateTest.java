@@ -21,23 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public final class TransmissionPolicyStateTest {
-    @Test
-    public void testStateAfterCtor() {
-        TransmissionPolicyState tested = new TransmissionPolicyState();
-        assertEquals(tested.getCurrentState(), TransmissionPolicy.UNBLOCKED);
-    }
+  @Test
+  public void testStateAfterCtor() {
+    TransmissionPolicyState tested = new TransmissionPolicyState();
+    assertEquals(tested.getCurrentState(), TransmissionPolicy.UNBLOCKED);
+  }
 
-    @Test
-    public void testSetCurrentState() {
-        TransmissionPolicyState tested = new TransmissionPolicyState();
-        tested.setCurrentState(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
-        assertEquals(tested.getCurrentState(), TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
-        tested.setCurrentState(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
-        assertEquals(tested.getCurrentState(), TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
-    }
+  @Test
+  public void testSetCurrentState() {
+    TransmissionPolicyState tested = new TransmissionPolicyState();
+    tested.setCurrentState(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
+    assertEquals(tested.getCurrentState(), TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
+    tested.setCurrentState(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
+    assertEquals(tested.getCurrentState(), TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
+  }
 }

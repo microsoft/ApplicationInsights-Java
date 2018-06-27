@@ -30,54 +30,58 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class supplies the cpu usage of the Java process the SDK is in.
- * <p>
- * Created by gupele on 3/3/2015.
+ *
+ * <p>Created by gupele on 3/3/2015.
  */
 final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
 
-    private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+  private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
 
-    public ProcessCpuPerformanceCounter() {
-        try {
-            cpuPerformanceCounterCalculator = new CpuPerformanceCounterCalculator();
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                cpuPerformanceCounterCalculator = null;
-                InternalLogger.INSTANCE.error("Failed to create ProcessCpuPerformanceCounter," +
-                        " Exception : %s", ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            } finally {
-                throw new RuntimeException("Failed to create ProcessCpuPerformanceCounter", t);
-            }
-        }
+  public ProcessCpuPerformanceCounter() {
+    try {
+      cpuPerformanceCounterCalculator = new CpuPerformanceCounterCalculator();
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        cpuPerformanceCounterCalculator = null;
+        InternalLogger.INSTANCE.error(
+            "Failed to create ProcessCpuPerformanceCounter," + " Exception : %s",
+            ExceptionUtils.getStackTrace(t));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      } finally {
+        throw new RuntimeException("Failed to create ProcessCpuPerformanceCounter", t);
+      }
+    }
+  }
+
+  @Override
+  public String getId() {
+    return Constants.PROCESS_CPU_PC_ID;
+  }
+
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    if (cpuPerformanceCounterCalculator == null) {
+      return;
+    }
+    Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
+    if (processCpuUsage == null) {
+      return;
     }
 
-    @Override
-    public String getId() {
-        return Constants.PROCESS_CPU_PC_ID;
-    }
-
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        if (cpuPerformanceCounterCalculator == null) {
-            return;
-        }
-        Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
-        if (processCpuUsage == null) {
-            return;
-        }
-
-        InternalLogger.INSTANCE.trace("Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
-        Telemetry telemetry = new PerformanceCounterTelemetry(
-                getProcessCategoryName(),
-                Constants.CPU_PC_COUNTER_NAME,
-                SystemInformation.INSTANCE.getProcessId(),
-                processCpuUsage);
-        telemetryClient.track(telemetry);
-    }
+    InternalLogger.INSTANCE.trace(
+        "Performance Counter: %s %s: %s",
+        getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
+    Telemetry telemetry =
+        new PerformanceCounterTelemetry(
+            getProcessCategoryName(),
+            Constants.CPU_PC_COUNTER_NAME,
+            SystemInformation.INSTANCE.getProcessId(),
+            processCpuUsage);
+    telemetryClient.track(telemetry);
+  }
 }

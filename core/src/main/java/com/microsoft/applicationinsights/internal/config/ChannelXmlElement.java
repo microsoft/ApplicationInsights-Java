@@ -22,128 +22,125 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import com.google.common.base.Strings;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
-/**
- * Created by gupele on 3/15/2015.
- */
+/** Created by gupele on 3/15/2015. */
 public class ChannelXmlElement {
 
-    private String endpointAddress;
-    private String maxTelemetryBufferCapacity;
-    private String flushIntervalInSeconds;
-    private boolean developerMode;
-    private boolean throttling = true;
-    private String maxTransmissionStorageFilesCapacityInMB;
-    private String maxInstantRetry;
-    private String type = "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
+  private String endpointAddress;
+  private String maxTelemetryBufferCapacity;
+  private String flushIntervalInSeconds;
+  private boolean developerMode;
+  private boolean throttling = true;
+  private String maxTransmissionStorageFilesCapacityInMB;
+  private String maxInstantRetry;
+  private String type =
+      "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
 
-    public String getType() {
-        return type;
+  public String getType() {
+    return type;
+  }
+
+  @XmlAttribute(name = "type")
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public String getEndpointAddress() {
+    return endpointAddress;
+  }
+
+  @XmlElement(name = "EndpointAddress")
+  public void setEndpointAddress(String endpointAddress) {
+    this.endpointAddress = endpointAddress;
+  }
+
+  public boolean getThrottling() {
+    return throttling;
+  }
+
+  @XmlElement(name = "Throttling")
+  public void setThrottling(boolean throttling) {
+    this.throttling = throttling;
+  }
+
+  public boolean getDeveloperMode() {
+    return developerMode;
+  }
+
+  @XmlElement(name = "DeveloperMode")
+  public void setDeveloperMode(boolean developerMode) {
+    this.developerMode = developerMode;
+  }
+
+  public String getMaxTelemetryBufferCapacity() {
+    return maxTelemetryBufferCapacity;
+  }
+
+  @XmlElement(name = "MaxTelemetryBufferCapacity")
+  public void setMaxTelemetryBufferCapacity(String maxTelemetryBufferCapacity) {
+    this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
+  }
+
+  public String getFlushIntervalInSeconds() {
+    return flushIntervalInSeconds;
+  }
+
+  @XmlElement(name = "FlushIntervalInSeconds")
+  public void setFlushIntervalInSeconds(String flushIntervalInSeconds) {
+    this.flushIntervalInSeconds = flushIntervalInSeconds;
+  }
+
+  public String isMaxTransmissionStorageFilesCapacityInMB() {
+    return maxTransmissionStorageFilesCapacityInMB;
+  }
+
+  @XmlElement(name = "MaxTransmissionStorageFilesCapacityInMB")
+  public void setMaxTransmissionStorageFilesCapacityInMB(
+      String maxTransmissionStorageFilesCapacityInMB) {
+    this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
+  }
+
+  public String getMaxInstantRetry() {
+    return maxInstantRetry;
+  }
+
+  @XmlElement(name = "MaxInstantRetry")
+  public void setMaxInstantRetry(String maxInstantRetry) {
+    this.maxInstantRetry = maxInstantRetry;
+  }
+
+  public Map<String, String> getData() {
+    HashMap<String, String> data = new HashMap<String, String>();
+    if (developerMode) {
+      data.put("DeveloperMode", "true");
     }
 
-    @XmlAttribute(name="type")
-    public void setType(String type) {
-        this.type = type;
+    if (!Strings.isNullOrEmpty(endpointAddress)) {
+      data.put("EndpointAddress", endpointAddress);
     }
 
-    public String getEndpointAddress() {
-        return endpointAddress;
+    if (!Strings.isNullOrEmpty(maxTelemetryBufferCapacity)) {
+      data.put("MaxTelemetryBufferCapacity", maxTelemetryBufferCapacity);
     }
 
-    @XmlElement(name="Throttling")
-    public void setThrottling(boolean throttling) {
-        this.throttling = throttling;
+    if (!Strings.isNullOrEmpty(flushIntervalInSeconds)) {
+      data.put("FlushIntervalInSeconds", flushIntervalInSeconds);
     }
 
-    public boolean getThrottling() {
-        return throttling;
+    if (!Strings.isNullOrEmpty(maxTransmissionStorageFilesCapacityInMB)) {
+      data.put("MaxTransmissionStorageFilesCapacityInMB", maxTransmissionStorageFilesCapacityInMB);
     }
 
-    @XmlElement(name="EndpointAddress")
-    public void setEndpointAddress(String endpointAddress) {
-        this.endpointAddress = endpointAddress;
+    if (!Strings.isNullOrEmpty(maxInstantRetry)) {
+      data.put("MaxInstantRetry", maxInstantRetry);
     }
 
-    public boolean getDeveloperMode() {
-        return developerMode;
-    }
+    data.put("Throttling", throttling ? "true" : "false");
 
-    @XmlElement(name="DeveloperMode")
-    public void setDeveloperMode(boolean developerMode) {
-        this.developerMode = developerMode;
-    }
-
-    public String getMaxTelemetryBufferCapacity() {
-        return maxTelemetryBufferCapacity;
-    }
-
-    @XmlElement(name="MaxTelemetryBufferCapacity")
-    public void setMaxTelemetryBufferCapacity(String maxTelemetryBufferCapacity) {
-        this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
-    }
-
-    public String getFlushIntervalInSeconds() {
-        return flushIntervalInSeconds;
-    }
-
-    @XmlElement(name="FlushIntervalInSeconds")
-    public void setFlushIntervalInSeconds(String flushIntervalInSeconds) {
-        this.flushIntervalInSeconds = flushIntervalInSeconds;
-    }
-
-    public String isMaxTransmissionStorageFilesCapacityInMB() {
-        return maxTransmissionStorageFilesCapacityInMB;
-    }
-
-    @XmlElement(name="MaxTransmissionStorageFilesCapacityInMB")
-    public void setMaxTransmissionStorageFilesCapacityInMB(String maxTransmissionStorageFilesCapacityInMB) {
-        this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
-    }
-
-
-    public String getMaxInstantRetry() {
-        return maxInstantRetry;
-    }
-
-    @XmlElement(name="MaxInstantRetry")
-    public void setMaxInstantRetry(String maxInstantRetry) {
-        this.maxInstantRetry = maxInstantRetry;
-    }
-
-    public Map<String, String> getData() {
-        HashMap<String, String> data = new HashMap<String, String>();
-        if (developerMode) {
-            data.put("DeveloperMode", "true");
-        }
-
-        if (!Strings.isNullOrEmpty(endpointAddress)) {
-            data.put("EndpointAddress", endpointAddress);
-        }
-
-
-        if (!Strings.isNullOrEmpty(maxTelemetryBufferCapacity)) {
-            data.put("MaxTelemetryBufferCapacity", maxTelemetryBufferCapacity);
-        }
-
-        if (!Strings.isNullOrEmpty(flushIntervalInSeconds)) {
-            data.put("FlushIntervalInSeconds", flushIntervalInSeconds);
-        }
-
-        if (!Strings.isNullOrEmpty(maxTransmissionStorageFilesCapacityInMB)) {
-            data.put("MaxTransmissionStorageFilesCapacityInMB", maxTransmissionStorageFilesCapacityInMB);
-        }
-
-        if (!Strings.isNullOrEmpty(maxInstantRetry)) {
-            data.put("MaxInstantRetry", maxInstantRetry);
-        }
-
-        data.put("Throttling", throttling ? "true" : "false");
-
-        return data;
-    }
+    return data;
+  }
 }

@@ -24,45 +24,41 @@ package com.microsoft.applicationinsights.internal.schemav2;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.SessionState;
-import org.apache.http.annotation.Obsolete;
-
 import java.io.IOException;
 
 /**
  * Created by gupele on 2/19/2015.
  *
- *@deprecated
- * Our end point does not accept this any more. The usage of this class and any
- * of its associated methods is deprecated. Our end point no longer accepts
- * SessionStateData
+ * @deprecated Our end point does not accept this any more. The usage of this class and any of its
+ *     associated methods is deprecated. Our end point no longer accepts SessionStateData
  */
 @Deprecated
 public final class SessionStateData extends Domain {
 
-    private final int ver = 2;
+  private final int ver = 2;
 
-    private SessionState state;
+  private SessionState state;
 
-    public SessionStateData(SessionState state) {
-        this.state = state;
-    }
+  public SessionStateData(SessionState state) {
+    this.state = state;
+  }
 
-    public int getVer() {
-        return ver;
-    }
+  public int getVer() {
+    return ver;
+  }
 
-    public SessionState getState() {
-        return state;
-    }
+  public SessionState getState() {
+    return state;
+  }
 
-    public void setState(SessionState state) {
-        this.state = state;
-    }
+  public void setState(SessionState state) {
+    this.state = state;
+  }
 
-    protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-        Preconditions.checkNotNull(writer, "writer must be a non-null value");
+  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
+    Preconditions.checkNotNull(writer, "writer must be a non-null value");
 
-        writer.write("ver", ver);
-        writer.write("state", state.toString(), 1000);
-    }
+    writer.write("ver", ver);
+    writer.write("state", state.toString(), 1000);
+  }
 }

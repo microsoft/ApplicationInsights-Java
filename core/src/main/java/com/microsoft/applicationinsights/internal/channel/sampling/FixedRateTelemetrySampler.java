@@ -21,126 +21,133 @@
 
 package com.microsoft.applicationinsights.internal.channel.sampling;
 
-import java.util.Set;
-import java.util.Collections;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.List;
-
 import com.google.common.util.concurrent.AtomicDouble;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.telemetry.*;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.SupportSampling;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by gupele on 11/2/2016.
  *
- * Represents a telemetry sampler for sampling telemetry at a fixed-rate before sending to Application Insights.
+ * <p>Represents a telemetry sampler for sampling telemetry at a fixed-rate before sending to
+ * Application Insights.
  */
 public final class FixedRateTelemetrySampler implements TelemetrySampler {
-    private AtomicDouble samplingPercentage = new AtomicDouble(100.0);
-    private HashSet<Class> excludeTypes = new HashSet<Class>();
-    private HashSet<Class> includeTypes = new HashSet<Class>();
-    private final HashMap<String, Class> allowedTypes = new HashMap<String, Class>();
+  private final HashMap<String, Class> allowedTypes = new HashMap<String, Class>();
+  private AtomicDouble samplingPercentage = new AtomicDouble(100.0);
+  private HashSet<Class> excludeTypes = new HashSet<Class>();
+  private HashSet<Class> includeTypes = new HashSet<Class>();
 
-    public FixedRateTelemetrySampler() {
-        allowedTypes.put("Dependency", RemoteDependencyTelemetry.class);
-        allowedTypes.put("Event", EventTelemetry.class);
-        allowedTypes.put("Exception", ExceptionTelemetry.class);
-        allowedTypes.put("PageView", PageViewTelemetry.class);
-        allowedTypes.put("Request", RequestTelemetry.class);
-        allowedTypes.put("Trace", TraceTelemetry.class);
+  public FixedRateTelemetrySampler() {
+    allowedTypes.put("Dependency", RemoteDependencyTelemetry.class);
+    allowedTypes.put("Event", EventTelemetry.class);
+    allowedTypes.put("Exception", ExceptionTelemetry.class);
+    allowedTypes.put("PageView", PageViewTelemetry.class);
+    allowedTypes.put("Request", RequestTelemetry.class);
+    allowedTypes.put("Trace", TraceTelemetry.class);
+  }
+
+  @Override
+  public Set<Class> getExcludeTypes() {
+    return Collections.unmodifiableSet(excludeTypes);
+  }
+
+  @Override
+  public void setExcludeTypes(String types) {
+    excludeTypes = parseToSet(types, "ExcludeTypes");
+  }
+
+  @Override
+  public Set<Class> getIncludeTypes() {
+    return Collections.unmodifiableSet(includeTypes);
+  }
+
+  @Override
+  public void setIncludeTypes(String types) {
+    includeTypes = parseToSet(types, "IncludeTypes");
+  }
+
+  @Override
+  public Double getSamplingPercentage() {
+    return samplingPercentage.get();
+  }
+
+  @Override
+  public void setSamplingPercentage(Double samplingPercentage) {
+    if (samplingPercentage != null) {
+      this.samplingPercentage.set(samplingPercentage);
     }
+    InternalLogger.INSTANCE.info(
+        "Setting sampling percentage to %s percent", this.samplingPercentage);
+  }
 
-    @Override
-    public Set<Class> getExcludeTypes() {
-        return Collections.unmodifiableSet(excludeTypes);
-    }
+  @Override
+  public boolean isSampledIn(Telemetry telemetry) {
+    Double currentSamplingPercentage = samplingPercentage.get();
 
-    @Override
-    public void setExcludeTypes(String types) {
-        excludeTypes = parseToSet(types, "ExcludeTypes");
-    }
+    if (currentSamplingPercentage < 100.0 - 1.0E-12) {
+      if (telemetry instanceof SupportSampling) {
+        SupportSampling samplingSupportingTelemetry = (SupportSampling) telemetry;
 
-    @Override
-    public Set<Class> getIncludeTypes() {
-        return Collections.unmodifiableSet(includeTypes);
-    }
+        if (!excludeTypes.isEmpty() && excludeTypes.contains(telemetry.getClass())) {
+          InternalLogger.INSTANCE.trace("Skip sampling since %s is excluded", telemetry.getClass());
+        } else if (!includeTypes.isEmpty() && !includeTypes.contains(telemetry.getClass())) {
+          InternalLogger.INSTANCE.trace(
+              "Skip sampling since %s is not included", telemetry.getClass());
+        } else {
+          Double testedPercentage = currentSamplingPercentage;
+          if (samplingSupportingTelemetry.getSamplingPercentage() != null) {
+            testedPercentage = samplingSupportingTelemetry.getSamplingPercentage();
+          }
 
-    @Override
-    public void setIncludeTypes(String types) {
-        includeTypes = parseToSet(types, "IncludeTypes");
-    }
+          double telemetrySamplingScore = SamplingScoreGenerator.getSamplingScore(telemetry);
+          if (telemetrySamplingScore >= testedPercentage) {
+            InternalLogger.INSTANCE.trace("Sampled out %s", telemetry.getClass());
 
-    @Override
-    public Double getSamplingPercentage() {
-        return samplingPercentage.get();
-    }
-
-    @Override
-    public void setSamplingPercentage(Double samplingPercentage) {
-        if (samplingPercentage != null) {
-            this.samplingPercentage.set(samplingPercentage);
+            return false;
+          }
+          samplingSupportingTelemetry.setSamplingPercentage(testedPercentage);
         }
-        InternalLogger.INSTANCE.info( "Setting sampling percentage to %s percent", this.samplingPercentage);
+      }
     }
 
-    @Override
-    public boolean isSampledIn(Telemetry telemetry) {
-        Double currentSamplingPercentage = samplingPercentage.get();
+    return true;
+  }
 
-        if (currentSamplingPercentage < 100.0 - 1.0E-12) {
-            if (telemetry instanceof SupportSampling) {
-                SupportSampling samplingSupportingTelemetry = (SupportSampling)telemetry;
+  private HashSet<Class> parseToSet(String value, String prefix) {
+    HashSet<Class> set = new HashSet<Class>();
 
-                if (!excludeTypes.isEmpty() && excludeTypes.contains(telemetry.getClass())) {
-                    InternalLogger.INSTANCE.trace("Skip sampling since %s is excluded", telemetry.getClass());
-                }
-                else if (!includeTypes.isEmpty() && !includeTypes.contains(telemetry.getClass())) {
-                    InternalLogger.INSTANCE.trace("Skip sampling since %s is not included", telemetry.getClass());
-                }
-                else {
-                    Double testedPercentage = currentSamplingPercentage;
-                    if (samplingSupportingTelemetry.getSamplingPercentage() != null) {
-                        testedPercentage = samplingSupportingTelemetry.getSamplingPercentage();
-                    }
+    if (!LocalStringsUtils.isNullOrEmpty(value)) {
+      List<String> types = Arrays.asList(value.split(","));
 
-                    double telemetrySamplingScore = SamplingScoreGenerator.getSamplingScore(telemetry);
-                    if (telemetrySamplingScore >= testedPercentage) {
-                        InternalLogger.INSTANCE.trace("Sampled out %s", telemetry.getClass());
-
-                        return false;
-                    }
-                    samplingSupportingTelemetry.setSamplingPercentage(testedPercentage);
-                }
-            }
+      for (String type : types) {
+        type = type.trim();
+        if (LocalStringsUtils.isNullOrEmpty(type)) {
+          continue;
         }
-
-        return true;
-    }
-
-    private HashSet<Class> parseToSet(String value, String prefix) {
-        HashSet<Class> set = new HashSet<Class>();
-
-        if (!LocalStringsUtils.isNullOrEmpty(value)) {
-            List<String> types = Arrays.asList(value.split(","));
-
-            for (String type : types) {
-                type = type.trim();
-                if (LocalStringsUtils.isNullOrEmpty(type)) {
-                    continue;
-                }
-                if (!allowedTypes.containsKey(type)) {
-                    InternalLogger.INSTANCE.error("%s contains illegal type %s, ignored", prefix, type);
-                    continue;
-                }
-
-                set.add(allowedTypes.get(type));
-            }
+        if (!allowedTypes.containsKey(type)) {
+          InternalLogger.INSTANCE.error("%s contains illegal type %s, ignored", prefix, type);
+          continue;
         }
 
-        return set;
+        set.add(allowedTypes.get(type));
+      }
     }
+
+    return set;
+  }
 }

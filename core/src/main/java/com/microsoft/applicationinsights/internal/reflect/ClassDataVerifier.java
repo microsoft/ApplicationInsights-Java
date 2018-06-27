@@ -21,13 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.reflect;
 
-import java.lang.reflect.Method;
-
-/**
- * Created by gupele on 5/26/2015.
- */
+/** Created by gupele on 5/26/2015. */
 public interface ClassDataVerifier {
-    boolean verifyClassExists(String className);
+  boolean verifyClassExists(String className);
 
-    boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes);
+  boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes);
 }

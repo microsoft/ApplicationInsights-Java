@@ -21,33 +21,34 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.Collection;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import java.util.Collection;
 
 /**
- * A performance counter that sends {@link com.microsoft.applicationinsights.telemetry.MetricTelemetry}
+ * A performance counter that sends {@link
+ * com.microsoft.applicationinsights.telemetry.MetricTelemetry}
  *
- * Created by gupele on 3/15/2015.
+ * <p>Created by gupele on 3/15/2015.
  */
 public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
 
-    public JmxMetricPerformanceCounter(String id, String objectName, Collection<JmxAttributeData> attributes) {
-        super(id, objectName, attributes);
-    }
+  public JmxMetricPerformanceCounter(
+      String id, String objectName, Collection<JmxAttributeData> attributes) {
+    super(id, objectName, attributes);
+  }
 
-    @Override
-    protected void send(TelemetryClient telemetryClient, String displayName, double value) {
-        InternalLogger.INSTANCE.trace("Metric JMX: %s, %s", displayName, value);
-	
-	MetricTelemetry telemetry = new MetricTelemetry();
-	telemetry.markAsCustomPerfCounter();
-        telemetry.setName(displayName);
-        telemetry.setValue(value);
-        telemetry.getProperties().put("CustomPerfCounter", "true");
-        telemetryClient.track(telemetry);
-    }
+  @Override
+  protected void send(TelemetryClient telemetryClient, String displayName, double value) {
+    InternalLogger.INSTANCE.trace("Metric JMX: %s, %s", displayName, value);
+
+    MetricTelemetry telemetry = new MetricTelemetry();
+    telemetry.markAsCustomPerfCounter();
+    telemetry.setName(displayName);
+    telemetry.setValue(value);
+    telemetry.getProperties().put("CustomPerfCounter", "true");
+    telemetryClient.track(telemetry);
+  }
 }

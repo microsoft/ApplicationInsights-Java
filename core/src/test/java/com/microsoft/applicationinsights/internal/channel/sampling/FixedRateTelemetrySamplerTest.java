@@ -21,95 +21,92 @@
 
 package com.microsoft.applicationinsights.internal.channel.sampling;
 
-import com.microsoft.applicationinsights.internal.channel.sampling.FixedRateTelemetrySampler;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Created by gupele on 11/2/2016.
- */
+/** Created by gupele on 11/2/2016. */
 public class FixedRateTelemetrySamplerTest {
 
-    @Test
-    public void testWith100Percent() {
-        FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
-        tested.setIncludeTypes("Event, PageView");
-        boolean result = tested.isSampledIn(new EventTelemetry());
+  @Test
+  public void testWith100Percent() {
+    FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
+    tested.setIncludeTypes("Event, PageView");
+    boolean result = tested.isSampledIn(new EventTelemetry());
 
-        Assert.assertTrue(result);
-    }
+    Assert.assertTrue(result);
+  }
 
-    @Test
-    public void testWith0Percent() {
-        FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
-        tested.setIncludeTypes("Event, PageView");
-        tested.setSamplingPercentage(0.0);
-        boolean result = tested.isSampledIn(new EventTelemetry());
+  @Test
+  public void testWith0Percent() {
+    FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
+    tested.setIncludeTypes("Event, PageView");
+    tested.setSamplingPercentage(0.0);
+    boolean result = tested.isSampledIn(new EventTelemetry());
 
-        Assert.assertFalse(result);
-    }
+    Assert.assertFalse(result);
+  }
 
-    @Test
-    public void testWith0PercentWithUserId() {
-        FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
-        tested.setIncludeTypes("Event, PageView");
-        tested.setSamplingPercentage(0.0);
-        Telemetry telemetry = new EventTelemetry();
-        telemetry.getContext().getUser().setId("B");
-        boolean result = tested.isSampledIn(telemetry);
+  @Test
+  public void testWith0PercentWithUserId() {
+    FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
+    tested.setIncludeTypes("Event, PageView");
+    tested.setSamplingPercentage(0.0);
+    Telemetry telemetry = new EventTelemetry();
+    telemetry.getContext().getUser().setId("B");
+    boolean result = tested.isSampledIn(telemetry);
 
-        Assert.assertFalse(result);
-    }
+    Assert.assertFalse(result);
+  }
 
-    @Test
-    public void testWith100PercentWithUserId() {
-        FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
-        tested.setExcludeTypes("Event, PageView");
-        tested.setSamplingPercentage(100.0);
-        Telemetry telemetry = new EventTelemetry();
-        telemetry.getContext().getUser().setId("B");
-        boolean result = tested.isSampledIn(telemetry);
+  @Test
+  public void testWith100PercentWithUserId() {
+    FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
+    tested.setExcludeTypes("Event, PageView");
+    tested.setSamplingPercentage(100.0);
+    Telemetry telemetry = new EventTelemetry();
+    telemetry.getContext().getUser().setId("B");
+    boolean result = tested.isSampledIn(telemetry);
 
-        Assert.assertTrue(result);
-    }
+    Assert.assertTrue(result);
+  }
 
-    @Test
-    public void testWith90PercentWithOpId() {
-        FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
-        tested.setSamplingPercentage(10.0);
-        Telemetry telemetry = new EventTelemetry();
-        telemetry.getContext().getOperation().setId("a");
-        boolean result = tested.isSampledIn(telemetry);
+  @Test
+  public void testWith90PercentWithOpId() {
+    FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
+    tested.setSamplingPercentage(10.0);
+    Telemetry telemetry = new EventTelemetry();
+    telemetry.getContext().getOperation().setId("a");
+    boolean result = tested.isSampledIn(telemetry);
 
-        Assert.assertFalse(result);
-    }
+    Assert.assertFalse(result);
+  }
 
-    @Test
-    public void testWith99PercentWithOpId() {
-        FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
-        tested.setSamplingPercentage(99.0);
-        Telemetry telemetry = new EventTelemetry();
-        telemetry.getContext().getOperation().setId("a");
-        boolean result = tested.isSampledIn(telemetry);
-        telemetry.getContext().getOperation().setId("aa");
-        result = tested.isSampledIn(telemetry);
-        telemetry.getContext().getOperation().setId("aaasdfsadfasdfsadfsadfsdafasfsadfsdf");
-        result = tested.isSampledIn(telemetry);
+  @Test
+  public void testWith99PercentWithOpId() {
+    FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
+    tested.setSamplingPercentage(99.0);
+    Telemetry telemetry = new EventTelemetry();
+    telemetry.getContext().getOperation().setId("a");
+    boolean result = tested.isSampledIn(telemetry);
+    telemetry.getContext().getOperation().setId("aa");
+    result = tested.isSampledIn(telemetry);
+    telemetry.getContext().getOperation().setId("aaasdfsadfasdfsadfsadfsdafasfsadfsdf");
+    result = tested.isSampledIn(telemetry);
 
-        Assert.assertTrue(result);
-    }
+    Assert.assertTrue(result);
+  }
 
-    @Test
-    public void testWith0PercentWithOpIdAndExclude() {
-        FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
-        tested.setSamplingPercentage(0.0);
-        tested.setExcludeTypes("Event, PageView");
-        Telemetry telemetry = new EventTelemetry();
-        telemetry.getContext().getOperation().setId("a");
-        boolean result = tested.isSampledIn(telemetry);
+  @Test
+  public void testWith0PercentWithOpIdAndExclude() {
+    FixedRateTelemetrySampler tested = new FixedRateTelemetrySampler();
+    tested.setSamplingPercentage(0.0);
+    tested.setExcludeTypes("Event, PageView");
+    Telemetry telemetry = new EventTelemetry();
+    telemetry.getContext().getOperation().setId("a");
+    boolean result = tested.isSampledIn(telemetry);
 
-        Assert.assertTrue(result);
-    }
+    Assert.assertTrue(result);
+  }
 }

@@ -22,53 +22,50 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * Created by gupele on 3/15/2015.
- */
+/** Created by gupele on 3/15/2015. */
 public class JmxXmlElement {
-    private String displayName;
-    private String objectName;
-    private String attribute;
-    private String type;
+  private String displayName;
+  private String objectName;
+  private String attribute;
+  private String type;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+  public String getDisplayName() {
+    return displayName;
+  }
 
-    @XmlAttribute
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+  @XmlAttribute
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
 
-    public String getObjectName() {
-        return objectName;
-    }
+  public String getObjectName() {
+    return objectName;
+  }
 
-    @XmlAttribute
-    public void setObjectName(String objectName) {
-        this.objectName = objectName;
-    }
+  @XmlAttribute
+  public void setObjectName(String objectName) {
+    this.objectName = objectName;
+  }
 
-    public String getAttribute() {
-        return attribute;
-    }
+  public String getAttribute() {
+    return attribute;
+  }
 
-    @XmlAttribute
-    public void setAttribute(String attribute) {
-        this.attribute = attribute;
-    }
+  @XmlAttribute
+  public void setAttribute(String attribute) {
+    this.attribute = attribute;
+  }
 
-    public String getType() {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    @XmlAttribute
-    public void setType(String type) {
-        this.type = type;
-        if (this.type != null) {
-            this.type = this.type.toUpperCase();
-        }
+  @XmlAttribute
+  public void setType(String type) {
+    this.type = type;
+    if (this.type != null) {
+      this.type = this.type.toUpperCase();
     }
+  }
 }

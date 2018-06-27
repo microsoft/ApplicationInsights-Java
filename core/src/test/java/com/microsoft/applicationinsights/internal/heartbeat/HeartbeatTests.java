@@ -26,8 +26,19 @@ import org.mockito.stubbing.Answer;
 
 public class HeartbeatTests {
 
+  @AfterClass
+  public static void tear() throws Exception {
+    tearDown();
+  }
+
+  private static void tearDown() throws Exception {
+    Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
+    method.setAccessible(true);
+    method.invoke(null);
+  }
+
   @Before
-  public void setTelemetryConfigurationNull() throws Exception{
+  public void setTelemetryConfigurationNull() throws Exception {
     tearDown();
   }
 
@@ -50,9 +61,11 @@ public class HeartbeatTests {
     module.initialize(null);
 
     Thread.sleep(100);
-    Assert.assertTrue(module.getExcludedHeartBeatProperties() == null ||
-    module.getExcludedHeartBeatProperties().size() == 0);
-    Assert.assertEquals(module.getHeartBeatInterval(), HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL);
+    Assert.assertTrue(
+        module.getExcludedHeartBeatProperties() == null
+            || module.getExcludedHeartBeatProperties().size() == 0);
+    Assert.assertEquals(
+        module.getHeartBeatInterval(), HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL);
   }
 
   @Test
@@ -73,7 +86,8 @@ public class HeartbeatTests {
     HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
     module.initialize(null);
     Assert.assertNotEquals(heartBeatInterval, module.getHeartBeatInterval());
-    Assert.assertEquals(HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
+    Assert.assertEquals(
+        HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
   }
 
   @Test
@@ -83,9 +97,8 @@ public class HeartbeatTests {
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
-    HeartBeatProviderInterface hbi = (HeartBeatProviderInterface)field.get(module);
-    Assert.assertTrue(hbi.addHeartBeatProperty("test01",
-        "This is value", true));
+    HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
+    Assert.assertTrue(hbi.addHeartBeatProperty("test01", "This is value", true));
   }
 
   @Test
@@ -102,22 +115,30 @@ public class HeartbeatTests {
         origIsEnabled = ((HeartBeatModule) module).isHeartBeatEnabled();
         ((HeartBeatModule) module).setHeartBeatEnabled(!origIsEnabled);
 
-        Assert.assertFalse(((HeartBeatModule)module).getExcludedHeartBeatProperties().contains(origExcludedHbProvider));
-        ((HeartBeatModule)module).setExcludedHeartBeatPropertiesProvider(Arrays.asList(origExcludedHbProvider));
-        originalInterval = ((HeartBeatModule)module).getHeartBeatInterval();
-        ((HeartBeatModule)module).setExcludedHeartBeatProperties(Arrays.asList("test01"));
-        ((HeartBeatModule)module).setHeartBeatInterval(setInterval);
+        Assert.assertFalse(
+            ((HeartBeatModule) module)
+                .getExcludedHeartBeatProperties()
+                .contains(origExcludedHbProvider));
+        ((HeartBeatModule) module)
+            .setExcludedHeartBeatPropertiesProvider(Arrays.asList(origExcludedHbProvider));
+        originalInterval = ((HeartBeatModule) module).getHeartBeatInterval();
+        ((HeartBeatModule) module).setExcludedHeartBeatProperties(Arrays.asList("test01"));
+        ((HeartBeatModule) module).setHeartBeatInterval(setInterval);
       }
     }
 
     TelemetryClient client2 = new TelemetryClient();
-    for (TelemetryModule module :TelemetryConfiguration.getActive().getTelemetryModules()) {
+    for (TelemetryModule module : TelemetryConfiguration.getActive().getTelemetryModules()) {
       if (module instanceof HeartBeatModule) {
-        Assert.assertNotEquals(((HeartBeatModule)module).isHeartBeatEnabled(), origIsEnabled);
-        Assert.assertTrue(((HeartBeatModule)module).getExcludedHeartBeatPropertiesProvider().contains(origExcludedHbProvider));
-        Assert.assertTrue(((HeartBeatModule)module).getExcludedHeartBeatProperties().contains("test01"));
-        Assert.assertNotEquals(((HeartBeatModule)module).getHeartBeatInterval(), originalInterval);
-        Assert.assertEquals(((HeartBeatModule)module).getHeartBeatInterval(), setInterval);
+        Assert.assertNotEquals(((HeartBeatModule) module).isHeartBeatEnabled(), origIsEnabled);
+        Assert.assertTrue(
+            ((HeartBeatModule) module)
+                .getExcludedHeartBeatPropertiesProvider()
+                .contains(origExcludedHbProvider));
+        Assert.assertTrue(
+            ((HeartBeatModule) module).getExcludedHeartBeatProperties().contains("test01"));
+        Assert.assertNotEquals(((HeartBeatModule) module).getHeartBeatInterval(), originalInterval);
+        Assert.assertEquals(((HeartBeatModule) module).getHeartBeatInterval(), setInterval);
       }
     }
   }
@@ -132,7 +153,7 @@ public class HeartbeatTests {
     for (TelemetryModule m : modules) {
       if (m instanceof HeartBeatModule) {
         hasHeartBeatModule = true;
-        hbm = (HeartBeatModule)m;
+        hbm = (HeartBeatModule) m;
         break;
       }
     }
@@ -140,7 +161,6 @@ public class HeartbeatTests {
     Assert.assertTrue(hasHeartBeatModule);
     Assert.assertNotNull(hbm);
     Assert.assertTrue(hbm.isHeartBeatEnabled());
-
   }
 
   @Test
@@ -153,7 +173,6 @@ public class HeartbeatTests {
     module.initialize(configuration);
     Assert.assertFalse(module.isHeartBeatEnabled());
 
-
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
@@ -161,10 +180,9 @@ public class HeartbeatTests {
   }
 
   @Test
-  public void canDisableHeartBeatPropertyProviderPriorToInitialize() throws  Exception {
+  public void canDisableHeartBeatPropertyProviderPriorToInitialize() throws Exception {
     HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
     module.setExcludedHeartBeatPropertiesProvider(Arrays.asList("Base", "webapps"));
-
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
@@ -182,20 +200,26 @@ public class HeartbeatTests {
   public void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
     HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
     final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
-    Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
-        .then(new Answer<Boolean>() {
+    Mockito.when(
+            mockProvider.addHeartBeatProperty(
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
+        .then(
+            new Answer<Boolean>() {
               @Override
               public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                        props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
-                        return true;
-                      }
+                props.put(
+                    invocation.getArgumentAt(0, String.class),
+                    invocation.getArgumentAt(1, String.class));
+                return true;
+              }
             });
 
     List<String> disabledProviders = new ArrayList<>();
     disabledProviders.add("Default");
     disabledProviders.add("webapps");
-    Callable<Boolean> callable = HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(),
-        disabledProviders, mockProvider);
+    Callable<Boolean> callable =
+        HeartbeatDefaultPayload.populateDefaultPayload(
+            new ArrayList<String>(), disabledProviders, mockProvider);
 
     callable.call();
     Assert.assertEquals(0, props.size());
@@ -209,12 +233,11 @@ public class HeartbeatTests {
     Thread.sleep(100);
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
+    Telemetry t = (Telemetry) m.invoke(provider);
     Assert.assertNotNull(t);
     // for callable to complete adding
     Thread.sleep(100);
     Assert.assertTrue(t.getProperties().size() > 0);
-
   }
 
   @Test
@@ -224,9 +247,8 @@ public class HeartbeatTests {
 
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
+    Telemetry t = (Telemetry) m.invoke(provider);
     Assert.assertEquals("testVal", t.getProperties().get("test"));
-
   }
 
   @Test
@@ -236,9 +258,8 @@ public class HeartbeatTests {
 
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
-    Assert.assertEquals(1, ((MetricTelemetry)t).getValue(), 0.0);
-
+    Telemetry t = (Telemetry) m.invoke(provider);
+    Assert.assertEquals(1, ((MetricTelemetry) t).getValue(), 0.0);
   }
 
   @Test
@@ -249,29 +270,35 @@ public class HeartbeatTests {
 
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
-    Assert.assertEquals(2, ((MetricTelemetry)t).getValue(), 0.0);
+    Telemetry t = (Telemetry) m.invoke(provider);
+    Assert.assertEquals(2, ((MetricTelemetry) t).getValue(), 0.0);
   }
 
   @Test
   public void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
     HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
     final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
-    Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
-        .then(new Answer<Boolean>() {
-          @Override
-          public Boolean answer(InvocationOnMock invocation) throws Throwable {
-            props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
-            return true;
-          }
-        });
+    Mockito.when(
+            mockProvider.addHeartBeatProperty(
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
+        .then(
+            new Answer<Boolean>() {
+              @Override
+              public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                props.put(
+                    invocation.getArgumentAt(0, String.class),
+                    invocation.getArgumentAt(1, String.class));
+                return true;
+              }
+            });
     DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
-    HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(), new ArrayList<String>(),
-        mockProvider).call();
+    HeartbeatDefaultPayload.populateDefaultPayload(
+            new ArrayList<String>(), new ArrayList<String>(), mockProvider)
+        .call();
     Field field = defaultProvider.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
-    Set<String> defaultFields = (Set<String>)field.get(defaultProvider);
+    Set<String> defaultFields = (Set<String>) field.get(defaultProvider);
     for (String fieldName : defaultFields) {
       Assert.assertTrue(props.containsKey(fieldName));
       Assert.assertTrue(props.get(fieldName).length() > 0);
@@ -300,11 +327,11 @@ public class HeartbeatTests {
     provider.initialize(null);
     DefaultHeartBeatPropertyProvider defaultBase = new DefaultHeartBeatPropertyProvider();
 
-    //for callable to complete
+    // for callable to complete
     Thread.sleep(100);
     Field field = defaultBase.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
-    Set<String> defaultFields = (Set<String>)field.get(defaultBase);
+    Set<String> defaultFields = (Set<String>) field.get(defaultBase);
     for (String key : defaultFields) {
       Assert.assertFalse(provider.setHeartBeatProperty(key, "test", true));
     }
@@ -317,13 +344,13 @@ public class HeartbeatTests {
 
     Field field = base.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
-    Set<String> defaultFields = (Set<String>)field.get(base);
+    Set<String> defaultFields = (Set<String>) field.get(base);
     defaultFields.add(testKey);
     HeartBeatProvider provider = new HeartBeatProvider();
     base.setDefaultPayload(new ArrayList<String>(), provider).call();
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
+    Telemetry t = (Telemetry) m.invoke(provider);
     Assert.assertFalse(t.getProperties().containsKey("testKey"));
   }
 
@@ -337,16 +364,5 @@ public class HeartbeatTests {
     Thread.sleep(100);
     Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("Base"));
     Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("webapps"));
-  }
-
-  @AfterClass
-  public static void tear() throws Exception{
-    tearDown();
-  }
-
-  private static void tearDown() throws Exception{
-    Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
-    method.setAccessible(true);
-    method.invoke(null);
   }
 }

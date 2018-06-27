@@ -21,78 +21,80 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.io.IOException;
+import java.io.InputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * The JAXB implementation of the {@link com.microsoft.applicationinsights.internal.config.AppInsightsConfigurationBuilder}
+ * The JAXB implementation of the {@link
+ * com.microsoft.applicationinsights.internal.config.AppInsightsConfigurationBuilder}
  *
- * Created by gupele on 3/15/2015.
+ * <p>Created by gupele on 3/15/2015.
  */
 class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBuilder {
-    @Override
-    public ApplicationInsightsXmlConfiguration build(InputStream resourceFile) {
-        if (resourceFile == null) {
-            return null;
-        }
-
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            XMLStreamReader resourceFileReader = getXmlStreamReader(resourceFile);
-            
-            if (resourceFileReader == null) {
-                return null;
-            }
-
-            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFileReader);
-
-            return applicationInsights;
-        } catch (JAXBException e) {
-            if (e.getCause() != null) {
-                InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
-                        ExceptionUtils.getStackTrace(e));
-            } else {
-                InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
-                        ExceptionUtils.getStackTrace(e));
-            }
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                resourceFile.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+  @Override
+  public ApplicationInsightsXmlConfiguration build(InputStream resourceFile) {
+    if (resourceFile == null) {
+      return null;
     }
 
-    /**
-     * Given an InputStream, returns an XMLStreamReader for it. Explicitly disables DTDs and external entities.
-     */
-    private XMLStreamReader getXmlStreamReader(InputStream input) {
+    try {
+      JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
+      Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+      XMLStreamReader resourceFileReader = getXmlStreamReader(resourceFile);
 
-        try {
-            XMLInputFactory factory = XMLInputFactory.newInstance();
-            factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-            factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-            
-            return factory.createXMLStreamReader(input);
-        } catch (Throwable t ) {
-            InternalLogger.INSTANCE.error("Failed to create stream reader for configuration file: '%s'", ExceptionUtils.getStackTrace(t));
-            return null;
-        }
-    } 
+      if (resourceFileReader == null) {
+        return null;
+      }
+
+      ApplicationInsightsXmlConfiguration applicationInsights =
+          (ApplicationInsightsXmlConfiguration) unmarshaller.unmarshal(resourceFileReader);
+
+      return applicationInsights;
+    } catch (JAXBException e) {
+      if (e.getCause() != null) {
+        InternalLogger.INSTANCE.error(
+            "Failed to parse configuration file: '%s'", ExceptionUtils.getStackTrace(e));
+      } else {
+        InternalLogger.INSTANCE.error(
+            "Failed to parse configuration file: '%s'", ExceptionUtils.getStackTrace(e));
+      }
+    } catch (NullPointerException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        resourceFile.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Given an InputStream, returns an XMLStreamReader for it. Explicitly disables DTDs and external
+   * entities.
+   */
+  private XMLStreamReader getXmlStreamReader(InputStream input) {
+
+    try {
+      XMLInputFactory factory = XMLInputFactory.newInstance();
+      factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+      factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+
+      return factory.createXMLStreamReader(input);
+    } catch (Throwable t) {
+      InternalLogger.INSTANCE.error(
+          "Failed to create stream reader for configuration file: '%s'",
+          ExceptionUtils.getStackTrace(t));
+      return null;
+    }
+  }
 }
-

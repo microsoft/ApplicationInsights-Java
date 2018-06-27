@@ -21,55 +21,55 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
 public final class TelemetryContextTest {
-    private final static String TEST_IKEY = "00000000-0000-0000-0000-000000000000";
+  private static final String TEST_IKEY = "00000000-0000-0000-0000-000000000000";
 
-    @Test
-    public void testCtor() {
-        TelemetryContext context = new TelemetryContext();
+  @Test
+  public void testCtor() {
+    TelemetryContext context = new TelemetryContext();
 
-        assertTrue(context.getProperties().isEmpty());
-        assertTrue(context.getTags().isEmpty());
-        assertNull(context.getInstrumentationKey());
-    }
+    assertTrue(context.getProperties().isEmpty());
+    assertTrue(context.getTags().isEmpty());
+    assertNull(context.getInstrumentationKey());
+  }
 
-    @Test
-    public void testSetInstrumentationKey() {
-        TelemetryContext context = new TelemetryContext();
-        context.setInstrumentationKey("key");
+  @Test
+  public void testSetInstrumentationKey() {
+    TelemetryContext context = new TelemetryContext();
+    context.setInstrumentationKey("key");
 
-        assertEquals("key", context.getInstrumentationKey());
-    }
+    assertEquals("key", context.getInstrumentationKey());
+  }
 
-    @Test
-    public void testEmptyInstrumentationKeyOverridenWhenContextInitialized() {
-        TelemetryContext contextToInitialize = new TelemetryContext();
+  @Test
+  public void testEmptyInstrumentationKeyOverridenWhenContextInitialized() {
+    TelemetryContext contextToInitialize = new TelemetryContext();
 
-        TelemetryContext context = new TelemetryContext();
-        context.setInstrumentationKey(TEST_IKEY);
+    TelemetryContext context = new TelemetryContext();
+    context.setInstrumentationKey(TEST_IKEY);
 
-        contextToInitialize.initialize(context);
+    contextToInitialize.initialize(context);
 
-        Assert.assertEquals(TEST_IKEY, contextToInitialize.getInstrumentationKey());
-    }
+    Assert.assertEquals(TEST_IKEY, contextToInitialize.getInstrumentationKey());
+  }
 
-    @Test
-    public void testInstrumentationKeyNotOverridenWhenContextInitialized() {
-        TelemetryContext contextToInitialize = new TelemetryContext();
-        contextToInitialize.setInstrumentationKey(TEST_IKEY);
+  @Test
+  public void testInstrumentationKeyNotOverridenWhenContextInitialized() {
+    TelemetryContext contextToInitialize = new TelemetryContext();
+    contextToInitialize.setInstrumentationKey(TEST_IKEY);
 
-        TelemetryContext context = new TelemetryContext();
-        context.setInstrumentationKey(TEST_IKEY.replaceFirst("0", "1"));
+    TelemetryContext context = new TelemetryContext();
+    context.setInstrumentationKey(TEST_IKEY.replaceFirst("0", "1"));
 
-        contextToInitialize.initialize(context);
+    contextToInitialize.initialize(context);
 
-        Assert.assertEquals(TEST_IKEY, contextToInitialize.getInstrumentationKey());
-    }
+    Assert.assertEquals(TEST_IKEY, contextToInitialize.getInstrumentationKey());
+  }
 }

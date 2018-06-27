@@ -21,42 +21,41 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
-/**
- * Created by gupele on 8/8/2016.
- */
+/** Created by gupele on 8/8/2016. */
 public class PerformanceCounterJvmSectionXmlElement {
-    private ArrayList<JvmXmlElement> jvmXmlElements;
-    private boolean enabled = true;
+  private ArrayList<JvmXmlElement> jvmXmlElements;
+  private boolean enabled = true;
 
-    private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
+  private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
 
-    public ArrayList<JvmXmlElement> getJvmXmlElements() {
-        return jvmXmlElements;
+  public ArrayList<JvmXmlElement> getJvmXmlElements() {
+    return jvmXmlElements;
+  }
+
+  @XmlElement(name = "JvmPC")
+  public void setJvmXmlElements(ArrayList<JvmXmlElement> jvmXmlElements) {
+    this.jvmXmlElements = jvmXmlElements;
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  @XmlAttribute
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  public HashMap<String, JvmXmlElement> getJvmXmlElementsMap() {
+    HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<String, JvmXmlElement>();
+    for (JvmXmlElement jvmPc : jvmXmlElements) {
+      jvmPcsMap.put(jvmPc.getName(), jvmPc);
     }
-
-    @XmlElement(name="JvmPC")
-    public void setJvmXmlElements(ArrayList<JvmXmlElement> jvmXmlElements) {
-        this.jvmXmlElements = jvmXmlElements;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @XmlAttribute
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public HashMap<String, JvmXmlElement> getJvmXmlElementsMap() {
-        HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<String, JvmXmlElement>();
-        for (JvmXmlElement jvmPc : jvmXmlElements) {
-            jvmPcsMap.put(jvmPc.getName(), jvmPc);
-        }
-        return jvmPcsMap;
-    }
+    return jvmPcsMap;
+  }
 }

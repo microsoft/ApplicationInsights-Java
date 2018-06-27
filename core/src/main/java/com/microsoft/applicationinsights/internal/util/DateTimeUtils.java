@@ -27,54 +27,53 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by yonisha on 2/5/2015.
- */
+/** Created by yonisha on 2/5/2015. */
 public class DateTimeUtils {
 
-    private static final String ROUND_TRIP_DATE_FORMAT = "yyyy-MM-dd'T'HH";
+  private static final String ROUND_TRIP_DATE_FORMAT = "yyyy-MM-dd'T'HH";
 
-    private DateTimeUtils() {
-    }
+  private DateTimeUtils() {}
 
-    public static Date getDateTimeNow() {
-        return new Date();
-    }
+  public static Date getDateTimeNow() {
+    return new Date();
+  }
 
-    public static Date addToDate(Date date, int field, int amount) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(field, amount);
+  public static Date addToDate(Date date, int field, int amount) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(date);
+    calendar.add(field, amount);
 
-        return calendar.getTime();
-    }
+    return calendar.getTime();
+  }
 
-    public static long getDateDiff(Date laterDate, Date date, TimeUnit timeUnit) {
-        long diffInMs = laterDate.getTime() - date.getTime();
+  public static long getDateDiff(Date laterDate, Date date, TimeUnit timeUnit) {
+    long diffInMs = laterDate.getTime() - date.getTime();
 
-        return timeUnit.convert(diffInMs, TimeUnit.MILLISECONDS);
-    }
+    return timeUnit.convert(diffInMs, TimeUnit.MILLISECONDS);
+  }
 
-    /**
-     * Parses the given round-trip date string (e.g. '2015-05-26T07') into Date object.
-     * @param roundTripString The string to parse.
-     * @return Date represents the string.
-     * @throws java.text.ParseException Thrown when failed to parse the given string.
-     */
-    public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
-        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
-        Date date = roundTripDateFormat.parse(roundTripString);
+  /**
+   * Parses the given round-trip date string (e.g. '2015-05-26T07') into Date object.
+   *
+   * @param roundTripString The string to parse.
+   * @return Date represents the string.
+   * @throws java.text.ParseException Thrown when failed to parse the given string.
+   */
+  public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
+    SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
+    Date date = roundTripDateFormat.parse(roundTripString);
 
-        return date;
-    }
+    return date;
+  }
 
-    /**
-     * Formats the given date as round-trip date string
-     * @param date Round-trip date string
-     * @return Round-trip date string
-     */
-    public static String formatAsRoundTripDate(Date date) {
-        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
-        return roundTripDateFormat.format(date);
-    }
+  /**
+   * Formats the given date as round-trip date string
+   *
+   * @param date Round-trip date string
+   * @return Round-trip date string
+   */
+  public static String formatAsRoundTripDate(Date date) {
+    SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
+    return roundTripDateFormat.format(date);
+  }
 }

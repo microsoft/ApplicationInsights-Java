@@ -21,52 +21,55 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.microsoft.applicationinsights.telemetry.SessionState;
-import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.io.StringWriter;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import com.microsoft.applicationinsights.telemetry.SessionState;
+import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
+import java.io.IOException;
+import java.io.StringWriter;
+import org.junit.Test;
+
 public final class SessionStateDataTest {
-    @Test
-    public void testCtor() throws IOException {
-        SessionStateData sessionStateData = new SessionStateData(SessionState.Start);
-        assertEquals(2, sessionStateData.getVer());
-        assertEquals(SessionState.Start, sessionStateData.getState());
-        verifyEnvelope(sessionStateData, SessionState.Start);
-    }
+  private static void verifyEnvelope(SessionStateData sessionStateData, SessionState expectedState)
+      throws IOException {
+    Envelope envelope = new Envelope();
+    envelope.setName((new SessionStateTelemetry()).getEnvelopName());
+    Data<SessionStateData> tmp = new Data<SessionStateData>();
+    tmp.setBaseData(sessionStateData);
+    tmp.setBaseType((new SessionStateTelemetry()).getBaseTypeName());
+    envelope.setData(tmp);
 
-    @Test
-    public void testSetState() throws IOException {
-        SessionStateData sessionStateData = new SessionStateData(SessionState.Start);
-        sessionStateData.setState(SessionState.End);
+    StringWriter writer = new StringWriter();
+    JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
+    envelope.serialize(jsonWriter);
+    jsonWriter.close();
+    String asJson = writer.toString();
+    String expectedDataAsString =
+        String.format(
+            "\"data\":{\"baseType\":\"SessionStateData\",\"baseData\":{\"ver\":2,\"state\":\"%s\"}}",
+            expectedState.toString());
+    int index = asJson.indexOf(expectedDataAsString);
+    assertTrue(index != -1);
+    index = asJson.indexOf("\"name\":\"SessionState\"");
+    assertTrue(index != -1);
+  }
 
-        assertEquals(SessionState.End, sessionStateData.getState());
-        verifyEnvelope(sessionStateData, SessionState.End);
-    }
+  @Test
+  public void testCtor() throws IOException {
+    SessionStateData sessionStateData = new SessionStateData(SessionState.Start);
+    assertEquals(2, sessionStateData.getVer());
+    assertEquals(SessionState.Start, sessionStateData.getState());
+    verifyEnvelope(sessionStateData, SessionState.Start);
+  }
 
-    private static void verifyEnvelope(SessionStateData sessionStateData, SessionState expectedState) throws IOException {
-        Envelope envelope = new Envelope();
-        envelope.setName((new SessionStateTelemetry()).getEnvelopName());
-        Data<SessionStateData> tmp = new Data<SessionStateData>();
-        tmp.setBaseData(sessionStateData);
-        tmp.setBaseType((new SessionStateTelemetry()).getBaseTypeName());
-        envelope.setData(tmp);
+  @Test
+  public void testSetState() throws IOException {
+    SessionStateData sessionStateData = new SessionStateData(SessionState.Start);
+    sessionStateData.setState(SessionState.End);
 
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
-        envelope.serialize(jsonWriter);
-        jsonWriter.close();
-        String asJson = writer.toString();
-        String expectedDataAsString = String.format("\"data\":{\"baseType\":\"SessionStateData\",\"baseData\":{\"ver\":2,\"state\":\"%s\"}}", expectedState.toString());
-        int index = asJson.indexOf(expectedDataAsString);
-        assertTrue(index != -1);
-        index = asJson.indexOf("\"name\":\"SessionState\"");
-        assertTrue(index != -1);
-    }
+    assertEquals(SessionState.End, sessionStateData.getState());
+    verifyEnvelope(sessionStateData, SessionState.End);
+  }
 }

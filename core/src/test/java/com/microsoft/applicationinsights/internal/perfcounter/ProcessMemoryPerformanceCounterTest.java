@@ -21,29 +21,29 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 public final class ProcessMemoryPerformanceCounterTest {
-    private static final class TelemetryClassStub extends TelemetryClient {
-        public void track(Telemetry telemetry) {
-            if (!(telemetry instanceof PerformanceCounterTelemetry)) {
-                assertFalse(true);
-            }
+  @Test
+  public void testGetId() {
+    ProcessMemoryPerformanceCounter pc = new ProcessMemoryPerformanceCounter();
+    assertEquals(pc.getId(), Constants.PROCESS_MEM_PC_ID);
+  }
 
-            PerformanceCounterTelemetry pct = (PerformanceCounterTelemetry)telemetry;
-            assertEquals(pct.getCounterName(), Constants.PROCESS_MEM_PC_COUNTER_NAME);
-        }
-    }
+  private static final class TelemetryClassStub extends TelemetryClient {
+    public void track(Telemetry telemetry) {
+      if (!(telemetry instanceof PerformanceCounterTelemetry)) {
+        assertFalse(true);
+      }
 
-    @Test
-    public void testGetId() {
-        ProcessMemoryPerformanceCounter pc = new ProcessMemoryPerformanceCounter();
-        assertEquals(pc.getId(), Constants.PROCESS_MEM_PC_ID);
+      PerformanceCounterTelemetry pct = (PerformanceCounterTelemetry) telemetry;
+      assertEquals(pct.getCounterName(), Constants.PROCESS_MEM_PC_COUNTER_NAME);
     }
+  }
 }

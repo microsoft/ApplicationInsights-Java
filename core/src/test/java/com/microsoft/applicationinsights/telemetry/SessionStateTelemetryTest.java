@@ -21,35 +21,36 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-
 public final class SessionStateTelemetryTest {
-    @Test
-    public void testEmptyCtor() {
-        SessionStateTelemetry telemetry = new SessionStateTelemetry();
-        verifyStateAfterCtor(telemetry, SessionState.Start);
-    }
+  private static void verifyStateAfterCtor(
+      SessionStateTelemetry telemetry, SessionState expectedState) {
+    assertNull(telemetry.getTimestamp());
+    assertNull(telemetry.getSequence());
+    assertEquals(telemetry.getSessionState(), expectedState);
+  }
 
-    @Test
-    public void testCtor() {
-        SessionStateTelemetry telemetry = new SessionStateTelemetry(SessionState.End);
-        verifyStateAfterCtor(telemetry, SessionState.End);
-    }
+  @Test
+  public void testEmptyCtor() {
+    SessionStateTelemetry telemetry = new SessionStateTelemetry();
+    verifyStateAfterCtor(telemetry, SessionState.Start);
+  }
 
-    @Test
-    public void testSetSessionState() {
-        SessionStateTelemetry telemetry = new SessionStateTelemetry(SessionState.Start);
-        telemetry.setSessionState(SessionState.End);
+  @Test
+  public void testCtor() {
+    SessionStateTelemetry telemetry = new SessionStateTelemetry(SessionState.End);
+    verifyStateAfterCtor(telemetry, SessionState.End);
+  }
 
-        assertEquals(telemetry.getSessionState(), SessionState.End);
-    }
+  @Test
+  public void testSetSessionState() {
+    SessionStateTelemetry telemetry = new SessionStateTelemetry(SessionState.Start);
+    telemetry.setSessionState(SessionState.End);
 
-    private static void verifyStateAfterCtor(SessionStateTelemetry telemetry, SessionState expectedState) {
-        assertNull(telemetry.getTimestamp());
-        assertNull(telemetry.getSequence());
-        assertEquals(telemetry.getSessionState(), expectedState);
-    }
+    assertEquals(telemetry.getSessionState(), SessionState.End);
+  }
 }

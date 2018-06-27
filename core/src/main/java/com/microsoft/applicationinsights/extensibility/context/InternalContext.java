@@ -21,38 +21,38 @@
 
 package com.microsoft.applicationinsights.extensibility.context;
 
+import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.concurrent.ConcurrentMap;
 
-import com.microsoft.applicationinsights.internal.util.MapUtil;
-
 public final class InternalContext {
-    private final ConcurrentMap<String, String> tags;
+  private final ConcurrentMap<String, String> tags;
 
-    public InternalContext(ConcurrentMap<String, String> tags) {
-        this.tags = tags;
-    }
+  public InternalContext(ConcurrentMap<String, String> tags) {
+    this.tags = tags;
+  }
 
-    public String getSdkVersion() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalSdkVersion());
-    }
+  public String getSdkVersion() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalSdkVersion());
+  }
 
-    public void setSdkVersion(String version) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalSdkVersion(), version);
-    }
+  public void setSdkVersion(String version) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalSdkVersion(), version);
+  }
 
-    public String getAgentVersion() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalAgentVersion());
-    }
+  public String getAgentVersion() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalAgentVersion());
+  }
 
-    public void setAgentVersion(String version) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalAgentVersion(), version);
-    }
+  public void setAgentVersion(String version) {
+    MapUtil.setStringValueOrRemove(
+        tags, ContextTagKeys.getKeys().getInternalAgentVersion(), version);
+  }
 
-    public String getNodeName() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalNodeName());
-    }
+  public String getNodeName() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalNodeName());
+  }
 
-    public void setNodeName(String nodeName) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalNodeName(), nodeName);
-    }
+  public void setNodeName(String nodeName) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalNodeName(), nodeName);
+  }
 }

@@ -21,53 +21,52 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by gupele on 7/26/2016.
- */
+/** Created by gupele on 7/26/2016. */
 public class TelemetryEventFilterTest {
 
-    @Test
-    public void testNullTelemetry() throws Throwable {
-        TelemetryEventFilter tested = new TelemetryEventFilter();
-        tested.setNotNeededNames("name");
+  @Test
+  public void testNullTelemetry() throws Throwable {
+    TelemetryEventFilter tested = new TelemetryEventFilter();
+    tested.setNotNeededNames("name");
 
-        boolean result = tested.process(null);
+    boolean result = tested.process(null);
 
-        assertTrue(result);
+    assertTrue(result);
+  }
+
+  @Test
+  public void testNonEventTelemetry() throws Throwable {
+    TelemetryEventFilter tested = new TelemetryEventFilter();
+    tested.setNotNeededNames("name");
+
+    boolean result = tested.process(new MetricTelemetry());
+
+    assertTrue(result);
+  }
+
+  @Test
+  public void testMultipleEvents() throws Throwable {
+    TelemetryEventFilter tested = new TelemetryEventFilter();
+    tested.setNotNeededNames("name0, name1");
+
+    String[] unneededNames = {"name0", "name1"};
+    for (String unneeded : unneededNames) {
+      EventTelemetry et = new EventTelemetry(unneeded);
+      boolean result = tested.process(et);
+
+      assertFalse(result);
     }
 
-    @Test
-    public void testNonEventTelemetry() throws Throwable {
-        TelemetryEventFilter tested = new TelemetryEventFilter();
-        tested.setNotNeededNames("name");
+    EventTelemetry et = new EventTelemetry("other");
+    boolean result = tested.process(et);
 
-        boolean result = tested.process(new MetricTelemetry());
-
-        assertTrue(result);
-    }
-
-    @Test
-    public void testMultipleEvents() throws Throwable {
-        TelemetryEventFilter tested = new TelemetryEventFilter();
-        tested.setNotNeededNames("name0, name1");
-
-        String[] unneededNames = {"name0", "name1"};
-        for (String unneeded : unneededNames) {
-            EventTelemetry et = new EventTelemetry(unneeded);
-            boolean result = tested.process(et);
-
-            assertFalse(result);
-        }
-
-        EventTelemetry et = new EventTelemetry("other");
-        boolean result = tested.process(et);
-
-        assertTrue(result);
-    }
+    assertTrue(result);
+  }
 }

@@ -24,31 +24,32 @@ package com.microsoft.applicationinsights.extensibility;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
- * The method gets a {@link Telemetry} instance that is ready to be sent. This is your chance to approve
- * or deny it. Returning 'false' means that the Telemetry will not be sent while 'true' means you approve it.
+ * The method gets a {@link Telemetry} instance that is ready to be sent. This is your chance to
+ * approve or deny it. Returning 'false' means that the Telemetry will not be sent while 'true'
+ * means you approve it.
  *
- * The Telemetry might go through other filters though, that might deny its sending.
+ * <p>The Telemetry might go through other filters though, that might deny its sending.
  *
- * To enable this processor you need to add it in the ApplicationInsights.xml like this:
+ * <p>To enable this processor you need to add it in the ApplicationInsights.xml like this:
  *
- * <pre>
- * {@code
- *  <TelemetryProcessors>
- *      <CustomProcessors>
- *          <Processor type="full.path.to.Filter">
- *              <Add name="Property" value="stringValue"/>
- *          </Processor>
- *      </CustomProcessors>
- *  </TelemetryProcessors>
- *  }
- *</pre>
+ * <pre>{@code
+ * <TelemetryProcessors>
+ *     <CustomProcessors>
+ *         <Processor type="full.path.to.Filter">
+ *             <Add name="Property" value="stringValue"/>
+ *         </Processor>
+ *     </CustomProcessors>
+ * </TelemetryProcessors>
  *
- * Note that the class defines a property named 'Property' which is configured too.
- * Every property that you wish to configure needs to have a 'setX' public method like 'setProperty' in this example
- * <b>Exceptions thrown from the 'setX' methods will be caught by the framework that will ignore the filter</b>
+ * }</pre>
  *
- * Created by gupele on 7/26/2016.
+ * Note that the class defines a property named 'Property' which is configured too. Every property
+ * that you wish to configure needs to have a 'setX' public method like 'setProperty' in this
+ * example <b>Exceptions thrown from the 'setX' methods will be caught by the framework that will
+ * ignore the filter</b>
+ *
+ * <p>Created by gupele on 7/26/2016.
  */
 public interface TelemetryProcessor {
-    boolean process(Telemetry telemetry);
+  boolean process(Telemetry telemetry);
 }

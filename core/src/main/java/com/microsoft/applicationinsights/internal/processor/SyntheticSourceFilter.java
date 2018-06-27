@@ -21,74 +21,76 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class will filter out telemetries that come from 'unneeded' configured list of source names
- * <p>
- * Illegal value will prevent from the filter from being used.
- * <p>
- * Created by gupele on 7/26/2016.
+ *
+ * <p>Illegal value will prevent from the filter from being used.
+ *
+ * <p>Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("SyntheticSourceFilter")
 public final class SyntheticSourceFilter implements TelemetryProcessor {
 
-    private final Set<String> notNeededSources = new HashSet<String>();
+  private final Set<String> notNeededSources = new HashSet<String>();
 
-    public SyntheticSourceFilter() {
+  public SyntheticSourceFilter() {}
+
+  @Override
+  public boolean process(Telemetry telemetry) {
+    if (telemetry == null) {
+      return true;
     }
 
-    @Override
-    public boolean process(Telemetry telemetry) {
-        if (telemetry == null) {
-            return true;
-        }
-
-        if (notNeededSources.isEmpty()) {
-            return LocalStringsUtils.isNullOrEmpty(telemetry.getContext().getOperation().getSyntheticSource());
-        }
-        if (notNeededSources.contains(telemetry.getContext().getOperation().getSyntheticSource())) {
-            return false;
-        }
-
-        return true;
+    if (notNeededSources.isEmpty()) {
+      return LocalStringsUtils.isNullOrEmpty(
+          telemetry.getContext().getOperation().getSyntheticSource());
+    }
+    if (notNeededSources.contains(telemetry.getContext().getOperation().getSyntheticSource())) {
+      return false;
     }
 
-    public void setNotNeededSources(String notNeededSources) throws Throwable {
-        try {
-            List<String> notNeededAsList = Arrays.asList(notNeededSources.split(","));
-            for (String notNeeded : notNeededAsList) {
-                String ready = notNeeded.trim();
-                if (LocalStringsUtils.isNullOrEmpty(ready)) {
-                    continue;
-                }
+    return true;
+  }
 
-                this.notNeededSources.add(ready);
-            }
-            InternalLogger.INSTANCE.trace(String.format("SyntheticSourceFilter: set NotNeededSources: %s", notNeededSources));
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error(String.format("SyntheticSourceFilter: failed to parse NotNeededSources: %s," +
-                        " exception : %s", notNeededSources, ExceptionUtils.getStackTrace(t)));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            } finally {
-                throw t;
-            }
+  public void setNotNeededSources(String notNeededSources) throws Throwable {
+    try {
+      List<String> notNeededAsList = Arrays.asList(notNeededSources.split(","));
+      for (String notNeeded : notNeededAsList) {
+        String ready = notNeeded.trim();
+        if (LocalStringsUtils.isNullOrEmpty(ready)) {
+          continue;
         }
+
+        this.notNeededSources.add(ready);
+      }
+      InternalLogger.INSTANCE.trace(
+          String.format("SyntheticSourceFilter: set NotNeededSources: %s", notNeededSources));
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalLogger.INSTANCE.error(
+            String.format(
+                "SyntheticSourceFilter: failed to parse NotNeededSources: %s," + " exception : %s",
+                notNeededSources, ExceptionUtils.getStackTrace(t)));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      } finally {
+        throw t;
+      }
     }
+  }
 }

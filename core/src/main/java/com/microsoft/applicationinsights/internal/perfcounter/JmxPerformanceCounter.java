@@ -29,106 +29,126 @@ import com.microsoft.applicationinsights.internal.jmx.JmxDataFetcher;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A performance counter that sends {@link com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry}
+ * A performance counter that sends {@link
+ * com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry}
  *
- * Created by gupele on 3/15/2015.
+ * <p>Created by gupele on 3/15/2015.
  */
 public final class JmxPerformanceCounter implements PerformanceCounter {
-    private final PerformanceCounterTelemetry telemetry;
-    private final Map<String, Collection<JmxAttributeData>> objectToAttributes;
-    private Map.Entry<String, Collection<JmxAttributeData>> entry;
-    private final String id;
-    private boolean relevant = true;
+  private final PerformanceCounterTelemetry telemetry;
+  private final Map<String, Collection<JmxAttributeData>> objectToAttributes;
+  private final String id;
+  private Map.Entry<String, Collection<JmxAttributeData>> entry;
+  private boolean relevant = true;
 
-    public JmxPerformanceCounter(String categoryName, String counterName, final String objectName, final Collection<JmxAttributeData> attributes) {
-        this(categoryName, counterName, new HashMap<String, Collection<JmxAttributeData>>() {{
+  public JmxPerformanceCounter(
+      String categoryName,
+      String counterName,
+      final String objectName,
+      final Collection<JmxAttributeData> attributes) {
+    this(
+        categoryName,
+        counterName,
+        new HashMap<String, Collection<JmxAttributeData>>() {
+          {
             put(objectName, attributes);
-        }});
+          }
+        });
+  }
+
+  public JmxPerformanceCounter(
+      String categoryName,
+      String counterName,
+      Map<String, Collection<JmxAttributeData>> objectToAttributes) {
+    Preconditions.checkArgument(
+        !Strings.isNullOrEmpty(categoryName), "categoryName should be a valid non-empty value");
+    Preconditions.checkArgument(
+        !Strings.isNullOrEmpty(counterName), "categoryName should be a valid non-empty value");
+    Preconditions.checkNotNull(objectToAttributes, "objectToAttributes should be not null");
+    Preconditions.checkArgument(
+        !objectToAttributes.isEmpty(), "objectToAttributes should be not be empty");
+
+    id = categoryName + "." + counterName;
+    telemetry = new PerformanceCounterTelemetry();
+    telemetry.setCategoryName(categoryName);
+    telemetry.setCounterName(counterName);
+    telemetry.setInstanceName(SystemInformation.INSTANCE.getProcessId());
+    this.objectToAttributes = objectToAttributes;
+  }
+
+  @Override
+  public String getId() {
+    return id;
+  }
+
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    if (!relevant) {
+      return;
     }
 
-    public JmxPerformanceCounter(String categoryName, String counterName, Map<String, Collection<JmxAttributeData>> objectToAttributes) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(categoryName), "categoryName should be a valid non-empty value");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(counterName), "categoryName should be a valid non-empty value");
-        Preconditions.checkNotNull(objectToAttributes, "objectToAttributes should be not null");
-        Preconditions.checkArgument(!objectToAttributes.isEmpty(), "objectToAttributes should be not be empty");
+    Map<String, Collection<Object>> data = null;
+    if (entry == null) {
+      for (Map.Entry<String, Collection<JmxAttributeData>> entry : objectToAttributes.entrySet()) {
+        try {
+          data = JmxDataFetcher.fetch(entry.getKey(), entry.getValue());
+          this.entry = entry;
+          break;
+        } catch (Exception e) {
+        }
+      }
 
-        id = categoryName + "." + counterName;
-        telemetry = new PerformanceCounterTelemetry();
-        telemetry.setCategoryName(categoryName);
-        telemetry.setCounterName(counterName);
-        telemetry.setInstanceName(SystemInformation.INSTANCE.getProcessId());
-        this.objectToAttributes = objectToAttributes;
+      if (entry == null) {
+        relevant = false;
+        InternalLogger.INSTANCE.error(
+            "Could not find JMX data for '%s'. Performance Counter will be ignored.", getId());
+        return;
+      }
+    } else {
+      try {
+        data = JmxDataFetcher.fetch(entry.getKey(), entry.getValue());
+      } catch (Exception e) {
+        InternalLogger.INSTANCE.error("Failed to fetch JMX data for '%s'..", getId());
+        return;
+      }
     }
 
-
-    @Override
-    public String getId() {
-        return id;
+    if (data == null) {
+      return;
     }
 
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        if (!relevant) {
-            return;
+    for (Map.Entry<String, Collection<Object>> displayAndValues : data.entrySet()) {
+      boolean ok = true;
+      double value = 0.0;
+      for (Object obj : displayAndValues.getValue()) {
+        try {
+          value += Double.parseDouble(String.valueOf(obj));
+        } catch (Exception e) {
+          ok = false;
+          InternalLogger.INSTANCE.error(
+              "Error while parsing JMX value for '%s:%s': '%s'",
+              getId(), displayAndValues.getKey(), e.toString());
+          break;
         }
+      }
 
-        Map<String, Collection<Object>> data = null;
-        if (entry == null) {
-            for (Map.Entry<String, Collection<JmxAttributeData>> entry : objectToAttributes.entrySet()) {
-                try {
-                    data = JmxDataFetcher.fetch(entry.getKey(), entry.getValue());
-                    this.entry = entry;
-                    break;
-                } catch (Exception e) {
-                }
-            }
-
-            if (entry == null) {
-                relevant = false;
-                InternalLogger.INSTANCE.error("Could not find JMX data for '%s'. Performance Counter will be ignored.", getId());
-                return;
-            }
-        } else {
-            try {
-                data = JmxDataFetcher.fetch(entry.getKey(), entry.getValue());
-            } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Failed to fetch JMX data for '%s'..", getId());
-                return;
-            }
+      if (ok) {
+        try {
+          telemetry.setValue(value);
+          InternalLogger.INSTANCE.trace(
+              "JMX Metric: %s:%s: %s",
+              telemetry.getCategoryName(), telemetry.getCounterName(), value);
+          telemetryClient.track(telemetry);
+        } catch (Exception e) {
+          InternalLogger.INSTANCE.error(
+              "Error while sending JMX data for '%s': '%s'", getId(), e.toString());
         }
-
-        if (data == null) {
-            return;
-        }
-
-        for (Map.Entry<String, Collection<Object>> displayAndValues : data.entrySet()) {
-            boolean ok = true;
-            double value = 0.0;
-            for (Object obj : displayAndValues.getValue()) {
-                try {
-                    value += Double.parseDouble(String.valueOf(obj));
-                } catch (Exception e) {
-                    ok = false;
-                    InternalLogger.INSTANCE.error("Error while parsing JMX value for '%s:%s': '%s'", getId(), displayAndValues.getKey(), e.toString());
-                    break;
-                }
-            }
-
-            if (ok) {
-                try {
-                    telemetry.setValue(value);
-                    InternalLogger.INSTANCE.trace("JMX Metric: %s:%s: %s", telemetry.getCategoryName(), telemetry.getCounterName(), value);
-                    telemetryClient.track(telemetry);
-                } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Error while sending JMX data for '%s': '%s'", getId(), e.toString());
-                }
-            }
-        }
+      }
     }
+  }
 }

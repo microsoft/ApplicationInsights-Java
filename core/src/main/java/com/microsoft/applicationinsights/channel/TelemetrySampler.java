@@ -22,27 +22,26 @@
 package com.microsoft.applicationinsights.channel;
 
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-
 import java.util.Set;
 
 /**
  * Telemetry Sampler might be used to reduce the amount of telemetries that are sent by the SDK.
- * Sampling reduces the volume of telemetry without affecting your statistics.
- * It keeps together related data points so that you can navigate between them when diagnosing a problem.
- * In the portal, the total counts are multiplied to compensate for the sampling.
+ * Sampling reduces the volume of telemetry without affecting your statistics. It keeps together
+ * related data points so that you can navigate between them when diagnosing a problem. In the
+ * portal, the total counts are multiplied to compensate for the sampling.
  */
 public interface TelemetrySampler {
-    Set<Class> getExcludeTypes();
+  Set<Class> getExcludeTypes();
 
-    void setExcludeTypes(String types);
+  void setExcludeTypes(String types);
 
-    Set<Class> getIncludeTypes();
+  Set<Class> getIncludeTypes();
 
-    void setIncludeTypes(String types);
+  void setIncludeTypes(String types);
 
-    Double getSamplingPercentage();
+  Double getSamplingPercentage();
 
-    void setSamplingPercentage(Double samplingPercentage);
+  void setSamplingPercentage(Double samplingPercentage);
 
-    public boolean isSampledIn(Telemetry telemetry);
+  public boolean isSampledIn(Telemetry telemetry);
 }

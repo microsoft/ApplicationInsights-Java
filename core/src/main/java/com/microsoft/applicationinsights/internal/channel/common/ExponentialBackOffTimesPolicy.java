@@ -22,41 +22,42 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 /**
- * This class creates the back-off timeouts by starting with five seconds
- * and expanding the interval up to six minutes, every interval is followed
- * by a five seconds timeout to make sure not all threads are block for long timeouts.
+ * This class creates the back-off timeouts by starting with five seconds and expanding the interval
+ * up to six minutes, every interval is followed by a five seconds timeout to make sure not all
+ * threads are block for long timeouts.
  *
- * Created by gupele on 2/10/2015.
+ * <p>Created by gupele on 2/10/2015.
  */
 final class ExponentialBackOffTimesPolicy implements BackOffTimesPolicy {
-    private static final long FIVE_SECONDS_IN_MILLIS = 5000;
-    private static final long TEN_SECONDS_IN_MILLIS = 10000;
-    private static final long FIFTEEN_SECONDS_IN_MILLIS = 15000;
-    private static final long THIRTY_SECONDS_IN_MILLIS = 30000;
-    private static final long ONE_MINUTES_IN_MILLIS = 60000;
-    private static final long TWO_MINUTES_IN_MILLIS = 120000;
-    private static final long FOUR_MINUTES_IN_MILLIS = 240000;
-    private static final long SIX_MINUTES_IN_MILLIS = 360000;
-    private static long[] s_exponentialBackOffInMillis = new long[] {
-            FIVE_SECONDS_IN_MILLIS,
-            TEN_SECONDS_IN_MILLIS,
-            FIVE_SECONDS_IN_MILLIS,
-            FIFTEEN_SECONDS_IN_MILLIS,
-            FIVE_SECONDS_IN_MILLIS,
-            THIRTY_SECONDS_IN_MILLIS,
-            FIVE_SECONDS_IN_MILLIS,
-            ONE_MINUTES_IN_MILLIS,
-            FIVE_SECONDS_IN_MILLIS,
-            TWO_MINUTES_IN_MILLIS,
-            FIVE_SECONDS_IN_MILLIS,
-            FOUR_MINUTES_IN_MILLIS,
-            FIVE_SECONDS_IN_MILLIS,
-            SIX_MINUTES_IN_MILLIS,
-            FIVE_SECONDS_IN_MILLIS
-    };
+  private static final long FIVE_SECONDS_IN_MILLIS = 5000;
+  private static final long TEN_SECONDS_IN_MILLIS = 10000;
+  private static final long FIFTEEN_SECONDS_IN_MILLIS = 15000;
+  private static final long THIRTY_SECONDS_IN_MILLIS = 30000;
+  private static final long ONE_MINUTES_IN_MILLIS = 60000;
+  private static final long TWO_MINUTES_IN_MILLIS = 120000;
+  private static final long FOUR_MINUTES_IN_MILLIS = 240000;
+  private static final long SIX_MINUTES_IN_MILLIS = 360000;
+  private static long[] s_exponentialBackOffInMillis =
+      new long[] {
+        FIVE_SECONDS_IN_MILLIS,
+        TEN_SECONDS_IN_MILLIS,
+        FIVE_SECONDS_IN_MILLIS,
+        FIFTEEN_SECONDS_IN_MILLIS,
+        FIVE_SECONDS_IN_MILLIS,
+        THIRTY_SECONDS_IN_MILLIS,
+        FIVE_SECONDS_IN_MILLIS,
+        ONE_MINUTES_IN_MILLIS,
+        FIVE_SECONDS_IN_MILLIS,
+        TWO_MINUTES_IN_MILLIS,
+        FIVE_SECONDS_IN_MILLIS,
+        FOUR_MINUTES_IN_MILLIS,
+        FIVE_SECONDS_IN_MILLIS,
+        SIX_MINUTES_IN_MILLIS,
+        FIVE_SECONDS_IN_MILLIS
+      };
 
-    @Override
-    public long[] getBackOffTimeoutsInMillis() {
-        return s_exponentialBackOffInMillis;
-    }
+  @Override
+  public long[] getBackOffTimeoutsInMillis() {
+    return s_exponentialBackOffInMillis;
+  }
 }

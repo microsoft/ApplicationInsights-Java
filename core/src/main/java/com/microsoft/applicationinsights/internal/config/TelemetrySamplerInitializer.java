@@ -28,67 +28,66 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-/**
- * Created by gupele on 11/14/2016.
- */
+/** Created by gupele on 11/14/2016. */
 final class TelemetrySamplerInitializer {
-    /**
-     * Sets the configuration data of Context Initializers in configuration class.
-     *
-     * @param sampler The configuration data.
-     */
-    public TelemetrySampler getSampler(SamplerXmlElement sampler) {
-        if (sampler == null) {
-            return null;
-        }
-
-        FixedSamplerXmlElement fixedSamplerXmlElement = sampler.getFixedSamplerXmlElement();
-        TelemetrySampler telemetrySampler = null;
-        if (fixedSamplerXmlElement != null) {
-            Double percentage = null;
-
-            String percentageAsString = fixedSamplerXmlElement.getSamplingPercentage();
-            if (percentageAsString != null) {
-                percentageAsString = percentageAsString.trim();
-            }
-            if (!LocalStringsUtils.isNullOrEmpty(percentageAsString)) {
-                try {
-                    percentage = Double.valueOf(percentageAsString);
-                } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to parse %s, exception : %s", percentageAsString,
-                            ExceptionUtils.getStackTrace(e));
-                }
-            }
-
-            telemetrySampler = new FixedRateTelemetrySampler();
-            telemetrySampler.setIncludeTypes(fixedSamplerXmlElement.getIncludeTypes());
-            telemetrySampler.setExcludeTypes(fixedSamplerXmlElement.getExcludeTypes());
-            telemetrySampler.setSamplingPercentage(percentage);
-        } else {
-            AdaptiveSamplerXmlElement adaptiveSamplerXmlElement = sampler.getAdaptiveSamplerXmlElement();
-            if (adaptiveSamplerXmlElement != null) {
-                AdaptiveTelemetrySampler adaptiveTelemetrySampler = new AdaptiveTelemetrySampler();
-
-                adaptiveTelemetrySampler.setIncludeTypes(adaptiveSamplerXmlElement.getIncludeTypes());
-                adaptiveTelemetrySampler.setExcludeTypes(adaptiveSamplerXmlElement.getExcludeTypes());
-
-                adaptiveTelemetrySampler.initialize(
-                        adaptiveSamplerXmlElement.getMaxTelemetryItemsPerSecond(),
-                        adaptiveSamplerXmlElement.getEvaluationInterval(),
-                        adaptiveSamplerXmlElement.getSamplingPercentageDecreaseTimeout(),
-                        adaptiveSamplerXmlElement.getSamplingPercentageIncreaseTimeout(),
-                        adaptiveSamplerXmlElement.getMinSamplingPercentage(),
-                        adaptiveSamplerXmlElement.getMaxSamplingPercentage(),
-                        adaptiveSamplerXmlElement.getInitialSamplingPercentage(),
-                        adaptiveSamplerXmlElement.getMovingAverageRatio()
-                );
-
-                telemetrySampler = adaptiveTelemetrySampler;
-            } else {
-                InternalLogger.INSTANCE.error("Could not resolve sampler type. Possible values are 'Fixed' or 'Adaptive'");
-            }
-        }
-
-        return telemetrySampler;
+  /**
+   * Sets the configuration data of Context Initializers in configuration class.
+   *
+   * @param sampler The configuration data.
+   */
+  public TelemetrySampler getSampler(SamplerXmlElement sampler) {
+    if (sampler == null) {
+      return null;
     }
+
+    FixedSamplerXmlElement fixedSamplerXmlElement = sampler.getFixedSamplerXmlElement();
+    TelemetrySampler telemetrySampler = null;
+    if (fixedSamplerXmlElement != null) {
+      Double percentage = null;
+
+      String percentageAsString = fixedSamplerXmlElement.getSamplingPercentage();
+      if (percentageAsString != null) {
+        percentageAsString = percentageAsString.trim();
+      }
+      if (!LocalStringsUtils.isNullOrEmpty(percentageAsString)) {
+        try {
+          percentage = Double.valueOf(percentageAsString);
+        } catch (Exception e) {
+          InternalLogger.INSTANCE.error(
+              "Failed to parse %s, exception : %s",
+              percentageAsString, ExceptionUtils.getStackTrace(e));
+        }
+      }
+
+      telemetrySampler = new FixedRateTelemetrySampler();
+      telemetrySampler.setIncludeTypes(fixedSamplerXmlElement.getIncludeTypes());
+      telemetrySampler.setExcludeTypes(fixedSamplerXmlElement.getExcludeTypes());
+      telemetrySampler.setSamplingPercentage(percentage);
+    } else {
+      AdaptiveSamplerXmlElement adaptiveSamplerXmlElement = sampler.getAdaptiveSamplerXmlElement();
+      if (adaptiveSamplerXmlElement != null) {
+        AdaptiveTelemetrySampler adaptiveTelemetrySampler = new AdaptiveTelemetrySampler();
+
+        adaptiveTelemetrySampler.setIncludeTypes(adaptiveSamplerXmlElement.getIncludeTypes());
+        adaptiveTelemetrySampler.setExcludeTypes(adaptiveSamplerXmlElement.getExcludeTypes());
+
+        adaptiveTelemetrySampler.initialize(
+            adaptiveSamplerXmlElement.getMaxTelemetryItemsPerSecond(),
+            adaptiveSamplerXmlElement.getEvaluationInterval(),
+            adaptiveSamplerXmlElement.getSamplingPercentageDecreaseTimeout(),
+            adaptiveSamplerXmlElement.getSamplingPercentageIncreaseTimeout(),
+            adaptiveSamplerXmlElement.getMinSamplingPercentage(),
+            adaptiveSamplerXmlElement.getMaxSamplingPercentage(),
+            adaptiveSamplerXmlElement.getInitialSamplingPercentage(),
+            adaptiveSamplerXmlElement.getMovingAverageRatio());
+
+        telemetrySampler = adaptiveTelemetrySampler;
+      } else {
+        InternalLogger.INSTANCE.error(
+            "Could not resolve sampler type. Possible values are 'Fixed' or 'Adaptive'");
+      }
+    }
+
+    return telemetrySampler;
+  }
 }

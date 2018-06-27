@@ -21,136 +21,134 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * Created by gupele on 3/13/2015.
- */
-@XmlRootElement(name="ApplicationInsights")
+/** Created by gupele on 3/13/2015. */
+@XmlRootElement(name = "ApplicationInsights")
 public class ApplicationInsightsXmlConfiguration {
-    private String instrumentationKey;
+  private String instrumentationKey;
 
-    private boolean disableTelemetry = false;
+  private boolean disableTelemetry = false;
 
-    private TelemetryInitializersXmlElement telemetryInitializers;
-    private TelemetryProcessorsXmlElement telemetryProcessors;
-    private ContextInitializersXmlElement contextInitializers;
-    private ChannelXmlElement channel = new ChannelXmlElement();
-    private TelemetryModulesXmlElement modules;
-    private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
-    private SDKLoggerXmlElement sdkLogger;
-    private SamplerXmlElement sampler;
-    private QuickPulseXmlElement quickPulse;
+  private TelemetryInitializersXmlElement telemetryInitializers;
+  private TelemetryProcessorsXmlElement telemetryProcessors;
+  private ContextInitializersXmlElement contextInitializers;
+  private ChannelXmlElement channel = new ChannelXmlElement();
+  private TelemetryModulesXmlElement modules;
+  private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
+  private SDKLoggerXmlElement sdkLogger;
+  private SamplerXmlElement sampler;
+  private QuickPulseXmlElement quickPulse;
 
-    private String schemaVersion;
+  private String schemaVersion;
 
-    public String getInstrumentationKey() {
-        return instrumentationKey;
-    }
+  public String getInstrumentationKey() {
+    return instrumentationKey;
+  }
 
-    @XmlElement(name="InstrumentationKey")
-    public void setInstrumentationKey(String instrumentationKey) {
-        this.instrumentationKey = instrumentationKey;
-    }
+  @XmlElement(name = "InstrumentationKey")
+  public void setInstrumentationKey(String instrumentationKey) {
+    this.instrumentationKey = instrumentationKey;
+  }
 
-    public String getSchemaVersion() {
-        return schemaVersion;
-    }
+  public String getSchemaVersion() {
+    return schemaVersion;
+  }
 
-    @XmlAttribute
-    public void setSchemaVersion(String schemaVersion) {
-        this.schemaVersion = schemaVersion;
-    }
+  @XmlAttribute
+  public void setSchemaVersion(String schemaVersion) {
+    this.schemaVersion = schemaVersion;
+  }
 
-    public TelemetryInitializersXmlElement getTelemetryInitializers() {
-        return telemetryInitializers;
-    }
+  public TelemetryInitializersXmlElement getTelemetryInitializers() {
+    return telemetryInitializers;
+  }
 
-    @XmlElement(name="TelemetryInitializers")
-    public void setTelemetryInitializers(TelemetryInitializersXmlElement telemetryInitializers) {
-        this.telemetryInitializers = telemetryInitializers;
-    }
+  @XmlElement(name = "TelemetryInitializers")
+  public void setTelemetryInitializers(TelemetryInitializersXmlElement telemetryInitializers) {
+    this.telemetryInitializers = telemetryInitializers;
+  }
 
-    public ContextInitializersXmlElement getContextInitializers() {
-        return contextInitializers;
-    }
+  public ContextInitializersXmlElement getContextInitializers() {
+    return contextInitializers;
+  }
 
-    @XmlElement(name="TelemetryProcessors")
-    public void setTelemetryProcessors(TelemetryProcessorsXmlElement telemetryProcessors) {
-        this.telemetryProcessors = telemetryProcessors;
-    }
+  @XmlElement(name = "ContextInitializers")
+  public void setContextInitializers(ContextInitializersXmlElement contextInitializers) {
+    this.contextInitializers = contextInitializers;
+  }
 
-    public TelemetryProcessorsXmlElement getTelemetryProcessors() {
-        return telemetryProcessors;
-    }
+  public TelemetryProcessorsXmlElement getTelemetryProcessors() {
+    return telemetryProcessors;
+  }
 
-    @XmlElement(name="ContextInitializers")
-    public void setContextInitializers(ContextInitializersXmlElement contextInitializers) {
-        this.contextInitializers = contextInitializers;
-    }
+  @XmlElement(name = "TelemetryProcessors")
+  public void setTelemetryProcessors(TelemetryProcessorsXmlElement telemetryProcessors) {
+    this.telemetryProcessors = telemetryProcessors;
+  }
 
-    public ChannelXmlElement getChannel() {
-        return channel;
-    }
+  public ChannelXmlElement getChannel() {
+    return channel;
+  }
 
-    @XmlElement(name="Channel")
-    public void setChannel(ChannelXmlElement channel) {
-        this.channel = channel;
-    }
+  @XmlElement(name = "Channel")
+  public void setChannel(ChannelXmlElement channel) {
+    this.channel = channel;
+  }
 
-    public SamplerXmlElement getSampler() {
-        return sampler;
-    }
+  public SamplerXmlElement getSampler() {
+    return sampler;
+  }
 
-    @XmlElement(name="Sampling")
-    public void setSampler(SamplerXmlElement sampler) {
-        this.sampler = sampler;
-    }
+  @XmlElement(name = "Sampling")
+  public void setSampler(SamplerXmlElement sampler) {
+    this.sampler = sampler;
+  }
 
-    public QuickPulseXmlElement getQuickPulse() {
-        return quickPulse;
-    }
+  public QuickPulseXmlElement getQuickPulse() {
+    return quickPulse;
+  }
 
-    @XmlElement(name="QuickPulse")
-    public void setQuickPulse(QuickPulseXmlElement quickPulse) {
-        this.quickPulse = quickPulse;
-    }
+  @XmlElement(name = "QuickPulse")
+  public void setQuickPulse(QuickPulseXmlElement quickPulse) {
+    this.quickPulse = quickPulse;
+  }
 
-    public SDKLoggerXmlElement getSdkLogger() {
-        return sdkLogger;
-    }
+  public SDKLoggerXmlElement getSdkLogger() {
+    return sdkLogger;
+  }
 
-    @XmlElement(name="SDKLogger")
-    public void setSdkLogger(SDKLoggerXmlElement sdkLogger) {
-        this.sdkLogger = sdkLogger;
-    }
+  @XmlElement(name = "SDKLogger")
+  public void setSdkLogger(SDKLoggerXmlElement sdkLogger) {
+    this.sdkLogger = sdkLogger;
+  }
 
-    public boolean isDisableTelemetry() {
-        return disableTelemetry;
-    }
+  public boolean isDisableTelemetry() {
+    return disableTelemetry;
+  }
 
-    @XmlElement(name="DisableTelemetry")
-    public void setDisableTelemetry(boolean disableTelemetry) {
-        this.disableTelemetry = disableTelemetry;
-    }
+  @XmlElement(name = "DisableTelemetry")
+  public void setDisableTelemetry(boolean disableTelemetry) {
+    this.disableTelemetry = disableTelemetry;
+  }
 
-    public TelemetryModulesXmlElement getModules() {
-        return modules;
-    }
+  public TelemetryModulesXmlElement getModules() {
+    return modules;
+  }
 
-    @XmlElement(name="TelemetryModules")
-    public void setModules(TelemetryModulesXmlElement modules) {
-        this.modules = modules;
-    }
+  @XmlElement(name = "TelemetryModules")
+  public void setModules(TelemetryModulesXmlElement modules) {
+    this.modules = modules;
+  }
 
-    public PerformanceCountersXmlElement getPerformance() {
-        return performance;
-    }
+  public PerformanceCountersXmlElement getPerformance() {
+    return performance;
+  }
 
-    @XmlElement(name="PerformanceCounters")
-    public void setPerformance(PerformanceCountersXmlElement performance) {
-        this.performance = performance;
-    }
+  @XmlElement(name = "PerformanceCounters")
+  public void setPerformance(PerformanceCountersXmlElement performance) {
+    this.performance = performance;
+  }
 }

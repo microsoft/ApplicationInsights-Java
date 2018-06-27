@@ -21,88 +21,92 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.Collection;
-import java.util.Map;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.jmx.JmxDataFetcher;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.Collection;
+import java.util.Map;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * The class is a base class for JMX performance counters.
- * It knows how to fetch the needed information from JMX and then relies on its derived classes to send the data.
+ * The class is a base class for JMX performance counters. It knows how to fetch the needed
+ * information from JMX and then relies on its derived classes to send the data.
  *
- * Created by gupele on 3/15/2015.
+ * <p>Created by gupele on 3/15/2015.
  */
 public abstract class AbstractJmxPerformanceCounter implements PerformanceCounter {
-    private final String id;
-    private final String objectName;
-    private final Collection<JmxAttributeData> attributes;
-    private boolean relevant = true;
-    private boolean firstTime = true;
+  private final String id;
+  private final String objectName;
+  private final Collection<JmxAttributeData> attributes;
+  private boolean relevant = true;
+  private boolean firstTime = true;
 
-    @Override
-    public String getId() {
-        return id;
+  protected AbstractJmxPerformanceCounter(
+      String id, String objectName, Collection<JmxAttributeData> attributes) {
+    this.id = id;
+    this.objectName = objectName;
+    this.attributes = attributes;
+  }
+
+  @Override
+  public String getId() {
+    return id;
+  }
+
+  /**
+   * The main method. The method will fetch the data and send it. The method will not do anything if
+   * there was a major problem accessing the needed counter.
+   *
+   * @param telemetryClient The telemetry client to send events.
+   */
+  @Override
+  public synchronized void report(TelemetryClient telemetryClient) {
+    if (!relevant) {
+      return;
     }
 
-    /**
-     * The main method. The method will fetch the data and send it.
-     * The method will not do anything if there was a major problem accessing the needed counter.
-     * @param telemetryClient The telemetry client to send events.
-     */
-    @Override
-    public synchronized void report(TelemetryClient telemetryClient) {
-        if (!relevant) {
-            return;
+    try {
+      Map<String, Collection<Object>> result = JmxDataFetcher.fetch(objectName, attributes);
+
+      for (Map.Entry<String, Collection<Object>> displayAndValues : result.entrySet()) {
+        boolean ok = true;
+        double value = 0.0;
+        for (Object obj : displayAndValues.getValue()) {
+          try {
+            value += Double.parseDouble(String.valueOf(obj));
+          } catch (Exception e) {
+            ok = false;
+            break;
+          }
         }
 
-        try {
-            Map<String, Collection<Object>> result =
-                    JmxDataFetcher.fetch(objectName, attributes);
-
-            for (Map.Entry<String, Collection<Object>> displayAndValues : result.entrySet()) {
-                boolean ok = true;
-                double value = 0.0;
-                for (Object obj : displayAndValues.getValue()) {
-                    try {
-                        value += Double.parseDouble(String.valueOf(obj));
-                    } catch (Exception e) {
-                        ok = false;
-                        break;
-                    }
-                }
-
-                if (ok) {
-                    try {
-                        send(telemetryClient, displayAndValues.getKey(), value);
-                    } catch (Exception e) {
-                        InternalLogger.INSTANCE.error("Error while sending JMX data: '%s'", e.toString());
-                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            if (firstTime) {
-                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s', The PC will be ignored", e.toString());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-                relevant = false;
-            } else {
-                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s'", e.toString());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-            }
-        } finally {
-            firstTime = false;
+        if (ok) {
+          try {
+            send(telemetryClient, displayAndValues.getKey(), value);
+          } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Error while sending JMX data: '%s'", e.toString());
+            InternalLogger.INSTANCE.trace(
+                "Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+          }
         }
+      }
+    } catch (Exception e) {
+      if (firstTime) {
+        InternalLogger.INSTANCE.error(
+            "Error while fetching JMX data: '%s', The PC will be ignored", e.toString());
+        InternalLogger.INSTANCE.trace(
+            "Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+        relevant = false;
+      } else {
+        InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s'", e.toString());
+        InternalLogger.INSTANCE.trace(
+            "Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+      }
+    } finally {
+      firstTime = false;
     }
+  }
 
-    protected AbstractJmxPerformanceCounter(String id, String objectName, Collection<JmxAttributeData> attributes) {
-        this.id = id;
-        this.objectName = objectName;
-        this.attributes = attributes;
-    }
-
-    protected abstract void send(TelemetryClient telemetryClient, String displayName, double value);
+  protected abstract void send(TelemetryClient telemetryClient, String displayName, double value);
 }

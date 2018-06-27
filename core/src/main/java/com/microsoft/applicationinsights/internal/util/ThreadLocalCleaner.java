@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-/**
- * Created by gupele on 7/8/2015.
- */
+/** Created by gupele on 7/8/2015. */
 public interface ThreadLocalCleaner {
-    void clean();
+  void clean();
 }

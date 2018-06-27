@@ -21,76 +21,80 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 /**
  * The class supplies the overall memory usage of the machine.
  *
- * Created by gupele on 3/9/2015.
+ * <p>Created by gupele on 3/9/2015.
  */
 final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCounter {
-    private final static String MEM_FILE = "/proc/meminfo";
-    private final static double KB = 1024.0;
+  private static final String MEM_FILE = "/proc/meminfo";
+  private static final double KB = 1024.0;
 
-    public UnixTotalMemoryPerformanceCounter() {
-        super(MEM_FILE);
+  public UnixTotalMemoryPerformanceCounter() {
+    super(MEM_FILE);
+  }
+
+  @Override
+  public String getId() {
+    return Constants.TOTAL_MEMORY_PC_ID;
+  }
+
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    Double totalAvailableMemory = getTotalAvailableMemory();
+    if (totalAvailableMemory == null) {
+      return;
     }
 
-    @Override
-    public String getId() {
-        return Constants.TOTAL_MEMORY_PC_ID;
-    }
+    InternalLogger.INSTANCE.trace(
+        "Sending Performance Counter: %s %s: %s",
+        Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
+        Constants.TOTAL_MEMORY_PC_COUNTER_NAME,
+        totalAvailableMemory);
+    Telemetry telemetry =
+        new PerformanceCounterTelemetry(
+            Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
+            Constants.TOTAL_MEMORY_PC_COUNTER_NAME,
+            "",
+            totalAvailableMemory);
 
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        Double totalAvailableMemory = getTotalAvailableMemory();
-        if (totalAvailableMemory == null) {
-            return;
-        }
+    telemetryClient.track(telemetry);
+  }
 
-        InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, totalAvailableMemory);
-        Telemetry telemetry = new PerformanceCounterTelemetry(
-                Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
-                Constants.TOTAL_MEMORY_PC_COUNTER_NAME,
-                "",
-                totalAvailableMemory);
+  private Double getTotalAvailableMemory() {
+    BufferedReader bufferedReader = null;
 
-        telemetryClient.track(telemetry);
-    }
+    Double result = null;
+    UnixTotalMemInfoParser reader = new UnixTotalMemInfoParser();
+    try {
+      bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
+      String line;
+      while (!reader.done() && (line = bufferedReader.readLine()) != null) {
+        reader.process(line);
+      }
 
-    private Double getTotalAvailableMemory() {
-        BufferedReader bufferedReader = null;
-
-        Double result = null;
-        UnixTotalMemInfoParser reader = new UnixTotalMemInfoParser();
+      // The value we get is in KB so we need to translate that to bytes.
+      result = reader.getValue() * KB;
+    } catch (Exception e) {
+      result = null;
+      logPerfCounterErrorError("Error while parsing file: '%s'", e.toString());
+    } finally {
+      if (bufferedReader != null) {
         try {
-            bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
-            String line;
-            while (!reader.done() && (line = bufferedReader.readLine()) != null) {
-                reader.process(line);
-            }
-
-            // The value we get is in KB so we need to translate that to bytes.
-            result = reader.getValue() * KB;
+          bufferedReader.close();
         } catch (Exception e) {
-            result = null;
-            logPerfCounterErrorError("Error while parsing file: '%s'", e.toString());
-        } finally {
-            if (bufferedReader != null ) {
-                try {
-                    bufferedReader.close();
-                } catch (Exception e) {
-                    logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
-                }
-            }
+          logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
         }
-
-        return result;
+      }
     }
+
+    return result;
+  }
 }

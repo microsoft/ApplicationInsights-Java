@@ -21,34 +21,39 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import org.junit.*;
 import java.io.InputStream;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public final class JaxbAppInsightsConfigurationBuilderTest {
-    private final static String EXISTING_CONF_TEST_FILE = "ApplicationInsights2.xml";
+  private static final String EXISTING_CONF_TEST_FILE = "ApplicationInsights2.xml";
 
-    @Before
-    public void clearProp() {
-        System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
-    }
+  @Before
+  public void clearProp() {
+    System.clearProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY);
+  }
 
-    @Test
-    public void testNullInputShouldReturnNull() {
-        Assert.assertNull(new JaxbAppInsightsConfigurationBuilder().build(null));
-    }
+  @Test
+  public void testNullInputShouldReturnNull() {
+    Assert.assertNull(new JaxbAppInsightsConfigurationBuilder().build(null));
+  }
 
-    @Test
-    public void testBuilderProducesCorrectConfig() {
-        System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "src/test/resources");
-        InputStream resourceFile = new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
-        JaxbAppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
-        ApplicationInsightsXmlConfiguration config = builder.build(resourceFile);
+  @Test
+  public void testBuilderProducesCorrectConfig() {
+    System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "src/test/resources");
+    InputStream resourceFile =
+        new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
+    JaxbAppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
+    ApplicationInsightsXmlConfiguration config = builder.build(resourceFile);
 
-        // asserting a few config items only since the point of the test is to validate deserialization occurs
-        // with no errors.
-        Assert.assertEquals("myikey", config.getInstrumentationKey());
-        Assert.assertFalse(config.getChannel().getDeveloperMode());
-        Assert.assertEquals("mypackage.MyCustomContextInitializer", config.getContextInitializers().getAdds().get(0).getType());
-    }
+    // asserting a few config items only since the point of the test is to validate deserialization
+    // occurs
+    // with no errors.
+    Assert.assertEquals("myikey", config.getInstrumentationKey());
+    Assert.assertFalse(config.getChannel().getDeveloperMode());
+    Assert.assertEquals(
+        "mypackage.MyCustomContextInitializer",
+        config.getContextInitializers().getAdds().get(0).getType());
+  }
 }
-

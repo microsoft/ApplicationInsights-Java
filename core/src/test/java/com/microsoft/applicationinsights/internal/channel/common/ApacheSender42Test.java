@@ -21,17 +21,18 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public final class ApacheSender42Test {
-    @Test
-    public void testHttpClientType() {
-        HttpClient tested = new ApacheSender42().getHttpClient();
-        assertNotNull(tested);
-        assertEquals(tested.getClass(), DefaultHttpClient.class);
-    }
+  @Test
+  public void testHttpClientType() {
+    HttpClient tested = new ApacheSender42().getHttpClient();
+    assertNotNull(tested);
+    assertEquals(tested.getClass(), DefaultHttpClient.class);
+  }
 }

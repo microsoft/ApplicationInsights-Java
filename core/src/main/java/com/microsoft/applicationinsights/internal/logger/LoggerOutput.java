@@ -21,11 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
-/**
- * Created by gupele on 1/14/2015.
- */
+/** Created by gupele on 1/14/2015. */
 public interface LoggerOutput {
-    void log(String message);
+  void log(String message);
 
-    void close();
+  void close();
 }

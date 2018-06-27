@@ -21,23 +21,21 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-/**
- * Enum SeverityLevel.
- */
+/** Enum SeverityLevel. */
 public enum SeverityLevel {
-    Verbose(0),
-    Information(1),
-    Warning(2),
-    Error(3),
-    Critical(4);
+  Verbose(0),
+  Information(1),
+  Warning(2),
+  Error(3),
+  Critical(4);
 
-    private final int id;
+  private final int id;
 
-    public int getValue() {
-        return id;
-    }
+  SeverityLevel(int id) {
+    this.id = id;
+  }
 
-    SeverityLevel(int id) {
-        this.id = id;
-    }
+  public int getValue() {
+    return id;
+  }
 }

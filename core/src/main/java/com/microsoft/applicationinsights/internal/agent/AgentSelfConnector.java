@@ -22,15 +22,15 @@
 package com.microsoft.applicationinsights.internal.agent;
 
 /**
- * A utility class to load the core SDK into the Agent
- * This is an internal class that should only used by the Agent
+ * A utility class to load the core SDK into the Agent This is an internal class that should only
+ * used by the Agent
  *
- * Created by gupele on 9/11/2016.
+ * <p>Created by gupele on 9/11/2016.
  */
 public class AgentSelfConnector {
-    public AgentSelfConnector() throws Exception {
-        if (!AgentConnector.INSTANCE.registerSelf()) {
-            throw new Exception("Failed to register Core in Agent");
-        }
+  public AgentSelfConnector() throws Exception {
+    if (!AgentConnector.INSTANCE.registerSelf()) {
+      throw new Exception("Failed to register Core in Agent");
     }
+  }
 }

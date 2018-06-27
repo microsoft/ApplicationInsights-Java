@@ -23,23 +23,21 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.io.InputStream;
 
-/**
- * Created by gupele on 8/16/2015.
- */
+/** Created by gupele on 8/16/2015. */
 final class ResourceFile {
-    public final String filename;
-    public final InputStream fileInputStream;
+  public final String filename;
+  public final InputStream fileInputStream;
 
-    ResourceFile(InputStream fileInputStream) {
-        this(null, fileInputStream);
-    }
+  ResourceFile(InputStream fileInputStream) {
+    this(null, fileInputStream);
+  }
 
-    ResourceFile(String filename) {
-        this(filename, null);
-    }
+  ResourceFile(String filename) {
+    this(filename, null);
+  }
 
-    ResourceFile(String filename, InputStream fileInputStream) {
-        this.filename = filename;
-        this.fileInputStream = fileInputStream;
-    }
+  ResourceFile(String filename, InputStream fileInputStream) {
+    this.filename = filename;
+    this.fileInputStream = fileInputStream;
+  }
 }

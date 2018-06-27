@@ -22,76 +22,67 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.SessionStateData;
-
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Telemetry type used to track user sessions in Azure Application Insights.
- */
+/** Telemetry type used to track user sessions in Azure Application Insights. */
 public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData> {
-    private final SessionStateData data;
+  /** Envelope Name for this telemetry. */
+  private static final String ENVELOPE_NAME = "SessionState";
+  /** Base Type for this telemetry. */
+  private static final String BASE_TYPE = "SessionStateData";
+  private final SessionStateData data;
+  /**
+   * Default initialization of a new instance of the class. The session state will be set to 'Start'
+   */
+  public SessionStateTelemetry() {
+    this(SessionState.Start);
+  }
 
-    /**
-     * Envelope Name for this telemetry.
-     */
-    private static final String ENVELOPE_NAME = "SessionState";
+  /**
+   * Initializes a new instance of the class with the specified <code>sessionState</code>
+   *
+   * @param sessionState value indicating state of the user session (Start or End).
+   */
+  public SessionStateTelemetry(SessionState sessionState) {
+    super();
+    data = new SessionStateData(sessionState);
+    initialize(new ConcurrentHashMap<String, String>());
+  }
 
+  /**
+   * Gets the session state.
+   *
+   * @return session state.
+   */
+  public SessionState getSessionState() {
+    return data.getState();
+  }
 
-    /**
-     * Base Type for this telemetry.
-     */
-    private static final String BASE_TYPE = "SessionStateData";
-    /**
-     * Default initialization of a new instance of the class.
-     * The session state will be set to 'Start'
-     */
-    public SessionStateTelemetry() {
-        this(SessionState.Start);
-    }
+  /**
+   * Sets the session state.
+   *
+   * @param sessionState the session state.
+   */
+  public void setSessionState(SessionState sessionState) {
+    data.setState(sessionState);
+    ;
+  }
 
-    /**
-     * Initializes a new instance of the class with the specified <code>sessionState</code>
-     * @param sessionState value indicating state of the user session (Start or End).
-     */
-    public SessionStateTelemetry(SessionState sessionState) {
-        super();
-        data = new SessionStateData(sessionState);
-        initialize(new ConcurrentHashMap<String, String>());
-    }
+  @Deprecated
+  protected void additionalSanitize() {}
 
-    /**
-     * Gets the session state.
-     * @return session state.
-     */
-    public SessionState getSessionState() {
-        return data.getState();
-    }
+  @Override
+  protected SessionStateData getData() {
+    return data;
+  }
 
-    /**
-     * Sets the session state.
-     * @param sessionState the session state.
-     */
-    public void setSessionState(SessionState sessionState) {
-        data.setState(sessionState);;
-    }
+  @Override
+  public String getEnvelopName() {
+    return ENVELOPE_NAME;
+  }
 
-    @Deprecated
-    protected void additionalSanitize() {
-    }
-
-    @Override
-    protected SessionStateData getData() {
-        return data;
-    }
-
-    @Override
-    public String getEnvelopName() {
-        return ENVELOPE_NAME;
-    }
-
-    @Override
-    public String getBaseTypeName() {
-        return BASE_TYPE;
-    }
-
+  @Override
+  public String getBaseTypeName() {
+    return BASE_TYPE;
+  }
 }

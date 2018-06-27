@@ -21,22 +21,19 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
+import javax.xml.bind.annotation.XmlElement;
 
-/**
- * Created by gupele on 3/15/2015.
- */
+/** Created by gupele on 3/15/2015. */
 public class TelemetryModulesXmlElement {
-    private ArrayList<AddTypeXmlElement> adds;
+  private ArrayList<AddTypeXmlElement> adds;
 
-    public ArrayList<AddTypeXmlElement> getAdds() {
-        return adds;
-    }
+  public ArrayList<AddTypeXmlElement> getAdds() {
+    return adds;
+  }
 
-    @XmlElement(name="Add")
-    public void setAdds(ArrayList<AddTypeXmlElement> adds) {
-        this.adds = adds;
-    }
+  @XmlElement(name = "Add")
+  public void setAdds(ArrayList<AddTypeXmlElement> adds) {
+    this.adds = adds;
+  }
 }

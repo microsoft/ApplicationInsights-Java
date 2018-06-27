@@ -21,50 +21,49 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer;
 
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-
 import org.apache.commons.codec.binary.Base64;
 
-import com.google.common.base.Strings;
-
 /**
- * An {@link com.microsoft.applicationinsights.extensibility.TelemetryInitializer} implementation that
- * populates Sequence property to ensure correct ordering of the telemetry in the portal.
+ * An {@link com.microsoft.applicationinsights.extensibility.TelemetryInitializer} implementation
+ * that populates Sequence property to ensure correct ordering of the telemetry in the portal.
  */
 public final class SequencePropertyInitializer implements TelemetryInitializer {
-    private final static String SEPARATOR = ":";
+  private static final String SEPARATOR = ":";
 
-    private final String stablePrefix;
-    private final AtomicLong currentNumber = new AtomicLong(-1);
+  private final String stablePrefix;
+  private final AtomicLong currentNumber = new AtomicLong(-1);
 
-    public SequencePropertyInitializer() {
-        stablePrefix = uuidToBase64() + SEPARATOR;
+  public SequencePropertyInitializer() {
+    stablePrefix = uuidToBase64() + SEPARATOR;
+  }
+
+  private static String uuidToBase64() {
+    Base64 base64 = new Base64();
+    UUID uuid = UUID.randomUUID();
+    ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+    bb.putLong(uuid.getMostSignificantBits());
+    bb.putLong(uuid.getLeastSignificantBits());
+    return base64.encodeBase64URLSafeString(bb.array());
+  }
+
+  /**
+   * Sets the Telemetry's sequence if there that sequence is null or empty.
+   *
+   * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to
+   *     initialize.
+   */
+  @Override
+  public void initialize(Telemetry telemetry) {
+    String sequence = telemetry.getSequence();
+    if (Strings.isNullOrEmpty(sequence)) {
+      sequence = stablePrefix + String.valueOf(currentNumber.incrementAndGet());
+      telemetry.setSequence(sequence);
     }
-
-    /**
-     * Sets the Telemetry's sequence if there that sequence is null or empty.
-     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
-     */
-    @Override
-    public void initialize(Telemetry telemetry) {
-        String sequence = telemetry.getSequence();
-        if (Strings.isNullOrEmpty(sequence)) {
-            sequence = stablePrefix + String.valueOf(currentNumber.incrementAndGet());
-            telemetry.setSequence(sequence);
-        }
-    }
-
-    private static String uuidToBase64() {
-        Base64 base64 = new Base64();
-        UUID uuid = UUID.randomUUID();
-        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-        return base64.encodeBase64URLSafeString(bb.array());
-    }
+  }
 }

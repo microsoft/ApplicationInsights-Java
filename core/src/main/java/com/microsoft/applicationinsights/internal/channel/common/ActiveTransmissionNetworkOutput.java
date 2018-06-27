@@ -21,87 +21,92 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-
-/**
- * Created by gupele on 12/18/2014.
- */
+/** Created by gupele on 12/18/2014. */
 public final class ActiveTransmissionNetworkOutput implements TransmissionOutput {
-    private final static int DEFAULT_MAX_MESSAGES_IN_BUFFER = 128;
-    private final static int DEFAULT_MIN_NUMBER_OF_THREADS = 7;
-    private final static int DEFAULT_MAX_NUMBER_OF_THREADS = 7;
-    private final static long DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS = 60L;
-    private final static AtomicInteger INTSTANCE_ID_POOL = new AtomicInteger(1);
+  private static final int DEFAULT_MAX_MESSAGES_IN_BUFFER = 128;
+  private static final int DEFAULT_MIN_NUMBER_OF_THREADS = 7;
+  private static final int DEFAULT_MAX_NUMBER_OF_THREADS = 7;
+  private static final long DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS = 60L;
+  private static final AtomicInteger INTSTANCE_ID_POOL = new AtomicInteger(1);
 
-    private final int maxThreads;
-    private final ThreadPoolExecutor outputThreads;
-    private final TransmissionOutput actualOutput;
-    private final TransmissionPolicyStateFetcher transmissionPolicy;
-    private final int instanceId = INTSTANCE_ID_POOL.getAndIncrement();
+  private final int maxThreads;
+  private final ThreadPoolExecutor outputThreads;
+  private final TransmissionOutput actualOutput;
+  private final TransmissionPolicyStateFetcher transmissionPolicy;
+  private final int instanceId = INTSTANCE_ID_POOL.getAndIncrement();
 
-    public ActiveTransmissionNetworkOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
-        this(actualOutput, transmissionPolicy, DEFAULT_MAX_MESSAGES_IN_BUFFER);
-    }
+  public ActiveTransmissionNetworkOutput(
+      TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
+    this(actualOutput, transmissionPolicy, DEFAULT_MAX_MESSAGES_IN_BUFFER);
+  }
 
-    public ActiveTransmissionNetworkOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy, int maxMessagesInBuffer) {
-        Preconditions.checkNotNull(transmissionPolicy, "transmissionPolicy must be a valid non-null value");
+  public ActiveTransmissionNetworkOutput(
+      TransmissionOutput actualOutput,
+      TransmissionPolicyStateFetcher transmissionPolicy,
+      int maxMessagesInBuffer) {
+    Preconditions.checkNotNull(
+        transmissionPolicy, "transmissionPolicy must be a valid non-null value");
 
-        this.actualOutput = actualOutput;
-        this.transmissionPolicy = transmissionPolicy;
+    this.actualOutput = actualOutput;
+    this.transmissionPolicy = transmissionPolicy;
 
-        maxThreads = DEFAULT_MAX_NUMBER_OF_THREADS;
-        outputThreads = ThreadPoolUtils.newLimitedThreadPool(
-                DEFAULT_MIN_NUMBER_OF_THREADS,
-                maxThreads,
-                DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS,
-                maxMessagesInBuffer);
-        outputThreads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(ActiveTransmissionNetworkOutput.class, instanceId));
-    }
+    maxThreads = DEFAULT_MAX_NUMBER_OF_THREADS;
+    outputThreads =
+        ThreadPoolUtils.newLimitedThreadPool(
+            DEFAULT_MIN_NUMBER_OF_THREADS,
+            maxThreads,
+            DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS,
+            maxMessagesInBuffer);
+    outputThreads.setThreadFactory(
+        ThreadPoolUtils.createDaemonThreadFactory(
+            ActiveTransmissionNetworkOutput.class, instanceId));
+  }
 
-    @Override
-    public boolean send(final Transmission transmission) {
-        try {
-            if (transmissionPolicy.getCurrentState() != TransmissionPolicy.UNBLOCKED) {
-                return false;
-            }
-
-            outputThreads.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        actualOutput.send(transmission);
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable throwable) {
-                        // Avoid un-expected exit of thread
-                    }
-                }
-            });
-            return true;
-
-        } catch (RejectedExecutionException e) {
-        } catch (Exception e) {
-            // TODO: log
-        }
-
+  @Override
+  public boolean send(final Transmission transmission) {
+    try {
+      if (transmissionPolicy.getCurrentState() != TransmissionPolicy.UNBLOCKED) {
         return false;
+      }
+
+      outputThreads.execute(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                actualOutput.send(transmission);
+              } catch (ThreadDeath td) {
+                throw td;
+              } catch (Throwable throwable) {
+                // Avoid un-expected exit of thread
+              }
+            }
+          });
+      return true;
+
+    } catch (RejectedExecutionException e) {
+    } catch (Exception e) {
+      // TODO: log
     }
 
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-        actualOutput.stop(timeout, timeUnit);
-        ThreadPoolUtils.stop(outputThreads, timeout, timeUnit);
-    }
+    return false;
+  }
 
-    public int getNumberOfMaxThreads() {
-        return this.maxThreads;
-    }
+  @Override
+  public void stop(long timeout, TimeUnit timeUnit) {
+    actualOutput.stop(timeout, timeUnit);
+    ThreadPoolUtils.stop(outputThreads, timeout, timeUnit);
+  }
+
+  public int getNumberOfMaxThreads() {
+    return this.maxThreads;
+  }
 }
-

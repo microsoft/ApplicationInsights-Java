@@ -21,75 +21,74 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by gupele on 7/26/2016.
- */
+/** Created by gupele on 7/26/2016. */
 public class RequestTelemetryFilterTest {
 
-    @Test
-    public void testNullTelemetry() throws Throwable {
-        RequestTelemetryFilter tested = new RequestTelemetryFilter();
-        tested.setNotNeededResponseCodes("200");
+  @Test
+  public void testNullTelemetry() throws Throwable {
+    RequestTelemetryFilter tested = new RequestTelemetryFilter();
+    tested.setNotNeededResponseCodes("200");
 
-        boolean result = tested.process(null);
+    boolean result = tested.process(null);
 
-        assertTrue(result);
-    }
+    assertTrue(result);
+  }
 
-    @Test
-    public void testNoRequestTelemetry() throws Throwable {
-        RequestTelemetryFilter tested = new RequestTelemetryFilter();
-        tested.setNotNeededResponseCodes("200");
+  @Test
+  public void testNoRequestTelemetry() throws Throwable {
+    RequestTelemetryFilter tested = new RequestTelemetryFilter();
+    tested.setNotNeededResponseCodes("200");
 
-        boolean result = tested.process(new MetricTelemetry());
+    boolean result = tested.process(new MetricTelemetry());
 
-        assertTrue(result);
-    }
+    assertTrue(result);
+  }
 
-    @Test
-    public void testDuration() throws Throwable {
-        RequestTelemetryFilter tested = new RequestTelemetryFilter();
-        tested.setMinimumDurationInMS("101");
+  @Test
+  public void testDuration() throws Throwable {
+    RequestTelemetryFilter tested = new RequestTelemetryFilter();
+    tested.setMinimumDurationInMS("101");
 
-        RequestTelemetry rt = new RequestTelemetry();
-        rt.setDuration(new Duration(102));
-        boolean result = tested.process(rt);
+    RequestTelemetry rt = new RequestTelemetry();
+    rt.setDuration(new Duration(102));
+    boolean result = tested.process(rt);
 
-        assertTrue(result);
+    assertTrue(result);
 
-        rt.setDuration(new Duration(101));
-        result = tested.process(rt);
+    rt.setDuration(new Duration(101));
+    result = tested.process(rt);
 
-        assertTrue(result);
+    assertTrue(result);
 
-        rt.setDuration(new Duration(100));
-        result = tested.process(rt);
+    rt.setDuration(new Duration(100));
+    result = tested.process(rt);
 
+    assertFalse(result);
+  }
+
+  @Test
+  public void testErrorCodes() throws Throwable {
+    RequestTelemetryFilter tested = new RequestTelemetryFilter();
+    tested.setNotNeededResponseCodes("200-400, 500");
+
+    RequestTelemetry rt = new RequestTelemetry();
+    for (int i = 200; i <= 600; ++i) {
+      rt.setResponseCode(String.valueOf(i));
+      boolean result = tested.process(rt);
+
+      if ((i >= 200 && i <= 400) || (i == 500)) {
         assertFalse(result);
+      } else {
+        assertTrue(result);
+      }
     }
-
-    @Test
-    public void testErrorCodes() throws Throwable {
-        RequestTelemetryFilter tested = new RequestTelemetryFilter();
-        tested.setNotNeededResponseCodes("200-400, 500");
-
-        RequestTelemetry rt = new RequestTelemetry();
-        for (int i = 200; i <= 600; ++i) {
-            rt.setResponseCode(String.valueOf(i));
-            boolean result = tested.process(rt);
-
-            if ((i >= 200 && i <= 400) || (i == 500)){
-                assertFalse(result);
-            } else {
-                assertTrue(result);
-            }
-        }
-    }
+  }
 }

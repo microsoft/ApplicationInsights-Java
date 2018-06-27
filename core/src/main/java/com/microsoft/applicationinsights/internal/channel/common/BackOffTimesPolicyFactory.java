@@ -21,43 +21,42 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
-import com.google.common.base.Strings;
-
 /**
- * The class knows how to create the {@link BackOffTimesPolicy}
- * Based on its name.
- * The name must currently be one of the type names as defined in the ContainerType enum.
+ * The class knows how to create the {@link BackOffTimesPolicy} Based on its name. The name must
+ * currently be one of the type names as defined in the ContainerType enum.
  *
- * By default the {@link ExponentialBackOffTimesPolicy} is created.
+ * <p>By default the {@link ExponentialBackOffTimesPolicy} is created.
  *
- * Created by gupele on 2/10/2015.
+ * <p>Created by gupele on 2/10/2015.
  */
 final class BackOffTimesPolicyFactory {
-    private enum BackOffPolicyType {
-        EXPONENTIAL,
-        STATIC
+  public BackOffTimesPolicy create(String typeAsString) {
+    BackOffPolicyType type = BackOffPolicyType.EXPONENTIAL;
+    if (Strings.isNullOrEmpty(typeAsString)) {
+      InternalLogger.INSTANCE.trace("No back-off container defined, using the default '%s'", type);
+    } else {
+      try {
+        type = BackOffPolicyType.valueOf(typeAsString.toUpperCase());
+      } catch (Exception e) {
+        InternalLogger.INSTANCE.error(
+            "Failed to parse '%s', using the default back-off container '%s'", typeAsString, type);
+      }
     }
 
-    public BackOffTimesPolicy create(String typeAsString) {
-        BackOffPolicyType type = BackOffPolicyType.EXPONENTIAL;
-        if (Strings.isNullOrEmpty(typeAsString)) {
-            InternalLogger.INSTANCE.trace("No back-off container defined, using the default '%s'", type);
-        } else {
-            try {
-                type = BackOffPolicyType.valueOf(typeAsString.toUpperCase());
-            } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Failed to parse '%s', using the default back-off container '%s'", typeAsString, type);
-            }
-        }
+    switch (type) {
+      case STATIC:
+        return new StaticBackOffTimesPolicy();
 
-        switch (type) {
-            case STATIC:
-                return new StaticBackOffTimesPolicy();
-
-            default:
-                return new ExponentialBackOffTimesPolicy();
-        }
+      default:
+        return new ExponentialBackOffTimesPolicy();
     }
+  }
+
+  private enum BackOffPolicyType {
+    EXPONENTIAL,
+    STATIC
+  }
 }

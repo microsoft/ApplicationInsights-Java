@@ -21,56 +21,50 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
 
-/**
- * Created by gupele on 7/26/2016.
- */
+/** Created by gupele on 7/26/2016. */
 public class TelemetryProcessorXmlElement {
-    private String type;
-    private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();
-    private ParamExcludedTypeXmlElement excludedTypes;
-    private ParamIncludedTypeXmlElement includedTypes;
+  private String type;
+  private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();
+  private ParamExcludedTypeXmlElement excludedTypes;
+  private ParamIncludedTypeXmlElement includedTypes;
 
-    public ParamExcludedTypeXmlElement getExcludedTypes() {
-        return excludedTypes;
-    }
+  public ParamExcludedTypeXmlElement getExcludedTypes() {
+    return excludedTypes;
+  }
 
-    @XmlElement(name = "ExcludedTypes")
-    public void setExcludedTypes(ParamExcludedTypeXmlElement excludedTypes) {
-        this.excludedTypes = excludedTypes;
-    }
+  @XmlElement(name = "ExcludedTypes")
+  public void setExcludedTypes(ParamExcludedTypeXmlElement excludedTypes) {
+    this.excludedTypes = excludedTypes;
+  }
 
+  public ParamIncludedTypeXmlElement getIncludedTypes() {
+    return includedTypes;
+  }
 
-    public ParamIncludedTypeXmlElement getIncludedTypes() {
-        return includedTypes;
-    }
+  @XmlElement(name = "IncludedTypes")
+  public void setIncludedTypes(ParamIncludedTypeXmlElement includedTypes) {
+    this.includedTypes = includedTypes;
+  }
 
-    @XmlElement(name = "IncludedTypes")
-    public void setIncludedTypes(ParamIncludedTypeXmlElement includedTypes) {
-        this.includedTypes = includedTypes;
-    }
+  public ArrayList<ParamXmlElement> getAdds() {
+    return adds;
+  }
 
-    public ArrayList<ParamXmlElement> getAdds() {
-        return adds;
-    }
+  @XmlElement(name = "Add")
+  public void setAdds(ArrayList<ParamXmlElement> adds) {
+    this.adds = adds;
+  }
 
-    @XmlElement(name="Add")
-    public void setAdds(ArrayList<ParamXmlElement> adds) {
-        this.adds = adds;
-    }
+  @XmlAttribute
+  public String getType() {
+    return type;
+  }
 
-    @XmlAttribute
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type){
-        this.type = type;
-    }
-
-
+  public void setType(String type) {
+    this.type = type;
+  }
 }

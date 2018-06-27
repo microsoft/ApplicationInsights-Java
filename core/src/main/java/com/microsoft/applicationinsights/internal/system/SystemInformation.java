@@ -21,57 +21,53 @@
 
 package com.microsoft.applicationinsights.internal.system;
 
-import java.lang.management.ManagementFactory;
-
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.lang.management.ManagementFactory;
 import org.apache.commons.lang3.SystemUtils;
 
-import com.google.common.base.Strings;
-
-/**
- * Created by gupele on 3/3/2015.
- */
+/** Created by gupele on 3/3/2015. */
 public enum SystemInformation {
-    INSTANCE;
+  INSTANCE;
 
-    private final static String DEFAULT_PROCESS_NAME = "Java_Process";
+  private static final String DEFAULT_PROCESS_NAME = "Java_Process";
 
-    private String processId;
+  private String processId;
 
-    public String getProcessId() {
-        setProcessId();
-        return processId;
+  public String getProcessId() {
+    setProcessId();
+    return processId;
+  }
+
+  public boolean isWindows() {
+    return SystemUtils.IS_OS_WINDOWS;
+  }
+
+  public boolean isUnix() {
+    return SystemUtils.IS_OS_UNIX;
+  }
+
+  private synchronized void setProcessId() {
+    if (!Strings.isNullOrEmpty(processId)) {
+      return;
     }
 
-    public boolean isWindows() {
-        return SystemUtils.IS_OS_WINDOWS;
-    }
-
-    public boolean isUnix() {
-        return SystemUtils.IS_OS_UNIX;
-    }
-
-    private synchronized void setProcessId() {
-        if (!Strings.isNullOrEmpty(processId)) {
-            return;
+    String rawName = ManagementFactory.getRuntimeMXBean().getName();
+    if (!Strings.isNullOrEmpty(rawName)) {
+      int i = rawName.indexOf("@");
+      if (i != -1) {
+        String processIdAsString = rawName.substring(0, i);
+        try {
+          Integer.parseInt(processIdAsString);
+          processId = processIdAsString;
+          return;
+        } catch (Exception e) {
+          InternalLogger.INSTANCE.error("Failed to fetch process id: '%s'", e.toString());
         }
-
-        String rawName = ManagementFactory.getRuntimeMXBean().getName();
-        if (!Strings.isNullOrEmpty(rawName)) {
-            int i = rawName.indexOf("@");
-            if (i != -1) {
-                String processIdAsString = rawName.substring(0, i);
-                try {
-                    Integer.parseInt(processIdAsString);
-                    processId = processIdAsString;
-                    return;
-                } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to fetch process id: '%s'", e.toString());
-                }
-            }
-        }
-
-        // Default
-        processId = DEFAULT_PROCESS_NAME;
+      }
     }
+
+    // Default
+    processId = DEFAULT_PROCESS_NAME;
+  }
 }

@@ -21,147 +21,152 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import org.apache.commons.io.FileUtils;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyObject;
 
+import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 public class ActiveTransmissionLoaderTest {
-    private final static String TEMP_TEST_FOLDER = "TransmissionTests";
+  private static final String TEMP_TEST_FOLDER = "TransmissionTests";
 
-    @Test(expected = NullPointerException.class)
-    public void testNullFileSystem() throws Exception {
-        new ActiveTransmissionLoader(null, Mockito.mock(TransmissionDispatcher.class), mockStateFetcher(), 1);
-    }
+  @Test(expected = NullPointerException.class)
+  public void testNullFileSystem() throws Exception {
+    new ActiveTransmissionLoader(
+        null, Mockito.mock(TransmissionDispatcher.class), mockStateFetcher(), 1);
+  }
 
-    @Test(expected = NullPointerException.class)
-    public void testNullDispatcher() throws Exception {
-        testIllegalState(null, 1);
-    }
+  @Test(expected = NullPointerException.class)
+  public void testNullDispatcher() throws Exception {
+    testIllegalState(null, 1);
+  }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testZeroThreads() throws Exception {
-        testIllegalState(Mockito.mock(TransmissionDispatcher.class), 0);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testZeroThreads() throws Exception {
+    testIllegalState(Mockito.mock(TransmissionDispatcher.class), 0);
+  }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNegativeNumberOfThreads() throws Exception {
-        testIllegalState(Mockito.mock(TransmissionDispatcher.class), -1);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testNegativeNumberOfThreads() throws Exception {
+    testIllegalState(Mockito.mock(TransmissionDispatcher.class), -1);
+  }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testTooManyThreads() throws Exception {
-        testIllegalState(Mockito.mock(TransmissionDispatcher.class), ActiveTransmissionLoader.MAX_THREADS_ALLOWED + 1);
-    }
+  @Test(expected = IllegalArgumentException.class)
+  public void testTooManyThreads() throws Exception {
+    testIllegalState(
+        Mockito.mock(TransmissionDispatcher.class),
+        ActiveTransmissionLoader.MAX_THREADS_ALLOWED + 1);
+  }
 
-    @Test
-    public void testOneFileOnDiskBeforeLoaderStarted() throws Exception {
-        testFilesOnDiskAreLoaded(1, true);
-    }
+  @Test
+  public void testOneFileOnDiskBeforeLoaderStarted() throws Exception {
+    testFilesOnDiskAreLoaded(1, true);
+  }
 
-    @Test
-    public void testTwoFilesOnDiskBeforeLoaderStarted() throws Exception {
-        testFilesOnDiskAreLoaded(2, true);
-    }
+  @Test
+  public void testTwoFilesOnDiskBeforeLoaderStarted() throws Exception {
+    testFilesOnDiskAreLoaded(2, true);
+  }
 
-    @Test
-    public void testOneFileOnDiskAfterLoaderStarted() throws Exception {
-        testFilesOnDiskAreLoaded(1, false);
-    }
+  @Test
+  public void testOneFileOnDiskAfterLoaderStarted() throws Exception {
+    testFilesOnDiskAreLoaded(1, false);
+  }
 
-    @Test
-    public void testTwoFilesOnDiskAfterLoaderStarted() throws Exception {
-        testFilesOnDiskAreLoaded(2, false);
-    }
+  @Test
+  public void testTwoFilesOnDiskAfterLoaderStarted() throws Exception {
+    testFilesOnDiskAreLoaded(2, false);
+  }
 
-    private void testFilesOnDiskAreLoaded(int amount, boolean putFilesFirst) throws IOException, InterruptedException {
-        File folder = null;
-        ActiveTransmissionLoader tested = null;
+  private void testFilesOnDiskAreLoaded(int amount, boolean putFilesFirst)
+      throws IOException, InterruptedException {
+    File folder = null;
+    ActiveTransmissionLoader tested = null;
+    try {
+      String filesPath = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
+      folder = new File(filesPath);
+      if (folder.exists()) {
+        FileUtils.deleteDirectory(folder);
+      }
+      if (!folder.exists()) {
+        folder.mkdir();
+      }
+
+      TransmissionFileSystemOutput fileSystem = new TransmissionFileSystemOutput(filesPath);
+      TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
+      tested = new ActiveTransmissionLoader(fileSystem, mockDispatcher, mockStateFetcher(), 2);
+      if (!putFilesFirst) {
+        boolean ok = tested.load(true);
+        assertTrue("Failed to load", ok);
+      }
+
+      for (int i = 0; i < amount; ++i) {
+        fileSystem.send(new Transmission(new byte[2], "MockContentType", "MockEncodingType"));
+      }
+
+      if (putFilesFirst) {
+        boolean ok = tested.load(true);
+        assertTrue("Failed to load", ok);
+      }
+
+      int i = 0;
+      while (true) {
         try {
-            String filesPath = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
-            folder = new File(filesPath);
-            if (folder.exists()) {
-                FileUtils.deleteDirectory(folder);
-            }
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
-
-            TransmissionFileSystemOutput fileSystem = new TransmissionFileSystemOutput(filesPath);
-            TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
-            tested = new ActiveTransmissionLoader(fileSystem, mockDispatcher, mockStateFetcher(), 2);
-            if (!putFilesFirst) {
-                boolean ok = tested.load(true);
-                assertTrue("Failed to load", ok);
-            }
-
-            for (int i = 0; i < amount; ++i) {
-                fileSystem.send(new Transmission(new byte[2], "MockContentType", "MockEncodingType"));
-            }
-
-            if (putFilesFirst) {
-                boolean ok = tested.load(true);
-                assertTrue("Failed to load", ok);
-            }
-
-            int i = 0;
-            while (true) {
-                try {
-                    Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
-                    break;
-                } catch (Error e) {
-                    ++i;
-                    if (i == 7) {
-                        assertFalse(true);
-                    }
-                    Thread.sleep(1000);
-                }
-            }
-
-        } finally {
-            if (tested != null) {
-                tested.stop(1L, TimeUnit.SECONDS);
-            }
-
-            if (folder != null && folder.exists()) {
-                FileUtils.deleteDirectory(folder);
-            }
+          Mockito.verify(mockDispatcher, Mockito.times(amount))
+              .dispatch((Transmission) anyObject());
+          break;
+        } catch (Error e) {
+          ++i;
+          if (i == 7) {
+            assertFalse(true);
+          }
+          Thread.sleep(1000);
         }
-    }
+      }
 
-    private void testIllegalState(final TransmissionDispatcher dispatcher, int numberOfThreads) throws Exception {
-        File folder = null;
-        try {
-            String filesPath = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
-            folder = new File(filesPath);
-            if (folder.exists()) {
-                FileUtils.deleteDirectory(folder);
-            }
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
+    } finally {
+      if (tested != null) {
+        tested.stop(1L, TimeUnit.SECONDS);
+      }
 
-            TransmissionFileSystemOutput mock = new TransmissionFileSystemOutput(filesPath);
-            new ActiveTransmissionLoader(mock, dispatcher, mockStateFetcher(), numberOfThreads);
-        } finally {
-            if (folder != null && folder.exists()) {
-                FileUtils.deleteDirectory(folder);
-            }
-        }
+      if (folder != null && folder.exists()) {
+        FileUtils.deleteDirectory(folder);
+      }
     }
+  }
 
-    private TransmissionPolicyStateFetcher mockStateFetcher() {
-        TransmissionPolicyStateFetcher mockStateFetcher = Mockito.mock(TransmissionPolicyStateFetcher.class);
-        Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
-        return mockStateFetcher;
+  private void testIllegalState(final TransmissionDispatcher dispatcher, int numberOfThreads)
+      throws Exception {
+    File folder = null;
+    try {
+      String filesPath = System.getProperty("java.io.tmpdir") + File.separator + TEMP_TEST_FOLDER;
+      folder = new File(filesPath);
+      if (folder.exists()) {
+        FileUtils.deleteDirectory(folder);
+      }
+      if (!folder.exists()) {
+        folder.mkdir();
+      }
+
+      TransmissionFileSystemOutput mock = new TransmissionFileSystemOutput(filesPath);
+      new ActiveTransmissionLoader(mock, dispatcher, mockStateFetcher(), numberOfThreads);
+    } finally {
+      if (folder != null && folder.exists()) {
+        FileUtils.deleteDirectory(folder);
+      }
     }
+  }
+
+  private TransmissionPolicyStateFetcher mockStateFetcher() {
+    TransmissionPolicyStateFetcher mockStateFetcher =
+        Mockito.mock(TransmissionPolicyStateFetcher.class);
+    Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
+    return mockStateFetcher;
+  }
 }

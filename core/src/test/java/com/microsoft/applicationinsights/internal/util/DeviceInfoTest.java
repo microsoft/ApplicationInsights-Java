@@ -21,49 +21,45 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Locale;
+import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
-/**
- * Created by amnonsh on 2/10/2015.
- */
+/** Created by amnonsh on 2/10/2015. */
 public class DeviceInfoTest {
 
-    @Test
-    public void testSimpleLocale() throws IOException {
-        Locale.setDefault(new Locale("en", "us"));
-        String tag = DeviceInfo.getLocale();
+  @Test
+  public void testSimpleLocale() throws IOException {
+    Locale.setDefault(new Locale("en", "us"));
+    String tag = DeviceInfo.getLocale();
 
-        assertEquals("en-US", tag);
+    assertEquals("en-US", tag);
+  }
+
+  @Test
+  public void testSpecialLocale() throws IOException {
+    Locale.setDefault(new Locale("iw", "il"));
+    String tag = DeviceInfo.getLocale();
+
+    assertEquals("he-IL", tag);
+  }
+
+  @Test
+  public void testBadLocale() throws IOException {
+    Locale.setDefault(new Locale("BadLocale"));
+    String tag = DeviceInfo.getLocale();
+
+    assertEquals(isJava6() ? "badlocale" : "und", tag);
+  }
+
+  private boolean isJava6() {
+    try {
+      Locale.class.getMethod("toLanguageTag");
+    } catch (NoSuchMethodException e) {
+      return true;
     }
-
-    @Test
-    public void testSpecialLocale() throws IOException {
-        Locale.setDefault(new Locale("iw", "il"));
-        String tag = DeviceInfo.getLocale();
-
-        assertEquals("he-IL", tag);
-    }
-
-    @Test
-    public void testBadLocale() throws IOException {
-        Locale.setDefault(new Locale("BadLocale"));
-        String tag = DeviceInfo.getLocale();
-
-        assertEquals(isJava6() ? "badlocale" : "und", tag);
-    }
-
-    private boolean isJava6()
-    {
-        try {
-            Locale.class.getMethod("toLanguageTag");
-        } catch (NoSuchMethodException e) {
-            return true;
-        }
-        return false;
-    }
+    return false;
+  }
 }

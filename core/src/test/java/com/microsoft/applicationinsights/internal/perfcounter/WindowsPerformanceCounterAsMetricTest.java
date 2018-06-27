@@ -21,34 +21,33 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.ArrayList;
-
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
-
+import java.util.ArrayList;
 import org.junit.Test;
 
 public final class WindowsPerformanceCounterAsMetricTest {
-    @Test(expected = Throwable.class)
-    public void testNoNativeCodeActivated() throws Throwable {
-        if (!SystemInformation.INSTANCE.isWindows()) {
-            throw new Throwable("dummy");
-        }
-
-        ArrayList<WindowsPerformanceCounterData> data = new ArrayList<WindowsPerformanceCounterData>();
-        data.add(new WindowsPerformanceCounterData().
-                        setCategoryName("Category").
-                        setCounterName("Counter").
-                        setInstanceName("Instance").
-                        setDisplayName("display"));
-        WindowsPerformanceCounterAsMetric pc = new WindowsPerformanceCounterAsMetric(data);
+  @Test(expected = Throwable.class)
+  public void testNoNativeCodeActivated() throws Throwable {
+    if (!SystemInformation.INSTANCE.isWindows()) {
+      throw new Throwable("dummy");
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testNull() throws Throwable {
-        if (!SystemInformation.INSTANCE.isWindows()) {
-            throw new NullPointerException("dummy");
-        }
+    ArrayList<WindowsPerformanceCounterData> data = new ArrayList<WindowsPerformanceCounterData>();
+    data.add(
+        new WindowsPerformanceCounterData()
+            .setCategoryName("Category")
+            .setCounterName("Counter")
+            .setInstanceName("Instance")
+            .setDisplayName("display"));
+    WindowsPerformanceCounterAsMetric pc = new WindowsPerformanceCounterAsMetric(data);
+  }
 
-        WindowsPerformanceCounterAsMetric pc = new WindowsPerformanceCounterAsMetric(null);
+  @Test(expected = NullPointerException.class)
+  public void testNull() throws Throwable {
+    if (!SystemInformation.INSTANCE.isWindows()) {
+      throw new NullPointerException("dummy");
     }
+
+    WindowsPerformanceCounterAsMetric pc = new WindowsPerformanceCounterAsMetric(null);
+  }
 }

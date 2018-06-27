@@ -22,30 +22,27 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * Created by gupele on 8/8/2016.
- */
+/** Created by gupele on 8/8/2016. */
 public class JvmXmlElement {
-    private String name;
-    private boolean enabled = true;
+  private String name;
+  private boolean enabled = true;
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    @XmlAttribute
-    public void setName(String name) {
-        this.name = name;
-    }
+  @XmlAttribute
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    @XmlAttribute
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+  @XmlAttribute
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 }

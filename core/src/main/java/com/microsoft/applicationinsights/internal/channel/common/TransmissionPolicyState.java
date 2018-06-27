@@ -21,19 +21,18 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-/**
- * Created by gupele on 6/29/2015.
- */
-final class TransmissionPolicyState implements TransmissionPolicyStateFetcher, TransmissionPolicyStateSetter {
-    private volatile TransmissionPolicy currentState = TransmissionPolicy.UNBLOCKED;
+/** Created by gupele on 6/29/2015. */
+final class TransmissionPolicyState
+    implements TransmissionPolicyStateFetcher, TransmissionPolicyStateSetter {
+  private volatile TransmissionPolicy currentState = TransmissionPolicy.UNBLOCKED;
 
-    @Override
-    public TransmissionPolicy getCurrentState() {
-        return currentState;
-    }
+  @Override
+  public TransmissionPolicy getCurrentState() {
+    return currentState;
+  }
 
-    @Override
-    public void setCurrentState(TransmissionPolicy currentState) {
-        this.currentState = currentState;
-    }
+  @Override
+  public void setCurrentState(TransmissionPolicy currentState) {
+    this.currentState = currentState;
+  }
 }

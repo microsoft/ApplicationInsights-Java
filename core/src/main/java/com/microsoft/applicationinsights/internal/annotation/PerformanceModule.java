@@ -22,19 +22,20 @@
 package com.microsoft.applicationinsights.internal.annotation;
 
 /**
- * This annotation is for marking a {@link com.microsoft.applicationinsights.extensibility.TelemetryModule}
- * as a performance module. The annotation currently only for the internal use of the Java SDK.
+ * This annotation is for marking a {@link
+ * com.microsoft.applicationinsights.extensibility.TelemetryModule} as a performance module. The
+ * annotation currently only for the internal use of the Java SDK.
  *
- * Created by gupele on 3/11/2015.
+ * <p>Created by gupele on 3/11/2015.
  */
 
-import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PerformanceModule {
-    String value() default "BuiltIn";
+  String value() default "BuiltIn";
 }

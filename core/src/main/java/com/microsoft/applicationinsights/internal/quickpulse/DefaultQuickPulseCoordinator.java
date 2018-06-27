@@ -23,97 +23,94 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
-/**
- * Created by gupele on 12/14/2016.
- */
+/** Created by gupele on 12/14/2016. */
 final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runnable {
-    private volatile boolean stopped = false;
-    private volatile boolean pingMode = true;
+  private final QuickPulsePingSender pingSender;
+  private final QuickPulseDataFetcher dataFetcher;
+  private final QuickPulseDataSender dataSender;
+  private final long waitBetweenPingsInMS;
+  private final long waitBetweenPostsInMS;
+  private final long waitOnErrorInMS;
+  private volatile boolean stopped = false;
+  private volatile boolean pingMode = true;
 
-    private final QuickPulsePingSender pingSender;
-    private final QuickPulseDataFetcher dataFetcher;
-    private final QuickPulseDataSender dataSender;
+  public DefaultQuickPulseCoordinator(QuickPulseCoordinatorInitData initData) {
+    dataSender = initData.dataSender;
+    pingSender = initData.pingSender;
+    dataFetcher = initData.dataFetcher;
 
-    private final long waitBetweenPingsInMS;
-    private final long waitBetweenPostsInMS;
-    private final long waitOnErrorInMS;
+    waitBetweenPingsInMS = initData.waitBetweenPingsInMS;
+    waitBetweenPostsInMS = initData.waitBetweenPingsInMS;
+    waitOnErrorInMS = initData.waitBetweenPingsInMS;
+  }
 
-    public DefaultQuickPulseCoordinator(QuickPulseCoordinatorInitData initData) {
-        dataSender = initData.dataSender;
-        pingSender = initData.pingSender;
-        dataFetcher = initData.dataFetcher;
-
-        waitBetweenPingsInMS = initData.waitBetweenPingsInMS;
-        waitBetweenPostsInMS = initData.waitBetweenPingsInMS;
-        waitOnErrorInMS = initData.waitBetweenPingsInMS;
-    }
-
-    @Override
-    public void run() {
+  @Override
+  public void run() {
+    try {
+      while (!stopped) {
+        long sleepInMS;
+        if (pingMode) {
+          sleepInMS = ping();
+        } else {
+          sleepInMS = sendData();
+        }
         try {
-            while (!stopped) {
-                long sleepInMS;
-                if (pingMode) {
-                    sleepInMS = ping();
-                } else {
-                    sleepInMS = sendData();
-                }
-                try {
-                    Thread.sleep(sleepInMS);
-                } catch (InterruptedException e) {
-                }
-            }
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
+          Thread.sleep(sleepInMS);
+        } catch (InterruptedException e) {
         }
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
     }
+  }
 
-    private long sendData() {
-        dataFetcher.prepareQuickPulseDataForSend();
-        final QuickPulseStatus currentQPStatus = dataSender.getQuickPulseStatus();
-        switch (currentQPStatus) {
-            case ERROR:
-                pingMode = true;
-                return waitOnErrorInMS;
+  private long sendData() {
+    dataFetcher.prepareQuickPulseDataForSend();
+    final QuickPulseStatus currentQPStatus = dataSender.getQuickPulseStatus();
+    switch (currentQPStatus) {
+      case ERROR:
+        pingMode = true;
+        return waitOnErrorInMS;
 
-            case QP_IS_OFF:
-                pingMode = true;
-                return waitBetweenPingsInMS;
+      case QP_IS_OFF:
+        pingMode = true;
+        return waitBetweenPingsInMS;
 
-            case QP_IS_ON:
-                return waitBetweenPostsInMS;
+      case QP_IS_ON:
+        return waitBetweenPostsInMS;
 
-            default:
-                InternalLogger.INSTANCE.error( "Critical error while sending QP data: unknown status, aborting");
-                QuickPulseDataCollector.INSTANCE.disable();
-                stopped = true;
-                return 0;
-        }
+      default:
+        InternalLogger.INSTANCE.error(
+            "Critical error while sending QP data: unknown status, aborting");
+        QuickPulseDataCollector.INSTANCE.disable();
+        stopped = true;
+        return 0;
     }
+  }
 
-    private long ping() {
-        QuickPulseStatus pingResult = pingSender.ping();
-        switch (pingResult) {
-            case ERROR:
-                return waitOnErrorInMS;
+  private long ping() {
+    QuickPulseStatus pingResult = pingSender.ping();
+    switch (pingResult) {
+      case ERROR:
+        return waitOnErrorInMS;
 
-            case QP_IS_ON:
-                pingMode = false;
-                dataSender.startSending();
-                return waitBetweenPostsInMS;
-            case QP_IS_OFF:
-                return waitBetweenPingsInMS;
+      case QP_IS_ON:
+        pingMode = false;
+        dataSender.startSending();
+        return waitBetweenPostsInMS;
+      case QP_IS_OFF:
+        return waitBetweenPingsInMS;
 
-            default:
-                InternalLogger.INSTANCE.error( "Critical error while ping QP: unknown status, aborting");
-                QuickPulseDataCollector.INSTANCE.disable();
-                stopped = true;
-                return 0;
-        }
+      default:
+        InternalLogger.INSTANCE.error("Critical error while ping QP: unknown status, aborting");
+        QuickPulseDataCollector.INSTANCE.disable();
+        stopped = true;
+        return 0;
     }
+  }
 
-    public void stop() {
-            stopped = true;
-    }
+  public void stop() {
+    stopped = true;
+  }
 }

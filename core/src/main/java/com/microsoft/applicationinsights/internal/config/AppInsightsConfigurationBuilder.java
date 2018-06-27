@@ -24,11 +24,12 @@ package com.microsoft.applicationinsights.internal.config;
 import java.io.InputStream;
 
 /**
- * The class defines the interface of builders that know
- * to get the configuration file and create the data represented in {@link com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration}
+ * The class defines the interface of builders that know to get the configuration file and create
+ * the data represented in {@link
+ * com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration}
  *
- * Created by gupele on 3/15/2015.
+ * <p>Created by gupele on 3/15/2015.
  */
 interface AppInsightsConfigurationBuilder {
-    ApplicationInsightsXmlConfiguration build(InputStream resourceFile);
+  ApplicationInsightsXmlConfiguration build(InputStream resourceFile);
 }

@@ -23,52 +23,57 @@ package com.microsoft.applicationinsights.internal.annotation;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import eu.infomas.annotation.AnnotationDetector;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
-/**
- * Created by gupele on 3/15/2015.
- */
+/** Created by gupele on 3/15/2015. */
 public final class AnnotationPackageScanner {
-    private AnnotationPackageScanner(){}
-    /**
-     * The method will scan packages searching for classes that have the needed annotations.
-     * @param annotationsToSearch The annotations we need.
-     * @param packageToScan The packages to scan from, note that all sub packages will be scanned too.
-     * @return A list of class names that are under the package we asked and that carry the needed annotations
-     */
-    public static List<String> scanForClassAnnotations(final Class<? extends Annotation>[] annotationsToSearch, String packageToScan) {
-        final ArrayList<String> performanceModuleNames = new ArrayList<String>();
-        AnnotationDetector.TypeReporter reporter = new AnnotationDetector.TypeReporter() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public Class<? extends Annotation>[] annotations() {
-                return annotationsToSearch;
-            }
+  private AnnotationPackageScanner() {}
+  /**
+   * The method will scan packages searching for classes that have the needed annotations.
+   *
+   * @param annotationsToSearch The annotations we need.
+   * @param packageToScan The packages to scan from, note that all sub packages will be scanned too.
+   * @return A list of class names that are under the package we asked and that carry the needed
+   *     annotations
+   */
+  public static List<String> scanForClassAnnotations(
+      final Class<? extends Annotation>[] annotationsToSearch, String packageToScan) {
+    final ArrayList<String> performanceModuleNames = new ArrayList<String>();
+    AnnotationDetector.TypeReporter reporter =
+        new AnnotationDetector.TypeReporter() {
+          @Override
+          @SuppressWarnings("unchecked")
+          public Class<? extends Annotation>[] annotations() {
+            return annotationsToSearch;
+          }
 
-            @Override
-            public void reportTypeAnnotation(Class<? extends Annotation> annotation, String className) {
-                performanceModuleNames.add(className);
-            }
+          @Override
+          public void reportTypeAnnotation(
+              Class<? extends Annotation> annotation, String className) {
+            performanceModuleNames.add(className);
+          }
         };
-        final AnnotationDetector annotationDetector = new AnnotationDetector(reporter);
-        try {
-            annotationDetector.detect(packageToScan);
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("Failed to scan packages '%s': exception: '%s'", packageToScan, t.toString());                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
-        return performanceModuleNames;
+    final AnnotationDetector annotationDetector = new AnnotationDetector(reporter);
+    try {
+      annotationDetector.detect(packageToScan);
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "Failed to scan packages '%s': exception: '%s'", packageToScan, t.toString());
+        InternalLogger.INSTANCE.trace(
+            "Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
+
+    return performanceModuleNames;
+  }
 }

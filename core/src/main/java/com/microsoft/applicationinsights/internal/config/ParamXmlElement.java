@@ -22,30 +22,27 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * Created by yonisha on 3/16/2015.
- */
+/** Created by yonisha on 3/16/2015. */
 public class ParamXmlElement {
-    private String name;
-    private String value;
+  private String name;
+  private String value;
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getValue() {
-        return value;
-    }
+  @XmlAttribute(name = "name")
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    @XmlAttribute(name="name")
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getValue() {
+    return value;
+  }
 
-    @XmlAttribute(name="value")
-    public void setValue(String value) {
-        this.value = value;
-    }
+  @XmlAttribute(name = "value")
+  public void setValue(String value) {
+    this.value = value;
+  }
 }

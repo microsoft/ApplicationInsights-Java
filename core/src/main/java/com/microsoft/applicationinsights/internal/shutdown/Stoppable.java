@@ -23,9 +23,7 @@ package com.microsoft.applicationinsights.internal.shutdown;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by gupele on 3/3/2015.
- */
+/** Created by gupele on 3/3/2015. */
 public interface Stoppable {
-    void stop(long timeout, TimeUnit timeUnit);
+  void stop(long timeout, TimeUnit timeUnit);
 }

@@ -24,24 +24,18 @@ package com.microsoft.applicationinsights.telemetry;
 /**
  * This enumeration is used by ExceptionTelemetry to identify if and where exception was handled.
  *
- * This Enum is now deprecated.
+ * <p>This Enum is now deprecated.
+ *
  * @deprecated As of 1.0.11
  */
 @Deprecated
-public enum ExceptionHandledAt
-{
-    /**
-     *  Exception was not handled. Application crashed.
-     */
-    Unhandled,
+public enum ExceptionHandledAt {
+  /** Exception was not handled. Application crashed. */
+  Unhandled,
 
-    /**
-     *  Exception was handled in user code.
-     */
-    UserCode,
+  /** Exception was handled in user code. */
+  UserCode,
 
-    /**
-     *  Exception was handled by some platform handlers.
-     */
-    Platform
+  /** Exception was handled by some platform handlers. */
+  Platform
 }

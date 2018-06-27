@@ -21,44 +21,43 @@
 
 package com.microsoft.applicationinsights.extensibility.context;
 
-import org.junit.Test;
-
-import java.util.concurrent.ConcurrentHashMap;
-
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.ConcurrentHashMap;
+import org.junit.Test;
+
 public final class OperationContextTest {
-    @Test
-    public void testSetName() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
-        OperationContext context = new OperationContext(map);
-        context.setName("mock");
+  @Test
+  public void testSetName() {
+    ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+    OperationContext context = new OperationContext(map);
+    context.setName("mock");
 
-        assertEquals(context.getName(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getOperationName()), "mock");
-    }
+    assertEquals(context.getName(), "mock");
+    assertEquals(map.size(), 1);
+    assertEquals(map.get(ContextTagKeys.getKeys().getOperationName()), "mock");
+  }
 
-    @Test
-    public void testSetId() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
-        OperationContext context = new OperationContext(map);
-        context.setId("mock");
+  @Test
+  public void testSetId() {
+    ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+    OperationContext context = new OperationContext(map);
+    context.setId("mock");
 
-        assertEquals(context.getId(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getOperationId()), "mock");
-    }
+    assertEquals(context.getId(), "mock");
+    assertEquals(map.size(), 1);
+    assertEquals(map.get(ContextTagKeys.getKeys().getOperationId()), "mock");
+  }
 
-    @Test
-    public void testSetSyntheticSource() {
-        final String source = "mockSource";
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
-        OperationContext context = new OperationContext(map);
-        context.setSyntheticSource(source);
+  @Test
+  public void testSetSyntheticSource() {
+    final String source = "mockSource";
+    ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+    OperationContext context = new OperationContext(map);
+    context.setSyntheticSource(source);
 
-        assertEquals(context.getSyntheticSource(), source);
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getSyntheticSource()), source);
-    }
+    assertEquals(context.getSyntheticSource(), source);
+    assertEquals(map.size(), 1);
+    assertEquals(map.get(ContextTagKeys.getKeys().getSyntheticSource()), source);
+  }
 }

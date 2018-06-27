@@ -21,78 +21,77 @@
 
 package com.microsoft.applicationinsights.internal.processor;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class will filter out Event Telemetries with unneeded values
- * <p>
- * Illegal value will prevent from the filter from being used.
- * <p>
- * Created by gupele on 7/26/2016.
+ *
+ * <p>Illegal value will prevent from the filter from being used.
+ *
+ * <p>Created by gupele on 7/26/2016.
  */
 @BuiltInProcessor("TelemetryEventFilter")
 public final class TelemetryEventFilter implements TelemetryProcessor {
-    private final Set<String> notNeededNames = new HashSet<String>();
+  private final Set<String> notNeededNames = new HashSet<String>();
 
-    public TelemetryEventFilter() {
+  public TelemetryEventFilter() {}
+
+  @Override
+  public boolean process(Telemetry telemetry) {
+    if (telemetry == null) {
+      return true;
     }
 
-    @Override
-    public boolean process(Telemetry telemetry) {
-        if (telemetry == null) {
-            return true;
-        }
-
-        if (!(telemetry instanceof EventTelemetry)) {
-            return true;
-        }
-
-        EventTelemetry et = (EventTelemetry) telemetry;
-        String eventName = et.getName();
-        if (LocalStringsUtils.isNullOrEmpty(eventName)) {
-            return true;
-        }
-
-        return !notNeededNames.contains(eventName);
+    if (!(telemetry instanceof EventTelemetry)) {
+      return true;
     }
 
-    public void setNotNeededNames(String notNeededNames) throws Throwable {
-        try {
-            List<String> notNeededAsList = Arrays.asList(notNeededNames.split(","));
-            for (String notNeeded : notNeededAsList) {
-                String ready = notNeeded.trim();
-                if (LocalStringsUtils.isNullOrEmpty(ready)) {
-                    continue;
-                }
-
-                this.notNeededNames.add(ready);
-            }
-            InternalLogger.INSTANCE.trace(String.format("TelemetryEventFilter: set NotNeededNames: %s", notNeededNames));
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable e) {
-            try {
-                InternalLogger.INSTANCE.error("TelemetryEventFilter: failed to parse NotNeededNames: %s Exception : %s", notNeededNames,
-                        ExceptionUtils.getStackTrace(e));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            } finally {
-                throw e;
-            }
-
-        }
+    EventTelemetry et = (EventTelemetry) telemetry;
+    String eventName = et.getName();
+    if (LocalStringsUtils.isNullOrEmpty(eventName)) {
+      return true;
     }
+
+    return !notNeededNames.contains(eventName);
+  }
+
+  public void setNotNeededNames(String notNeededNames) throws Throwable {
+    try {
+      List<String> notNeededAsList = Arrays.asList(notNeededNames.split(","));
+      for (String notNeeded : notNeededAsList) {
+        String ready = notNeeded.trim();
+        if (LocalStringsUtils.isNullOrEmpty(ready)) {
+          continue;
+        }
+
+        this.notNeededNames.add(ready);
+      }
+      InternalLogger.INSTANCE.trace(
+          String.format("TelemetryEventFilter: set NotNeededNames: %s", notNeededNames));
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable e) {
+      try {
+        InternalLogger.INSTANCE.error(
+            "TelemetryEventFilter: failed to parse NotNeededNames: %s Exception : %s",
+            notNeededNames, ExceptionUtils.getStackTrace(e));
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      } finally {
+        throw e;
+      }
+    }
+  }
 }

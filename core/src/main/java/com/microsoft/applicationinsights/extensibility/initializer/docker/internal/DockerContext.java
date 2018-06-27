@@ -27,39 +27,39 @@ import java.util.Map;
 /**
  * Created by yonisha on 7/29/2015.
  *
- * Represents the Docker context, which includes the host name, image name, container name and container ID.
- * The Docker context file is written in the following structure:
- *      Docker host=host_name,Docker image=image_name,Docker container id=con_id,Docker container name=con_name
+ * <p>Represents the Docker context, which includes the host name, image name, container name and
+ * container ID. The Docker context file is written in the following structure: Docker
+ * host=host_name,Docker image=image_name,Docker container id=con_id,Docker container name=con_name
  */
 public class DockerContext {
-    private String hostName;
-    private Map<String, String> properties = new HashMap<String, String>();
+  private String hostName;
+  private Map<String, String> properties = new HashMap<String, String>();
 
-    public DockerContext(String json) throws Exception {
-        extract(json);
+  public DockerContext(String json) throws Exception {
+    extract(json);
+  }
+
+  public String getHostName() {
+    return this.hostName;
+  }
+
+  public Map<String, String> getProperties() {
+    return this.properties;
+  }
+
+  private void extract(String context) throws Exception {
+    String[] properties = context.split(",");
+
+    for (String kv : properties) {
+      String[] split = kv.split("=");
+      String key = split[0];
+      String value = split[1];
+
+      if (key.equalsIgnoreCase(Constants.DOCKER_HOST_PROPERTY_KEY)) {
+        this.hostName = value;
+      } else {
+        this.properties.put(key, value);
+      }
     }
-
-    public String getHostName() {
-        return this.hostName;
-    }
-
-    public Map<String, String> getProperties() {
-        return this.properties;
-    }
-
-    private void extract(String context) throws Exception {
-        String[] properties = context.split(",");
-
-        for (String kv : properties) {
-            String[] split = kv.split("=");
-            String key = split[0];
-            String value = split[1];
-
-            if (key.equalsIgnoreCase(Constants.DOCKER_HOST_PROPERTY_KEY)) {
-                this.hostName = value;
-            } else {
-                this.properties.put(key, value);
-            }
-        }
-    }
+  }
 }

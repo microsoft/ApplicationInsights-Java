@@ -25,71 +25,69 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
-/**
- * Created by gupele on 8/6/2015.
- */
+/** Created by gupele on 8/6/2015. */
 final class ArgsFormatter {
-    private StringBuilder sb = new StringBuilder();
+  private StringBuilder sb = new StringBuilder();
 
-    String format(Object[] args) {
-        try {
-            for (Object arg : args) {
-                format(arg, ',');
-            }
-            String argsAsString = sb.deleteCharAt(sb.length() - 1).toString();
-            return argsAsString;
-        } catch (Exception e) {
-        }
-
-        return "";
+  String format(Object[] args) {
+    try {
+      for (Object arg : args) {
+        format(arg, ',');
+      }
+      String argsAsString = sb.deleteCharAt(sb.length() - 1).toString();
+      return argsAsString;
+    } catch (Exception e) {
     }
 
-    void format(Object object, char separator) {
-        if (object == null) {
-            formatNullObject();
-        } else if (object instanceof Collection) {
-            formatCollection((Collection)object);
-        } else if (object instanceof Map) {
-            formatMap((Map) object);
-        }  else if (object instanceof Object[]) {
-            formatArray((Object[])object);
-        } else {
-            sb.append(object.toString());
-        }
-        sb.append(separator);
-    }
+    return "";
+  }
 
-    private void formatArray(Object[] array) {
-        sb.append('[');
-        for (Object object : array) {
-            format(object, ',');
-        }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append(']');
+  void format(Object object, char separator) {
+    if (object == null) {
+      formatNullObject();
+    } else if (object instanceof Collection) {
+      formatCollection((Collection) object);
+    } else if (object instanceof Map) {
+      formatMap((Map) object);
+    } else if (object instanceof Object[]) {
+      formatArray((Object[]) object);
+    } else {
+      sb.append(object.toString());
     }
+    sb.append(separator);
+  }
 
-    private void formatCollection(Collection collection) {
-        sb.append('[');
-        Iterator it = collection.iterator();
-        while (it.hasNext()) {
-            Object obj = it.next();
-            format(obj, ',');
-        }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append(']');
+  private void formatArray(Object[] array) {
+    sb.append('[');
+    for (Object object : array) {
+      format(object, ',');
     }
+    sb.deleteCharAt(sb.length() - 1);
+    sb.append(']');
+  }
 
-    private <K,V> void formatMap(Map<K,V> map) {
-        sb.append('[');
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            format(entry.getKey(), ':');
-            format(entry.getValue(), ',');
-        }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append(']');
+  private void formatCollection(Collection collection) {
+    sb.append('[');
+    Iterator it = collection.iterator();
+    while (it.hasNext()) {
+      Object obj = it.next();
+      format(obj, ',');
     }
+    sb.deleteCharAt(sb.length() - 1);
+    sb.append(']');
+  }
 
-    void formatNullObject() {
-        sb.append("null");
+  private <K, V> void formatMap(Map<K, V> map) {
+    sb.append('[');
+    for (Map.Entry<K, V> entry : map.entrySet()) {
+      format(entry.getKey(), ':');
+      format(entry.getValue(), ',');
     }
+    sb.deleteCharAt(sb.length() - 1);
+    sb.append(']');
+  }
+
+  void formatNullObject() {
+    sb.append("null");
+  }
 }
