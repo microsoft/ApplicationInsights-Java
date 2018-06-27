@@ -25,29 +25,31 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
-/**
- * Created by yonisha on 2/16/2015.
- */
+/** Created by yonisha on 2/16/2015. */
 public abstract class WebTelemetryInitializerBase implements TelemetryInitializer {
 
-    /**
-     * Initializes properties of the given telemetry.
-     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
-     */
-    @Override
-    public void initialize(Telemetry telemetry) {
+  /**
+   * Initializes properties of the given telemetry.
+   *
+   * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to
+   *     initialize.
+   */
+  @Override
+  public void initialize(Telemetry telemetry) {
 
-        // Some threads may not have TLS initialized, such as performance counters mechanism threads.
-        if (ThreadContext.getRequestTelemetryContext() == null) {
-            return;
-        }
-
-        onInitializeTelemetry(telemetry);
+    // Some threads may not have TLS initialized, such as performance counters mechanism threads.
+    if (ThreadContext.getRequestTelemetryContext() == null) {
+      return;
     }
 
-    /**
-     * Initializes the properties of the given telemetry.
-     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
-     */
-    protected abstract void onInitializeTelemetry(Telemetry telemetry);
+    onInitializeTelemetry(telemetry);
+  }
+
+  /**
+   * Initializes the properties of the given telemetry.
+   *
+   * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to
+   *     initialize.
+   */
+  protected abstract void onInitializeTelemetry(Telemetry telemetry);
 }

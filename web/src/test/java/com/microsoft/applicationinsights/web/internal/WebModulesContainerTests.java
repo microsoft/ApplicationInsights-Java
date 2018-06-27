@@ -21,66 +21,64 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
 import java.lang.reflect.Field;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
-import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
 
 /**
- * Created by yonisha on 3/9/2015.
- * TODO:
- * 1. Add test to verify that modules invocation continues when exception is thrown from a single module.
+ * Created by yonisha on 3/9/2015. TODO: 1. Add test to verify that modules invocation continues
+ * when exception is thrown from a single module.
  */
 public class WebModulesContainerTests {
 
-    private WebModulesContainer container;
+  private WebModulesContainer container;
 
-    // region Initialization
+  // region Initialization
 
-    @Before
-    public void testInitialize() {
-        container = new WebModulesContainer(TelemetryConfiguration.getActive());
+  @Before
+  public void testInitialize() {
+    container = new WebModulesContainer(TelemetryConfiguration.getActive());
+  }
+
+  // endregion Initialization
+
+  // region Tests
+
+  @Test
+  public void testAllTelemetryModulesAreLoaded() {
+    Assert.assertEquals(3, container.getModulesCount());
+  }
+
+  // endregion Tests
+
+  // region Private
+
+  private <T> T getModuleByType(Class<T> tClass) throws Exception {
+
+    T module = null;
+    List<WebTelemetryModule> containerModules = getContainerModules();
+
+    for (WebTelemetryModule telemetryModule : containerModules) {
+      if (tClass.isInstance(telemetryModule)) {
+        module = tClass.cast(telemetryModule);
+        break;
+      }
     }
 
-    // endregion Initialization
+    return module;
+  }
 
-    // region Tests
+  @SuppressWarnings("unchecked")
+  private List<WebTelemetryModule> getContainerModules() throws Exception {
+    Field field = container.getClass().getDeclaredField("modules");
+    field.setAccessible(true);
 
-    @Test
-    public void testAllTelemetryModulesAreLoaded() {
-        Assert.assertEquals(3, container.getModulesCount());
-    }
+    return (List<WebTelemetryModule>) field.get(container);
+  }
 
-    // endregion Tests
-
-    // region Private
-
-    private <T> T getModuleByType(Class<T> tClass) throws Exception {
-
-        T module = null;
-        List<WebTelemetryModule> containerModules = getContainerModules();
-
-        for (WebTelemetryModule telemetryModule : containerModules) {
-            if (tClass.isInstance(telemetryModule)) {
-                module = tClass.cast(telemetryModule);
-                break;
-            }
-        }
-
-        return module;
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<WebTelemetryModule> getContainerModules() throws Exception {
-        Field field = container.getClass().getDeclaredField("modules");
-        field.setAccessible(true);
-
-        return (List<WebTelemetryModule>)field.get(container);
-    }
-
-    // endregion Private
+  // endregion Private
 }

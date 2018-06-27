@@ -27,33 +27,33 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
-/**
- * Created by yonisha on 3/5/2015.
- */
+/** Created by yonisha on 3/5/2015. */
 public class WebSessionTelemetryInitializer extends WebTelemetryInitializerBase {
 
-    /**
-     * Initializes the properties of the given telemetry.
-     *
-     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
-     */
-    @Override
-    protected void onInitializeTelemetry(Telemetry telemetry) {
-        SessionContext session = telemetry.getContext().getSession();
+  /**
+   * Initializes the properties of the given telemetry.
+   *
+   * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to
+   *     initialize.
+   */
+  @Override
+  protected void onInitializeTelemetry(Telemetry telemetry) {
+    SessionContext session = telemetry.getContext().getSession();
 
-        if (!CommonUtils.isNullOrEmpty(session.getId())) {
-            return;
-        }
-
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        SessionContext requestSessionContext = requestTelemetry.getContext().getSession();
-        if (requestSessionContext == null) {
-            return;
-        }
-
-        session.setId(requestSessionContext.getId());
-
-        Boolean isFirst = requestSessionContext.getIsFirst();
-        session.setIsFirst(isFirst != null ? isFirst : false);
+    if (!CommonUtils.isNullOrEmpty(session.getId())) {
+      return;
     }
+
+    RequestTelemetry requestTelemetry =
+        ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+    SessionContext requestSessionContext = requestTelemetry.getContext().getSession();
+    if (requestSessionContext == null) {
+      return;
+    }
+
+    session.setId(requestSessionContext.getId());
+
+    Boolean isFirst = requestSessionContext.getIsFirst();
+    session.setIsFirst(isFirst != null ? isFirst : false);
+  }
 }

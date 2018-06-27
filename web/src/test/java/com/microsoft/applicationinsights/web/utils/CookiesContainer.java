@@ -24,26 +24,24 @@ package com.microsoft.applicationinsights.web.utils;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 
-/**
- * Created by yonisha on 2/9/2015.
- */
+/** Created by yonisha on 2/9/2015. */
 public class CookiesContainer {
-    private SessionCookie sessionCookie;
-    private UserCookie userCookie;
+  private SessionCookie sessionCookie;
+  private UserCookie userCookie;
 
-    public void setSessionCookie(SessionCookie sessionCookie) {
-        this.sessionCookie = sessionCookie;
-    }
+  public SessionCookie getSessionCookie() {
+    return sessionCookie;
+  }
 
-    public SessionCookie getSessionCookie() {
-        return sessionCookie;
-    }
+  public void setSessionCookie(SessionCookie sessionCookie) {
+    this.sessionCookie = sessionCookie;
+  }
 
-    public void setUserCookie(UserCookie userCookie) {
-        this.userCookie = userCookie;
-    }
+  public UserCookie getUserCookie() {
+    return userCookie;
+  }
 
-    public UserCookie getUserCookie() {
-        return userCookie;
-    }
+  public void setUserCookie(UserCookie userCookie) {
+    this.userCookie = userCookie;
+  }
 }

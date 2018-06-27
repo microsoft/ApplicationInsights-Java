@@ -21,48 +21,48 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
+import com.microsoft.applicationinsights.web.internal.correlation.AppProfileFetcher;
+import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResult;
+import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import com.microsoft.applicationinsights.web.internal.correlation.AppProfileFetcher;
-import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
-import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResult;
 
 public class MockProfileFetcher implements AppProfileFetcher {
-    
-    private String appId = "defaultId";
-    private int callCounter = 0;
-    private boolean throwException = false;
-    private ProfileFetcherResultTaskStatus status = ProfileFetcherResultTaskStatus.COMPLETE;
 
-	@Override
-	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws ExecutionException {
-        ++callCounter;
-        
-        if (throwException) {
-        	throw new ExecutionException("No doughnuts for you.", null);
-        }
+  private String appId = "defaultId";
+  private int callCounter = 0;
+  private boolean throwException = false;
+  private ProfileFetcherResultTaskStatus status = ProfileFetcherResultTaskStatus.COMPLETE;
 
-        return new ProfileFetcherResult(this.appId, this.status);
-	}
-	
-	public void setExceptionOn(boolean throwException) {
-		this.throwException = throwException;
-	}
+  @Override
+  public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws ExecutionException {
+    ++callCounter;
 
-	public void setAppIdToReturn(String appId) {
-        this.appId = appId;
-    }
-    
-    public int callCount() {
-        return this.callCounter;
+    if (throwException) {
+      throw new ExecutionException("No doughnuts for you.", null);
     }
 
-    public void setResultStatus(ProfileFetcherResultTaskStatus status) {
-        this.status = status;
-    }
+    return new ProfileFetcherResult(this.appId, this.status);
+  }
 
-	@Override
-	public void close() throws IOException {
-		// nop
-	}
+  public void setExceptionOn(boolean throwException) {
+    this.throwException = throwException;
+  }
+
+  public void setAppIdToReturn(String appId) {
+    this.appId = appId;
+  }
+
+  public int callCount() {
+    return this.callCounter;
+  }
+
+  public void setResultStatus(ProfileFetcherResultTaskStatus status) {
+    this.status = status;
+  }
+
+  @Override
+  public void close() throws IOException {
+    // nop
+  }
 }

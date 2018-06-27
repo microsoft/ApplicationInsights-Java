@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 public enum ProfileFetcherResultTaskStatus {
-    PENDING,
-    COMPLETE,
-    FAILED
+  PENDING,
+  COMPLETE,
+  FAILED
 }

@@ -21,95 +21,90 @@
 
 package com.microsoft.applicationinsights.web.internal.cookies;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import java.util.Date;
+import javax.servlet.http.Cookie;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import javax.servlet.http.Cookie;
-import java.util.Date;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * Created by yonisha on 2/9/2015.
- */
+/** Created by yonisha on 2/9/2015. */
 public class UserCookieTests {
-    // region Members
+  // region Members
 
-    private static Cookie defaultCookie;
-    private static String userId;
-    private static Date acquisitionTime;
-    private static RequestTelemetryContext requestTelemetryContextMock;
+  private static Cookie defaultCookie;
+  private static String userId;
+  private static Date acquisitionTime;
+  private static RequestTelemetryContext requestTelemetryContextMock;
 
-    // endregion Members
+  // endregion Members
+  // region Tests
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
-    @BeforeClass
-    public static void initialize() throws Exception {
-        userId = LocalStringsUtils.generateRandomId(true);
-        acquisitionTime = new Date();
+  @BeforeClass
+  public static void initialize() throws Exception {
+    userId = LocalStringsUtils.generateRandomId(true);
+    acquisitionTime = new Date();
 
-        String formattedCookie = UserCookie.formatCookie(new String[] {
-                userId,
-                DateTimeUtils.formatAsRoundTripDate(acquisitionTime),
-        });
+    String formattedCookie =
+        UserCookie.formatCookie(
+            new String[] {
+              userId, DateTimeUtils.formatAsRoundTripDate(acquisitionTime),
+            });
 
-        defaultCookie = new Cookie(UserCookie.COOKIE_NAME, formattedCookie);
+    defaultCookie = new Cookie(UserCookie.COOKIE_NAME, formattedCookie);
 
+    UserCookie userCookie = new UserCookie(defaultCookie);
+    requestTelemetryContextMock = mock(RequestTelemetryContext.class);
+    when(requestTelemetryContextMock.getUserCookie()).thenReturn(userCookie);
+  }
 
-        UserCookie userCookie = new UserCookie(defaultCookie);
-        requestTelemetryContextMock = mock(RequestTelemetryContext.class);
-        when(requestTelemetryContextMock.getUserCookie()).thenReturn(userCookie);
-    }
+  @Test
+  public void testCookieParsedSuccessfully() throws Exception {
+    UserCookie userCookie = new UserCookie(defaultCookie);
 
-    // region Tests
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    Date expectedAcquisitionTime =
+        DateTimeUtils.parseRoundTripDateString(
+            DateTimeUtils.formatAsRoundTripDate(acquisitionTime));
+    Assert.assertEquals("Wrong user ID", userId, userCookie.getUserId());
+    Assert.assertEquals(
+        "Wrong acquisition time", expectedAcquisitionTime, userCookie.getAcquisitionDate());
+  }
 
-    @Test
-    public void testCookieParsedSuccessfully() throws Exception {
-        UserCookie userCookie = new UserCookie(defaultCookie);
+  @Test
+  public void testCorruptedAcquisitionDateValueThrowsExceptionOnCookieParsing() throws Exception {
+    thrown.expect(Exception.class);
 
-        Date expectedAcquisitionTime = DateTimeUtils.parseRoundTripDateString(DateTimeUtils.formatAsRoundTripDate(acquisitionTime));
-        Assert.assertEquals("Wrong user ID", userId, userCookie.getUserId());
-        Assert.assertEquals("Wrong acquisition time", expectedAcquisitionTime, userCookie.getAcquisitionDate());
-    }
+    String formattedCookie =
+        UserCookie.formatCookie(new String[] {userId, "corruptedAcquisitionTime"});
 
-    @Test
-    public void testCorruptedAcquisitionDateValueThrowsExceptionOnCookieParsing() throws Exception {
-        thrown.expect(Exception.class);
+    createUserCookie(formattedCookie);
+  }
 
-        String formattedCookie = UserCookie.formatCookie(new String[] {
-                userId,
-                "corruptedAcquisitionTime"
-        });
+  @Test
+  public void testUnexpectedCookieValuesCountThrowsException() throws Exception {
+    thrown.expect(Exception.class);
 
-        createUserCookie(formattedCookie);
-    }
+    String formattedCookie = SessionCookie.formatCookie(new String[] {"singleValueCookie"});
 
-    @Test
-    public void testUnexpectedCookieValuesCountThrowsException() throws Exception {
-        thrown.expect(Exception.class);
+    createUserCookie(formattedCookie);
+  }
 
-        String formattedCookie = SessionCookie.formatCookie(new String[] {
-                "singleValueCookie"
-        });
+  // endregion Tests
 
-        createUserCookie(formattedCookie);
-    }
+  // region Private
 
-    // endregion Tests
+  private void createUserCookie(String cookieValue) throws Exception {
+    Cookie corruptedCookie = new Cookie(UserCookie.COOKIE_NAME, cookieValue);
+    new UserCookie(corruptedCookie);
+  }
 
-    // region Private
-
-    private void createUserCookie(String cookieValue) throws Exception {
-        Cookie corruptedCookie = new Cookie(UserCookie.COOKIE_NAME, cookieValue);
-        new UserCookie(corruptedCookie);
-    }
-
-    // endregion Private
+  // endregion Private
 }

@@ -21,71 +21,68 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
-import static org.mockito.Mockito.mock;
-
-/**
- * Created by yonisha on 5/27/2015.
- */
+/** Created by yonisha on 5/27/2015. */
 public class ApplicationInsightsHttpResponseWrapperTests {
 
-    private HttpServletResponse responseMock = mock(HttpServletResponse.class);
-    private ApplicationInsightsHttpResponseWrapper wrapperUnderTest;
+  private HttpServletResponse responseMock = mock(HttpServletResponse.class);
+  private ApplicationInsightsHttpResponseWrapper wrapperUnderTest;
 
-    @Before
-    public void testInitialize() {
-        wrapperUnderTest = new ApplicationInsightsHttpResponseWrapper(responseMock);
-    }
+  @Before
+  public void testInitialize() {
+    wrapperUnderTest = new ApplicationInsightsHttpResponseWrapper(responseMock);
+  }
 
-    @Test
-    public void testDefaultStatusCode() {
-        verifyStatus(HttpServletResponse.SC_OK);
-    }
+  @Test
+  public void testDefaultStatusCode() {
+    verifyStatus(HttpServletResponse.SC_OK);
+  }
 
-    @Test
-    public void testSetStatus() {
-        wrapperUnderTest.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+  @Test
+  public void testSetStatus() {
+    wrapperUnderTest.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
 
-        verifyStatus(HttpServletResponse.SC_BAD_GATEWAY);
-    }
+    verifyStatus(HttpServletResponse.SC_BAD_GATEWAY);
+  }
 
-    @Test
-    public void testSendError() throws IOException {
-        wrapperUnderTest.sendError(HttpServletResponse.SC_BAD_REQUEST);
+  @Test
+  public void testSendError() throws IOException {
+    wrapperUnderTest.sendError(HttpServletResponse.SC_BAD_REQUEST);
 
-        verifyStatus(HttpServletResponse.SC_BAD_REQUEST);
-    }
+    verifyStatus(HttpServletResponse.SC_BAD_REQUEST);
+  }
 
-    @Test
-    public void testSendErrorWithMessage() throws IOException {
-        final String errorMessage = "FATAL!";
-        wrapperUnderTest.sendError(HttpServletResponse.SC_BAD_REQUEST, errorMessage);
+  @Test
+  public void testSendErrorWithMessage() throws IOException {
+    final String errorMessage = "FATAL!";
+    wrapperUnderTest.sendError(HttpServletResponse.SC_BAD_REQUEST, errorMessage);
 
-        verifyStatus(HttpServletResponse.SC_BAD_REQUEST);
-    }
+    verifyStatus(HttpServletResponse.SC_BAD_REQUEST);
+  }
 
-    @Test
-    public void testSendRedirect() throws IOException {
-        wrapperUnderTest.sendRedirect("some location");
+  @Test
+  public void testSendRedirect() throws IOException {
+    wrapperUnderTest.sendRedirect("some location");
 
-        verifyStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-    }
+    verifyStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+  }
 
-    @Test
-    public void testReset() throws IOException {
-        wrapperUnderTest.setStatus(HttpServletResponse.SC_CONFLICT);
-        wrapperUnderTest.reset();
+  @Test
+  public void testReset() throws IOException {
+    wrapperUnderTest.setStatus(HttpServletResponse.SC_CONFLICT);
+    wrapperUnderTest.reset();
 
-        verifyStatus(HttpServletResponse.SC_OK);
-    }
+    verifyStatus(HttpServletResponse.SC_OK);
+  }
 
-    private void verifyStatus(int expectedStatus) {
-        Assert.assertEquals(expectedStatus, wrapperUnderTest.getStatus());
-    }
+  private void verifyStatus(int expectedStatus) {
+    Assert.assertEquals(expectedStatus, wrapperUnderTest.getStatus());
+  }
 }

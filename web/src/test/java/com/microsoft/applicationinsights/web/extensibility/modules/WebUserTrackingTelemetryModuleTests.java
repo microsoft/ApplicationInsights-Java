@@ -27,103 +27,107 @@ import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Assert;
 import com.microsoft.applicationinsights.web.utils.CookiesContainer;
 import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
+import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-/**
- * Created by yonisha on 2/9/2015.
- */
+/** Created by yonisha on 2/9/2015. */
 public class WebUserTrackingTelemetryModuleTests {
-    private static class TestModuleInitializer implements TelemetryInitializer {
-        private final String expectedUserId;
+  private static String userCookieFormatted;
 
-        private TestModuleInitializer(String expectedUserId) {
-            this.expectedUserId = expectedUserId;
-        }
+  // region Members
+  private static JettyTestServer server = new JettyTestServer();
+  private static MockTelemetryChannel channel;
 
-        @Override
-        public void initialize(Telemetry telemetry) {
-            RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-            UserContext requestUserContext = requestTelemetry.getContext().getUser();
+  @BeforeClass
+  public static void classInitialize() throws Exception {
+    server.start();
 
-            if (expectedUserId == null) {
-                //No longer testing for UUID
-                //Assert.assertTrue(Sanitizer.isUUID(requestUserContext.getId()));
-                Assert.assertNotEquals(requestUserContext.getId(), HttpHelper.getCookie());
-            } else {
-                Assert.assertEquals(expectedUserId, requestUserContext.getId());
-            }
-            Assert.assertNotNull(requestUserContext.getAcquisitionDate());
-        }
-    }
+    // Set mock channel
+    channel = MockTelemetryChannel.INSTANCE;
+    TelemetryConfiguration.getActive().setChannel(channel);
+    TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
+  }
 
-    // region Members
+  // endregion Members
 
-    private static String userCookieFormatted;
-    private static JettyTestServer server = new JettyTestServer();
-    private static MockTelemetryChannel channel;
+  // region Initialization
 
-    // endregion Members
+  @AfterClass
+  public static void classCleanup() throws Exception {
+    server.shutdown();
+  }
 
-    // region Initialization
+  @Before
+  public void testInitialize() {
+    userCookieFormatted = HttpHelper.getFormattedUserCookieHeader();
+    channel.reset();
+  }
 
-    @BeforeClass
-    public static void classInitialize() throws Exception {
-        server.start();
+  @Test
+  public void testNewUserCookieIsNotCreatedWhenCookieNotExist() throws Exception {
+    TelemetryConfiguration.getActive()
+        .getTelemetryInitializers()
+        .add(new TestModuleInitializer(null));
 
-        // Set mock channel
-        channel = MockTelemetryChannel.INSTANCE;
-        TelemetryConfiguration.getActive().setChannel(channel);
-        TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
-    }
+    CookiesContainer cookiesContainer =
+        HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber());
 
-    @Before
-    public void testInitialize() {
-        userCookieFormatted = HttpHelper.getFormattedUserCookieHeader();
-        channel.reset();
-    }
+    Assert.assertNull("User cookie should be null.", cookiesContainer.getUserCookie());
+  }
 
-    @AfterClass
-    public static void classCleanup() throws Exception {
-        server.shutdown();
-    }
+  // endregion Initialization
 
-    // endregion Initialization
+  // region Tests
 
-    // region Tests
+  @Test
+  public void testWhenCookieExistCorrectUserIdAttachedToSentTelemetry() throws Exception {
+    HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(), userCookieFormatted);
 
-    @Test
-    public void testNewUserCookieIsNotCreatedWhenCookieNotExist() throws Exception {
-        TelemetryConfiguration.getActive().getTelemetryInitializers().add(new TestModuleInitializer(null));
+    RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
 
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber());
+    Assert.assertTrue(
+        userCookieFormatted.contains(requestTelemetry.getContext().getUser().getId()));
+    Assert.assertEquals(requestTelemetry.getContext().getUser().getId(), HttpHelper.getCookie());
+  }
 
-        Assert.assertNull("User cookie should be null.", cookiesContainer.getUserCookie());
-    }
-
-    @Test
-    public void testWhenCookieExistCorrectUserIdAttachedToSentTelemetry() throws Exception {
+  @Test
+  public void testNoUserCookieCreatedWhenValidCookieExists() throws Exception {
+    CookiesContainer cookiesContainer =
         HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(), userCookieFormatted);
 
-        RequestTelemetry requestTelemetry = channel.getTelemetryItems(RequestTelemetry.class).get(0);
+    Assert.assertNull(cookiesContainer.getUserCookie());
+  }
 
-        Assert.assertTrue(userCookieFormatted.contains(requestTelemetry.getContext().getUser().getId()));
-        Assert.assertEquals(requestTelemetry.getContext().getUser().getId(), HttpHelper.getCookie());
+  private static class TestModuleInitializer implements TelemetryInitializer {
+    private final String expectedUserId;
+
+    private TestModuleInitializer(String expectedUserId) {
+      this.expectedUserId = expectedUserId;
     }
 
-    @Test
-    public void testNoUserCookieCreatedWhenValidCookieExists() throws Exception {
-        CookiesContainer cookiesContainer = HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber(),userCookieFormatted);
+    @Override
+    public void initialize(Telemetry telemetry) {
+      RequestTelemetry requestTelemetry =
+          ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+      UserContext requestUserContext = requestTelemetry.getContext().getUser();
 
-        Assert.assertNull(cookiesContainer.getUserCookie());
+      if (expectedUserId == null) {
+        // No longer testing for UUID
+        // Assert.assertTrue(Sanitizer.isUUID(requestUserContext.getId()));
+        Assert.assertNotEquals(requestUserContext.getId(), HttpHelper.getCookie());
+      } else {
+        Assert.assertEquals(expectedUserId, requestUserContext.getId());
+      }
+      Assert.assertNotNull(requestUserContext.getAcquisitionDate());
     }
+  }
 
-    // endregion Tests
+  // endregion Tests
 }

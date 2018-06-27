@@ -21,77 +21,72 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
-/**
- * Created by yonisha on 2/4/2015.
- */
-public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
+/** Created by yonisha on 2/4/2015. */
+public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
 
-    // region Public
+  // region Public
 
-    /**
-     * Initializes the telemetry module.
-     *
-     * @param configuration The configuration to used to initialize the module.
-     */
-    @Override
-    public void initialize(TelemetryConfiguration configuration) {
+  /**
+   * Initializes the telemetry module.
+   *
+   * @param configuration The configuration to used to initialize the module.
+   */
+  @Override
+  public void initialize(TelemetryConfiguration configuration) {}
+
+  /**
+   * Begin request processing.
+   *
+   * @param req The request to process
+   * @param res The response to modify
+   */
+  @Override
+  public void onBeginRequest(ServletRequest req, ServletResponse res) {
+    HttpServletRequest request = (HttpServletRequest) req;
+    RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+
+    SessionCookie sessionCookie =
+        com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+            SessionCookie.class, request, SessionCookie.COOKIE_NAME);
+
+    if (sessionCookie == null) {
+      return;
     }
 
-    /**
-     * Begin request processing.
-     *
-     * @param req The request to process
-     * @param res The response to modify
-     */
-    @Override
-    public void onBeginRequest(ServletRequest req, ServletResponse res) {
-        HttpServletRequest request = (HttpServletRequest)req;
-        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+    context.setSessionCookie(sessionCookie);
 
-        SessionCookie sessionCookie =
-                com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
-                        SessionCookie.class, request, SessionCookie.COOKIE_NAME);
+    String sessionId = sessionCookie.getSessionId();
+    getTelemetrySessionContext(context).setId(sessionId);
+  }
 
-        if (sessionCookie == null) {
-            return;
-        }
+  /**
+   * End request processing. This method checks if the session cookie should be updated before sent
+   * back to the client. The session cookie is updated when the session is new or current session
+   * already expired.
+   *
+   * @param req The request to process
+   * @param res The response to modify
+   */
+  @Override
+  public void onEndRequest(ServletRequest req, ServletResponse res) {}
 
-        context.setSessionCookie(sessionCookie);
+  // endregion Public
 
-        String sessionId = sessionCookie.getSessionId();
-        getTelemetrySessionContext(context).setId(sessionId);
-    }
+  // region Private
 
-    /**
-     * End request processing.
-     * This method checks if the session cookie should be updated before sent back to the client.
-     * The session cookie is updated when the session is new or current session already expired.
-     *
-     * @param req The request to process
-     * @param res The response to modify
-     */
-    @Override
-    public void onEndRequest(ServletRequest req, ServletResponse res) {
-    }
+  private SessionContext getTelemetrySessionContext(RequestTelemetryContext aiContext) {
+    return aiContext.getHttpRequestTelemetry().getContext().getSession();
+  }
 
-    // endregion Public
-
-    // region Private
-
-    private SessionContext getTelemetrySessionContext(RequestTelemetryContext aiContext) {
-        return aiContext.getHttpRequestTelemetry().getContext().getSession();
-    }
-
-    // endregion Private
+  // endregion Private
 }

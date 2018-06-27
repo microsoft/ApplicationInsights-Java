@@ -21,11 +21,9 @@
 
 package com.microsoft.applicationinsights.test.framework.telemetries;
 
-/**
- * Created by moralt on 4/30/2015.
- */
+/** Created by moralt on 4/30/2015. */
 public enum DocumentType {
-    Requests,
-    PerformanceCounters,
-    Event
+  Requests,
+  PerformanceCounters,
+  Event
 }

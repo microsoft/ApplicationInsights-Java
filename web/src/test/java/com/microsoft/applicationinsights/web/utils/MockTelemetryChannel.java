@@ -24,60 +24,51 @@ package com.microsoft.applicationinsights.web.utils;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by yonisha on 2/2/2015.
- */
+/** Created by yonisha on 2/2/2015. */
 public enum MockTelemetryChannel implements TelemetryChannel {
-    INSTANCE;
+  INSTANCE;
 
-    List<Telemetry> telemetryItems = new ArrayList<Telemetry>();
+  List<Telemetry> telemetryItems = new ArrayList<Telemetry>();
 
-    public <E> List<E> getTelemetryItems(Class<E> eClass) {
-        List<E> filtered = new ArrayList<E>();
+  public <E> List<E> getTelemetryItems(Class<E> eClass) {
+    List<E> filtered = new ArrayList<E>();
 
-        for (Telemetry telemetry : telemetryItems) {
-            if (eClass.isInstance(telemetry)) {
-                filtered.add(eClass.cast(telemetry));
-            }
-        }
-
-        return filtered;
+    for (Telemetry telemetry : telemetryItems) {
+      if (eClass.isInstance(telemetry)) {
+        filtered.add(eClass.cast(telemetry));
+      }
     }
 
-    @Override
-    public boolean isDeveloperMode() {
-        return true;
-    }
+    return filtered;
+  }
 
-    @Override
-    public void setDeveloperMode(boolean value) {
+  @Override
+  public boolean isDeveloperMode() {
+    return true;
+  }
 
-    }
+  @Override
+  public void setDeveloperMode(boolean value) {}
 
-    @Override
-    public void send(Telemetry item) {
-        telemetryItems.add(item);
-    }
+  @Override
+  public void send(Telemetry item) {
+    telemetryItems.add(item);
+  }
 
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
+  @Override
+  public void stop(long timeout, TimeUnit timeUnit) {}
 
-    }
+  @Override
+  public void flush() {}
 
-    @Override
-    public void flush() {
-    }
+  public void reset() {
+    telemetryItems.clear();
+  }
 
-    public void reset() {
-        telemetryItems.clear();
-    }
-
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
-    }
+  @Override
+  public void setSampler(TelemetrySampler telemetrySampler) {}
 }

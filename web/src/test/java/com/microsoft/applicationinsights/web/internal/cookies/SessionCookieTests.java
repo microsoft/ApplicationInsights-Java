@@ -21,78 +21,72 @@
 
 package com.microsoft.applicationinsights.web.internal.cookies;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.microsoft.applicationinsights.extensibility.context.SessionContext;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.Cookie;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.extensibility.context.SessionContext;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * Created by yonisha on 2/5/2015.
- */
+/** Created by yonisha on 2/5/2015. */
 public class SessionCookieTests {
 
-    // region Members
+  // region Members
 
-    private static Cookie defaultCookie;
-    private static String sessionId;
-    private static SessionContext sessionContext;
-    private static RequestTelemetryContext requestTelemetryContextMock;
+  private static Cookie defaultCookie;
+  private static String sessionId;
+  private static SessionContext sessionContext;
+  private static RequestTelemetryContext requestTelemetryContextMock;
 
-    // endregion Members
+  // endregion Members
 
-    @BeforeClass
-    public static void initialize() throws Exception {
-        sessionId = LocalStringsUtils.generateRandomId(true);
-       
-        String formattedCookie = SessionCookie.formatCookie(new String[] {
-                sessionId
-        });
+  @BeforeClass
+  public static void initialize() throws Exception {
+    sessionId = LocalStringsUtils.generateRandomId(true);
 
-        defaultCookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
+    String formattedCookie = SessionCookie.formatCookie(new String[] {sessionId});
 
-        sessionContext = new SessionContext(new ConcurrentHashMap<String, String>());
-        sessionContext.setId(sessionId);
+    defaultCookie = new Cookie(SessionCookie.COOKIE_NAME, formattedCookie);
 
-        SessionCookie sessionCookie = new SessionCookie(defaultCookie);
-        requestTelemetryContextMock = mock(RequestTelemetryContext.class);
-        when(requestTelemetryContextMock.getSessionCookie()).thenReturn(sessionCookie);
-    }
+    sessionContext = new SessionContext(new ConcurrentHashMap<String, String>());
+    sessionContext.setId(sessionId);
 
-    // region Tests
-    
-    @Test
-    public void testCookieParsedSuccessfully() throws Exception {
-        SessionCookie sessionCookie = new SessionCookie(defaultCookie);
+    SessionCookie sessionCookie = new SessionCookie(defaultCookie);
+    requestTelemetryContextMock = mock(RequestTelemetryContext.class);
+    when(requestTelemetryContextMock.getSessionCookie()).thenReturn(sessionCookie);
+  }
 
-        Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
-    }
+  // region Tests
 
-    @Test
-    public void testSingleCookieValue() {
-        String formattedCookie = SessionCookie.formatCookie(new String[]{
-                sessionId
-        });
+  @Test
+  public void testCookieParsedSuccessfully() throws Exception {
+    SessionCookie sessionCookie = new SessionCookie(defaultCookie);
 
-        SessionCookie sessionCookie = createSessionCookie(formattedCookie);
-        
-        Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
-    }
+    Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
+  }
 
-    // endregion Tests
+  @Test
+  public void testSingleCookieValue() {
+    String formattedCookie = SessionCookie.formatCookie(new String[] {sessionId});
 
-    // region Private
+    SessionCookie sessionCookie = createSessionCookie(formattedCookie);
 
-    private SessionCookie createSessionCookie(String cookieValue) {
-        Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, cookieValue);
-        return new SessionCookie(cookie);
-    }
+    Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
+  }
 
-    // endregion Private
+  // endregion Tests
+
+  // region Private
+
+  private SessionCookie createSessionCookie(String cookieValue) {
+    Cookie cookie = new Cookie(SessionCookie.COOKIE_NAME, cookieValue);
+    return new SessionCookie(cookie);
+  }
+
+  // endregion Private
 }

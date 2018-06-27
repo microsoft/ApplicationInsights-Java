@@ -21,6 +21,15 @@
 
 package com.microsoft.applicationinsights.web.struts;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionInvocation;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -28,67 +37,62 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionInvocation;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * Created by yonisha on 3/10/2015.
- */
+/** Created by yonisha on 3/10/2015. */
 public class RequestNameInterceptorTests {
 
-    private static final String HTTP_METHOD = "GET";
-    private static final String ACTION_NAME = "TestAction";
-    private static final String REQUEST_NAME = String.format("%s /%s", HTTP_METHOD, ACTION_NAME);
+  private static final String HTTP_METHOD = "GET";
+  private static final String ACTION_NAME = "TestAction";
+  private static final String REQUEST_NAME = String.format("%s /%s", HTTP_METHOD, ACTION_NAME);
 
-    private static ActionContext actionContext;
-    private static ActionInvocation actionInvocation;
-    private static RequestNameInterceptor interceptor = new RequestNameInterceptor();
+  private static ActionContext actionContext;
+  private static ActionInvocation actionInvocation;
+  private static RequestNameInterceptor interceptor = new RequestNameInterceptor();
 
-    @BeforeClass
-    public static void classInitialize() {
-        actionInvocation = mock(ActionInvocation.class);
-    }
+  @BeforeClass
+  public static void classInitialize() {
+    actionInvocation = mock(ActionInvocation.class);
+  }
 
-    @Before
-    public void testInitialize() {
-        RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        requestTelemetry.setHttpMethod(HTTP_METHOD);
+  @Before
+  public void testInitialize() {
+    RequestTelemetryContext requestTelemetryContext =
+        new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+    ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
+    RequestTelemetry requestTelemetry =
+        ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+    requestTelemetry.setHttpMethod(HTTP_METHOD);
 
-        // Setting mock for action context
-        actionContext = mock(ActionContext.class);
-        when(actionContext.getName()).thenReturn(ACTION_NAME);
-        ActionContext.setContext(actionContext);
-    }
+    // Setting mock for action context
+    actionContext = mock(ActionContext.class);
+    when(actionContext.getName()).thenReturn(ACTION_NAME);
+    ActionContext.setContext(actionContext);
+  }
 
-    @Test
-    public void testInterceptorSetRequestNameCorrectly() throws Exception {
-        interceptor.intercept(actionInvocation);
+  @Test
+  public void testInterceptorSetRequestNameCorrectly() throws Exception {
+    interceptor.intercept(actionInvocation);
 
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        Assert.assertEquals(REQUEST_NAME, requestTelemetry.getName());
-    }
+    RequestTelemetry requestTelemetry =
+        ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+    Assert.assertEquals(REQUEST_NAME, requestTelemetry.getName());
+  }
 
-    @Test
-    public void testActionInvocationWhenExceptionThrownDuringRequestCalculation() throws Exception {
+  @Test
+  public void testActionInvocationWhenExceptionThrownDuringRequestCalculation() throws Exception {
 
-        // Mocking the ActionContext to throw exception.
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+    // Mocking the ActionContext to throw exception.
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 throw new Exception("FATAL!");
-            }
-        }).when(actionContext).getName();
-        ActionContext.setContext(actionContext);
+              }
+            })
+        .when(actionContext)
+        .getName();
+    ActionContext.setContext(actionContext);
 
-        interceptor.intercept(actionInvocation);
-    }
+    interceptor.intercept(actionInvocation);
+  }
 }

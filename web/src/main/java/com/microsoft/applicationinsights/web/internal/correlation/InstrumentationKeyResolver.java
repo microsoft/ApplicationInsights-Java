@@ -21,84 +21,95 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public enum InstrumentationKeyResolver {
-    INSTANCE;
+  INSTANCE;
 
-	private static final String CorrelationIdFormat = "cid-v1:%s";
-    private AppProfileFetcher profileFetcher;
-    private final ConcurrentMap<String, String> appIdCache;
-    
-    InstrumentationKeyResolver() {
-    	this.appIdCache = new ConcurrentHashMap<String, String>();
-    	this.profileFetcher = new CdsProfileFetcher();
-    }
-    
-    public void clearCache() {
-        this.appIdCache.clear();
-    }
+  private static final String CorrelationIdFormat = "cid-v1:%s";
+  private final ConcurrentMap<String, String> appIdCache;
+  private AppProfileFetcher profileFetcher;
 
-    public void setProfileFetcher(AppProfileFetcher profileFetcher) {
-        this.profileFetcher = profileFetcher;
-    }
+  InstrumentationKeyResolver() {
+    this.appIdCache = new ConcurrentHashMap<String, String>();
+    this.profileFetcher = new CdsProfileFetcher();
+  }
 
-    /**
-     * @param instrumentationKey The instrumentation key.
-     * @return The applicationId associated with the instrumentation key or null if it cannot be retrieved.
-     */
-    public String resolveInstrumentationKey(String instrumentationKey) {
-        
-    	 if (instrumentationKey == null || instrumentationKey.isEmpty()) {
-             throw new IllegalArgumentException("instrumentationKey must be not null or empty");
-         }
-    	
-        try {
-            String appId = this.appIdCache.get(instrumentationKey);
+  public void clearCache() {
+    this.appIdCache.clear();
+  }
 
-            if (appId != null) {
-                return appId;
-            }
+  public void setProfileFetcher(AppProfileFetcher profileFetcher) {
+    this.profileFetcher = profileFetcher;
+  }
 
-            ProfileFetcherResult result = this.profileFetcher.fetchAppProfile(instrumentationKey);
-            appId = processResult(result, instrumentationKey);
-            
-            if (appId != null) {
-            	this.appIdCache.putIfAbsent(instrumentationKey, appId);
-            }
-            
-            return appId;
-		} catch (Exception e) {
-            InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s => Exception: %s", instrumentationKey, e);
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-		}
+  /**
+   * @param instrumentationKey The instrumentation key.
+   * @return The applicationId associated with the instrumentation key or null if it cannot be
+   *     retrieved.
+   */
+  public String resolveInstrumentationKey(String instrumentationKey) {
 
-        return null;
+    if (instrumentationKey == null || instrumentationKey.isEmpty()) {
+      throw new IllegalArgumentException("instrumentationKey must be not null or empty");
     }
 
-    private String processResult(ProfileFetcherResult result, String instrumentationKey) {
-        
-        String appId = null;
-        
-        switch (result.getStatus()) {
-            case PENDING:
-                InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - pending resolution of instrumentation key: %s", instrumentationKey);
-                break;
-            case FAILED:
-                InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s", instrumentationKey);
-                break;
-            case COMPLETE:
-                InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - successfully resolved instrumentation key: %s", instrumentationKey);
-                appId = String.format(CorrelationIdFormat, result.getAppId());
-                break;
-            default:
-                InternalLogger.INSTANCE.error("InstrumentationKeyResolver - unexpected status. Instrumentation key: %s", instrumentationKey);
-                break;
-        }
+    try {
+      String appId = this.appIdCache.get(instrumentationKey);
 
+      if (appId != null) {
         return appId;
+      }
+
+      ProfileFetcherResult result = this.profileFetcher.fetchAppProfile(instrumentationKey);
+      appId = processResult(result, instrumentationKey);
+
+      if (appId != null) {
+        this.appIdCache.putIfAbsent(instrumentationKey, appId);
+      }
+
+      return appId;
+    } catch (Exception e) {
+      InternalLogger.INSTANCE.error(
+          "InstrumentationKeyResolver - failed to resolve instrumentation key: %s => Exception: %s",
+          instrumentationKey, e);
+      InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
     }
+
+    return null;
+  }
+
+  private String processResult(ProfileFetcherResult result, String instrumentationKey) {
+
+    String appId = null;
+
+    switch (result.getStatus()) {
+      case PENDING:
+        InternalLogger.INSTANCE.trace(
+            "InstrumentationKeyResolver - pending resolution of instrumentation key: %s",
+            instrumentationKey);
+        break;
+      case FAILED:
+        InternalLogger.INSTANCE.error(
+            "InstrumentationKeyResolver - failed to resolve instrumentation key: %s",
+            instrumentationKey);
+        break;
+      case COMPLETE:
+        InternalLogger.INSTANCE.trace(
+            "InstrumentationKeyResolver - successfully resolved instrumentation key: %s",
+            instrumentationKey);
+        appId = String.format(CorrelationIdFormat, result.getAppId());
+        break;
+      default:
+        InternalLogger.INSTANCE.error(
+            "InstrumentationKeyResolver - unexpected status. Instrumentation key: %s",
+            instrumentationKey);
+        break;
+    }
+
+    return appId;
+  }
 }

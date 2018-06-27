@@ -21,63 +21,63 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import com.microsoft.applicationinsights.web.utils.ThreadContextValidator;
+import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
-import com.microsoft.applicationinsights.web.utils.ThreadContextValidator;
 
-import java.util.ArrayList;
-
-/**
- * Created by yonisha on 2/16/2015.
- */
+/** Created by yonisha on 2/16/2015. */
 public class ThreadContextTests {
 
-    /**
-     * Here we're using a large number of threads in order to increase the probability that threads will interrupt
-     * each other in case of a wrong logic.
-     */
-    private final int NUMBER_OF_VALIDATOR_THREADS = 10000;
+  /**
+   * Here we're using a large number of threads in order to increase the probability that threads
+   * will interrupt each other in case of a wrong logic.
+   */
+  private final int NUMBER_OF_VALIDATOR_THREADS = 10000;
 
-    @Test
-    public void testConcurrentThreadsGetTheirOwnContext() throws InterruptedException {
-        ArrayList<ThreadContextValidator> threadContextValidators = new ArrayList<ThreadContextValidator>();
+  @Test
+  public void testConcurrentThreadsGetTheirOwnContext() throws InterruptedException {
+    ArrayList<ThreadContextValidator> threadContextValidators =
+        new ArrayList<ThreadContextValidator>();
 
-        // Initializing validators.
-        for (int i = 0; i < NUMBER_OF_VALIDATOR_THREADS; i++) {
-            threadContextValidators.add(new ThreadContextValidator());
-        }
-
-        // Executing all validators.
-        for (ThreadContextValidator validator : threadContextValidators) {
-            validator.start();
-        }
-
-        // Wait for all threads to complete.
-        for (ThreadContextValidator validator : threadContextValidators) {
-            validator.join();
-        }
+    // Initializing validators.
+    for (int i = 0; i < NUMBER_OF_VALIDATOR_THREADS; i++) {
+      threadContextValidators.add(new ThreadContextValidator());
     }
 
-    @Test
-    public void testNewCreatedThreadGetsTheParentContext() throws InterruptedException {
-        final String expectedRequestName = "inherited_context";
-        RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
-        requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName);
+    // Executing all validators.
+    for (ThreadContextValidator validator : threadContextValidators) {
+      validator.start();
+    }
 
-        ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
+    // Wait for all threads to complete.
+    for (ThreadContextValidator validator : threadContextValidators) {
+      validator.join();
+    }
+  }
 
-        final RequestTelemetryContext[] context = new RequestTelemetryContext[1];
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+  @Test
+  public void testNewCreatedThreadGetsTheParentContext() throws InterruptedException {
+    final String expectedRequestName = "inherited_context";
+    RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
+    requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName);
+
+    ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
+
+    final RequestTelemetryContext[] context = new RequestTelemetryContext[1];
+    Thread thread =
+        new Thread(
+            new Runnable() {
+              @Override
+              public void run() {
                 context[0] = ThreadContext.getRequestTelemetryContext();
-            }
-        });
+              }
+            });
 
-        thread.start();
-        thread.join();
+    thread.start();
+    thread.join();
 
-        Assert.assertNotNull(context[0]);
-        Assert.assertEquals(expectedRequestName, context[0].getHttpRequestTelemetry().getName());
-    }
+    Assert.assertNotNull(context[0]);
+    Assert.assertEquals(expectedRequestName, context[0].getHttpRequestTelemetry().getName());
+  }
 }

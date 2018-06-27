@@ -23,23 +23,21 @@ package com.microsoft.applicationinsights.test.framework;
 
 import com.microsoft.applicationinsights.test.framework.telemetries.DocumentType;
 
-/**
- * Created by yonisha on 6/21/2015.
- */
+/** Created by yonisha on 6/21/2015. */
 public class TelemetryBlob {
-    private final DocumentType docType;
-    private final String blobUri;
+  private final DocumentType docType;
+  private final String blobUri;
 
-    public TelemetryBlob(DocumentType docType, String blobUri) {
-        this.docType = docType;
-        this.blobUri = blobUri;
-    }
+  public TelemetryBlob(DocumentType docType, String blobUri) {
+    this.docType = docType;
+    this.blobUri = blobUri;
+  }
 
-    public DocumentType getDocType() {
-        return this.docType;
-    }
+  public DocumentType getDocType() {
+    return this.docType;
+  }
 
-    public String getBlobUri() {
-        return this.blobUri;
-    }
+  public String getBlobUri() {
+    return this.blobUri;
+  }
 }

@@ -21,97 +21,100 @@
 
 package com.microsoft.applicationinsights.web.internal.cookies;
 
-import javax.servlet.http.Cookie;
-import java.util.Date;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import java.util.Date;
+import javax.servlet.http.Cookie;
 
-/**
- * Created by yonisha on 2/7/2015.
- */
+/** Created by yonisha on 2/7/2015. */
 public class UserCookie extends com.microsoft.applicationinsights.web.internal.cookies.Cookie {
 
-    // region Consts
+  // region Consts
 
-    public static final String COOKIE_NAME = "ai_user";
+  public static final String COOKIE_NAME = "ai_user";
 
-    // endregion Consts
+  // endregion Consts
 
-    // region Members
+  // region Members
 
-    private boolean isNewUser;
-    private String userId;
-    private Date acquisitionDate;
+  private boolean isNewUser;
+  private String userId;
+  private Date acquisitionDate;
 
-    private enum CookieFields {
-        USER_ID(0),
-        ACQUISITION_DATE(1);
+  public UserCookie(Cookie cookie) throws Exception {
+    parseCookie(cookie);
+    isNewUser = false;
+  }
 
-        private final int value;
+  // endregion Members
 
-        CookieFields(int value) {
-            this.value = value;
-        }
+  // region Ctor
 
-        public int getValue() { return value; }
+  public UserCookie() {
+    userId = LocalStringsUtils.generateRandomId(true);
+    acquisitionDate = DateTimeUtils.getDateTimeNow();
+    isNewUser = true;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
+
+  // endregion Ctor
+
+  // region Public
+
+  public Date getAcquisitionDate() {
+    return acquisitionDate;
+  }
+
+  public boolean isNewUser() {
+    return isNewUser;
+  }
+
+  private void parseCookie(Cookie cookie) throws Exception {
+    String[] split = cookie.getValue().split(RAW_COOKIE_SPLIT_DELIMITER);
+
+    if (split.length < CookieFields.values().length) {
+
+      // TODO: dedicated exception
+      String errorMessage =
+          String.format("Session cookie is not in the correct format: %s", cookie.getValue());
+
+      throw new Exception(errorMessage);
     }
 
-    // endregion Members
+    try {
+      userId = split[CookieFields.USER_ID.getValue()];
+      acquisitionDate =
+          DateTimeUtils.parseRoundTripDateString(split[CookieFields.ACQUISITION_DATE.getValue()]);
+    } catch (Exception e) {
+      String errorMessage =
+          String.format("Failed to parse user cookie with exception: %s", e.toString());
 
-    // region Ctor
+      // TODO: dedicated exception
+      throw new Exception(errorMessage);
+    }
+  }
 
-    public UserCookie(Cookie cookie) throws Exception {
-        parseCookie(cookie);
-        isNewUser = false;
+  // endregion Public
+
+  // region Private
+
+  private enum CookieFields {
+    USER_ID(0),
+    ACQUISITION_DATE(1);
+
+    private final int value;
+
+    CookieFields(int value) {
+      this.value = value;
     }
 
-    public UserCookie() {
-        userId = LocalStringsUtils.generateRandomId(true);
-        acquisitionDate = DateTimeUtils.getDateTimeNow();
-        isNewUser = true;
+    public int getValue() {
+      return value;
     }
+  }
 
-    // endregion Ctor
-
-    // region Public
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public Date getAcquisitionDate() {
-        return acquisitionDate;
-    }
-
-    public boolean isNewUser() {
-        return isNewUser;
-    }
-
-    // endregion Public
-
-    // region Private
-
-    private void parseCookie(Cookie cookie) throws Exception {
-        String[] split = cookie.getValue().split(RAW_COOKIE_SPLIT_DELIMITER);
-
-        if (split.length < CookieFields.values().length) {
-
-            // TODO: dedicated exception
-            String errorMessage = String.format("Session cookie is not in the correct format: %s", cookie.getValue());
-
-            throw new Exception(errorMessage);
-        }
-
-        try {
-            userId = split[CookieFields.USER_ID.getValue()];
-            acquisitionDate = DateTimeUtils.parseRoundTripDateString(split[CookieFields.ACQUISITION_DATE.getValue()]);
-        } catch (Exception e) {
-            String errorMessage = String.format("Failed to parse user cookie with exception: %s", e.toString());
-
-            // TODO: dedicated exception
-            throw new Exception(errorMessage);
-        }
-    }
-
-    // endregion Private
+  // endregion Private
 }

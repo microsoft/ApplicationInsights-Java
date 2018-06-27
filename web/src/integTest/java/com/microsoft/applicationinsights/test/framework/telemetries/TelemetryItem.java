@@ -22,123 +22,134 @@
 package com.microsoft.applicationinsights.test.framework.telemetries;
 
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import java.net.URISyntaxException;
+import java.util.Properties;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
-import java.util.Properties;
-
-/**
- * Created by moralt on 05/05/2015.
- */
+/** Created by moralt on 05/05/2015. */
 public abstract class TelemetryItem extends Properties {
-    private DocumentType docType;
+  private DocumentType docType;
 
-    /**
-     * Initializes a new TelemetryItem object
-     * @param docType The document type of the telemetry item
-     */
-    public TelemetryItem(DocumentType docType) {
-        this.docType = docType;
+  /**
+   * Initializes a new TelemetryItem object
+   *
+   * @param docType The document type of the telemetry item
+   */
+  public TelemetryItem(DocumentType docType) {
+    this.docType = docType;
+  }
+
+  public TelemetryItem(DocumentType docType, JSONObject jsonObject)
+      throws URISyntaxException, JSONException {
+    this(docType);
+
+    initTelemetryItemWithCommonProperties(jsonObject);
+  }
+
+  protected abstract String[] getDefaultPropertiesToCompare();
+
+  public DocumentType getDocType() {
+    return this.docType;
+  }
+
+  /**
+   * Tests if the properties of the this item equals to the properties of another telemetry item
+   *
+   * @param obj The other object
+   * @return True if equals, otherwise false.
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
 
-    public TelemetryItem(DocumentType docType, JSONObject jsonObject) throws URISyntaxException, JSONException {
-        this(docType);
-
-        initTelemetryItemWithCommonProperties(jsonObject);
+    if (obj == null || !(obj instanceof TelemetryItem)) {
+      return false;
     }
 
-    protected abstract String[] getDefaultPropertiesToCompare();
+    TelemetryItem telemetry = (TelemetryItem) obj;
 
-    public DocumentType getDocType() {
-        return this.docType;
+    if (telemetry.getDocType() != this.getDocType()) {
+      return false;
     }
 
-    /**
-     * Tests if the properties of the this item equals to the properties of another telemetry item
-     * @param obj The other object
-     * @return True if equals, otherwise false.
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
+    for (String propertyName : getDefaultPropertiesToCompare()) {
+      if (telemetry.getProperty(propertyName) == null && this.getProperty(propertyName) == null) {
+        continue;
+      }
 
-        if (obj == null || !(obj instanceof TelemetryItem)) {
-            return false;
-        }
-
-        TelemetryItem telemetry = (TelemetryItem)obj;
-
-        if (telemetry.getDocType() != this.getDocType()) {
-            return false;
-        }
-
-        for (String propertyName : getDefaultPropertiesToCompare()) {
-            if (telemetry.getProperty(propertyName) == null && this.getProperty(propertyName) == null) {
-                continue;
-            }
-
-            if (telemetry.getProperty(propertyName) == null ||
-                    this.getProperty(propertyName) == null ||
-                    !telemetry.getProperty(propertyName).equalsIgnoreCase(this.getProperty(propertyName))) {
-                System.out.println("Mismatch for property name '" + propertyName + "': '" + telemetry.getProperty(propertyName) + "' '" + getProperty(propertyName) + "'.");
-                return false;
-            }
-        }
-
-        return true;
+      if (telemetry.getProperty(propertyName) == null
+          || this.getProperty(propertyName) == null
+          || !telemetry
+              .getProperty(propertyName)
+              .equalsIgnoreCase(this.getProperty(propertyName))) {
+        System.out.println(
+            "Mismatch for property name '"
+                + propertyName
+                + "': '"
+                + telemetry.getProperty(propertyName)
+                + "' '"
+                + getProperty(propertyName)
+                + "'.");
+        return false;
+      }
     }
 
-    /**
-     * Returns the Hashcode of the ID of this object
-     * @return The Hashcode of the ID of this object
-     */
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        for (String propertyName : getDefaultPropertiesToCompare()) {
-            String property = getProperty(propertyName);
+    return true;
+  }
 
-            if (!LocalStringsUtils.isNullOrEmpty(property)) {
-                hash ^= property.hashCode();
-            }
-        }
+  /**
+   * Returns the Hashcode of the ID of this object
+   *
+   * @return The Hashcode of the ID of this object
+   */
+  @Override
+  public int hashCode() {
+    int hash = 0;
+    for (String propertyName : getDefaultPropertiesToCompare()) {
+      String property = getProperty(propertyName);
 
-        return hash;
+      if (!LocalStringsUtils.isNullOrEmpty(property)) {
+        hash ^= property.hashCode();
+      }
     }
 
-    private void initTelemetryItemWithCommonProperties(JSONObject json) throws URISyntaxException, JSONException {
-        System.out.println("Extracting JSON common properties (" + this.docType + ")");
-        JSONObject context = json.getJSONObject("context");
+    return hash;
+  }
 
-        JSONObject sessionJson = context.getJSONObject("session");
-        String sessionId = !sessionJson.isNull("id") ? sessionJson.getString("id") : "";
+  private void initTelemetryItemWithCommonProperties(JSONObject json)
+      throws URISyntaxException, JSONException {
+    System.out.println("Extracting JSON common properties (" + this.docType + ")");
+    JSONObject context = json.getJSONObject("context");
 
-        JSONObject userJson = context.getJSONObject("user");
-        String userId = !userJson.isNull("anonId") ? userJson.getString("anonId") : "";
+    JSONObject sessionJson = context.getJSONObject("session");
+    String sessionId = !sessionJson.isNull("id") ? sessionJson.getString("id") : "";
 
-        String operationId = context.getJSONObject("operation").getString("id");
-        String operationName = context.getJSONObject("operation").getString("name");
+    JSONObject userJson = context.getJSONObject("user");
+    String userId = !userJson.isNull("anonId") ? userJson.getString("anonId") : "";
 
-        JSONObject custom = context.getJSONObject("custom");
-        JSONArray dimensions = custom.getJSONArray("dimensions");
+    String operationId = context.getJSONObject("operation").getString("id");
+    String operationName = context.getJSONObject("operation").getString("name");
 
-        String runId = null;
-        for (int i = 0; i < dimensions.length(); i++) {
-            JSONObject jsonObject = dimensions.getJSONObject(i);
-            if (!jsonObject.isNull("runid")) {
-                runId = jsonObject.getString("runid");
-                break;
-            }
-        }
+    JSONObject custom = context.getJSONObject("custom");
+    JSONArray dimensions = custom.getJSONArray("dimensions");
 
-        this.setProperty("userId", userId);
-        this.setProperty("sessionId", sessionId);
-        this.setProperty("runId", runId);
-        this.setProperty("operationId", operationId);
-        this.setProperty("operationName", operationName);
+    String runId = null;
+    for (int i = 0; i < dimensions.length(); i++) {
+      JSONObject jsonObject = dimensions.getJSONObject(i);
+      if (!jsonObject.isNull("runid")) {
+        runId = jsonObject.getString("runid");
+        break;
+      }
     }
+
+    this.setProperty("userId", userId);
+    this.setProperty("sessionId", sessionId);
+    this.setProperty("runId", runId);
+    this.setProperty("operationId", operationId);
+    this.setProperty("operationName", operationName);
+  }
 }

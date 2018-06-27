@@ -21,40 +21,40 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import java.util.Date;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import java.util.Date;
 
-/**
- * Created by yonisha on 3/5/2015.
- */
+/** Created by yonisha on 3/5/2015. */
 public class WebUserTelemetryInitializer extends WebTelemetryInitializerBase {
 
-    /**
-     * Initializes the properties of the given telemetry.
-     *
-     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
-     */
-    @Override
-    protected void onInitializeTelemetry(Telemetry telemetry) {
-        UserContext userContext = telemetry.getContext().getUser();
+  /**
+   * Initializes the properties of the given telemetry.
+   *
+   * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to
+   *     initialize.
+   */
+  @Override
+  protected void onInitializeTelemetry(Telemetry telemetry) {
+    UserContext userContext = telemetry.getContext().getUser();
 
-        if (!CommonUtils.isNullOrEmpty(userContext.getId())) {
-            return;
-        }
-
-        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        UserContext requestUserContext = requestTelemetry.getContext().getUser();
-        if (requestUserContext == null) {
-            return;
-        }
-
-        userContext.setId(requestUserContext.getId());
-
-        Date requestUserAcquisitionDate = requestUserContext.getAcquisitionDate();
-        userContext.setAcquisitionDate(requestUserAcquisitionDate);
+    if (!CommonUtils.isNullOrEmpty(userContext.getId())) {
+      return;
     }
+
+    RequestTelemetry requestTelemetry =
+        ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+    UserContext requestUserContext = requestTelemetry.getContext().getUser();
+    if (requestUserContext == null) {
+      return;
+    }
+
+    userContext.setId(requestUserContext.getId());
+
+    Date requestUserAcquisitionDate = requestUserContext.getAcquisitionDate();
+    userContext.setAcquisitionDate(requestUserAcquisitionDate);
+  }
 }

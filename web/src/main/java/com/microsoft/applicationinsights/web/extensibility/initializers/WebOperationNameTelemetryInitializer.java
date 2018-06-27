@@ -27,40 +27,39 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
-/**
- * Created by yonisha on 2/17/2015.
- */
+/** Created by yonisha on 2/17/2015. */
 public class WebOperationNameTelemetryInitializer extends WebTelemetryInitializerBase {
 
-    /**
-     * Initializes the properties of the given telemetry.
-     *
-     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to initialize.
-     */
-    @Override
-    protected void onInitializeTelemetry(Telemetry telemetry) {
-        RequestTelemetryContext telemetryContext = ThreadContext.getRequestTelemetryContext();
-        String operationName = telemetryContext.getHttpRequestTelemetry().getName();
+  /**
+   * Initializes the properties of the given telemetry.
+   *
+   * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to
+   *     initialize.
+   */
+  @Override
+  protected void onInitializeTelemetry(Telemetry telemetry) {
+    RequestTelemetryContext telemetryContext = ThreadContext.getRequestTelemetryContext();
+    String operationName = telemetryContext.getHttpRequestTelemetry().getName();
 
-        updateRequestNameIfRequestTelemetry(telemetry, operationName);
+    updateRequestNameIfRequestTelemetry(telemetry, operationName);
 
-        telemetry.getContext().getOperation().setName(operationName);
+    telemetry.getContext().getOperation().setName(operationName);
+  }
+
+  // region Private
+
+  private void updateRequestNameIfRequestTelemetry(Telemetry telemetry, String operationName) {
+    if (!(telemetry instanceof RequestTelemetry)) {
+      return;
     }
 
-    // region Private
+    RequestTelemetry requestTelemetry = (RequestTelemetry) telemetry;
 
-    private void updateRequestNameIfRequestTelemetry(Telemetry telemetry, String operationName) {
-        if (!(telemetry instanceof RequestTelemetry)) {
-            return;
-        }
-
-        RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
-
-        // We only update the request telemetry name if not already provided by the user.
-        if (requestTelemetry != null && CommonUtils.isNullOrEmpty(requestTelemetry.getName())) {
-            requestTelemetry.setName(operationName);
-        }
+    // We only update the request telemetry name if not already provided by the user.
+    if (requestTelemetry != null && CommonUtils.isNullOrEmpty(requestTelemetry.getName())) {
+      requestTelemetry.setName(operationName);
     }
+  }
 
-    // endregion Private
+  // endregion Private
 }

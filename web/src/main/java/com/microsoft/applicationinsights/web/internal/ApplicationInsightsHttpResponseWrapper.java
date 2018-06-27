@@ -21,69 +21,70 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import java.io.IOException;
 
 /**
- * This class wraps the HTTP servlet response in order to store the response status code.
- * This wrapper is used to support servlet API 2.5, which lacks the api to get response status.
- * Created by yonisha on 5/27/2015.
+ * This class wraps the HTTP servlet response in order to store the response status code. This
+ * wrapper is used to support servlet API 2.5, which lacks the api to get response status. Created
+ * by yonisha on 5/27/2015.
  */
 public class ApplicationInsightsHttpResponseWrapper extends HttpServletResponseWrapper {
 
-    private int httpStatusCode = SC_OK;
+  private int httpStatusCode = SC_OK;
 
-    public ApplicationInsightsHttpResponseWrapper(HttpServletResponse response) {
-        super(response);
-    }
+  public ApplicationInsightsHttpResponseWrapper(HttpServletResponse response) {
+    super(response);
+  }
 
-    @Override
-    public void setStatus(int sc) {
-        super.setStatus(sc);
+  @Override
+  public void setStatus(int sc, String sm) {
+    super.setStatus(sc, sm);
 
-        this.httpStatusCode = sc;
-    }
+    this.httpStatusCode = sc;
+  }
 
-    @Override
-    public void setStatus(int sc, String sm) {
-        super.setStatus(sc, sm);
+  @Override
+  public void sendError(int sc) throws IOException {
+    super.sendError(sc);
 
-        this.httpStatusCode = sc;
-    }
+    this.httpStatusCode = sc;
+  }
 
-    @Override
-    public void sendError(int sc) throws IOException {
-        super.sendError(sc);
+  @Override
+  public void sendError(int sc, String msg) throws IOException {
+    super.sendError(sc, msg);
 
-        this.httpStatusCode = sc;
-    }
+    this.httpStatusCode = sc;
+  }
 
-    @Override
-    public void sendError(int sc, String msg) throws IOException {
-        super.sendError(sc, msg);
+  @Override
+  public void sendRedirect(String location) throws IOException {
+    super.sendRedirect(location);
 
-        this.httpStatusCode = sc;
-    }
+    this.httpStatusCode = SC_MOVED_TEMPORARILY;
+  }
 
-    @Override
-    public void sendRedirect(String location) throws IOException {
-        super.sendRedirect(location);
+  @Override
+  public void reset() {
+    super.reset();
+    this.httpStatusCode = SC_OK;
+  }
 
-        this.httpStatusCode = SC_MOVED_TEMPORARILY;
-    }
+  /**
+   * Gets the response status.
+   *
+   * @return The response status.
+   */
+  public int getStatus() {
+    return httpStatusCode;
+  }
 
-    @Override
-    public void reset() {
-        super.reset();
-        this.httpStatusCode = SC_OK;
-    }
+  @Override
+  public void setStatus(int sc) {
+    super.setStatus(sc);
 
-    /**
-     * Gets the response status.
-     * @return The response status.
-     */
-    public int getStatus() {
-        return httpStatusCode;
-    }
+    this.httpStatusCode = sc;
+  }
 }

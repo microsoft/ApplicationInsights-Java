@@ -21,8 +21,13 @@
 
 package com.microsoft.applicationinsights.web.spring;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import javax.servlet.http.HttpServletRequest;
 import org.eclipse.jetty.http.HttpMethods;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,65 +36,63 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.web.method.HandlerMethod;
-import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * Created by yonisha on 3/4/2015.
- */
+/** Created by yonisha on 3/4/2015. */
 public class RequestNameHandlerInterceptorAdapterTests {
 
-    private static final String DEFAULT_ACTION_NAME = "toString";
-    private final String DEFAULT_CONTROLLER_NAME = this.getClass().getSimpleName();
-    private HandlerMethod handlerMethod;
-    private RequestNameHandlerInterceptorAdapter interceptorAdapter = new RequestNameHandlerInterceptorAdapter();
+  private static final String DEFAULT_ACTION_NAME = "toString";
+  private final String DEFAULT_CONTROLLER_NAME = this.getClass().getSimpleName();
+  private HandlerMethod handlerMethod;
+  private RequestNameHandlerInterceptorAdapter interceptorAdapter =
+      new RequestNameHandlerInterceptorAdapter();
 
-    @Before
-    public void testInitialize() throws NoSuchMethodException {
-        handlerMethod = new HandlerMethod(this, DEFAULT_ACTION_NAME);
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(context);
-    }
+  @Before
+  public void testInitialize() throws NoSuchMethodException {
+    handlerMethod = new HandlerMethod(this, DEFAULT_ACTION_NAME);
+    RequestTelemetryContext context =
+        new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+    ThreadContext.setRequestTelemetryContext(context);
+  }
 
-    @Test
-    public void testAdapterSetRequestNameCorrectly() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getMethod()).thenReturn(HttpMethods.GET);
+  @Test
+  public void testAdapterSetRequestNameCorrectly() throws Exception {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getMethod()).thenReturn(HttpMethods.GET);
 
-        interceptorAdapter.preHandle(request, null, handlerMethod);
+    interceptorAdapter.preHandle(request, null, handlerMethod);
 
-        String requestName = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getName();
+    String requestName =
+        ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getName();
 
-        String expectedRequestName =
-                String.format("%s %s/%s", HttpMethods.GET, DEFAULT_CONTROLLER_NAME, DEFAULT_ACTION_NAME);
+    String expectedRequestName =
+        String.format("%s %s/%s", HttpMethods.GET, DEFAULT_CONTROLLER_NAME, DEFAULT_ACTION_NAME);
 
-        Assert.assertEquals(expectedRequestName, requestName);
-    }
+    Assert.assertEquals(expectedRequestName, requestName);
+  }
 
-    @Test
-    public void testAdapterReturnTrueWhenExceptionIsThrown() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+  @Test
+  public void testAdapterReturnTrueWhenExceptionIsThrown() throws Exception {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    Mockito.doAnswer(
+            new Answer() {
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
                 throw new Exception("FATAL!");
-            }
-        }).when(request).getMethod();
+              }
+            })
+        .when(request)
+        .getMethod();
 
-        boolean result = interceptorAdapter.preHandle(request, null, handlerMethod);
+    boolean result = interceptorAdapter.preHandle(request, null, handlerMethod);
 
-        Assert.assertTrue("Adapter should return true.", result);
-    }
+    Assert.assertTrue("Adapter should return true.", result);
+  }
 
-    @Test
-    public void testAdapterReturnTrueWhenContextNull() throws Exception {
-        ThreadContext.setRequestTelemetryContext(null);
-        boolean result = interceptorAdapter.preHandle(null, null, handlerMethod);
+  @Test
+  public void testAdapterReturnTrueWhenContextNull() throws Exception {
+    ThreadContext.setRequestTelemetryContext(null);
+    boolean result = interceptorAdapter.preHandle(null, null, handlerMethod);
 
-        Assert.assertTrue("Adapter should return true.", result);
-    }
+    Assert.assertTrue("Adapter should return true.", result);
+  }
 }

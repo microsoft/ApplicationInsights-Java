@@ -22,19 +22,19 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 public class ProfileFetcherResult {
-    private final String appId;
-    private final ProfileFetcherResultTaskStatus taskStatus; 
+  private final String appId;
+  private final ProfileFetcherResultTaskStatus taskStatus;
 
-    public ProfileFetcherResult(String appId, ProfileFetcherResultTaskStatus taskStatus) {
-        this.appId = appId;
-        this.taskStatus = taskStatus;
-    }
+  public ProfileFetcherResult(String appId, ProfileFetcherResultTaskStatus taskStatus) {
+    this.appId = appId;
+    this.taskStatus = taskStatus;
+  }
 
-    public String getAppId() {
-        return this.appId;
-    }
+  public String getAppId() {
+    return this.appId;
+  }
 
-    public ProfileFetcherResultTaskStatus getStatus() {
-        return this.taskStatus;
-    }
+  public ProfileFetcherResultTaskStatus getStatus() {
+    return this.taskStatus;
+  }
 }

@@ -26,58 +26,62 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
-
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
 
-/**
- * Created by yonisha on 6/16/2015.
- */
+/** Created by yonisha on 6/16/2015. */
 public class ApplicationTelemetryQueue {
 
-    private final int queueVisibilityTimeoutInSeconds;
-    private final int queueMessageBatchSize;
-    private CloudQueue queue;
+  private final int queueVisibilityTimeoutInSeconds;
+  private final int queueMessageBatchSize;
+  private CloudQueue queue;
 
-    public ApplicationTelemetryQueue(String connectionString, String queueName, int queueMessageBatchSize, int queueVisibilityTimeoutInSeconds) throws URISyntaxException, StorageException, InvalidKeyException {
-        CloudStorageAccount account = CloudStorageAccount.parse(connectionString);
-        CloudQueueClient queueClient = account.createCloudQueueClient();
+  public ApplicationTelemetryQueue(
+      String connectionString,
+      String queueName,
+      int queueMessageBatchSize,
+      int queueVisibilityTimeoutInSeconds)
+      throws URISyntaxException, StorageException, InvalidKeyException {
+    CloudStorageAccount account = CloudStorageAccount.parse(connectionString);
+    CloudQueueClient queueClient = account.createCloudQueueClient();
 
-        this.queue = queueClient.getQueueReference(queueName);
-        this.queueVisibilityTimeoutInSeconds = queueVisibilityTimeoutInSeconds;
-        this.queueMessageBatchSize = queueMessageBatchSize;
+    this.queue = queueClient.getQueueReference(queueName);
+    this.queueVisibilityTimeoutInSeconds = queueVisibilityTimeoutInSeconds;
+    this.queueMessageBatchSize = queueMessageBatchSize;
 
-        // This can be a problem if the queue is used by several tests concurrently.
-        this.clear();
+    // This can be a problem if the queue is used by several tests concurrently.
+    this.clear();
+  }
+
+  public ArrayList<CloudQueueMessage> retrieveMessages() throws StorageException {
+    return retrieveMessagesUntilEmpty();
+  }
+
+  public void clear() throws StorageException {
+    queue.downloadAttributes();
+    System.out.println("Clearing " + queue.getApproximateMessageCount() + " items.");
+
+    queue.clear();
+  }
+
+  public void deleteMessages(ArrayList<CloudQueueMessage> messages) throws StorageException {
+    for (CloudQueueMessage message : messages) {
+      this.queue.deleteMessage(message);
     }
+  }
 
-    public ArrayList<CloudQueueMessage> retrieveMessages() throws StorageException {
-        return retrieveMessagesUntilEmpty();
-    }
+  private ArrayList<CloudQueueMessage> retrieveMessagesUntilEmpty() throws StorageException {
+    ArrayList<CloudQueueMessage> allMessages = new ArrayList<CloudQueueMessage>();
 
-    public void clear() throws StorageException {
-        queue.downloadAttributes();
-        System.out.println("Clearing " + queue.getApproximateMessageCount() + " items.");
+    do {
+      ArrayList<CloudQueueMessage> messages =
+          (ArrayList<CloudQueueMessage>)
+              queue.retrieveMessages(
+                  this.queueMessageBatchSize, this.queueVisibilityTimeoutInSeconds, null, null);
+      allMessages.addAll(messages);
+    } while (allMessages.size() >= this.queueMessageBatchSize);
 
-        queue.clear();
-    }
-
-    public void deleteMessages(ArrayList<CloudQueueMessage> messages) throws StorageException {
-        for (CloudQueueMessage message : messages) {
-            this.queue.deleteMessage(message);
-        }
-    }
-
-    private ArrayList<CloudQueueMessage> retrieveMessagesUntilEmpty() throws StorageException {
-        ArrayList<CloudQueueMessage> allMessages = new ArrayList<CloudQueueMessage>();
-
-        do {
-            ArrayList<CloudQueueMessage> messages = (ArrayList<CloudQueueMessage>) queue.retrieveMessages(
-                    this.queueMessageBatchSize, this.queueVisibilityTimeoutInSeconds, null, null);
-            allMessages.addAll(messages);
-        } while (allMessages.size() >= this.queueMessageBatchSize);
-
-        return allMessages;
-    }
+    return allMessages;
+  }
 }

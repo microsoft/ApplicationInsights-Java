@@ -26,43 +26,41 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-/**
- * Created by yonisha on 6/16/2015.
- */
+/** Created by yonisha on 6/16/2015. */
 public class HttpRequestClient {
 
-    // URI structure: http://<server>:<port>/<app_name>/<path>
-    private static final String REQUEST_URI_TEMPLATE = "http://%s:%s/%s/%s";
-    private static final String COOKIE_HEADER_KEY = "Cookie";
+  // URI structure: http://<server>:<port>/<app_name>/<path>
+  private static final String REQUEST_URI_TEMPLATE = "http://%s:%s/%s/%s";
+  private static final String COOKIE_HEADER_KEY = "Cookie";
 
-    private HttpRequestClient() {
+  private HttpRequestClient() {}
+
+  public static int sendHttpRequest(URI uri, List<String> requestCookies) throws Exception {
+
+    HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+
+    if (requestCookies != null && requestCookies.size() > 0) {
+      String allCookies = "";
+
+      for (String cookie : requestCookies) {
+        allCookies = allCookies.concat(cookie + "; ");
+      }
+
+      allCookies = allCookies.substring(0, allCookies.length() - 2);
+      connection.setRequestProperty(COOKIE_HEADER_KEY, allCookies);
     }
 
-    public static int sendHttpRequest(URI uri, List<String> requestCookies) throws Exception {
+    System.out.println("Sending 'GET' request to URL: " + uri.toString());
+    int responseCode = connection.getResponseCode();
+    System.out.println("Response Code : " + responseCode);
 
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+    return responseCode;
+  }
 
-        if (requestCookies != null && requestCookies.size() > 0) {
-            String allCookies = "";
+  public static URI constructUrl(String server, int port, String app, String path)
+      throws URISyntaxException {
+    String url = String.format(REQUEST_URI_TEMPLATE, server, port, app, path);
 
-            for (String cookie : requestCookies) {
-                allCookies = allCookies.concat(cookie + "; ");
-            }
-
-            allCookies = allCookies.substring(0, allCookies.length() - 2);
-            connection.setRequestProperty(COOKIE_HEADER_KEY, allCookies);
-        }
-
-        System.out.println("Sending 'GET' request to URL: " + uri.toString());
-        int responseCode = connection.getResponseCode();
-        System.out.println("Response Code : " + responseCode);
-
-        return responseCode;
-    }
-
-    public static URI constructUrl(String server, int port, String app, String path) throws URISyntaxException {
-        String url = String.format(REQUEST_URI_TEMPLATE, server, port, app, path);
-
-        return new URI(url);
-    }
+    return new URI(url);
+  }
 }

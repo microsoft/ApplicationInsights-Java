@@ -21,21 +21,22 @@
 
 package com.microsoft.applicationinsights.web.spring.internal;
 
+import com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter;
 
 /**
- * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry.
- * The registration enables the interceptor to extract the http request's controller and action names.
+ * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry. The
+ * registration enables the interceptor to extract the http request's controller and action names.
  */
 @EnableWebMvc
 @Configuration
 public class InterceptorRegistry extends WebMvcConfigurerAdapter {
 
-    @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
-        registry.addInterceptor(new RequestNameHandlerInterceptorAdapter());
-    }
+  @Override
+  public void addInterceptors(
+      org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
+    registry.addInterceptor(new RequestNameHandlerInterceptorAdapter());
+  }
 }

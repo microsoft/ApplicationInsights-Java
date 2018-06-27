@@ -25,53 +25,53 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-/**
- * Created by yonisha on 6/16/2015.
- */
+/** Created by yonisha on 6/16/2015. */
 public class ApplicationBlobClient {
 
-    private CloudBlobClient cloudBlobClient;
+  private CloudBlobClient cloudBlobClient;
 
-    public ApplicationBlobClient(String connectionString) throws URISyntaxException, InvalidKeyException {
-        CloudStorageAccount account = CloudStorageAccount.parse(connectionString);
-        cloudBlobClient = account.createCloudBlobClient();
+  public ApplicationBlobClient(String connectionString)
+      throws URISyntaxException, InvalidKeyException {
+    CloudStorageAccount account = CloudStorageAccount.parse(connectionString);
+    cloudBlobClient = account.createCloudBlobClient();
+  }
+
+  public List<JSONObject> getTelemetriesAsJsonObjects(String blobUri)
+      throws URISyntaxException, StorageException, JSONException, IOException {
+
+    CloudBlockBlob blob = new CloudBlockBlob(new URI(blobUri), this.cloudBlobClient);
+    String blobContent = blob.downloadText();
+
+    ArrayList<JSONObject> jsonObjects = convertToJsonObject(blobContent);
+
+    return jsonObjects;
+  }
+
+  /**
+   * Converts a string to multiple JSON objects
+   *
+   * @param jString The string to convert
+   * @return ArrayList of JSON objects
+   */
+  private ArrayList<JSONObject> convertToJsonObject(String jString) throws JSONException {
+    System.out.println("Extracting JSON objects from string");
+    String[] jsonStrings = jString.split("\n");
+    ArrayList<JSONObject> jsonObjects = new ArrayList<JSONObject>();
+
+    for (String s : jsonStrings) {
+      jsonObjects.add(new JSONObject(s));
     }
 
-    public List<JSONObject> getTelemetriesAsJsonObjects(String blobUri) throws URISyntaxException, StorageException, JSONException, IOException {
-
-        CloudBlockBlob blob = new CloudBlockBlob(new URI(blobUri), this.cloudBlobClient);
-        String blobContent = blob.downloadText();
-
-        ArrayList<JSONObject> jsonObjects = convertToJsonObject(blobContent);
-
-        return jsonObjects;
-    }
-
-    /**
-     * Converts a string to multiple JSON objects
-     * @param jString The string to convert
-     * @return ArrayList of JSON objects
-     */
-    private ArrayList<JSONObject> convertToJsonObject(String jString) throws JSONException {
-        System.out.println("Extracting JSON objects from string");
-        String[] jsonStrings = jString.split("\n");
-        ArrayList<JSONObject> jsonObjects = new ArrayList<JSONObject>();
-
-        for (String s : jsonStrings) {
-            jsonObjects.add(new JSONObject(s));
-        }
-
-        System.out.println("Got " + jsonObjects.size() + " JSON objects");
-        return jsonObjects;
-    }
+    System.out.println("Got " + jsonObjects.size() + " JSON objects");
+    return jsonObjects;
+  }
 }

@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import org.junit.*;
-import java.util.List;
+import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
+import static org.junit.Assert.assertEquals;
+
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
@@ -32,97 +33,109 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
+import java.util.List;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
-import static org.junit.Assert.assertEquals;
-
-/**
- * Created by yonisha on 2/17/2015.
- */
+/** Created by yonisha on 2/17/2015. */
 public class WebOperationNameTelemetryInitializerTests {
 
-    private static JettyTestServer server = new JettyTestServer();
-    private static MockTelemetryChannel channel;
-    private static WebOperationNameTelemetryInitializer defaultInitializer = new WebOperationNameTelemetryInitializer();
+  private static JettyTestServer server = new JettyTestServer();
+  private static MockTelemetryChannel channel;
+  private static WebOperationNameTelemetryInitializer defaultInitializer =
+      new WebOperationNameTelemetryInitializer();
 
-    // region Initialization
+  // region Initialization
 
-    @BeforeClass
-    public static void classInitialize() throws Exception {
-        server.start();
+  @BeforeClass
+  public static void classInitialize() throws Exception {
+    server.start();
 
-        // Set mock channel
-        channel = MockTelemetryChannel.INSTANCE;
-        TelemetryConfiguration.getActive().setChannel(channel);
-        TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
-    }
+    // Set mock channel
+    channel = MockTelemetryChannel.INSTANCE;
+    TelemetryConfiguration.getActive().setChannel(channel);
+    TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
+  }
 
-    @Before
-    public void testInitialize() {
-        channel.reset();
-        ThreadContext.setRequestTelemetryContext(null);
-    }
+  @AfterClass
+  public static void classCleanup() throws Exception {
+    server.shutdown();
+  }
 
-    @AfterClass
-    public static void classCleanup() throws Exception {
-        server.shutdown();
-    }
+  @Before
+  public void testInitialize() {
+    channel.reset();
+    ThreadContext.setRequestTelemetryContext(null);
+  }
 
-    // endregion Initialization
+  // endregion Initialization
 
-    // region Tests
+  // region Tests
 
-    @Test
-    public void testRequestTelemetryInitializedWithOperationName() throws Exception {
-        sendRequestAndGetResponseCookie(server.getPortNumber());
+  @Test
+  public void testRequestTelemetryInitializedWithOperationName() throws Exception {
+    sendRequestAndGetResponseCookie(server.getPortNumber());
 
-        List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
-        assertEquals(1, items.size());
-        RequestTelemetry requestTelemetry = items.get(0);
+    List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
+    assertEquals(1, items.size());
+    RequestTelemetry requestTelemetry = items.get(0);
 
-        Assert.assertEquals("Operation name not match", requestTelemetry.getName(), requestTelemetry.getContext().getOperation().getName());
-    }
+    Assert.assertEquals(
+        "Operation name not match",
+        requestTelemetry.getName(),
+        requestTelemetry.getContext().getOperation().getName());
+  }
 
-    @Test
-    public void testTelemetryInitializedWithOperationName() {
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(context);
+  @Test
+  public void testTelemetryInitializedWithOperationName() {
+    RequestTelemetryContext context =
+        new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+    ThreadContext.setRequestTelemetryContext(context);
 
-        OperationContext operationContext = createAndInitializeTelemetry();
+    OperationContext operationContext = createAndInitializeTelemetry();
 
-        Assert.assertEquals("Operation name hasn't been set.", context.getHttpRequestTelemetry().getName(), operationContext.getName());
-    }
+    Assert.assertEquals(
+        "Operation name hasn't been set.",
+        context.getHttpRequestTelemetry().getName(),
+        operationContext.getName());
+  }
 
-    @Test
-    public void testInitializerDoesNotOverrideCustomerOperationId() {
-        String customerRequestName = "CustomerRequestName";
+  @Test
+  public void testInitializerDoesNotOverrideCustomerOperationId() {
+    String customerRequestName = "CustomerRequestName";
 
-        RequestTelemetry requestTelemetry = new RequestTelemetry();
-        OperationContext operationContext = requestTelemetry.getContext().getOperation();
-        operationContext.setName(customerRequestName);
+    RequestTelemetry requestTelemetry = new RequestTelemetry();
+    OperationContext operationContext = requestTelemetry.getContext().getOperation();
+    operationContext.setName(customerRequestName);
 
-        defaultInitializer.initialize(requestTelemetry);
+    defaultInitializer.initialize(requestTelemetry);
 
-        Assert.assertEquals("Customer operation name should not be changed.", customerRequestName, operationContext.getName());
-    }
+    Assert.assertEquals(
+        "Customer operation name should not be changed.",
+        customerRequestName,
+        operationContext.getName());
+  }
 
-    @Test
-    public void testOperationNameNotSetWhenRequestTelemetryContextNotInitialized() {
-        OperationContext operationContext = createAndInitializeTelemetry();
+  @Test
+  public void testOperationNameNotSetWhenRequestTelemetryContextNotInitialized() {
+    OperationContext operationContext = createAndInitializeTelemetry();
 
-        Assert.assertNull("Operation name should not be set.", operationContext.getName());
-    }
+    Assert.assertNull("Operation name should not be set.", operationContext.getName());
+  }
 
-    // endregion Tests
+  // endregion Tests
 
-    // region Private
+  // region Private
 
-    private OperationContext createAndInitializeTelemetry() {
-        TraceTelemetry telemetry = new TraceTelemetry();
-        defaultInitializer.initialize(telemetry);
+  private OperationContext createAndInitializeTelemetry() {
+    TraceTelemetry telemetry = new TraceTelemetry();
+    defaultInitializer.initialize(telemetry);
 
-        return telemetry.getContext().getOperation();
-    }
+    return telemetry.getContext().getOperation();
+  }
 
-    // endregion Private
+  // endregion Private
 }

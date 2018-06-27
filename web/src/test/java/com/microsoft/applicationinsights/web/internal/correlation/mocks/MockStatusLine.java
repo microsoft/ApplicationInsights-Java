@@ -26,33 +26,33 @@ import org.apache.http.StatusLine;
 
 public class MockStatusLine implements StatusLine {
 
-    private final ProtocolVersion version;
-    private final String reasonPhrase;
-    private int statusCode;
+  private final ProtocolVersion version;
+  private final String reasonPhrase;
+  private int statusCode;
 
-    public MockStatusLine(final ProtocolVersion protocolVersion, final int status, final String phrase) {
-        this.version = protocolVersion;
-        this.statusCode = status;
-        this.reasonPhrase = phrase;
-    }
+  public MockStatusLine(
+      final ProtocolVersion protocolVersion, final int status, final String phrase) {
+    this.version = protocolVersion;
+    this.statusCode = status;
+    this.reasonPhrase = phrase;
+  }
 
-	@Override
-	public ProtocolVersion getProtocolVersion() {
-		return this.version;
-	}
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return this.version;
+  }
 
-	@Override
-	public int getStatusCode() {
-		return this.statusCode;
-    }
-    
-    public void setStatusCode(int code) {
-        this.statusCode = code;
-    }
+  @Override
+  public int getStatusCode() {
+    return this.statusCode;
+  }
 
-	@Override
-	public String getReasonPhrase() {
-		return this.reasonPhrase;
-	}
+  public void setStatusCode(int code) {
+    this.statusCode = code;
+  }
 
+  @Override
+  public String getReasonPhrase() {
+    return this.reasonPhrase;
+  }
 }

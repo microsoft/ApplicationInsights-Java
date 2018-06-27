@@ -21,133 +21,133 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import com.microsoft.applicationinsights.web.internal.correlation.mocks.*;
+import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class InstrumentationKeyResolverTests {
-    
-    @Before
-    public void testInitialize() {
-       InstrumentationKeyResolver.INSTANCE.clearCache();
-    }
 
-    @Test
-    public void testResolveInstrumentationKey() {
+  @Before
+  public void testInitialize() {
+    InstrumentationKeyResolver.INSTANCE.clearCache();
+  }
 
-        //setup
-        MockProfileFetcher mockFetcher = new MockProfileFetcher();
-        mockFetcher.setAppIdToReturn("id1");
-        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
+  @Test
+  public void testResolveInstrumentationKey() {
 
-        //run
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        
-        //validate
-        Assert.assertEquals("cid-v1:id1", appId);
-        Assert.assertEquals(1, mockFetcher.callCount());
-    }
+    // setup
+    MockProfileFetcher mockFetcher = new MockProfileFetcher();
+    mockFetcher.setAppIdToReturn("id1");
+    InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
 
-    @Test
-    public void testResolveInstrumentationKeyWithPendingStatus() {
+    // run
+    String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
 
-        //setup
-        MockProfileFetcher mockFetcher = new MockProfileFetcher();
-        mockFetcher.setAppIdToReturn("appId");
-        mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
-        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
+    // validate
+    Assert.assertEquals("cid-v1:id1", appId);
+    Assert.assertEquals(1, mockFetcher.callCount());
+  }
 
-        //run
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+  @Test
+  public void testResolveInstrumentationKeyWithPendingStatus() {
 
-        //validate
-        Assert.assertNull(appId);
-        Assert.assertEquals(1, mockFetcher.callCount());
+    // setup
+    MockProfileFetcher mockFetcher = new MockProfileFetcher();
+    mockFetcher.setAppIdToReturn("appId");
+    mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
+    InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
 
-        //mimic calling resolver again after some time
-        mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        Assert.assertEquals("cid-v1:appId", appId);
-        //fetcher will be called again since the task was pending (i.e. not yet in the cache)
-        Assert.assertEquals(2, mockFetcher.callCount());
-    }
+    // run
+    String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
 
-    @Test
-    public void testResolveInstrumentationKeyWithFailedStatus() {
+    // validate
+    Assert.assertNull(appId);
+    Assert.assertEquals(1, mockFetcher.callCount());
 
-        //setup
-        MockProfileFetcher mockFetcher = new MockProfileFetcher();
-        mockFetcher.setAppIdToReturn("appId");
-        mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.FAILED);
-        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
+    // mimic calling resolver again after some time
+    mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+    appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+    Assert.assertEquals("cid-v1:appId", appId);
+    // fetcher will be called again since the task was pending (i.e. not yet in the cache)
+    Assert.assertEquals(2, mockFetcher.callCount());
+  }
 
-        //run
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+  @Test
+  public void testResolveInstrumentationKeyWithFailedStatus() {
 
-        //validate
-        Assert.assertNull(appId);
-        Assert.assertEquals(1, mockFetcher.callCount());
+    // setup
+    MockProfileFetcher mockFetcher = new MockProfileFetcher();
+    mockFetcher.setAppIdToReturn("appId");
+    mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.FAILED);
+    InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
 
-        //mimic calling resolver again after some time
-        mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        Assert.assertEquals("cid-v1:appId", appId);
-        //fetcher will be called again since the previous attempt failed
-        Assert.assertEquals(2, mockFetcher.callCount());
-    }
-    
-    @Test
-    public void testResolveInstrumentationKeyWhenExceptionThrown() {
+    // run
+    String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
 
-        //setup
-        MockProfileFetcher mockFetcher = new MockProfileFetcher();
-        mockFetcher.setAppIdToReturn("appId");
-        mockFetcher.setExceptionOn(true);
-        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
+    // validate
+    Assert.assertNull(appId);
+    Assert.assertEquals(1, mockFetcher.callCount());
 
-        //run
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+    // mimic calling resolver again after some time
+    mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+    appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+    Assert.assertEquals("cid-v1:appId", appId);
+    // fetcher will be called again since the previous attempt failed
+    Assert.assertEquals(2, mockFetcher.callCount());
+  }
 
-        //validate no exception is thrown back to the caller and appId is null
-        Assert.assertNull(appId);
-        Assert.assertEquals(1, mockFetcher.callCount());
+  @Test
+  public void testResolveInstrumentationKeyWhenExceptionThrown() {
 
-        //mimic calling resolver again after some time
-        mockFetcher.setExceptionOn(false);
-        mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
-        appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        //result is still null since fetcher returns a task in pending state
-        Assert.assertNull(appId);
-        //fetcher will be called again since the previous attempt failed
-        Assert.assertEquals(2, mockFetcher.callCount());
-        
-        //mimic final call which returns the completed task
-        mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        Assert.assertEquals("cid-v1:appId", appId);
-        Assert.assertEquals(3, mockFetcher.callCount());
-    }
+    // setup
+    MockProfileFetcher mockFetcher = new MockProfileFetcher();
+    mockFetcher.setAppIdToReturn("appId");
+    mockFetcher.setExceptionOn(true);
+    InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
 
-    @Test
-    public void testIkeyResolvedFromCache() {
+    // run
+    String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
 
-        //setup
-        MockProfileFetcher mockFetcher = new MockProfileFetcher();
-        mockFetcher.setAppIdToReturn("appId");
-        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
+    // validate no exception is thrown back to the caller and appId is null
+    Assert.assertNull(appId);
+    Assert.assertEquals(1, mockFetcher.callCount());
 
-        //run
-        Assert.assertEquals(0, mockFetcher.callCount());
-        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        Assert.assertEquals(1, mockFetcher.callCount());
+    // mimic calling resolver again after some time
+    mockFetcher.setExceptionOn(false);
+    mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
+    appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+    // result is still null since fetcher returns a task in pending state
+    Assert.assertNull(appId);
+    // fetcher will be called again since the previous attempt failed
+    Assert.assertEquals(2, mockFetcher.callCount());
 
-        //resolving the same ikey should not generate new call to fetcher
-        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        Assert.assertEquals(1, mockFetcher.callCount());
+    // mimic final call which returns the completed task
+    mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+    appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+    Assert.assertEquals("cid-v1:appId", appId);
+    Assert.assertEquals(3, mockFetcher.callCount());
+  }
 
-        //resolving another ikey increases call count
-        InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey2");
-        Assert.assertEquals(2, mockFetcher.callCount());
-    }
+  @Test
+  public void testIkeyResolvedFromCache() {
+
+    // setup
+    MockProfileFetcher mockFetcher = new MockProfileFetcher();
+    mockFetcher.setAppIdToReturn("appId");
+    InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockFetcher);
+
+    // run
+    Assert.assertEquals(0, mockFetcher.callCount());
+    InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+    Assert.assertEquals(1, mockFetcher.callCount());
+
+    // resolving the same ikey should not generate new call to fetcher
+    InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
+    Assert.assertEquals(1, mockFetcher.callCount());
+
+    // resolving another ikey increases call count
+    InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey2");
+    Assert.assertEquals(2, mockFetcher.callCount());
+  }
 }

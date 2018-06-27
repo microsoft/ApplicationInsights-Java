@@ -26,38 +26,36 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
-/**
- * Created by yonisha on 2/3/2015.
- */
+/** Created by yonisha on 2/3/2015. */
 public class JettyTestServer {
-    private Server server;
-    private int Min = 1050;
-    private int Max = 15000;
-    private int portNumber = Min + (int)(Math.random() * ((Max - Min) + 1));
+  private Server server;
+  private int Min = 1050;
+  private int Max = 15000;
+  private int portNumber = Min + (int) (Math.random() * ((Max - Min) + 1));
 
-    public void start() throws Exception {
-        server = new Server(portNumber);
+  public void start() throws Exception {
+    server = new Server(portNumber);
 
-        //Initialize the server
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.setContextPath("/");
-        context.addServlet(TestServlet.class, "/");
-        context.addFilter(WebRequestTrackingFilter.class, "/*", FilterMapping.ALL);
+    // Initialize the server
+    ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+    context.setContextPath("/");
+    context.addServlet(TestServlet.class, "/");
+    context.addFilter(WebRequestTrackingFilter.class, "/*", FilterMapping.ALL);
 
-        server.setHandler(context);
-        server.start();
+    server.setHandler(context);
+    server.start();
+  }
+
+  public void shutdown() throws Exception {
+    if (server == null) {
+      return;
     }
 
-    public void shutdown() throws Exception {
-        if (server == null) {
-            return;
-        }
+    server.stop();
+    server.destroy();
+  }
 
-        server.stop();
-        server.destroy();
-    }
-
-    public int getPortNumber() {
-        return portNumber;
-    }
+  public int getPortNumber() {
+    return portNumber;
+  }
 }

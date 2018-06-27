@@ -29,50 +29,47 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import java.util.Map;
 
-/**
- * Created by yonisha on 2/16/2015.
- */
+/** Created by yonisha on 2/16/2015. */
 public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerBase {
 
-    /**
-     * Initializes the properties of the given telemetry.
-     */
-    @Override
-    protected void onInitializeTelemetry(Telemetry telemetry) {
-        RequestTelemetryContext telemetryContext = ThreadContext.getRequestTelemetryContext();
+  /** Initializes the properties of the given telemetry. */
+  @Override
+  protected void onInitializeTelemetry(Telemetry telemetry) {
+    RequestTelemetryContext telemetryContext = ThreadContext.getRequestTelemetryContext();
 
-        if (telemetryContext == null) {
-            InternalLogger.INSTANCE.error(
-                "Unexpected error. No telemetry context found. OperationContext will not be initialized.");
-                return;
-        }
-
-        RequestTelemetry requestTelemetry = telemetryContext.getHttpRequestTelemetry();
-        String currentOperationId = requestTelemetry.getContext().getOperation().getId();
-
-        // if there's no current operation (e.g. telemetry being initialized outside of 
-        // request scope), just initialize operationId to the generic id currently in request
-        if (currentOperationId == null || currentOperationId.isEmpty()) {
-            telemetry.getContext().getOperation().setId(requestTelemetry.getId());
-            return;
-        }
-
-        // set operationId to the request telemetry's operation ID
-        if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
-            telemetry.getContext().getOperation().setId(currentOperationId);
-        }
-
-        // set operation parentId to the request telemetry's ID
-        if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getParentId())) {
-            telemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
-        }
-
-        // add correlation context to properties
-        Map<String, String> correlationContextMap = telemetryContext.getCorrelationContext().getMappings();
-        for (String key : correlationContextMap.keySet()) {
-            if (telemetry.getProperties().get(key) == null) {
-                telemetry.getProperties().put(key, correlationContextMap.get(key));
-            }
-        }
+    if (telemetryContext == null) {
+      InternalLogger.INSTANCE.error(
+          "Unexpected error. No telemetry context found. OperationContext will not be initialized.");
+      return;
     }
+
+    RequestTelemetry requestTelemetry = telemetryContext.getHttpRequestTelemetry();
+    String currentOperationId = requestTelemetry.getContext().getOperation().getId();
+
+    // if there's no current operation (e.g. telemetry being initialized outside of
+    // request scope), just initialize operationId to the generic id currently in request
+    if (currentOperationId == null || currentOperationId.isEmpty()) {
+      telemetry.getContext().getOperation().setId(requestTelemetry.getId());
+      return;
+    }
+
+    // set operationId to the request telemetry's operation ID
+    if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getId())) {
+      telemetry.getContext().getOperation().setId(currentOperationId);
+    }
+
+    // set operation parentId to the request telemetry's ID
+    if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getParentId())) {
+      telemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
+    }
+
+    // add correlation context to properties
+    Map<String, String> correlationContextMap =
+        telemetryContext.getCorrelationContext().getMappings();
+    for (String key : correlationContextMap.keySet()) {
+      if (telemetry.getProperties().get(key) == null) {
+        telemetry.getProperties().put(key, correlationContextMap.get(key));
+      }
+    }
+  }
 }

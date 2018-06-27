@@ -21,54 +21,55 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation.mocks;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 public class MockHttpAsyncClientWrapper {
 
-    private final CloseableHttpAsyncClient mockClient;
-    private final MockHttpEntity entity;
-    private final MockHttpResponse response;
-    private final MockHttpTask task;
+  private final CloseableHttpAsyncClient mockClient;
+  private final MockHttpEntity entity;
+  private final MockHttpResponse response;
+  private final MockHttpTask task;
 
-    public MockHttpAsyncClientWrapper() {
-        
-        this.entity = new MockHttpEntity();
-        this.response = new MockHttpResponse(this.entity, 200);
-        
-        this.task = new MockHttpTask(this.response);
+  public MockHttpAsyncClientWrapper() {
 
-        this.mockClient = mock(CloseableHttpAsyncClient.class);
-        
-        when(mockClient.execute(any(HttpUriRequest.class), any(FutureCallback.class))).thenReturn(this.task);
-    }
+    this.entity = new MockHttpEntity();
+    this.response = new MockHttpResponse(this.entity, 200);
 
-    public void setAppId(String appId) {
-        this.entity.setContent(appId);
-    }
+    this.task = new MockHttpTask(this.response);
 
-    public void setFailureOn(boolean fail) {
-        this.task.setFailureOn(fail);
-    }
+    this.mockClient = mock(CloseableHttpAsyncClient.class);
 
-    public void setTaskAsComplete() {
-        this.task.setIsDone(true);
-    }
+    when(mockClient.execute(any(HttpUriRequest.class), any(FutureCallback.class)))
+        .thenReturn(this.task);
+  }
 
-    public void setTaskAsPending() {
-        this.task.setIsDone(false);
-    }
+  public void setAppId(String appId) {
+    this.entity.setContent(appId);
+  }
 
-    public void setStatusCode(int code) {
-        this.response.setStatusCode(code);
-    }
+  public void setFailureOn(boolean fail) {
+    this.task.setFailureOn(fail);
+  }
 
-    public CloseableHttpAsyncClient getClient() {
-        return this.mockClient;
-    }
+  public void setTaskAsComplete() {
+    this.task.setIsDone(true);
+  }
+
+  public void setTaskAsPending() {
+    this.task.setIsDone(false);
+  }
+
+  public void setStatusCode(int code) {
+    this.response.setStatusCode(code);
+  }
+
+  public CloseableHttpAsyncClient getClient() {
+    return this.mockClient;
+  }
 }

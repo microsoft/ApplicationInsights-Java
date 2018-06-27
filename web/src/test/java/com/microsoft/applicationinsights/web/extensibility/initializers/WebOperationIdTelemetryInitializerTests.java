@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
-import org.junit.*;
-import java.util.List;
+import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
+import static org.junit.Assert.assertEquals;
+
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
@@ -32,99 +33,110 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
+import java.util.List;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import static com.microsoft.applicationinsights.web.utils.HttpHelper.sendRequestAndGetResponseCookie;
-import static org.junit.Assert.assertEquals;
-
-/**
- * Created by yonisha on 2/17/2015.
- */
+/** Created by yonisha on 2/17/2015. */
 public class WebOperationIdTelemetryInitializerTests {
 
-    private static JettyTestServer server = new JettyTestServer();
-    private static MockTelemetryChannel channel;
-    private static WebOperationIdTelemetryInitializer defaultInitializer = new WebOperationIdTelemetryInitializer();
+  private static JettyTestServer server = new JettyTestServer();
+  private static MockTelemetryChannel channel;
+  private static WebOperationIdTelemetryInitializer defaultInitializer =
+      new WebOperationIdTelemetryInitializer();
 
-    // region Initialization
+  // region Initialization
 
-    @BeforeClass
-    public static void classInitialize() throws Exception {
-        server.start();
+  @BeforeClass
+  public static void classInitialize() throws Exception {
+    server.start();
 
-        // Set mock channel
-        channel = MockTelemetryChannel.INSTANCE;
-        TelemetryConfiguration.getActive().setChannel(channel);
-        TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
-    }
+    // Set mock channel
+    channel = MockTelemetryChannel.INSTANCE;
+    TelemetryConfiguration.getActive().setChannel(channel);
+    TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
+  }
 
-    @Before
-    public void testInitialize() {
-        channel.reset();
-        ThreadContext.setRequestTelemetryContext(null);
-    }
+  @AfterClass
+  public static void classCleanup() throws Exception {
+    server.shutdown();
+  }
 
-    @AfterClass
-    public static void classCleanup() throws Exception {
-        server.shutdown();
-    }
+  @Before
+  public void testInitialize() {
+    channel.reset();
+    ThreadContext.setRequestTelemetryContext(null);
+  }
 
-    // endregion Initialization
+  // endregion Initialization
 
-    // region Tests
+  // region Tests
 
-    @Test
-    public void testRequestTelemetryInitializedWithOperationId() throws Exception {
-        sendRequestAndGetResponseCookie(server.getPortNumber());
+  @Test
+  public void testRequestTelemetryInitializedWithOperationId() throws Exception {
+    sendRequestAndGetResponseCookie(server.getPortNumber());
 
-        List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
-        assertEquals(1, items.size());
-        RequestTelemetry requestTelemetry = items.get(0);
+    List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
+    assertEquals(1, items.size());
+    RequestTelemetry requestTelemetry = items.get(0);
 
-        // the WebRequestTrackingModule automatically creates a hierarchical ID for request telemetry of the 
-        // following form: "|guid.", where guid is the OperationId
-        Assert.assertEquals("Operation id not match", requestTelemetry.getId(), "|" + requestTelemetry.getContext().getOperation().getId() + ".");
-    }
+    // the WebRequestTrackingModule automatically creates a hierarchical ID for request telemetry of
+    // the
+    // following form: "|guid.", where guid is the OperationId
+    Assert.assertEquals(
+        "Operation id not match",
+        requestTelemetry.getId(),
+        "|" + requestTelemetry.getContext().getOperation().getId() + ".");
+  }
 
-    @Test
-    public void testTelemetryInitializedWithOperationId() {
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
-        ThreadContext.setRequestTelemetryContext(context);
+  @Test
+  public void testTelemetryInitializedWithOperationId() {
+    RequestTelemetryContext context =
+        new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+    ThreadContext.setRequestTelemetryContext(context);
 
-        OperationContext operationContext = createAndInitializeTelemetry();
+    OperationContext operationContext = createAndInitializeTelemetry();
 
-        Assert.assertEquals("Operation ID hasn't been set.", context.getHttpRequestTelemetry().getId(), operationContext.getId());
-    }
+    Assert.assertEquals(
+        "Operation ID hasn't been set.",
+        context.getHttpRequestTelemetry().getId(),
+        operationContext.getId());
+  }
 
-    @Test
-    public void testInitializerDoesNotOverrideCustomerOperationId() {
-        String customerId = "CustomerID";
+  @Test
+  public void testInitializerDoesNotOverrideCustomerOperationId() {
+    String customerId = "CustomerID";
 
-        RequestTelemetry requestTelemetry = new RequestTelemetry();
-        OperationContext operationContext = requestTelemetry.getContext().getOperation();
-        operationContext.setId(customerId);
+    RequestTelemetry requestTelemetry = new RequestTelemetry();
+    OperationContext operationContext = requestTelemetry.getContext().getOperation();
+    operationContext.setId(customerId);
 
-        defaultInitializer.initialize(requestTelemetry);
+    defaultInitializer.initialize(requestTelemetry);
 
-        Assert.assertEquals("Customer operation ID should not be changed.", customerId, operationContext.getId());
-    }
+    Assert.assertEquals(
+        "Customer operation ID should not be changed.", customerId, operationContext.getId());
+  }
 
-    @Test
-    public void testOperationIdNotSetWhenRequestTelemetryContextNotInitialized() {
-        OperationContext operationContext = createAndInitializeTelemetry();
+  @Test
+  public void testOperationIdNotSetWhenRequestTelemetryContextNotInitialized() {
+    OperationContext operationContext = createAndInitializeTelemetry();
 
-        Assert.assertNull("Operation ID should not be set.", operationContext.getId());
-    }
+    Assert.assertNull("Operation ID should not be set.", operationContext.getId());
+  }
 
-    // endregion Tests
+  // endregion Tests
 
-    // region Private
+  // region Private
 
-    private OperationContext createAndInitializeTelemetry() {
-        TraceTelemetry telemetry = new TraceTelemetry();
-        defaultInitializer.initialize(telemetry);
+  private OperationContext createAndInitializeTelemetry() {
+    TraceTelemetry telemetry = new TraceTelemetry();
+    defaultInitializer.initialize(telemetry);
 
-        return telemetry.getContext().getOperation();
-    }
+    return telemetry.getContext().getOperation();
+  }
 
-    // endregion Private
+  // endregion Private
 }

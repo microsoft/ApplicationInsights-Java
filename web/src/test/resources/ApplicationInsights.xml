@@ -20,29 +20,35 @@
   ~ DEALINGS IN THE SOFTWARE.
   -->
 
-<ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" schemaVersion="2014-05-30">
-    <InstrumentationKey>
-        A-test-instrumentation-key
-    </InstrumentationKey>
-    <ContextInitializers>
-    </ContextInitializers>
-    <TelemetryInitializers>
-        <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer"/>
-        <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer"/>
-    </TelemetryInitializers>
-    <TelemetryModules>
-        <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule"/>
-        <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule">
-            <Param name="GenerateNewSessions" value="true" />
-        </Add>
+<ApplicationInsights schemaVersion="2014-05-30"
+  xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings">
+  <InstrumentationKey>
+    A-test-instrumentation-key
+  </InstrumentationKey>
+  <ContextInitializers>
+  </ContextInitializers>
+  <TelemetryInitializers>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer"/>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer"/>
+  </TelemetryInitializers>
+  <TelemetryModules>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule"/>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule">
+      <Param name="GenerateNewSessions" value="true"/>
+    </Add>
 
-        <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule">
-            <Param name="GenerateNewUsers" value="true" />
-        </Add>
-    </TelemetryModules>
-    <Channel type="com.microsoft.applicationinsights.internal.shared.LogChannelMock">
-        <EndpointAddress>
-            test-endpoint
-        </EndpointAddress>
-    </Channel>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule">
+      <Param name="GenerateNewUsers" value="true"/>
+    </Add>
+  </TelemetryModules>
+  <Channel type="com.microsoft.applicationinsights.internal.shared.LogChannelMock">
+    <EndpointAddress>
+      test-endpoint
+    </EndpointAddress>
+  </Channel>
 </ApplicationInsights>

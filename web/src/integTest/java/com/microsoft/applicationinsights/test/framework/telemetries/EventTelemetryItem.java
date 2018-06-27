@@ -21,25 +21,23 @@
 
 package com.microsoft.applicationinsights.test.framework.telemetries;
 
+import java.net.URISyntaxException;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.net.URISyntaxException;
 
-/**
- * Created by yonisha on 6/21/2015.
- */
+/** Created by yonisha on 6/21/2015. */
 public class EventTelemetryItem extends TelemetryItem {
 
-    public EventTelemetryItem() {
-        super(DocumentType.Event);
-    }
+  public EventTelemetryItem() {
+    super(DocumentType.Event);
+  }
 
-    public EventTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        super(DocumentType.Event, json);
-    }
+  public EventTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
+    super(DocumentType.Event, json);
+  }
 
-    @Override
-    protected String[] getDefaultPropertiesToCompare() {
-        return new String[0];
-    }
+  @Override
+  protected String[] getDefaultPropertiesToCompare() {
+    return new String[0];
+  }
 }

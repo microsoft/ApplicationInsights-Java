@@ -23,43 +23,40 @@ package com.microsoft.applicationinsights.web.javaee;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
-/**
- *
- * @author Daichi Isami
- */
+/** @author Daichi Isami */
 @Interceptor
 @RequestName
 public class RequestNameInterceptor {
 
-    @AroundInvoke
-    public Object invoke(InvocationContext ic) throws Exception {
-        setRequestNameSafe(ic);
-        return ic.proceed();
-    }
+  @AroundInvoke
+  public Object invoke(InvocationContext ic) throws Exception {
+    setRequestNameSafe(ic);
+    return ic.proceed();
+  }
 
-    private void setRequestNameSafe(InvocationContext ic) {
-        try {
-            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-            if (context != null) {
+  private void setRequestNameSafe(InvocationContext ic) {
+    try {
+      RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+      if (context != null) {
 
-                String actionName = String.format("%s.%s", ic.getMethod().getDeclaringClass().getName(), ic.getMethod().getName());
-                String httpMethod = context.getHttpRequestTelemetry().getHttpMethod();
-                String requestName = String.format("%s %s", httpMethod, actionName);
-                
-                context.getHttpRequestTelemetry().setName(requestName);
-            }
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to invoke interceptor '%s' with exception: %s.",
-                    this.getClass().getSimpleName(),
-                    e.toString());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-        }
+        String actionName =
+            String.format(
+                "%s.%s", ic.getMethod().getDeclaringClass().getName(), ic.getMethod().getName());
+        String httpMethod = context.getHttpRequestTelemetry().getHttpMethod();
+        String requestName = String.format("%s %s", httpMethod, actionName);
+
+        context.getHttpRequestTelemetry().setName(requestName);
+      }
+    } catch (Exception e) {
+      InternalLogger.INSTANCE.error(
+          "Failed to invoke interceptor '%s' with exception: %s.",
+          this.getClass().getSimpleName(), e.toString());
+      InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
     }
+  }
 }

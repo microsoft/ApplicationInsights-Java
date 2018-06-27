@@ -21,79 +21,75 @@
 
 package com.microsoft.applicationinsights.web.spring;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
  * Created by yonisha on 3/1/2015.
  *
- * This class intercepts all requests before forwarded to the relevant handler.
- * It extracts the relevant controller and method names and updates the request telemetry name.
- * This class should never throw exceptions to avoid blocking request processing.
+ * <p>This class intercepts all requests before forwarded to the relevant handler. It extracts the
+ * relevant controller and method names and updates the request telemetry name. This class should
+ * never throw exceptions to avoid blocking request processing.
  */
 public class RequestNameHandlerInterceptorAdapter extends HandlerInterceptorAdapter {
 
-    // region Public
+  // region Public
 
-    /**
-     * This method is being invoked just before the request is forwarded the the relevant controller.
-     * It should always return true, so the request will be processed in any case of failure.
-     */
-    @Override
-    public boolean preHandle(HttpServletRequest request,
-                             HttpServletResponse response,
-                             Object handler) throws Exception {
+  /**
+   * This method is being invoked just before the request is forwarded the the relevant controller.
+   * It should always return true, so the request will be processed in any case of failure.
+   */
+  @Override
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+      throws Exception {
 
-        try {
-            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+    try {
+      RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
-            if (context == null) {
-                return true;
-            }
-
-            String requestName = generateRequestName(request, handler);
-
-            if (requestName == null) {
-                return true;
-            }
-
-            context.getHttpRequestTelemetry().setName(requestName);
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                "Failed to invoke interceptor '%s' with exception: %s.",
-                this.getClass().getSimpleName(),
-                e.toString());
-        }
-
+      if (context == null) {
         return true;
+      }
+
+      String requestName = generateRequestName(request, handler);
+
+      if (requestName == null) {
+        return true;
+      }
+
+      context.getHttpRequestTelemetry().setName(requestName);
+    } catch (Exception e) {
+      InternalLogger.INSTANCE.error(
+          "Failed to invoke interceptor '%s' with exception: %s.",
+          this.getClass().getSimpleName(), e.toString());
     }
 
-    // endregion Public
+    return true;
+  }
 
-    // region Private
+  // endregion Public
 
-    private String generateRequestName(HttpServletRequest request, Object handler) {
+  // region Private
 
-        // Some handlers, such as built-in ResourceHttpRequestHandler are not of type HandlerMethod.
-        if (!(handler instanceof HandlerMethod)) {
-            return null;
-        }
+  private String generateRequestName(HttpServletRequest request, Object handler) {
 
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
-        String controller = handlerMethod.getBeanType().getSimpleName();
-        String action = handlerMethod.getMethod().getName();
-
-        String method = request.getMethod();
-
-        return String.format("%s %s/%s", method, controller, action);
+    // Some handlers, such as built-in ResourceHttpRequestHandler are not of type HandlerMethod.
+    if (!(handler instanceof HandlerMethod)) {
+      return null;
     }
 
-    // endregion Private
+    HandlerMethod handlerMethod = (HandlerMethod) handler;
+    String controller = handlerMethod.getBeanType().getSimpleName();
+    String action = handlerMethod.getMethod().getName();
+
+    String method = request.getMethod();
+
+    return String.format("%s %s/%s", method, controller, action);
+  }
+
+  // endregion Private
 }
-

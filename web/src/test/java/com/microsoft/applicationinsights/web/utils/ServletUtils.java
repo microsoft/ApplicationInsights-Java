@@ -21,126 +21,124 @@
 
 package com.microsoft.applicationinsights.web.utils;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
+import java.lang.reflect.Field;
+import java.util.Enumeration;
+import java.util.Map;
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.lang.reflect.Field;
-import java.util.Enumeration;
-import java.util.Map;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * Created by yonisha on 2/3/2015.
- */
+/** Created by yonisha on 2/3/2015. */
 public class ServletUtils {
 
-    private ServletUtils() {
+  private ServletUtils() {}
+
+  public static WebModulesContainer setMockWebModulesContainer(Filter filter) {
+    WebModulesContainer container = mock(WebModulesContainer.class);
+
+    Field field = null;
+    try {
+      field = getFilterWebModulesContainersField(filter);
+      field.set(filter, container);
+    } catch (Exception e) {
+      container = null;
+      e.printStackTrace();
     }
 
-    public static WebModulesContainer setMockWebModulesContainer(Filter filter) {
-        WebModulesContainer container = mock(WebModulesContainer.class);
+    return container;
+  }
 
-        Field field = null;
-        try {
-            field = getFilterWebModulesContainersField(filter);
-            field.set(filter, container);
-        } catch (Exception e) {
-            container = null;
-            e.printStackTrace();
-        }
+  public static WebModulesContainer getWebModuleContainer(Filter filter) {
+    WebModulesContainer container = null;
 
-        return container;
+    try {
+      Field field = getFilterWebModulesContainersField(filter);
+      container = (WebModulesContainer) field.get(filter);
+    } catch (NoSuchFieldException e) {
+      InternalLogger.INSTANCE.error("NoSuchFieldException while executing getWebModuleContainer");
+      InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
+    } catch (IllegalAccessException e) {
+      InternalLogger.INSTANCE.error(
+          "IllegalAccessException generated while accessing getModuleWebContainer");
+      InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
     }
 
-    public static WebModulesContainer getWebModuleContainer(Filter filter) {
-        WebModulesContainer container = null;
+    return container;
+  }
 
-        try {
-            Field field = getFilterWebModulesContainersField(filter);
-            container = (WebModulesContainer)field.get(filter);
-        } catch (NoSuchFieldException e) {
-            InternalLogger.INSTANCE.error("NoSuchFieldException while executing getWebModuleContainer");
-            InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
-        } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("IllegalAccessException generated while accessing getModuleWebContainer");
-            InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
-        }
+  public static ServletRequest generateDummyServletRequest() {
+    return mock(HttpServletRequest.class);
+  }
 
-        return container;
+  public static ServletResponse generateDummyServletResponse() {
+    return mock(HttpServletResponse.class);
+  }
+
+  public static HttpServletRequest createServletRequestWithHeaders(Map<String, String> headers) {
+    return createServletRequestWithHeaders(headers, 0);
+  }
+
+  public static HttpServletRequest createServletRequestWithHeaders(
+      Map<String, String> headers, final int correlationContextHeaderCount) {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+
+    for (String headerName : headers.keySet()) {
+      when(request.getHeader(headerName)).thenReturn(headers.get(headerName));
     }
 
-    public static ServletRequest generateDummyServletRequest() {
-        return mock(HttpServletRequest.class);
-    }
+    when(request.getRequestURI()).thenReturn("/controller/action.action");
+    when(request.getMethod()).thenReturn("POST");
+    when(request.getScheme()).thenReturn("http");
+    when(request.getHeader("Host")).thenReturn("contoso.com");
 
-    public static ServletResponse generateDummyServletResponse() {
-        return mock(HttpServletResponse.class);
-    }
-
-    public static HttpServletRequest createServletRequestWithHeaders(Map<String, String> headers) {
-        return createServletRequestWithHeaders(headers, 0);
-    }
-
-    public static HttpServletRequest createServletRequestWithHeaders(Map<String, String> headers, final int correlationContextHeaderCount) {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-
-        for (String headerName : headers.keySet()) {
-            when(request.getHeader(headerName)).thenReturn(headers.get(headerName));
-        }
-
-        when(request.getRequestURI()).thenReturn("/controller/action.action");
-        when(request.getMethod()).thenReturn("POST");
-        when(request.getScheme()).thenReturn("http");
-        when(request.getHeader("Host")).thenReturn("contoso.com");
-
-        when(request.getHeaders(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME)).thenReturn(
+    when(request.getHeaders(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME))
+        .thenReturn(
             new Enumeration<String>() {
 
-                private int itemCount = correlationContextHeaderCount;
-                private String item1 = "key1=value1, key2=value2";
-                private String item2 = "key3=value3";
+              private int itemCount = correlationContextHeaderCount;
+              private String item1 = "key1=value1, key2=value2";
+              private String item2 = "key3=value3";
 
-				@Override
-				public boolean hasMoreElements() {
-                    return itemCount > 0;
-				}
+              @Override
+              public boolean hasMoreElements() {
+                return itemCount > 0;
+              }
 
-				@Override
-				public String nextElement() {
-					if (itemCount == 2) {
-                        itemCount--;
-                        return item2;
-                    } else if (itemCount == 1) {
-                        itemCount--;
-                        return item1;
-                    } else {
-                        return null;
-                    }
-				}
+              @Override
+              public String nextElement() {
+                if (itemCount == 2) {
+                  itemCount--;
+                  return item2;
+                } else if (itemCount == 1) {
+                  itemCount--;
+                  return item1;
+                } else {
+                  return null;
+                }
+              }
+            });
 
-            }
-        );
+    return request;
+  }
 
-        return request;
-    }
+  // region Private
 
-    // region Private
+  private static Field getFilterWebModulesContainersField(Filter filter)
+      throws NoSuchFieldException {
+    Field field = filter.getClass().getDeclaredField("webModulesContainer");
+    field.setAccessible(true);
 
-    private static Field getFilterWebModulesContainersField(Filter filter) throws NoSuchFieldException {
-        Field field = filter.getClass().getDeclaredField("webModulesContainer");
-        field.setAccessible(true);
+    return field;
+  }
 
-        return field;
-    }
-
-    // endregion Private
+  // endregion Private
 }

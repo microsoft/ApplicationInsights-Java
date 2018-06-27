@@ -21,21 +21,20 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-/**
- * Created by yonisha on 2/16/2015.
- */
+/** Created by yonisha on 2/16/2015. */
 public class ThreadContext {
-    private static final InheritableThreadLocal<RequestTelemetryContext> threadLocal = new InheritableThreadLocal<RequestTelemetryContext>();
+  private static final InheritableThreadLocal<RequestTelemetryContext> threadLocal =
+      new InheritableThreadLocal<RequestTelemetryContext>();
 
-    public static void setRequestTelemetryContext(RequestTelemetryContext telemetryContext) {
-        threadLocal.set(telemetryContext);
-    }
+  public static RequestTelemetryContext getRequestTelemetryContext() {
+    return threadLocal.get();
+  }
 
-    public static RequestTelemetryContext getRequestTelemetryContext() {
-        return threadLocal.get();
-    }
+  public static void setRequestTelemetryContext(RequestTelemetryContext telemetryContext) {
+    threadLocal.set(telemetryContext);
+  }
 
-    public static void remove() {
-        threadLocal.remove();
-    }
+  public static void remove() {
+    threadLocal.remove();
+  }
 }

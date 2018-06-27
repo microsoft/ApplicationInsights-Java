@@ -29,31 +29,30 @@ import org.junit.Assert;
 /**
  * Created by yonisha on 2/16/2015.
  *
- * This class validates the ThreadContext class.
- * The idea is simple: store a request telemetry context using TLS and then getting it back
- * to validate the expected value.
- * This class should be called concurrently to increase the probability of other threads (validators)
- * interrupting each other, and therefore identify potential bugs.
- * Concurrent invocations of this calls basically simulates concurrent http requests on a web server.
+ * <p>This class validates the ThreadContext class. The idea is simple: store a request telemetry
+ * context using TLS and then getting it back to validate the expected value. This class should be
+ * called concurrently to increase the probability of other threads (validators) interrupting each
+ * other, and therefore identify potential bugs. Concurrent invocations of this calls basically
+ * simulates concurrent http requests on a web server.
  */
 public class ThreadContextValidator extends Thread {
-    private long startTicks;
+  private long startTicks;
 
-    public ThreadContextValidator() {
-        startTicks = DateTimeUtils.getDateTimeNow().getTime();
-    }
+  public ThreadContextValidator() {
+    startTicks = DateTimeUtils.getDateTimeNow().getTime();
+  }
 
-    @Override
-    public void run() {
-        RequestTelemetryContext context = new RequestTelemetryContext(startTicks);
-        ThreadContext.setRequestTelemetryContext(context);
+  @Override
+  public void run() {
+    RequestTelemetryContext context = new RequestTelemetryContext(startTicks);
+    ThreadContext.setRequestTelemetryContext(context);
 
-        validate();
-    }
+    validate();
+  }
 
-    private void validate() {
-        long currentTicks = ThreadContext.getRequestTelemetryContext().getRequestStartTimeTicks();
+  private void validate() {
+    long currentTicks = ThreadContext.getRequestTelemetryContext().getRequestStartTimeTicks();
 
-        Assert.assertEquals("Found a thread with unexpected value.", startTicks, currentTicks);
-    }
+    Assert.assertEquals("Found a thread with unexpected value.", startTicks, currentTicks);
+  }
 }

@@ -21,71 +21,65 @@
 
 package com.microsoft.applicationinsights.test.framework.telemetries;
 
+import java.net.URISyntaxException;
+import java.util.Hashtable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
-import java.util.Hashtable;
-
-/**
- * Created by moralt on 05/05/2015.
- */
+/** Created by moralt on 05/05/2015. */
 public class RequestTelemetryItem extends TelemetryItem {
-    private static final String[] propertiesToCompare = new String[] {
-        "port",
-        "responseCode",
-        "uri",
-        "sessionId",
-        "userId",
-        "requestName",
-        "runId",
-    };
+  private static final String[] propertiesToCompare =
+      new String[] {
+        "port", "responseCode", "uri", "sessionId", "userId", "requestName", "runId",
+      };
 
-    public RequestTelemetryItem() {
-        super(DocumentType.Requests);
+  public RequestTelemetryItem() {
+    super(DocumentType.Requests);
+  }
+
+  public RequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
+    super(DocumentType.Requests, json);
+
+    initRequestTelemetryItem(json);
+  }
+
+  @Override
+  protected String[] getDefaultPropertiesToCompare() {
+    return propertiesToCompare;
+  }
+
+  /**
+   * Converts JSON object to Request TelemetryItem
+   *
+   * @param json The JSON object
+   */
+  private void initRequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
+    System.out.println("Converting JSON object to RequestTelemetryItem");
+    JSONObject requestProperties = json.getJSONArray("request").getJSONObject(0);
+
+    String address = requestProperties.getString("url");
+    Integer port = requestProperties.getJSONObject("urlData").getInt("port");
+    Integer responseCode = requestProperties.getInt("responseCode");
+    String requestName = requestProperties.getString("name");
+
+    JSONArray parameters =
+        requestProperties.getJSONObject("urlData").getJSONArray("queryParameters");
+    Hashtable<String, String> queryParameters = new Hashtable<String, String>();
+    for (int i = 0; i < parameters.length(); ++i) {
+      JSONObject parameterPair = parameters.getJSONObject(i);
+      String name = parameterPair.getString("parameter");
+      String value = parameterPair.getString("value");
+      queryParameters.put(name, value);
     }
 
-    public RequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        super(DocumentType.Requests, json);
+    this.setProperty("uri", address);
+    this.setProperty("port", port.toString());
+    this.setProperty("responseCode", responseCode.toString());
+    this.setProperty("requestName", requestName);
 
-        initRequestTelemetryItem(json);
+    for (String key : queryParameters.keySet()) {
+      this.setProperty("queryParameter." + key, queryParameters.get(key));
     }
-
-    @Override
-    protected String[] getDefaultPropertiesToCompare() {
-        return propertiesToCompare;
-    }
-
-    /**
-     * Converts JSON object to Request TelemetryItem
-     * @param json The JSON object
-     */
-    private void initRequestTelemetryItem(JSONObject json) throws URISyntaxException, JSONException {
-        System.out.println("Converting JSON object to RequestTelemetryItem");
-        JSONObject requestProperties = json.getJSONArray("request").getJSONObject(0);
-
-        String address = requestProperties.getString("url");
-        Integer port = requestProperties.getJSONObject("urlData").getInt("port");
-        Integer responseCode = requestProperties.getInt("responseCode");
-        String requestName = requestProperties.getString("name");
-
-        JSONArray parameters = requestProperties.getJSONObject("urlData").getJSONArray("queryParameters");
-        Hashtable<String, String> queryParameters = new Hashtable<String, String>();
-        for (int i = 0; i < parameters.length(); ++i) {
-            JSONObject parameterPair = parameters.getJSONObject(i);
-            String name  = parameterPair.getString("parameter");
-            String value = parameterPair.getString("value");
-            queryParameters.put(name, value);
-        }
-
-        this.setProperty("uri", address);
-        this.setProperty("port", port.toString());
-        this.setProperty("responseCode", responseCode.toString());
-        this.setProperty("requestName", requestName);
-
-        for (String key : queryParameters.keySet()) {
-            this.setProperty("queryParameter." + key, queryParameters.get(key));
-        }
-    }
+  }
 }

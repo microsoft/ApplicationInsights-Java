@@ -24,48 +24,36 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Class responsible to store the correlation context information.
- */
+/** Class responsible to store the correlation context information. */
 public class CorrelationContext {
 
-    /**
-     * Stores the correlation context as mappings.
-     */
-    private final Map<String, String> mappings; 
+  /** Stores the correlation context as mappings. */
+  private final Map<String, String> mappings;
 
-    /**
-     * Stores the context as a string.
-     */
-    private final StringBuilder contextAsString;
+  /** Stores the context as a string. */
+  private final StringBuilder contextAsString;
 
-    public CorrelationContext() {
-        this.mappings = new HashMap<String, String>();
-        this.contextAsString = new StringBuilder();
-    }
+  public CorrelationContext() {
+    this.mappings = new HashMap<String, String>();
+    this.contextAsString = new StringBuilder();
+  }
 
-    /**
-     * Gets the correlation context key-value pairs.
-     */
-    public Map<String, String> getMappings() {
-        return this.mappings;
-    }
-    
-    /**
-     * Appends content to the correlation context.
-     */
-    public void append(String content) {
-        if (this.contextAsString.length() > 0) {
-            this.contextAsString.append(",");
-        }
-        this.contextAsString.append(content);
-    }
+  /** Gets the correlation context key-value pairs. */
+  public Map<String, String> getMappings() {
+    return this.mappings;
+  }
 
-    /**
-     * Returns a single string for the whole correlation context.
-     */
-    @Override
-    public String toString() {
-        return this.contextAsString.toString();
+  /** Appends content to the correlation context. */
+  public void append(String content) {
+    if (this.contextAsString.length() > 0) {
+      this.contextAsString.append(",");
     }
+    this.contextAsString.append(content);
+  }
+
+  /** Returns a single string for the whole correlation context. */
+  @Override
+  public String toString() {
+    return this.contextAsString.toString();
+  }
 }

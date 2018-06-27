@@ -21,70 +21,65 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.Date;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
+import java.util.Date;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
-/**
- * Created by yonisha on 2/7/2015.
- */
+/** Created by yonisha on 2/7/2015. */
 public class WebUserTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
 
-    /**
-     * Initializes the telemetry module.
-     *
-     * @param configuration The configuration to used to initialize the module.
-     */
-    @Override
-    public void initialize(TelemetryConfiguration configuration) {
+  /**
+   * Initializes the telemetry module.
+   *
+   * @param configuration The configuration to used to initialize the module.
+   */
+  @Override
+  public void initialize(TelemetryConfiguration configuration) {}
+
+  /**
+   * Begin request processing.
+   *
+   * @param req The request to process
+   * @param res The response to modify
+   */
+  @Override
+  public void onBeginRequest(ServletRequest req, ServletResponse res) {
+    HttpServletRequest request = (HttpServletRequest) req;
+    RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+
+    UserCookie userCookie =
+        com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+            UserCookie.class, request, UserCookie.COOKIE_NAME);
+
+    if (userCookie == null) {
+      return;
     }
 
-    /**
-     * Begin request processing.
-     *
-     * @param req The request to process
-     * @param res The response to modify
-     */
-    @Override
-    public void onBeginRequest(ServletRequest req, ServletResponse res) {
-        HttpServletRequest request = (HttpServletRequest)req;
-        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+    String userId = userCookie.getUserId();
+    Date acquisitionDate = userCookie.getAcquisitionDate();
 
-        UserCookie userCookie =
-                com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
-                        UserCookie.class, request, UserCookie.COOKIE_NAME);
+    context.setUserCookie(userCookie);
 
-        if (userCookie == null) {
-            return;
-        }
+    UserContext userContext = context.getHttpRequestTelemetry().getContext().getUser();
+    userContext.setId(userId);
+    userContext.setAcquisitionDate(acquisitionDate);
+  }
 
-        String userId = userCookie.getUserId();
-        Date acquisitionDate = userCookie.getAcquisitionDate();
+  /**
+   * End request processing.
+   *
+   * @param req The request to process
+   * @param res The response to modify
+   */
+  @Override
+  public void onEndRequest(ServletRequest req, ServletResponse res) {}
 
-        context.setUserCookie(userCookie);
-
-        UserContext userContext = context.getHttpRequestTelemetry().getContext().getUser();
-        userContext.setId(userId);
-        userContext.setAcquisitionDate(acquisitionDate);
-    }
-
-    /**
-     * End request processing.
-     *
-     * @param req The request to process
-     * @param res The response to modify
-     */
-    @Override
-    public void onEndRequest(ServletRequest req, ServletResponse res) {
-    }
-
-    // endregion Public
+  // endregion Public
 }
