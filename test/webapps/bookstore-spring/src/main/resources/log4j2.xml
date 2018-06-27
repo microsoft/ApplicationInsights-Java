@@ -2,23 +2,23 @@
 
 <Configuration status="WARN">
 
-	<Appenders>
-		<ApplicationInsightsAppender name="aiAppender" />
-		<File name="file" fileName="app.log">
-			<PatternLayout>
-				<Pattern>%d %p %c{1.} [%t] %m %ex%n</Pattern>
-			</PatternLayout>
-		</File>
-		<Console name="STDOUT" target="SYSTEM_OUT">
-			<PatternLayout pattern="%m%n" />
-		</Console>
-	</Appenders>
-	<Loggers>
-		<Root level="trace">
-			<AppenderRef ref="file" level="DEBUG" />
-			<AppenderRef ref="STDOUT" level="INFO" />
-			<AppenderRef ref="aiAppender" />
-		</Root>
-	</Loggers>
+  <Appenders>
+    <ApplicationInsightsAppender name="aiAppender"/>
+    <File fileName="app.log" name="file">
+      <PatternLayout>
+        <Pattern>%d %p %c{1.} [%t] %m %ex%n</Pattern>
+      </PatternLayout>
+    </File>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%m%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="trace">
+      <AppenderRef level="DEBUG" ref="file"/>
+      <AppenderRef level="INFO" ref="STDOUT"/>
+      <AppenderRef ref="aiAppender"/>
+    </Root>
+  </Loggers>
 
 </Configuration>

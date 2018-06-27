@@ -5,7 +5,7 @@ dependencies {
     compile aiWebJar
     compile aiLog4j1_2Jar
     compile 'com.google.guava:guava:20.0'
-    
+
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 
     smokeTestCompile 'com.google.guava:guava:23.0'

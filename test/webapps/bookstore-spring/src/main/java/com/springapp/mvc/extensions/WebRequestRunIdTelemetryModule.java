@@ -27,7 +27,6 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -35,54 +34,53 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Created by yonisha on 6/21/2015.
  *
- * This module reads teh 'runid' query parameter, if exists, from the incoming http request and adds it
- * as a property to the RequestTelemetry sent to AI.
- * This run ID is then used to identify requests sent as part of a test suite.
+ * <p>This module reads teh 'runid' query parameter, if exists, from the incoming http request and
+ * adds it as a property to the RequestTelemetry sent to AI. This run ID is then used to identify
+ * requests sent as part of a test suite.
  */
 public class WebRequestRunIdTelemetryModule implements WebTelemetryModule, TelemetryModule {
 
-    protected static final String RUN_ID_QUERY_PARAM_NAME = "runid";
+  protected static final String RUN_ID_QUERY_PARAM_NAME = "runid";
 
-    @Override
-    public void initialize(TelemetryConfiguration telemetryConfiguration) {
+  @Override
+  public void initialize(TelemetryConfiguration telemetryConfiguration) {}
+
+  @Override
+  public void onBeginRequest(ServletRequest req, ServletResponse res) {
+    HttpServletRequest httpRequest = (HttpServletRequest) req;
+    String queryString = httpRequest.getQueryString();
+
+    String runId = getRunIdFromQueryString(queryString);
+
+    if (runId == null) {
+      return;
     }
 
-    @Override
-    public void onBeginRequest(ServletRequest req, ServletResponse res) {
-        HttpServletRequest httpRequest = (HttpServletRequest) req;
-        String queryString = httpRequest.getQueryString();
+    RequestTelemetry httpRequestTelemetry =
+        ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+    httpRequestTelemetry.getProperties().put(RUN_ID_QUERY_PARAM_NAME, runId);
+  }
 
-        String runId = getRunIdFromQueryString(queryString);
-
-        if (runId == null) {
-            return;
-        }
-
-        RequestTelemetry httpRequestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-        httpRequestTelemetry.getProperties().put(RUN_ID_QUERY_PARAM_NAME, runId);
+  private String getRunIdFromQueryString(String queryString) {
+    if (LocalStringsUtils.isNullOrEmpty(queryString)) {
+      return null;
     }
 
-    private String getRunIdFromQueryString(String queryString) {
-        if (LocalStringsUtils.isNullOrEmpty(queryString)) {
-            return null;
-        }
+    String[] parameters = queryString.split("&");
 
-        String[] parameters = queryString.split("&");
+    for (String parameter : parameters) {
+      String[] paramWithValue = parameter.split("=");
 
-        for (String parameter : parameters) {
-            String[] paramWithValue = parameter.split("=");
+      String param = paramWithValue[0];
 
-            String param = paramWithValue[0];
-
-            if (param.equalsIgnoreCase(RUN_ID_QUERY_PARAM_NAME)) {
-                return paramWithValue[1];
-            }
-        }
-
-        return null;
+      if (param.equalsIgnoreCase(RUN_ID_QUERY_PARAM_NAME)) {
+        return paramWithValue[1];
+      }
     }
 
-    @Override
-    public void onEndRequest(ServletRequest req, ServletResponse res) {
-    }
+    return null;
+  }
+
+  @Override
+  public void onEndRequest(ServletRequest req, ServletResponse res) {}
 }

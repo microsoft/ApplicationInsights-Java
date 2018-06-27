@@ -10,13 +10,15 @@
 </p>
 <h2><a href="./baseline">Baseline</a></h2>
 <p>
-    This endpoint simulates an application without the Java SDK. It performs some simple computations to simulate something close to a real application.
+    This endpoint simulates an application without the Java SDK. It performs some simple
+    computations to simulate something close to a real application.
     <strong>When doing a comparison with track/*, this should be run first.</strong>
 </p>
 
 <h2>Track/*</h2>
 <p>
-    Each method performs the same "churn" computations done in the baseline (there are iterations performed.
+    Each method performs the same "churn" computations done in the baseline (there are iterations
+    performed.
 </p>
 <ul>
     <!-- TODO provide values for parameters sent to methods -->
@@ -30,7 +32,8 @@
 </ul>
 <h2><a href="./fakeRest">FakeRest Endpoint</a></h2>
 <p>
-    This simulates a "real world" endpoint. It runs trackDependnecy, trackEvent, trackMetric and trackTrace.
+    This simulates a "real world" endpoint. It runs trackDependnecy, trackEvent, trackMetric and
+    trackTrace.
 </p>
 </body>
 </html>

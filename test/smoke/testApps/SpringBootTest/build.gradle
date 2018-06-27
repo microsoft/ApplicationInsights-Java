@@ -24,8 +24,8 @@ dependencies {
 }
 
 configurations {
-    smokeTestCompile.exclude group:'org.springframework.boot'
-    smokeTestRuntime.exclude group:'org.springframework.boot'
+    smokeTestCompile.exclude group: 'org.springframework.boot'
+    smokeTestRuntime.exclude group: 'org.springframework.boot'
 }
 
 ext.testAppArtifactDir = war.destinationDir

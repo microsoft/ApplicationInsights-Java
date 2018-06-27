@@ -21,7 +21,7 @@
 
 apply from: "$buildScriptsDir/common-java.gradle"
 apply plugin: "war"
- 
+
 repositories {
     mavenCentral()
 }

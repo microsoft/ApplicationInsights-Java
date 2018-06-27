@@ -21,19 +21,18 @@
 
 package com.microsoft.applicationinsights.core.volume;
 
-/**
- * Created by gupele on 2/5/2015.
- */
+/** Created by gupele on 2/5/2015. */
 final class TestThreadLocalData {
-    private static final ThreadLocal<FakeTransmissionOutput> currentOutput = new ThreadLocal<FakeTransmissionOutput>() {
+  private static final ThreadLocal<FakeTransmissionOutput> currentOutput =
+      new ThreadLocal<FakeTransmissionOutput>() {
         @Override
         protected FakeTransmissionOutput initialValue() {
-            TestResultsVerifier testResultsVerifier = new TestResultsVerifier();
-            return new FakeTransmissionOutput(testResultsVerifier);
+          TestResultsVerifier testResultsVerifier = new TestResultsVerifier();
+          return new FakeTransmissionOutput(testResultsVerifier);
         }
-    };
+      };
 
-    public static FakeTransmissionOutput getTransmissionOutput() {
-        return currentOutput.get();
-    }
+  public static FakeTransmissionOutput getTransmissionOutput() {
+    return currentOutput.get();
+  }
 }

@@ -7,9 +7,9 @@ import org.junit.runners.parameterized.TestWithParameters;
 
 public class ParameterizedRunnerWithFixturesFactory implements ParametersRunnerFactory {
 
-	@Override
-	public Runner createRunnerForTestWithParameters(TestWithParameters test) throws InitializationError {
-		return new ParameterizedRunnerWithFixtures(test);
-	}
-
+  @Override
+  public Runner createRunnerForTestWithParameters(TestWithParameters test)
+      throws InitializationError {
+    return new ParameterizedRunnerWithFixtures(test);
+  }
 }

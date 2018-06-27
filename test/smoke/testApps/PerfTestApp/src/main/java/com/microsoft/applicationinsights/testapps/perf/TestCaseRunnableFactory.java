@@ -2,18 +2,19 @@ package com.microsoft.applicationinsights.testapps.perf;
 
 public abstract class TestCaseRunnableFactory {
 
-    private final String name;
+  private final String name;
 
-    public TestCaseRunnableFactory() {
-        this(null);
-    }
-    public TestCaseRunnableFactory(String name) {
-        this.name = name;
-    }
+  public TestCaseRunnableFactory() {
+    this(null);
+  }
 
-    public TestCaseRunnable get() {
-        return new TestCaseRunnable(getRunnable(), name);
-    }
+  public TestCaseRunnableFactory(String name) {
+    this.name = name;
+  }
 
-    protected abstract Runnable getRunnable();
+  public TestCaseRunnable get() {
+    return new TestCaseRunnable(getRunnable(), name);
+  }
+
+  protected abstract Runnable getRunnable();
 }

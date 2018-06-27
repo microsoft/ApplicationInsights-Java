@@ -15,41 +15,38 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 public class HttpHelper {
-	public static String get(String url) throws UnsupportedOperationException, IOException {
-		CloseableHttpClient client = HttpClients.createDefault();
-		try {
-			HttpGet get = new HttpGet(url);
-			CloseableHttpResponse resp1 = client.execute(get);
-			return extractResponseBody(resp1);
-		}
-		finally {
-			client.close();
-		}
-	}
+  public static String get(String url) throws UnsupportedOperationException, IOException {
+    CloseableHttpClient client = HttpClients.createDefault();
+    try {
+      HttpGet get = new HttpGet(url);
+      CloseableHttpResponse resp1 = client.execute(get);
+      return extractResponseBody(resp1);
+    } finally {
+      client.close();
+    }
+  }
 
-	public static String post(String url, String body) throws ClientProtocolException, IOException {
-		CloseableHttpClient client = HttpClients.createDefault();
-		try {
-			HttpPost post = new HttpPost(url);
-			post.setEntity(new StringEntity("PING"));
-			CloseableHttpResponse resp1 = client.execute(post);
-			return extractResponseBody(resp1);
-		}
-		finally {
-			client.close();
-		}
-	}
+  public static String post(String url, String body) throws ClientProtocolException, IOException {
+    CloseableHttpClient client = HttpClients.createDefault();
+    try {
+      HttpPost post = new HttpPost(url);
+      post.setEntity(new StringEntity("PING"));
+      CloseableHttpResponse resp1 = client.execute(post);
+      return extractResponseBody(resp1);
+    } finally {
+      client.close();
+    }
+  }
 
-	private static String extractResponseBody(CloseableHttpResponse resp) throws IOException {
-		try {
-            HttpEntity entity = resp.getEntity();
-            StringWriter cw = new StringWriter();
-            CharStreams.copy(new InputStreamReader(entity.getContent()), cw);
-            EntityUtils.consume(entity);
-            return cw.toString();
-        }
-        finally {
-            resp.close();
-        }
-	}
+  private static String extractResponseBody(CloseableHttpResponse resp) throws IOException {
+    try {
+      HttpEntity entity = resp.getEntity();
+      StringWriter cw = new StringWriter();
+      CharStreams.copy(new InputStreamReader(entity.getContent()), cw);
+      EntityUtils.consume(entity);
+      return cw.toString();
+    } finally {
+      resp.close();
+    }
+  }
 }

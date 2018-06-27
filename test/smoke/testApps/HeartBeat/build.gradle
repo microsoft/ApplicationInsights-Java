@@ -4,11 +4,11 @@ dependencies {
     compile aiCoreJar
     compile aiWebJar
     compile 'com.google.guava:guava:20.0'
-    
+
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 
     smokeTestCompile 'com.google.guava:guava:23.0'
-    
+
     testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 }
 

@@ -1,2 +1,7 @@
-tr.odd {bgcolor: #EEDDEE}
-tr.even {bgcolor: #EEEEDD}
+tr.odd {
+  bgcolor: #EEDDEE
+}
+
+tr.even {
+  bgcolor: #EEEEDD
+}

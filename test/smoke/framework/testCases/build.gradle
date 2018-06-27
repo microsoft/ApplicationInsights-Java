@@ -1,12 +1,12 @@
 apply plugin: 'java-library'
 
 repositories {
-	jcenter()
+    jcenter()
 }
 
 dependencies {
-	compile 'com.google.guava:guava:20.0'
-	compile aiCoreJar
+    compile 'com.google.guava:guava:20.0'
+    compile aiCoreJar
 }
 
 compileJava.sourceCompatibility = 1.8

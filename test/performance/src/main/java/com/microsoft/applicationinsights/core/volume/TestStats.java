@@ -21,62 +21,61 @@
 
 package com.microsoft.applicationinsights.core.volume;
 
-/**
- * Created by gupele on 2/5/2015.
- */
+/** Created by gupele on 2/5/2015. */
 final class TestStats {
-    private final int numberOfSentEvents;
-    private final int numberOfAcceptedEvents;
-    private final TestStatus status;
-    private final double timeToFinishInSeconds;
-    private final double sendTimeInSeconds;
-    private final double eventsPerSecond;
-    private final int acceptedUntilEndOfSending;
+  private final int numberOfSentEvents;
+  private final int numberOfAcceptedEvents;
+  private final TestStatus status;
+  private final double timeToFinishInSeconds;
+  private final double sendTimeInSeconds;
+  private final double eventsPerSecond;
+  private final int acceptedUntilEndOfSending;
 
-    public TestStats(int numberOfSentEvents,
-                     int numberOfAcceptedEvents,
-                     TestStatus status,
-                     long timeToFinishInNanos,
-                     long sendTimeInNanos,
-                     int acceptedUntilEndOfSending) {
-        this.numberOfSentEvents = numberOfSentEvents;
-        this.numberOfAcceptedEvents = numberOfAcceptedEvents;
-        this.status = status;
-        this.timeToFinishInSeconds = nanoTimeToSeconds(timeToFinishInNanos);
-        this.acceptedUntilEndOfSending = acceptedUntilEndOfSending;
-        this.sendTimeInSeconds = nanoTimeToSeconds(sendTimeInNanos);
-        eventsPerSecond = numberOfAcceptedEvents / timeToFinishInSeconds;
-    }
+  public TestStats(
+      int numberOfSentEvents,
+      int numberOfAcceptedEvents,
+      TestStatus status,
+      long timeToFinishInNanos,
+      long sendTimeInNanos,
+      int acceptedUntilEndOfSending) {
+    this.numberOfSentEvents = numberOfSentEvents;
+    this.numberOfAcceptedEvents = numberOfAcceptedEvents;
+    this.status = status;
+    this.timeToFinishInSeconds = nanoTimeToSeconds(timeToFinishInNanos);
+    this.acceptedUntilEndOfSending = acceptedUntilEndOfSending;
+    this.sendTimeInSeconds = nanoTimeToSeconds(sendTimeInNanos);
+    eventsPerSecond = numberOfAcceptedEvents / timeToFinishInSeconds;
+  }
 
-    public int getNumberOfSentEvents() {
-        return numberOfSentEvents;
-    }
+  private static double nanoTimeToSeconds(long nanos) {
+    return (double) nanos / 1000000000.0;
+  }
 
-    public int getNumberOfAcceptedEvents() {
-        return numberOfAcceptedEvents;
-    }
+  public int getNumberOfSentEvents() {
+    return numberOfSentEvents;
+  }
 
-    public TestStatus getStatus() {
-        return status;
-    }
+  public int getNumberOfAcceptedEvents() {
+    return numberOfAcceptedEvents;
+  }
 
-    public double getTimeToFinishInSeconds() {
-        return timeToFinishInSeconds;
-    }
+  public TestStatus getStatus() {
+    return status;
+  }
 
-    public double getEventsPerSecond() {
-        return eventsPerSecond;
-    }
+  public double getTimeToFinishInSeconds() {
+    return timeToFinishInSeconds;
+  }
 
-    private static double nanoTimeToSeconds(long nanos) {
-        return (double)nanos / 1000000000.0;
-    }
+  public double getEventsPerSecond() {
+    return eventsPerSecond;
+  }
 
-    public double getSendTimeInSeconds() {
-        return sendTimeInSeconds;
-    }
+  public double getSendTimeInSeconds() {
+    return sendTimeInSeconds;
+  }
 
-    public int getAcceptedUntilEndOfSending() {
-        return acceptedUntilEndOfSending;
-    }
+  public int getAcceptedUntilEndOfSending() {
+    return acceptedUntilEndOfSending;
+  }
 }

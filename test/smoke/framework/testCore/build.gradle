@@ -1,16 +1,16 @@
 apply plugin: 'java-library'
 
 repositories {
-	jcenter()
+    jcenter()
 }
 
 dependencies {
-	compile 'com.google.guava:guava:23.0'
-	compile 'junit:junit:4.12'
-	compile 'org.apache.commons:commons-lang3:3.7'
-	compile aiCoreJar
-	compile project(':test:smoke:framework:utils')
-	compile project(':test:smoke:framework:fakeIngestion:standalone')
+    compile 'com.google.guava:guava:23.0'
+    compile 'junit:junit:4.12'
+    compile 'org.apache.commons:commons-lang3:3.7'
+    compile aiCoreJar
+    compile project(':test:smoke:framework:utils')
+    compile project(':test:smoke:framework:fakeIngestion:standalone')
 }
 
 compileJava.sourceCompatibility = 1.8

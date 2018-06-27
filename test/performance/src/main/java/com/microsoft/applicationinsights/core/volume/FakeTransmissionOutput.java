@@ -21,59 +21,53 @@
 
 package com.microsoft.applicationinsights.core.volume;
 
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.common.Transmission;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
-
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-import com.microsoft.applicationinsights.internal.channel.common.Transmission;
-
 import org.apache.commons.io.IOUtils;
 
-/**
- * Created by gupele on 2/4/2015.
- */
+/** Created by gupele on 2/4/2015. */
 final class FakeTransmissionOutput implements TransmissionOutput {
-    private volatile AtomicInteger counter = null;
+  private final TestResultsVerifier testResultsVerifier;
+  private volatile AtomicInteger counter = null;
 
-    private final TestResultsVerifier testResultsVerifier;
+  public FakeTransmissionOutput(TestResultsVerifier testResultsVerifier) {
+    this.testResultsVerifier = testResultsVerifier;
+  }
 
-    public FakeTransmissionOutput(TestResultsVerifier testResultsVerifier) {
-        this.testResultsVerifier = testResultsVerifier;
-    }
+  public TestResultsVerifier getTestResultsVerifier() {
+    return testResultsVerifier;
+  }
 
-    public TestResultsVerifier getTestResultsVerifier() {
-        return testResultsVerifier;
-    }
-
-    @Override
-    public boolean send(Transmission transmission) {
-        ByteArrayOutputStream out = null;
+  @Override
+  public boolean send(Transmission transmission) {
+    ByteArrayOutputStream out = null;
+    try {
+      out = new ByteArrayOutputStream();
+      IOUtils.copy(new GZIPInputStream(new ByteArrayInputStream(transmission.getContent())), out);
+      String[] strings = new String(out.toByteArray()).split(System.getProperty("line.separator"));
+      testResultsVerifier.notifyEventsArrival(strings.length);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException(e);
+    } finally {
+      if (out != null) {
         try {
-            out = new ByteArrayOutputStream();
-            IOUtils.copy(new GZIPInputStream(new ByteArrayInputStream(transmission.getContent())), out);
-            String[] strings = new String(out.toByteArray()).split(System.getProperty("line.separator"));
-            testResultsVerifier.notifyEventsArrival(strings.length);
-        } catch(Exception e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+          out.close();
+        } catch (IOException e) {
+          e.printStackTrace();
         }
-
-        return true;
+      }
     }
 
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-    }
+    return true;
+  }
+
+  @Override
+  public void stop(long timeout, TimeUnit timeUnit) {}
 }

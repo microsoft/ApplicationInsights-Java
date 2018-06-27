@@ -1,4 +1,3 @@
-
 ext {
-	appServerShortName = 'tomcat8'
+    appServerShortName = 'tomcat8'
 }

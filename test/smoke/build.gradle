@@ -1,33 +1,32 @@
-
 apply plugin: 'base'
 
 allprojects {
-	ext {
-		sharedOutputRoot = project(':test:smoke').projectDir.absolutePath+'/shared-tmp'
-		sharedResourcesDir = "$sharedOutputRoot/resources"
-	}
+    ext {
+        sharedOutputRoot = project(':test:smoke').projectDir.absolutePath + '/shared-tmp'
+        sharedResourcesDir = "$sharedOutputRoot/resources"
+    }
 }
 
 subprojects {
-	ext {
-		/* 	
-			By default, the Applciation Insights jars are built and used by the smokeTests.
-			To use different jars for smokeTests, reassign these variables to point the path to the jar using this 'files' function.
-			For example,
-				aiCoreJar = files('c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar')
-		*/
-		aiAgentJar = project(':agent')
-		aiCoreJar = project(':core')
-		aiWebJar =  project(':web')
-		aiLog4j1_2Jar = project(':logging:log4j1_2')
-		aiLo4j2Jar = project(':logging:log4j2')
-		aiLogbackJar = project(':logging:logback')
-		springBootStarterJar = project(':azure-application-insights-spring-boot-starter')
-	}
+    ext {
+        /* 	
+            By default, the Applciation Insights jars are built and used by the smokeTests.
+            To use different jars for smokeTests, reassign these variables to point the path to the jar using this 'files' function.
+            For example,
+                aiCoreJar = files('c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar')
+        */
+        aiAgentJar = project(':agent')
+        aiCoreJar = project(':core')
+        aiWebJar = project(':web')
+        aiLog4j1_2Jar = project(':logging:log4j1_2')
+        aiLo4j2Jar = project(':logging:log4j2')
+        aiLogbackJar = project(':logging:logback')
+        springBootStarterJar = project(':azure-application-insights-spring-boot-starter')
+    }
 }
 
 clean {
-	delete file(sharedOutputRoot)
+    delete file(sharedOutputRoot)
 }
 
 defaultTasks 'build'

@@ -10,30 +10,31 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
 
-	@Autowired
-	TelemetryClient client;
+  @Autowired TelemetryClient client;
 
-	@GetMapping("/")
-	public String rootPage() {
-		return "OK";
-	}
+  @GetMapping("/")
+  public String rootPage() {
+    return "OK";
+  }
 
-	@GetMapping("/basic/trackEvent")
-	public String trackEventSpringBoot() {
-		Map<String, String> properties = new HashMap<String, String>() {
-			{
-				put("key", "value");
-			}
-		};
-		Map<String, Double> metrics = new HashMap<String, Double>() {
-			{
-				put("key", 1d);
-			}
-		};
+  @GetMapping("/basic/trackEvent")
+  public String trackEventSpringBoot() {
+    Map<String, String> properties =
+        new HashMap<String, String>() {
+          {
+            put("key", "value");
+          }
+        };
+    Map<String, Double> metrics =
+        new HashMap<String, Double>() {
+          {
+            put("key", 1d);
+          }
+        };
 
-		//Event
-		client.trackEvent("EventDataTest");
-		client.trackEvent("EventDataPropertyTest", properties, metrics);
-		return "hello";
-	}
+    // Event
+    client.trackEvent("EventDataTest");
+    client.trackEvent("EventDataPropertyTest", properties, metrics);
+    return "hello";
+  }
 }

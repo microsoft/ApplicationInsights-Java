@@ -4,7 +4,7 @@ dependencies {
     compile aiCoreJar
     compile aiWebJar
     compile 'com.google.guava:guava:20.0'
-    
+
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 
     providedRuntime 'mysql:mysql-connector-java:5.1.44'
