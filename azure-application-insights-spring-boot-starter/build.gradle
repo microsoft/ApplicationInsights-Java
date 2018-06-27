@@ -44,8 +44,8 @@ sourceSets {
 }
 
 dependencies {
-    compile (project(':core'))
-    compile (project(':web'))
+    compile(project(':core'))
+    compile(project(':web'))
     provided('org.springframework.boot:spring-boot:1.5.9.RELEASE')
     provided('org.springframework.boot:spring-boot-autoconfigure:1.5.9.RELEASE')
     provided('org.springframework.boot:spring-boot-starter-web:1.5.9.RELEASE')

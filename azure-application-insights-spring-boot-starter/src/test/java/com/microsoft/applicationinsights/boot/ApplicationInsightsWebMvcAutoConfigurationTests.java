@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.boot;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 import org.junit.Test;
@@ -38,42 +40,37 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * @author Arthur Gavlyukovskiy
- */
+/** @author Arthur Gavlyukovskiy */
 @SpringBootTest(
-        properties = {
-                "spring.test.mockmvc: true",
-                "spring.application.name: test-application",
-                "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000"
-        },
-        classes = {
-                EmbeddedServletContainerAutoConfiguration.class,
-                ServerPropertiesAutoConfiguration.class,
-                DispatcherServletAutoConfiguration.class,
-                HttpMessageConvertersAutoConfiguration.class,
-                WebMvcAutoConfiguration.class,
-                MockMvcAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class,
-                ApplicationInsightsTelemetryAutoConfiguration.class,
-                ApplicationInsightsWebMvcAutoConfiguration.class
-        },
-        webEnvironment = WebEnvironment.RANDOM_PORT
+  properties = {
+    "spring.test.mockmvc: true",
+    "spring.application.name: test-application",
+    "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000"
+  },
+  classes = {
+    EmbeddedServletContainerAutoConfiguration.class,
+    ServerPropertiesAutoConfiguration.class,
+    DispatcherServletAutoConfiguration.class,
+    HttpMessageConvertersAutoConfiguration.class,
+    WebMvcAutoConfiguration.class,
+    MockMvcAutoConfiguration.class,
+    PropertyPlaceholderAutoConfiguration.class,
+    ApplicationInsightsTelemetryAutoConfiguration.class,
+    ApplicationInsightsWebMvcAutoConfiguration.class
+  },
+  webEnvironment = WebEnvironment.RANDOM_PORT
 )
 @RunWith(SpringRunner.class)
 public class ApplicationInsightsWebMvcAutoConfigurationTests {
 
-    @Autowired
-    private ApplicationContext context;
+  @Autowired private ApplicationContext context;
 
-    @Test
-    public void shouldRegisterWebRequestTrackingFilter() {
-        WebRequestTrackingFilter webRequestTrackingFilter = context.getBean(WebRequestTrackingFilter.class);
+  @Test
+  public void shouldRegisterWebRequestTrackingFilter() {
+    WebRequestTrackingFilter webRequestTrackingFilter =
+        context.getBean(WebRequestTrackingFilter.class);
 
-        assertThat(webRequestTrackingFilter).extracting("appName").contains("test-application");
-        assertThat(QuickPulse.INSTANCE).extracting("initialized").contains(true);
-    }
-
+    assertThat(webRequestTrackingFilter).extracting("appName").contains("test-application");
+    assertThat(QuickPulse.INSTANCE).extracting("initialized").contains(true);
+  }
 }

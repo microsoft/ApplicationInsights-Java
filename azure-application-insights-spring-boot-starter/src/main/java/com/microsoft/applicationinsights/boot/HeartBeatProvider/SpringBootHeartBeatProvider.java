@@ -16,24 +16,21 @@ import org.springframework.core.SpringVersion;
 import org.springframework.core.env.Environment;
 
 /**
+ *
+ *
  * <h1>SpringBoot Heartbeat Property Provider</h1>
- * <p>
- *   This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface}
- *   It enables setting SpringBoot Metadata to heartbeat payload.
- * </p>
+ *
+ * <p>This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface} It
+ * enables setting SpringBoot Metadata to heartbeat payload.
  *
  * @author Dhaval Doshi
  */
 public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInterface {
 
-  /**
-   * Collection holding default properties for this default provider.
-   */
+  /** Collection holding default properties for this default provider. */
   private final Set<String> defaultFields;
 
-  /**
-   * Name of this provider.
-   */
+  /** Name of this provider. */
   private final String name = "SpringBootProvider";
 
   private final Environment environment;
@@ -44,8 +41,6 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
 
   private final String SPRING_BOOT_STARTER_VERSION = "ai.spring.boot.starter.version";
 
-
-
   public SpringBootHeartBeatProvider(Environment environment) {
     defaultFields = new HashSet<>();
     this.environment = environment;
@@ -53,7 +48,6 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
   }
 
   @Override
-
   public String getName() {
     return this.name;
   }
@@ -64,11 +58,12 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
   }
 
   @Override
-  public Callable<Boolean> setDefaultPayload(final List<String> disableFields,
-      final HeartBeatProviderInterface provider) {
+  public Callable<Boolean> setDefaultPayload(
+      final List<String> disableFields, final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
       Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
+
       @Override
       public Boolean call() {
         boolean hasSetValues = false;
@@ -86,14 +81,14 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
               case SPRING_BOOT_STARTER_VERSION:
                 provider.addHeartBeatProperty(fieldName, getSpringBootStarterVersionNumber(), true);
               default:
-                //We won't accept unknown properties in default providers.
+                // We won't accept unknown properties in default providers.
                 InternalLogger.INSTANCE.trace("Encountered unknown default property");
                 break;
             }
-          }
-          catch (Exception e) {
-            InternalLogger.INSTANCE.warn("Failed to obtain heartbeat property, stack trace"
-                + "is: %s", ExceptionUtils.getStackTrace(e));
+          } catch (Exception e) {
+            InternalLogger.INSTANCE.warn(
+                "Failed to obtain heartbeat property, stack trace" + "is: %s",
+                ExceptionUtils.getStackTrace(e));
           }
         }
         return hasSetValues;
@@ -103,6 +98,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
 
   /**
    * This method initializes the collection with Default Properties of this provider.
+   *
    * @param defaultFields collection to hold default properties.
    */
   private void initializeDefaultFields(Set<String> defaultFields) {
@@ -113,6 +109,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
 
   /**
    * Gets the version of SpringBoot
+   *
    * @return returns springboot version string
    */
   private String getSpringBootVersion() {
@@ -121,6 +118,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
 
   /**
    * Gets the Spring Framework version
+   *
    * @return the SpringFrameWork version String
    */
   private String getSpringVersion() {
@@ -129,6 +127,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
 
   /**
    * Gets the AI SpringBoot starter version number
+   *
    * @return the AI SpringBoot starter version number
    */
   private String getSpringBootStarterVersionNumber() {
@@ -138,5 +137,4 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
     }
     return "undefined";
   }
-
 }

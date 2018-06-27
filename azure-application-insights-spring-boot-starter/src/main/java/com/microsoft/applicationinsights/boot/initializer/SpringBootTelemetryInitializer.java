@@ -6,18 +6,18 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
+ *
+ *
  * <h1>TelemetryInitializer to set the CloudRoleName Instance</h1>
  *
- * <p>
- *  This Telemetry Initializer is used to auto-configure cloud_RoleName field
- *  to get a logical component on AppMap.
- * </p>
+ * <p>This Telemetry Initializer is used to auto-configure cloud_RoleName field to get a logical
+ * component on AppMap.
  *
  * @author Dhaval Doshi
  */
 public class SpringBootTelemetryInitializer implements TelemetryInitializer {
 
-  /** The Logical Name of SpringBoot Application*/
+  /** The Logical Name of SpringBoot Application */
   @Value("${spring.application.name:application}")
   String appName;
 
@@ -27,5 +27,4 @@ public class SpringBootTelemetryInitializer implements TelemetryInitializer {
     DeviceContext device = telemetry.getContext().getDevice();
     device.setRoleName(appName);
   }
-
 }

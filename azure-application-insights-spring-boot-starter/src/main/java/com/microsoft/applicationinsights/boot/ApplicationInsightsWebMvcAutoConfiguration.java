@@ -38,38 +38,42 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 
 /**
+ *
+ *
  * <h1>Configuration for Auto-collection of HTTP requests.</h1>
  *
- * <p>
- *   This class is responsible for configuring {@link WebRequestTrackingFilter} for auto collection
- *   of incoming HTTP requests
- * </p>
+ * <p>This class is responsible for configuring {@link WebRequestTrackingFilter} for auto collection
+ * of incoming HTTP requests
  *
  * @author Arthur Gavlyukovskiy
  */
-
 @Configuration
 @Import(InterceptorRegistry.class)
 @ConditionalOnBean(TelemetryConfiguration.class)
 @ConditionalOnWebApplication
-@ConditionalOnProperty(value = "azure.application-insights.web.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+  value = "azure.application-insights.web.enabled",
+  havingValue = "true",
+  matchIfMissing = true
+)
 @AutoConfigureAfter(ApplicationInsightsTelemetryAutoConfiguration.class)
 public class ApplicationInsightsWebMvcAutoConfiguration {
 
-    @Bean
-    public FilterRegistrationBean webRequestTrackingFilterRegistrationBean(WebRequestTrackingFilter webRequestTrackingFilter) {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(webRequestTrackingFilter);
-        registration.addUrlPatterns("/*");
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
-        return registration;
-    }
+  @Bean
+  public FilterRegistrationBean webRequestTrackingFilterRegistrationBean(
+      WebRequestTrackingFilter webRequestTrackingFilter) {
+    FilterRegistrationBean registration = new FilterRegistrationBean();
+    registration.setFilter(webRequestTrackingFilter);
+    registration.addUrlPatterns("/*");
+    registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
+    return registration;
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    @DependsOn("telemetryConfiguration")
-    public WebRequestTrackingFilter webRequestTrackingFilter(@Value("${spring.application.name:application}") String applicationName) {
-        return new WebRequestTrackingFilter(applicationName);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  @DependsOn("telemetryConfiguration")
+  public WebRequestTrackingFilter webRequestTrackingFilter(
+      @Value("${spring.application.name:application}") String applicationName) {
+    return new WebRequestTrackingFilter(applicationName);
+  }
 }
-

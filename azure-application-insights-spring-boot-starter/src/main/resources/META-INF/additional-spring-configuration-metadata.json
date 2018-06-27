@@ -62,7 +62,7 @@
     },
     {
       "name": "azure.application-insights.default.modules.JvmPerformanceCountersModule.enabled",
-      "type":"java.lang.Boolean",
+      "type": "java.lang.Boolean",
       "description": "Enable JvmPerformanceCountersModule.",
       "defaultValue": true
     }

@@ -13,6 +13,7 @@ Release/
 ipch/
 classpath.txt
 javaconfig.json
+pom.xml
 
 # Eclipse
 .classpath

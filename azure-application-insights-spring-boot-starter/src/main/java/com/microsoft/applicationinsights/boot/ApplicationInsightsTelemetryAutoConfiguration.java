@@ -26,14 +26,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel.InProcess;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
-import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
@@ -53,7 +51,10 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 
 /**
- * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration} </h1>
+ *
+ *
+ * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration}
+ * </h1>
  *
  * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
@@ -62,133 +63,138 @@ import org.springframework.context.annotation.Import;
 @EnableConfigurationProperties(ApplicationInsightsProperties.class)
 @ConditionalOnClass(TelemetryConfiguration.class)
 @Import({
-        ApplicationInsightsModuleConfiguration.class,
-        ApplicationInsightsWebModuleConfiguration.class
+  ApplicationInsightsModuleConfiguration.class,
+  ApplicationInsightsWebModuleConfiguration.class
 })
 public class ApplicationInsightsTelemetryAutoConfiguration {
 
-    private static final Logger log = getLogger(ApplicationInsightsTelemetryAutoConfiguration.class);
+  private static final Logger log = getLogger(ApplicationInsightsTelemetryAutoConfiguration.class);
 
-    private ApplicationInsightsProperties applicationInsightsProperties;
+  private ApplicationInsightsProperties applicationInsightsProperties;
 
-    private Collection<ContextInitializer> contextInitializers;
+  private Collection<ContextInitializer> contextInitializers;
 
-    private Collection<TelemetryInitializer> telemetryInitializers;
+  private Collection<TelemetryInitializer> telemetryInitializers;
 
-    private Collection<TelemetryModule> telemetryModules;
+  private Collection<TelemetryModule> telemetryModules;
 
-    private Collection<TelemetryProcessor> telemetryProcessors;
+  private Collection<TelemetryProcessor> telemetryProcessors;
 
-    @Autowired
-    public ApplicationInsightsTelemetryAutoConfiguration(
-        ApplicationInsightsProperties applicationInsightsProperties) {
-        this.applicationInsightsProperties = applicationInsightsProperties;
+  @Autowired
+  public ApplicationInsightsTelemetryAutoConfiguration(
+      ApplicationInsightsProperties applicationInsightsProperties) {
+    this.applicationInsightsProperties = applicationInsightsProperties;
+  }
+
+  @Autowired(required = false)
+  public void setContextInitializers(Collection<ContextInitializer> contextInitializers) {
+    this.contextInitializers = contextInitializers;
+  }
+
+  @Autowired(required = false)
+  public void setTelemetryInitializers(Collection<TelemetryInitializer> telemetryInitializers) {
+    this.telemetryInitializers = telemetryInitializers;
+  }
+
+  @Autowired(required = false)
+  public void setTelemetryModules(Collection<TelemetryModule> telemetryModules) {
+    this.telemetryModules = telemetryModules;
+  }
+
+  @Autowired(required = false)
+  public void setTelemetryProcessors(Collection<TelemetryProcessor> telemetryProcessors) {
+    this.telemetryProcessors = telemetryProcessors;
+  }
+
+  @Bean
+  @DependsOn("internalLogger")
+  public TelemetryConfiguration telemetryConfiguration(TelemetryChannel telemetryChannel) {
+    TelemetryConfiguration telemetryConfiguration =
+        TelemetryConfiguration.getActiveWithoutInitializingConfig();
+    telemetryConfiguration.setTrackingIsDisabled(!applicationInsightsProperties.isEnabled());
+    telemetryConfiguration.setInstrumentationKey(
+        applicationInsightsProperties.getInstrumentationKey());
+    if (contextInitializers != null) {
+      telemetryConfiguration.getContextInitializers().addAll(contextInitializers);
     }
-
-    @Autowired(required = false)
-    public void setContextInitializers(
-        Collection<ContextInitializer> contextInitializers) {
-        this.contextInitializers = contextInitializers;
+    if (telemetryInitializers != null) {
+      telemetryConfiguration.getTelemetryInitializers().addAll(telemetryInitializers);
     }
-
-    @Autowired(required = false)
-    public void setTelemetryInitializers(
-        Collection<TelemetryInitializer> telemetryInitializers) {
-        this.telemetryInitializers = telemetryInitializers;
+    if (telemetryModules != null) {
+      telemetryConfiguration.getTelemetryModules().addAll(telemetryModules);
     }
-
-    @Autowired(required = false)
-    public void setTelemetryModules(
-        Collection<TelemetryModule> telemetryModules) {
-        this.telemetryModules = telemetryModules;
+    if (telemetryProcessors != null) {
+      telemetryConfiguration.getTelemetryProcessors().addAll(telemetryProcessors);
     }
+    telemetryConfiguration.setChannel(telemetryChannel);
+    initializeComponents(telemetryConfiguration);
+    return telemetryConfiguration;
+  }
 
-    @Autowired(required = false)
-    public void setTelemetryProcessors(
-        Collection<TelemetryProcessor> telemetryProcessors) {
-        this.telemetryProcessors = telemetryProcessors;
+  // TODO: copy-paste from TelemetryConfigurationFactory, move to TelemetryConfiguration?
+  private void initializeComponents(TelemetryConfiguration configuration) {
+    List<TelemetryModule> telemetryModules = configuration.getTelemetryModules();
+
+    for (TelemetryModule module : telemetryModules) {
+      try {
+        module.initialize(configuration);
+      } catch (Exception e) {
+        log.error("Failed to initialized telemetry module " + module.getClass().getSimpleName(), e);
+      }
     }
+  }
 
-    @Bean
-    @DependsOn("internalLogger")
-    public TelemetryConfiguration telemetryConfiguration(TelemetryChannel telemetryChannel) {
-        TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
-        telemetryConfiguration.setTrackingIsDisabled(!applicationInsightsProperties.isEnabled());
-        telemetryConfiguration.setInstrumentationKey(applicationInsightsProperties.getInstrumentationKey());
-        if (contextInitializers != null) {
-            telemetryConfiguration.getContextInitializers().addAll(contextInitializers);
-        }
-        if (telemetryInitializers != null) {
-            telemetryConfiguration.getTelemetryInitializers().addAll(telemetryInitializers);
-        }
-        if (telemetryModules != null) {
-            telemetryConfiguration.getTelemetryModules().addAll(telemetryModules);
-        }
-        if (telemetryProcessors != null) {
-            telemetryConfiguration.getTelemetryProcessors().addAll(telemetryProcessors);
-        }
-        telemetryConfiguration.setChannel(telemetryChannel);
-        initializeComponents(telemetryConfiguration);
-        return telemetryConfiguration;
+  @Bean
+  public TelemetryClient telemetryClient(TelemetryConfiguration configuration) {
+    return new TelemetryClient(configuration);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public TelemetryChannel telemetryChannel() {
+    InProcess inProcess = applicationInsightsProperties.getChannel().getInProcess();
+    return new InProcessTelemetryChannel(
+        inProcess.getEndpointAddress(),
+        String.valueOf(inProcess.getMaxTransmissionStorageFilesCapacityInMb()),
+        inProcess.isDeveloperMode(),
+        inProcess.getMaxTelemetryBufferCapacity(),
+        inProcess.getFlushIntervalInSeconds(),
+        inProcess.isThrottling(),
+        inProcess.getMaxInstantRetry());
+  }
+
+  @Bean
+  @ConditionalOnProperty(
+    value = "azure.application-insights.quick-pulse.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  @DependsOn("telemetryConfiguration")
+  public QuickPulse quickPulse() {
+    QuickPulse.INSTANCE.initialize();
+    return QuickPulse.INSTANCE;
+  }
+
+  @Bean
+  public InternalLogger internalLogger() {
+    Map<String, String> loggerParameters = new HashMap<>();
+    ApplicationInsightsProperties.Logger logger = applicationInsightsProperties.getLogger();
+    loggerParameters.put("Level", logger.getLevel().name());
+    InternalLogger.INSTANCE.initialize(logger.getType().name(), loggerParameters);
+    return InternalLogger.INSTANCE;
+  }
+
+  @Bean
+  public PerformanceCounterContainer performanceCounterContainer() {
+    ApplicationInsightsProperties.PerformanceCounter performanceCounter =
+        applicationInsightsProperties.getPerformanceCounter();
+    PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(
+        performanceCounter.getCollectionFrequencyInSeconds());
+
+    ApplicationInsightsProperties.Jmx jmx = applicationInsightsProperties.getJmx();
+    if (jmx.getJmxCounters() != null && jmx.getJmxCounters().size() > 0) {
+      applicationInsightsProperties.processAndLoadJmxCounters(jmx.getJmxCounters());
     }
-
-    // TODO: copy-paste from TelemetryConfigurationFactory, move to TelemetryConfiguration?
-    private void initializeComponents(TelemetryConfiguration configuration) {
-        List<TelemetryModule> telemetryModules = configuration.getTelemetryModules();
-
-        for (TelemetryModule module : telemetryModules) {
-            try {
-                module.initialize(configuration);
-            }
-            catch (Exception e) {
-                log.error("Failed to initialized telemetry module " + module.getClass().getSimpleName(), e);
-            }
-        }
-    }
-
-    @Bean
-    public TelemetryClient telemetryClient(TelemetryConfiguration configuration) {
-        return new TelemetryClient(configuration);
-    }
-
-
-
-    @Bean
-    @ConditionalOnMissingBean
-    public TelemetryChannel telemetryChannel() {
-        InProcess inProcess = applicationInsightsProperties.getChannel().getInProcess();
-        return new InProcessTelemetryChannel(inProcess.getEndpointAddress(),
-                String.valueOf(inProcess.getMaxTransmissionStorageFilesCapacityInMb()), inProcess.isDeveloperMode(),
-                inProcess.getMaxTelemetryBufferCapacity(), inProcess.getFlushIntervalInSeconds(), inProcess.isThrottling(),
-            inProcess.getMaxInstantRetry());
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.quick-pulse.enabled", havingValue = "true", matchIfMissing = true)
-    @DependsOn("telemetryConfiguration")
-    public QuickPulse quickPulse() {
-        QuickPulse.INSTANCE.initialize();
-        return QuickPulse.INSTANCE;
-    }
-
-    @Bean
-    public InternalLogger internalLogger() {
-        Map<String, String> loggerParameters = new HashMap<>();
-        ApplicationInsightsProperties.Logger logger = applicationInsightsProperties.getLogger();
-        loggerParameters.put("Level", logger.getLevel().name());
-        InternalLogger.INSTANCE.initialize(logger.getType().name(), loggerParameters);
-        return InternalLogger.INSTANCE;
-    }
-
-    @Bean
-    public PerformanceCounterContainer performanceCounterContainer() {
-        ApplicationInsightsProperties.PerformanceCounter performanceCounter = applicationInsightsProperties.getPerformanceCounter();
-        PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceCounter.getCollectionFrequencyInSeconds());
-
-        ApplicationInsightsProperties.Jmx jmx = applicationInsightsProperties.getJmx();
-        if (jmx.getJmxCounters() !=null && jmx.getJmxCounters().size() > 0) {
-            applicationInsightsProperties.processAndLoadJmxCounters(jmx.getJmxCounters());
-        }
-        return PerformanceCounterContainer.INSTANCE;
-    }
+    return PerformanceCounterContainer.INSTANCE;
+  }
 }

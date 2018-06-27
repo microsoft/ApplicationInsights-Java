@@ -37,106 +37,154 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 /**
+ *
+ *
  * <h1>Web Configuration for Application Insights</h1>
  *
- * <p>
- *   This class provides the configuration for applications of type web. The modules in this class
- *   will only be configured if the Spring Framework identifies them as web Application.
- * </p>
- *
- * {@link Configuration} for web applications.
+ * <p>This class provides the configuration for applications of type web. The modules in this class
+ * will only be configured if the Spring Framework identifies them as web Application. {@link
+ * Configuration} for web applications.
  *
  * @author Arthur Gavlyukovskiy
  */
 @Configuration
-@ConditionalOnProperty(value = "azure.application-insights.web.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+  value = "azure.application-insights.web.enabled",
+  havingValue = "true",
+  matchIfMissing = true
+)
 @ConditionalOnWebApplication
 public class ApplicationInsightsWebModuleConfiguration {
 
   /**
    * Bean for WebRequestTrackingTelemetryModule
+   *
    * @return instance of {@link WebRequestTrackingTelemetryModule}
    */
-    @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
-    public WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
-        return new WebRequestTrackingTelemetryModule();
-    }
+  @Bean
+  @ConditionalOnProperty(
+    value = "azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
+    return new WebRequestTrackingTelemetryModule();
+  }
 
   /**
    * Bean for WebSessionTrackingTelemetryModule
+   *
    * @return instance of {@link WebSessionTrackingTelemetryModule}
    */
   @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebSessionTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
-    public WebSessionTrackingTelemetryModule webSessionTrackingTelemetryModule() {
-        return new WebSessionTrackingTelemetryModule();
-    }
+  @ConditionalOnProperty(
+    value = "azure.application-insights.default-modules.WebSessionTrackingTelemetryModule.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebSessionTrackingTelemetryModule webSessionTrackingTelemetryModule() {
+    return new WebSessionTrackingTelemetryModule();
+  }
 
   /**
    * Bean for WebUserTrackingTelemetryModule
+   *
    * @return instance of {@link WebUserTrackingTelemetryModule}
    */
   @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebUserTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
-    public WebUserTrackingTelemetryModule webUserTrackingTelemetryModule() {
-        return new WebUserTrackingTelemetryModule();
-    }
+  @ConditionalOnProperty(
+    value = "azure.application-insights.default-modules.WebUserTrackingTelemetryModule.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebUserTrackingTelemetryModule webUserTrackingTelemetryModule() {
+    return new WebUserTrackingTelemetryModule();
+  }
 
   /**
    * Bean for WebPerformanceCounterModule
+   *
    * @return instance of {@link WebPerformanceCounterModule}
    */
   @Bean
-    @DependsOn("performanceCounterContainer")
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebPerformanceCounterModule.enabled", havingValue = "true", matchIfMissing = true)
-    public WebPerformanceCounterModule webPerformanceCounterModule() {
-        return new WebPerformanceCounterModule();
-    }
+  @DependsOn("performanceCounterContainer")
+  @ConditionalOnProperty(
+    value = "azure.application-insights.default-modules.WebPerformanceCounterModule.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebPerformanceCounterModule webPerformanceCounterModule() {
+    return new WebPerformanceCounterModule();
+  }
 
   /**
    * Bean for WebOperationIdTelemetryInitializer
+   *
    * @return instance of {@link WebOperationIdTelemetryInitializer}
    */
   @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebOperationIdTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebOperationIdTelemetryInitializer webOperationIdTelemetryInitializer() {
-        return new WebOperationIdTelemetryInitializer();
-    }
+  @ConditionalOnProperty(
+    value = "azure.application-insights.default-modules.WebOperationIdTelemetryInitializer.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebOperationIdTelemetryInitializer webOperationIdTelemetryInitializer() {
+    return new WebOperationIdTelemetryInitializer();
+  }
 
-    @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebOperationNameTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebOperationNameTelemetryInitializer webOperationNameTelemetryInitializer() {
-        return new WebOperationNameTelemetryInitializer();
-    }
+  @Bean
+  @ConditionalOnProperty(
+    value =
+        "azure.application-insights.default-modules.WebOperationNameTelemetryInitializer.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebOperationNameTelemetryInitializer webOperationNameTelemetryInitializer() {
+    return new WebOperationNameTelemetryInitializer();
+  }
 
   /**
    * Bean for WebSessionTelemetryInitializer
+   *
    * @return instance of {@link WebSessionTelemetryInitializer}
    */
   @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebSessionTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebSessionTelemetryInitializer webSessionTelemetryInitializer() {
-        return new WebSessionTelemetryInitializer();
-    }
+  @ConditionalOnProperty(
+    value = "azure.application-insights.default-modules.WebSessionTelemetryInitializer.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebSessionTelemetryInitializer webSessionTelemetryInitializer() {
+    return new WebSessionTelemetryInitializer();
+  }
 
   /**
    * Bean for WebUserTelemetryInitializer
+   *
    * @return instance of {@link WebUserTelemetryInitializer}
    */
   @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebUserTelemetryInitializer webUserTelemetryInitializer() {
-        return new WebUserTelemetryInitializer();
-    }
+  @ConditionalOnProperty(
+    value = "azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebUserTelemetryInitializer webUserTelemetryInitializer() {
+    return new WebUserTelemetryInitializer();
+  }
 
   /**
    * Bean for WebUserAgentTelemetryInitializer
+   *
    * @return instance of {@link WebUserAgentTelemetryInitializer}
    */
   @Bean
-    @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebUserAgentTelemetryInitializer webUserAgentTelemetryInitializer() {
-        return new WebUserAgentTelemetryInitializer();
-    }
+  @ConditionalOnProperty(
+    value = "azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled",
+    havingValue = "true",
+    matchIfMissing = true
+  )
+  public WebUserAgentTelemetryInitializer webUserAgentTelemetryInitializer() {
+    return new WebUserAgentTelemetryInitializer();
+  }
 }
