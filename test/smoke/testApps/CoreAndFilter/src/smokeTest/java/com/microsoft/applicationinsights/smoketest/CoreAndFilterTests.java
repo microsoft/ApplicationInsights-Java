@@ -276,4 +276,11 @@ public class CoreAndFilterTests extends AiSmokeTest {
         final String expectedName = "This is a auto thrown exception !";
         assertEquals(expectedName, eDetails.getMessage());
     }
+
+    @Test
+    @TargetUri("/index.jsp")
+    public void testRequestJSP() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+    }
+
 }
