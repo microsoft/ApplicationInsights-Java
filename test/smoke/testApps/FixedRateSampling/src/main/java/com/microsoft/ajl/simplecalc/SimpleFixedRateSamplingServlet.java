@@ -27,6 +27,11 @@ public class SimpleFixedRateSamplingServlet extends HttpServlet {
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
         client.trackTrace("Trace Test.");
-        client.trackEvent("Event Test.");
+        int i = 0;
+        while (i < 100) {
+            String str = String.format("Event Test %s", i);
+            client.trackEvent(str);
+            i++;
+        }        
     }
 }
