@@ -47,12 +47,6 @@ public final class TransmissionFileSystemOutputTest {
     private final static String MOCK_ENCODING_TYPE_BASE = "MockEncodingType";
     private final static int SIZE_OF_MOCK_TRANSMISSION = 1;
 
-    private final String workingFolder;
-
-    public TransmissionFileSystemOutputTest() {
-        workingFolder = new File(LocalFileSystemUtils.getTempDir(), TEMP_TEST_FOLDER).getAbsolutePath();
-    }
-
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
