@@ -35,6 +35,11 @@ import org.junit.rules.TemporaryFolder;
 
 public final class TransmissionFileSystemOutputTest {
     private final static String TRANSMISSION_FILE_EXTENSION = "trn";
+
+    // This is derived from the following relationship
+    // 100 Bytes -> fill 394 bytes of file
+    // So by doing the math to fill 1 MB with 3 transmission each size of transmission should be the
+    // following
     private final static int SIZE_OF_TRANSMISSION_CONTENT = 349525;
     private final static String TEMP_TEST_FOLDER = "TransmissionTests";
     private final static String MOCK_CONTENT = "MockContent";
