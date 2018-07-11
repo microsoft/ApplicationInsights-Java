@@ -21,34 +21,34 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-
-import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import org.apache.commons.io.FileUtils;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
+import java.io.File;
+import java.util.Collection;
+import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
 public final class TransmissionFileSystemOutputTest {
     private final static String TRANSMISSION_FILE_EXTENSION = "trn";
-    private final static int SIZE_OF_TRANSMISSION_CONTENT = 100;
+
+    // This is derived from the following relationship
+    // 100 Bytes -> fill 394 bytes of file
+    // So by doing the math to fill 1 MB with 3 transmission each size of transmission should be the
+    // following
+    private final static int SIZE_OF_TRANSMISSION_CONTENT = 349525;
     private final static String TEMP_TEST_FOLDER = "TransmissionTests";
     private final static String MOCK_CONTENT = "MockContent";
     private final static String MOCK_CONTENT_TYPE_BASE = "MockContent";
     private final static String MOCK_ENCODING_TYPE_BASE = "MockEncodingType";
     private final static int SIZE_OF_MOCK_TRANSMISSION = 1;
 
-    private final String workingFolder;
-
-    public TransmissionFileSystemOutputTest() {
-        workingFolder = new File(LocalFileSystemUtils.getTempDir(), TEMP_TEST_FOLDER).getAbsolutePath();
-    }
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Test
     public void testSuccessfulSendOneFile() throws Exception {
@@ -71,13 +71,12 @@ public final class TransmissionFileSystemOutputTest {
     }
 
     @Test
-    @Ignore("The test needs further debugging on the build machine")
     public void testFetchOldestFiles() throws Exception {
-        File folder = createFolderForTest();
+        File folder = tmpFolder.newFolder(TEMP_TEST_FOLDER);
         try {
-            TransmissionFileSystemOutput tested = new TransmissionFileSystemOutput(workingFolder);
+            TransmissionFileSystemOutput tested = new TransmissionFileSystemOutput(folder.getAbsolutePath());
 
-            for (int i = 10; i != 0; --i) {
+            for (int i = 1; i <= 10; ++i) {
                 String iAsString = String.valueOf(i);
                 String content = MOCK_CONTENT + iAsString;
                 tested.send(new Transmission(content.getBytes(), MOCK_CONTENT_TYPE_BASE + iAsString, MOCK_ENCODING_TYPE_BASE + iAsString));
@@ -88,10 +87,10 @@ public final class TransmissionFileSystemOutputTest {
                 assertNotNull(transmission);
 
                 String iAsString = String.valueOf(i);
-                assertEquals(String.format("Wrong WebContentType %s", transmission.getWebContentType()), transmission.getWebContentType(), MOCK_CONTENT_TYPE_BASE + iAsString);
-                assertEquals(String.format("Wrong WebContentEncodingType %s", transmission.getWebContentEncodingType()), transmission.getWebContentEncodingType(), MOCK_ENCODING_TYPE_BASE + iAsString);
+                assertEquals(String.format("Wrong WebContentType %s", transmission.getWebContentType()), MOCK_CONTENT_TYPE_BASE + iAsString, transmission.getWebContentType());
+                assertEquals(String.format("Wrong WebContentEncodingType %s", transmission.getWebContentEncodingType()), MOCK_ENCODING_TYPE_BASE + iAsString, transmission.getWebContentEncodingType());
                 String fetchedContent = new String(transmission.getContent());
-                assertEquals(String.format("Wrong content %s", fetchedContent), fetchedContent, MOCK_CONTENT + iAsString);
+                assertEquals(String.format("Wrong content %s", fetchedContent), MOCK_CONTENT + iAsString, fetchedContent);
             }
 
             Transmission transmission = tested.fetchOldestFile();
@@ -108,15 +107,16 @@ public final class TransmissionFileSystemOutputTest {
     }
 
     private TransmissionFileSystemOutput testSuccessfulSends(int amount, int expectedSuccess, Integer capacity, File testFolder) throws Exception {
-        File folder = testFolder == null ? createFolderForTest() : testFolder;
+        File folder = testFolder == null ? tmpFolder.newFolder(TEMP_TEST_FOLDER) : testFolder;
         TransmissionFileSystemOutput tested = null;
         try {
-            tested = createAndSend(amount, capacity);
+            tested = createAndSend(folder.getAbsolutePath(), amount, capacity);
 
             Collection<File> transmissions = FileUtils.listFiles(folder, new String[]{TRANSMISSION_FILE_EXTENSION}, false);
 
             assertNotNull(transmissions);
-            assertEquals(transmissions.size(), expectedSuccess);
+            assertEquals(expectedSuccess, transmissions.size());
+
         } finally {
             if (testFolder == null && folder.exists()) {
                 FileUtils.deleteDirectory(folder);
@@ -126,12 +126,12 @@ public final class TransmissionFileSystemOutputTest {
         return tested;
     }
 
-    private TransmissionFileSystemOutput createAndSend(int amount, Integer capacity) {
+    private TransmissionFileSystemOutput createAndSend(String absoulutePath, int amount, Integer capacity) {
         TransmissionFileSystemOutput tested = null;
         if (capacity != null) {
-            tested = new TransmissionFileSystemOutput(workingFolder, String.valueOf(capacity));;
+            tested = new TransmissionFileSystemOutput(absoulutePath, String.valueOf(capacity));;
         } else {
-            tested = new TransmissionFileSystemOutput(workingFolder);
+            tested = new TransmissionFileSystemOutput(absoulutePath);
         }
 
         for (int i = 0; i < amount; ++i) {
@@ -139,17 +139,5 @@ public final class TransmissionFileSystemOutputTest {
         }
 
         return tested;
-    }
-
-    private File createFolderForTest() throws IOException {
-        File folder = new File(workingFolder);
-        if (folder.exists()) {
-            FileUtils.deleteDirectory(folder);
-        }
-        if (!folder.exists()) {
-            folder.mkdir();
-        }
-
-        return folder;
     }
 }
