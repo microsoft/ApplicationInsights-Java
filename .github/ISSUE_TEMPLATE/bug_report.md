@@ -14,7 +14,7 @@ Describe what actually happened that was unexpected.
 Steps to reproduce the behavior:
 
 **System information**
-Please complete the following information:
+Please provide the following information:
  - SDK Version: 
  - OS type and version:
  - Application Server type and version (if applicable):
