@@ -4,16 +4,19 @@ about: Create a report to help us improve
 
 ---
 
-**Expected behavior**
+### Expected behavior
 Describe what you expected to happen.
 
-**Actual behavior**
+### Actual behavior
 Describe what actually happened that was unexpected.
 
-**To Reproduce**
+### To Reproduce
 Steps to reproduce the behavior:
 
-**System information**
+#### Sample Application
+If applicable, provide a sample application which reproduces the issue.
+
+### System information
 Please provide the following information:
  - SDK Version: 
  - OS type and version:
@@ -21,8 +24,10 @@ Please provide the following information:
  - Using spring-boot?
  - Additional relevant libraries (with version, if applicable):
 
-**Logs**
+### Logs
 [Turn on SDK logs](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-troubleshoot#debug-data-from-the-sdk) and attach/paste them to the issue. If using an application server, also attach any relevant server logs.
 
-**Screenshots**
+_Be sure to remove any private information from the logs before posting!_
+
+### Screenshots
 If applicable, add screenshots to help explain your problem.
