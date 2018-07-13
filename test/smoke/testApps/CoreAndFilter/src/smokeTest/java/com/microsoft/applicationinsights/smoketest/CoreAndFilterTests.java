@@ -13,8 +13,10 @@ import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
+
 import org.junit.*;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -257,7 +259,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         RequestData rd1 = getTelemetryDataForType(0, "RequestData");
         long actual = rd1.getDuration().getTotalMilliseconds();
         long expected = (new Duration(0, 0, 0, 20, 0).getTotalMilliseconds());
-        assertTrue(actual >= expected);
+        long tolerance = 2 * 1000; // 2 seconds
+        assertThat(actual, both(greaterThanOrEqualTo(expected - tolerance)).and(lessThan(expected + tolerance)));
     }
 
     @Ignore // See github issue #600. This should pass when that is fixed.
