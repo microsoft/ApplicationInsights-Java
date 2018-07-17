@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 
@@ -18,7 +18,7 @@ public class FixedRateSamplingTest extends AiSmokeTest {
     @TargetUri(value = "/fixedRateSampling", delay = 10000)
     public void testFixedRateSamplingInIncludedTypes() {
         int count = mockedIngestion.getCountForType("EventData");
-        //assertEquals(1, mockedIngestion.getCountForType("EventData"));
+        assertTrue(40 <= count && 60 >= count);
         assertEquals(50.0, getSampleRate("EventData", 0), 0);
     }
 
