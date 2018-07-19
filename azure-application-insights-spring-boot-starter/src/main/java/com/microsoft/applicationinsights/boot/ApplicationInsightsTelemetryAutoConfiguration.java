@@ -26,14 +26,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel.InProcess;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
-import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
@@ -41,6 +39,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -180,8 +179,10 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         return InternalLogger.INSTANCE;
     }
 
-    @Bean
-    public PerformanceCounterContainer performanceCounterContainer() {
+    // Configure properties of PerformanceCounter Container. Since this is ENUM type we do not need
+    // a bean for this.
+    @PostConstruct
+    public void initializePerformanceCounterContainer() {
         ApplicationInsightsProperties.PerformanceCounter performanceCounter = applicationInsightsProperties.getPerformanceCounter();
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceCounter.getCollectionFrequencyInSeconds());
 
@@ -189,6 +190,5 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         if (jmx.getJmxCounters() !=null && jmx.getJmxCounters().size() > 0) {
             applicationInsightsProperties.processAndLoadJmxCounters(jmx.getJmxCounters());
         }
-        return PerformanceCounterContainer.INSTANCE;
     }
 }

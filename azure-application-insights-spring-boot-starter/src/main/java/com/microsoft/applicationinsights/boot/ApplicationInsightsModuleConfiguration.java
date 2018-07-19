@@ -31,7 +31,6 @@ import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionCon
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatPayloadProviderInterface;
-import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartbeatDefaultPayload;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
@@ -41,7 +40,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
 
 /**
@@ -102,7 +100,6 @@ public class ApplicationInsightsModuleConfiguration {
     //FIXME: This should be conditional on operating System. However, current architecture of ProcessBuiltInPerformanceCountersFactory
     //FIXME: does not separate this concerns therefore cannot condition as of now.
     @Bean
-    @DependsOn("performanceCounterContainer")
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled", havingValue = "true", matchIfMissing = true)
     public ProcessPerformanceCountersModule processPerformanceCountersModule() {
         try {
@@ -119,7 +116,6 @@ public class ApplicationInsightsModuleConfiguration {
      * @return instance of {@link JvmPerformanceCountersModule}
      */
     @Bean
-    @DependsOn("performanceCounterContainer")
     @ConditionalOnProperty(value = "azure.application-insights.default.modules.JvmPerformanceCountersModule.enabled", havingValue = "true", matchIfMissing = true)
     public JvmPerformanceCountersModule jvmPerformanceCountersModule() {
         try {
