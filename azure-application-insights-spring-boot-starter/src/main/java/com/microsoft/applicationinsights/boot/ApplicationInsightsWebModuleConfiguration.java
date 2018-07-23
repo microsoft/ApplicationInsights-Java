@@ -34,7 +34,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 
 /**
  * <h1>Web Configuration for Application Insights</h1>
@@ -88,7 +87,6 @@ public class ApplicationInsightsWebModuleConfiguration {
    * @return instance of {@link WebPerformanceCounterModule}
    */
   @Bean
-    @DependsOn("performanceCounterContainer")
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebPerformanceCounterModule.enabled", havingValue = "true", matchIfMissing = true)
     public WebPerformanceCounterModule webPerformanceCounterModule() {
         return new WebPerformanceCounterModule();

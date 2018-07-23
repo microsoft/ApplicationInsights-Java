@@ -250,7 +250,7 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
             ApplicationInsightsTelemetryAutoConfiguration.class);
         context.refresh();
 
-        PerformanceCounterContainer counterContainer = context.getBean(PerformanceCounterContainer.class);
+        PerformanceCounterContainer counterContainer = PerformanceCounterContainer.INSTANCE;
         Field field = counterContainer.getClass().getDeclaredField("performanceCounters");
         field.setAccessible(true);
         Map<String, PerformanceCounter> map = (Map<String, PerformanceCounter>)field.get(counterContainer);
