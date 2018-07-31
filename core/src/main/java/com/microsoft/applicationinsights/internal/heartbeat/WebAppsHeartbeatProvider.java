@@ -145,7 +145,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
    */
 
   private String getWebsiteHostName() {
-    return environmentMap.get("WEBSITE_HOSTNAME ");
+    return environmentMap.get("WEBSITE_HOSTNAME");
   }
 
   /**
