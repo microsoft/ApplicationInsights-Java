@@ -6,7 +6,7 @@ option java_package = "com.microsoft.localforwarder.library.inputs.contracts";
 option java_multiple_files = true;
 
 import "StackFrame.proto";
-import "include/google/protobuf/wrappers.proto";
+import "google/protobuf/wrappers.proto";
 
 message ExceptionDetails {
 	int32 id = 1;
