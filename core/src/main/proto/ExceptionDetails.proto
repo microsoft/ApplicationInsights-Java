@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+
+import "StackFrame.proto";
+import "include/google/protobuf/wrappers.proto";
+
+message ExceptionDetails {
+	int32 id = 1;
+    
+	int32 outerId = 2;
+    
+	string typeName = 3;
+    
+	string message = 4;
+    
+	// the default is true
+	google.protobuf.BoolValue hasFullStack = 5;
+    
+	string stack = 6;
+    
+	repeated StackFrame parsedStack = 7;
+
+}

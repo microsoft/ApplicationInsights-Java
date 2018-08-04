@@ -1,0 +1,19 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+
+import "include/google/protobuf/duration.proto";
+import "Event.proto";
+
+message PageView {
+	Event event = 1;
+
+	string url = 2;
+    
+	google.protobuf.Duration duration = 3;
+    
+	string id = 4;
+    
+	string referrerUri = 5;
+}

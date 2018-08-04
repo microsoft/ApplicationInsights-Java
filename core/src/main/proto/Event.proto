@@ -1,0 +1,14 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+
+message Event {
+	int32 ver = 1;
+
+	string name = 2;
+
+	map<string, string> properties = 3;
+
+	map<string, double> measurements = 4;
+}

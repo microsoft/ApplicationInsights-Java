@@ -1,0 +1,26 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+
+import "include/google/protobuf/duration.proto";
+
+message Availability {
+	int32 ver = 1;
+    
+	string id  = 2;
+    
+	string name = 3;
+    
+	google.protobuf.Duration duration = 4;
+    
+	bool success = 5;
+    
+	string runLocation = 6;
+    
+	string message = 7;
+    
+	map<string, string> properties = 8;
+    
+	map<string, double> measurements = 9;
+}

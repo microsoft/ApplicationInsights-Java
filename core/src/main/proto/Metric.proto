@@ -1,0 +1,15 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+
+import "DataPoint.proto";
+
+message Metric {
+	int32 ver = 1;
+    
+	// only one metric in the list is currently supported by Application Insights storage. If multiple data points were sent only the first one will be used.
+	repeated DataPoint metrics = 2;
+    
+	map<string, string> properties = 3;
+}

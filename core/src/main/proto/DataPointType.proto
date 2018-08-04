@@ -1,0 +1,10 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+
+enum DataPointType
+{
+	Measurement = 0;
+	Aggregation = 1;
+}
