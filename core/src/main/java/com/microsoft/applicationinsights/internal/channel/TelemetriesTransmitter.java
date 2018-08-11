@@ -40,14 +40,14 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/17/2014.
  */
-public interface TelemetriesTransmitter {
-    public interface TelemetriesFetcher {
-        Collection<String> fetch();
+public interface TelemetriesTransmitter<T> {
+    public interface TelemetriesFetcher<T> {
+        Collection<T> fetch();
     }
 
     boolean scheduleSend(TelemetriesFetcher telemetriesFetcher, long value, TimeUnit timeUnit);
 
-    boolean sendNow(Collection<String> telemetries);
+    boolean sendNow(Collection<T> telemetries);
 
     void stop(long timeout, TimeUnit timeUnit);
 }

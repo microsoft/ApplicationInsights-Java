@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -161,6 +162,26 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
         envelope.setTags(context.getTags());
 
         envelope.serialize(writer);
+    }
+
+    /**
+     * THIS IS FOR DEBUGGING AND TESTING ONLY!
+     * DON'T USE THIS IN HAPPY-PATH, PRODUCTION CODE.
+     *
+     * @return Json representation of this telemetry item.
+     */
+    @Override
+    public String toString() {
+        StringWriter sw = new StringWriter();
+        try {
+            JsonTelemetryDataSerializer jtds = new JsonTelemetryDataSerializer(sw);
+            this.serialize(jtds);
+            jtds.close();
+            return sw.toString();
+        } catch (IOException e) {
+            // shouldn't happen with a string writer
+            throw new RuntimeException("Error serializing "+this.getClass().getSimpleName()+" toString", e);
+        }
     }
 
     @Override

@@ -50,7 +50,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmitterImpl implements TelemetriesTransmitter {
+public final class TransmitterImpl implements TelemetriesTransmitter<String> {
     private static abstract class SendHandler {
         protected final TransmissionDispatcher transmissionDispatcher;
 

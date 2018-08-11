@@ -21,12 +21,8 @@
 
 package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
-import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
-import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
+import com.microsoft.applicationinsights.channel.concrete.ATelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
@@ -38,8 +34,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -62,37 +57,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  *
  * <p>Created by gupele on 12/17/2014.
  */
-public final class InProcessTelemetryChannel implements TelemetryChannel {
-
-  private static final String INSTANT_RETRY_NAME = "MaxInstantRetry";
-  public static final int DEFAULT_MAX_INSTANT_RETRY = 3;
-  public static final int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;
-  private static final int MIN_MAX_TELEMETRY_BUFFER_CAPACITY = 1;
-  private static final int MAX_MAX_TELEMETRY_BUFFER_CAPACITY = 1000;
-  private static final String MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME = "MaxTelemetryBufferCapacity";
-
-  public static final int DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 5;
-  private static final int MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 1;
-  private static final int MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 300;
-  private static final String FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME = "FlushIntervalInSeconds";
-
-    private final static String DEVELOPER_MODE_SYSTEM_PROPRETY_NAME = "APPLICATION_INSIGHTS_DEVELOPER_MODE";
-
-    private final static String DEVELOPER_MODE_NAME = "DeveloperMode";
-    private final static String ENDPOINT_ADDRESS_NAME = "EndpointAddress";
-    private final static String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "MaxTransmissionStorageFilesCapacityInMB";
-
-    private boolean developerMode = false;
-    private static TransmitterFactory s_transmitterFactory;
-
-    private boolean stopped = false;
-
-    private TelemetriesTransmitter telemetriesTransmitter;
-
-    private TelemetryBuffer telemetryBuffer;
-    private TelemetrySampler telemetrySampler;
-
-    private static AtomicLong itemsSent = new AtomicLong(0);
+public final class InProcessTelemetryChannel extends ATelemetryChannel<String> {
 
     public InProcessTelemetryChannel() {
         boolean developerMode = false;
@@ -210,47 +175,8 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         maxInstantRetries);
   }
 
-    /**
-     * Gets value indicating whether this channel is in developer mode.
-     */
     @Override
-    public boolean isDeveloperMode() {
-        return developerMode;
-    }
-
-    /**
-     * Sets value indicating whether this channel is in developer mode.
-     *
-	 * @param developerMode
-	 *            True or false
-     */
-    @Override
-    public void setDeveloperMode(boolean developerMode) {
-        if (developerMode != this.developerMode) {
-            this.developerMode = developerMode;
-            int maxTelemetriesInBatch = this.developerMode ? 1 : DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
-
-            setMaxTelemetriesInBatch(maxTelemetriesInBatch);
-        }
-    }
-
-    /**
-     * Sends a Telemetry instance through the channel.
-     */
-    @Override
-    public void send(Telemetry telemetry) {
-        Preconditions.checkNotNull(telemetry, "Telemetry item must be non null");
-
-        if (isDeveloperMode()) {
-            telemetry.getContext().getProperties().put("DeveloperMode", "true");
-        }
-
-        if (telemetrySampler != null) {
-            if (!telemetrySampler.isSampledIn(telemetry)) {
-                return;
-            }
-        }
-
+    protected boolean doSend(Telemetry telemetry) {
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = null;
         try {
@@ -260,100 +186,16 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
             String asJson = writer.toString();
             telemetryBuffer.add(asJson);
             telemetry.reset();
-            if (itemsSent.incrementAndGet() % 10000 == 0) {
-                InternalLogger.INSTANCE.info("items sent till now %d", itemsSent.get());
-            }
 
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
             InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
-            return;
+            return false;
         }
-
-        if (isDeveloperMode()) {
-            writeTelemetryToDebugOutput(telemetry);
-        }
+        return true;
     }
 
-    /**
-     * Stops on going work
-     */
-    @Override
-    public synchronized void stop(long timeout, TimeUnit timeUnit) {
-        try {
-            if (stopped) {
-                return;
-            }
-
-            telemetriesTransmitter.stop(timeout, timeUnit);
-            stopped = true;
-        } catch (ThreadDeath td) {
-        	throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-    }
-
-    /**
-     * Flushes the data that the channel might have internally.
-     */
-    @Override
-    public void flush() {
-        telemetryBuffer.flush();
-    }
-
-    /**
-	 * Sets an optional Sampler that can sample out telemetries Currently, we don't
-	 * allow to replace a valid telemtry sampler.
-     *
-	 * @param telemetrySampler
-	 *            - The sampler
-     */
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
-        if (this.telemetrySampler == null) {
-            this.telemetrySampler = telemetrySampler;
-        }
-    }
-
-    /**
-     * Sets the buffer size
-     *
-	 * @param maxTelemetriesInBatch
-	 *            should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and
-	 *            MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive if the number is lower
-	 *            than the minimum then the minimum will be used if the number is
-	 *            higher than the maximum then the maximum will be used
-     */
-    public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch) {
-        telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
-    }
-
-    /**
-     * Sets the time tow wait before flushing the internal buffer
-     *
-	 * @param transmitBufferTimeoutInSeconds
-	 *            should be between MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS and
-	 *            MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS inclusive if the number is
-	 *            lower than the minimum then the minimum will be used if the number
-	 *            is higher than the maximum then the maximum will be used
-     */
-    public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds) {
-        telemetryBuffer.setTransmitBufferTimeoutInSeconds(transmitBufferTimeoutInSeconds);
-    }
-
-    private void writeTelemetryToDebugOutput(Telemetry telemetry) {
-        InternalLogger.INSTANCE.trace("InProcessTelemetryChannel sending telemetry");
-    }
-
-	private synchronized void initialize(String endpointAddress, String maxTransmissionStorageCapacity,
+    private synchronized void initialize(String endpointAddress, String maxTransmissionStorageCapacity,
 			boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
 			LimitsEnforcer sendIntervalInSeconds, boolean throttling) {
 		initialize(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer,
@@ -366,7 +208,7 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         if (s_transmitterFactory == null) {
-            s_transmitterFactory = new InProcessTelemetryChannelFactory();
+            s_transmitterFactory = new InProcessTelemetryTransmitterFactory();
         }
 
 		telemetriesTransmitter = s_transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity,
@@ -414,4 +256,5 @@ public final class InProcessTelemetryChannel implements TelemetryChannel {
 
         return sendIntervalInSecondsEnforcer;
     }
+
 }
