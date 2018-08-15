@@ -15,6 +15,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 // FIXME better name?
+
+/**
+ *
+ * @param <T> The type of the telemetry being stored in the buffer.
+ */
 public abstract class ATelemetryChannel<T> implements TelemetryChannel {
     public static final int DEFAULT_MAX_INSTANT_RETRY = 3;
     public static final int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;

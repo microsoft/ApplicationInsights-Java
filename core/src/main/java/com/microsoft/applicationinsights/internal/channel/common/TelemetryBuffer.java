@@ -78,7 +78,7 @@ public final class TelemetryBuffer<T> {
     }
 
     /// The sender we use to send Telemetry containers
-    private final TelemetriesTransmitter sender;
+    private final TelemetriesTransmitter<T> sender;
 
     /// The maximum amount of Telemetries in a batch. If the buffer is
     /// full before the timeout expired, we will need to send it anyway and not wait for the timeout to expire
@@ -103,7 +103,7 @@ public final class TelemetryBuffer<T> {
      * @param maxTelemetriesInBatchEnforcer For getting the number of maximum number of telemetries in a batch within limits
      * @param transmitBufferTimeoutInSecondsEnforcer For getting the number of transmit buffer timeout in seconds within limits
      */
-    public TelemetryBuffer(TelemetriesTransmitter sender, LimitsEnforcer maxTelemetriesInBatchEnforcer, LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer) {
+    public TelemetryBuffer(TelemetriesTransmitter<T> sender, LimitsEnforcer maxTelemetriesInBatchEnforcer, LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer) {
         Preconditions.checkNotNull(sender, "sender must be non-null value");
         Preconditions.checkNotNull(maxTelemetriesInBatchEnforcer, "maxTelemetriesInBatchEnforcer must be non-null value");
         Preconditions.checkNotNull(transmitBufferTimeoutInSecondsEnforcer, "transmitBufferTimeoutInSecondsEnforcer must be non-null value");
@@ -112,7 +112,7 @@ public final class TelemetryBuffer<T> {
 
         this.maxTelemetriesInBatchEnforcer = maxTelemetriesInBatchEnforcer;
         this.maxTelemetriesInBatch = maxTelemetriesInBatchEnforcer.getCurrentValue();
-        telemetries = new ArrayList<T>(this.maxTelemetriesInBatch);
+        telemetries = new ArrayList<>(this.maxTelemetriesInBatch);
 
         this.sender = sender;
         this.transmitBufferTimeoutInSecondsEnforcer = transmitBufferTimeoutInSecondsEnforcer;
