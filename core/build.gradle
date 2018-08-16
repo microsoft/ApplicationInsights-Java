@@ -35,6 +35,21 @@ apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
 apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
+def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
+
+def generatedDir = 'generated'
+def generatedPath = "src/main/$generatedDir"
+
+idea {
+    module {
+        generatedSourceDirs = [ file(generatedPath) ]
+
+        sourceDirs += file('src/main/java')
+        sourceDirs += file(generatedPath)
+    }
+}
 
 protobuf {
     protoc {
@@ -48,13 +63,34 @@ protobuf {
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                java { }
+                java {
+                    outputSubDir = generatedDir
+                }
             }
             task.plugins {
-                grpc { }
+                grpc {
+                    outputSubDir = generatedDir
+                }
             }
         }
     }
+    generatedFilesBaseDir = "${projectDir}/src/"
+}
+
+sourceSets {
+    main {
+        output.dir(generatedPath, builtBy: 'generateProto')
+        java {
+            srcDirs generatedPath
+        }
+        resources {
+            srcDir sdkVersionFileDir
+        }
+    }
+}
+
+clean {
+    delete 'src/main/generated'
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -116,21 +152,12 @@ jar {
     enabled = false
 }
 
-def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
 task generateVersionProperties(type: PropsFileGen) {
     targetFile = new File(sdkVersionFileDir, "sdk-version.properties")
     property "version", project.version
 }
 
 processResources.dependsOn generateVersionProperties
-
-sourceSets {
-    main {
-        resources {
-            srcDir sdkVersionFileDir
-        }
-    }
-}
 
 // region Publishing properties
 

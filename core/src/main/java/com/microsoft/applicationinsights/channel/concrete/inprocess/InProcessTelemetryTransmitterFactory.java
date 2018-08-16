@@ -34,10 +34,6 @@ import com.microsoft.applicationinsights.internal.channel.common.*;
  */
 final class InProcessTelemetryTransmitterFactory implements TransmitterFactory {
 	private final int DEFAULT_RETRY = 3;
-	@Override
-	public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled) {
-		return create(endpoint, maxTransmissionStorageCapacity, throttlingIsEnabled, DEFAULT_RETRY);
-	}
     @Override
     public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);     	

@@ -30,14 +30,6 @@ public interface TransmitterFactory<T> {
 	 * @param endpoint HTTP Endpoint to send telemetry to
 	 * @param maxTransmissionStorageCapacity Max amount of disk space in KB for persistent storage to use
 	 * @param throttlingIsEnabled Allow the network telemetry sender to be throttled 
-	 * @return The {@link TelemetriesTransmitter} object
-	 */
-    TelemetriesTransmitter<T> create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled);
-	/** 
-	 * Creates the {@link TelemetriesTransmitter} for use by the {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
-	 * @param endpoint HTTP Endpoint to send telemetry to
-	 * @param maxTransmissionStorageCapacity Max amount of disk space in KB for persistent storage to use
-	 * @param throttlingIsEnabled Allow the network telemetry sender to be throttled 
 	 * @param maxInstantRetries Number of instant retries in case of a temporary network outage
 	 * @return The {@link TelemetriesTransmitter} object
 	 */

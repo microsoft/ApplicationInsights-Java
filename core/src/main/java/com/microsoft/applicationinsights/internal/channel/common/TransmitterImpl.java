@@ -79,9 +79,9 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
     }
 
     private static final class ScheduledSendHandler extends SendHandler implements Runnable {
-        private final TelemetriesFetcher telemetriesFetcher;
+        private final TelemetriesFetcher<String> telemetriesFetcher;
 
-        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher telemetriesFetcher, TelemetrySerializer serializer) {
+        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher<String> telemetriesFetcher, TelemetrySerializer serializer) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetriesFetcher, "telemetriesFetcher should be a non-null value");
