@@ -37,13 +37,13 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Metric";
+    public static final String ENVELOPE_NAME = "Metric";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "MetricData";
+    public static final String BASE_TYPE = "MetricData";
 
     /**
      * Default constructor
@@ -54,6 +54,11 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         metric = new DataPoint();
         initialize(data.getProperties());
         data.getMetrics().add(metric);
+    }
+
+    @Override
+    public int getVer() {
+        return getData().getVer();
     }
 
     /**
@@ -209,4 +214,9 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     public String getBaseTypeName() {
         return BASE_TYPE;
     }
+
+    public DataPointType getKind() {
+        return metric.getKind();
+    }
+
 }

@@ -42,13 +42,13 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Exception";
+    public static final String ENVELOPE_NAME = "Exception";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "ExceptionData";
+    public static final String BASE_TYPE = "ExceptionData";
 
 
     private ExceptionTelemetry() {
@@ -73,6 +73,11 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
      */
     public ExceptionTelemetry(Throwable exception) {
         this(exception, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public int getVer() {
+        return getData().getVer();
     }
 
     public Exception getException() {
@@ -150,7 +155,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         return data;
     }
 
-    protected List<ExceptionDetails> getExceptions() {
+    public List<ExceptionDetails> getExceptions() {
         return data.getExceptions();
     }
 
@@ -241,5 +246,9 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     @Override
     public String getBaseTypeName() {
         return BASE_TYPE;
+    }
+
+    public String getProblemId() {
+        return getData().getProblemId();
     }
 }

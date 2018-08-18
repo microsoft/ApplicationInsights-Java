@@ -44,7 +44,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private Date timestamp;
     private String sequence;
     
-    private final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
+    public static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
     protected BaseTelemetry() {
     }
@@ -57,6 +57,8 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     protected void initialize(ConcurrentMap<String, String> properties) {
         this.context = new TelemetryContext(properties, new ConcurrentHashMap<String, String>());
     }
+
+    public abstract int getVer();
 
     /**
      * Sequence field used to track absolute order of uploaded events.
@@ -205,15 +207,15 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     protected void setSampleRate(Envelope envelope) {
     }
 
-    protected String getEnvelopName() {
+    public String getEnvelopName() {
         throw new UnsupportedOperationException();
     }
 
-    protected String getBaseTypeName() {
+    public String getBaseTypeName() {
         throw new UnsupportedOperationException();
     }
     
-    private String normalizeInstrumentationKey(String instrumentationKey){
+    public static String normalizeInstrumentationKey(String instrumentationKey){
     	if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
     		return "";
     	}
@@ -222,7 +224,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     	}
     }
     
-    private String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
+    public static String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
     	return String.format(
     			"%s%s%s",
     			TELEMETRY_NAME_PREFIX,
