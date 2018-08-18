@@ -29,7 +29,6 @@ import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
@@ -64,8 +63,8 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
     protected static final int LOG_TELEMETRY_ITEMS_MODULUS = 10000;
     protected static final String THROTTLING_ENABLED_NAME = "Throttling";
 
-    private static volatile TransmitterFactory s_transmitterFactory;
-    private static AtomicLong itemsSent = new AtomicLong(0);
+    private TransmitterFactory transmitterFactory;
+    private AtomicLong itemsSent = new AtomicLong(0);
 
     protected boolean stopped = false;
 
@@ -195,21 +194,18 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
                                        LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
         makeSureEndpointAddressIsValid(endpointAddress);
 
+
         telemetriesTransmitter = getTransmitterFactory().create(endpointAddress, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
         telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);
     }
 
-    protected TransmitterFactory<T> getTransmitterFactory() {
-        if (s_transmitterFactory == null) {
-            synchronized (ATelemetryChannel.class) {
-                if (s_transmitterFactory == null) {
-                    s_transmitterFactory = createTransmitterFactory();
-                }
-            }
+    protected synchronized TransmitterFactory<T> getTransmitterFactory() {
+        if (transmitterFactory == null) {
+            transmitterFactory = createTransmitterFactory();
         }
-        return s_transmitterFactory;
+        return transmitterFactory;
     }
 
     /**
@@ -374,12 +370,12 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
 
     /**
 	 * The method will throw IllegalArgumentException if the endpointAddress is not
-	 * a valid uri Please note that a null or empty string is valid as far as the
+	 * a valid URI. Please note that a null or empty string is valid as far as the
 	 * class is concerned and thus considered valid
      *
      * @param endpointAddress
      */
-    private void makeSureEndpointAddressIsValid(String endpointAddress) {
+    protected void makeSureEndpointAddressIsValid(String endpointAddress) {
         if (Strings.isNullOrEmpty(endpointAddress)) {
             return;
         }
