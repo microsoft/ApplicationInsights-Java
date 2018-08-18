@@ -478,7 +478,9 @@ public enum TelemetryConfigurationFactory {
                 return true;
             } else {
                 InternalLogger.INSTANCE.error("Failed to create '%s'", channelName);
-                return false;
+                if (!InProcessTelemetryChannel.class.getCanonicalName().equals(channelName)) {
+                    return false;
+                }
             }
         }
 
