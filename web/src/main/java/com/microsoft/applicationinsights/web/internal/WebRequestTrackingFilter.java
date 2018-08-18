@@ -182,7 +182,7 @@ public final class WebRequestTrackingFilter implements Filter {
      * Destroy the filter by releases resources.
      */
     public void destroy() {
-        //add code to release any resource
+        cleanup();
     }
 
     // endregion Public
