@@ -863,7 +863,7 @@ public class ContextTagKeys
         InternalSdkVersion = "ai.internal.sdkVersion";
         InternalAgentVersion = "ai.internal.agentVersion";
         SyntheticSource = "ai.operation.syntheticSource";
-        InternalNodeName = "ai.internal.nodename";
+        InternalNodeName = "ai.internal.nodeName";
     }
 
 } // class ContextTagKeys
