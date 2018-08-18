@@ -108,7 +108,7 @@ public final class TelemetryConfiguration {
      * Gets the telemetry channel.
      * @return An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      */
-    public TelemetryChannel getChannel() {
+    public synchronized TelemetryChannel getChannel() {
         return channel;
     }
 
@@ -116,7 +116,7 @@ public final class TelemetryConfiguration {
      * Sets the telemetry channel.
      * @param channel An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      */
-    public void setChannel(TelemetryChannel channel) {
+    public synchronized void setChannel(TelemetryChannel channel) {
         this.channel = channel;
     }
 
