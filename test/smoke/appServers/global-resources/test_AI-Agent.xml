@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationInsightsAgent>
+    <Instrumentation>
+        <BuiltIn enabled="true">
+            <Jedis enabled="true" thresholdInMs="1" />
+            <JDBC enabled="true" />
+            <HTTP enabled="true"/>
+            <MaxStatementQueryLimitInMS>1000</MaxStatementQueryLimitInMS>
+        </BuiltIn>
+
+        <Class name="com.microsoft.ajl.simplecalc">
+            <Method name="doGet" 
+                reportCaughtExceptions="true" 
+                reportExecutionTime="true" />
+        </Class>
+    </Instrumentation>
+    <AgentLogger />
+</ApplicationInsightsAgent>

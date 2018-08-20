@@ -6,7 +6,8 @@ dependencies {
     compile 'com.google.guava:guava:20.0'
 
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
-
+    
+    compile 'redis.clients:jedis:2.9.0'
     smokeTestCompile 'com.google.guava:guava:23.0'
     testCompile 'com.google.guava:guava:23.0' // VSCODE workaround for intellisense bug
 }

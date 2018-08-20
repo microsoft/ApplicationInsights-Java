@@ -8,22 +8,27 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.Duration;
+import redis.clients.jedis.Jedis;
 
 /**
  * Servlet implementation class SimpleTrackDependencyAndExceptionServlet
  */
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/trackData" })
-public class SimpleTrackDependencyAndExceptionServlet extends HttpServlet {    
-	private static final long serialVersionUID = -7496476539225639976L;
-	private TelemetryClient client = new TelemetryClient();
+public class SimpleTrackDependencyAndExceptionServlet extends HttpServlet {
+    private static final long serialVersionUID = -7496476539225639976L;
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ServletFuncs.getRrenderHtml(request, response);
-        Exception exception = new Exception("This is track exception.");
-        client.trackException(exception);
-        client.trackDependency("AgentDependencyTest", "commandName", new Duration(0, 0, 1, 1, 1), true);
+
+        try {
+            String redisHostname = System.getenv("REDIS");
+            Jedis jedis = new Jedis(redisHostname, 6379);
+            jedis.set("foo", "bar");
+        } catch (Exception e) {
+            //TODO: handle exception
+            e.printStackTrace();
+        }
+
     }
 }
