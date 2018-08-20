@@ -135,12 +135,10 @@ public enum TelemetryConfigurationFactory {
 
             TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
             boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
-            if (channelIsConfigured) {
-                configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
-            } else {
-                InternalLogger.INSTANCE.warn("No channel was initialized. Tracking will be disabled.");
-                configuration.setTrackingIsDisabled(true);
+            if (!channelIsConfigured) {
+                InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
             }
+            configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
 
             setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
             setTelemetryInitializers(applicationInsightsConfig.getTelemetryInitializers(), configuration);

@@ -30,6 +30,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.nop.NopTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
@@ -403,7 +404,7 @@ public final class TelemetryConfigurationFactoryTest {
     public void testEmptyConfiguration() {
         TelemetryConfiguration emptyConfig = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         Assert.assertEquals(null, emptyConfig.getInstrumentationKey());
-        Assert.assertEquals(null, emptyConfig.getChannel());
+        Assert.assertSame(NopTelemetryChannel.instance(), emptyConfig.getChannel());
         Assert.assertEquals(0, emptyConfig.getTelemetryModules().size());
         Assert.assertEquals(false, emptyConfig.isTrackingDisabled());
         Assert.assertEquals(0, emptyConfig.getContextInitializers().size());

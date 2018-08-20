@@ -505,12 +505,7 @@ public class TelemetryClient {
      */
     TelemetryChannel getChannel() {
         if (this.channel == null) {
-            TelemetryChannel tc = configuration.getChannel();
-            if (tc == null) {
-                this.channel = new NopTelemetryChannel();
-            } else {
-                this.channel = tc;
-            }
+            this.channel = configuration.getChannel();
         }
 
         return this.channel;

@@ -10,6 +10,23 @@ import java.util.concurrent.TimeUnit;
  * Null-object implementation of TelemetryChannel. Used when a custom channel is misconfigured.
  */
 public class NopTelemetryChannel implements TelemetryChannel {
+
+    private static volatile NopTelemetryChannel INSTANCE;
+
+    private NopTelemetryChannel() {
+    }
+
+    public static NopTelemetryChannel instance() {
+        if (INSTANCE == null) {
+            synchronized (NopTelemetryChannel.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new NopTelemetryChannel();
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
     @Override
     public boolean isDeveloperMode() {
         // doesn't matter
