@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -49,6 +50,15 @@ public class CustomAiTestCases {
 			@Override
 			public void run() {
 				tclient.trackMetric(name, value);				
+			}
+		};
+	}
+
+	public Runnable getTrackMetric(final MetricTelemetry mt) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				tclient.trackMetric(mt);
 			}
 		};
 	}

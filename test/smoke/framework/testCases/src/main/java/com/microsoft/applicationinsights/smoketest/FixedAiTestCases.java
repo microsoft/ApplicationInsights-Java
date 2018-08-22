@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.smoketest;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -20,13 +21,11 @@ import java.util.Random;
 
 public class FixedAiTestCases {
 
-    private final TelemetryClient tclient;
     private final CustomAiTestCases customCases;
 
 
     public FixedAiTestCases(TelemetryClient tclient) {
-        this.tclient = tclient;
-        this.customCases = new CustomAiTestCases(this.tclient);
+        this.customCases = new CustomAiTestCases(tclient);
     }
 
     private Map<String, String> getPropertyMapForMethod(String method) {
@@ -57,16 +56,33 @@ public class FixedAiTestCases {
         final int count = 2;
         final double min = 123.4;
         final double max = 567.8;
-        // FIXME StdDev.
-        return customCases.getTrackMetric("AiTestMetric_Aggregate", value, count, min, max, getPropertyMapForMethod("Metric_Agg"));
+        final double avg = value/count;
+        final double stdDev = Math.sqrt(((123.4-avg)*(123.4-avg) + (567.8-avg)*(567.8-avg))/count);
+        MetricTelemetry mt = new MetricTelemetry();
+        mt.setName("AiTestMetric_Aggregate");
+        mt.setValue(value);
+        mt.setCount(count);
+        mt.setMin(min);
+        mt.setStandardDeviation(stdDev);
+        for (Entry<String, String> entry : getPropertyMapForMethod("Metric_Agg").entrySet()) {
+            mt.getProperties().put(entry.getKey(), entry.getValue());
+        }
+
+        return customCases.getTrackMetric(mt);
     }
 
     public Runnable getTrackMetric_Measurement() {
-        final double value = 123.4;
+        final double value = 789.0123;
         final int count = 1;
-        final double min = 123.4;
-        final double max = 123.4;
-        return customCases.getTrackMetric("AiTestMetric_Measurement", value, count, min, max, getPropertyMapForMethod("Metric_Mea"));
+        MetricTelemetry mt = new MetricTelemetry();
+        mt.setName("AiTestMetric_Measurement");
+        mt.setValue(value);
+        mt.setCount(count);
+        for (Entry<String, String> entry : getPropertyMapForMethod("Metric_Mea").entrySet()) {
+            mt.getProperties().put(entry.getKey(), entry.getValue());
+        }
+
+        return customCases.getTrackMetric(mt);
     }
 
     public Runnable getTrackException() {
@@ -140,7 +156,7 @@ public class FixedAiTestCases {
             rdt.getProperties().put(entry.getKey(), entry.getValue());
         }
         for (Entry<String, Double> entry : getMetricMapForMethod("Depdenency").entrySet()) {
-            // FIXME remoteDependnecyData needs getMetrics
+            rdt.getMetrics().put(entry.getKey(), entry.getValue());
         }
         return customCases.getTrackDependency(rdt);
     }
@@ -154,13 +170,11 @@ public class FixedAiTestCases {
         pvt.setDuration(1011L);
         pvt.setUrl(URI.create("some-host.somewhere/fake/path/elements/AiTestPageView2.html"));
         
-        // FIXME needs props
         for (Entry<String, String> entry : getPropertyMapForMethod("PageView").entrySet()) {
-
+            pvt.getProperties().put(entry.getKey(), entry.getValue());
         }
-        // FIXME needs metrics
         for (Entry<String, Double> entry : getMetricMapForMethod("PageView").entrySet()) {
-
+            pvt.getMetrics().put(entry.getKey(), entry.getValue());
         }
 
         return customCases.getTrackPageView(pvt);
