@@ -51,7 +51,7 @@ public class FixedAiTestCases {
         return customCases.getTrackTrace("AiTestTrace", SeverityLevel.Warning, getPropertyMapForMethod("Trace"));
     }
 
-    public Runnable getTrackMetric_Aggregate() {
+    public Runnable getTrackMetric_FullAggregate() {
         final double value = (123.4 + 567.8);
         final int count = 2;
         final double min = 123.4;
@@ -59,10 +59,11 @@ public class FixedAiTestCases {
         final double avg = value/count;
         final double stdDev = Math.sqrt(((123.4-avg)*(123.4-avg) + (567.8-avg)*(567.8-avg))/count);
         MetricTelemetry mt = new MetricTelemetry();
-        mt.setName("AiTestMetric_Aggregate");
+        mt.setName("AiTestMetric_FullAggregate");
         mt.setValue(value);
         mt.setCount(count);
         mt.setMin(min);
+        mt.setMax(max);
         mt.setStandardDeviation(stdDev);
         for (Entry<String, String> entry : getPropertyMapForMethod("Metric_Agg").entrySet()) {
             mt.getProperties().put(entry.getKey(), entry.getValue());
@@ -71,11 +72,11 @@ public class FixedAiTestCases {
         return customCases.getTrackMetric(mt);
     }
 
-    public Runnable getTrackMetric_Measurement() {
+    public Runnable getTrackMetric_FullMeasurement() {
         final double value = 789.0123;
         final int count = 1;
         MetricTelemetry mt = new MetricTelemetry();
-        mt.setName("AiTestMetric_Measurement");
+        mt.setName("AiTestMetric_FullMeasurement");
         mt.setValue(value);
         mt.setCount(count);
         for (Entry<String, String> entry : getPropertyMapForMethod("Metric_Mea").entrySet()) {
@@ -84,6 +85,22 @@ public class FixedAiTestCases {
 
         return customCases.getTrackMetric(mt);
     }
+
+    public Runnable getTrackMetric_HelperAggregate() {
+        final double value = (123.4 + 567.8);
+        final int count = 2;
+        final double min = 123.4;
+        final double max = 567.8;
+        final double avg = value/count;
+        final double stdDev = Math.sqrt(((123.4-avg)*(123.4-avg) + (567.8-avg)*(567.8-avg))/count);
+        return customCases.getTrackMetric("AiTestMetric_HelperAgg", value, count, min, max, getPropertyMapForMethod("Metric_Agg"));
+    }
+
+    public Runnable getTrackMetric_HelperMeasurement() {
+        final double value = 789.0123;
+        return customCases.getTrackMetric("AiTestMetric_HelperMeasurement", value);
+    }
+
 
     public Runnable getTrackException() {
         return customCases.getTrackException(new Exception("AiTestException", new Exception("TestExceptionCause")), getPropertyMapForMethod("Exception"), getMetricMapForMethod("Exception"));
@@ -113,7 +130,7 @@ public class FixedAiTestCases {
      * Uses 100 as result code. Success=true
      * @return
      */
-    public Runnable getTrackRequest() {
+    public Runnable getTrackRequest_Full() {
         // name, timestamp, duration, resultCode, success
         RequestTelemetry rt = new RequestTelemetry("AiTestRequest", Date.from(Instant.now()), 147L, "100", true);
         // add props

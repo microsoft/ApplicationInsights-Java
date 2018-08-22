@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.smoketest.FixedAiTestCases;
 import com.microsoft.applicationinsights.testapps.perf.TestCaseRunnableFactory;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -14,16 +15,38 @@ import java.util.Map;
 @WebServlet(urlPatterns = "/track/*")
 public class TrackServlet extends APerfTestServlet {
 	public static final long serialVersionUID = -1L;
-	
+
+	@GuardedBy("lock")
 	private volatile TelemetryClient tc;
+
+	@GuardedBy("lock")
 	private volatile FixedAiTestCases cases;
+
 	private static final Object lock = new Object();
 
 	private final Map<String, TestCaseRunnableFactory> factoryMap = new HashMap<String, TestCaseRunnableFactory>(){{
-		put("metric", new TestCaseRunnableFactory("trackMetric") {
+		put("metric/helper/measurement", new TestCaseRunnableFactory("trackMetric") {
 			@Override
 			public Runnable getRunnable() {
-				return cases.getTrackMetric_Aggregate();
+				return cases.getTrackMetric_HelperMeasurement();
+			}
+		});
+		put("metric/helper/aggregate", new TestCaseRunnableFactory() {
+			@Override
+			protected Runnable getRunnable() {
+				return cases.getTrackMetric_HelperAggregate();
+			}
+		});
+		put("metric/full/aggregate", new TestCaseRunnableFactory("trackMetric_Aggregate") {
+			@Override
+			protected Runnable getRunnable() {
+				return cases.getTrackMetric_FullAggregate();
+			}
+		});
+		put("metric/full/measurement", new TestCaseRunnableFactory() {
+			@Override
+			protected Runnable getRunnable() {
+				return cases.getTrackMetric_FullMeasurement();
 			}
 		});
 		put("event", new TestCaseRunnableFactory("trackEvent") {
@@ -38,10 +61,22 @@ public class TrackServlet extends APerfTestServlet {
 				return cases.getTrackHttpRequest_Success();
 			}
 		});
+		put("request/full", new TestCaseRunnableFactory() {
+			@Override
+			protected Runnable getRunnable() {
+				return cases.getTrackRequest_Full();
+			}
+		});
 		put("dependency", new TestCaseRunnableFactory("trackDependency") {
 			@Override
 			protected Runnable getRunnable() {
 				return cases.getTrackDependency();
+			}
+		});
+		put("dependency/full", new TestCaseRunnableFactory() {
+			@Override
+			protected Runnable getRunnable() {
+				return cases.getTrackDependency_Full();
 			}
 		});
 		put("trace", new TestCaseRunnableFactory("trackTrace") {
@@ -60,6 +95,12 @@ public class TrackServlet extends APerfTestServlet {
 			@Override
 			protected Runnable getRunnable() {
 				return cases.getTrackPageView();
+			}
+		});
+		put("pageView/full", new TestCaseRunnableFactory() {
+			@Override
+			protected Runnable getRunnable() {
+				return cases.getTrackPageView_Full();
 			}
 		});
 	}};
