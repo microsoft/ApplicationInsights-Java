@@ -23,7 +23,7 @@ public class TrackServlet extends APerfTestServlet {
 		put("metric", new TestCaseRunnableFactory("trackMetric") {
 			@Override
 			public Runnable getRunnable() {
-				return cases.getTrackMetric();
+				return cases.getTrackMetric_Aggregate();
 			}
 		});
 		put("event", new TestCaseRunnableFactory("trackEvent") {
@@ -35,7 +35,7 @@ public class TrackServlet extends APerfTestServlet {
 		put("httpRequest", new TestCaseRunnableFactory("trackHttpRequest") {
 			@Override
 			protected Runnable getRunnable() {
-				return cases.getTrackHttpRequest();
+				return cases.getTrackHttpRequest_Success();
 			}
 		});
 		put("dependency", new TestCaseRunnableFactory("trackDependency") {
