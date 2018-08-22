@@ -237,6 +237,7 @@ public class TelemetryClient {
         if (sampleCount > 1) {
             mt.setMin(min);
             mt.setMax(max);
+            mt.setStandardDeviation(0.0);
         }
 
         if (properties != null && properties.size() > 0) {
