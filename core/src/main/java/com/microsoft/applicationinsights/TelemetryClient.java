@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Strings;
+import com.sun.istack.internal.Nullable;
 
 // Created by gupele
 /**
@@ -217,43 +218,66 @@ public class TelemetryClient {
     /**
      * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
      * @param name The name of the metric. Max length 150.
-     * @param value The value of the metric. Average if based on more than one sample count. Should be greater than 0.
+     * @param value The value of the metric. Sum if based on more than one sample count.
      * @param sampleCount The sample count.
      * @param min The minimum value of the sample.
      * @param max The maximum value of the sample.
      * @param properties Named string values you can use to search and classify trace messages.
+     * @throws IllegalArgumentException if name is null or empty.
+     * @deprecated Use {@link #trackMetric(String, double, Integer, Double, Double, Double, Map)}
      */
+    @Deprecated
     public void trackMetric(String name, double value, int sampleCount, double min, double max, Map<String, String> properties) {
+        this.trackMetric(name, value, sampleCount, min, max, null, properties);
+    }
+
+    /**
+     * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
+     *
+     * @param name The name of the metric. Max length 150.
+     * @param value The value of the metric. Sum if it represents an aggregation.
+     * @param sampleCount The sample count.
+     * @param min The minimum value of the sample.
+     * @param max The maximum value of the sample.
+     * @param stdDev The standard deviation of the sample.
+     * @param properties Named string values you can use to search and classify trace messages.
+     * @throws IllegalArgumentException if name is null or empty
+     */
+    public void trackMetric(String name, double value, @Nullable Integer sampleCount, @Nullable Double min, @Nullable Double max, @Nullable Double stdDev, @Nullable Map<String, String> properties) {
         if (isDisabled()) {
             return;
         }
 
-        if (Strings.isNullOrEmpty(name)) {
-            name = "";
-        }
-
         MetricTelemetry mt = new MetricTelemetry(name, value);
         mt.setCount(sampleCount);
-        if (sampleCount > 1) {
-            mt.setMin(min);
-            mt.setMax(max);
-            mt.setStandardDeviation(0.0);
-        }
-
+        mt.setMin(min);
+        mt.setMax(max);
+        mt.setStandardDeviation(stdDev);
         if (properties != null && properties.size() > 0) {
-            MapUtil.copy(properties, mt.getContext().getProperties());
+            MapUtil.copy(properties, mt.getProperties());
         }
-
         this.track(mt);
     }
 
     /**
      * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
      * @param name The name of the metric. Max length 150.
-     * @param value The value of the metric. Should be greater than 0.
+     * @param value The value of the metric.
+     * @throws IllegalArgumentException if name is null or empty.
      */
     public void trackMetric(String name, double value) {
-        trackMetric(name, value, 1, value, value, null);
+        trackMetric(name, value, null, null, null, null, null);
+    }
+
+    /**
+     * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
+     * @param name The name of the metric. Max length 150.
+     * @param value The value of the metric.
+     * @param properties Named string values you can use to search and classify trace messages.
+     * @throws IllegalArgumentException if name is null or empty.
+     */
+    public void trackMetric(String name, double value, @Nullable Map<String, String> properties) {
+        trackMetric(name, value, null, null, null, null, properties);
     }
 
     /**
