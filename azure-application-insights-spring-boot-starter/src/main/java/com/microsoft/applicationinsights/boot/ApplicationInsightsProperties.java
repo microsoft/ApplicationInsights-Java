@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -91,7 +92,37 @@ public class ApplicationInsightsProperties {
   }
 
   public String getInstrumentationKey() {
-    return instrumentationKey;
+    if (StringUtils.isNoneBlank(instrumentationKey)) {
+      return instrumentationKey;
+    }
+
+    String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
+    String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+
+    String v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
+    if (StringUtils.isNoneBlank(v)) {
+      return v;
+    }
+
+    v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
+    if (StringUtils.isNoneBlank(v)) {
+      return v;
+    }
+
+    // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
+    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
+    if (StringUtils.isNoneBlank(v)) {
+      return v;
+    }
+    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
+    if (StringUtils.isNoneBlank(v)) {
+      return v;
+    }
+
+    if (v == null) {
+      throw new IllegalStateException("Instrumentation Key must be set to report telemetry");
+    }
+    return v;
   }
 
   public void setInstrumentationKey(String instrumentationKey) {

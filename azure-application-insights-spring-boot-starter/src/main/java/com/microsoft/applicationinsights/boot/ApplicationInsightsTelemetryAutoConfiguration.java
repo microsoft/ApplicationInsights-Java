@@ -42,6 +42,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -55,6 +56,7 @@ import org.springframework.context.annotation.Import;
  * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration} </h1>
  *
  * @author Arthur Gavlyukovskiy, Dhaval Doshi
+ * TODO : Fix conditional for iKey to allow for environment variables also
  */
 @Configuration
 @ConditionalOnProperty(value = "azure.application-insights.instrumentation-key")
@@ -63,6 +65,9 @@ import org.springframework.context.annotation.Import;
 @Import({
         ApplicationInsightsModuleConfiguration.class,
         ApplicationInsightsWebModuleConfiguration.class
+})
+@AutoConfigureBefore(name = {
+    "io.micrometer.spring.autoconfigure.export.azure.AzureMetricsExportAutoConfiguration"
 })
 public class ApplicationInsightsTelemetryAutoConfiguration {
 
