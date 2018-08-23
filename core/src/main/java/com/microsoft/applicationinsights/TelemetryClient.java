@@ -39,7 +39,6 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Strings;
-import com.sun.istack.internal.Nullable;
 
 // Created by gupele
 /**
@@ -243,7 +242,7 @@ public class TelemetryClient {
      * @param properties Named string values you can use to search and classify trace messages.
      * @throws IllegalArgumentException if name is null or empty
      */
-    public void trackMetric(String name, double value, @Nullable Integer sampleCount, @Nullable Double min, @Nullable Double max, @Nullable Double stdDev, @Nullable Map<String, String> properties) {
+    public void trackMetric(String name, double value, Integer sampleCount, Double min, Double max, Double stdDev, Map<String, String> properties) {
         if (isDisabled()) {
             return;
         }
@@ -276,7 +275,7 @@ public class TelemetryClient {
      * @param properties Named string values you can use to search and classify trace messages.
      * @throws IllegalArgumentException if name is null or empty.
      */
-    public void trackMetric(String name, double value, @Nullable Map<String, String> properties) {
+    public void trackMetric(String name, double value, Map<String, String> properties) {
         trackMetric(name, value, null, null, null, null, properties);
     }
 

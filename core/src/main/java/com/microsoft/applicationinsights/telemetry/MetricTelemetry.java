@@ -26,7 +26,6 @@ import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import com.sun.istack.internal.Nullable;
 
 /**
  * Telemetry type used to track metrics sent to Azure Application Insights.
@@ -132,7 +131,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
      * Sets the number of samples for this metric.
      * @param count Number of samples greater than or equal to 1
      */
-    public void setCount(@Nullable Integer count) {
+    public void setCount(Integer count) {
         metric.setCount(count); updateKind();
     }
 
@@ -148,7 +147,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
      * Sets the min value of this metric across samples.
      * @param value The min value.
      */
-    public void setMin(@Nullable Double value) {
+    public void setMin(Double value) {
         metric.setMin(value); updateKind();
     }
 
@@ -164,7 +163,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
      * Sets the max value of this metric across samples.
      * @param value The max value.
      */
-    public void setMax(@Nullable Double value) {
+    public void setMax(Double value) {
         metric.setMax(value); updateKind();
     }
 
@@ -180,7 +179,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
      * Sets the standard deviation of this metric across samples.
      * @param value The max value.
      */
-    public void setStandardDeviation(@Nullable Double value) {
+    public void setStandardDeviation(Double value) {
         metric.setStdDev(value); updateKind();
     }
 
