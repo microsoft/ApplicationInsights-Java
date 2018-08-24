@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.boot;
 
+import com.microsoft.applicationinsights.boot.helpers.IkeyResolver;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
@@ -92,33 +93,13 @@ public class ApplicationInsightsProperties {
   }
 
   public String getInstrumentationKey() {
+    // First try getting ikey from application.properties
     if (StringUtils.isNoneBlank(instrumentationKey)) {
       return instrumentationKey;
     }
 
-    String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
-    String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
-
-    String v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
-    if (StringUtils.isNoneBlank(v)) {
-      return v;
-    }
-
-    v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
-    if (StringUtils.isNoneBlank(v)) {
-      return v;
-    }
-
-    // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
-    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
-    if (StringUtils.isNoneBlank(v)) {
-      return v;
-    }
-    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
-    if (StringUtils.isNoneBlank(v)) {
-      return v;
-    }
-
+    // If above fails try getting ikey from environment variables or system properties
+    String v = IkeyResolver.getIkeyFromEnvironmentVariables();
     if (v == null) {
       throw new IllegalStateException("Instrumentation Key must be set to report telemetry");
     }

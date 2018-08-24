@@ -22,15 +22,19 @@
 package com.microsoft.applicationinsights.boot;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.web.internal.ApplicationInsightsServletContextListener;
 import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 import com.microsoft.applicationinsights.web.spring.internal.InterceptorRegistry;
+import javax.servlet.ServletContextListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -45,7 +49,7 @@ import org.springframework.core.Ordered;
  *   of incoming HTTP requests
  * </p>
  *
- * @author Arthur Gavlyukovskiy
+ * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
 
 @Configuration
@@ -56,6 +60,11 @@ import org.springframework.core.Ordered;
 @AutoConfigureAfter(ApplicationInsightsTelemetryAutoConfiguration.class)
 public class ApplicationInsightsWebMvcAutoConfiguration {
 
+    /**
+     * Programmatically registers a FilterRegistrationBean to register WebRequestTrackingFilter
+     * @param webRequestTrackingFilter
+     * @return Bean of type {@link FilterRegistrationBean}
+     */
     @Bean
     public FilterRegistrationBean webRequestTrackingFilterRegistrationBean(WebRequestTrackingFilter webRequestTrackingFilter) {
         FilterRegistrationBean registration = new FilterRegistrationBean();
@@ -65,11 +74,40 @@ public class ApplicationInsightsWebMvcAutoConfiguration {
         return registration;
     }
 
+    /**
+     * Programmatically registers an AppliactionInsightsServletContextListner to destroy all the running threads.
+     * @param applicationInsightsServletContextListener
+     * @return Bean of type {@link ServletListenerRegistrationBean}
+     */
+    @Bean
+    public ServletListenerRegistrationBean<ServletContextListener>
+    appInsightsServletContextListenerRegistrationBean(ApplicationInsightsServletContextListener applicationInsightsServletContextListener) {
+        ServletListenerRegistrationBean<ServletContextListener> srb =
+            new ServletListenerRegistrationBean<>();
+        srb.setListener(applicationInsightsServletContextListener);
+        return srb;
+    }
+
+    /**
+     * Creates bean of type WebRequestTrackingFilter for request tracking
+     * @param applicationName Name of the application to bind filter to
+     * @return {@link Bean} of type {@link WebRequestTrackingFilter}
+     */
     @Bean
     @ConditionalOnMissingBean
     @DependsOn("telemetryConfiguration")
     public WebRequestTrackingFilter webRequestTrackingFilter(@Value("${spring.application.name:application}") String applicationName) {
         return new WebRequestTrackingFilter(applicationName);
+    }
+
+    /**
+     * Creates Bean ApplicationInsightsServletContextListener for gracefull shutdown
+     * @return {@link Bean} of type {@link ApplicationInsightsServletContextListener}
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ApplicationInsightsServletContextListener applicationInsightsServletContextListener() {
+        return new ApplicationInsightsServletContextListener();
     }
 }
 

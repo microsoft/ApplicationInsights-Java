@@ -26,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel.InProcess;
+import com.microsoft.applicationinsights.boot.conditionals.InstrumentationKeyCondition;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -48,6 +49,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
@@ -56,10 +58,9 @@ import org.springframework.context.annotation.Import;
  * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration} </h1>
  *
  * @author Arthur Gavlyukovskiy, Dhaval Doshi
- * TODO : Fix conditional for iKey to allow for environment variables also
  */
 @Configuration
-@ConditionalOnProperty(value = "azure.application-insights.instrumentation-key")
+@Conditional(InstrumentationKeyCondition.class)
 @EnableConfigurationProperties(ApplicationInsightsProperties.class)
 @ConditionalOnClass(TelemetryConfiguration.class)
 @Import({
