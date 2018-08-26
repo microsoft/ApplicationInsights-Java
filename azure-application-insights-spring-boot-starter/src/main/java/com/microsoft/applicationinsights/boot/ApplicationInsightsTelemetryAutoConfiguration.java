@@ -56,6 +56,7 @@ import org.springframework.context.annotation.Import;
 
 /**
  * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration} </h1>
+ * This class is supposed to perform auto-configuration before Micrometer and SpringBoot.
  *
  * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
@@ -68,7 +69,8 @@ import org.springframework.context.annotation.Import;
         ApplicationInsightsWebModuleConfiguration.class
 })
 @AutoConfigureBefore(name = {
-    "io.micrometer.spring.autoconfigure.export.azure.AzureMetricsExportAutoConfiguration"
+    "io.micrometer.spring.autoconfigure.export.azure.AzureMetricsExportAutoConfiguration",
+    "org.springframework.boot.actuate.autoconfigure.metrics.export.azure.AzureMetricsExportAutoConfiguration"
 })
 public class ApplicationInsightsTelemetryAutoConfiguration {
 
