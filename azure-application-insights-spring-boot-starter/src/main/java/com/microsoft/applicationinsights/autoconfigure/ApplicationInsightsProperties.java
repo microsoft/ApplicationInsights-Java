@@ -414,7 +414,7 @@ public class ApplicationInsightsProperties {
   static class Jmx {
 
     /** List of JMX counters */
-    List<String> jmxCounters = new ArrayList<>();
+    private List<String> jmxCounters = new ArrayList<>();
 
     public List<String> getJmxCounters() {
       return jmxCounters;
@@ -430,22 +430,22 @@ public class ApplicationInsightsProperties {
     /**
      * Switch to enable / disable heartbeat
      */
-    boolean enabled = false;
+    private boolean enabled = false;
 
     /**
      * The heartbeat interval in seconds.
      */
-    long heartBeatInterval = HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL;
+    private long heartBeatInterval = HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL;
 
     /**
      * List of excluded heartbeat properties
      */
-    List<String> excludedHeartBeatProviderList = new ArrayList<>();
+    private List<String> excludedHeartBeatProviderList = new ArrayList<>();
 
     /**
      * List of excluded heartbeat providers
      */
-    List<String> excludedHeartBeatPropertiesList = new ArrayList<>();
+    private List<String> excludedHeartBeatPropertiesList = new ArrayList<>();
 
     public boolean isEnabled() {
       return enabled;
