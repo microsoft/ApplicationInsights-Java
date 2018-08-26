@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.boot.HeartBeatProvider;
+package com.microsoft.applicationinsights.autoconfigure.HeartBeatProvider;
 
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatPayloadProviderInterface;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;

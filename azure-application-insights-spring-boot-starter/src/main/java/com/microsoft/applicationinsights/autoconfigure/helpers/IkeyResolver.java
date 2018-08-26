@@ -18,29 +18,41 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.boot.conditionals;
 
-import com.microsoft.applicationinsights.boot.helpers.IkeyResolver;
+package com.microsoft.applicationinsights.autoconfigure.helpers;
+
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * Conditional to check if instrumentation key is either set in application.properties
- * or as system property or environment variable.
- *
+ * A helper class to fetch instrumentation key from system properties or environment variables
  * @author Dhaval Doshi
  */
-public class InstrumentationKeyCondition implements Condition {
+public class IkeyResolver {
 
-  @Override
-  public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-    String iKey = context.getEnvironment().getProperty("azure.application-insights.instrumentation-key");
-    if (StringUtils.isNoneBlank(iKey)) {
-      return true;
+  private static final String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
+  private static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+
+    public static String getIkeyFromEnvironmentVariables() {
+    String v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
+    if (StringUtils.isNoneBlank(v)) {
+      return v;
     }
-    iKey = IkeyResolver.getIkeyFromEnvironmentVariables();
-    return StringUtils.isNoneBlank(iKey);
+
+    v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
+    if (StringUtils.isNoneBlank(v)) {
+      return v;
+    }
+
+    // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
+    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
+    if (StringUtils.isNoneBlank(v)) {
+      return v;
+    }
+    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
+    if (StringUtils.isNoneBlank(v)) {
+      return v;
+    }
+
+    return v;
   }
 }

@@ -19,12 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.boot;
+package com.microsoft.applicationinsights.autoconfigure;
 
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.HeartBeat;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
-import com.microsoft.applicationinsights.boot.HeartBeatProvider.SpringBootHeartBeatProvider;
-import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
+import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.HeartBeat;
+import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
+import com.microsoft.applicationinsights.autoconfigure.HeartBeatProvider.SpringBootHeartBeatProvider;
+import com.microsoft.applicationinsights.autoconfigure.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;

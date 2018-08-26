@@ -18,41 +18,29 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+package com.microsoft.applicationinsights.autoconfigure.conditionals;
 
-package com.microsoft.applicationinsights.boot.helpers;
-
+import com.microsoft.applicationinsights.autoconfigure.helpers.IkeyResolver;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * A helper class to fetch instrumentation key from system properties or environment variables
+ * Conditional to check if instrumentation key is either set in application.properties
+ * or as system property or environment variable.
+ *
  * @author Dhaval Doshi
  */
-public class IkeyResolver {
+public class InstrumentationKeyCondition implements Condition {
 
-  private static final String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
-  private static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
-
-    public static String getIkeyFromEnvironmentVariables() {
-    String v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
-    if (StringUtils.isNoneBlank(v)) {
-      return v;
+  @Override
+  public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+    String iKey = context.getEnvironment().getProperty("azure.application-insights.instrumentation-key");
+    if (StringUtils.isNoneBlank(iKey)) {
+      return true;
     }
-
-    v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
-    if (StringUtils.isNoneBlank(v)) {
-      return v;
-    }
-
-    // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
-    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
-    if (StringUtils.isNoneBlank(v)) {
-      return v;
-    }
-    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
-    if (StringUtils.isNoneBlank(v)) {
-      return v;
-    }
-
-    return v;
+    iKey = IkeyResolver.getIkeyFromEnvironmentVariables();
+    return StringUtils.isNoneBlank(iKey);
   }
 }
