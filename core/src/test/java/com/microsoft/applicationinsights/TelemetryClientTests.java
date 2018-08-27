@@ -321,31 +321,6 @@ public final class TelemetryClientTests {
     }
 
     @Test
-    public void testTrackMetricWithNameValueProperties() {
-        final String name = "Metric";
-        final double value = 1.11;
-        final Map<String, String> props = new HashMap<String, String>(){{
-            put("key1", "val1");
-            put("key2", "val2");
-        }};
-        client.trackMetric(name, value, props);
-
-        MetricTelemetry mt = (MetricTelemetry) verifyAndGetLastEventSent();
-        assertEquals("getName", name, mt.getName());
-        assertEquals("getValue", value, mt.getValue(), Math.ulp(value));
-
-        assertNull("getCount should be null", mt.getCount());
-        assertNull("getMin should be null", mt.getMin());
-        assertNull("getMax should be null", mt.getMax());
-        assertNull("getStandardDeviation should be null", mt.getStandardDeviation());
-        assertNotNull("getProperties should be non-null", mt.getProperties());
-        for (String key : props.keySet()) {
-            assertTrue("metric properties contains key", mt.getProperties().containsKey(key));
-            assertEquals("metric properties key/value pair did not match", props.get(key), mt.getProperties().get(key));
-        }
-    }
-
-    @Test
     public void testTrackMetricWithAllValues() {
         Map<String, String> props = new HashMap<String, String>() {{
             put("key1", "value1");

@@ -270,17 +270,6 @@ public class TelemetryClient {
 
     /**
      * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
-     * @param name The name of the metric. Max length 150.
-     * @param value The value of the metric.
-     * @param properties Named string values you can use to search and classify trace messages.
-     * @throws IllegalArgumentException if name is null or empty.
-     */
-    public void trackMetric(String name, double value, Map<String, String> properties) {
-        trackMetric(name, value, null, null, null, null, properties);
-    }
-
-    /**
-     * Sends a numeric metric to Application Insights. Appears in customMetrics in Analytics, and under Custom Metrics in Metric Explorer.
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void trackMetric(MetricTelemetry telemetry) {
