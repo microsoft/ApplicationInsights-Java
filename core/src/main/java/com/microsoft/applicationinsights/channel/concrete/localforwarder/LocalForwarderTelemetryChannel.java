@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.channel.concrete.localforwarder;
 
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -10,7 +11,9 @@ import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Int32Value;
 import com.microsoft.applicationinsights.channel.concrete.ATelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryTransmitterFactory.LocalForwarderTelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
+import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
@@ -42,14 +45,13 @@ import com.microsoft.localforwarder.library.inputs.contracts.Telemetry;
 import com.microsoft.localforwarder.library.inputs.contracts.Telemetry.Builder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
 public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry> {
 
     private static final Map<String, Function<BaseTelemetry, Telemetry>> transformers = new HashMap<>();
-    private static SeverityLevel transformSeverityLevel(@Nullable com.microsoft.applicationinsights.telemetry.SeverityLevel input) {
+    private static SeverityLevel transformSeverityLevel(com.microsoft.applicationinsights.telemetry.SeverityLevel input) {
         if (input == null) {
             return SeverityLevel.UNRECOGNIZED;
         }
@@ -62,7 +64,7 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
         }
         return SeverityLevel.UNRECOGNIZED;
     }
-    private static DataPointType transformDataPointType(@Nullable com.microsoft.applicationinsights.internal.schemav2.DataPointType input) {
+    private static DataPointType transformDataPointType(com.microsoft.applicationinsights.internal.schemav2.DataPointType input) {
         if (input == null) {
             return DataPointType.UNRECOGNIZED;
         }
@@ -102,9 +104,8 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
     static {
         // Trace
         transformers.put(TraceTelemetry.BASE_TYPE, new Function<BaseTelemetry, Telemetry>() {
-            @Nullable
             @Override
-            public Telemetry apply(@Nullable BaseTelemetry bt) {
+            public Telemetry apply(BaseTelemetry bt) {
                 Preconditions.checkNotNull(bt);
                 TraceTelemetry t = (TraceTelemetry) bt;
 
@@ -122,9 +123,8 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
         });
         // Metric
         transformers.put(MetricTelemetry.BASE_TYPE, new Function<BaseTelemetry, Telemetry>() {
-            @Nullable
             @Override
-            public Telemetry apply(@Nullable BaseTelemetry bt) {
+            public Telemetry apply(BaseTelemetry bt) {
                 Preconditions.checkNotNull(bt);
                 MetricTelemetry t = (MetricTelemetry) bt;
 
@@ -152,9 +152,8 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
         });
         // PerformanceCounter
         transformers.put(PerformanceCounterTelemetry.BASE_TYPE, new Function<BaseTelemetry, Telemetry>() {
-            @Nullable
             @Override
-            public Telemetry apply(@Nullable BaseTelemetry bt) {
+            public Telemetry apply(BaseTelemetry bt) {
                 Preconditions.checkNotNull(bt);
                 PerformanceCounterTelemetry t = (PerformanceCounterTelemetry) bt;
                 final Metric.Builder mb = Metric.newBuilder()
@@ -186,9 +185,8 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
         });
         // Dependency
         transformers.put(RemoteDependencyTelemetry.BASE_TYPE, new Function<BaseTelemetry, Telemetry>() {
-            @Nullable
             @Override
-            public Telemetry apply(@Nullable BaseTelemetry bt) {
+            public Telemetry apply(BaseTelemetry bt) {
                 Preconditions.checkNotNull(bt);
                 RemoteDependencyTelemetry t = (RemoteDependencyTelemetry) bt;
 
@@ -211,9 +209,8 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
         });
         // Event
         transformers.put(EventTelemetry.BASE_TYPE, new Function<BaseTelemetry, Telemetry>() {
-            @Nullable
             @Override
-            public Telemetry apply(@Nullable BaseTelemetry bt) {
+            public Telemetry apply(BaseTelemetry bt) {
                 Preconditions.checkNotNull(bt);
                 EventTelemetry t = (EventTelemetry) bt;
 
@@ -229,17 +226,14 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
         });
         // Exception
         transformers.put(ExceptionTelemetry.BASE_TYPE, new Function<BaseTelemetry, Telemetry>(){
-
-            @Nullable
             @Override
-            public Telemetry apply(@Nullable BaseTelemetry bt) {
+            public Telemetry apply(BaseTelemetry bt) {
                 Preconditions.checkNotNull(bt);
                 ExceptionTelemetry t = (ExceptionTelemetry) bt;
 
                 final Function<com.microsoft.applicationinsights.internal.schemav2.StackFrame, StackFrame> sf2sf = new Function<com.microsoft.applicationinsights.internal.schemav2.StackFrame, StackFrame>() {
-                    @Nullable
                     @Override
-                    public StackFrame apply(@Nullable com.microsoft.applicationinsights.internal.schemav2.StackFrame s) {
+                    public StackFrame apply(com.microsoft.applicationinsights.internal.schemav2.StackFrame s) {
                         final StackFrame.Builder sfb = StackFrame.newBuilder()
                                 .setLevel(s.getLevel())
                                 .setLine(s.getLine());
@@ -252,9 +246,8 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
                 };
 
                 final Function<com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails, ExceptionDetails> ed2ed = new Function<com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails, ExceptionDetails>() {
-                    @Nullable
                     @Override
-                    public ExceptionDetails apply(@Nullable com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails d) {
+                    public ExceptionDetails apply(com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails d) {
                         final ExceptionDetails.Builder edb = ExceptionDetails.newBuilder()
                                 .setId(d.getId())
                                 .setOuterId(d.getOuterId())
@@ -284,10 +277,8 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
         });
         // PageView
         transformers.put(PageViewTelemetry.BASE_TYPE, new Function<BaseTelemetry, Telemetry>(){
-
-            @Nullable
             @Override
-            public Telemetry apply(@Nullable BaseTelemetry bt) {
+            public Telemetry apply(BaseTelemetry bt) {
                 Preconditions.checkNotNull(bt);
                 PageViewTelemetry t = (PageViewTelemetry) bt;
 
@@ -302,18 +293,13 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
                 if (t.getUrlString() != null) pvb.setUrl(t.getUrlString());
                 if (t.getDurationObject() != null) pvb.setDuration(transformDuration(t.getDurationObject()));
 
-//                        .setId() // FIXME what is this?
-//                        .setReferrerUri() // FIXME same here, what is this?
-                        ;
                 return telemetryBuilderWithStandardFields(t).setPageView(pvb).build();
             }
         });
         // Request
         transformers.put(RequestTelemetry.BASE_TYPE, new Function<BaseTelemetry, Telemetry> () {
-
-            @Nullable
             @Override
-            public Telemetry apply(@Nullable BaseTelemetry bt) {
+            public Telemetry apply(BaseTelemetry bt) {
                 Preconditions.checkNotNull(bt);
                 RequestTelemetry t = (RequestTelemetry) bt;
 
@@ -332,15 +318,10 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
                 return telemetryBuilderWithStandardFields(t).setRequest(rb).build();
             }
         });
-        // FIXME Availability?
     }
 
     public static final String ENDPOINT_ENVIRONMENT_VARIABLE_NAME = "APPLICATION_INSIGHTS_LOCAL_FORWARDER_ENDPOINT";
     public static final String ENDPOINT_SYSTEM_PROPERTY_NAME = "applicationinsights.localforwarder.endpoint";
-
-    public LocalForwarderTelemetryChannel() {
-        super();
-    }
 
     public LocalForwarderTelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
         super(endpointAddress, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis);
@@ -388,6 +369,16 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
             InternalLogger.INSTANCE.error("Failed to transform telemetry: %s\nException: %s", telemetry.toString(), ExceptionUtils.getStackTrace(e));
         }
         return false;
+    }
+
+    @VisibleForTesting
+    TelemetryBuffer<Telemetry> getTelemetryBuffer() {
+        return telemetryBuffer;
+    }
+
+    @VisibleForTesting
+    LocalForwarderTelemetriesTransmitter getTransmitter() {
+        return (LocalForwarderTelemetriesTransmitter) telemetriesTransmitter;
     }
 
     @Override

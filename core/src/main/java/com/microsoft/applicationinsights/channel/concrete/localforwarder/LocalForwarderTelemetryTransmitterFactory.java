@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.channel.concrete.localforwarder;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -31,7 +32,7 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Transmit
         return new LocalForwarderTelemetriesTransmitter(endpoint);
     }
 
-    static final class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmitter<Telemetry> {
+    public static final class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmitter<Telemetry> {
 
         private final String endpoint;
         private final ManagedChannel channel;
@@ -55,7 +56,7 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Transmit
                     StatusRuntimeException sre = (StatusRuntimeException) t;
                     // TODO do something with status?
                 }
-                error("Error sending to '%s': %s", thiz.endpoint, ExceptionUtils.getStackTrace(t));
+                error("Error sending to '%s':%n%s", thiz.endpoint, ExceptionUtils.getStackTrace(t));
             }
 
             @Override
@@ -64,8 +65,8 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Transmit
             }
         };
 
-        public LocalForwarderTelemetriesTransmitter(String endpoint) {
-            // FIXME use default when null
+        @VisibleForTesting
+        LocalForwarderTelemetriesTransmitter(String endpoint) {
             this.endpoint = endpoint;
             this.executor = Executors.newScheduledThreadPool(2,
                     ThreadPoolUtils.createDaemonThreadFactory(LocalForwarderTelemetriesTransmitter.class, instanceId));
@@ -78,6 +79,10 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Transmit
                     .enableRetry()
                     .build();
             this.asyncService = AITelemetryServiceGrpc.newStub(channel);
+        }
+
+        public String getEndpoint() {
+            return this.endpoint;
         }
 
         @Override
