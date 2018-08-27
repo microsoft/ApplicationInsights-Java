@@ -22,25 +22,34 @@ package com.microsoft.applicationinsights.autoconfigure.conditionals;
 
 import com.microsoft.applicationinsights.autoconfigure.helpers.IkeyResolver;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.annotation.Condition;
+import org.springframework.boot.autoconfigure.condition.ConditionMessage;
+import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
+import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * Conditional to check if instrumentation key is either set in application.properties
- * or as system property or environment variable.
+ * Conditional to check if instrumentation key is either specified using
+ * 1. azure.application-insights.instrumentation-key
+ * 2. APPLICATION_INSIGHTS_IKEY
+ * 3. APPINSIGHTS_INSTRUMENTATIONKEY
  *
  * @author Dhaval Doshi
  */
-public class InstrumentationKeyCondition implements Condition {
+public class InstrumentationKeyCondition extends SpringBootCondition {
 
   @Override
-  public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+  public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
     String iKey = context.getEnvironment().getProperty("azure.application-insights.instrumentation-key");
     if (StringUtils.isNoneBlank(iKey)) {
-      return true;
+      return new ConditionOutcome(true, ConditionMessage.of("instrumentation key found"));
     }
     iKey = IkeyResolver.getIkeyFromEnvironmentVariables();
-    return StringUtils.isNoneBlank(iKey);
+    if (StringUtils.isNoneBlank(iKey)) {
+      return new ConditionOutcome(true, ConditionMessage.of("instrumentation key found"));
+    }
+    else {
+      return new ConditionOutcome(false, ConditionMessage.of("instrumentation key not found"));
+    }
   }
 }
