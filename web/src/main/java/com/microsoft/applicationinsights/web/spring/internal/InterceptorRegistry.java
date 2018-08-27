@@ -21,18 +21,27 @@
 
 package com.microsoft.applicationinsights.web.spring.internal;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 /**
  * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry.
  * The registration enables the interceptor to extract the http request's controller and action names.
+ *
+ * This class extends {@link WebMvcConfigurationSupport} to add {@link RequestNameHandlerInterceptorAdapter}
+ * instead of overriding @EnableWebMvc annotation. This is necessary to prevent breaking SpringBoot
+ * auto-configuration.
+ *
+ * Recommendation from Spring framework : If WebMvcConfigurer does not expose some more advanced setting
+ * that needs to be configured consider removing the @EnableWebMvc annotation and extending directly from
+ * WebMvcConfigurationSupport or DelegatingWebMvcConfiguration.
+ *
+ * @see <a href="https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/config/annotation/EnableWebMvc.html">
+ *   https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/config/annotation/EnableWebMvc.html</a>
  */
-@EnableWebMvc
 @Configuration
-public class InterceptorRegistry extends WebMvcConfigurerAdapter {
+public class InterceptorRegistry extends WebMvcConfigurationSupport {
 
     @Override
     public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
