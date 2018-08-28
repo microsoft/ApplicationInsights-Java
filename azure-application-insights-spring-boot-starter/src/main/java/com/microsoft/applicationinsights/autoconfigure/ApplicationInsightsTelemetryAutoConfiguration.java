@@ -136,6 +136,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         }
         telemetryConfiguration.setChannel(telemetryChannel);
         initializeComponents(telemetryConfiguration);
+        initializePerformanceCounterContainer();
         return telemetryConfiguration;
     }
 
@@ -187,10 +188,8 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         return InternalLogger.INSTANCE;
     }
 
-    // Configure properties of PerformanceCounter Container. Since this is ENUM type we do not need
-    // a bean for this.
-    @PostConstruct
-    public void initializePerformanceCounterContainer() {
+    // calling directly telemetry configuration call to have Internal logger configured first
+     private void initializePerformanceCounterContainer() {
         ApplicationInsightsProperties.PerformanceCounter performanceCounter = applicationInsightsProperties.getPerformanceCounter();
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceCounter.getCollectionFrequencyInSeconds());
 
