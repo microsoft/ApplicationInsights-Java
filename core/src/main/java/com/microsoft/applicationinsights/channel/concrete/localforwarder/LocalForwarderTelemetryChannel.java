@@ -63,7 +63,7 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
             telemetry.reset();
             return true;
         } catch (java.lang.Exception e) {
-            InternalLogger.INSTANCE.error("Failed to transform telemetry: %s\nException: %s", telemetry.toString(), ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.error("Failed to transform telemetry: %s%nException: %s", telemetry.toString(), ExceptionUtils.getStackTrace(e));
         }
         return false;
     }
