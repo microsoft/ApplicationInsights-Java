@@ -47,6 +47,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.any;
@@ -304,9 +305,71 @@ public final class TelemetryClientTests {
 
     @Test
     public void testTrackMetricWithNameAndValue() {
-        client.trackMetric("Metric", 1);
+        final String name = "Metric";
+        final double value = 1.11;
+        client.trackMetric(name, value);
 
-        verifyAndGetLastEventSent();
+        MetricTelemetry mt = (MetricTelemetry) verifyAndGetLastEventSent();
+        assertEquals("getName", name, mt.getName());
+        assertEquals("getValue", value, mt.getValue(), Math.ulp(value));
+
+        assertNull("getCount should be null", mt.getCount());
+        assertNull("getMin should be null", mt.getMin());
+        assertNull("getMax should be null", mt.getMax());
+        assertNull("getStandardDeviation should be null", mt.getStandardDeviation());
+        assertTrue("properties should be empty", mt.getProperties().isEmpty());
+    }
+
+    @Test
+    public void testTrackMetricWithAllValues() {
+        Map<String, String> props = new HashMap<String, String>() {{
+            put("key1", "value1");
+            put("key2", "value2");
+        }};
+
+        final String name = "MyMetric";
+        final double value = 1.01;
+        final Integer sampleCount = 2;
+        final Double min = 0.01;
+        final Double max = 1.0;
+        final Double stdDev = 0.636396;
+
+        client.trackMetric(name, value, sampleCount, min, max, stdDev, props);
+        MetricTelemetry mt = (MetricTelemetry) verifyAndGetLastEventSent();
+
+        assertEquals("getName", name, mt.getName());
+        assertEquals("getValue", value, mt.getValue(), Math.ulp(value));
+        assertEquals("getMin", min, mt.getMin());
+        assertEquals("getMax", max, mt.getMax());
+        assertEquals("getStandardDeviation", stdDev, mt.getStandardDeviation());
+        assertNotNull("getProperties should be non-null", mt.getProperties());
+        for (String key : props.keySet()) {
+            assertTrue("metric properties contains key", mt.getProperties().containsKey(key));
+            assertEquals("metric properties key/value pair did not match", props.get(key), mt.getProperties().get(key));
+        }
+    }
+
+    @Test
+    public void testTrackMetricAggregateWithSomeNulls() {
+        Map<String, String> propsIsNull = null;
+
+        final String name = "MyMetricHasNulls";
+        final double value = 1.02;
+        final Integer sampleCount = 3;
+        final Double minIsNull = null;
+        final Double max = 0.99;
+        final Double stdDevIsNull = null;
+
+        client.trackMetric(name, value, sampleCount, minIsNull, max, stdDevIsNull, propsIsNull);
+        MetricTelemetry mt = (MetricTelemetry) verifyAndGetLastEventSent();
+
+        assertEquals("getName", name, mt.getName());
+        assertEquals("getValue", value, mt.getValue(), Math.ulp(value));
+        assertNull("getMin should be null", mt.getMin());
+        assertEquals("getMax", max, mt.getMax());
+        assertNull("getStandardDeviation should be null", mt.getStandardDeviation());
+        assertNotNull("getProperties should be null", mt.getProperties());
+        assertEquals("properties size", 0, mt.getProperties().size());
     }
 
     @Test
@@ -362,7 +425,7 @@ public final class TelemetryClientTests {
     }
 
     @Test
-    @Ignore("Not supported yet.")
+    @Ignore("Not supported yet.") //FIXME yes, it is
     public void testTrackRemoteDependency(){ }
 
     @Test
