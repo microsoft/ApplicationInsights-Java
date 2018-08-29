@@ -29,6 +29,12 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
  * Telemetry type used to track metrics sent to Azure Application Insights.
+ * <p>
+ * This represents a Measurement, if only Name and Value are set.
+ * If Count, Min, Max or Standard Deviation are set, this represents an Aggregation;
+ * a sampled set of points summarized by these statistic fields.
+ * In an Aggregation metric, the value, i.e. {@link #getValue()}, represents the sum of sampled data points.
+ * </p>
  */
 public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     private final MetricData data;
@@ -65,6 +71,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
      * Initializes the instance with a name and value
      * @param name The name of the metric. Length 1-150 characters.
      * @param value The value of the metric.
+     * @throws IllegalArgumentException if name is null or empty
      */
     public MetricTelemetry(String name, double value) {
         this();
@@ -73,10 +80,11 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * indicate that this metric is a custom performance counter and should be sent to the performance counters table
+     * Indicate that this metric is a custom performance counter and should be sent to the performance counters table.
+     * This sets 'CustomPerfCounter'='true' key/value pair in this metric's properties.
      */
     public void markAsCustomPerfCounter(){
-        data.getProperties().putIfAbsent("CustomPerfCounter", "true");
+        data.getProperties().put("CustomPerfCounter", "true");
     }
 
     /**
@@ -90,6 +98,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     /**
      * Sets the name of the metric. Length 1-150 characters.
      * @param name The name of the metric.
+     * @throws IllegalArgumentException if the name is null or empty.
      */
     public void setName(String name) {
         if (Strings.isNullOrEmpty(name)) {
@@ -100,7 +109,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Gets The value of the metric.
+     * Gets The value of the metric. Represents the sum of data points if this metric is an Aggregation
      * @return The value of the metric.
      */
     public double getValue() {
@@ -124,7 +133,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     /**
-     * Sets the number of samples for this metric. 
+     * Sets the number of samples for this metric.
      * @param count Number of samples greater than or equal to 1
      */
     public void setCount(Integer count) {
@@ -191,16 +200,12 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     }
 
     private void updateKind() {
+        // if any stats are set, assume it's an aggregation.
         boolean isAggregation =
             (metric.getCount() != null) ||
             (metric.getMin() != null) ||
             (metric.getMax() != null) ||
             (metric.getStdDev() != null);
-
-        if ((metric.getCount() != null) && metric.getCount() == 1) {
-            // Singular data point. This is not an aggregation.
-            isAggregation = false;
-        }
 
         metric.setKind(isAggregation ? DataPointType.Aggregation : DataPointType.Measurement);
     }

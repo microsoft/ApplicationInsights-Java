@@ -179,11 +179,11 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		assertEquals(DataPointType.Measurement, dp.getKind());
 		assertEquals(expectedValue, dp.getValue(), epsilon);
 		assertEquals("TimeToRespond", dp.getName());
-		assertEquals(Integer.valueOf(1),  dp.getCount());
 
-		assertNull(dp.getMin());
-		assertNull(dp.getMax());
-		assertNull(dp.getStdDev());
+		assertNull("getCount was non-null", dp.getCount());
+		assertNull("getMin was non-null", dp.getMin());
+		assertNull("getMax was non-null", dp.getMax());
+		assertNull("getStdDev was non-null", dp.getStdDev());
 	}
 	
 	@Test
@@ -279,4 +279,11 @@ public class CoreAndFilterTests extends AiSmokeTest {
         final String expectedName = "This is a auto thrown exception !";
         assertEquals(expectedName, eDetails.getMessage());
     }
+
+    @Test
+    @TargetUri("/index.jsp")
+    public void testRequestJSP() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+    }
+
 }
