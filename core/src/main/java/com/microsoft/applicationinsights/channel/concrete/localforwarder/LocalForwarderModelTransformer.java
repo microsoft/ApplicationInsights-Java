@@ -40,9 +40,44 @@ import java.util.HashMap;
 import java.util.Map;
 
 final class LocalForwarderModelTransformer {
+
     private LocalForwarderModelTransformer(){}
 
     private static final Map<String, Function<BaseTelemetry, Telemetry>> transformers = new HashMap<>();
+
+    @VisibleForTesting
+    static final Function<com.microsoft.applicationinsights.internal.schemav2.StackFrame, StackFrame> STACK_FRAME_TRANSFORMER_FUNCTION = new Function<com.microsoft.applicationinsights.internal.schemav2.StackFrame, StackFrame>() {
+        @Override
+        public StackFrame apply(com.microsoft.applicationinsights.internal.schemav2.StackFrame s) {
+            final StackFrame.Builder sfb = StackFrame.newBuilder()
+                    .setLevel(s.getLevel())
+                    .setLine(s.getLine());
+            if (s.getMethod() != null) sfb.setMethod(s.getMethod());
+            if (s.getAssembly() != null) sfb.setAssembly(s.getAssembly());
+            if (s.getFileName() != null) sfb.setFileName(s.getFileName());
+
+            return sfb.build();
+        }
+    };
+
+    @VisibleForTesting
+    static final Function<com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails, ExceptionDetails> EXCEPTION_DETAILS_TRANSFORMER_FUNCTION = new Function<com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails, ExceptionDetails>() {
+        @Override
+        public ExceptionDetails apply(com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails d) {
+            final ExceptionDetails.Builder edb = ExceptionDetails.newBuilder()
+                    .setId(d.getId())
+                    .setOuterId(d.getOuterId())
+                    .setHasFullStack(BoolValue.of(d.getHasFullStack()));
+
+            if (d.getTypeName() != null) edb.setTypeName(d.getTypeName());
+            if (d.getMessage() != null) edb.setMessage(d.getMessage());
+            if (d.getStack() != null) edb.setStack(d.getStack());
+            if (d.getParsedStack() != null) edb.addAllParsedStack(Iterables.transform(d.getParsedStack(), STACK_FRAME_TRANSFORMER_FUNCTION));
+
+            return edb.build();
+        }
+    };
+
 
     @VisibleForTesting
     static SeverityLevel transformSeverityLevel(com.microsoft.applicationinsights.telemetry.SeverityLevel input) {
@@ -74,6 +109,10 @@ final class LocalForwarderModelTransformer {
     @VisibleForTesting
     static <T extends BaseTelemetry> Telemetry.Builder telemetryBuilderWithStandardFields(T telemetry) {
         Preconditions.checkArgument(telemetry.getContext() != null, "TelemetryContext is null for telemetry with "+telemetry.getBaseTypeName());
+        TelemetryContext context = telemetry.getContext();
+        final String iKey = context.getInstrumentationKey();
+        Preconditions.checkArgument(iKey != null, "The TelemetryContext.InstrumentationKey is null inside "+telemetry.getBaseTypeName());
+
         final Builder tb = Telemetry.newBuilder();
         if (telemetry.getTimestamp() != null) tb.setDateTime(LocalStringsUtils.getDateFormatter().format(telemetry.getTimestamp()));
         if (telemetry.getSequence() != null) tb.setSequenceNumber(telemetry.getSequence());
@@ -81,8 +120,6 @@ final class LocalForwarderModelTransformer {
             final BaseSampleSourceTelemetry bsst = (BaseSampleSourceTelemetry) telemetry;
             if (bsst.getSamplingPercentage() != null) tb.setSamplingRate(DoubleValue.of(bsst.getSamplingPercentage()));
         }
-        TelemetryContext context = telemetry.getContext();
-        final String iKey = context.getInstrumentationKey();
         tb.setInstrumentationKey(iKey);
         if (context.getTags() != null) tb.putAllTags(context.getTags());
         tb.setVer(Envelope.DEFAULT_VER);
@@ -240,37 +277,6 @@ final class LocalForwarderModelTransformer {
                 Preconditions.checkNotNull(bt);
                 ExceptionTelemetry t = (ExceptionTelemetry) bt;
 
-                final Function<com.microsoft.applicationinsights.internal.schemav2.StackFrame, StackFrame> sf2sf = new Function<com.microsoft.applicationinsights.internal.schemav2.StackFrame, StackFrame>() {
-                    @Override
-                    public StackFrame apply(com.microsoft.applicationinsights.internal.schemav2.StackFrame s) {
-                        final StackFrame.Builder sfb = StackFrame.newBuilder()
-                                .setLevel(s.getLevel())
-                                .setLine(s.getLine());
-                        if (s.getMethod() != null) sfb.setMethod(s.getMethod());
-                        if (s.getAssembly() != null) sfb.setAssembly(s.getAssembly());
-                        if (s.getFileName() != null) sfb.setFileName(s.getFileName());
-
-                        return sfb.build();
-                    }
-                };
-
-                final Function<com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails, ExceptionDetails> ed2ed = new Function<com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails, ExceptionDetails>() {
-                    @Override
-                    public ExceptionDetails apply(com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails d) {
-                        final ExceptionDetails.Builder edb = ExceptionDetails.newBuilder()
-                                .setId(d.getId())
-                                .setOuterId(d.getOuterId())
-                                .setHasFullStack(BoolValue.of(d.getHasFullStack()));
-
-                        if (d.getTypeName() != null) edb.setTypeName(d.getTypeName());
-                        if (d.getMessage() != null) edb.setMessage(d.getMessage());
-                        if (d.getStack() != null) edb.setStack(d.getStack());
-                        if (d.getParsedStack() != null) edb.addAllParsedStack(Iterables.transform(d.getParsedStack(), sf2sf));
-
-                        return edb.build();
-                    }
-                };
-
                 final Exception.Builder eb = Exception.newBuilder()
                         .setVer(t.getVer());
                 final SeverityLevel sl = transformSeverityLevel(t.getSeverityLevel());
@@ -279,7 +285,7 @@ final class LocalForwarderModelTransformer {
                 if (t.getProblemId() != null) eb.setProblemId(t.getProblemId());
                 if (t.getProperties() != null) eb.putAllProperties(t.getProperties());
                 if (t.getMetrics() != null) eb.putAllMeasurements(t.getMetrics());
-                if (t.getExceptions() != null) eb.addAllExceptions(Iterables.transform(t.getExceptions(), ed2ed));
+                if (t.getExceptions() != null) eb.addAllExceptions(Iterables.transform(t.getExceptions(), EXCEPTION_DETAILS_TRANSFORMER_FUNCTION));
 
                 return telemetryBuilderWithStandardFields(t).setException(eb).build();
             }
