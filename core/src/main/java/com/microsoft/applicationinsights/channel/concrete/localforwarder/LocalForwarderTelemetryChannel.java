@@ -4,7 +4,6 @@ package com.microsoft.applicationinsights.channel.concrete.localforwarder;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.concrete.ATelemetryChannel;
-import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryTransmitterFactory.LocalForwarderTelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
