@@ -4,7 +4,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.smoketest.FixedAiTestCases;
 import com.microsoft.applicationinsights.testapps.perf.TestCaseRunnableFactory;
 
-import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,10 +15,10 @@ import java.util.Map;
 public class TrackServlet extends APerfTestServlet {
 	public static final long serialVersionUID = -1L;
 
-	@GuardedBy("lock")
+//	@GuardedBy("lock")
 	private volatile TelemetryClient tc;
 
-	@GuardedBy("lock")
+//	@GuardedBy("lock")
 	private volatile FixedAiTestCases cases;
 
 	private static final Object lock = new Object();
