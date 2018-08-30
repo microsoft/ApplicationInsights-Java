@@ -109,20 +109,24 @@ public final class DeviceContext {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceLanguage(), language);
     }
 
+    @Deprecated
     String getRoleName()
     {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceRoleName());
     }
 
+    @Deprecated
     public void setRoleName(String roleName)
     {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceRoleName(), roleName);
     }
 
+    @Deprecated
     String getRoleInstance() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceRoleInstance());
     }
 
+    @Deprecated
     public void setRoleInstance(String roleInstance) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceRoleInstance(), roleInstance);
     }
