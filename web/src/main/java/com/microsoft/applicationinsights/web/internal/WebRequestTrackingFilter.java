@@ -26,7 +26,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
@@ -43,10 +42,12 @@ import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.agent.AgentConnector;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
@@ -156,7 +157,8 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config) {
         try {
-            initialize(config);
+            String appName = getName(config.getServletContext());
+            initializeAgentIfAvailable(config);
 
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
 
@@ -166,6 +168,8 @@ public final class WebRequestTrackingFilter implements Filter {
 
                 return;
             }
+
+            configureWebAppNameContextInitializer(appName, configuration);
 
             telemetryClient = new TelemetryClient(configuration);
             webModulesContainer = new WebModulesContainer(configuration);
@@ -178,11 +182,21 @@ public final class WebRequestTrackingFilter implements Filter {
         }
     }
 
+    private void configureWebAppNameContextInitializer(String appName, TelemetryConfiguration configuration) {
+        for (ContextInitializer ci : configuration.getContextInitializers()) {
+            if (ci instanceof WebAppNameContextInitializer) {
+                ((WebAppNameContextInitializer)ci).setAppName(appName);
+                return;
+            }
+        }
+    }
+
     /**
      * Destroy the filter by releases resources.
      */
     public void destroy() {
         //add code to release any resource
+        ThreadContext.remove();
     }
 
     // endregion Public
@@ -250,13 +264,11 @@ public final class WebRequestTrackingFilter implements Filter {
     public WebRequestTrackingFilter() {
     }
 
-    private synchronized void initialize(FilterConfig filterConfig) {
-
+    private synchronized void initializeAgentIfAvailable(FilterConfig filterConfig) {
         StopWatch sw = StopWatch.createStarted();
 
         //If Agent Jar is not present in the class path skip the process
-        if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
-            this.getClass().getClassLoader())) {
+        if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME, this.getClass().getClassLoader())) {
             InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration in %.3fms", sw.getNanoTime()/1_000_000.0);
             return;
         }

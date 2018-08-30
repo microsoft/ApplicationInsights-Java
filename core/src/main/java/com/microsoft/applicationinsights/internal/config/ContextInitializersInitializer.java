@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.config;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.extensibility.initializer.CloudInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 
@@ -43,6 +44,7 @@ final class ContextInitializersInitializer {
         // To keep with prev version. A few will probably be moved to the configuration
         initializerList.add(new SdkVersionContextInitializer());
         initializerList.add(new DeviceInfoContextInitializer());
+        initializerList.add(new CloudInfoContextInitializer());
 
         if (contextInitializers != null) {
             ReflectionUtils.loadComponents(ContextInitializer.class, initializerList, contextInitializers.getAdds());

@@ -1,7 +1,7 @@
 package com.microsoft.applicationinsights.boot.initializer;
 
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
+import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -23,9 +23,8 @@ public class SpringBootTelemetryInitializer implements TelemetryInitializer {
 
   @Override
   public void initialize(Telemetry telemetry) {
-
-    DeviceContext device = telemetry.getContext().getDevice();
-    device.setRoleName(appName);
+    CloudContext device = telemetry.getContext().getCloud();
+    device.setRole(appName);
   }
 
 }
