@@ -69,8 +69,8 @@ import org.springframework.context.annotation.Import;
         ApplicationInsightsWebModuleConfiguration.class
 })
 @AutoConfigureBefore(name = {
-    "io.micrometer.spring.autoconfigure.export.azure.AzureMetricsExportAutoConfiguration",
-    "org.springframework.boot.actuate.autoconfigure.metrics.export.azure.AzureMetricsExportAutoConfiguration"
+    "io.micrometer.spring.autoconfigure.export.azuremonitor.AzureMonitorMetricsExportAutoConfiguration",
+    "org.springframework.boot.actuate.autoconfigure.metrics.export.azuremonitor.AzureMonitorMetricsExportAutoConfiguration"
 })
 public class ApplicationInsightsTelemetryAutoConfiguration {
 
