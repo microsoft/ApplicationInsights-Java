@@ -68,7 +68,7 @@ public class LocalForwarderTelemetryTransmitterTest {
                 return null;
             }
         }).when(mockRespObsvr).onCompleted();
-        latch.await(10, TimeUnit.SECONDS);
+        assertTrue("timeout waiting for response", latch.await(10, TimeUnit.SECONDS));
 
         verify(mockChannel, times(1)).newCall(any(MethodDescriptor.class), any(CallOptions.class));
     }
@@ -91,7 +91,7 @@ public class LocalForwarderTelemetryTransmitterTest {
                 return null;
             }
         }).when(mockRespObsvr).onCompleted();
-        latch.await(10, TimeUnit.SECONDS);
+        assertTrue("timeout waiting for response", latch.await(10, TimeUnit.SECONDS));
 
         verify(mockChannel, times(1)).newCall(any(MethodDescriptor.class), any(CallOptions.class));
     }
