@@ -45,7 +45,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  *
  * Created by gupele on 12/17/2014.
  */
-public final class TelemetryBuffer<T> {
+public class TelemetryBuffer<T> {
     /**
      * An inner helper class that will let the Sender class to fetch the relevant Telemetries.
      *

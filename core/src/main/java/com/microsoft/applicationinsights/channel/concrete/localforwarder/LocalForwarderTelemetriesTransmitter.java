@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmitter<Telemetry> {
+public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmitter<Telemetry> {
 
     private final String endpoint;
     private ManagedChannel channel;

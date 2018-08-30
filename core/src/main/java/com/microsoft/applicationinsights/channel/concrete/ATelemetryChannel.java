@@ -54,14 +54,14 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
     public static final int MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 300;
     public static final String DEVELOPER_MODE_SYSTEM_PROPRETY_NAME = "APPLICATION_INSIGHTS_DEVELOPER_MODE";
 
-    protected static final String MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME = "MaxTelemetryBufferCapacity";
-    protected static final String INSTANT_RETRY_NAME = "MaxInstantRetry";
-    protected static final String FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME = "FlushIntervalInSeconds";
-    protected static final String DEVELOPER_MODE_NAME = "DeveloperMode";
-    protected static final String ENDPOINT_ADDRESS_NAME = "EndpointAddress";
-    protected static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "MaxTransmissionStorageFilesCapacityInMB";
-    protected static final int LOG_TELEMETRY_ITEMS_MODULUS = 10000;
-    protected static final String THROTTLING_ENABLED_NAME = "Throttling";
+    public static final String MAX_TELEMETRY_BUFFER_CAPACITY_NAME = "MaxTelemetryBufferCapacity";
+    public static final String INSTANT_RETRY_NAME = "MaxInstantRetry";
+    public static final String FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME = "FlushIntervalInSeconds";
+    public static final String DEVELOPER_MODE_NAME = "DeveloperMode";
+    public static final String ENDPOINT_ADDRESS_NAME = "EndpointAddress";
+    public static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "MaxTransmissionStorageFilesCapacityInMB";
+    public static final int LOG_TELEMETRY_ITEMS_MODULUS = 10000;
+    public static final String THROTTLING_ENABLED_NAME = "Throttling";
 
     private TransmitterFactory transmitterFactory;
     private AtomicLong itemsSent = new AtomicLong(0);
@@ -172,7 +172,7 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
             endpointAddress = namesAndValues.get(ENDPOINT_ADDRESS_NAME);
 
             maxTelemetryBufferCapacityEnforcer
-                    .normalizeStringValue(namesAndValues.get(MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME));
+                    .normalizeStringValue(namesAndValues.get(MAX_TELEMETRY_BUFFER_CAPACITY_NAME));
             sendIntervalInSecondsEnforcer
                     .normalizeStringValue(namesAndValues.get(FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME));
         }
@@ -352,7 +352,7 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
 
     protected LimitsEnforcer createDefaultMaxTelemetryBufferCapacityEnforcer(Integer currentValue) {
 		LimitsEnforcer maxItemsInBatchEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
-				MAX_MAX_TELEMETRY_BUFFER_CAPACITY_NAME, MIN_MAX_TELEMETRY_BUFFER_CAPACITY,
+                MAX_TELEMETRY_BUFFER_CAPACITY_NAME, MIN_MAX_TELEMETRY_BUFFER_CAPACITY,
 				MAX_MAX_TELEMETRY_BUFFER_CAPACITY, DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY,
                         currentValue == null ? DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY : currentValue);
 

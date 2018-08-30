@@ -32,7 +32,8 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
     }
 
     @Override
-    protected synchronized void initialize(String configurationFileEndpoint, String maxTransmissionStorageCapacity, boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer, LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
+    protected synchronized void initialize(String configurationFileEndpoint, String maxTransmissionStorageCapacity, boolean developerMode,
+                                           LimitsEnforcer maxTelemetryBufferCapacityEnforcer, LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
         // using the same policy as TelemetryConfigurationFactory, in priority order: System Property, Environment Variable, Configuration File
         String endpoint = System.getProperty(ENDPOINT_SYSTEM_PROPERTY_NAME, System.getenv(ENDPOINT_ENVIRONMENT_VARIABLE_NAME));
         if (Strings.isNullOrEmpty(endpoint)) {
@@ -73,8 +74,18 @@ public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry>
     }
 
     @VisibleForTesting
+    void setTelemetryBuffer(TelemetryBuffer<Telemetry> buffer) {
+        this.telemetryBuffer = buffer;
+    }
+
+    @VisibleForTesting
     LocalForwarderTelemetriesTransmitter getTransmitter() {
         return (LocalForwarderTelemetriesTransmitter) telemetriesTransmitter;
+    }
+
+    @VisibleForTesting
+    void setTransmitter(LocalForwarderTelemetriesTransmitter transmitter) {
+        this.telemetriesTransmitter = transmitter;
     }
 
     @Override
