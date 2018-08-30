@@ -33,8 +33,6 @@
 //------------------------------------------------------------------------------
 package com.microsoft.applicationinsights.extensibility.context;
 
-import javax.naming.SizeLimitExceededException;
-
 /**
 * ContextTagKeys
 */
@@ -72,9 +70,11 @@ public class ContextTagKeys
     private String DeviceVMName;
 
     // 17: Optional string DeviceRoleName
+    @Deprecated
     private String DeviceRoleName;
 
     // 18: Optional string DeviceRoleInstance
+    @Deprecated
     private String DeviceRoleInstance;
 
     // 19: Optional string DeviceOEMName
@@ -175,6 +175,10 @@ public class ContextTagKeys
     // 1002: Optional string InternalNodeName
     private String InternalNodeName;
 
+    private String CloudRole;
+
+    private String CloudRoleInstance;
+
     /**
      * @return current value of ApplicationId property
      */
@@ -185,7 +189,7 @@ public class ContextTagKeys
     /**
      * @param value new value of ApplicationId property
      */
-    public final void setApplicationId(String value) {
+    final void setApplicationId(String value) {
         this.ApplicationId = value;
     }
 
@@ -303,7 +307,9 @@ public class ContextTagKeys
 
     /**
      * @return current value of DeviceRoleName property
+     * @deprecated use {@link #getCloudRole()}
      */
+    @Deprecated
     public final String getDeviceRoleName() {
         return this.DeviceRoleName;
     }
@@ -311,13 +317,16 @@ public class ContextTagKeys
     /**
      * @param value new value of DeviceRoleName property
      */
+    @Deprecated
     public final void setDeviceRoleName(String value) {
         this.DeviceRoleName = value;
     }
 
     /**
      * @return current value of DeviceRoleInstance property
+     * @deprecated use {@link #getCloudRoleInstance()}
      */
+    @Deprecated
     public final String getDeviceRoleInstance() {
         return this.DeviceRoleInstance;
     }
@@ -325,6 +334,7 @@ public class ContextTagKeys
     /**
      * @param value new value of DeviceRoleInstance property
      */
+    @Deprecated
     public final void setDeviceRoleInstance(String value) {
         this.DeviceRoleInstance = value;
     }
@@ -793,6 +803,14 @@ public class ContextTagKeys
         this.InternalNodeName = internalNodeName;
     }
 
+    public final String getCloudRole() {
+        return this.CloudRole;
+    }
+
+    public final String getCloudRoleInstance() {
+        return this.CloudRoleInstance;
+    }
+
     public static ContextTagKeys getKeys()
     {
         return s_keys;
@@ -819,7 +837,6 @@ public class ContextTagKeys
     }
 
     protected void reset(String name, String qualifiedName) {
-        
         ApplicationId = "ai.application.id";
         ApplicationVersion = "ai.application.ver";
         ApplicationTypeId = "ai.application.typeId";
@@ -864,6 +881,8 @@ public class ContextTagKeys
         InternalAgentVersion = "ai.internal.agentVersion";
         SyntheticSource = "ai.operation.syntheticSource";
         InternalNodeName = "ai.internal.nodeName";
+        CloudRole = "ai.cloud.role";
+        CloudRoleInstance = "ai.cloud.roleInstance";
     }
 
 } // class ContextTagKeys
