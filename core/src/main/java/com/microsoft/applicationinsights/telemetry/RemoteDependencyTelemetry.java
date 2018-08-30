@@ -30,6 +30,8 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import java.util.Map;
+
 /**
  * Telemetry sent to Azure Application Insights about dependencies - that is, calls from
  * your application to external services such as databases or REST APIs.
@@ -382,6 +384,10 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     @Override
     public String getBaseTypeName() {
         return BASE_TYPE;
+    }
+
+    public Map<String, Double> getMetrics() {
+        return getData().getMeasurements();
     }
 
 }
