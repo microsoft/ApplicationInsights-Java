@@ -128,7 +128,7 @@ public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmit
             // gRPC has an unereliable thread shutdown process, but it's usually done in under 2 seconds. The await methods don't really work.
             TimeUnit tu = TimeUnit.SECONDS;
             long sleepTime = 2L; // maybe this should be configurable...
-            InternalLogger.INSTANCE.trace("Sleeing for %d %s to wait for gRPC threads to terminate.", sleepTime, tu.name());
+            InternalLogger.INSTANCE.trace("Sleeping for %d %s to wait for gRPC threads to terminate.", sleepTime, tu.name());
             tu.sleep(timeout);
         } catch (InterruptedException e) {
             channel.shutdownNow();
