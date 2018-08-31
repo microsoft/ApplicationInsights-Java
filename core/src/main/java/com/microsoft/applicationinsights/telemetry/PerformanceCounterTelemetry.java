@@ -35,7 +35,7 @@ public final class PerformanceCounterTelemetry extends BaseTelemetry<Performance
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String ENVELOPE_NAME = "PerformanceCounter";
+    private static final String ENVELOPE_NAME = "PerformanceCounter";
 
 
     /**

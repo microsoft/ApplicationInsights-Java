@@ -34,7 +34,7 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String ENVELOPE_NAME = "Message";
+    private static final String ENVELOPE_NAME = "Message";
 
 
     /**

@@ -46,7 +46,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String ENVELOPE_NAME = "Request";
+    private static final String ENVELOPE_NAME = "Request";
 
 
     /**

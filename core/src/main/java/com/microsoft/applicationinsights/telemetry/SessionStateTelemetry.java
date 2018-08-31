@@ -35,7 +35,7 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String ENVELOPE_NAME = "SessionState";
+    private static final String ENVELOPE_NAME = "SessionState";
 
 
     /**

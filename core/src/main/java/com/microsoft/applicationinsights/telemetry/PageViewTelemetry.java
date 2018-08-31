@@ -40,7 +40,7 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String ENVELOPE_NAME = "PageView";
+    private static final String ENVELOPE_NAME = "PageView";
 
 
     /**

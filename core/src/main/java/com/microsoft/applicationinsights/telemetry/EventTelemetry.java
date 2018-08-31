@@ -37,7 +37,7 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     /**
      * Envelope Name for this telemetry.
      */
-    public static final String ENVELOPE_NAME = "Event";
+    private static final String ENVELOPE_NAME = "Event";
 
 
     /**
