@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @param <T> The type of the telemetry being stored in the buffer.
  */
-public abstract class ATelemetryChannel<T> implements TelemetryChannel {
+public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     public static final int DEFAULT_MAX_INSTANT_RETRY = 3;
     public static final int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;
     public static final int DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 5;
@@ -74,7 +74,7 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
 
     private boolean developerMode = false;
 
-    public ATelemetryChannel() {
+    public TelemetryChannelBase() {
         boolean developerMode = false;
         try {
             String developerModeAsString = System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME);
@@ -107,7 +107,7 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
      *     buffer Note, value should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and
      *     MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
      */
-    public ATelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
+    public TelemetryChannelBase(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
         this(
                 endpointAddress,
                 null,
@@ -118,7 +118,7 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
                 DEFAULT_MAX_INSTANT_RETRY);
     }
 
-    public ATelemetryChannel(
+    public TelemetryChannelBase(
             String endpointAddress,
             String maxTransmissionStorageCapacity,
             boolean developerMode,
@@ -143,7 +143,7 @@ public abstract class ATelemetryChannel<T> implements TelemetryChannel {
      *
      * @param namesAndValues - The data passed as name and value pairs
      */
-    public ATelemetryChannel(Map<String, String> namesAndValues) {
+    public TelemetryChannelBase(Map<String, String> namesAndValues) {
         boolean developerMode = false;
         String endpointAddress = null;
         int maxInstantRetries = DEFAULT_MAX_INSTANT_RETRY;

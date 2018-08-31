@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.channel.concrete.localforwarder;
 
-import com.microsoft.applicationinsights.channel.concrete.ATelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.localforwarder.library.inputs.contracts.Telemetry;
@@ -47,10 +47,10 @@ public class LocalForwarderTelemetryChannelTest {
     @Test
     public void testMapConstructor() {
         Map<String, String> args = new HashMap<String, String>() {{
-            put(ATelemetryChannel.DEVELOPER_MODE_NAME, "false");
-            put(ATelemetryChannel.FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME, "7");
-            put(ATelemetryChannel.MAX_TELEMETRY_BUFFER_CAPACITY_NAME, "789");
-            put(ATelemetryChannel.ENDPOINT_ADDRESS_NAME, "myhost.local");
+            put(TelemetryChannelBase.DEVELOPER_MODE_NAME, "false");
+            put(TelemetryChannelBase.FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME, "7");
+            put(TelemetryChannelBase.MAX_TELEMETRY_BUFFER_CAPACITY_NAME, "789");
+            put(TelemetryChannelBase.ENDPOINT_ADDRESS_NAME, "myhost.local");
         }};
 
         LocalForwarderTelemetryChannel ch = new LocalForwarderTelemetryChannel(args);

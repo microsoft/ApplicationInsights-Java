@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
-import com.microsoft.applicationinsights.channel.concrete.ATelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
@@ -52,7 +52,7 @@ import java.util.Map;
  *
  * <p>Created by gupele on 12/17/2014.
  */
-public final class InProcessTelemetryChannel extends ATelemetryChannel<String> {
+public final class InProcessTelemetryChannel extends TelemetryChannelBase<String> {
 
     public InProcessTelemetryChannel() {
         super();

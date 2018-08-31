@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.channel.concrete.localforwarder;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.channel.concrete.ATelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -14,7 +14,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Map;
 
-public class LocalForwarderTelemetryChannel extends ATelemetryChannel<Telemetry> {
+public class LocalForwarderTelemetryChannel extends TelemetryChannelBase<Telemetry> {
 
     public static final String ENDPOINT_ENVIRONMENT_VARIABLE_NAME = "APPLICATION_INSIGHTS_LOCAL_FORWARDER_ENDPOINT";
     public static final String ENDPOINT_SYSTEM_PROPERTY_NAME = "applicationinsights.localforwarder.endpoint";
