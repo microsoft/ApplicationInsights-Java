@@ -42,7 +42,6 @@ public class LocalForwarderTelemetryChannelTest {
         assertFalse("isDeveloperMode should be false", ch.isDeveloperMode());
         assertEquals(555, ch.getTelemetryBuffer().getMaxTelemetriesInBatch());
         assertEquals(6, ch.getTelemetryBuffer().getTransmitBufferTimeoutInSeconds());
-        assertEquals("localhost", ch.getTransmitter().getEndpoint());
     }
 
     @Test
@@ -57,7 +56,6 @@ public class LocalForwarderTelemetryChannelTest {
         LocalForwarderTelemetryChannel ch = new LocalForwarderTelemetryChannel(args);
 
         assertFalse("isDeveloperMode shoudl be false", ch.isDeveloperMode());
-        assertEquals("myhost.local", ch.getTransmitter().getEndpoint());
         assertEquals(789, ch.getTelemetryBuffer().getMaxTelemetriesInBatch());
         assertEquals(7, ch.getTelemetryBuffer().getTransmitBufferTimeoutInSeconds());
     }

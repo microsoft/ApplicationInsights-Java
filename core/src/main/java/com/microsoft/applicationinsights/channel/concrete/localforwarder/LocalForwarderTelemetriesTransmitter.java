@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.channel.concrete.localforwarder;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -23,18 +22,14 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmitter<Telemetry> {
 
-    private final String endpoint;
     private ManagedChannel channel;
     private AITelemetryServiceStub asyncService;
 
     private final ScheduledExecutorService executor;
     private final ExecutorService grpcServiceExecutor;
-    private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
-    private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
     private StreamObserver<AiResponse> responseObserver = new StreamObserver<AiResponse>() {
         private final LocalForwarderTelemetriesTransmitter thiz = LocalForwarderTelemetriesTransmitter.this;
@@ -45,7 +40,7 @@ public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmit
 
         @Override
         public void onError(Throwable t) {
-            error("Error sending to '%s':%n%s", thiz.endpoint, ExceptionUtils.getStackTrace(t));
+            error("Error encountered:%n%s", ExceptionUtils.getStackTrace(t));
         }
 
         @Override
@@ -55,34 +50,24 @@ public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmit
     };
 
     @VisibleForTesting
-    LocalForwarderTelemetriesTransmitter(String endpoint) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(endpoint), "a non-empty endpoint must be specified");
-        this.endpoint = endpoint;
-        this.executor = Executors.newScheduledThreadPool(2, ThreadPoolUtils.createDaemonThreadFactory(LocalForwarderTelemetriesTransmitter.class, instanceId));
-        this.grpcServiceExecutor = new ThreadPoolExecutor(1, 10, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(),
-                ThreadPoolUtils.createDaemonThreadFactory(LocalForwarderTelemetriesTransmitter.class, String.format("%d-grpcPool", instanceId)));
-        channel = ManagedChannelBuilder.forTarget(endpoint)
-                .usePlaintext()
-                .executor(this.grpcServiceExecutor)
-                .enableRetry()
-                .build();
-        this.asyncService = AITelemetryServiceGrpc.newStub(channel);
-    }
+    LocalForwarderTelemetriesTransmitter(ManagedChannelBuilder channelBuilder, boolean createDefaultGrpcExecutor, int instanceId) {
+        Preconditions.checkNotNull(channelBuilder, "channelBuilder");
 
-    @VisibleForTesting
-    void updateServiceWithNewChannel(ManagedChannel channel) {
-        this.channel.shutdown();
-        this.channel = channel;
+        if (createDefaultGrpcExecutor) {
+            this.grpcServiceExecutor = new ThreadPoolExecutor(1, 10, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(),
+                    ThreadPoolUtils.createDaemonThreadFactory(LocalForwarderTelemetriesTransmitter.class, String.format("%d-grpcPool", instanceId)));
+            channelBuilder.executor(this.grpcServiceExecutor);
+        } else {
+            this.grpcServiceExecutor = null;
+        }
+        this.executor = Executors.newScheduledThreadPool(2, ThreadPoolUtils.createDaemonThreadFactory(LocalForwarderTelemetriesTransmitter.class, instanceId));
+        this.channel = channelBuilder.build();
         this.asyncService = AITelemetryServiceGrpc.newStub(channel);
     }
 
     @VisibleForTesting
     void setResponseObserver(StreamObserver<AiResponse> responseObserver) {
         this.responseObserver = responseObserver;
-    }
-
-    public String getEndpoint() {
-        return this.endpoint;
     }
 
     @Override
