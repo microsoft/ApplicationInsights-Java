@@ -42,7 +42,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Exception";
+    public static final String ENVELOPE_NAME = "Exception";
 
 
     /**

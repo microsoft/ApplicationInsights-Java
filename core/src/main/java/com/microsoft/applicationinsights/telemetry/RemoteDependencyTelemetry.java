@@ -43,7 +43,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "RemoteDependency";
+    public static final String ENVELOPE_NAME = "RemoteDependency";
 
 
     /**
