@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class NopTelemetryChannel implements TelemetryChannel {
 
+    private static final Object LOCK = new Object();
     private static volatile NopTelemetryChannel INSTANCE;
 
     private NopTelemetryChannel() {
@@ -18,7 +19,7 @@ public class NopTelemetryChannel implements TelemetryChannel {
 
     public static NopTelemetryChannel instance() {
         if (INSTANCE == null) {
-            synchronized (NopTelemetryChannel.class) {
+            synchronized (LOCK) {
                 if (INSTANCE == null) {
                     INSTANCE = new NopTelemetryChannel();
                 }
