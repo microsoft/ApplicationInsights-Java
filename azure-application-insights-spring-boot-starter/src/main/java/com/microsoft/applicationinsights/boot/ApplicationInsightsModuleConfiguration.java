@@ -90,7 +90,7 @@ public class ApplicationInsightsModuleConfiguration {
      * @return instance of {@link CloudInfoContextInitializer}
      */
     @Bean
-    public CloudInfoContextInitializer cloudInfoContextInitializer() {
+    CloudInfoContextInitializer cloudInfoContextInitializer() {
         return new CloudInfoContextInitializer();
     }
 
