@@ -208,7 +208,7 @@ public enum TelemetryConfigurationFactory {
 
     private boolean isQuickPulseEnabledInConfiguration(ApplicationInsightsXmlConfiguration appConfiguration) {
         QuickPulseXmlElement quickPulseXmlElement = appConfiguration.getQuickPulse();
-        return quickPulseXmlElement == null || quickPulseXmlElement.isEnabled();
+        return quickPulseXmlElement.isEnabled();
     }
 
     /**
