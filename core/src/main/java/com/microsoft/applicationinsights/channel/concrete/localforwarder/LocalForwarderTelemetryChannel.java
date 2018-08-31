@@ -97,6 +97,7 @@ public class LocalForwarderTelemetryChannel extends TelemetryChannelBase<Telemet
     protected void makeSureEndpointAddressIsValid(String endpointAddress) {
         if (Strings.isNullOrEmpty(endpointAddress)) { // it will fail somewhere downstream
             InternalLogger.INSTANCE.error("No endpoint address given for channel '%s'", this.getClass().getCanonicalName());
+            throw new IllegalArgumentException("endpointAddress must be non-empty");
         }
     }
 }
