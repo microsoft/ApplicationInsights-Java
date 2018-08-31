@@ -250,8 +250,8 @@ public class TelemetryClient {
 
         MetricTelemetry mt = new MetricTelemetry(name, value);
         mt.setCount(sampleCount);
-            mt.setMin(min);
-            mt.setMax(max);
+        mt.setMin(min);
+        mt.setMax(max);
         mt.setStandardDeviation(stdDev);
         if (properties != null && properties.size() > 0) {
             MapUtil.copy(properties, mt.getProperties());
