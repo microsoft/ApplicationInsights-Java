@@ -60,7 +60,7 @@ public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmit
         } else {
             this.grpcServiceExecutor = null;
         }
-        this.executor = Executors.newScheduledThreadPool(2, ThreadPoolUtils.createDaemonThreadFactory(LocalForwarderTelemetriesTransmitter.class, instanceId));
+        this.executor = Executors.newScheduledThreadPool(1, ThreadPoolUtils.createDaemonThreadFactory(LocalForwarderTelemetriesTransmitter.class, instanceId));
         this.channel = channelBuilder.build();
         this.asyncService = AITelemetryServiceGrpc.newStub(channel);
     }
