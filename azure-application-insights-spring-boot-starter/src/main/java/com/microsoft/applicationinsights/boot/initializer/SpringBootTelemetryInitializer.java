@@ -23,8 +23,8 @@ public class SpringBootTelemetryInitializer implements TelemetryInitializer {
 
   @Override
   public void initialize(Telemetry telemetry) {
-    CloudContext device = telemetry.getContext().getCloud();
-    device.setRole(appName);
+    CloudContext cloud = telemetry.getContext().getCloud();
+    cloud.setRole(appName);
   }
 
 }
