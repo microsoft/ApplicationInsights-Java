@@ -374,6 +374,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
 	 * class is concerned and thus considered valid
      *
      * @param endpointAddress
+     * @throws IllegalArgumentException if the endpointAddress is invalid
      */
     protected void makeSureEndpointAddressIsValid(String endpointAddress) {
         if (Strings.isNullOrEmpty(endpointAddress)) {
