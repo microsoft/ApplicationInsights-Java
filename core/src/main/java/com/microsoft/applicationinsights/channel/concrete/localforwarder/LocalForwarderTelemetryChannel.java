@@ -34,6 +34,9 @@ public class LocalForwarderTelemetryChannel extends TelemetryChannelBase<Telemet
     @Override
     protected synchronized void initialize(String configurationFileEndpoint, String maxTransmissionStorageCapacity, boolean developerMode,
                                            LimitsEnforcer maxTelemetryBufferCapacityEnforcer, LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
+        if (isInitailized) {
+            return;
+        }
         // using the same policy as TelemetryConfigurationFactory, in priority order: System Property, Environment Variable, Configuration File
         String endpoint = System.getProperty(ENDPOINT_SYSTEM_PROPERTY_NAME, System.getenv(ENDPOINT_ENVIRONMENT_VARIABLE_NAME));
         if (Strings.isNullOrEmpty(endpoint)) {

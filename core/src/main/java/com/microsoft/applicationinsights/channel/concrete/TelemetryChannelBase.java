@@ -67,6 +67,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     private AtomicLong itemsSent = new AtomicLong(0);
 
     protected boolean stopped = false;
+    protected boolean isInitailized = false;
 
     protected TelemetriesTransmitter<T> telemetriesTransmitter;
     protected TelemetrySampler telemetrySampler;
@@ -192,6 +193,9 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     protected synchronized void initialize(String endpointAddress, String maxTransmissionStorageCapacity,
                                        boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
                                        LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
+        if (isInitailized) {
+            return;
+        }
         makeSureEndpointAddressIsValid(endpointAddress);
 
 
@@ -199,6 +203,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);
+        isInitailized = true;
     }
 
     protected synchronized TransmitterFactory<T> getTransmitterFactory() {
