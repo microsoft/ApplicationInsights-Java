@@ -8,7 +8,6 @@ import com.google.protobuf.BoolValue;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Int32Value;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry;
 import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
