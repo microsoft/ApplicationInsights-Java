@@ -1,0 +1,24 @@
+apply plugin: 'war'
+
+dependencies {
+    compile aiCoreJar
+    compile aiWebJar
+    compile 'com.google.guava:guava:20.0'
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    compile 'org.apache.httpcomponents:httpclient:4.5.3'
+
+    compile 'com.squareup.okhttp:okhttp:2.7.5'
+    compile 'com.squareup.okio:okio:1.15.0'
+
+    smokeTestCompile 'com.google.guava:guava:23.0'
+}
+
+compileJava.sourceCompatibility = 1.7
+compileJava.targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName
