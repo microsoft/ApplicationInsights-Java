@@ -37,11 +37,10 @@ import java.util.concurrent.ConcurrentMap;
 public class Envelope
     implements JsonSerializable
 {
-    public static final int DEFAULT_VER = 1;
     /**
      * Backing field for property Ver.
      */
-    private int ver = DEFAULT_VER;
+    private int ver = 1;
     
     /**
      * Backing field for property Name.
