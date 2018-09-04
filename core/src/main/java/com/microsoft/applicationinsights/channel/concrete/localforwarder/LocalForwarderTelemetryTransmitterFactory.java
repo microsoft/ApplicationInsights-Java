@@ -15,7 +15,7 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Transmit
     @Override
     public TelemetriesTransmitter<Telemetry> create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(endpoint), "a non-empty endpoint must be specified");
-        return new LocalForwarderTelemetriesTransmitter(ManagedChannelBuilder.forTarget(endpoint).usePlaintext().enableRetry(), true, INSTANCE_ID_POOL.getAndIncrement());
+        return new LocalForwarderTelemetriesTransmitter(ManagedChannelBuilder.forTarget(endpoint).usePlaintext(), true, INSTANCE_ID_POOL.getAndIncrement());
     }
 
 }
