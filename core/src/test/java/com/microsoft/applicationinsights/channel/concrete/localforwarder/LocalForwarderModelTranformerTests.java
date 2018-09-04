@@ -53,7 +53,7 @@ public class LocalForwarderModelTranformerTests {
 
     private static Telemetry.Builder getTelemetryBuilder(String envelopeName, String iKey) {
         return Telemetry.newBuilder()
-                .setVer(Envelope.DEFAULT_VER)
+                .setVer(LocalForwarderModelTransformer.CURRENT_ENVELOPE_VERSION)
                 .setInstrumentationKey(iKey)
                 .setDataTypeName(LocalForwarderModelTransformer.generateDataTypeName(iKey, envelopeName));
     }

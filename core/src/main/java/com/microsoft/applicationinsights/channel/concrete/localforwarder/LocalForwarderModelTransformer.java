@@ -44,7 +44,8 @@ final class LocalForwarderModelTransformer {
 
     private static final Map<String, Function<BaseTelemetry, Telemetry>> transformers = new HashMap<>();
 
-    private static final int CURRENT_ENVELOPE_VERSION = 1;
+    @VisibleForTesting
+    static final int CURRENT_ENVELOPE_VERSION = 1;
 
     @VisibleForTesting
     static final Function<com.microsoft.applicationinsights.internal.schemav2.StackFrame, StackFrame> STACK_FRAME_TRANSFORMER_FUNCTION = new Function<com.microsoft.applicationinsights.internal.schemav2.StackFrame, StackFrame>() {

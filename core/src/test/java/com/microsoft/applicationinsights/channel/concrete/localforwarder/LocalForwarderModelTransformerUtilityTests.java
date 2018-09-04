@@ -191,7 +191,7 @@ public class LocalForwarderModelTransformerUtilityTests {
             bt.setTimestamp(date);
             assertEquals(Telemetry.newBuilder()
                             .setDateTime(LocalStringsUtils.getDateFormatter().format(date))
-                            .setVer(Envelope.DEFAULT_VER)
+                            .setVer(LocalForwarderModelTransformer.CURRENT_ENVELOPE_VERSION)
                             .setInstrumentationKey(ikey)
                             .setDataTypeName(String.format("Microsoft.ApplicationInsights.%s.%s", ikey, envelopeName)).buildPartial(),
                     LocalForwarderModelTransformer.telemetryBuilderWithStandardFields(bt).buildPartial());
@@ -230,7 +230,7 @@ public class LocalForwarderModelTransformerUtilityTests {
 
             final Telemetry.Builder expected = Telemetry.newBuilder()
                     .setDateTime(LocalStringsUtils.getDateFormatter().format(date))
-                    .setVer(Envelope.DEFAULT_VER)
+                    .setVer(LocalForwarderModelTransformer.CURRENT_ENVELOPE_VERSION)
                     .setInstrumentationKey(ikey)
                     .setSequenceNumber(sequence)
                     .putAllTags(tags)
