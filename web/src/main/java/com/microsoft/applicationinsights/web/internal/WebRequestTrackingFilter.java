@@ -73,6 +73,7 @@ public final class WebRequestTrackingFilter implements Filter {
         WebReflectionUtils.initialize();
     }
     // region Members
+    // Visible for testing
     final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
 
