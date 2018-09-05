@@ -94,7 +94,7 @@ public class ApplicationInsightsProperties {
 
   public String getInstrumentationKey() {
     // First try getting ikey from application.properties
-    if (StringUtils.isNoneBlank(instrumentationKey)) {
+    if (StringUtils.isNotBlank(instrumentationKey)) {
       return instrumentationKey;
     }
 
