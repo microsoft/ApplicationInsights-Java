@@ -74,7 +74,7 @@ public class ApplicationInsightsWebMvcAutoConfiguration {
     }
 
     /**
-     * Programmatically registers an AppliCactionInsightsServletContextListener to destroy all the running threads.
+     * Programmatically registers an ApplicationInsightsServletContextListener to destroy all the running threads.
      * @param applicationInsightsServletContextListener
      * @return Bean of type {@link ServletListenerRegistrationBean}
      */
