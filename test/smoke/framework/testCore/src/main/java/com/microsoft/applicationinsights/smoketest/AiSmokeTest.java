@@ -143,6 +143,7 @@ public abstract class AiSmokeTest {
 	protected String targetUri;
 	protected String httpMethod;
 	protected long targetUriDelayMs;
+	protected long targetUriTimeoutMs;
 	protected boolean expectSomeTelemetry = true;
 	//endregion
 
@@ -173,6 +174,7 @@ public abstract class AiSmokeTest {
 				thiz.targetUri = null;
 				thiz.httpMethod = null;
 				thiz.targetUriDelayMs = 0L;
+				thiz.targetUriTimeoutMs = 0L;
 			} else {
 				thiz.targetUri = targetUri.value();
 				if (!thiz.targetUri.startsWith("/")) {
@@ -180,6 +182,7 @@ public abstract class AiSmokeTest {
 				}
 				thiz.httpMethod = targetUri.method().toUpperCase();
 				thiz.targetUriDelayMs = targetUri.delay();
+				thiz.targetUriTimeoutMs = targetUri.timeout();
 			}
 
 			ExpectSomeTelemetry expectSomeTelemetry = description.getAnnotation(ExpectSomeTelemetry.class);
@@ -355,8 +358,12 @@ public abstract class AiSmokeTest {
 		assertNotNull(String.format("Null response from targetUri: '%s'. %s", targetUri, expectationMessage), content);
 		assertTrue(String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage), content.length() > 0);
 
-		System.out.printf("Waiting %ds for telemetry...%n", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
-		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		if (this.targetUriTimeoutMs > 0) {
+			mockedIngestion.awaitAnyItems(this.targetUriTimeoutMs, TimeUnit.MILLISECONDS);
+		} else {
+			System.out.printf("Waiting %ds for telemetry...%n", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+			TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+		}
 		System.out.println("Finished waiting for telemetry.\nStarting validation...");
 
 		if (expectSomeTelemetry) {
