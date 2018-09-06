@@ -276,7 +276,8 @@ public final class WebRequestTrackingFilter implements Filter {
         StopWatch sw = StopWatch.createStarted();
 
         //If Agent Jar is not present in the class path skip the process
-        if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME, this.getClass().getClassLoader())) {
+        if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
+            this.getClass().getClassLoader())) {
             InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration in %.3fms", sw.getNanoTime()/1_000_000.0);
             return;
         }
