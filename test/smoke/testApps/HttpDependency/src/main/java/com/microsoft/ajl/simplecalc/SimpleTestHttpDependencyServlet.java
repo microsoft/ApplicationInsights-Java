@@ -34,29 +34,29 @@ public class SimpleTestHttpDependencyServlet extends HttpServlet {
         ServletFuncs.geRrenderHtml(request, response);
 
         // Get true http use apache http client
-        GetHttpUseApacheHttpClient("https://www.bing.com");
+        getHttpUseApacheHttpClient("https://www.bing.com");
 
         // Get true http use ok http client
-        GetHttpUseOkHttpClient("https://www.microsoft.com");
+        getHttpUseOkHttpClient("https://www.microsoft.com");
 
         // Get false http use ok http client
         try {
-            GetHttpUseOkHttpClient("https://www.microsoftabc.com");
+            getHttpUseOkHttpClient("https://www.microsoftabc.com");
         } catch (Exception e) {
             // TODO: handle exception
         }
 
         // Get false http use apache http client
-        GetHttpUseApacheHttpClient("https://www.bingxxxxx.com");
+        getHttpUseApacheHttpClient("https://www.bingxxxxx.com");
     }
 
-    public void GetHttpUseApacheHttpClient(String url) throws IOException {
+    private void getHttpUseApacheHttpClient(String url) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(url);
         HttpResponse httpResponse = client.execute(get);
     }
 
-    public void GetHttpUseOkHttpClient(String url) throws IOException {
+    private void getHttpUseOkHttpClient(String url) throws IOException {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(url).build();
         Response response = client.newCall(request).execute();
