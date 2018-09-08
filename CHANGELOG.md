@@ -4,7 +4,8 @@
 - Introduces SpringBoot Starter 1.0.2-BETA
 - Fixes the thread shutdown issue in SpringBoot Starter by registering `ApplicationInsightsServletContextListener`.
 - SpringBoot Starter now supports reading iKey using all the variable names as core sdk.
-- Starter would no longer support relaxed binding of ikey property due to complex conditional need and backport problems with RelaxedBinder from Boot 2 to 1.5.x
+- Starter would no longer support relaxed binding of ikey property due to complex conditional need and backport problems with RelaxedBinder from Boot 2 to 1.5.x.
+- `InterceptorRegistry` class no longer has `@EnableWebMvc` annotation as it breaks springboot autoconfig.
 
 # Version 2.1.2
 - Fix [#676](https://github.com/Microsoft/ApplicationInsights-Java/issues/676). This fixes the HTTP dependency collection when using NetFlix Zuul Library.
