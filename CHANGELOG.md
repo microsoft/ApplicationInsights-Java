@@ -2,6 +2,7 @@
 
 # Version 2.2.0
 - Introduces SpringBoot Starter 1.0.2-BETA
+- Starter now respects autoconfiguration for Micrometer metrics.
 - Fixes the thread shutdown issue in SpringBoot Starter by registering `ApplicationInsightsServletContextListener`.
 - SpringBoot Starter now supports reading iKey using all the variable names as core sdk.
 - Starter would no longer support relaxed binding of ikey property due to complex conditional need and backport problems with RelaxedBinder from Boot 2 to 1.5.x.
