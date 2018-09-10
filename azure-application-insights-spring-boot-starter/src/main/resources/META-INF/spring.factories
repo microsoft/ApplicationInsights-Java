@@ -18,5 +18,5 @@
 # DEALINGS IN THE SOFTWARE.
 
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.microsoft.applicationinsights.boot.ApplicationInsightsTelemetryAutoConfiguration,\
-com.microsoft.applicationinsights.boot.ApplicationInsightsWebMvcAutoConfiguration
+com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsTelemetryAutoConfiguration,\
+com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsWebMvcAutoConfiguration

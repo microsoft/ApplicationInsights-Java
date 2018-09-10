@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.boot;
+package com.microsoft.applicationinsights.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -83,6 +83,17 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
     }
 
     @Test
+    public void shouldBeAbleToLoadInstrumentationKeyFromIkeySystemProperty_1() {
+        testIkeySystemProperty("APPLICATION_INSIGHTS_IKEY");
+    }
+
+    @Test
+    public void shouldBeAbleToLoadInstrumentationKeyFromIkeySystemProperty_2() {
+        testIkeySystemProperty("APPINSIGHTS_INSTRUMENTATIONKEY");
+    }
+
+    @Test
+    @Ignore("Boot 2 causes backport issues if depending on RelaxedPropertyBinder")
     public void shouldSetInstrumentationKeyFromRelaxedCase() {
         EnvironmentTestUtils.addEnvironment(context,
                 "AZURE.APPLICATION_INSIGHTS.INSTRUMENTATION_KEY: 00000000-0000-0000-0000-000000000000");
@@ -279,6 +290,22 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         context.refresh();
 
         assertThat(context.getBeansOfType(HeartBeatModule.class)).isNotEmpty();
+    }
+
+    private void testIkeySystemProperty(String propertyName) {
+        System.setProperty(propertyName, "00000000-0000-0000-0000-000000000001");
+        context.register(PropertyPlaceholderAutoConfiguration.class,
+            ApplicationInsightsTelemetryAutoConfiguration.class);
+        context.refresh();
+
+        TelemetryClient telemetryClient = context.getBean(TelemetryClient.class);
+        TelemetryConfiguration telemetryConfiguration = context.getBean(TelemetryConfiguration.class);
+
+        assertThat(telemetryConfiguration).isSameAs(TelemetryConfiguration.getActive());
+        assertThat(telemetryConfiguration.getInstrumentationKey()).isEqualTo("00000000-0000-0000-0000-000000000001");
+        assertThat(telemetryClient.getContext().getInstrumentationKey()).isEqualTo("00000000-0000-0000-0000-000000000001");
+
+        System.clearProperty(propertyName);
     }
 
     private static class CustomModuleConfiguration {

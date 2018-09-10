@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.boot;
+package com.microsoft.applicationinsights.autoconfigure;
 
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;

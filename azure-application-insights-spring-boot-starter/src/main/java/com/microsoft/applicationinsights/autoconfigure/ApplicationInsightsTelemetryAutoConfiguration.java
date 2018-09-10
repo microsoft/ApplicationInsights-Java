@@ -19,13 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.boot;
+package com.microsoft.applicationinsights.autoconfigure;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.Channel.InProcess;
+import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.Channel.InProcess;
+import com.microsoft.applicationinsights.autoconfigure.conditionals.InstrumentationKeyCondition;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -42,27 +43,34 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 
 /**
  * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration} </h1>
+ * This class is supposed to perform auto-configuration before Micrometer and SpringBoot.
  *
  * @author Arthur Gavlyukovskiy, Dhaval Doshi
  */
 @Configuration
-@ConditionalOnProperty(value = "azure.application-insights.instrumentation-key")
+@Conditional(InstrumentationKeyCondition.class)
 @EnableConfigurationProperties(ApplicationInsightsProperties.class)
 @ConditionalOnClass(TelemetryConfiguration.class)
 @Import({
         ApplicationInsightsModuleConfiguration.class,
         ApplicationInsightsWebModuleConfiguration.class
+})
+@AutoConfigureBefore(name = {
+    "io.micrometer.spring.autoconfigure.export.azuremonitor.AzureMonitorMetricsExportAutoConfiguration",
+    "org.springframework.boot.actuate.autoconfigure.metrics.export.azuremonitor.AzureMonitorMetricsExportAutoConfiguration"
 })
 public class ApplicationInsightsTelemetryAutoConfiguration {
 
@@ -128,6 +136,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         }
         telemetryConfiguration.setChannel(telemetryChannel);
         initializeComponents(telemetryConfiguration);
+        initializePerformanceCounterContainer();
         return telemetryConfiguration;
     }
 
@@ -179,10 +188,8 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         return InternalLogger.INSTANCE;
     }
 
-    // Configure properties of PerformanceCounter Container. Since this is ENUM type we do not need
-    // a bean for this.
-    @PostConstruct
-    public void initializePerformanceCounterContainer() {
+    // calling directly telemetry configuration call to have Internal logger configured first
+     private void initializePerformanceCounterContainer() {
         ApplicationInsightsProperties.PerformanceCounter performanceCounter = applicationInsightsProperties.getPerformanceCounter();
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceCounter.getCollectionFrequencyInSeconds());
 

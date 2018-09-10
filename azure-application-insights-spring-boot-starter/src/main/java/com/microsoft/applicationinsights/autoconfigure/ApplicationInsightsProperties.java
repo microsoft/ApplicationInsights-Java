@@ -19,8 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.boot;
+package com.microsoft.applicationinsights.autoconfigure;
 
+import com.microsoft.applicationinsights.autoconfigure.helpers.IkeyResolver;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -92,7 +94,17 @@ public class ApplicationInsightsProperties {
   }
 
   public String getInstrumentationKey() {
-    return instrumentationKey;
+    // First try getting ikey from application.properties
+    if (StringUtils.isNotBlank(instrumentationKey)) {
+      return instrumentationKey;
+    }
+
+    // If above fails try getting ikey from environment variables or system properties
+    String v = IkeyResolver.getIkeyFromEnvironmentVariables();
+    if (v == null) {
+      throw new IllegalStateException("Instrumentation Key must be set to report telemetry");
+    }
+    return v;
   }
 
   public void setInstrumentationKey(String instrumentationKey) {
@@ -403,7 +415,7 @@ public class ApplicationInsightsProperties {
   static class Jmx {
 
     /** List of JMX counters */
-    List<String> jmxCounters = new ArrayList<>();
+    private List<String> jmxCounters = new ArrayList<>();
 
     public List<String> getJmxCounters() {
       return jmxCounters;
@@ -419,22 +431,22 @@ public class ApplicationInsightsProperties {
     /**
      * Switch to enable / disable heartbeat
      */
-    boolean enabled = false;
+    private boolean enabled = false;
 
     /**
      * The heartbeat interval in seconds.
      */
-    long heartBeatInterval = HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL;
+    private long heartBeatInterval = HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL;
 
     /**
      * List of excluded heartbeat properties
      */
-    List<String> excludedHeartBeatProviderList = new ArrayList<>();
+    private List<String> excludedHeartBeatProviderList = new ArrayList<>();
 
     /**
      * List of excluded heartbeat providers
      */
-    List<String> excludedHeartBeatPropertiesList = new ArrayList<>();
+    private List<String> excludedHeartBeatPropertiesList = new ArrayList<>();
 
     public boolean isEnabled() {
       return enabled;
