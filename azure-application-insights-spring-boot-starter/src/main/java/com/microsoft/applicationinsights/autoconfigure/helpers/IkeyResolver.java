@@ -19,25 +19,40 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.spring.internal;
+package com.microsoft.applicationinsights.autoconfigure.helpers;
 
-import com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
- * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry.
- * The registration enables the interceptor to extract the http request's controller and action names.
- *
- * This class extends {@link WebMvcConfigurerAdapter} to add {@link RequestNameHandlerInterceptorAdapter}
- * instead of overriding @EnableWebMvc annotation.
- *
+ * A helper class to fetch instrumentation key from system properties or environment variables
+ * @author Dhaval Doshi
  */
-@Configuration
-public class InterceptorRegistry extends WebMvcConfigurerAdapter {
+public class IkeyResolver {
 
-    @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
-        registry.addInterceptor(new RequestNameHandlerInterceptorAdapter());
+  private static final String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
+  private static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+
+    public static String getIkeyFromEnvironmentVariables() {
+    String v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
+    if (StringUtils.isNotBlank(v)) {
+      return v;
     }
+
+    v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
+    if (StringUtils.isNotBlank(v)) {
+      return v;
+    }
+
+    // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
+    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
+    if (StringUtils.isNotBlank(v)) {
+      return v;
+    }
+    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
+    if (StringUtils.isNotBlank(v)) {
+      return v;
+    }
+
+    return v;
+  }
 }

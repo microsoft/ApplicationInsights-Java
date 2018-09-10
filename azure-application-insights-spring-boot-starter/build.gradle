@@ -20,6 +20,9 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
+}
 
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
@@ -44,8 +47,9 @@ sourceSets {
 }
 
 dependencies {
-    compile (project(':core'))
-    compile (project(':web'))
+    compile(project(':core'))
+    compile(project(':web'))
+    compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
     provided('org.springframework.boot:spring-boot:1.5.9.RELEASE')
     provided('org.springframework.boot:spring-boot-autoconfigure:1.5.9.RELEASE')
     provided('org.springframework.boot:spring-boot-starter-web:1.5.9.RELEASE')
@@ -53,6 +57,33 @@ dependencies {
     testCompile('junit:junit:4.12')
     testCompile('org.springframework.boot:spring-boot-starter-test:1.5.9.RELEASE')
     testCompile('org.assertj:assertj-core:2.6.0')
+}
+
+ext.dependenciesPrefix = 'com.microsoft.applicationinsights.boot.dependencies'
+shadowJar {
+    dependencies {
+        exclude(project(':core'))
+        exclude(project(':web'))
+        exclude(dependency([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5']))
+        exclude(dependency([group: 'commons-io', name: 'commons-io', version: '2.6']))
+        exclude(dependency([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3']))
+        // Transitive dependencies of httpclient that needs to be excluded seperately as shadow jar doesn't exclude them
+        // automatically.
+        exclude(dependency([group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.6']))
+        exclude(dependency([group: 'org.apache.httpcomponents', name: 'httpcore-nio', version: '4.4.6']))
+        // end excluding transitive dependencies
+
+        exclude(dependency([group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.3']))
+        exclude(dependency([group: 'com.google.guava', name: 'guava', version: '20.0']))
+        exclude(dependency([group: 'com.google.code.gson', name: 'gson', version: '2.8.2']))
+    }
+    classifier=''
+    relocate 'org.apache.commons', "${dependenciesPrefix}.apachecommons"
+}
+
+jar {
+    dependsOn shadowJar
+    enabled = false
 }
 
 compileJava.dependsOn(processResources)

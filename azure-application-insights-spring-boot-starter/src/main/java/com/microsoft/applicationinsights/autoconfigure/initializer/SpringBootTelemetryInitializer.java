@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.boot.initializer;
+package com.microsoft.applicationinsights.autoconfigure.initializer;
 
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
