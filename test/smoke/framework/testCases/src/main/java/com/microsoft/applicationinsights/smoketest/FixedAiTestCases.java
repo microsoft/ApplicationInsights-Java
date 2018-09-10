@@ -3,19 +3,29 @@ package com.microsoft.applicationinsights.smoketest;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 
 public class FixedAiTestCases {
 
-    private final TelemetryClient tclient;
+    private final CustomAiTestCases customCases;
 
 
     public FixedAiTestCases(TelemetryClient tclient) {
-        this.tclient = tclient;
+        this.customCases = new CustomAiTestCases(tclient);
     }
 
     private Map<String, String> getPropertyMapForMethod(String method) {
@@ -34,66 +44,157 @@ public class FixedAiTestCases {
     }
 
     public Runnable getTrackEvent() {
-        return new Runnable() {
-            @Override
-            public void run() {
-                tclient.trackEvent("AiTestEvent", getPropertyMapForMethod("Event"), getMetricMapForMethod("Event"));
-            }
-        };
+        return customCases.getTrackEvent("AiTestEvent", getPropertyMapForMethod("Event"), getMetricMapForMethod("Event"));
     }
 
     public Runnable getTrackTrace() {
-        return new Runnable() {
-            @Override
-            public void run() {
-                tclient.trackTrace("TestTrace", SeverityLevel.Warning, getPropertyMapForMethod("Trace"));
-            }
-        };
+        return customCases.getTrackTrace("AiTestTrace", SeverityLevel.Warning, getPropertyMapForMethod("Trace"));
     }
 
-    public Runnable getTrackMetric() {
-        return new Runnable(){
-            @Override
-            public void run() {
-                tclient.trackMetric("TestMetric", (123.4 + 567.8)/2.0, 2, 123.4, 567.8, getPropertyMapForMethod("Metric"));
-            }
-        };
+    public Runnable getTrackMetric_FullAggregate() {
+        final double value = (123.4 + 567.8);
+        final int count = 2;
+        final double min = 123.4;
+        final double max = 567.8;
+        final double avg = value/count;
+        final double stdDev = Math.sqrt(((123.4-avg)*(123.4-avg) + (567.8-avg)*(567.8-avg))/count);
+        MetricTelemetry mt = new MetricTelemetry();
+        mt.setName("AiTestMetric_FullAggregate");
+        mt.setValue(value);
+        mt.setCount(count);
+        mt.setMin(min);
+        mt.setMax(max);
+        mt.setStandardDeviation(stdDev);
+        for (Entry<String, String> entry : getPropertyMapForMethod("Metric_Agg").entrySet()) {
+            mt.getProperties().put(entry.getKey(), entry.getValue());
+        }
+
+        return customCases.getTrackMetric(mt);
     }
+
+    public Runnable getTrackMetric_FullMeasurement() {
+        final double value = 789.0123;
+        final int count = 1;
+        MetricTelemetry mt = new MetricTelemetry();
+        mt.setName("AiTestMetric_FullMeasurement");
+        mt.setValue(value);
+        mt.setCount(count);
+        for (Entry<String, String> entry : getPropertyMapForMethod("Metric_Mea").entrySet()) {
+            mt.getProperties().put(entry.getKey(), entry.getValue());
+        }
+
+        return customCases.getTrackMetric(mt);
+    }
+
+    public Runnable getTrackMetric_HelperAggregate() {
+        final double value = (123.4 + 567.8);
+        final int count = 2;
+        final double min = 123.4;
+        final double max = 567.8;
+        final double avg = value/count;
+        final double stdDev = Math.sqrt(((123.4-avg)*(123.4-avg) + (567.8-avg)*(567.8-avg))/count);
+        return customCases.getTrackMetric("AiTestMetric_HelperAgg", value, count, min, max, getPropertyMapForMethod("Metric_Agg"));
+    }
+
+    public Runnable getTrackMetric_HelperMeasurement() {
+        final double value = 789.0123;
+        return customCases.getTrackMetric("AiTestMetric_HelperMeasurement", value);
+    }
+
 
     public Runnable getTrackException() {
-        return new Runnable(){
-            @Override
-            public void run() {
-                tclient.trackException(new Exception("TestException", new Exception("TestExceptionCause")), getPropertyMapForMethod("Exception"), getMetricMapForMethod("Exception"));
-            }
-        };
+        return customCases.getTrackException(new Exception("AiTestException", new Exception("TestExceptionCause")), getPropertyMapForMethod("Exception"), getMetricMapForMethod("Exception"));
     }
 
-    public Runnable getTrackHttpRequest() {
-        return new Runnable(){
-            @Override
-            public void run() {
-                tclient.trackHttpRequest("TestHttpRequest", new Date(), 123L, "200", true);
-            }
-        };
+    /**
+     * Generates random result code >= 200 and code < 300.
+     * @return
+     */
+    public Runnable getTrackHttpRequest_Success() {
+        Random r = new Random(System.currentTimeMillis());
+        int code = 200 + r.nextInt(100);
+        return customCases.getTrackHttpRequest("AiTestHttpRequest1", Date.from(Instant.now()), 123L, String.valueOf(code), true);
     }
 
+    /**
+     * Generates random result code >= 400
+     * @return
+     */
+    public Runnable getTrackHttpRequest_Failed() {
+        Random r = new Random(System.currentTimeMillis());
+        int code = 400 + r.nextInt(200);
+        return customCases.getTrackHttpRequest("AiTestHttpRequest2", Date.from(Instant.now()), 456L, String.valueOf(code), false);
+    }
+
+    /**
+     * Uses 100 as result code. Success=true
+     * @return
+     */
+    public Runnable getTrackRequest_Full() {
+        // name, timestamp, duration, resultCode, success
+        RequestTelemetry rt = new RequestTelemetry("AiTestRequest", Date.from(Instant.now()), 147L, "100", true);
+        // add props
+        for (Entry<String, String> entry : getPropertyMapForMethod("Request").entrySet()) {
+            rt.getProperties().put(entry.getKey(), entry.getValue());
+        }
+        // set URL
+        try {
+            rt.setUrl(new URL("http", "some-host.somewhere", 9997, "some/file/path.ext"));
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("The url format is messed up. fix it.", e);
+        }
+        // set Source
+        rt.setSource("some-source-for-test-request");
+
+        return customCases.getTrackRequest(rt);
+    }
+
+    /**
+     * success=true
+     * @return
+     */
     public Runnable getTrackDependency() {
-        return new Runnable(){
-            @Override
-            public void run() {
-                tclient.trackDependency("TestDependency", "TestCommand", new Duration(0, 0, 0, 12, 345), true);
-            }
-        };
+        return customCases.getTrackDependency("AiTestDependency", "TestCommand1", new Duration(789L), true);
+    }
+
+    /**
+     * Success=false
+     * @return
+     */
+    public Runnable getTrackDependency_Full() {
+        RemoteDependencyTelemetry rdt = new RemoteDependencyTelemetry("AiTestDependency");
+        rdt.setCommandName("TestCommand2");
+        rdt.setDuration(new Duration(999L));
+        rdt.setResultCode("503");
+        rdt.setSuccess(false);
+        rdt.setTarget("some-target");
+        rdt.setTarget("fake-type");
+        for (Entry<String, String> entry : getPropertyMapForMethod("Dependency").entrySet()) {
+            rdt.getProperties().put(entry.getKey(), entry.getValue());
+        }
+        for (Entry<String, Double> entry : getMetricMapForMethod("Depdenency").entrySet()) {
+            rdt.getMetrics().put(entry.getKey(), entry.getValue());
+        }
+        return customCases.getTrackDependency(rdt);
     }
 
     public Runnable getTrackPageView() {
-        return new Runnable(){
-            @Override
-            public void run() {
-                tclient.trackPageView("TestPageView");
-            }
-        };
+        return customCases.getTrackPageView("AiTestPageView1");
+    }
+
+    public Runnable getTrackPageView_Full() {
+        PageViewTelemetry pvt = new PageViewTelemetry("AiTestPageView2");
+        pvt.setDuration(1011L);
+        pvt.setUrl(URI.create("some-host.somewhere/fake/path/elements/AiTestPageView2.html"));
+        
+        for (Entry<String, String> entry : getPropertyMapForMethod("PageView").entrySet()) {
+            pvt.getProperties().put(entry.getKey(), entry.getValue());
+        }
+        for (Entry<String, Double> entry : getMetricMapForMethod("PageView").entrySet()) {
+            pvt.getMetrics().put(entry.getKey(), entry.getValue());
+        }
+
+        return customCases.getTrackPageView(pvt);
     }
 
 }
