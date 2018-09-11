@@ -19,12 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.boot;
+package com.microsoft.applicationinsights.autoconfigure;
 
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.HeartBeat;
-import com.microsoft.applicationinsights.boot.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
-import com.microsoft.applicationinsights.boot.HeartBeatProvider.SpringBootHeartBeatProvider;
-import com.microsoft.applicationinsights.boot.initializer.SpringBootTelemetryInitializer;
+import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.HeartBeat;
+import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.TelemetryProcessor.Sampling;
+import com.microsoft.applicationinsights.autoconfigure.HeartBeatProvider.SpringBootHeartBeatProvider;
+import com.microsoft.applicationinsights.autoconfigure.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.initializer.CloudInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
@@ -41,7 +41,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 
 /**
  * <h1>Core Application Insights Configuration</h1>
@@ -55,7 +54,7 @@ import org.springframework.core.env.Environment;
 @Configuration
 @EnableConfigurationProperties(ApplicationInsightsProperties.class)
 @ConditionalOnProperty(value = "azure.application-insights.enabled", havingValue = "true", matchIfMissing = true)
-public class ApplicationInsightsModuleConfiguration {
+class ApplicationInsightsModuleConfiguration {
 
     /**
      * Instance for the container of ApplicationInsights Properties
@@ -72,7 +71,7 @@ public class ApplicationInsightsModuleConfiguration {
      * @return instance of {@link SdkVersionContextInitializer}
      */
     @Bean
-    public SdkVersionContextInitializer sdkVersionContextInitializer() {
+    SdkVersionContextInitializer sdkVersionContextInitializer() {
         return new SdkVersionContextInitializer();
     }
 
@@ -81,7 +80,7 @@ public class ApplicationInsightsModuleConfiguration {
      * @return instance of {@link DeviceInfoContextInitializer}
      */
     @Bean
-    public DeviceInfoContextInitializer deviceInfoContextInitializer() {
+    DeviceInfoContextInitializer deviceInfoContextInitializer() {
         return new DeviceInfoContextInitializer();
     }
 
@@ -99,7 +98,7 @@ public class ApplicationInsightsModuleConfiguration {
      * @return instance of {@link SpringBootTelemetryInitializer}
      */
     @Bean
-    public SpringBootTelemetryInitializer springBootTelemetryInitializer() {
+    SpringBootTelemetryInitializer springBootTelemetryInitializer() {
         return new SpringBootTelemetryInitializer();
     }
 
@@ -111,7 +110,7 @@ public class ApplicationInsightsModuleConfiguration {
     //FIXME: does not separate this concerns therefore cannot condition as of now.
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.ProcessPerformanceCountersModule.enabled", havingValue = "true", matchIfMissing = true)
-    public ProcessPerformanceCountersModule processPerformanceCountersModule() {
+    ProcessPerformanceCountersModule processPerformanceCountersModule() {
         try {
             return new ProcessPerformanceCountersModule();
         }
@@ -127,7 +126,7 @@ public class ApplicationInsightsModuleConfiguration {
      */
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default.modules.JvmPerformanceCountersModule.enabled", havingValue = "true", matchIfMissing = true)
-    public JvmPerformanceCountersModule jvmPerformanceCountersModule() {
+    JvmPerformanceCountersModule jvmPerformanceCountersModule() {
         try {
             return new JvmPerformanceCountersModule();
         }
@@ -140,8 +139,8 @@ public class ApplicationInsightsModuleConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public HeartBeatPayloadProviderInterface heartBeatProviderInterface(Environment environment) {
-        return new SpringBootHeartBeatProvider(environment);
+    HeartBeatPayloadProviderInterface heartBeatProviderInterface() {
+        return new SpringBootHeartBeatProvider();
     }
 
     /**
@@ -151,7 +150,7 @@ public class ApplicationInsightsModuleConfiguration {
      */
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.heart-beat.enabled", havingValue = "true", matchIfMissing = true)
-    public HeartBeatModule heartBeatModule(HeartBeatPayloadProviderInterface heartBeatPayloadProviderInterface) {
+    HeartBeatModule heartBeatModule(HeartBeatPayloadProviderInterface heartBeatPayloadProviderInterface) {
         try {
             HeartBeatModule heartBeatModule = new HeartBeatModule();
             HeartbeatDefaultPayload.addDefaultPayLoadProvider(heartBeatPayloadProviderInterface);
@@ -177,7 +176,7 @@ public class ApplicationInsightsModuleConfiguration {
      */
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.telemetry-processor.sampling.enabled", havingValue = "true")
-    public TelemetryProcessor fixedRateSamplingTelemetryProcessor() {
+    TelemetryProcessor fixedRateSamplingTelemetryProcessor() {
         Sampling sampling = applicationInsightsProperties.getTelemetryProcessor().getSampling();
         FixedRateSamplingTelemetryProcessor processor = new FixedRateSamplingTelemetryProcessor();
         processor.setSamplingPercentage(String.valueOf(sampling.getPercentage()));

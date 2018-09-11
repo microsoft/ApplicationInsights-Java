@@ -1,6 +1,12 @@
 # CHANGELOG
 
-# FIXME: Version 2.2.0 OR Version 2.1.3
+# Version 2.2.0
+- Introduces SpringBoot Starter 1.0.2-BETA
+- Starter now respects autoconfiguration for Micrometer metrics.
+- Fix [#712](https://github.com/Microsoft/ApplicationInsights-Java/issues/712) the thread shutdown issue in SpringBoot Starter by registering `ApplicationInsightsServletContextListener`.
+- SpringBoot Starter now supports reading iKey using all the variable names as core sdk.
+- Starter would no longer support relaxed binding of ikey property due to complex conditional need and backport problems with RelaxedBinder from Boot 2 to 1.5.x.
+- `InterceptorRegistry` class no longer has `@EnableWebMvc` annotation as it breaks springboot autoconfig.
 - Deprecated `getRoleName`/`setRoleName` and `getRoleInstance`/`setRoleInstance` in `DeviceContext`. 
 Introduced `CloudContext` to hold replacements, `getRole`/`setRole` and `getRoleInstance`/`setRoleInstance`, respectively.
 - Introduced `CloudInfoContextInitializer` to set roleInstance in `CloudContext`.

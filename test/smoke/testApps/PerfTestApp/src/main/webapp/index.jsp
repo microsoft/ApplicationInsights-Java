@@ -18,15 +18,27 @@
 <p>
     Each method performs the same "churn" computations done in the baseline (there are iterations performed.
 </p>
+<h3>"Helpers"</h3>
+<p>These are the methods which take values and not <em>Abc</em>Telemetry objects.</p>
 <ul>
     <!-- TODO provide values for parameters sent to methods -->
-    <li><a href="./track/metric">Metric</a></li>
+    <li><a href="./track/metric/helper/aggregate">Metric, Aggregate</a></li>
+    <li><a href="./track/metric/helper/measurement">Metric, Measurement</a></li>
     <li><a href="./track/event">Event</a></li>
     <li><a href="./track/httpRequest">HttpRequest</a></li>
     <li><a href="./track/dependency">Dependency</a></li>
     <li><a href="./track/trace">Trace</a></li>
     <li><a href="./track/exception">Exception</a></li>
     <li><a href="./track/pageView">PageView</a></li>
+</ul>
+<h3>"Full"</h3>
+<p>These are the methods which take Telemetry objects.</p>
+<ul>
+    <li><a href="./track/metric/full/aggregate">Metric, Aggregate</a></li>
+    <li><a href="./track/metric/full/measurement">Metric, Measurement</a></li>
+    <li><a href="./track/request/full">Request</a></li>
+    <li><a href="./track/pageView/full">PageView</a></li>
+    <li><a href="./track/dependency/full">Dependency</a></li>
 </ul>
 <h2><a href="./fakeRest">FakeRest Endpoint</a></h2>
 <p>

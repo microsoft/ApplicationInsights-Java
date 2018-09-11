@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.boot.HeartBeatProvider;
+package com.microsoft.applicationinsights.autoconfigure.HeartBeatProvider;
 
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatPayloadProviderInterface;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;
@@ -13,7 +13,6 @@ import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.core.SpringVersion;
-import org.springframework.core.env.Environment;
 
 /**
  * <h1>SpringBoot Heartbeat Property Provider</h1>
@@ -36,8 +35,6 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
    */
   private final String name = "SpringBootProvider";
 
-  private final Environment environment;
-
   private final String SPRING_BOOT_VERSION = "ai.spring-boot.version";
 
   private final String SPRING_VERSION = "ai.spring.version";
@@ -46,9 +43,8 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
 
 
 
-  public SpringBootHeartBeatProvider(Environment environment) {
+  public SpringBootHeartBeatProvider() {
     defaultFields = new HashSet<>();
-    this.environment = environment;
     initializeDefaultFields(defaultFields);
   }
 

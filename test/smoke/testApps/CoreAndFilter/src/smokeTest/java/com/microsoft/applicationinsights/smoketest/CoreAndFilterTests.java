@@ -252,7 +252,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/requestSlow")
+    @TargetUri(value="/requestSlow", timeout=25_000) // the servlet sleeps for 20 seconds
     public void testRequestSlowWithResponseTime() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 
