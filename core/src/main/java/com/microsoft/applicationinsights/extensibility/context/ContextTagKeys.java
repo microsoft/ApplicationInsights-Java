@@ -189,7 +189,7 @@ public class ContextTagKeys
     /**
      * @param value new value of ApplicationId property
      */
-    final void setApplicationId(String value) {
+    public final void setApplicationId(String value) {
         this.ApplicationId = value;
     }
 
