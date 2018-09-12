@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.autoconfigure;
 
 import com.microsoft.applicationinsights.autoconfigure.helpers.IkeyResolver;
+import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
@@ -199,10 +200,10 @@ public class ApplicationInsightsProperties {
        * 1000.
        */
       private int maxTelemetryBufferCapacity =
-          InProcessTelemetryChannel.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
+          TelemetryChannelBase.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
       /** Interval to send telemetry. Must be between 1 and 300. */
       private int flushIntervalInSeconds =
-          InProcessTelemetryChannel.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
+          TelemetryChannelBase.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
       /**
        * Size of disk space that Application Insights can use to store telemetry in case of network
        * outage. Must be between 1 and 1000.
@@ -213,7 +214,7 @@ public class ApplicationInsightsProperties {
       private boolean throttling = true;
 
       /** Sets the size of maximum instant retries without delay */
-      private int maxInstantRetry = InProcessTelemetryChannel.DEFAULT_MAX_INSTANT_RETRY;
+      private int maxInstantRetry = TelemetryChannelBase.DEFAULT_MAX_INSTANT_RETRY;
 
       public boolean isDeveloperMode() {
         return developerMode;

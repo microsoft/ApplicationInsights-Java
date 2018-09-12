@@ -46,13 +46,13 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Request";
+    public static final String ENVELOPE_NAME = "Request";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "RequestData";
+    public static final String BASE_TYPE = "RequestData";
 
 
     /**
@@ -105,11 +105,16 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
         setSuccess(success);
     }
 
+    @Override
+    public int getVer() {
+        return getData().getVer();
+    }
+
     /**
      * Gets a map of application-defined request metrics.
      * @return The map of metrics
      */
-    ConcurrentMap<String, Double> getMetrics() {
+    public ConcurrentMap<String, Double> getMetrics() {
         return data.getMeasurements();
     }
 
@@ -244,6 +249,10 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
      */
     public void setUrl(URL url) {
         data.setUrl(url.toString());
+    }
+
+    public String getUrlString() {
+        return getData().getUrl();
     }
 
     /**

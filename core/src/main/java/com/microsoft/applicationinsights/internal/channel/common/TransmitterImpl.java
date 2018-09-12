@@ -50,7 +50,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmitterImpl implements TelemetriesTransmitter {
+public final class TransmitterImpl implements TelemetriesTransmitter<String> {
     private static abstract class SendHandler {
         protected final TransmissionDispatcher transmissionDispatcher;
 
@@ -79,9 +79,9 @@ public final class TransmitterImpl implements TelemetriesTransmitter {
     }
 
     private static final class ScheduledSendHandler extends SendHandler implements Runnable {
-        private final TelemetriesFetcher telemetriesFetcher;
+        private final TelemetriesFetcher<String> telemetriesFetcher;
 
-        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher telemetriesFetcher, TelemetrySerializer serializer) {
+        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher<String> telemetriesFetcher, TelemetrySerializer serializer) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetriesFetcher, "telemetriesFetcher should be a non-null value");

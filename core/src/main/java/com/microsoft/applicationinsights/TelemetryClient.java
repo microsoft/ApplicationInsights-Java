@@ -516,7 +516,7 @@ public class TelemetryClient {
      * Gets the channel used by the client.
      */
     TelemetryChannel getChannel() {
-        if (channel == null) {
+        if (this.channel == null) {
             this.channel = configuration.getChannel();
         }
 

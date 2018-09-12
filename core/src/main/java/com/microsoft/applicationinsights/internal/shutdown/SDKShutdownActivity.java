@@ -77,6 +77,20 @@ public enum SDKShutdownActivity {
             });
         }
 
+        private volatile long perThreadTimeout = 10L;
+        private volatile TimeUnit perThreadTimeUnit = TimeUnit.SECONDS;
+
+        public long getPerThreadTimeout() {
+            return perThreadTimeout;
+        }
+        public TimeUnit getPerThreadTimeUnit() {
+            return perThreadTimeUnit;
+        }
+        public void setPerThreadTimeout(long timeout, TimeUnit unit) {
+            this.perThreadTimeout = timeout;
+            this.perThreadTimeUnit = unit;
+        }
+
         @Override
         public synchronized void run() {
             if (stopped) {
@@ -117,13 +131,14 @@ public enum SDKShutdownActivity {
                 try {
                     TelemetryChannel channelToStop = fetcher.fetch();
                     if (channelToStop != null) {
-                        channelToStop.stop(1L, TimeUnit.SECONDS);
+                        channelToStop.stop(getPerThreadTimeout(), getPerThreadTimeUnit());
                     }
                 } catch (ThreadDeath td) {
                 	throw td;
                 } catch (Throwable t) {
                     try {
-                        InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                        InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());
+                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t2) {
@@ -132,18 +147,20 @@ public enum SDKShutdownActivity {
                 }
             }
         }
+
         /**
          * Make sure no exception is thrown!
          */
         private void stopStoppables() {
             for (Stoppable stoppable : stoppables) {
                 try {
-                    stoppable.stop(1L, TimeUnit.SECONDS);
+                    stoppable.stop(getPerThreadTimeout(), getPerThreadTimeUnit());
                 } catch (ThreadDeath td) {
                 	throw td;
                 } catch (Throwable t) {
                     try {
-                        InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.toString());                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                        InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.toString());
+                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t2) {
@@ -192,6 +209,7 @@ public enum SDKShutdownActivity {
 
     public void stopAll() {
         getShutdownAction().run();
+        InternalLogger.INSTANCE.info("SDK shutdown complete.");
     }
 
     private SDKShutdownAction getShutdownAction() {
@@ -200,7 +218,7 @@ public enum SDKShutdownActivity {
                 if (shutdownAction == null) {
                     try {
                         shutdownAction = new SDKShutdownAction();
-                        Thread t = new Thread(shutdownAction, SDKShutdownActivity.class.getSimpleName());
+                        Thread t = new Thread(shutdownAction, SDKShutdownActivity.class.getSimpleName()+"-ShutdownHook");
                         t.setDaemon(true);
                         Runtime.getRuntime().addShutdownHook(t);
                     } catch (Exception e) {

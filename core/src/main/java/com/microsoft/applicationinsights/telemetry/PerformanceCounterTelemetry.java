@@ -28,19 +28,20 @@ import com.microsoft.applicationinsights.internal.schemav2.PerformanceCounterDat
 /**
  * The class that represents information about performance counters.
  */
+@Deprecated
 public final class PerformanceCounterTelemetry extends BaseTelemetry<PerformanceCounterData> {
     private final PerformanceCounterData data;
 
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "PerformanceCounter";
+    public static final String ENVELOPE_NAME = "PerformanceCounter";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "PerformanceCounterData";
+    public static final String BASE_TYPE = "PerformanceCounterData";
 
 
     public PerformanceCounterTelemetry() {
@@ -66,6 +67,11 @@ public final class PerformanceCounterTelemetry extends BaseTelemetry<Performance
         data.setCounterName(counterName);
         data.setInstanceName(instanceName);
         data.setValue(value);
+    }
+
+    @Override
+    public int getVer() {
+        return getData().getVer();
     }
 
     /**

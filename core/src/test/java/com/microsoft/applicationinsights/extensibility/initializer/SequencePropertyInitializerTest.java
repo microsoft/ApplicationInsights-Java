@@ -59,6 +59,11 @@ public final class SequencePropertyInitializerTest {
         protected StubDomainData getData() {
             return null;
         }
+
+        @Override
+        public int getVer() {
+            return 0;
+        }
     }
 
     @Test

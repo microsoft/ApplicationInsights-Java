@@ -34,13 +34,13 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Message";
+    public static final String ENVELOPE_NAME = "Message";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "MessageData";
+    public static final String BASE_TYPE = "MessageData";
 
 
     /**
@@ -67,6 +67,11 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
 
         setMessage(message);
         setSeverityLevel(severityLevel);
+    }
+
+    @Override
+    public int getVer() {
+        return getData().getVer();
     }
 
     /**

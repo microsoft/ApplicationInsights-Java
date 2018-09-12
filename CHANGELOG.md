@@ -13,6 +13,7 @@ Introduced `CloudContext` to hold replacements, `getRole`/`setRole` and `getRole
 `DeviceInfoContextInitializer` will continue to send the deprecated field in `DeviceContext`.
 This will be removed in a future release.
 Users should use begin using the `CloudInfoContextInitializer` to continue to receive the proper value for `cloud_roleInstance` in telemetry items.
+- Adds `LocalForwarderChannel` for use with the LocalForwarder.
 
 # Version 2.1.2
 - Fix [#676](https://github.com/Microsoft/ApplicationInsights-Java/issues/676). This fixes the HTTP dependency collection when using NetFlix Zuul Library.

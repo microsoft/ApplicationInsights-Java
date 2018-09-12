@@ -61,8 +61,12 @@ public enum QuickPulseDataCollector {
             } else {
                 memoryCommitted = -1;
             }
-            if (cpuPerformanceCounterCalculator != null) {
-                cpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
+
+            Double cpuDatum;
+            if (cpuPerformanceCounterCalculator != null
+                    && (cpuDatum = cpuPerformanceCounterCalculator.getProcessCpuUsage()) != null) {
+                // normally I wouldn't do this, but I prefer to avoid code duplication more than one-liners :)
+                cpuUsage = cpuDatum;
             } else {
                 cpuUsage = -1;
             }
@@ -127,7 +131,7 @@ public enum QuickPulseDataCollector {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                InternalLogger.INSTANCE.error("Could not initialize %s:%n%s", CpuPerformanceCounterCalculator.class.getSimpleName(), ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -148,7 +152,7 @@ public enum QuickPulseDataCollector {
         counters.set(new Counters());
     }
 
-    public FinalCounters getAndRestart() {
+    public synchronized FinalCounters getAndRestart() {
         final Counters currentCounters = counters.getAndSet(new Counters());
         if (currentCounters != null) {
             return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);

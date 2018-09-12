@@ -28,19 +28,20 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Telemetry type used to track user sessions in Azure Application Insights.
  */
+@Deprecated
 public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData> {
     private final SessionStateData data;
 
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "SessionState";
+    public static final String ENVELOPE_NAME = "SessionState";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "SessionStateData";
+    public static final String BASE_TYPE = "SessionStateData";
     /**
      * Default initialization of a new instance of the class.
      * The session state will be set to 'Start'
@@ -57,6 +58,11 @@ public final class SessionStateTelemetry extends BaseTelemetry<SessionStateData>
         super();
         data = new SessionStateData(sessionState);
         initialize(new ConcurrentHashMap<String, String>());
+    }
+
+    @Override
+    public int getVer() {
+        return getData().getVer();
     }
 
     /**

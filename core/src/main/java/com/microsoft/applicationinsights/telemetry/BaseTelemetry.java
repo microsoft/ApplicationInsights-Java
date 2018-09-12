@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private Date timestamp;
     private String sequence;
     
-    private final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
+    public static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
     protected BaseTelemetry() {
     }
@@ -56,6 +57,8 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     protected void initialize(ConcurrentMap<String, String> properties) {
         this.context = new TelemetryContext(properties, new ConcurrentHashMap<String, String>());
     }
+
+    public abstract int getVer();
 
     /**
      * Sequence field used to track absolute order of uploaded events.
@@ -163,6 +166,26 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
         envelope.serialize(writer);
     }
 
+    /**
+     * THIS IS FOR DEBUGGING AND TESTING ONLY!
+     * DON'T USE THIS IN HAPPY-PATH, PRODUCTION CODE.
+     *
+     * @return Json representation of this telemetry item.
+     */
+    @Override
+    public String toString() {
+        StringWriter sw = new StringWriter();
+        try {
+            JsonTelemetryDataSerializer jtds = new JsonTelemetryDataSerializer(sw);
+            this.serialize(jtds);
+            jtds.close();
+            return sw.toString();
+        } catch (IOException e) {
+            // shouldn't happen with a string writer
+            throw new RuntimeException("Error serializing "+this.getClass().getSimpleName()+" toString", e);
+        }
+    }
+
     @Override
     public void reset() {
     }
@@ -184,15 +207,15 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     protected void setSampleRate(Envelope envelope) {
     }
 
-    protected String getEnvelopName() {
+    public String getEnvelopName() {
         throw new UnsupportedOperationException();
     }
 
-    protected String getBaseTypeName() {
+    public String getBaseTypeName() {
         throw new UnsupportedOperationException();
     }
     
-    private String normalizeInstrumentationKey(String instrumentationKey){
+    public static String normalizeInstrumentationKey(String instrumentationKey){
     	if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
     		return "";
     	}
@@ -201,7 +224,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     	}
     }
     
-    private String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
+    public static String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
     	return String.format(
     			"%s%s%s",
     			TELEMETRY_NAME_PREFIX,

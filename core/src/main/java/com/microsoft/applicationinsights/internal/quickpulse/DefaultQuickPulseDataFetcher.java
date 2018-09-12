@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 
@@ -73,7 +74,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.trace("Quick Pulse failed to prepare data for send");
+                InternalLogger.INSTANCE.error("Quick Pulse failed to prepare data for send:%n%s", ExceptionUtils.getStackTrace(e));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

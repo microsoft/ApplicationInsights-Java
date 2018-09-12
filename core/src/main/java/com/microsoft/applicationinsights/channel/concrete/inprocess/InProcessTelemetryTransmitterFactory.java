@@ -32,12 +32,8 @@ import com.microsoft.applicationinsights.internal.channel.common.*;
 /**
  * Created by gupele on 1/15/2015.
  */
-final class InProcessTelemetryChannelFactory implements TransmitterFactory {
+final class InProcessTelemetryTransmitterFactory implements TransmitterFactory {
 	private final int DEFAULT_RETRY = 3;
-	@Override
-	public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled) {
-		return create(endpoint, maxTransmissionStorageCapacity, throttlingIsEnabled, DEFAULT_RETRY);
-	}
     @Override
     public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);     	
@@ -65,7 +61,7 @@ final class InProcessTelemetryChannelFactory implements TransmitterFactory {
         TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, stateFetcher, dispatcher);
 
         // The Transmitter manage all
-        TelemetriesTransmitter telemetriesTransmitter = new TransmitterImpl(dispatcher, new GzipTelemetrySerializer(), transmissionsLoader);
+        TelemetriesTransmitter<String> telemetriesTransmitter = new TransmitterImpl(dispatcher, new GzipTelemetrySerializer(), transmissionsLoader);
 
         return telemetriesTransmitter;
     }
