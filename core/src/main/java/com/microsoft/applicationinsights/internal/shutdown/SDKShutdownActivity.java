@@ -80,13 +80,13 @@ public enum SDKShutdownActivity {
         private volatile long perThreadTimeout = 10L;
         private volatile TimeUnit perThreadTimeUnit = TimeUnit.SECONDS;
 
-        public synchronized long getPerThreadTimeout() {
+        public long getPerThreadTimeout() {
             return perThreadTimeout;
         }
-        public synchronized TimeUnit getPerThreadTimeUnit() {
+        public TimeUnit getPerThreadTimeUnit() {
             return perThreadTimeUnit;
         }
-        public synchronized void setPerThreadTimeout(long timeout, TimeUnit unit) {
+        public void setPerThreadTimeout(long timeout, TimeUnit unit) {
             this.perThreadTimeout = timeout;
             this.perThreadTimeUnit = unit;
         }

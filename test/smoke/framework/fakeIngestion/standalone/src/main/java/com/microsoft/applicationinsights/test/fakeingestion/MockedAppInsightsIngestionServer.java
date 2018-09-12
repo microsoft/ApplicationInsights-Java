@@ -91,6 +91,10 @@ public class MockedAppInsightsIngestionServer implements AutoCloseable {
 		return data.getBaseData();
 	}
 
+	public void awaitAnyItems(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+		servlet.awaitAnyItems(timeout, unit);
+	}
+
 	/**
 	 * Waits the given amount of time for this mocked server to recieve one telemetry item matching the given predicate.
 	 *

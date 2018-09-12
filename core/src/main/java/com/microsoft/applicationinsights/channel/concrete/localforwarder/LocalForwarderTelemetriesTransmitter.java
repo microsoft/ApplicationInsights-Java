@@ -118,18 +118,34 @@ public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmit
 
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
-        ThreadPoolUtils.stop(executor, timeout, timeUnit);
-        ThreadPoolUtils.stop(grpcServiceExecutor, timeout, timeUnit);
+        executor.shutdown();
+        grpcServiceExecutor.shutdown();
+        channel.shutdown();
         try {
-            if (!channel.shutdown().awaitTermination(timeout, timeUnit)) {
+            if (!executor.awaitTermination(timeout, timeUnit)) {
+                warn("executor did not terminate. Attempting forced shutdown.");
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+
+        try {
+            if (!grpcServiceExecutor.awaitTermination(timeout, timeUnit)) {
+                warn("grpcServiceExecutor did not terminate. Attempting forced shutdown.");
+                grpcServiceExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            grpcServiceExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+
+        try {
+            if (!channel.awaitTermination(timeout, timeUnit)) {
                 warn("grpcChannel did not terminate. Attempting forced shutdown.");
                 channel.shutdownNow();
             }
-            // gRPC has an unereliable thread shutdown process, but it's usually done in under 2 seconds. The await methods don't really work.
-            TimeUnit tu = TimeUnit.SECONDS;
-            long sleepTime = 2L; // maybe this should be configurable...
-            InternalLogger.INSTANCE.trace("Sleeping for %d %s to wait for gRPC threads to terminate.", sleepTime, tu.name());
-            tu.sleep(timeout);
         } catch (InterruptedException e) {
             channel.shutdownNow();
             Thread.currentThread().interrupt();

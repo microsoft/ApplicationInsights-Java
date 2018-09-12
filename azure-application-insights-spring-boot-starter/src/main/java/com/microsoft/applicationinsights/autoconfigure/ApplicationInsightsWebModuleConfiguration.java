@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.boot;
+package com.microsoft.applicationinsights.autoconfigure;
 
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer;
@@ -50,7 +50,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnProperty(value = "azure.application-insights.web.enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication
-public class ApplicationInsightsWebModuleConfiguration {
+class ApplicationInsightsWebModuleConfiguration {
 
   /**
    * Bean for WebRequestTrackingTelemetryModule
@@ -58,7 +58,7 @@ public class ApplicationInsightsWebModuleConfiguration {
    */
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
-    public WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
+    WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
         return new WebRequestTrackingTelemetryModule();
     }
 
@@ -68,7 +68,7 @@ public class ApplicationInsightsWebModuleConfiguration {
    */
   @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebSessionTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
-    public WebSessionTrackingTelemetryModule webSessionTrackingTelemetryModule() {
+    WebSessionTrackingTelemetryModule webSessionTrackingTelemetryModule() {
         return new WebSessionTrackingTelemetryModule();
     }
 
@@ -78,7 +78,7 @@ public class ApplicationInsightsWebModuleConfiguration {
    */
   @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebUserTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
-    public WebUserTrackingTelemetryModule webUserTrackingTelemetryModule() {
+    WebUserTrackingTelemetryModule webUserTrackingTelemetryModule() {
         return new WebUserTrackingTelemetryModule();
     }
 
@@ -88,7 +88,7 @@ public class ApplicationInsightsWebModuleConfiguration {
    */
   @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebPerformanceCounterModule.enabled", havingValue = "true", matchIfMissing = true)
-    public WebPerformanceCounterModule webPerformanceCounterModule() {
+    WebPerformanceCounterModule webPerformanceCounterModule() {
         return new WebPerformanceCounterModule();
     }
 
@@ -98,13 +98,13 @@ public class ApplicationInsightsWebModuleConfiguration {
    */
   @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebOperationIdTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebOperationIdTelemetryInitializer webOperationIdTelemetryInitializer() {
+    WebOperationIdTelemetryInitializer webOperationIdTelemetryInitializer() {
         return new WebOperationIdTelemetryInitializer();
     }
 
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebOperationNameTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebOperationNameTelemetryInitializer webOperationNameTelemetryInitializer() {
+    WebOperationNameTelemetryInitializer webOperationNameTelemetryInitializer() {
         return new WebOperationNameTelemetryInitializer();
     }
 
@@ -114,7 +114,7 @@ public class ApplicationInsightsWebModuleConfiguration {
    */
   @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebSessionTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebSessionTelemetryInitializer webSessionTelemetryInitializer() {
+    WebSessionTelemetryInitializer webSessionTelemetryInitializer() {
         return new WebSessionTelemetryInitializer();
     }
 
@@ -124,7 +124,7 @@ public class ApplicationInsightsWebModuleConfiguration {
    */
   @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebUserTelemetryInitializer webUserTelemetryInitializer() {
+    WebUserTelemetryInitializer webUserTelemetryInitializer() {
         return new WebUserTelemetryInitializer();
     }
 
@@ -134,7 +134,7 @@ public class ApplicationInsightsWebModuleConfiguration {
    */
   @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled", havingValue = "true", matchIfMissing = true)
-    public WebUserAgentTelemetryInitializer webUserAgentTelemetryInitializer() {
+    WebUserAgentTelemetryInitializer webUserAgentTelemetryInitializer() {
         return new WebUserAgentTelemetryInitializer();
     }
 }

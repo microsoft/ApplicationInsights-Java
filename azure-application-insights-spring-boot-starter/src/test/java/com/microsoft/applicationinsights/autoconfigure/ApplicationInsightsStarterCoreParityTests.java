@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.boot;
+package com.microsoft.applicationinsights.autoconfigure;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
