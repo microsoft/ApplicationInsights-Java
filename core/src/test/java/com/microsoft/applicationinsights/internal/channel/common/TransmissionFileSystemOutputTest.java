@@ -74,7 +74,7 @@ public final class TransmissionFileSystemOutputTest {
 
     @Test
     public void testFetchOldestFiles() throws Exception {
-        File folder = tmpFolder.newFolder(TEMP_TEST_FOLDER);
+        File folder = tmpFolder.newFolder(TEMP_TEST_FOLDER+"2");
         try {
             TransmissionFileSystemOutput tested = new TransmissionFileSystemOutput(folder.getAbsolutePath());
 
