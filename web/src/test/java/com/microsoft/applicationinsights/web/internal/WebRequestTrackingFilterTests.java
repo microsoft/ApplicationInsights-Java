@@ -182,7 +182,9 @@ public class WebRequestTrackingFilterTests {
 
     private Filter createInitializedFilter() throws ServletException {
         Filter filter = new WebRequestTrackingFilter();
-        filter.init(null);
+        FilterConfig config = mock(FilterConfig.class);
+        when(config.getFilterName()).thenReturn(WebRequestTrackingFilter.FILTER_NAME);
+        filter.init(config);
 
         return filter;
     }
