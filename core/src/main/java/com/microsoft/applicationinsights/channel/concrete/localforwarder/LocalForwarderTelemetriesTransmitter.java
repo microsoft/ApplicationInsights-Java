@@ -119,7 +119,9 @@ public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmit
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
         executor.shutdown();
-        grpcServiceExecutor.shutdown();
+        if (grpcServiceExecutor != null) {
+            grpcServiceExecutor.shutdown();
+        }
         channel.shutdown();
         try {
             if (!executor.awaitTermination(timeout, timeUnit)) {
@@ -130,15 +132,16 @@ public class LocalForwarderTelemetriesTransmitter implements TelemetriesTransmit
             executor.shutdownNow();
             Thread.currentThread().interrupt();
         }
-
-        try {
-            if (!grpcServiceExecutor.awaitTermination(timeout, timeUnit)) {
-                warn("grpcServiceExecutor did not terminate. Attempting forced shutdown.");
+        if (grpcServiceExecutor != null) {
+            try {
+                if (!grpcServiceExecutor.awaitTermination(timeout, timeUnit)) {
+                    warn("grpcServiceExecutor did not terminate. Attempting forced shutdown.");
+                    grpcServiceExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
                 grpcServiceExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
             }
-        } catch (InterruptedException e) {
-            grpcServiceExecutor.shutdownNow();
-            Thread.currentThread().interrupt();
         }
 
         try {
