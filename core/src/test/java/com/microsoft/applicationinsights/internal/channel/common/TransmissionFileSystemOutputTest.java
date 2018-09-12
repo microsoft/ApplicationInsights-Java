@@ -28,6 +28,8 @@ import static org.junit.Assert.assertNull;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import java.io.File;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,7 +74,7 @@ public final class TransmissionFileSystemOutputTest {
 
     @Test
     public void testFetchOldestFiles() throws Exception {
-        File folder = tmpFolder.newFolder(TEMP_TEST_FOLDER);
+        File folder = tmpFolder.newFolder(TEMP_TEST_FOLDER+"2");
         try {
             TransmissionFileSystemOutput tested = new TransmissionFileSystemOutput(folder.getAbsolutePath());
 
@@ -80,6 +82,7 @@ public final class TransmissionFileSystemOutputTest {
                 String iAsString = String.valueOf(i);
                 String content = MOCK_CONTENT + iAsString;
                 tested.send(new Transmission(content.getBytes(), MOCK_CONTENT_TYPE_BASE + iAsString, MOCK_ENCODING_TYPE_BASE + iAsString));
+                TimeUnit.MILLISECONDS.sleep(150); // sleep a bit so 2 files can never have the same timestamp.
             }
 
             for (int i = 1; i <= 10; ++i) {
