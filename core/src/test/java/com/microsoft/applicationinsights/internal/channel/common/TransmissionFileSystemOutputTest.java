@@ -28,6 +28,8 @@ import static org.junit.Assert.assertNull;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import java.io.File;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,6 +82,7 @@ public final class TransmissionFileSystemOutputTest {
                 String iAsString = String.valueOf(i);
                 String content = MOCK_CONTENT + iAsString;
                 tested.send(new Transmission(content.getBytes(), MOCK_CONTENT_TYPE_BASE + iAsString, MOCK_ENCODING_TYPE_BASE + iAsString));
+                TimeUnit.MILLISECONDS.sleep(750);
             }
 
             for (int i = 1; i <= 10; ++i) {
