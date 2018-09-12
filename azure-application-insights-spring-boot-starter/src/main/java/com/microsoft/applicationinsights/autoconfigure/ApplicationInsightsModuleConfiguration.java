@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProper
 import com.microsoft.applicationinsights.autoconfigure.HeartBeatProvider.SpringBootHeartBeatProvider;
 import com.microsoft.applicationinsights.autoconfigure.initializer.SpringBootTelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
+import com.microsoft.applicationinsights.extensibility.initializer.CloudInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
@@ -81,6 +82,15 @@ class ApplicationInsightsModuleConfiguration {
     @Bean
     DeviceInfoContextInitializer deviceInfoContextInitializer() {
         return new DeviceInfoContextInitializer();
+    }
+
+    /**
+     * Bean for CloudInfoContextInitializer
+     * @return instance of {@link CloudInfoContextInitializer}
+     */
+    @Bean
+    CloudInfoContextInitializer cloudInfoContextInitializer() {
+        return new CloudInfoContextInitializer();
     }
 
     /**

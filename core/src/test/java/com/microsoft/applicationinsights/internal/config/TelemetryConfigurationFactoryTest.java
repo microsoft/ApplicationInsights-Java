@@ -30,6 +30,8 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
@@ -44,14 +46,15 @@ import com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilte
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 
+import org.hamcrest.Matchers;
 import org.junit.*;
 import org.mockito.Mockito;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public final class TelemetryConfigurationFactoryTest {
 
@@ -150,8 +153,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @Test
@@ -213,34 +216,16 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
-        assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
-        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
+        assertThat(mockConfiguration.getTelemetryInitializers(), empty());
+        assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
 
-        assertEquals(mockConfiguration.getTelemetryProcessors().size(), 4);
+        assertThat(mockConfiguration.getTelemetryProcessors(), hasSize(4));
 
-        int rtf = 1;
-        int sf = 1;
-        int cvf1 = 1;
-        int cvf2 = 1;
-        for (TelemetryProcessor processor : mockConfiguration.getTelemetryProcessors()) {
-            if (processor instanceof SyntheticSourceFilter) {
-                --sf;
-            }
-            else if (processor instanceof RequestTelemetryFilter) {
-                --rtf;
-            }
-            else if (processor instanceof ValidProcessorsWithSetters) {
-                --cvf1;
-            }
-            else if (processor instanceof TestProcessorWithoutSetters) {
-                --cvf2;
-            }
-        }
-        assertEquals(rtf, 0);
-        assertEquals(sf, 0);
-        assertEquals(cvf1, 0);
-        assertEquals(cvf2, 0);
+        assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(SyntheticSourceFilter.class)));
+        assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(RequestTelemetryFilter.class)));
+        assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(ValidProcessorsWithSetters.class)));
+        assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(TestProcessorWithoutSetters.class)));
     }
 
     @Test
@@ -263,10 +248,10 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
-        assertEquals(mockConfiguration.getTelemetryInitializers().size(), 1);
-        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
-        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
+        assertThat(mockConfiguration.getTelemetryInitializers(), hasSize(1));
+        assertThat(mockConfiguration.getTelemetryProcessors(), empty());
+        assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
     }
 
     @Test
@@ -305,10 +290,10 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 3);
-        assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
-        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
-        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertThat(mockConfiguration.getContextInitializers(), hasSize(4));
+        assertThat(mockConfiguration.getTelemetryInitializers(), empty());
+        assertThat(mockConfiguration.getTelemetryProcessors(), empty());
+        assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
     }
 
     @Test
@@ -363,9 +348,9 @@ public final class TelemetryConfigurationFactoryTest {
 
         assertEquals(mockConfiguration.isTrackingDisabled(), false);
         assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
-        assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
-        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
+        assertThat(mockConfiguration.getContextInitializers(), Matchers.<ContextInitializer>hasSize(3));
+        assertThat(mockConfiguration.getTelemetryInitializers(), Matchers.<TelemetryInitializer>empty());
+        assertThat(mockConfiguration.getTelemetryProcessors(), empty());
         assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
     }
 

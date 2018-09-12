@@ -32,15 +32,18 @@ public class CommonUtils {
     return string == null || string.length() == 0;
   }
 
+  /**
+   * Returns the hostname using {@link InetAddress#getCanonicalHostName()} on {@link InetAddress#getLocalHost()}.
+   * If an error is encountered, the error is logged and it returns null.
+   *
+   * @return the local hostname, or null
+   */
   public static String getHostName() {
     try {
-      InetAddress addr;
-      addr = InetAddress.getLocalHost();
+      InetAddress addr = InetAddress.getLocalHost();
       return addr.getCanonicalHostName();
     } catch (UnknownHostException ex) {
-      // optional parameter. do nothing if unresolvable
-      InternalLogger.INSTANCE.trace(
-          "Unresolvable host error. Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
+      InternalLogger.INSTANCE.warn("Error resolving hostname:%n%s", ExceptionUtils.getStackTrace(ex));
       return null;
     }
   }
