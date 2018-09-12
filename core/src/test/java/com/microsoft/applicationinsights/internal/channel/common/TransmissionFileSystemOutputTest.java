@@ -82,7 +82,7 @@ public final class TransmissionFileSystemOutputTest {
                 String iAsString = String.valueOf(i);
                 String content = MOCK_CONTENT + iAsString;
                 tested.send(new Transmission(content.getBytes(), MOCK_CONTENT_TYPE_BASE + iAsString, MOCK_ENCODING_TYPE_BASE + iAsString));
-                TimeUnit.MILLISECONDS.sleep(750);
+                TimeUnit.MILLISECONDS.sleep(250);
             }
 
             for (int i = 1; i <= 10; ++i) {
