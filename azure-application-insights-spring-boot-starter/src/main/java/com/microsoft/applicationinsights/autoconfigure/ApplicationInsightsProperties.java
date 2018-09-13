@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.autoconfigure;
 import com.microsoft.applicationinsights.autoconfigure.helpers.IkeyResolver;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
@@ -179,6 +180,18 @@ public class ApplicationInsightsProperties {
     /** Configuration of {@link InProcessTelemetryChannel}. */
     private InProcess inProcess = new InProcess();
 
+    /** Configuration of {@link com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel}*/
+    private LocalForwarder localForwarder = new LocalForwarder();
+
+    public LocalForwarder getLocalForwarder() {
+      return localForwarder;
+    }
+
+    public void setLocalForwarder(
+        LocalForwarder localForwarder) {
+      this.localForwarder = localForwarder;
+    }
+
     public InProcess getInProcess() {
       return inProcess;
     }
@@ -271,6 +284,23 @@ public class ApplicationInsightsProperties {
 
       public void setThrottling(boolean throttling) {
         this.throttling = throttling;
+      }
+    }
+
+    /**
+     * The config class to encapsulate the LocalForwarder properties.
+     */
+    static class LocalForwarder {
+
+      /** Local Forwarder Endpoint address. */
+      private String endpointAddress;
+
+      public String getEndpointAddress() {
+        return endpointAddress;
+      }
+
+      public void setEndpointAddress(String endpointAddress) {
+        this.endpointAddress = endpointAddress;
       }
     }
   }

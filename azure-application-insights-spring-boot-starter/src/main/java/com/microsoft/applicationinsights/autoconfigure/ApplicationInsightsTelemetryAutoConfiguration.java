@@ -26,9 +26,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.Channel.InProcess;
+import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.Channel.LocalForwarder;
 import com.microsoft.applicationinsights.autoconfigure.conditionals.InstrumentationKeyCondition;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel;
+import com.microsoft.applicationinsights.exceptions.IllegalConfigurationException;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -40,7 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -53,6 +56,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
 /**
  * <h1>The central class for configuring and creating initialized {@link TelemetryConfiguration} </h1>
@@ -85,6 +89,9 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
     private Collection<TelemetryModule> telemetryModules;
 
     private Collection<TelemetryProcessor> telemetryProcessors;
+
+    @Autowired
+    private Environment environment;
 
     @Autowired
     public ApplicationInsightsTelemetryAutoConfiguration(
@@ -163,7 +170,22 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public TelemetryChannel telemetryChannel() {
+    public TelemetryChannel telemetryChannel() throws IllegalConfigurationException {
+        String localForwarderEndpoint = environment.getProperty("azure.application-insights.channel.local-forwarder.endpoint-address");
+        String inProcessEndPoint = environment.getProperty("azure.application-insights.channel.in-process.endpoint-address");
+        if (StringUtils.isNotBlank(localForwarderEndpoint) && StringUtils.isNotBlank(inProcessEndPoint)) {
+            throw new IllegalConfigurationException("SDK cannot have two channels, please either remove Local Forwarder Endpoint, "
+                + "or In Process Endpoint");
+        }
+
+        // If local forwarder endpoint is present configure local forwarder channel
+        if (StringUtils.isNotBlank(localForwarderEndpoint)) {
+            LocalForwarder lf = applicationInsightsProperties.getChannel().getLocalForwarder();
+
+            // only the endpoint address is picked up. All the other values are fake and just for future use if needed.
+            return new LocalForwarderTelemetryChannel(lf.getEndpointAddress(), false, 0 ,0);
+        }
+
         InProcess inProcess = applicationInsightsProperties.getChannel().getInProcess();
         return new InProcessTelemetryChannel(inProcess.getEndpointAddress(),
                 String.valueOf(inProcess.getMaxTransmissionStorageFilesCapacityInMb()), inProcess.isDeveloperMode(),
