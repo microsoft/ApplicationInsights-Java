@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.autoconfigure;
 import com.microsoft.applicationinsights.autoconfigure.helpers.IkeyResolver;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
-import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
@@ -293,6 +292,33 @@ public class ApplicationInsightsProperties {
 
       /** Local Forwarder Endpoint address. */
       private String endpointAddress;
+
+      /**
+       * Maximum count of telemetries that will be batched before sending. Must be between 1 and
+       * 1000.
+       */
+      private int maxTelemetryBufferCapacity =
+          TelemetryChannelBase.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
+
+      /** Interval to send telemetry. Must be between 1 and 300. */
+      private int flushIntervalInSeconds =
+          TelemetryChannelBase.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
+
+      public int getMaxTelemetryBufferCapacity() {
+        return maxTelemetryBufferCapacity;
+      }
+
+      public void setMaxTelemetryBufferCapacity(int maxTelemetryBufferCapacity) {
+        this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
+      }
+
+      public int getFlushIntervalInSeconds() {
+        return flushIntervalInSeconds;
+      }
+
+      public void setFlushIntervalInSeconds(int flushIntervalInSeconds) {
+        this.flushIntervalInSeconds = flushIntervalInSeconds;
+      }
 
       public String getEndpointAddress() {
         return endpointAddress;
