@@ -145,7 +145,7 @@ azure.application-insights.channel.in-process.max-transmission-storage-files-cap
 # Enable/Disable throttling on sending telemetry data. Default value: true.
 azure.application-insights.channel.in-process.throttling=true
 
-#Enable Configure Local Forwarder gRPC Telemetry Channel
+#Enable Configure Local Forwarder Telemetry Channel
 azure.application-insights.channel.local-forwarder.endpoint-address=
 # Interval to send telemetry. Must be between 1 and 300. Default value: 5 seconds.
 azure.application-insights.channel.local-forwarder.flush-interval-in-seconds=5
