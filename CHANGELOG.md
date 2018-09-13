@@ -7,12 +7,9 @@
 - SpringBoot Starter now supports reading iKey using all the variable names as core sdk.
 - Starter would no longer support relaxed binding of ikey property due to complex conditional need and backport problems with RelaxedBinder from Boot 2 to 1.5.x.
 - `InterceptorRegistry` class no longer has `@EnableWebMvc` annotation as it breaks springboot autoconfig.
-- Deprecated `getRoleName`/`setRoleName` and `getRoleInstance`/`setRoleInstance` in `DeviceContext`. 
-Introduced `CloudContext` to hold replacements, `getRole`/`setRole` and `getRoleInstance`/`setRoleInstance`, respectively.
-- Introduced `CloudInfoContextInitializer` to set roleInstance in `CloudContext`.
-`DeviceInfoContextInitializer` will continue to send the deprecated field in `DeviceContext`.
-This will be removed in a future release.
-Users should use begin using the `CloudInfoContextInitializer` to continue to receive the proper value for `cloud_roleInstance` in telemetry items.
+- Deprecated `getRoleName`/`setRoleName` and `getRoleInstance`/`setRoleInstance` in `DeviceContext`. Introduced `CloudContext` to hold replacements, `getRole`/`setRole` and `getRoleInstance`/`setRoleInstance`, respectively. 
+- Introduced `CloudInfoContextInitializer` to set roleInstance in `CloudContext`. `DeviceInfoContextInitializer` will continue to send the deprecated field in `DeviceContext`. This will be removed in a future release. The new initializer is included by default and therefore will not affect the current tags.
+- Adds `WebAppNameContextInitializer` for use with the `WebRequestTrackingFilter`.
 - Adds `LocalForwarderChannel` for use with the LocalForwarder.
 
 # Version 2.1.2
