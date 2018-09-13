@@ -145,6 +145,9 @@ azure.application-insights.channel.in-process.max-transmission-storage-files-cap
 # Enable/Disable throttling on sending telemetry data. Default value: true.
 azure.application-insights.channel.in-process.throttling=true
 
+#Enable Local Forwarder gRPC Telemetry Channel
+azure.application-insights.channel.local-forwarder.endpoint-address=
+
 # Percent of telemetry events that will be sent to Application Insights. Percentage must be close to 100/N where N is an integer.
 # E.g. 50 (=100/2), 33.33 (=100/3), 25 (=100/4), 20, 1 (=100/100), 0.1 (=100/1000). Default value: 100 (all telemetry events).
 azure.application-insights.telemetry-processor.sampling.percentage=100
