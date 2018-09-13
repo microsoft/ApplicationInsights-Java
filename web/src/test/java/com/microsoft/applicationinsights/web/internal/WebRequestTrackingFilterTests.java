@@ -37,7 +37,9 @@ import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 /**
@@ -45,25 +47,13 @@ import static org.mockito.Mockito.*;
  */
 public class WebRequestTrackingFilterTests {
 
-    private class StubTelemetryClient extends TelemetryClient {
-        public int trackExceptionCalled;
-
-        public boolean shouldThrow;
-
-        @Override
-        public void trackException(Exception exception) {
-            ++trackExceptionCalled;
-            if (shouldThrow) {
-                throw new RuntimeException();
-            }
-        }
-    }
+    private String mockContextPath = "/FakeContext";
 
     private static class FilterAndTelemetryClientMock {
         public final Filter filter;
-        public final StubTelemetryClient mockTelemetryClient;
+        public final TelemetryClient mockTelemetryClient;
 
-        private FilterAndTelemetryClientMock(Filter filter, StubTelemetryClient mockTelemetryClient) {
+        private FilterAndTelemetryClientMock(Filter filter, TelemetryClient mockTelemetryClient) {
             this.filter = filter;
             this.mockTelemetryClient = mockTelemetryClient;
         }
@@ -74,7 +64,7 @@ public class WebRequestTrackingFilterTests {
         Filter filter = createInitializedFilter();
         WebModulesContainer container = ServletUtils.getWebModuleContainer(filter);
 
-        Assert.assertNotNull("Container shouldn't be null", container);
+        assertNotNull("Container shouldn't be null", container);
         Assert.assertTrue("Modules container shouldn't be empty", container.getModulesCount() > 0);
     }
 
@@ -156,6 +146,18 @@ public class WebRequestTrackingFilterTests {
         testException(createdData, new IOException());
     }
 
+    @Test
+    public void testWebAppNameInitializerAppNameHandoff() throws Exception {
+        FilterAndTelemetryClientMock mocks = createInitializedFilterWithExposedTelemetryClient();
+        FilterChain chain = mock(FilterChain.class);
+
+        mocks.filter.doFilter(ServletUtils.generateDummyServletRequest(), ServletUtils.generateDummyServletResponse(), chain);
+        String role = mocks.mockTelemetryClient.getContext().getCloud().getRole();
+        assertNotNull(role);
+        assertEquals(this.mockContextPath.replace("/", ""), role);
+
+    }
+
     // region Private methods
 
     private void testException(FilterAndTelemetryClientMock createdData, Exception expectedException) throws NoSuchFieldException, IllegalAccessException, ServletException {
@@ -175,7 +177,7 @@ public class WebRequestTrackingFilterTests {
             Assert.assertSame(expectedException, se);
 
             if (createdData.mockTelemetryClient != null) {
-                Assert.assertTrue(createdData.mockTelemetryClient.trackExceptionCalled == 1);
+                verify(createdData.mockTelemetryClient, times(1)).trackException(any(Exception.class));
             }
         }
     }
@@ -184,6 +186,12 @@ public class WebRequestTrackingFilterTests {
         Filter filter = new WebRequestTrackingFilter();
         FilterConfig config = mock(FilterConfig.class);
         when(config.getFilterName()).thenReturn(WebRequestTrackingFilter.FILTER_NAME);
+
+        ServletContext context = mock(ServletContext.class);
+
+        when(context.getContextPath()).thenReturn(this.mockContextPath);
+
+        when(config.getServletContext()).thenReturn(context);
         filter.init(config);
 
         return filter;
@@ -208,16 +216,23 @@ public class WebRequestTrackingFilterTests {
         Field field = WebRequestTrackingFilter.class.getDeclaredField("telemetryClient");
         field.setAccessible(true);
 
-        StubTelemetryClient mockTelemetryClient = null;
+        TelemetryClient mockTelemetryClient = null;
         if (withTelemetryClient) {
-            mockTelemetryClient = new StubTelemetryClient();
+            mockTelemetryClient = spy(new TelemetryClient());
             if (clientThrows) {
-                mockTelemetryClient.shouldThrow = true;
+                doThrow(new RuntimeException()).when(mockTelemetryClient).trackException(any(Exception.class));
             }
         }
         field.set(filter, mockTelemetryClient);
 
         return new FilterAndTelemetryClientMock(filter, mockTelemetryClient);
+    }
+
+    private FilterAndTelemetryClientMock createInitializedFilterWithExposedTelemetryClient() throws Exception {
+        Filter filter = createInitializedFilter();
+        Field field = WebRequestTrackingFilter.class.getDeclaredField("telemetryClient");
+        field.setAccessible(true);
+        return new FilterAndTelemetryClientMock(filter, (TelemetryClient) field.get(filter));
     }
     // endregion Private methods
 }
