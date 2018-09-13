@@ -187,8 +187,7 @@ public class ApplicationInsightsProperties {
       return localForwarder;
     }
 
-    public void setLocalForwarder(
-        LocalForwarder localForwarder) {
+    public void setLocalForwarder(LocalForwarder localForwarder) {
       this.localForwarder = localForwarder;
     }
 
