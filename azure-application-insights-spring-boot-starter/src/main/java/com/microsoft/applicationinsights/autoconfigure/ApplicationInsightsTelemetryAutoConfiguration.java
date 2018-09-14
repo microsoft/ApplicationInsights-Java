@@ -182,7 +182,6 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         if (StringUtils.isNotBlank(localForwarderEndpoint)) {
             LocalForwarder lf = applicationInsightsProperties.getChannel().getLocalForwarder();
 
-            // only the endpoint address is picked up. All the other values are fake and just for future use if needed.
             return new LocalForwarderTelemetryChannel(lf.getEndpointAddress(), false, lf.getMaxTelemetryBufferCapacity() ,
                 lf.getFlushIntervalInSeconds());
         }
