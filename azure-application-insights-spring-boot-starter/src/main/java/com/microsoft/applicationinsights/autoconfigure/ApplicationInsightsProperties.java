@@ -179,6 +179,17 @@ public class ApplicationInsightsProperties {
     /** Configuration of {@link InProcessTelemetryChannel}. */
     private InProcess inProcess = new InProcess();
 
+    /** Configuration of {@link com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel}*/
+    private LocalForwarder localForwarder = new LocalForwarder();
+
+    public LocalForwarder getLocalForwarder() {
+      return localForwarder;
+    }
+
+    public void setLocalForwarder(LocalForwarder localForwarder) {
+      this.localForwarder = localForwarder;
+    }
+
     public InProcess getInProcess() {
       return inProcess;
     }
@@ -271,6 +282,50 @@ public class ApplicationInsightsProperties {
 
       public void setThrottling(boolean throttling) {
         this.throttling = throttling;
+      }
+    }
+
+    /**
+     * The config class to encapsulate the LocalForwarder properties.
+     */
+    static class LocalForwarder {
+
+      /** Local Forwarder Endpoint address. */
+      private String endpointAddress;
+
+      /**
+       * Maximum count of telemetries that will be batched before sending. Must be between 1 and
+       * 1000.
+       */
+      private int maxTelemetryBufferCapacity =
+          TelemetryChannelBase.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
+
+      /** Interval to send telemetry. Must be between 1 and 300. */
+      private int flushIntervalInSeconds =
+          TelemetryChannelBase.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
+
+      public int getMaxTelemetryBufferCapacity() {
+        return maxTelemetryBufferCapacity;
+      }
+
+      public void setMaxTelemetryBufferCapacity(int maxTelemetryBufferCapacity) {
+        this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
+      }
+
+      public int getFlushIntervalInSeconds() {
+        return flushIntervalInSeconds;
+      }
+
+      public void setFlushIntervalInSeconds(int flushIntervalInSeconds) {
+        this.flushIntervalInSeconds = flushIntervalInSeconds;
+      }
+
+      public String getEndpointAddress() {
+        return endpointAddress;
+      }
+
+      public void setEndpointAddress(String endpointAddress) {
+        this.endpointAddress = endpointAddress;
       }
     }
   }

@@ -27,6 +27,8 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel;
+import com.microsoft.applicationinsights.exceptions.IllegalConfigurationException;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -47,8 +49,12 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.springframework.beans.factory.UnsatisfiedDependencyException;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -59,7 +65,15 @@ import org.springframework.context.annotation.Bean;
  */
 public final class ApplicationInsightsTelemetryAutoConfigurationTests {
 
-    private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+    @Before
+    public void init() {
+        context = new AnnotationConfigApplicationContext();
+    }
+
+    private AnnotationConfigApplicationContext context;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @After
     public void restore() {
@@ -69,7 +83,7 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
     @Test
     public void shouldSetInstrumentationKeyWhenContextLoads() {
         EnvironmentTestUtils.addEnvironment(context,
-                "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000");
+                "azure.application-insights.instrumentation-key:00000000-0000-0000-0000-000000000000");
         context.register(PropertyPlaceholderAutoConfiguration.class,
                 ApplicationInsightsTelemetryAutoConfiguration.class);
         context.refresh();
@@ -110,7 +124,6 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
     }
 
     @Test
-    @Ignore
     public void shouldReloadInstrumentationKeyOnTelemetryClient() {
         TelemetryClient myClient = new TelemetryClient();
 
@@ -153,7 +166,7 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
     }
 
     @Test
-    public void shouldBeAbleToConfigureTelemetryChannel() {
+    public void shouldBeAbleToConfigureInprocessTelemetryChannel() throws IllegalConfigurationException {
         EnvironmentTestUtils.addEnvironment(context,
                 "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
                 "azure.application-insights.channel.in-process.developer-mode=false",
@@ -171,6 +184,36 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         assertThat(channel).extracting("telemetryBuffer").extracting("transmitBufferTimeoutInSeconds").contains(123);
         assertThat(channel).extracting("telemetryBuffer").extracting("maxTelemetriesInBatch").contains(10);
     }
+
+    @Ignore
+    @Test
+    public void shouldBeAbleToConfigureLocalForwarderTelemetryChannel() throws IllegalConfigurationException {
+        EnvironmentTestUtils.addEnvironment(context,
+            "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
+            "azure.application-insights.channel.local-forwarder.endpoint-address=localhost:8080");
+        context.register(PropertyPlaceholderAutoConfiguration.class,
+            ApplicationInsightsTelemetryAutoConfiguration.class);
+        context.refresh();
+
+        TelemetryConfiguration telemetryConfiguration = context.getBean(TelemetryConfiguration.class);
+        TelemetryChannel channel = telemetryConfiguration.getChannel();
+
+        assertThat(channel).isInstanceOf(LocalForwarderTelemetryChannel.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenChannelsMisconfigured() {
+
+        EnvironmentTestUtils.addEnvironment(context,
+            "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
+            "azure.application-insights.channel.local-forwarder.endpoint-address=localhost:8080",
+            "azure.application-insights.channel.in-process.endpoint-address=https://dc.services.visualstudio.com/v2/track");
+        context.register(PropertyPlaceholderAutoConfiguration.class,
+            ApplicationInsightsTelemetryAutoConfiguration.class);
+        thrown.expect(UnsatisfiedDependencyException.class);
+        context.refresh();
+    }
+
 
     @Test
     public void shouldBeAbleToConfigureSamplingTelemetryProcessor() {
@@ -205,7 +248,8 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
     }
 
     @Test
-    public void internalLoggerShouldBeInitializedBeforeTelemetryConfiguration() {
+    public void internalLoggerShouldBeInitializedBeforeTelemetryConfiguration() throws Exception {
+        resetInternalLogger();
         EnvironmentTestUtils.addEnvironment(context,
             "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
             "azure.application-insights.logger.level=INFO"
@@ -353,5 +397,15 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
         method.setAccessible(true);
         method.invoke(null);
+    }
+
+    /**
+     * Resets the internal logger's initialized variable so configuration could be re-done
+     * @throws Exception
+     */
+    private void resetInternalLogger() throws Exception {
+        Field f1 = InternalLogger.INSTANCE.getClass().getDeclaredField("initialized");
+        f1.setAccessible(true);
+        f1.set(InternalLogger.INSTANCE, false);
     }
 }
