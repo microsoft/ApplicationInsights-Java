@@ -845,7 +845,7 @@ END OF CREATIVE COMMONS ATTRIBUTION 4.0 INTERNATIONAL PUBLIC LICENSE
  END OF FILE FROM /commons-lang-LANG_3_6/src/main/java/org/apache/commons/lang3/StringUtils.java NOTICE, INFORMATION AND LICENSE
  
 ==========
-Protobuf
+protobuf-java
 Copyright 2008 Google Inc.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
