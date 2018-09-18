@@ -192,10 +192,15 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
             inProcess.getMaxInstantRetry());
     }
 
+    // If local forwarder channel is present quick pulse would not be initialized.
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.quick-pulse.enabled", havingValue = "true", matchIfMissing = true)
     @DependsOn("telemetryConfiguration")
     public QuickPulse quickPulse() {
+        String inProcessEndPoint = environment.getProperty("azure.application-insights.channel.local-forwarder.endpoint-address");
+        if (StringUtils.isNotBlank(inProcessEndPoint)) {
+          return QuickPulse.INSTANCE;
+        }
         QuickPulse.INSTANCE.initialize();
         return QuickPulse.INSTANCE;
     }
