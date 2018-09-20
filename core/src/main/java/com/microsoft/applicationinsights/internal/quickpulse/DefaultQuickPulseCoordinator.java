@@ -44,7 +44,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
         dataFetcher = initData.dataFetcher;
 
         waitBetweenPingsInMS = initData.waitBetweenPingsInMS;
-        waitBetweenPostsInMS = initData.waitBetweenPingsInMS;
+        waitBetweenPostsInMS = initData.waitBetweenPostsInMS;
         waitOnErrorInMS = initData.waitBetweenPingsInMS;
     }
 
