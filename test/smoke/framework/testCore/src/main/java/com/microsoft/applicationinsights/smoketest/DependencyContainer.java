@@ -1,5 +1,8 @@
 package com.microsoft.applicationinsights.smoketest;
 
+/**
+ * Defines a container to be used as a test dependency.
+ */
 public @interface DependencyContainer {
     /**
      * The identifier of the docker image.

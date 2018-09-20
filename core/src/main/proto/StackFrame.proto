@@ -1,0 +1,18 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+option java_package = "com.microsoft.localforwarder.library.inputs.contracts";
+option java_multiple_files = true;
+
+message StackFrame {
+	int32 level = 1;
+    
+	string method = 2;
+    
+	string assembly = 3;
+    
+	string fileName = 4;
+    
+	int32 line = 5;
+}

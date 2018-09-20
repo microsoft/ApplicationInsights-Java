@@ -21,19 +21,17 @@
 
 package com.microsoft.applicationinsights.web.spring;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.List;
-
-import com.microsoft.applicationinsights.web.spring.internal.InterceptorRegistry;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+
+import com.microsoft.applicationinsights.web.spring.internal.InterceptorRegistry;
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * Created by yonisha on 3/4/2015.
@@ -43,8 +41,6 @@ public class InterceptorRegistryTests {
     @Test
     public void testInterceptorRegistryHasRequiredAnnotations() {
         List<Annotation> annotations = Arrays.asList(InterceptorRegistry.class.getAnnotations());
-
-        Assert.assertNotNull(getAnnotationByType(annotations, EnableWebMvc.class));
         Assert.assertNotNull(getAnnotationByType(annotations, Configuration.class));
     }
 

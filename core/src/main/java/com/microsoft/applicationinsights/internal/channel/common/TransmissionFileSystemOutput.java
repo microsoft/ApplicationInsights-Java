@@ -87,7 +87,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private File folder;
 
     /// Capacity is the size of disk that we are can use
-    private long capacityInKB = DEFAULT_CAPACITY_MEGABYTES * 1024;
+    private long capacityInBytes = DEFAULT_CAPACITY_MEGABYTES * 1024 * 1024;
 
     LimitsEnforcer capacityEnforcer;
 
@@ -108,7 +108,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
                                                                         DEFAULT_CAPACITY_MEGABYTES,
                                                                         MAX_TRANSMISSION_STORAGE_CAPACITY_NAME,
                                                                         maxTransmissionStorageCapacity);
-        capacityInKB = capacityEnforcer.getCurrentValue() * 1024;
+        capacityInBytes = capacityEnforcer.getCurrentValue() * 1024 * 1024;
 
         folder = new File(folderPath);
 
@@ -134,8 +134,13 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
 
     @Override
     public boolean send(Transmission transmission) {
-        if (size.get() >= capacityInKB) {
-        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Persistent storage max capacity has been reached; currently at %s KB. Telemetry will be lost, please set the MaxTransmissionStorageFilesCapacityInMB property in the configuration file.", size.get());
+
+        long currentSizeInBytes = size.get();
+        if (currentSizeInBytes >= capacityInBytes) {
+        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Persistent storage max capacity has been reached; "
+                + "currently at %.3f KB. Telemetry will be lost, "
+                + "please consider increasing the value of MaxTransmissionStorageFilesCapacityInMB property in the configuration file.",
+                (currentSizeInBytes / 1024.0));
             return false;
         }
 
@@ -204,7 +209,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     }
 
     public void setCapacity(int suggestedCapacity) {
-        this.capacityInKB = capacityEnforcer.normalizeValue(suggestedCapacity) * 1024;
+        this.capacityInBytes = capacityEnforcer.normalizeValue(suggestedCapacity) * 1024 * 1024;
     }
 
     private List<File> sortOldestLastAndTrim(Collection<File> transmissions, int limit) {
@@ -310,6 +315,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             } finally{
                 try {
                     output.close();
+                    buffer.close();
+                    fileOutput.close();
                 } catch (Exception e) {
                     return false;
                 }

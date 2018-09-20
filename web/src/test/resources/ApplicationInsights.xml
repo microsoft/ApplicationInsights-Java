@@ -25,6 +25,7 @@
         A-test-instrumentation-key
     </InstrumentationKey>
     <ContextInitializers>
+        <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer" />
     </ContextInitializers>
     <TelemetryInitializers>
         <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer"/>

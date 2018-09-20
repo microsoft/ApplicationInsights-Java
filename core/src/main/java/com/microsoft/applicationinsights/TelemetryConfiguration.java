@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.nop.NopTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -108,7 +109,10 @@ public final class TelemetryConfiguration {
      * Gets the telemetry channel.
      * @return An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      */
-    public TelemetryChannel getChannel() {
+    public synchronized TelemetryChannel getChannel() {
+        if (channel == null) {
+            return NopTelemetryChannel.instance();
+        }
         return channel;
     }
 
@@ -116,7 +120,7 @@ public final class TelemetryConfiguration {
      * Sets the telemetry channel.
      * @param channel An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      */
-    public void setChannel(TelemetryChannel channel) {
+    public synchronized void setChannel(TelemetryChannel channel) {
         this.channel = channel;
     }
 

@@ -1,0 +1,18 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+option java_package = "com.microsoft.localforwarder.library.inputs.contracts";
+option java_multiple_files = true;
+
+import "SeverityLevel.proto";
+
+message Message {
+	int32 ver = 1;
+    
+	string message = 2;
+    
+	SeverityLevel severityLevel = 3;
+    
+	map<string, string> properties = 4;
+}

@@ -1,0 +1,20 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+option java_package = "com.microsoft.localforwarder.library.inputs.contracts";
+option java_multiple_files = true;
+
+import "Telemetry.proto";
+
+// gRPC service to transmit telemetry
+service AITelemetryService {
+  rpc SendTelemetryBatch (stream TelemetryBatch) returns (stream AiResponse) {}
+}
+
+message AiResponse {
+}
+
+message TelemetryBatch {
+	repeated Telemetry items = 1;
+}

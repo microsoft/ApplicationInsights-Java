@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import java.io.InputStream;
@@ -133,8 +134,10 @@ public enum TelemetryConfigurationFactory {
             setInstrumentationKey(applicationInsightsConfig, configuration);
 
             TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
-            setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
-
+            boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
+            if (!channelIsConfigured) {
+                InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
+            }
             configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
 
             setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
@@ -142,6 +145,13 @@ public enum TelemetryConfigurationFactory {
             setTelemetryModules(applicationInsightsConfig, configuration);
             setTelemetryProcessors(applicationInsightsConfig, configuration);
 
+            TelemetryChannel channel = configuration.getChannel();
+            if (channel instanceof LocalForwarderTelemetryChannel) {
+                if (isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
+                    InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
+                    applicationInsightsConfig.getQuickPulse().setEnabled(false);
+                }
+            }
             setQuickPulse(applicationInsightsConfig);
 
             initializeComponents(configuration);
@@ -190,10 +200,15 @@ public enum TelemetryConfigurationFactory {
     }
 
     private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration) {
-        QuickPulseXmlElement quickPulseXmlElement = appConfiguration.getQuickPulse();
-        if (quickPulseXmlElement == null || quickPulseXmlElement.isEnabled()) {
+        if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
+            InternalLogger.INSTANCE.trace("Initializing QuickPulse...");
             QuickPulse.INSTANCE.initialize();
         }
+    }
+
+    private boolean isQuickPulseEnabledInConfiguration(ApplicationInsightsXmlConfiguration appConfiguration) {
+        QuickPulseXmlElement quickPulseXmlElement = appConfiguration.getQuickPulse();
+        return quickPulseXmlElement.isEnabled();
     }
 
     /**
@@ -460,7 +475,10 @@ public enum TelemetryConfigurationFactory {
                 configuration.setChannel(channel);
                 return true;
             } else {
-                InternalLogger.INSTANCE.error("Failed to create '%s', will create the default one with default arguments", channelName);
+                InternalLogger.INSTANCE.error("Failed to create '%s'", channelName);
+                if (!InProcessTelemetryChannel.class.getCanonicalName().equals(channelName)) {
+                    return false;
+                }
             }
         }
 

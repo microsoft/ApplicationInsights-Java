@@ -28,6 +28,7 @@ subprojects {
 		smokeTestCompile project(':test:smoke:framework:testCore')
 		smokeTestCompile project(':test:smoke:framework:utils')
 		smokeTestCompile 'junit:junit:4.12'
+		smokeTestCompile 'org.hamcrest:hamcrest-library:1.3'
 		
 		testCompile project(':test:smoke:framework:testCore') // not necessary; vs code bug workaround
 		testCompile project(':test:smoke:framework:utils')
