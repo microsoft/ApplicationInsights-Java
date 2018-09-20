@@ -65,9 +65,6 @@ import org.apache.commons.lang3.time.StopWatch;
  *  </filter-mapping>
  * }
  */
-@WebFilter(urlPatterns = {"/*"},
-        filterName = "ApplicationInsightsWebFilter",
-        description = "Reports request and exception telemetry")
 public final class WebRequestTrackingFilter implements Filter {
     static {
         WebReflectionUtils.initialize();
@@ -160,6 +157,7 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config) {
         try {
+
             String appName = extractAppName(config.getServletContext());
             initializeAgentIfAvailable(config);
 
@@ -204,7 +202,6 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void destroy() {
         cleanup();
-        ThreadContext.remove();
     }
 
     // endregion Public

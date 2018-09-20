@@ -11,7 +11,8 @@
 - Deprecated `getRoleName`/`setRoleName` and `getRoleInstance`/`setRoleInstance` in `DeviceContext`. Introduced `CloudContext` to hold replacements, `getRole`/`setRole` and `getRoleInstance`/`setRoleInstance`, respectively. 
 - Introduced `CloudInfoContextInitializer` to set roleInstance in `CloudContext`. This new initializer is included by default and therefore will not affect the current tags.
 - Adds `WebAppNameContextInitializer` for use with the `WebRequestTrackingFilter`.
-- Adds `LocalForwarderChannel` for use with the LocalForwarder.
+- Adds `LocalForwarderChannel` for use with the [LocalForwarder](https://github.com/Microsoft/ApplicationInsights-LocalForwarder).
+- Removes Servlet 3.0 annotations from `WebRequestTrackingFilter` and `ApplicationInsightsServletContextListener` which were causing issues in certain cases. This will allow easier customization of the filter. To use the listener moving forward, it will need to be defined in web.xml. 
 
 # Version 2.1.2
 - Fix [#676](https://github.com/Microsoft/ApplicationInsights-Java/issues/676). This fixes the HTTP dependency collection when using NetFlix Zuul Library.
