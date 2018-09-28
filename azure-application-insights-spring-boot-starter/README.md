@@ -175,9 +175,9 @@ azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled=t
 azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled=true
 
 #Collect JMX Counters
-azure.application-insights.jmx.jmx-counters=\
-  java.lang:type=ClassLoading/LoadedClassCount/Current Loaded Class Count, \
-  java.lang:type=Memory/HeapMemoryUsage.init/Initial Heap Memory Usage/Composite
+azure.application-insights.jmx.jmx-counters[0]=java.lang:type=ClassLoading/LoadedClassCount/Current Loaded Class Count
+azure.application-insights.jmx.jmx-counters[1]=java.lang:type=Memory/HeapMemoryUsage.init/Initial Heap Memory Usage/Composite
+azure.application-insights.jmx.jmx-counters[2]=java.lang:name=PS MarkSweep,type=GarbageCollector/CollectionTime/GC MarkSweep Time
 # where the elements separated by / have the following order:
 # 1. objectName 2. AttributeName 3. Display Name and 4. Type  
 
