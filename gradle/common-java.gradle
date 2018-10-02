@@ -28,10 +28,20 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 apply plugin: 'java'
 apply plugin: 'jacoco'
 
-
 tasks.withType(JavaCompile) {
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
+}
+
+jacoco {
+    toolVersion = "0.8.2"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
 }
 
 if (hasProperty("JDKToUse")) {
