@@ -1,10 +1,9 @@
 package com.microsoft.applicationinsights.channel.concrete.localforwarder;
 
-import static org.junit.Assert.assertEquals;
-
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry;
 import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
@@ -22,14 +21,20 @@ import com.microsoft.localforwarder.library.inputs.contracts.ExceptionDetails.Bu
 import com.microsoft.localforwarder.library.inputs.contracts.SeverityLevel;
 import com.microsoft.localforwarder.library.inputs.contracts.StackFrame;
 import com.microsoft.localforwarder.library.inputs.contracts.Telemetry;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.*;
+import org.mockito.internal.matchers.Null;
+import sun.misc.Perf;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Testing the utility methods in {@link LocalForwarderModelTransformer}
