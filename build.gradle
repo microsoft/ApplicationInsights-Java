@@ -42,6 +42,21 @@ ext {
     }
 }
 
+subprojects {
+    if (pluginManager.hasPlugin('jacoco')) {
+        jacoco {
+            toolVersion = "0.8.2"
+        }
+
+        jacocoTestReport {
+            reports {
+                xml.enabled true
+                html.enabled true
+            }
+        }
+    }
+}
+
 task clean {
     doLast {
         delete(rootProjectBuildFolder)
