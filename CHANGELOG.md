@@ -1,5 +1,14 @@
 # CHANGELOG
 
+# Version 2.2.1
+- Abstracted Internal Logger in Core into separate reusable module. 
+- Deprecated InternalAgentLogger in favor of InternalLogger for better consistency.
+- Agent now supports diagnostic writing logs to file. 
+- Added ability to configure FileLogger for SpringBootStarter. 
+- Fixed [#752](https://github.com/Microsoft/ApplicationInsights-Java/issues/752)
+- Fixed [#751](https://github.com/Microsoft/ApplicationInsights-Java/issues/751)
+
+
 # Version 2.2.0
 - Introduces SpringBoot Starter 1.1.0-BETA
 - Starter now respects autoconfiguration for Micrometer metrics.
