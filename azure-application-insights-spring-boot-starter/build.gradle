@@ -111,5 +111,5 @@ projectPomDescription = "This is the Spring Boot starter of " + project.msftAppI
 
 whenPomConfigured = { p ->
     def agentArtifactId = project(":agent").jar.baseName
-    p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != agentArtifactId }
+    p.dependencies = p.dependencies.findAll { dep -> dep.scope == "test" || dep.artifactId != agentArtifactId }
 }

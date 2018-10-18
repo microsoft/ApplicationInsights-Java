@@ -168,9 +168,10 @@ projectPomDescription = "This is the core module of " + project.msftAppInsightsJ
 whenPomConfigured = { p ->
     def agentArtifactId = project(":agent").jar.baseName
     p.dependencies = p.dependencies.findAll { dep ->
-        dep.artifactId != agentArtifactId &&
+        dep.scope == "test" || dep.artifactId != agentArtifactId &&
                 !(dep.groupId in ['org.apache.http', 'eu.infomas', 'org.apache.commons', 'commons-io',
-                                  'com.google.guava', 'com.google.code.gson', 'org.apache.httpcomponents'])
+                                  'com.google.guava', 'com.google.code.gson', 'org.apache.httpcomponents',
+                                  'io.grpc', 'com.google.protobuf'])
     }
 }
 
