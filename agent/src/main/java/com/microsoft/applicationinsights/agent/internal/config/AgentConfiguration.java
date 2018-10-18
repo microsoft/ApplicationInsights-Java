@@ -43,4 +43,6 @@ public interface AgentConfiguration {
     String getSdkPath();
 
     boolean isDebugMode();
+
+    Map<String, String> getAgentLoggingConfiguration();
 }

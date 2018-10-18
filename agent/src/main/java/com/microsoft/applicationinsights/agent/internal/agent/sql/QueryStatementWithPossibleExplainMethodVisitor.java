@@ -25,7 +25,6 @@ import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisit
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
 
 /**
  * Created by gupele on 8/4/2015.

@@ -21,19 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.coresync.impl;
 
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
-import org.objectweb.asm.Type;
-
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.agent.internal.config.DataOfConfigurationForException;
 import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.concurrent.ConcurrentHashMap;
+import org.objectweb.asm.Type;
 
 /**
  * The class serves as the contact point between injected code and its real implementation.
@@ -312,7 +308,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             throw td;
         } catch (Throwable throwable) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Exception: '%s'", throwable.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -328,12 +324,12 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
             }
 
             mainHandler = handler;
-            InternalAgentLogger.INSTANCE.trace("Setting main handler");
+            InternalLogger.INSTANCE.trace("Setting main handler");
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable throwable) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception: '%s'", throwable.toString());            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Exception: '%s'", throwable.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

@@ -21,13 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.exceptions;
 
-import com.microsoft.applicationinsights.agent.internal.agent.*;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodVisitorFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.Map;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.objectweb.asm.MethodVisitor;
-
-import java.util.Map;
 
 /**
  * Created by gupele on 7/31/2016.
@@ -62,7 +64,7 @@ public final class RuntimeExceptionProvider {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalAgentLogger.INSTANCE.error("Failed to load instrumentation for Jedis: '%s'", ExceptionUtils.getStackTrace(t));
+                InternalLogger.INSTANCE.error("Failed to load instrumentation for Jedis: '%s'", ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
+import com.google.common.base.Strings;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
-
-import com.google.common.base.Strings;
 
 /**
  * A first, very simple version of an internal logger
@@ -87,7 +87,7 @@ public enum InternalLogger {
     public synchronized void initialize(String loggerOutputType, Map<String, String> loggerData) {
         if (!initialized) {
             try {
-                String loggerLevel = loggerData.remove(LOGGER_LEVEL);
+                String loggerLevel = loggerData.get(LOGGER_LEVEL);
                 if (Strings.isNullOrEmpty(loggerLevel)) {
                     // The user didn't specify the logging level, therefore by default we set that to 'TRACE'
                     loggingLevel = LoggingLevel.TRACE;
@@ -98,7 +98,6 @@ public enum InternalLogger {
                         loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
                         setLoggerOutput(loggerOutputType, loggerData);
                     } catch (Exception e) {
-                        // Failed
                         onInitializationError(String.format("Error: Illegal value '%s' for the SDK internal logger. Logging level is therefore set to 'OFF'", loggerLevel));
                     }
                 }
@@ -257,6 +256,7 @@ public enum InternalLogger {
                 // If the user asked for a logger type
                 type = LoggerOutputType.valueOf(loggerOutputType.toUpperCase());
             } catch (Exception e) {
+                System.out.println(e);
                 onInitializationError(String.format("Error: Illegal value '%s' for the SDK Internal Logger type.", loggerOutputType));
                 return;
             }

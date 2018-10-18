@@ -21,12 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.microsoft.applicationinsights.agent.internal.agent.exceptions.RuntimeExceptionProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.http.HttpClassDataProvider;
 import com.microsoft.applicationinsights.agent.internal.agent.redis.JedisClassDataProvider;
@@ -34,7 +28,11 @@ import com.microsoft.applicationinsights.agent.internal.agent.sql.PreparedStatem
 import com.microsoft.applicationinsights.agent.internal.agent.sql.StatementClassDataDataProvider;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by gupele on 5/11/2015.
@@ -78,28 +76,28 @@ class DefaultClassDataProvider implements ClassDataProvider {
         setBuiltInDataFlag(agentConfiguration);
 
         if (builtInEnabled) {
-            InternalAgentLogger.INSTANCE.trace("Adding built-in instrumentation");
+            InternalLogger.INSTANCE.trace("Adding built-in instrumentation");
 
             if (agentConfiguration.getBuiltInConfiguration().isJdbcEnabled()) {
-				InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Statements instrumentation");
+				InternalLogger.INSTANCE.trace("Adding built-in JDBC Statements instrumentation");
                 new StatementClassDataDataProvider(classesToInstrument).add();
 
-				InternalAgentLogger.INSTANCE.trace("Adding built-in JDBC Prepared Statements instrumentation");
+				InternalLogger.INSTANCE.trace("Adding built-in JDBC Prepared Statements instrumentation");
                 new PreparedStatementClassDataProvider(classesToInstrument).add();
             }
 
             if (agentConfiguration.getBuiltInConfiguration().isHttpEnabled()) {
-				InternalAgentLogger.INSTANCE.trace("Adding built-in HTTP instrumentation");
+				InternalLogger.INSTANCE.trace("Adding built-in HTTP instrumentation");
                 new HttpClassDataProvider(classesToInstrument).add();
             }
 
             if (agentConfiguration.getBuiltInConfiguration().isRedisEnabled()) {
-				InternalAgentLogger.INSTANCE.trace("Adding built-in Jedis instrumentation");
+				InternalLogger.INSTANCE.trace("Adding built-in Jedis instrumentation");
                 new JedisClassDataProvider(classesToInstrument).add();
             }
 
             if (agentConfiguration.getBuiltInConfiguration().getDataOfConfigurationForException().isEnabled()) {
-				InternalAgentLogger.INSTANCE.trace("Adding built-in Runtime instrumentation");
+				InternalLogger.INSTANCE.trace("Adding built-in Runtime instrumentation");
                 new RuntimeExceptionProvider(classesToInstrument).add();
             }
 
@@ -139,7 +137,7 @@ class DefaultClassDataProvider implements ClassDataProvider {
 					ClassInstrumentationData newClassInstrumentationData = new ClassInstrumentationData(className, classInstrumentationData.getClassType(), classInstrumentationData.getClassVisitorFactory());
 					newClassInstrumentationData.setMethodInstrumentationInfo(classInstrumentationData.getMethodInstrumentationInfo());
 					classInstrumentationData = newClassInstrumentationData;
-					InternalAgentLogger.INSTANCE.trace("Adding %s", classInstrumentationData.getFullPackageName());
+					InternalLogger.INSTANCE.trace("Adding %s", classInstrumentationData.getFullPackageName());
                }
             }
         }
@@ -171,12 +169,12 @@ class DefaultClassDataProvider implements ClassDataProvider {
         for (ClassInstrumentationData classInstrumentationData : requestedClassesToInstrument) {
             if (!classInstrumentationData.isRegExp()) {
                 if (isExcluded(classInstrumentationData.getClassName())) {
-                    InternalAgentLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
+                    InternalLogger.INSTANCE.trace("'%s' is not added since it is not allowed", classInstrumentationData.getClassName());
                     continue;
                 }
-                InternalAgentLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
+                InternalLogger.INSTANCE.trace("Adding '%s'", classInstrumentationData.getClassName());
             } else {
-                InternalAgentLogger.INSTANCE.trace("Adding regex classes in package'%s'", classInstrumentationData.getFullPackageName());
+                InternalLogger.INSTANCE.trace("Adding regex classes in package'%s'", classInstrumentationData.getFullPackageName());
             }
 
             if (classInstrumentationData.isRegExp()) {

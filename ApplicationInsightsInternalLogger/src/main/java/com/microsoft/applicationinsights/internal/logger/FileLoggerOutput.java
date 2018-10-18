@@ -21,24 +21,22 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
-import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.FileUtils;
-
-import com.google.common.collect.Lists;
-import com.google.common.base.Strings;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The class is responsible for write log messages into log files.
@@ -49,7 +47,7 @@ import com.google.common.base.Strings;
  * When the maximum amount of log files is reached, the oldest one will be deleted.
  *
  * The class does a 'best effort' to work with files, if there is a problem, the class will
- * try to write into a {@link com.microsoft.applicationinsights.internal.logger.ConsoleLoggerOutput}
+ * try to write into a {@link ConsoleLoggerOutput}
  * but will not fail the process under any scenario.
  */
 public final class FileLoggerOutput implements LoggerOutput {
@@ -57,10 +55,12 @@ public final class FileLoggerOutput implements LoggerOutput {
     private final static int MAX_SIZE_PER_LOG_FILE_IN_MB = 500;
     private final static int MIN_NUMBER_OF_LOG_FILES = 2;
     private static String SDK_LOGS_DEFAULT_FOLDER = "javasdklogs";
+    private static String SDK_LOGS_BASE_FOLDER_PATH = LocalFileSystemUtils.getTempDir().getAbsolutePath();
     private final static String LOG_FILE_SUFFIX_FOR_LISTING = "jsl";
     private final static String NUMBER_OF_FILES_ATTRIBUTE = "NumberOfFiles";
     private final static String TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE = "NumberOfTotalSizeInMB";
     private final static String LOG_FILES_BASE_FOLDER_ATTRIBUTE = "BaseFolder";
+    private final static String LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE = "BaseFolderPath";
     private final static String UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE = "UniquePrefix";
     private static final String DATE_FORMAT_NOW = "yyyy-MM-dd-HH-mm-ss";
 
@@ -95,11 +95,12 @@ public final class FileLoggerOutput implements LoggerOutput {
         int numberOfFiles = getRequest(loggerData, NUMBER_OF_FILES_ATTRIBUTE, MIN_NUMBER_OF_LOG_FILES);
         int numberOfTotalMB = getRequest(loggerData, TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE, MIN_SIZE_PER_LOG_FILE_IN_MB);
 
+        String baseFolderPath = loggerData.get(LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE);
         String baseFolderName = loggerData.get(LOG_FILES_BASE_FOLDER_ATTRIBUTE);
 
         factory = new DefaultLogFileProxyFactory();
 
-        initialize(baseFolderName, numberOfFiles, numberOfTotalMB);
+        initialize(baseFolderPath, baseFolderName, numberOfFiles, numberOfTotalMB);
     }
 
     private int getRequest(Map<String, String> loggerData, String requestName, int defaultValue) {
@@ -116,8 +117,12 @@ public final class FileLoggerOutput implements LoggerOutput {
         return requestValue;
     }
 
-    private void initialize(String baseFolderName, int numberOfFiles, int numberOfTotalMB) {
+    private void initialize(String baseFolderPath, String baseFolderName, int numberOfFiles, int numberOfTotalMB) {
         currentLogFileIndex = 0;
+
+        if (Strings.isNullOrEmpty(baseFolderPath)) {
+            baseFolderPath = SDK_LOGS_BASE_FOLDER_PATH;
+        }
 
         if (Strings.isNullOrEmpty(baseFolderName)) {
             baseFolderName = SDK_LOGS_DEFAULT_FOLDER;
@@ -137,7 +142,7 @@ public final class FileLoggerOutput implements LoggerOutput {
         }
         this.maxSizePerFileInMB = tempSizePerFileInMB;
 
-        baseFolder = new File(LocalFileSystemUtils.getTempDir(), baseFolderName);
+        baseFolder = new File(baseFolderPath, baseFolderName);
         if (!baseFolder.exists()) {
             baseFolder.mkdirs();
         } else {
@@ -172,7 +177,7 @@ public final class FileLoggerOutput implements LoggerOutput {
         }
     }
 
-    void setLogProxyFactory(LogFileProxyFactory factory) {
+    public void setLogProxyFactory(LogFileProxyFactory factory) {
         this.factory = factory;
     }
 
@@ -218,6 +223,8 @@ public final class FileLoggerOutput implements LoggerOutput {
         String filePrefix = uniquePrefix + simpleDateFormat.format(cal.getTime());
         LogFileProxy logFileProxy = factory.create(baseFolder, filePrefix, maxSizePerFileInMB);
         files[currentLogFileIndex] = logFileProxy;
+
+
         return logFileProxy;
     }
 

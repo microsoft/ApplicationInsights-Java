@@ -21,10 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
 
 /**
  * An abstract base class for Method Visitors that handle http method calls.

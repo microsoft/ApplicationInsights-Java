@@ -98,11 +98,6 @@ public abstract class AdvancedAdviceAdapter extends AdviceAdapter {
         }
     }
 
-//    @Override
-//    public void visitMethodInsn(int opcode,String owner,String name,String desc, boolean isMethodOwnerAnInterface) {
-//        super.visitMethodInsn(opcode, owner, name, desc, isMethodOwnerAnInterface);
-//    }
-//
     protected AdvancedAdviceAdapter(boolean reportExecutionTime,
                                     int api,
                                     MethodVisitor methodVisitor,

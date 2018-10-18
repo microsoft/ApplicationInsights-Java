@@ -21,10 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.jmx;
 
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
-
-import javax.management.*;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.lang.management.ManagementFactory;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by gupele on 8/6/2015.
@@ -44,22 +49,27 @@ public final class JmxConnectorLoader {
             mxBean = new JmxConnectorMXBeanImpl();
             mbs.registerMBean(mxBean, name);
 
-            InternalAgentLogger.INSTANCE.info("Successfully registered Jmx connector.");
+            InternalLogger.INSTANCE.info("Successfully registered Jmx connector.");
 			
 			return true;
         } catch (MalformedObjectNameException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MalformedObjectNameException': '%s'", e.toString());
+            InternalLogger.INSTANCE.error("Failed to register Jmx connector 'MalformedObjectNameException': '%s'",
+                ExceptionUtils.getStackTrace(e));
         } catch (NotCompliantMBeanException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'NotCompliantMBeanException': '%s'", e.toString());
+            InternalLogger.INSTANCE.error("Failed to register Jmx connector 'NotCompliantMBeanException': '%s'",
+                ExceptionUtils.getStackTrace(e));
         } catch (InstanceAlreadyExistsException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'InstanceAlreadyExistsException': '%s'", e.toString());
+            InternalLogger.INSTANCE.error("Failed to register Jmx connector 'InstanceAlreadyExistsException': '%s'",
+                ExceptionUtils.getStackTrace(e));
         } catch (MBeanRegistrationException e) {
-            InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'MBeanRegistrationException': '%s'", e.toString());
+            InternalLogger.INSTANCE.error("Failed to register Jmx connector 'MBeanRegistrationException': '%s'",
+                ExceptionUtils.getStackTrace(e));
         } catch (ThreadDeath td) {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalAgentLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", t.toString());            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Failed to register Jmx connector 'Throwable': '%s'", ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

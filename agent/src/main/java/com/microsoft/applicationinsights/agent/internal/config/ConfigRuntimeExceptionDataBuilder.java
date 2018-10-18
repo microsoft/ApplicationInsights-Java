@@ -22,13 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.HashSet;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.HashSet;
 
 /**
  * The class fetches the data from the Agent's configuration file
@@ -104,7 +103,7 @@ final class ConfigRuntimeExceptionDataBuilder {
                 int maxStackSize = Integer.parseInt(preparedValue);
                 stackSize = maxStackSize;
             } catch (Exception e) {
-                InternalAgentLogger.INSTANCE.error("Failed to parse attribute %s with value %s, will send full stack" +
+                InternalLogger.INSTANCE.error("Failed to parse attribute %s with value %s, will send full stack" +
                         "exception : %s", MAX_STACK_SIZE, maxStackSizeAsString, ExceptionUtils.getStackTrace(e));
             }
         }

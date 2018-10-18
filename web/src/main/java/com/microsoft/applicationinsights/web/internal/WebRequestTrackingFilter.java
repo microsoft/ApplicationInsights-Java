@@ -21,33 +21,30 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
+import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.internal.agent.AgentConnector;
+import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.LinkedList;
-
 import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.annotation.WebFilter;
-
-import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
-import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
-import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;

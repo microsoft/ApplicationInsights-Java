@@ -21,16 +21,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.lang.instrument.Instrumentation;
-import java.security.ProtectionDomain;
-
 import com.microsoft.applicationinsights.agent.internal.agent.jmx.JmxConnectorLoader;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
-import com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilderFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
+import java.security.ProtectionDomain;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -51,13 +48,13 @@ public final class CodeInjector implements ClassFileTransformer {
     public CodeInjector(AgentConfiguration agentConfiguration) {
         try {
             loadConfiguration(agentConfiguration);
-            InternalAgentLogger.INSTANCE.info("Agent is up");
+            InternalLogger.INSTANCE.trace("Agent is up");
 
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable throwable) {
             try {
-                InternalAgentLogger.INSTANCE.error("Agent is NOT activated: failed to initialize CodeInjector: '%s'",
+                InternalLogger.INSTANCE.error("Agent is NOT activated: failed to initialize CodeInjector: '%s'",
                         ExceptionUtils.getStackTrace(throwable));
             } catch (ThreadDeath td) {
                 throw td;
@@ -93,7 +90,7 @@ public final class CodeInjector implements ClassFileTransformer {
                 throw td;
             } catch (Throwable throwable) {
                 try {
-                    InternalAgentLogger.INSTANCE.error("Failed to instrument '%s', " +
+                    InternalLogger.INSTANCE.error("Failed to instrument '%s', " +
                             "exception: '%s'", className, ExceptionUtils.getStackTrace(throwable));
                 } catch (ThreadDeath td) {
                     throw td;

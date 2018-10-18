@@ -27,16 +27,15 @@ import com.microsoft.applicationinsights.agent.internal.agent.ClassVisitorFactor
 import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision;
 import com.microsoft.applicationinsights.agent.internal.agent.MethodVisitorFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * Created by gupele on 8/3/2015.
@@ -74,7 +73,7 @@ public final class PreparedStatementClassDataProvider {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

@@ -21,11 +21,20 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.http;
 
-import java.util.Map;
-
-import com.microsoft.applicationinsights.agent.internal.agent.*;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassVisitorFactory;
+import com.microsoft.applicationinsights.agent.internal.agent.HttpClientMethodVisitor;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodVisitorFactory;
+import com.microsoft.applicationinsights.agent.internal.agent.OkHttpAsyncCallMethodVisitor;
+import com.microsoft.applicationinsights.agent.internal.agent.OkHttpClassVisitor;
+import com.microsoft.applicationinsights.agent.internal.agent.OkHttpMethodVisitor;
+import com.microsoft.applicationinsights.agent.internal.agent.RestTemplateMethodVisitor;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.Map;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -155,7 +164,9 @@ public final class HttpClassDataProvider {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'",
+                    ExceptionUtils.getStackTrace(t));            }
+                catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
