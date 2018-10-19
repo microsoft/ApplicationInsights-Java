@@ -70,7 +70,7 @@ whenPomConfigured = { p ->
     def agentArtifactId = project(":agent").jar.baseName
     def loggerArtifactId = project(":ApplicationInsightsInternalLogger").jar.baseName
     p.dependencies = p.dependencies.findAll { dep ->
-        dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
+        dep.scope == "test" || dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
                 !(dep.groupId in ['org.apache.http', 'org.apache.commons', 'commons-io',
                                   'org.apache.httpcomponents'])
     }

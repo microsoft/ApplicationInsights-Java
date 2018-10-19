@@ -61,7 +61,7 @@ findbugs.sourceSets = [sourceSets.main]
 // region Publishing properties
 
 whenPomConfigured = { p ->
-    p.dependencies = p.dependencies.findAll { dep -> dep.artifactId != "junit" && dep.artifactId != "mockito-all" }
+    p.dependencies = p.dependencies.findAll { dep -> dep.scope == "test" || dep.artifactId != "junit" && dep.artifactId != "mockito-all" }
 }
 
 // endregion Publishing properties
