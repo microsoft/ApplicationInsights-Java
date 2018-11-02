@@ -3,8 +3,11 @@ package com.springbootstartertest.smoketest;
 import static org.junit.Assert.assertEquals;
 
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
+import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
+import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.localforwarder.library.inputs.contracts.Request;
 import org.junit.Test;
 
 public class SpringbootSmokeTest extends AiSmokeTest{
@@ -33,5 +36,15 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 		assertEquals(expectedName, d2.getName());
 		assertEquals(expectedProperties, d2.getProperties().get("key"));
 		assertEquals(expectedMetric, d2.getMeasurements().get("key"));
+	}
+
+	@Test
+	@TargetUri("/throwsException")
+	public void testResultCodeWhenRestControllerThrows() throws Exception {
+		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+		RequestData d = getTelemetryDataForType(0, "RequestData");
+		final String expectedResponseCode = "500";
+		assertEquals(expectedResponseCode, d.getResponseCode());
+		assertEquals(false, d.getSuccess());
 	}
 }
