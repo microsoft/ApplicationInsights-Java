@@ -43,11 +43,7 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 	public void testResultCodeWhenRestControllerThrows() throws Exception {
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 		RequestData d = getTelemetryDataForType(0, "RequestData");
-//
-//		//final String expectedName = "HttpRequestDataTest";
 		final String expectedResponseCode = "500";
-//
-//		//assertEquals(expectedName, d.getName());
 		assertEquals(expectedResponseCode, d.getResponseCode());
 		assertEquals(false, d.getSuccess());
 	}
