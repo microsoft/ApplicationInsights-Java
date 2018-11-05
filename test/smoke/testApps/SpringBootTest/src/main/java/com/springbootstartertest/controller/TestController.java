@@ -36,4 +36,9 @@ public class TestController {
 		client.trackEvent("EventDataPropertyTest", properties, metrics);
 		return "hello";
 	}
+
+	@GetMapping("/throwsException")
+	public void resultCodeTest() throws Exception {
+		throw new Exception("This is an exception");
+	}
 }
