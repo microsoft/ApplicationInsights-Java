@@ -188,8 +188,9 @@ public final class FileLoggerOutputTest {
 
   private FileLoggerOutput createFileLoggerOutput(boolean withPrefix) {
     Map<String, String> data = new HashMap<String, String>();
-    data.put("BaseFolder", TEMP_LOG_TEST_FOLDER);
+
     data.put("NumberOfTotalSizeInMB", "2");
+    data.put("BaseFolderPath", workingFolder);
     data.put("NumberOfFiles", "2");
     if (withPrefix) {
       data.put("UniquePrefix", "UniquePrefix");

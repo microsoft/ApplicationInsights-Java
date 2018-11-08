@@ -83,8 +83,7 @@ public final class XmlAgentConfigurationBuilderTest {
         assertNotNull(loggingConfig);
         assertEquals("TRACE", loggingConfig.get("Level"));
         assertEquals("AI-Agent", loggingConfig.get("UniquePrefix"));
-        assertEquals("C:/agent", loggingConfig.get("BaseFolderPath"));
-        assertEquals("AIAGENT", loggingConfig.get("BaseFolder"));
+        assertEquals("C:/agent/AIAGENT", loggingConfig.get("BaseFolderPath"));
     }
 
     private AgentConfiguration testConfiguration(String testFileName) throws IOException {

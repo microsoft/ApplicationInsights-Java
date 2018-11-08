@@ -212,7 +212,6 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         ApplicationInsightsProperties.Logger logger = applicationInsightsProperties.getLogger();
         loggerParameters.put("Level", logger.getLevel().name());
         loggerParameters.put("UniquePrefix", logger.getUniquePrefix());
-        loggerParameters.put("BaseFolder", logger.getBaseFolder());
         loggerParameters.put("BaseFolderPath", logger.getBaseFolderPath());
         loggerParameters.put("NumberOfFiles", logger.getNumberOfFiles());
         loggerParameters.put("NumberOfTotalSizeInMB", logger.getNumberOfTotalSizeInMB());

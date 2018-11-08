@@ -23,6 +23,9 @@ package com.microsoft.applicationinsights.internal.logger;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -59,7 +62,6 @@ public final class FileLoggerOutput implements LoggerOutput {
     private final static String LOG_FILE_SUFFIX_FOR_LISTING = "jsl";
     private final static String NUMBER_OF_FILES_ATTRIBUTE = "NumberOfFiles";
     private final static String TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE = "NumberOfTotalSizeInMB";
-    private final static String LOG_FILES_BASE_FOLDER_ATTRIBUTE = "BaseFolder";
     private final static String LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE = "BaseFolderPath";
     private final static String UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE = "UniquePrefix";
     private static final String DATE_FORMAT_NOW = "yyyy-MM-dd-HH-mm-ss";
@@ -96,11 +98,10 @@ public final class FileLoggerOutput implements LoggerOutput {
         int numberOfTotalMB = getRequest(loggerData, TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE, MIN_SIZE_PER_LOG_FILE_IN_MB);
 
         String baseFolderPath = loggerData.get(LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE);
-        String baseFolderName = loggerData.get(LOG_FILES_BASE_FOLDER_ATTRIBUTE);
 
         factory = new DefaultLogFileProxyFactory();
 
-        initialize(baseFolderPath, baseFolderName, numberOfFiles, numberOfTotalMB);
+        initialize(baseFolderPath, numberOfFiles, numberOfTotalMB);
     }
 
     private int getRequest(Map<String, String> loggerData, String requestName, int defaultValue) {
@@ -117,15 +118,21 @@ public final class FileLoggerOutput implements LoggerOutput {
         return requestValue;
     }
 
-    private void initialize(String baseFolderPath, String baseFolderName, int numberOfFiles, int numberOfTotalMB) {
+    private void initialize(String baseFolderPath, int numberOfFiles, int numberOfTotalMB) {
         currentLogFileIndex = 0;
+        Path logFilePath;
 
         if (Strings.isNullOrEmpty(baseFolderPath)) {
             baseFolderPath = SDK_LOGS_BASE_FOLDER_PATH;
+
+            // If no path is specified by user create log file directory in temp with default folder
+            // name.
+            logFilePath = Paths.get(baseFolderPath, SDK_LOGS_DEFAULT_FOLDER);
         }
 
-        if (Strings.isNullOrEmpty(baseFolderName)) {
-            baseFolderName = SDK_LOGS_DEFAULT_FOLDER;
+        else {
+            // Use the user-specified absolute file path for logging.
+            logFilePath = Paths.get(baseFolderPath);
         }
 
         if (numberOfFiles < MIN_NUMBER_OF_LOG_FILES) {
@@ -142,12 +149,18 @@ public final class FileLoggerOutput implements LoggerOutput {
         }
         this.maxSizePerFileInMB = tempSizePerFileInMB;
 
-        baseFolder = new File(baseFolderPath, baseFolderName);
-        if (!baseFolder.exists()) {
-            baseFolder.mkdirs();
+        if (!Files.exists(logFilePath)) {
+            try {
+                baseFolder = Files.createDirectories(logFilePath).toFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         } else {
+            baseFolder = logFilePath.toFile();
             attachToExisting();
         }
+
     }
 
     @Override

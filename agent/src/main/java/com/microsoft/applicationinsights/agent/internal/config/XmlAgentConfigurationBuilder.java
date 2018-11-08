@@ -63,7 +63,6 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String SDK_LOGGER_TYPE_TAG = "type";
     private final static String SDK_LOG_LEVEL_TAG = "Level";
     private final static String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
-    private final static String SDK_LOGGER_BASE_FOLDER_TAG = "BaseFolder";
     private final static String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
     private final static String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
     private final static String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
@@ -346,13 +345,6 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         if (baseFolderPathTag != null && !baseFolderPathTag.getTextContent().trim().isEmpty()) {
             loggerConfig.put(SDK_LOGGER_BASE_FOLDER_PATH_TAG, baseFolderPathTag.getTextContent().trim());
-        }
-
-        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_BASE_FOLDER_TAG);
-        Element baseFolderTag = XmlParserUtils.getFirst(customTags);
-
-        if (baseFolderTag != null && !baseFolderTag.getTextContent().trim().isEmpty()) {
-            loggerConfig.put(SDK_LOGGER_BASE_FOLDER_TAG, baseFolderTag.getTextContent().trim());
         }
 
         customTags = loggerTag.getElementsByTagName(SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES);

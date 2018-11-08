@@ -437,8 +437,6 @@ public class ApplicationInsightsProperties {
 
     private String uniquePrefix = "AI";
 
-    private String BaseFolder;
-
     private String BaseFolderPath;
 
     private String numberOfFiles;
@@ -451,14 +449,6 @@ public class ApplicationInsightsProperties {
 
     public void setUniquePrefix(String uniquePrefix) {
       this.uniquePrefix = uniquePrefix;
-    }
-
-    public String getBaseFolder() {
-      return BaseFolder;
-    }
-
-    public void setBaseFolder(String baseFolder) {
-      BaseFolder = baseFolder;
     }
 
     public String getBaseFolderPath() {

@@ -24,7 +24,6 @@
   <AgentLogger type = "FILE">
     <Level>TRACE</Level>
     <UniquePrefix>AI-Agent</UniquePrefix>
-    <BaseFolderPath>C:/agent</BaseFolderPath>
-    <BaseFolder>AIAGENT</BaseFolder>
+    <BaseFolderPath>C:/agent/AIAGENT</BaseFolderPath>
   </AgentLogger>
 </ApplicationInsightsAgent>
