@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
@@ -59,13 +60,13 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String JMX_TAG = "AgentJmx";
     private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
 
-    private final static String AGENT_LOGGER_TAG = "AgentLogger";
-    private final static String SDK_LOGGER_TYPE_TAG = "type";
-    private final static String SDK_LOG_LEVEL_TAG = "Level";
-    private final static String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
-    private final static String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
-    private final static String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
-    private final static String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
+    @VisibleForTesting final static String AGENT_LOGGER_TAG = "AgentLogger";
+    @VisibleForTesting final static String SDK_LOGGER_TYPE_TAG = "type";
+    @VisibleForTesting final static String SDK_LOG_LEVEL_TAG = "Level";
+    @VisibleForTesting final static String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
+    @VisibleForTesting final static String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
+    @VisibleForTesting final static String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
+    @VisibleForTesting final static String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
 
     private final static long JEDIS_ARGS_THRESHOLD_IN_MS = 10000L;
 

@@ -81,9 +81,9 @@ public final class XmlAgentConfigurationBuilderTest {
         AgentConfiguration configuration = testConfiguration("LoggingTest.xml");
         Map<String, String> loggingConfig = configuration.getAgentLoggingConfiguration();
         assertNotNull(loggingConfig);
-        assertEquals("TRACE", loggingConfig.get("Level"));
-        assertEquals("AI-Agent", loggingConfig.get("UniquePrefix"));
-        assertEquals("C:/agent/AIAGENT", loggingConfig.get("BaseFolderPath"));
+        assertEquals("TRACE", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOG_LEVEL_TAG));
+        assertEquals("AI-Agent", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOGGER_UNIQUE_PREFIX_TAG));
+        assertEquals("C:/agent/AIAGENT", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOGGER_BASE_FOLDER_PATH_TAG));
     }
 
     private AgentConfiguration testConfiguration(String testFileName) throws IOException {
