@@ -26,14 +26,40 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 /**
  * Created by yonisha on 2/3/2015.
  */
 public class JettyTestServer {
     private Server server;
-    private int Min = 1050;
-    private int Max = 15000;
-    private int portNumber = Min + (int)(Math.random() * ((Max - Min) + 1));
+    private final int Min = 1050;
+    private final int Max = 15000;
+    private final int portNumber;
+
+    public JettyTestServer() {
+        // try 256 times for ports
+        int initialPortNumber = Min + (int)(Math.random() * ((Max - Min) + 1));
+        for (int i = 0; i < 256; i++) {
+            ServerSocket ss = null;
+            try {
+                ss = new ServerSocket(initialPortNumber);
+            } catch (IOException e) {
+                System.out.printf("port '%d' in use. Trying next one.%n", initialPortNumber);
+                initialPortNumber++;
+            } finally {
+                if (ss != null) {
+                    try {
+                        ss.close();
+                    } catch (IOException e) {
+                        System.err.printf("Error closing port testing socket:%n%s%n", e.toString());
+                    }
+                }
+            }
+        }
+        portNumber = initialPortNumber;
+    }
 
     public void start() throws Exception {
         server = new Server(portNumber);
