@@ -29,6 +29,8 @@ shadowJar {
     classifier = ''
     relocate 'org.objectweb.asm', 'com.microsoft.applicationinsights.agent.dependencies.asm'
     relocate 'org.apache.commons', 'com.microsoft.applicationinsights.agent.dependencies.apachecommons'
+    relocate 'com.microsoft.applicationinsights.internal.logger', 'com.microsoft.applicationinsights.agent.dependencies.internallogger'
+    relocate 'com.google', 'com.microsoft.applicationinsights.agent.dependencies.com.google'
 }
 archivesBaseName = 'applicationinsights-agent'
 
@@ -46,6 +48,7 @@ jar {
 }
 
 dependencies {
+    compile(project(':ApplicationInsightsInternalLogger'))
     compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.2'
     compile group: 'org.ow2.asm', name: 'asm-all', version: '5.2'
     compile group: 'org.apache.commons', name:'commons-lang3', version:'3.7'

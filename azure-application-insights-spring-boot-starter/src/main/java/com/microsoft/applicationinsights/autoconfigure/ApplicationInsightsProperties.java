@@ -435,6 +435,46 @@ public class ApplicationInsightsProperties {
     /** Minimal level of application insights logger. */
     private LoggingLevel level = LoggingLevel.OFF;
 
+    private String uniquePrefix = "AI";
+
+    private String BaseFolderPath;
+
+    private String numberOfFiles;
+
+    private String numberOfTotalSizeInMB;
+
+    public String getUniquePrefix() {
+      return uniquePrefix;
+    }
+
+    public void setUniquePrefix(String uniquePrefix) {
+      this.uniquePrefix = uniquePrefix;
+    }
+
+    public String getBaseFolderPath() {
+      return BaseFolderPath;
+    }
+
+    public void setBaseFolderPath(String baseFolderPath) {
+      BaseFolderPath = baseFolderPath;
+    }
+
+    public String getNumberOfFiles() {
+      return numberOfFiles;
+    }
+
+    public void setNumberOfFiles(String numberOfFiles) {
+      this.numberOfFiles = numberOfFiles;
+    }
+
+    public String getNumberOfTotalSizeInMB() {
+      return numberOfTotalSizeInMB;
+    }
+
+    public void setNumberOfTotalSizeInMB(String numberOfTotalSizeInMB) {
+      this.numberOfTotalSizeInMB = numberOfTotalSizeInMB;
+    }
+
     public LoggerOutputType getType() {
       return type;
     }

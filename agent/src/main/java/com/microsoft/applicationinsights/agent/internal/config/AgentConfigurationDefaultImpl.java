@@ -35,7 +35,8 @@ final class AgentConfigurationDefaultImpl implements AgentConfiguration {
     private boolean selfRegistrationMode = false;
     private boolean debugMode = false;
     private String sdkPath;
-    private HashMap<String, ClassInstrumentationData> classesToInstrument;
+    private Map<String, ClassInstrumentationData> classesToInstrument;
+    private Map<String, String> agentLoggerConfiguration;
     private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
     private Set<String> excludedPrefixes = new HashSet<String>();
 
@@ -73,6 +74,11 @@ final class AgentConfigurationDefaultImpl implements AgentConfiguration {
         return debugMode;
     }
 
+    @Override
+    public Map<String, String> getAgentLoggingConfiguration() {
+        return agentLoggerConfiguration;
+    }
+
     public void setDebugMode(boolean debugMode) {
         this.debugMode = debugMode;
     }
@@ -92,5 +98,10 @@ final class AgentConfigurationDefaultImpl implements AgentConfiguration {
 
     public void setSdkPath(String sdkPath) {
         this.sdkPath = sdkPath;
+    }
+
+
+    public void setAgentLoggerConfiguration(Map<String, String> agentLoggerConfiguration) {
+        this.agentLoggerConfiguration = agentLoggerConfiguration;
     }
 }

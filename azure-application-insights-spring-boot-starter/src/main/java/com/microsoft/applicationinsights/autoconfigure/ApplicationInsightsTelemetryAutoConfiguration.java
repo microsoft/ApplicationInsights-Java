@@ -211,6 +211,10 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         Map<String, String> loggerParameters = new HashMap<>();
         ApplicationInsightsProperties.Logger logger = applicationInsightsProperties.getLogger();
         loggerParameters.put("Level", logger.getLevel().name());
+        loggerParameters.put("UniquePrefix", logger.getUniquePrefix());
+        loggerParameters.put("BaseFolderPath", logger.getBaseFolderPath());
+        loggerParameters.put("NumberOfFiles", logger.getNumberOfFiles());
+        loggerParameters.put("NumberOfTotalSizeInMB", logger.getNumberOfTotalSizeInMB());
         InternalLogger.INSTANCE.initialize(logger.getType().name(), loggerParameters);
         return InternalLogger.INSTANCE;
     }

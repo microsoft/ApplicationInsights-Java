@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.agent.exceptions;
 import com.microsoft.applicationinsights.agent.internal.agent.AdvancedAdviceAdapter;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 /**

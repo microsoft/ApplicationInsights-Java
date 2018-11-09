@@ -21,19 +21,19 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
+import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
-import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -60,7 +60,13 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String JMX_TAG = "AgentJmx";
     private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
 
-    private final static String AGENT_LOGGER_TAG = "AgentLogger";
+    @VisibleForTesting final static String AGENT_LOGGER_TAG = "AgentLogger";
+    @VisibleForTesting final static String SDK_LOGGER_TYPE_TAG = "type";
+    @VisibleForTesting final static String SDK_LOG_LEVEL_TAG = "Level";
+    @VisibleForTesting final static String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
+    @VisibleForTesting final static String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
+    @VisibleForTesting final static String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
+    @VisibleForTesting final static String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
 
     private final static long JEDIS_ARGS_THRESHOLD_IN_MS = 10000L;
 
@@ -86,18 +92,18 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         File configurationFile = new File(configurationFileName);
         if (!configurationFile.exists()) {
-            InternalAgentLogger.INSTANCE.trace("Did not find Agent configuration file in '%s'", configurationFileName);
+            InternalLogger.INSTANCE.trace("Did not find Agent configuration file in '%s'", configurationFileName);
             return agentConfiguration;
         }
 
-        InternalAgentLogger.INSTANCE.trace("Found Agent configuration file in '%s'", configurationFileName);
+        InternalLogger.INSTANCE.trace("Found Agent configuration file in '%s'", configurationFileName);
         try {
             Element topElementTag = getTopTag(configurationFile);
             if (topElementTag == null) {
                 return agentConfiguration;
             }
 
-            initializeAgentLogger(topElementTag);
+            initializeAgentLogger(topElementTag, agentConfiguration);
 
             getForbiddenPaths(topElementTag, agentConfiguration);
 
@@ -111,9 +117,9 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 try {
                     boolean debugMode = Boolean.valueOf(debugModeAsString);
                     agentConfiguration.setDebugMode(debugMode);
-                    InternalAgentLogger.INSTANCE.warn("Instrumentation debug mode set to '%s'", debugMode);
+                    InternalLogger.INSTANCE.warn("Instrumentation debug mode set to '%s'", debugMode);
                 } catch (Exception e) {
-                    InternalAgentLogger.INSTANCE.error("Failed to parse debug attribute '%s, Exception : %s'", debugModeAsString,
+                    InternalLogger.INSTANCE.error("Failed to parse debug attribute '%s, Exception : %s'", debugModeAsString,
                             ExceptionUtils.getStackTrace(e));
                 }
             }
@@ -151,7 +157,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             throw td;
         } catch (Throwable e) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'",  e.toString());            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'",  e.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -302,14 +308,62 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         return XmlParserUtils.getFirst(customTags);
     }
 
-    private void initializeAgentLogger(Element topElementTag) {
+  /**
+   *  This method is responsible for parsing the Agent Logging Configuration and mimics the configuration
+   *  style for Core SDK
+   * @param topElementTag
+   * @param agentConfiguration
+   */
+    private synchronized void initializeAgentLogger(Element topElementTag, AgentConfigurationDefaultImpl agentConfiguration) {
         NodeList customTags = topElementTag.getElementsByTagName(AGENT_LOGGER_TAG);
         Element loggerTag = XmlParserUtils.getFirst(customTags);
         if (loggerTag == null) {
             return;
         }
 
-        InternalAgentLogger.INSTANCE.initialize(loggerTag.getNodeValue());
+        // Map that stores the configuration for agent logger
+        Map<String, String> loggerConfig = new HashMap<>();
+
+        // Get Type Attribute
+        String loggerType = loggerTag.getAttribute(SDK_LOGGER_TYPE_TAG);
+
+        customTags = loggerTag.getElementsByTagName(SDK_LOG_LEVEL_TAG);
+        Element levelTag = XmlParserUtils.getFirst(customTags);
+
+        if (levelTag != null && !levelTag.getTextContent().trim().isEmpty()) {
+            loggerConfig.put(SDK_LOG_LEVEL_TAG, levelTag.getTextContent().trim());
+        }
+
+        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_UNIQUE_PREFIX_TAG);
+        Element uniquePrefixTag = XmlParserUtils.getFirst(customTags);
+
+        if (uniquePrefixTag != null && !uniquePrefixTag.getTextContent().trim().isEmpty()) {
+            loggerConfig.put(SDK_LOGGER_UNIQUE_PREFIX_TAG, uniquePrefixTag.getTextContent().trim());
+        }
+
+        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_BASE_FOLDER_PATH_TAG);
+        Element baseFolderPathTag = XmlParserUtils.getFirst(customTags);
+
+        if (baseFolderPathTag != null && !baseFolderPathTag.getTextContent().trim().isEmpty()) {
+            loggerConfig.put(SDK_LOGGER_BASE_FOLDER_PATH_TAG, baseFolderPathTag.getTextContent().trim());
+        }
+
+        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES);
+        Element maxNoLogFilesTag = XmlParserUtils.getFirst(customTags);
+
+        if (maxNoLogFilesTag != null && !maxNoLogFilesTag.getTextContent().trim().isEmpty()) {
+            loggerConfig.put(SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES, maxNoLogFilesTag.getTextContent().trim());
+        }
+
+        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB);
+        Element totalLogFileSizeTag = XmlParserUtils.getFirst(customTags);
+
+        if (totalLogFileSizeTag != null && !totalLogFileSizeTag.getTextContent().trim().isEmpty()) {
+            loggerConfig.put(SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB, totalLogFileSizeTag.getTextContent().trim());
+        }
+
+        InternalLogger.INSTANCE.initialize(loggerType, loggerConfig);
+        agentConfiguration.setAgentLoggerConfiguration(loggerConfig);
     }
 
     private NodeList getAllClassesToInstrument(Element tag) {
@@ -372,7 +426,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
                 try {
                     thresholdInMS = Long.valueOf(valueStr);
                 } catch (Exception e) {
-                    InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", THRESHOLD_ATTRIBUTE, methodElement.getTagName());
+                    InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", THRESHOLD_ATTRIBUTE, methodElement.getTagName());
                 }
             }
 

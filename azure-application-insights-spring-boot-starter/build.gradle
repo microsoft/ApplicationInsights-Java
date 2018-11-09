@@ -49,6 +49,7 @@ sourceSets {
 dependencies {
     compile(project(':core'))
     compile(project(':web'))
+    compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
     provided('org.springframework.boot:spring-boot:1.5.9.RELEASE')
     provided('org.springframework.boot:spring-boot-autoconfigure:1.5.9.RELEASE')
@@ -64,6 +65,7 @@ shadowJar {
     dependencies {
         exclude(project(':core'))
         exclude(project(':web'))
+        exclude(project(':ApplicationInsightsInternalLogger'))
         exclude(dependency([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5']))
         exclude(dependency([group: 'commons-io', name: 'commons-io', version: '2.6']))
         exclude(dependency([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3']))
@@ -96,6 +98,7 @@ shadowJar {
     }
     classifier=''
     relocate 'org.apache.commons', "${dependenciesPrefix}.apachecommons"
+    relocate 'com.google', "${dependenciesPrefix}.google"
 }
 
 jar {
@@ -111,5 +114,10 @@ projectPomDescription = "This is the Spring Boot starter of " + project.msftAppI
 
 whenPomConfigured = { p ->
     def agentArtifactId = project(":agent").jar.baseName
-    p.dependencies = p.dependencies.findAll { dep -> dep.scope == "test" || dep.artifactId != agentArtifactId }
+    def loggerArtifactId = project(":ApplicationInsightsInternalLogger").jar.baseName
+    p.dependencies = p.dependencies.findAll { dep -> dep.scope == "test" ||
+            dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
+            !(dep.groupId in ['org.apache.http', 'eu.infomas', 'org.apache.commons', 'commons-io',
+                              'com.google.guava', 'com.google.code.gson', 'org.apache.httpcomponents',
+                              'io.grpc', 'com.google.protobuf'])}
 }

@@ -116,6 +116,7 @@ archivesBaseName = 'applicationinsights-core'
 
 dependencies {
     provided (project(':agent')) { transitive = false }
+    compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
@@ -167,8 +168,9 @@ projectPomDescription = "This is the core module of " + project.msftAppInsightsJ
 
 whenPomConfigured = { p ->
     def agentArtifactId = project(":agent").jar.baseName
+    def loggerArtifactId = project(":ApplicationInsightsInternalLogger").jar.baseName
     p.dependencies = p.dependencies.findAll { dep ->
-        dep.scope == "test" || dep.artifactId != agentArtifactId &&
+        dep.scope == "test" || dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
                 !(dep.groupId in ['org.apache.http', 'eu.infomas', 'org.apache.commons', 'commons-io',
                                   'com.google.guava', 'com.google.code.gson', 'org.apache.httpcomponents',
                                   'io.grpc', 'com.google.protobuf'])

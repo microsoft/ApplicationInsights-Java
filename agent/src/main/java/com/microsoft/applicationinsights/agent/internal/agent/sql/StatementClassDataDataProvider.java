@@ -21,11 +21,18 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
-import java.util.*;
-
-import com.microsoft.applicationinsights.agent.internal.agent.*;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodInstrumentationDecision;
+import com.microsoft.applicationinsights.agent.internal.agent.MethodVisitorFactory;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import org.objectweb.asm.MethodVisitor;
 
 /**
@@ -79,7 +86,7 @@ public class StatementClassDataDataProvider {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalAgentLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Exception while loading HTTP classes: '%s'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

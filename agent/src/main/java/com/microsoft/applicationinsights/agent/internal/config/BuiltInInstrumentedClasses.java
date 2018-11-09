@@ -26,11 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 /**
  * This class lets us add classes that will be a part of the 'BuiltIn' section in the AI-Agent.xml.
  *

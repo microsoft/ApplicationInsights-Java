@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 /**
  * The factory is responsible for creating the correct {@link com.microsoft.applicationinsights.agent.internal.config.AgentConfigurationBuilder}
@@ -43,7 +43,7 @@ public class AgentConfigurationBuilderFactory {
         	throw td;
         } catch (Throwable t) {
             try {
-                InternalAgentLogger.INSTANCE.error("Failed to create builder: '%s'", t.toString());            } catch (ThreadDeath td) {
+                InternalLogger.INSTANCE.error("Failed to create builder: '%s'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp

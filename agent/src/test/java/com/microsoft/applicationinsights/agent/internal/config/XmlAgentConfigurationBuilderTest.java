@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import java.util.Map.Entry;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
@@ -73,6 +74,16 @@ public final class XmlAgentConfigurationBuilderTest {
         assertEquals(builtInConfiguration.isJdbcEnabled(), true);
         assertEquals(builtInConfiguration.isJdbcEnabled(), true);
         assertEquals(builtInConfiguration.isHibernateEnabled(), false);
+    }
+
+    @Test
+    public void testLoggingConfiguration() throws IOException {
+        AgentConfiguration configuration = testConfiguration("LoggingTest.xml");
+        Map<String, String> loggingConfig = configuration.getAgentLoggingConfiguration();
+        assertNotNull(loggingConfig);
+        assertEquals("TRACE", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOG_LEVEL_TAG));
+        assertEquals("AI-Agent", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOGGER_UNIQUE_PREFIX_TAG));
+        assertEquals("C:/agent/AIAGENT", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOGGER_BASE_FOLDER_PATH_TAG));
     }
 
     private AgentConfiguration testConfiguration(String testFileName) throws IOException {

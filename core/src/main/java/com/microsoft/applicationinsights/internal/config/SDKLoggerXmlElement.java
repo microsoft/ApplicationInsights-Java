@@ -34,7 +34,7 @@ public class SDKLoggerXmlElement {
     private String type = "CONSOLE";
     private String level;
     private String uniquePrefix;
-    private String baseFolder;
+    private String baseFolderPath;
     private String numberOfFiles;
     private String numberOfTotalSizeInMB;
 
@@ -65,17 +65,17 @@ public class SDKLoggerXmlElement {
         this.uniquePrefix = uniquePrefix;
     }
 
-    public String getBaseFolder() {
-        return baseFolder;
-    }
-
-    @XmlElement(name="BaseFolder")
-    public void setBaseFolder(String baseFolder) {
-        this.baseFolder = baseFolder;
-    }
-
     public String getNumberOfFiles() {
         return numberOfFiles;
+    }
+
+    @XmlElement(name="BaseFolderPath")
+    public void setBaseFolderPath(String baseFolderPath) {
+        this.baseFolderPath = baseFolderPath;
+    }
+
+    public String getBaseFolderPath() {
+        return baseFolderPath;
     }
 
     @XmlElement(name="NumberOfFiles")
@@ -96,10 +96,9 @@ public class SDKLoggerXmlElement {
         HashMap<String, String> data = new HashMap<String, String>();
         data.put("Level", getLevel());
         data.put("UniquePrefix", getUniquePrefix());
-        data.put("BaseFolder", getBaseFolder());
         data.put("NumberOfFiles", getNumberOfFiles());
         data.put("NumberOfTotalSizeInMB", getNumberOfTotalSizeInMB());
-
+        data.put("BaseFolderPath", getBaseFolderPath());
         return data;
     }
 }

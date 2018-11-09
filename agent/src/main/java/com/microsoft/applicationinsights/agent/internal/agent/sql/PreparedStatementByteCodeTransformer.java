@@ -23,8 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ByteCodeTransformer;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
-
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
 
 /**
  * Created by gupele on 8/3/2015.

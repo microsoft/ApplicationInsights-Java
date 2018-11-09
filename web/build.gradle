@@ -31,6 +31,7 @@ archivesBaseName = 'applicationinsights-web'
 dependencies {
     provided (project(':agent')) { transitive = false }
     compile (project(':core')) { transitive = false }
+    compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
     compile ([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'])
     compile ([group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.3'])
@@ -67,8 +68,9 @@ projectPomDescription = "This is the web module of " + project.msftAppInsightsJa
 
 whenPomConfigured = { p ->
     def agentArtifactId = project(":agent").jar.baseName
+    def loggerArtifactId = project(":ApplicationInsightsInternalLogger").jar.baseName
     p.dependencies = p.dependencies.findAll { dep ->
-        dep.scope == "test" || dep.artifactId != agentArtifactId &&
+        dep.scope == "test" || dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
                 !(dep.groupId in ['org.apache.http', 'org.apache.commons', 'commons-io',
                                   'org.apache.httpcomponents'])
     }
