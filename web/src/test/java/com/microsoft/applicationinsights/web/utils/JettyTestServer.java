@@ -45,6 +45,7 @@ public class JettyTestServer {
             ServerSocket ss = null;
             try {
                 ss = new ServerSocket(initialPortNumber);
+                break; // if it doesn't throw, the port is open
             } catch (IOException e) {
                 System.out.printf("port '%d' in use. Trying next one.%n", initialPortNumber);
                 initialPortNumber++;
