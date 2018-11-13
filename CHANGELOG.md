@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 2.2.1
-- Updated gRPC dependencies.
+- Fixed [#767](https://github.com/Microsoft/ApplicationInsights-Java/issues/767). Updated gRPC dependencies which inlcudes latest netty version.
 - Abstracted Internal Logger in Core into separate reusable module. 
 - Deprecated InternalAgentLogger in favor of InternalLogger for better consistency.
 - Agent now supports diagnostic writing logs to file. 
