@@ -1,12 +1,13 @@
 # CHANGELOG
 
 # Version 2.2.1
+- Fixed [#767](https://github.com/Microsoft/ApplicationInsights-Java/issues/767). Updated gRPC dependencies which inlcudes latest netty version.
+- Fixed [#751](https://github.com/Microsoft/ApplicationInsights-Java/issues/751). Added support for absolute paths for log file output.
 - Abstracted Internal Logger in Core into separate reusable module. 
 - Deprecated InternalAgentLogger in favor of InternalLogger for better consistency.
-- Agent now supports diagnostic writing logs to file. 
+- Fixed [#752](https://github.com/Microsoft/ApplicationInsights-Java/issues/752). Agent now supports diagnostic writing logs to file. 
 - Added ability to configure FileLogger for SpringBootStarter. 
-- Fixed [#752](https://github.com/Microsoft/ApplicationInsights-Java/issues/752)
-- Fixed [#751](https://github.com/Microsoft/ApplicationInsights-Java/issues/751)
+- Fixed the `WebRequestTrackingFilter` order in FilterChain for SpringBoot Starter.
 
 
 # Version 2.2.0
