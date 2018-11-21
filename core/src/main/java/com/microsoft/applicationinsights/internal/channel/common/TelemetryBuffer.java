@@ -21,18 +21,19 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The class is responsible for getting instances of {@link com.microsoft.applicationinsights.telemetry.Telemetry}
