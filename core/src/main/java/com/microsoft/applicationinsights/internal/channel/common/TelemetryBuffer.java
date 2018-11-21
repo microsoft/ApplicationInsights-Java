@@ -21,11 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
@@ -55,25 +56,32 @@ public class TelemetryBuffer<T> {
      */
     private final class TelemetryBufferTelemetriesFetcher implements TelemetriesTransmitter.TelemetriesFetcher {
 
-        private final long expectedGeneration;
+        private final AtomicLong expectedGeneration;
 
-        private TelemetryBufferTelemetriesFetcher(long expectedGeneration) {
+        private TelemetryBufferTelemetriesFetcher(AtomicLong expectedGeneration) {
             this.expectedGeneration = expectedGeneration;
         }
 
+        // No need for low-level synchronization. Atomic long cover cover the generation check consistency
+        // ConcurrentLinkedList handles other parts for collection operation.
         @Override
         public Collection<T> fetch() {
-            synchronized (lock) {
-                if (expectedGeneration != generation) {
-                    return Collections.emptyList();
-                }
 
-                ++generation;
-                List<T> readyToBeSent = telemetries;
-                telemetries = new ArrayList<T>();
-
-                return readyToBeSent;
+            // cannot use equals() method here as AtomicLong doesn't
+            // override equals and hash code
+            if (expectedGeneration.get() != generation.get()) {
+                return Collections.emptyList();
             }
+
+            generation.incrementAndGet();
+
+            // Create an unmodifiable view of the collection so that the items cannot be edited
+            Collection<T> readyToBeSent = new ArrayList<>(Collections.unmodifiableCollection(telemetries));
+
+            // Clear the current queue for new batch
+            telemetries.clear();
+
+            return readyToBeSent;
         }
     }
 
@@ -89,10 +97,10 @@ public class TelemetryBuffer<T> {
     private LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer;
 
     /// The Telemetry instances are kept here
-    private List<T> telemetries;
+    private Queue<T> telemetries;
 
     /// A way to help incoming threads make sure they are picking up the right Telemetry container
-    private long generation = 0;
+    private AtomicLong generation = new AtomicLong(0);
 
     /// A synchronization object to avoid race conditions with the container and generation
     private final Object lock = new Object();
@@ -112,7 +120,9 @@ public class TelemetryBuffer<T> {
 
         this.maxTelemetriesInBatchEnforcer = maxTelemetriesInBatchEnforcer;
         this.maxTelemetriesInBatch = maxTelemetriesInBatchEnforcer.getCurrentValue();
-        telemetries = new ArrayList<>(this.maxTelemetriesInBatch);
+
+        // Using a non-blocking thread safe queue as we really don't need blocking
+        telemetries = new ConcurrentLinkedQueue<>();
 
         this.sender = sender;
         this.transmitBufferTimeoutInSecondsEnforcer = transmitBufferTimeoutInSecondsEnforcer;
@@ -177,27 +187,30 @@ public class TelemetryBuffer<T> {
     public void add(T telemetry) {
         Preconditions.checkNotNull(telemetry, "Telemetry must be non null value");
 
-        synchronized (lock) {
-            telemetries.add(telemetry);
+        // This method never fails as this is unbounded buffer
+        telemetries.offer(telemetry);
 
-            int currentSize = telemetries.size();
+        // size() method is not a linear time operation, and needs queue traversal
+        // however the cost incurred in doing so is significantly less than taking a lock.
+        // see : https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html
+        int currentSize = telemetries.size();
 
-            if (currentSize >= maxTelemetriesInBatch) {
-                if (!sender.sendNow(prepareTelemetriesForSend())) {
-                    // 'prepareTelemetriesForSend' already created a new container
-                    // so basically we have nothing to do, the old container is lost
-                    InternalLogger.INSTANCE.error("Failed to send buffer data to network");
-                }
-            } else if (currentSize == 1) {
-                if (!sender.scheduleSend(new TelemetryBufferTelemetriesFetcher(generation), transmitBufferTimeoutInSeconds, TimeUnit.SECONDS)) {
-                    // We cannot schedule send so we give up the Telemetry
-                    // The reason for this is that in case the maximum buffer size is greater than 2
-                    // than in case a new Telemetry arrives it won't trigger the schedule and might be lost too
-                    InternalLogger.INSTANCE.error("Failed to schedule send of the buffer to network");
-                    telemetries.clear();
-                }
+        if (currentSize >= maxTelemetriesInBatch) {
+            if (!sender.sendNow(prepareTelemetriesForSend())) {
+                // 'prepareTelemetriesForSend' already created a new container
+                // so basically we have nothing to do, the old container is lost
+                InternalLogger.INSTANCE.error("Failed to send buffer data to network");
+            }
+        } else if (currentSize == 1) {
+            if (!sender.scheduleSend(new TelemetryBufferTelemetriesFetcher(generation), transmitBufferTimeoutInSeconds, TimeUnit.SECONDS)) {
+                // We cannot schedule send so we give up the Telemetry
+                // The reason for this is that in case the maximum buffer size is greater than 2
+                // than in case a new Telemetry arrives it won't trigger the schedule and might be lost too
+                InternalLogger.INSTANCE.error("Failed to schedule send of the buffer to network");
+                telemetries.clear();
             }
         }
+
     }
 
     /**
@@ -220,12 +233,14 @@ public class TelemetryBuffer<T> {
      *
      * @return The list of {@link Telemetry} instances that are ready to be sent
      */
-    private List<T> prepareTelemetriesForSend() {
-        ++generation;
+    private Collection<T> prepareTelemetriesForSend() {
+        generation.incrementAndGet();
 
-        final List<T> readyToBeSent = telemetries;
+        // Create an unmodifiable view of the collection so that the items cannot be edited
+        final Collection<T> readyToBeSent = new ArrayList<>(Collections.unmodifiableCollection(telemetries));
 
-        telemetries = new ArrayList<T>(maxTelemetriesInBatch);
+        // Clear telemetry for next batch
+        telemetries.clear();
 
         return readyToBeSent;
     }
