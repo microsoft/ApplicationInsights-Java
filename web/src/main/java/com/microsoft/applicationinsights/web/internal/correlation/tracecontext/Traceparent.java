@@ -2,12 +2,36 @@ package com.microsoft.applicationinsights.web.internal.correlation.tracecontext;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.concurrent.ThreadLocalRandom;
+import org.apache.http.annotation.Experimental;
 
+/**
+ * This class represents the Traceparent data structure based on
+ * @link https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md
+ *
+ * @author Reily Yang
+ * @author Dhaval Doshi
+ */
+@Experimental
 public class Traceparent {
 
+    /**
+     * Version number between range [0,255] inclusive
+     */
     @VisibleForTesting final int version;
+
+    /**
+     * 16 byte trace-id that is used to uniquely identify a distributed trace
+     */
     @VisibleForTesting final String traceId;
+
+    /**
+     * It is a 8 byte ID that represents the caller span
+     */
     @VisibleForTesting final String spanId;
+
+    /**
+     * An 8-bit field that controls tracing flags such as sampling, trace level etc.
+     */
     @VisibleForTesting final int traceFlags;
 
     private Traceparent(int version, String traceId, String spanId, int traceFlags, boolean check) {
@@ -20,12 +44,24 @@ public class Traceparent {
         this.traceFlags = traceFlags;
     }
 
+    /**
+     * The constructor that tries to create Traceparent Object from given version, traceId, spanID
+     * and traceFlags.
+     * @param version
+     * @param traceId
+     * @param spanId
+     * @param traceFlags
+     */
     public Traceparent(int version, String traceId, String spanId, int traceFlags) {
         this(version, traceId != null ? traceId : randomHex(16),
             spanId != null ? spanId : randomHex(8),
             traceFlags, true);
     }
 
+    /**
+     * This constructor creates a new Traceparent object having new traceId.
+     * It should only be used if the call is the starting point of distributed trace.
+     */
     public Traceparent() {
         this(0, randomHex(16), randomHex(8), 0, false);
     }
@@ -42,6 +78,14 @@ public class Traceparent {
         return spanId;
     }
 
+    /**
+     * Validates the given input based on W3C specifications.
+     * @param version
+     * @param traceId
+     * @param spanId
+     * @param traceFlags
+     * @throws IllegalArgumentException
+     */
     private static void validate(int version, String traceId, String spanId, int traceFlags)
         throws IllegalArgumentException {
         if (version < 0 || version > 254) {
@@ -64,12 +108,21 @@ public class Traceparent {
         }
     }
 
-
+    /**
+     * Converts the Traceparent object to header format
+     * Eg: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
+     * @return traceparent
+     */
     @Override
     public String toString() {
         return String.format("%02x-%s-%s-%02x", version, traceId, spanId, traceFlags);
     }
 
+    /**
+     * Helper method to create a random hexadecimal string of n bytes.
+     * @param n
+     * @return n byte hexadecimal string
+     */
     @VisibleForTesting static String randomHex(int n) {
         byte[] bytes = new byte[n];
         ThreadLocalRandom.current().nextBytes(bytes);
@@ -80,6 +133,12 @@ public class Traceparent {
         return sb.toString();
     }
 
+    /**
+     * Helper method to check if a given string of n bytes is hexadecimal
+     * @param s
+     * @param n
+     * @return boolean
+     */
     private static boolean isHex(String s, int n) {
         if (s == null || s.length() == 0) {
             return false;
@@ -100,6 +159,11 @@ public class Traceparent {
         return true;
     }
 
+    /**
+     * Marshals the traceparent from String to Traceparent object
+     * @param s
+     * @return Traceparent
+     */
     public static Traceparent fromString(String s) {
         if (s == null || s.length() == 0) {
             return null;
