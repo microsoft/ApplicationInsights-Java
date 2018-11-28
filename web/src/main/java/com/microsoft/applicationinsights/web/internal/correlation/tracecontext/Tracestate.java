@@ -4,15 +4,12 @@ import org.apache.http.annotation.Experimental;
 
 /**
  * Class that represents Tracestate header based on
- * @link https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md
- *
- * According to W3C specification, implementations should pass the tracestate header to downstream
- * calls if received.
- *
- * Implementations can add vendor specific details here.
  *
  * @author Reiley Yang
  * @author Dhaval Doshi
+ * @link https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md
+ *
+ * Implementations can add vendor specific details here.
  */
 @Experimental
 public class Tracestate {
@@ -24,7 +21,6 @@ public class Tracestate {
 
     /**
      * Ctor that creates tracestate object from given value
-     * @param value
      */
     public Tracestate(String value) {
         if (value == null || value.length() == 0) {
@@ -39,8 +35,8 @@ public class Tracestate {
     }
 
     /**
-     * Marshals Tracestate header
-     * @param s
+     * Converts Tracestate header to Object representation
+     *
      * @return Tracestate
      */
     public static Tracestate fromString(String s) {

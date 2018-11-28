@@ -1,15 +1,16 @@
 package com.microsoft.applicationinsights.web.internal.correlation.tracecontext;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.util.concurrent.ThreadLocalRandom;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.http.annotation.Experimental;
 
 /**
  * This class represents the Traceparent data structure based on
- * @link https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md
  *
  * @author Reily Yang
  * @author Dhaval Doshi
+ * @link https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md
  */
 @Experimental
 public class Traceparent {
@@ -17,22 +18,26 @@ public class Traceparent {
     /**
      * Version number between range [0,255] inclusive
      */
-    @VisibleForTesting final int version;
+    @VisibleForTesting
+    final int version;
 
     /**
      * 16 byte trace-id that is used to uniquely identify a distributed trace
      */
-    @VisibleForTesting final String traceId;
+    @VisibleForTesting
+    final String traceId;
 
     /**
      * It is a 8 byte ID that represents the caller span
      */
-    @VisibleForTesting final String spanId;
+    @VisibleForTesting
+    final String spanId;
 
     /**
      * An 8-bit field that controls tracing flags such as sampling, trace level etc.
      */
-    @VisibleForTesting final int traceFlags;
+    @VisibleForTesting
+    final int traceFlags;
 
     private Traceparent(int version, String traceId, String spanId, int traceFlags, boolean check) {
         if (check) {
@@ -47,10 +52,6 @@ public class Traceparent {
     /**
      * The constructor that tries to create Traceparent Object from given version, traceId, spanID
      * and traceFlags.
-     * @param version
-     * @param traceId
-     * @param spanId
-     * @param traceFlags
      */
     public Traceparent(int version, String traceId, String spanId, int traceFlags) {
         this(version, traceId != null ? traceId : randomHex(16),
@@ -59,8 +60,8 @@ public class Traceparent {
     }
 
     /**
-     * This constructor creates a new Traceparent object having new traceId.
-     * It should only be used if the call is the starting point of distributed trace.
+     * This constructor creates a new Traceparent object having new traceId. It should only be used
+     * if the call is the starting point of distributed trace.
      */
     public Traceparent() {
         this(0, randomHex(16), randomHex(8), 0, false);
@@ -80,11 +81,6 @@ public class Traceparent {
 
     /**
      * Validates the given input based on W3C specifications.
-     * @param version
-     * @param traceId
-     * @param spanId
-     * @param traceFlags
-     * @throws IllegalArgumentException
      */
     private static void validate(int version, String traceId, String spanId, int traceFlags)
         throws IllegalArgumentException {
@@ -109,8 +105,8 @@ public class Traceparent {
     }
 
     /**
-     * Converts the Traceparent object to header format
-     * Eg: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
+     * Converts the Traceparent object to header format Eg: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
+     *
      * @return traceparent
      */
     @Override
@@ -120,10 +116,11 @@ public class Traceparent {
 
     /**
      * Helper method to create a random hexadecimal string of n bytes.
-     * @param n
+     *
      * @return n byte hexadecimal string
      */
-    @VisibleForTesting static String randomHex(int n) {
+    @VisibleForTesting
+    static String randomHex(int n) {
         byte[] bytes = new byte[n];
         ThreadLocalRandom.current().nextBytes(bytes);
         StringBuilder sb = new StringBuilder();
@@ -135,8 +132,7 @@ public class Traceparent {
 
     /**
      * Helper method to check if a given string of n bytes is hexadecimal
-     * @param s
-     * @param n
+     *
      * @return boolean
      */
     private static boolean isHex(String s, int n) {
@@ -160,8 +156,8 @@ public class Traceparent {
     }
 
     /**
-     * Marshals the traceparent from String to Traceparent object
-     * @param s
+     * converts traceparent from String to Traceparent object
+     *
      * @return Traceparent
      */
     public static Traceparent fromString(String s) {
@@ -172,10 +168,10 @@ public class Traceparent {
         if (arr.length != 4) {
             return null;
         }
-        if (arr[0].length() != 2) {
+        if (!isHex(arr[0], 2)) {
             return null;
         }
-        if (arr[3].length() != 2) {
+        if (!isHex(arr[3], 2)) {
             return null;
         }
 
