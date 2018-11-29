@@ -47,7 +47,7 @@ public final class RemoteDependencyTelemetryTest {
     public void testCtorWithNameParameter() {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        assertEquals(telemetry.getName(), "MockName");
+        assertEquals("MockName", telemetry.getName());
         assertNull(telemetry.getCount());
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
