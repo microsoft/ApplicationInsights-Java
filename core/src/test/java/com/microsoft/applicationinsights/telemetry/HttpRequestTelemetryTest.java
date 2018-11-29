@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.apache.http.HttpStatus;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public final class HttpRequestTelemetryTest {
 
@@ -34,8 +35,8 @@ public final class HttpRequestTelemetryTest {
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         assertNotNull(requestTelemetry.getTimestamp());
-        assertEquals(requestTelemetry.getResponseCode(), Integer.toString(HttpStatus.SC_OK));
-        assertEquals(requestTelemetry.isSuccess(), true);
+        assertEquals(Integer.toString(HttpStatus.SC_OK), requestTelemetry.getResponseCode());
+        assertTrue(requestTelemetry.isSuccess());
     }
 
     @Test
@@ -43,11 +44,11 @@ public final class HttpRequestTelemetryTest {
         Date date = new Date();
         RequestTelemetry requestTelemetry = new RequestTelemetry("mockName", date, 1010, "200", true);
 
-        assertEquals(requestTelemetry.getName(), "mockName");
-        assertEquals(requestTelemetry.getTimestamp(), date);
-        assertEquals(requestTelemetry.getDuration().toString(), "00:00:01.0100000");
-        assertEquals(requestTelemetry.getResponseCode(), "200");
-        assertEquals(requestTelemetry.isSuccess(), true);
+        assertEquals("mockName", requestTelemetry.getName());
+        assertEquals(date, requestTelemetry.getTimestamp());
+        assertEquals("00:00:01.0100000", requestTelemetry.getDuration().toString());
+        assertEquals("200", requestTelemetry.getResponseCode());
+        assertTrue(requestTelemetry.isSuccess());
     }
 
     @Test
@@ -56,7 +57,8 @@ public final class HttpRequestTelemetryTest {
         RequestTelemetry requestTelemetry = new RequestTelemetry("mockName", date, 1010, "200", true);
         requestTelemetry.setResponseCode("400");
 
-        assertEquals(requestTelemetry.getResponseCode(), "400");
-        assertEquals(requestTelemetry.isSuccess(), true);
+        assertEquals("400", requestTelemetry.getResponseCode());
+        // TODO FIXME ummm....400 is success? or should the test be named setCodeDoesNotUpdateSuccessState?
+        assertTrue(requestTelemetry.isSuccess());
     }
 }

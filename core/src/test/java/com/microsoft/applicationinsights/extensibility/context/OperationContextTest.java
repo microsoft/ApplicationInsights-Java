@@ -34,9 +34,9 @@ public final class OperationContextTest {
         OperationContext context = new OperationContext(map);
         context.setName("mock");
 
-        assertEquals(context.getName(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getOperationName()), "mock");
+        assertEquals("mock", context.getName());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getOperationName()));
     }
 
     @Test
@@ -45,9 +45,9 @@ public final class OperationContextTest {
         OperationContext context = new OperationContext(map);
         context.setId("mock");
 
-        assertEquals(context.getId(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getOperationId()), "mock");
+        assertEquals("mock", context.getId());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getOperationId()));
     }
 
     @Test
@@ -57,8 +57,8 @@ public final class OperationContextTest {
         OperationContext context = new OperationContext(map);
         context.setSyntheticSource(source);
 
-        assertEquals(context.getSyntheticSource(), source);
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getSyntheticSource()), source);
+        assertEquals(source, context.getSyntheticSource());
+        assertEquals(1, map.size());
+        assertEquals(source, map.get(ContextTagKeys.getKeys().getSyntheticSource()));
     }
 }

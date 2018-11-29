@@ -25,9 +25,7 @@ import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public final class RemoteDependencyTelemetryTest {
 
@@ -40,8 +38,8 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
         assertNull(telemetry.getStdDev());
-        assertEquals(telemetry.getDependencyKind(), DependencyKind.Other);
-        assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
+        assertEquals(DependencyKind.Other, telemetry.getDependencyKind());
+        assertEquals(DependencySourceType.Undefined, telemetry.getDependencySource());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -54,8 +52,8 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
         assertNull(telemetry.getStdDev());
-        assertEquals(telemetry.getDependencyKind(), DependencyKind.Other);
-        assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
+        assertEquals(DependencyKind.Other, telemetry.getDependencyKind());
+        assertEquals(DependencySourceType.Undefined, telemetry.getDependencySource());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -77,7 +75,7 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
         assertNull(telemetry.getStdDev());
-        assertEquals(telemetry.getDependencySource(), DependencySourceType.Undefined);
+        assertEquals(DependencySourceType.Undefined, telemetry.getDependencySource());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -113,7 +111,7 @@ public final class RemoteDependencyTelemetryTest {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         telemetry.setName("MockName1");
-        assertEquals(telemetry.getName(), "MockName1");
+        assertEquals("MockName1", telemetry.getName());
     }
 
     @Test
@@ -153,7 +151,7 @@ public final class RemoteDependencyTelemetryTest {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         telemetry.setDependencyKind(DependencyKind.Http);
-        assertEquals(telemetry.getDependencyKind(), DependencyKind.Http);
+        assertEquals(DependencyKind.Http, telemetry.getDependencyKind());
     }
 
     @Test

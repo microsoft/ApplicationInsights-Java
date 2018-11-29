@@ -25,18 +25,19 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public final class MetricTelemetryTest {
     @Test
     public void testEmptyCtor() {
         MetricTelemetry telemetry = new MetricTelemetry();
 
-        assertEquals(telemetry.getName(), null);
-        assertEquals(telemetry.getValue(), 0.0, 0);
-        assertEquals(telemetry.getCount(), null);
-        assertEquals(telemetry.getMin(), null);
-        assertEquals(telemetry.getMax(), null);
-        assertEquals(telemetry.getStandardDeviation(), null);
+        assertNull(telemetry.getName());
+        assertEquals(0.0, telemetry.getValue(), Math.ulp(0.0));
+        assertNull(telemetry.getCount());
+        assertNull(telemetry.getMin());
+        assertNull(telemetry.getMax());
+        assertNull(telemetry.getStandardDeviation());
     }
 
 
@@ -44,13 +45,13 @@ public final class MetricTelemetryTest {
     public void testCtor() {
         MetricTelemetry telemetry = new MetricTelemetry("MockName", 120.1);
 
-        assertEquals(telemetry.getName(), "MockName");
-        assertEquals(telemetry.getValue(), 120.1, 0);
-        assertEquals(telemetry.getCount(), null);
-        assertEquals(telemetry.getCount(), null);
-        assertEquals(telemetry.getMin(), null);
-        assertEquals(telemetry.getMax(), null);
-        assertEquals(telemetry.getStandardDeviation(), null);
+        assertEquals("MockName", telemetry.getName());
+        assertEquals(120.1, telemetry.getValue(), Math.ulp(120.1));
+        assertNull(telemetry.getCount());
+        assertNull(telemetry.getCount());
+        assertNull(telemetry.getMin());
+        assertNull(telemetry.getMax());
+        assertNull(telemetry.getStandardDeviation());
     }
 
     @Test
@@ -58,8 +59,8 @@ public final class MetricTelemetryTest {
         MetricTelemetry telemetry = new MetricTelemetry("MockName", 120.1);
         telemetry.setName("MockName1");
 
-        assertEquals(telemetry.getName(), "MockName1");
-        assertEquals(telemetry.getValue(), 120.1, 0);
+        assertEquals("MockName1", telemetry.getName());
+        assertEquals(120.1, telemetry.getValue(), Math.ulp(120.1));
     }
 
     @Test
@@ -67,8 +68,8 @@ public final class MetricTelemetryTest {
         MetricTelemetry telemetry = new MetricTelemetry("MockName", 120.1);
         telemetry.setValue(240.0);
 
-        assertEquals(telemetry.getName(), "MockName");
-        assertEquals(telemetry.getValue(), 240.0, 0);
+        assertEquals("MockName", telemetry.getName());
+        assertEquals(240.0, telemetry.getValue(), Math.ulp(240.0));
     }
 
     @Test
@@ -76,7 +77,7 @@ public final class MetricTelemetryTest {
         MetricTelemetry telemetry = new MetricTelemetry("MockName", 120.1);
         telemetry.setCount(1);
 
-        assertEquals(telemetry.getCount(), new Integer(1));
+        assertEquals(new Integer(1), telemetry.getCount());
     }
 
     @Test
@@ -84,7 +85,7 @@ public final class MetricTelemetryTest {
         MetricTelemetry telemetry = new MetricTelemetry("MockName", 120.1);
         telemetry.setMin(new Double(1));
 
-        assertEquals(telemetry.getMin(), new Double(1));
+        assertEquals(new Double(1), telemetry.getMin());
     }
 
     @Test
@@ -92,7 +93,7 @@ public final class MetricTelemetryTest {
         MetricTelemetry telemetry = new MetricTelemetry("MockName", 120.1);
         telemetry.setMax(new Double(1));
 
-        assertEquals(telemetry.getMax(), new Double(1));
+        assertEquals(new Double(1), telemetry.getMax());
     }
 
     @Test
@@ -100,7 +101,7 @@ public final class MetricTelemetryTest {
         MetricTelemetry telemetry = new MetricTelemetry("MockName", 120.1);
         telemetry.setStandardDeviation(new Double(1));
 
-        assertEquals(telemetry.getStandardDeviation(), new Double(1));
+        assertEquals(new Double(1), telemetry.getStandardDeviation());
     }
 
 }

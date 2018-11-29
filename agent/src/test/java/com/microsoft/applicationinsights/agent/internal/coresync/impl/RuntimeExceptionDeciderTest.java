@@ -65,7 +65,7 @@ public class RuntimeExceptionDeciderTest {
 
         assertNotNull(result);
         assertTrue(result.valid);
-        assertEquals(result.stackSize, Integer.MAX_VALUE);
+        assertEquals(Integer.MAX_VALUE, result.stackSize);
     }
 
     @Test
@@ -96,6 +96,6 @@ public class RuntimeExceptionDeciderTest {
 
         assertNotNull(result);
         assertTrue(result.valid);
-        assertEquals(result.stackSize, 1);
+        assertEquals(1, result.stackSize);
     }
 }

@@ -34,9 +34,9 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setId("mock");
 
-        assertEquals(context.getId(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceId()), "mock");
+        assertEquals("mock", context.getId());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceId()));
     }
 
     @Test
@@ -56,9 +56,9 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setModel("mock");
 
-        assertEquals(context.getModel(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceModel()), "mock");
+        assertEquals("mock", context.getModel());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceModel()));
     }
 
     @Test
@@ -67,9 +67,9 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setNetworkType("mock");
 
-        assertEquals(context.getNetworkType(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceNetwork()), "mock");
+        assertEquals("mock", context.getNetworkType());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceNetwork()));
     }
 
     @Test
@@ -78,9 +78,9 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setOemName("mock");
 
-        assertEquals(context.getOemName(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceOEMName()), "mock");
+        assertEquals("mock", context.getOemName());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceOEMName()));
     }
 
     @Test
@@ -89,9 +89,9 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setOperatingSystem("mock");
 
-        assertEquals(context.getOperatingSystem(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceOS()), "mock");
+        assertEquals("mock", context.getOperatingSystem());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceOS()));
     }
 
     @Test
@@ -100,9 +100,9 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setOperatingSystemVersion("mock");
 
-        assertEquals(context.getOperatingSystemVersion(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceOSVersion()), "mock");
+        assertEquals("mock", context.getOperatingSystemVersion());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceOSVersion()));
     }
 
     @Test
@@ -111,9 +111,9 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setRoleInstance("mock");
 
-        assertEquals(context.getRoleInstance(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceRoleInstance()), "mock");
+        assertEquals("mock", context.getRoleInstance());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceRoleInstance()));
     }
 
     @Test
@@ -122,9 +122,9 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setRoleName("mock");
 
-        assertEquals(context.getRoleName(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceRoleName()), "mock");
+        assertEquals("mock", context.getRoleName());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceRoleName()));
     }
 
     @Test
@@ -133,8 +133,8 @@ public final class DeviceContextTest {
         DeviceContext context = new DeviceContext(map);
         context.setScreenResolution("mock");
 
-        assertEquals(context.getScreenResolution(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getDeviceScreenResolution()), "mock");
+        assertEquals("mock", context.getScreenResolution());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceScreenResolution()));
     }
 }

@@ -144,12 +144,12 @@ public final class ApplicationInsightsLogEventTest {
 
             @Override
             public void setEndOfBatch(boolean endOfBatch) {
-
+                /* NOP */
             }
 
             @Override
             public void setIncludeLocation(boolean locationRequired) {
-
+                /* NOP */
             }
         };
         ApplicationInsightsLogEvent event = new ApplicationInsightsLogEvent(logEvent);

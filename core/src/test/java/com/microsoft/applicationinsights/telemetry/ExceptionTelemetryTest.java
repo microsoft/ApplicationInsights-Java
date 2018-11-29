@@ -25,7 +25,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -51,7 +53,7 @@ public final class ExceptionTelemetryTest {
         assertSame(exception, exceptionTelemetry.getException());
         assertTrue(exceptionTelemetry.getProperties().isEmpty());
         assertTrue(exceptionTelemetry.getMetrics().isEmpty());
-        assertEquals(exceptionTelemetry.getExceptions().size(), 1);
+        assertThat(exceptionTelemetry.getExceptions(), hasSize(1));
     }
 
     @Test
@@ -59,7 +61,7 @@ public final class ExceptionTelemetryTest {
         Exception exception = new IOException("mocka", new IllegalArgumentException("mockb"));
         ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
 
-        assertEquals(exceptionTelemetry.getExceptions().size(), 2);
+        assertThat(exceptionTelemetry.getExceptions(), hasSize(2));
     }
 
     @Test
@@ -75,7 +77,7 @@ public final class ExceptionTelemetryTest {
     @Test
     public void testFirstValueIsNull() {
         ExceptionTelemetry telemetry = new ExceptionTelemetry(new IllegalArgumentException("mockb"));
-        assertEquals(telemetry.getSeverityLevel(), null);
+        assertNull(telemetry.getSeverityLevel());
     }
 
     @Test

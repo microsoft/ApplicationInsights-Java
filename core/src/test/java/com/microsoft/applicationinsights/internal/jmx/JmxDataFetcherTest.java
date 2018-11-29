@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.internal.jmx;
 
-import org.junit.Test;
+import org.junit.*;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
@@ -97,7 +97,7 @@ public class JmxDataFetcherTest {
         Map<String, Collection<Object>> result = JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes);
 
         assertNotNull(result);
-        assertEquals(result.size(), 3);
+        assertEquals(3, result.size());
 
         verify(result, "Int", expectedInt);
         verify(result, "Double", expectedDouble);
@@ -107,13 +107,13 @@ public class JmxDataFetcherTest {
     private static void verify(Map<String, Collection<Object>> result, String key, double expectedValue) {
         Collection<Object> objects = result.get(key);
         assertNotNull(objects);
-        assertEquals(objects.size(), 1);
+        assertEquals(1, objects.size());
         double value = 0.0;
         for (Object obj : objects) {
             try {
                 value += Double.parseDouble(String.valueOf(obj));
             } catch (Exception e) {
-                assertFalse(true);
+                Assert.fail("Exception thrown: "+e);
             }
         }
 

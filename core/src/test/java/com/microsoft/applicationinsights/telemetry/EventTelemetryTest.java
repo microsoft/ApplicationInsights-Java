@@ -32,16 +32,16 @@ public final class EventTelemetryTest {
     public void testDefaultCtor() {
         EventTelemetry eventTelemetry = new EventTelemetry();
         String name = eventTelemetry.getName();
-        assertEquals(name, null);
+        assertNull(name);
     }
 
     @Test
     public void testSetName() {
         EventTelemetry eventTelemetry = new EventTelemetry("mockname");
-        assertEquals(eventTelemetry.getName(), "mockname");
+        assertEquals("mockname", eventTelemetry.getName());
 
         eventTelemetry.setName("new name");
-        assertEquals(eventTelemetry.getName(), "new name");
+        assertEquals("new name", eventTelemetry.getName());
     }
 
     @Test

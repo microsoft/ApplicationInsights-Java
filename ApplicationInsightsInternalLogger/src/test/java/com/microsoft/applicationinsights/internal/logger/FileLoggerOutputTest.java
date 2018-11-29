@@ -21,8 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -37,6 +39,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -147,7 +150,7 @@ public final class FileLoggerOutputTest {
       Collection<File> logs = FileUtils.listFiles(folder, new String[] {LOG_FILE_SUFFIX}, false);
 
       assertNotNull(logs);
-      assertEquals(logs.size(), 1);
+      assertThat(logs, hasSize(1));
 
       BufferedReader br = null;
       File file = null;

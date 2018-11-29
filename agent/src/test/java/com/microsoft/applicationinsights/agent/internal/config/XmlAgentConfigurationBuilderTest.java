@@ -46,7 +46,7 @@ public final class XmlAgentConfigurationBuilderTest {
         Set<String> excludedPrefixes = configuration.getExcludedPrefixes();
 
         assertNotNull(excludedPrefixes);
-        assertEquals(excludedPrefixes.size(), 2);
+        assertEquals(2, excludedPrefixes.size());
         assertTrue(excludedPrefixes.contains("a.AClass1"));
         assertTrue(excludedPrefixes.contains("a.b.AClass1"));
     }
@@ -62,18 +62,18 @@ public final class XmlAgentConfigurationBuilderTest {
         AgentConfiguration configuration = testConfiguration("InstrumentationTest.xml");
         Map<String, ClassInstrumentationData> classes = configuration.getRequestedClassesToInstrument();
         assertNotNull(classes);
-        assertEquals(classes.size(), 2);
+        assertEquals(2, classes.size());
     }
 
     @Test
     public void testBuiltInConfiguration() throws IOException {
         AgentConfiguration configuration = testConfiguration("BuiltInTest.xml");
         AgentBuiltInConfiguration builtInConfiguration = configuration.getBuiltInConfiguration();
-        assertEquals(builtInConfiguration.isEnabled(), true);
-        assertEquals(builtInConfiguration.isHttpEnabled(), true);
-        assertEquals(builtInConfiguration.isJdbcEnabled(), true);
-        assertEquals(builtInConfiguration.isJdbcEnabled(), true);
-        assertEquals(builtInConfiguration.isHibernateEnabled(), false);
+        assertTrue(builtInConfiguration.isEnabled());
+        assertTrue(builtInConfiguration.isHttpEnabled());
+        assertTrue(builtInConfiguration.isJdbcEnabled());
+        assertTrue(builtInConfiguration.isJdbcEnabled());
+        assertFalse(builtInConfiguration.isHibernateEnabled());
     }
 
     @Test

@@ -537,7 +537,7 @@ public final class TelemetryClientTests {
         telemetryClient.track(mockTelemetry);
 
         Mockito.verify(mockChannel, Mockito.times(1)).send(mockTelemetry);
-        assertEquals(mockContext.getInstrumentationKey(), "00000000-0000-0000-0000-000000000000");
+        assertEquals("00000000-0000-0000-0000-000000000000", mockContext.getInstrumentationKey());
     }
 
     private Telemetry verifyAndGetLastEventSent() {

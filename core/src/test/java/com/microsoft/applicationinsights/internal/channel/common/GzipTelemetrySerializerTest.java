@@ -45,6 +45,7 @@ import com.google.gson.Gson;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public final class GzipTelemetrySerializerTest {
     private static class StubTelemetry implements Telemetry {
@@ -182,8 +183,8 @@ public final class GzipTelemetrySerializerTest {
         Transmission serializationData = result.get();
         assertNotNull(serializationData);
         assertNotNull(serializationData.getContent());
-        assertEquals(serializationData.getWebContentType(), "application/x-json-stream");
-        assertEquals(serializationData.getWebContentEncodingType(), "gzip");
+        assertEquals("application/x-json-stream", serializationData.getWebContentType());
+        assertEquals("gzip", serializationData.getWebContentEncodingType());
 
         GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(serializationData.getContent()));
         try {
@@ -211,9 +212,15 @@ public final class GzipTelemetrySerializerTest {
             }
 
         } catch (IOException e) {
-            assertTrue(false);
+            fail("Exception thrown: "+e);
         } finally {
-            gis.close();
+            if (gis != null) {
+                try {
+                    gis.close();
+                } catch (Exception e) {
+                    // don't care
+                }
+            }
         }
     }
 

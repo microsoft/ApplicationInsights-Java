@@ -107,7 +107,7 @@ public final class TelemetryBufferTest {
 
             scheduleSendCallCounter.incrementAndGet();
 
-            assertEquals(timeUnit, TimeUnit.SECONDS);
+            assertEquals(TimeUnit.SECONDS, timeUnit);
 
             scheduler.schedule(new Runnable() {
                 @Override

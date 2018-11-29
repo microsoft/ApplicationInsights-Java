@@ -140,7 +140,7 @@ public class ApplicationInsightsLogEventTest {
 
             @Override
             public void prepareForDeferredProcessing() {
-
+                /* NOP */
             }
         };
         ApplicationInsightsLogEvent event = new ApplicationInsightsLogEvent(loggingEvent);

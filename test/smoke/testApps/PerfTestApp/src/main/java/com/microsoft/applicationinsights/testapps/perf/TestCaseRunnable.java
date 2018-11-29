@@ -20,6 +20,7 @@ public class TestCaseRunnable implements Runnable {
 			this.op = new Runnable(){
 				@Override
 				public void run() {
+					// NOP
 				}
 			};
 			this.name = (name == null) ? "NOP" : name;
