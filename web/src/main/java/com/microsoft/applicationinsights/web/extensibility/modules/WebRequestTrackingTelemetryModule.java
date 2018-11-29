@@ -21,7 +21,9 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
 import java.util.Date;
+import java.util.Map;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -48,9 +50,33 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
     private TelemetryClient telemetryClient;
     private boolean isInitialized = false;
 
+    private boolean isW3CEnabled = false;
+
+    /**
+     * Field to indicate if W3C tracing protocol is enabled.
+     */
+    private final String W3C_CONFIGURATION_PARAMETER = "W3CEnabled";
+
     // endregion Members
 
     // region Public
+
+    public WebRequestTrackingTelemetryModule() {
+
+    }
+
+    /**
+     * Ctor that parses incoming configuration.
+     * @param configurationData
+     */
+    public WebRequestTrackingTelemetryModule(Map<String, String> configurationData) {
+        assert configurationData != null;
+
+        if (configurationData.containsKey(W3C_CONFIGURATION_PARAMETER)) {
+            isW3CEnabled = Boolean.valueOf(configurationData.get(W3C_CONFIGURATION_PARAMETER));
+        }
+    }
+
 
     /**
      * Begin request processing.
@@ -94,7 +120,13 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
             // Look for cross-component correlation headers and resolve correlation ID's
             HttpServletResponse response = (HttpServletResponse) res;
-            TelemetryCorrelationUtils.resolveCorrelation(request, response, telemetry);
+            if (isW3CEnabled) {
+                TraceContextCorrelation.resolveCorrelation(request, response, telemetry);
+            } else {
+                // Default correlation experience
+                TelemetryCorrelationUtils.resolveCorrelation(request, response, telemetry);
+            }
+
 
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
@@ -132,7 +164,11 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             telemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
             
             String instrumentationKey = this.telemetryClient.getContext().getInstrumentationKey();
-            TelemetryCorrelationUtils.resolveRequestSource((HttpServletRequest) req, telemetry, instrumentationKey);
+            if (isW3CEnabled) {
+                TraceContextCorrelation.resolveRequestSource((HttpServletRequest) req, telemetry, instrumentationKey);
+            } else {
+                TelemetryCorrelationUtils.resolveRequestSource((HttpServletRequest) req, telemetry, instrumentationKey);
+            }
 
             telemetryClient.track(telemetry);
         } catch (Exception e) {
