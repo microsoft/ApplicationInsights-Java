@@ -104,7 +104,7 @@ public class TraceContextCorrelation {
             addTracestateInResponseHeader(response);
 
         } catch (Exception e) {
-            InternalLogger.INSTANCE.trace("unable to perform correlation :%s", ExceptionUtils.
+            InternalLogger.INSTANCE.error("unable to perform correlation :%s", ExceptionUtils.
                 getStackTrace(e));
         }
     }
