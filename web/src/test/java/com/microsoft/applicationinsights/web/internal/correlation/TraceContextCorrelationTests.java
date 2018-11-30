@@ -32,7 +32,7 @@ public class TraceContextCorrelationTests {
         //setup
         Map<String, String> headers = new HashMap<>();
         Traceparent t = new Traceparent();
-        headers.put(TraceContextCorrelation.CORRELATION_HEADER_NAME, t.toString());
+        headers.put(TraceContextCorrelation.TRACEPARENT_HEADER_NAME, t.toString());
 
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
@@ -82,7 +82,7 @@ public class TraceContextCorrelationTests {
 
         //setup - empty RequestId
         Map<String, String> headers = new HashMap<>();
-        headers.put(TraceContextCorrelation.CORRELATION_HEADER_NAME, "");
+        headers.put(TraceContextCorrelation.TRACEPARENT_HEADER_NAME, "");
 
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();

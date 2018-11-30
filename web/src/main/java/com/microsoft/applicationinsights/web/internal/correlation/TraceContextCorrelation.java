@@ -21,8 +21,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 public class TraceContextCorrelation {
 
-    public static final String CORRELATION_HEADER_NAME = "traceparent";
-    public static final String CORRELATION_COMPANION_HEADER_NAME = "tracestate";
+    public static final String TRACEPARENT_HEADER_NAME = "traceparent";
+    public static final String TRACESTATE_HEADER_NAME = "tracestate";
     public static final String AZURE_TRACEPARENT_COMPONENT_INITIAL = "az";
 
     /**
@@ -58,7 +58,7 @@ public class TraceContextCorrelation {
             }
 
 
-            String traceId = request.getHeader(CORRELATION_HEADER_NAME);
+            String traceId = request.getHeader(TRACEPARENT_HEADER_NAME);
 
             Traceparent outGoingTraceParent = null;
 
@@ -92,7 +92,7 @@ public class TraceContextCorrelation {
 
             }
 
-            String tracestate = request.getHeader(CORRELATION_COMPANION_HEADER_NAME);
+            String tracestate = request.getHeader(TRACESTATE_HEADER_NAME);
             Tracestate tracestateObject = Tracestate.fromString(tracestate);
             Map<String, String> tracestatePropertiesMap = getPropertiesMap(tracestateObject);
 
@@ -114,7 +114,7 @@ public class TraceContextCorrelation {
      */
     private static void addTracestateInResponseHeader(HttpServletResponse response) {
 
-        if (response.containsHeader(CORRELATION_COMPANION_HEADER_NAME)) {
+        if (response.containsHeader(TRACESTATE_HEADER_NAME)) {
             return;
         }
 
@@ -126,7 +126,7 @@ public class TraceContextCorrelation {
         // TODO: should we propagate the entire tracestate here?
         Tracestate tracestate = new Tracestate("az" + appId);
 
-        response.addHeader(CORRELATION_COMPANION_HEADER_NAME, tracestate.toString());
+        response.addHeader(TRACESTATE_HEADER_NAME, tracestate.toString());
     }
 
     /**
@@ -178,9 +178,10 @@ public class TraceContextCorrelation {
                 return;
             }
 
-            String tracestate = request.getHeader(CORRELATION_COMPANION_HEADER_NAME);
+            String tracestate = request.getHeader(TRACESTATE_HEADER_NAME);
             if (tracestate == null || tracestate.isEmpty()) {
-                InternalLogger.INSTANCE.info("Skip resolving request source as the following header was not found: %s", CORRELATION_COMPANION_HEADER_NAME);
+                InternalLogger.INSTANCE.info("Skip resolving request source as the following header was not found: %s",
+                    TRACESTATE_HEADER_NAME);
                 return;
             }
 
