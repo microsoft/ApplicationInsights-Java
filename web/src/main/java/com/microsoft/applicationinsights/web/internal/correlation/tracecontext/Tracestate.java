@@ -24,7 +24,7 @@ public class Tracestate {
      */
     public Tracestate(String value) {
         if (value == null || value.length() == 0) {
-            throw new IllegalArgumentException("invalid spanId");
+            throw new IllegalArgumentException("Tracestate cannot be null");
         }
         reserved = value;
     }

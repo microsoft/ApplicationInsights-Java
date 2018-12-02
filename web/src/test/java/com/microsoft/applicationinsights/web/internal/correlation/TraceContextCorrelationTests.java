@@ -27,7 +27,7 @@ public class TraceContextCorrelationTests {
     }
 
     @Test
-    public void testCorrelationIdsAreResolved() {
+    public void testTraceparentAreResolved() {
 
         //setup
         Map<String, String> headers = new HashMap<>();
@@ -54,7 +54,7 @@ public class TraceContextCorrelationTests {
     }
 
     @Test
-    public void testCorrelationIdsAreResolvedIfNoTraceIdHeader() {
+    public void testCorrelationIdsAreResolvedIfNoTraceparentHeader() {
 
         //setup - no headers
         Map<String, String> headers = new HashMap<>();
@@ -78,7 +78,7 @@ public class TraceContextCorrelationTests {
     }
 
     @Test
-    public void testCorrelationIdsAreResolvedIfRequestIdEmpty() {
+    public void testCorrelationIdsAreResolvedIfTraceparentEmpty() {
 
         //setup - empty RequestId
         Map<String, String> headers = new HashMap<>();
@@ -100,5 +100,152 @@ public class TraceContextCorrelationTests {
         // First trace will have it's own spanId also.
         Assert.assertTrue(requestTelemetry.getId().startsWith(operation.getId()+"-"));
         Assert.assertNull(operation.getParentId());
+    }
+
+    @Test
+    public void testTracestateIsResolved() {
+        Map<String, String> headers = new HashMap<>();
+        String incomingTracestate = getTracestateHeaderValue("id1");
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, incomingTracestate);
+
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
+
+        Assert.assertEquals("id1", requestTelemetry.getSource());
+
+    }
+
+    @Test
+    public void testSourceNotSetWhenIncomingAppIdInTraceStateIsSameAsCurrent() {
+        Map<String, String> headers = new HashMap<>();
+        String incomingTracestate = getTracestateHeaderValue("id1");
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, incomingTracestate);
+
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id1");
+
+        TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
+        //source and target have same appId
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testTracestateIsNotResolvedWhenHeaderNotPresent() {
+        Map<String, String> headers = new HashMap<>();
+
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id1");
+
+        TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testTracestateIsNotResolvedIfHeaderIsEmpty() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, "");
+
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id1");
+
+        TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testTraceStateIsNotResolvedIfHeaderDoesntHaveAzureComponent() {
+        Map<String, String> headers = new HashMap<>();
+        // get tracestate with non azure component
+        String incomingTracestate = getTracestateHeaderValue(null);
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, incomingTracestate);
+
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id1");
+
+        TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testTracestateIsNotResolvedWithNullIkey() {
+        Map<String, String> headers = new HashMap<>();
+        String incomingTracestate = getTracestateHeaderValue("id1");
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, incomingTracestate);
+
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, null);
+
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testTracestateIsNotResolvedWithNullRequestTelemetry() {
+        Map<String, String> headers = new HashMap<>();
+        String incomingTracestate = getTracestateHeaderValue("id1");
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, incomingTracestate);
+
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        TraceContextCorrelation.resolveRequestSource(request, null, "ikey1");
+
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testTracestateIsNotResolvedWithNullRequest() {
+        Map<String, String> headers = new HashMap<>();
+        String incomingTracestate = getTracestateHeaderValue("id1");
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, incomingTracestate);
+
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+        mockProfileFetcher.setAppIdToReturn("id2");
+
+        TraceContextCorrelation.resolveRequestSource(null, requestTelemetry, "ikey1");
+
+        Assert.assertNull(requestTelemetry.getSource());
+    }
+
+     public static String getTracestateHeaderValue(String appId) {
+        if (appId == null || appId.isEmpty()) {
+            return "foo=bar";
+        }
+        return String.format("%s=cid-v1:%s", TraceContextCorrelation.AZURE_TRACEPARENT_COMPONENT_INITIAL, appId);
+     }
+
+    public static String getRequestSourceValue(String appId) {
+
+        if (appId == null) {
+            return "someValue";
+        }
+
+        return String.format("cid-v1:%s", appId);
     }
 }

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
 import java.util.Date;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
     private TelemetryClient telemetryClient;
     private boolean isInitialized = false;
 
-    private boolean isW3CEnabled = false;
+    @VisibleForTesting boolean isW3CEnabled = false;
 
     /**
      * Field to indicate if W3C tracing protocol is enabled.

@@ -23,7 +23,9 @@ public class TraceContextCorrelation {
 
     public static final String TRACEPARENT_HEADER_NAME = "traceparent";
     public static final String TRACESTATE_HEADER_NAME = "tracestate";
+    public static final String REQUEST_CONTEXT_HEADER_NAME = "Request-Context";
     public static final String AZURE_TRACEPARENT_COMPONENT_INITIAL = "az";
+    public static final String REQUEST_CONTEXT_HEADER_APPID_KEY = "appId";
 
     /**
      * Private constructor as we don't expect to create an object of this class.
@@ -58,11 +60,11 @@ public class TraceContextCorrelation {
             }
 
 
-            String traceId = request.getHeader(TRACEPARENT_HEADER_NAME);
+            String traceparent = request.getHeader(TRACEPARENT_HEADER_NAME);
 
             Traceparent outGoingTraceParent = null;
 
-            if (traceId == null || traceId.isEmpty()) {
+            if (traceparent == null || traceparent.isEmpty()) {
                 outGoingTraceParent = new Traceparent();
 
                 // represents the id of the current request.
@@ -74,7 +76,7 @@ public class TraceContextCorrelation {
                 // set parentId as null because this is the is the originating request
                 requestTelemetry.getContext().getOperation().setParentId(null);
             } else {
-                Traceparent incomingTraceparent = Traceparent.fromString(traceId);
+                Traceparent incomingTraceparent = Traceparent.fromString(traceparent);
 
                 // create outgoing traceParent using the incoming header
                 outGoingTraceParent = new Traceparent(0, incomingTraceparent.getTraceId(),
@@ -86,22 +88,30 @@ public class TraceContextCorrelation {
                 // represents the trace-id of this distributed trace
                 requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
 
-                // represents the parent-id of this request which is combination of traceId and incoming spanId
+                // represents the parent-id of this request which is combination of traceparent and incoming spanId
                 requestTelemetry.getContext().getOperation().setParentId(outGoingTraceParent.getTraceId() + "-" +
                     incomingTraceparent.getSpanId());
 
             }
 
+            // Get Tracestate header
             String tracestate = request.getHeader(TRACESTATE_HEADER_NAME);
-            Tracestate tracestateObject = Tracestate.fromString(tracestate);
-            Map<String, String> tracestatePropertiesMap = getPropertiesMap(tracestateObject);
 
-            // create outbound tracestate to be propagated to downstream calls
-            Tracestate outboundTracestate = createOutboundTracestate(tracestatePropertiesMap, getAppId());
-            ThreadContext.getRequestTelemetryContext().setTracestate(outboundTracestate);
+            // populate outbound tracestate if we get incoming tracestate
+            if (tracestate != null) {
+                Tracestate tracestateObject = Tracestate.fromString(tracestate);
+                Map<String, String> tracestatePropertiesMap = getPropertiesMap(tracestateObject);
+
+                // TODO: This will throw if getAppId() returns an empty string due to async task (fetch profile) pending. What should be the alternative ?
+                // create outbound tracestate to be propagated to downstream calls
+                Tracestate outboundTracestate = createOutboundTracestate(tracestatePropertiesMap, getAppId());
+                ThreadContext.getRequestTelemetryContext().setTracestate(outboundTracestate);
+            }
+
+            // TODO: What happens when there is no tracestate? How do we pass AppId or we just keep source-null
 
             // Let the callee know the caller's AppId
-            addTracestateInResponseHeader(response);
+            addTargetAppIdInResponseHeaderViaRequestContext(response);
 
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("unable to perform correlation :%s", ExceptionUtils.
@@ -110,23 +120,31 @@ public class TraceContextCorrelation {
     }
 
     /**
-     * This adds the tracestate in response header so that the Callee can know what is the caller's AppId.
+     * This adds the Request-Context in response header so that the Callee can know what is the caller's AppId.
+     * @param response HttpResponse object
      */
-    private static void addTracestateInResponseHeader(HttpServletResponse response) {
+    private static void addTargetAppIdInResponseHeaderViaRequestContext(HttpServletResponse response) {
 
-        if (response.containsHeader(TRACESTATE_HEADER_NAME)) {
+        if (response.containsHeader(REQUEST_CONTEXT_HEADER_NAME)) {
             return;
         }
 
-        String appId = getAppId();
-        if (appId == null || appId.isEmpty()) {
+        String appId = getAppIdWithKey();
+        if (appId.isEmpty()) {
             return;
         }
 
-        // TODO: should we propagate the entire tracestate here?
-        Tracestate tracestate = new Tracestate("az" + appId);
+        // W3C protocol doesn't define any behavior for response headers.
+        // This is purely AI concept and hence we use RequestContextHeader here.
+        response.addHeader(REQUEST_CONTEXT_HEADER_NAME,appId);
+    }
 
-        response.addHeader(TRACESTATE_HEADER_NAME, tracestate.toString());
+    /**
+     * Gets AppId prefixed with key to append to Request-Context header
+     * @return
+     */
+    private static String getAppIdWithKey() {
+        return REQUEST_CONTEXT_HEADER_APPID_KEY + "=" + getAppId();
     }
 
     /**
@@ -222,7 +240,9 @@ public class TraceContextCorrelation {
         }
 
         if (sourceAppId != null && sourceAppId.length() > 0) {
-            outboundTracestate.append(",");
+            if (outboundTracestate.length() > 0) {
+                outboundTracestate.append(",");
+            }
             outboundTracestate.append(AZURE_TRACEPARENT_COMPONENT_INITIAL).append("=").append(sourceAppId);
         }
         return new Tracestate(outboundTracestate.toString());

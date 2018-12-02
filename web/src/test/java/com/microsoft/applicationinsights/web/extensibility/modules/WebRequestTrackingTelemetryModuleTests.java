@@ -21,6 +21,11 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationTests;
+import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
+import com.microsoft.localforwarder.library.inputs.contracts.Telemetry;
 import org.apache.http.HttpStatus;
 import org.eclipse.jetty.http.HttpMethods;
 import org.junit.*;
@@ -65,6 +70,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     private static JettyTestServer server = new JettyTestServer();
     private static WebRequestTrackingTelemetryModule defaultModule;
+    private static WebRequestTrackingTelemetryModule currentModule;
     private static MockTelemetryChannel channel;
     private static MockProfileFetcher mockProfileFetcher;
 
@@ -76,6 +82,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         // Set mock channel
         channel = MockTelemetryChannel.INSTANCE;
+        currentModule = getCurrentWebRequestTrackingModule();
         TelemetryConfiguration.getActive().setChannel(channel);
         TelemetryConfiguration.getActive().setInstrumentationKey("SOME_INT_KEY");
     }
@@ -93,6 +100,12 @@ public class WebRequestTrackingTelemetryModuleTests {
         defaultModule.initialize(TelemetryConfiguration.getActive());
 
         channel.reset();
+    }
+
+    @After
+    public void testDestroy() {
+        currentModule.isW3CEnabled = false;
+        defaultModule.isW3CEnabled = false;
     }
 
     @AfterClass
@@ -131,6 +144,12 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         String requestContext = requestContextValues.get(0);
         Assert.assertEquals("appId=cid-v1:myId", requestContext);
+    }
+
+    @Test
+    public void testResponseHeaderIsSetForRequestContextWhenUsingW3C() throws Exception {
+        currentModule.isW3CEnabled = true;
+        testResponseHeaderIsSetForRequestContext();
     }
    
     @Test
@@ -220,6 +239,54 @@ public class WebRequestTrackingTelemetryModuleTests {
     }
 
     @Test
+    public void testCrossComponentCorrelationHeadersAreCapturedWhenW3CTurnedOn() {
+
+        // Turn W3C on
+        defaultModule.isW3CEnabled = true;
+
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Map<String, String> headers = new HashMap<>();
+        Traceparent tp = new Traceparent();
+
+        headers.put(TraceContextCorrelation.TRACEPARENT_HEADER_NAME, tp.toString());
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, TraceContextCorrelationTests.getTracestateHeaderValue("id1"));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, response);
+
+        // verify ID's are set as expected in request telemetry
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertNotNull(requestTelemetry.getId());
+        // spanIds are different
+        Assert.assertNotEquals(tp.getTraceId(), requestTelemetry.getId());
+        // traceIds are same
+        Assert.assertTrue(requestTelemetry.getId().startsWith(tp.getTraceId()));
+
+        //validate operation context ID's
+        OperationContext operation = requestTelemetry.getContext().getOperation();
+        Assert.assertEquals(tp.getTraceId(), operation.getId());
+        Assert.assertEquals(tp.getTraceId() + "-" + tp.getSpanId(), operation.getParentId());
+
+        //run onEnd
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        Assert.assertNotNull(requestTelemetry.getSource());
+        Assert.assertEquals(TraceContextCorrelationTests.getRequestSourceValue("id1"), requestTelemetry.getSource());
+
+    }
+
+    @Test
     public void testTelemetryCreatedWithinRequestScopeIsRequestChild() {
         
         //setup: initialize a request context
@@ -257,6 +324,53 @@ public class WebRequestTrackingTelemetryModuleTests {
         Assert.assertEquals(2, exceptionTelemetry.getProperties().size());
         Assert.assertEquals("value1", exceptionTelemetry.getProperties().get("key1"));
         Assert.assertEquals("value2", exceptionTelemetry.getProperties().get("key2"));
+    }
+
+    @Test
+    public void testTelemetryCreatedWithinRequestScopeIsRequestChildWhenW3CEnabled() {
+
+        //turn on W3C
+        defaultModule.isW3CEnabled = true;
+
+        //setup: initialize a request context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Map<String, String> headers = new HashMap<>();
+
+        Traceparent tp = new Traceparent();
+
+        headers.put(TraceContextCorrelation.TRACEPARENT_HEADER_NAME, tp.toString());
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, TraceContextCorrelationTests.getTracestateHeaderValue("id1"));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, response);
+
+        //additional telemetry is manually tracked
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.trackException(new Exception());
+
+        List<ExceptionTelemetry> items = channel.getTelemetryItems(ExceptionTelemetry.class);
+        Assert.assertEquals(1, items.size());
+        ExceptionTelemetry exceptionTelemetry = items.get(0);
+
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+
+        //validate manually tracked telemetry is a child of the request telemetry
+        Assert.assertEquals(tp.getTraceId(), exceptionTelemetry.getContext().getOperation().getId());
+        Assert.assertEquals(requestTelemetry.getId(), exceptionTelemetry.getContext().getOperation().getParentId());
+
+        Assert.assertNotNull(ThreadContext.getRequestTelemetryContext().getTracestate());
+        Assert.assertEquals(TraceContextCorrelationTests.getTracestateHeaderValue("id2"),
+            ThreadContext.getRequestTelemetryContext().getTracestate().reserved);
+
     }
 
     @Test
@@ -417,6 +531,36 @@ public class WebRequestTrackingTelemetryModuleTests {
     }
 
     @Test
+    public void testOnEndDoesNotOverrideSourceFieldWhenW3CEnabled() {
+
+        // Enable W3C
+        defaultModule.isW3CEnabled = true;
+
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        requestTelemetry.setSource("myAppId");
+
+        //mock a servlet request with cross-component correlation headers
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, TraceContextCorrelationTests.getTracestateHeaderValue("id1"));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, response);
+        defaultModule.onEndRequest(request, null);
+
+        //validate source
+        Assert.assertEquals("myAppId", requestTelemetry.getSource());
+    }
+
+    @Test
     public void testInstrumentationKeyIsResolvedDuringModuleInit() {
         Assert.assertEquals(0, mockProfileFetcher.callCount());
         String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
@@ -547,6 +691,16 @@ public class WebRequestTrackingTelemetryModuleTests {
         }).when(request).getScheme();
 
         return request;
+    }
+
+    private static WebRequestTrackingTelemetryModule getCurrentWebRequestTrackingModule() {
+        List<TelemetryModule> modules = TelemetryConfiguration.getActive().getTelemetryModules();
+        for (TelemetryModule module : modules) {
+            if (module instanceof WebRequestTrackingTelemetryModule) {
+                return (WebRequestTrackingTelemetryModule) module;
+            }
+        }
+        return null;
     }
 
     // endregion Private methods
