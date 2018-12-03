@@ -235,16 +235,16 @@ public class TraceContextCorrelation {
                 outboundTracestate.append(",");
             }
         }
-        if (outboundTracestate.length() > 0) {
-            outboundTracestate.deleteCharAt(outboundTracestate.length()-1);
-        }
 
         if (sourceAppId != null && sourceAppId.length() > 0) {
-            if (outboundTracestate.length() > 0) {
-                outboundTracestate.append(",");
-            }
             outboundTracestate.append(AZURE_TRACEPARENT_COMPONENT_INITIAL).append("=").append(sourceAppId);
+        } else {
+            if (outboundTracestate.length() > 0) {
+                // removes the trailing ','
+                outboundTracestate.deleteCharAt(outboundTracestate.length()-1);
+            }
         }
+
         return new Tracestate(outboundTracestate.toString());
     }
 
