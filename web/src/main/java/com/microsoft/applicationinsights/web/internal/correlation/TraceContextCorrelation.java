@@ -96,19 +96,25 @@ public class TraceContextCorrelation {
 
             // Get Tracestate header
             String tracestate = request.getHeader(TRACESTATE_HEADER_NAME);
+            String appId = getAppId();
 
-            // populate outbound tracestate if we get incoming tracestate
-            if (tracestate != null) {
-                Tracestate tracestateObject = Tracestate.fromString(tracestate);
-                Map<String, String> tracestatePropertiesMap = getPropertiesMap(tracestateObject);
+            // appId might be null if the async fetch task is pending. In this case just skip.
+            if (appId != null && !appId.isEmpty()) {
+                Tracestate outboundTracestate = null;
+                // populate outbound tracestate if we get incoming tracestate
+                if (tracestate != null && !tracestate.isEmpty()) {
+                    Tracestate tracestateObject = Tracestate.fromString(tracestate);
+                    Map<String, String> tracestatePropertiesMap = getPropertiesMap(tracestateObject);
 
-                // TODO: This will throw if getAppId() returns an empty string due to async task (fetch profile) pending. What should be the alternative ?
-                // create outbound tracestate to be propagated to downstream calls
-                Tracestate outboundTracestate = createOutboundTracestate(tracestatePropertiesMap, getAppId());
+                    // create outbound tracestate to be propagated to downstream calls
+                    outboundTracestate = createOutboundTracestate(tracestatePropertiesMap, appId);
+
+                } else {
+                    // No inbound tracestate, create new and pass it.
+                    outboundTracestate = createOutboundTracestate(new HashMap<String, String>(), appId);
+                }
                 ThreadContext.getRequestTelemetryContext().setTracestate(outboundTracestate);
             }
-
-            // TODO: What happens when there is no tracestate? How do we pass AppId or we just keep source-null
 
             // Let the callee know the caller's AppId
             addTargetAppIdInResponseHeaderViaRequestContext(response);
