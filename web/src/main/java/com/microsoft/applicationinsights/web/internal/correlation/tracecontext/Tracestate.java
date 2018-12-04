@@ -17,16 +17,6 @@ import org.apache.http.annotation.Experimental;
  */
 public class Tracestate {
 
-    /**
-     * Internal representation of the tracestate
-     */
-    private LinkedHashMap<String, String> internalList = new LinkedHashMap<>(32);
-
-    /**
-     * String representation of the tracestate
-     */
-    private String internalString = null;
-
     private static String KEY_WITHOUT_VENDOR_FORMAT = "[a-z][_0-9a-z\\-\\*\\/]{0,255}";
     private static String KEY_WITH_VENDOR_FORMAT = "[a-z][_0-9a-z\\-\\*\\/]{0,240}@[a-z][_0-9a-z\\-\\*\\/]{0,13}";
     private static String KEY_FORMAT = KEY_WITHOUT_VENDOR_FORMAT + "|" + KEY_WITH_VENDOR_FORMAT;
@@ -40,6 +30,18 @@ public class Tracestate {
 
     private static Pattern DELIMITER_FORMAT_RE = Pattern.compile(DELIMITER_FORMAT);
     private static Pattern MEMBER_FORMAT_RE = Pattern.compile("^" + MEMBER_FORMAT + "$");
+
+    private static final int MAX_KEY_VALUE_PAIRS = 32;
+
+    /**
+     * Internal representation of the tracestate
+     */
+    private LinkedHashMap<String, String> internalList = new LinkedHashMap<>(MAX_KEY_VALUE_PAIRS);
+
+    /**
+     * String representation of the tracestate
+     */
+    private String internalString = null;
 
     /**
      * Ctor that creates tracestate object from given value
@@ -62,8 +64,8 @@ public class Tracestate {
             }
             internalList.put(key, value);
         }
-        if (internalList.size() > 32) {
-            throw new IllegalArgumentException("cannot have more than 32 key-value pairs");
+        if (internalList.size() > MAX_KEY_VALUE_PAIRS) {
+            throw new IllegalArgumentException(String.format("cannot have more than %d key-value pairs", MAX_KEY_VALUE_PAIRS));
         }
         internalString = toInternalString();
     }
