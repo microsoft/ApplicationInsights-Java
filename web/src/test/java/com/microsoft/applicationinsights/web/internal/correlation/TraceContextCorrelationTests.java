@@ -116,7 +116,7 @@ public class TraceContextCorrelationTests {
 
         TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
 
-        Assert.assertEquals("id1", requestTelemetry.getSource());
+        Assert.assertEquals("cid-v1:id1", requestTelemetry.getSource());
 
     }
 
