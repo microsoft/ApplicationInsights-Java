@@ -152,8 +152,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
         assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
         assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
@@ -215,8 +215,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
         assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
         assertThat(mockConfiguration.getTelemetryInitializers(), empty());
         assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
@@ -247,8 +247,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
         assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
         assertThat(mockConfiguration.getTelemetryInitializers(), hasSize(1));
         assertThat(mockConfiguration.getTelemetryProcessors(), empty());
@@ -289,8 +289,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
         assertThat(mockConfiguration.getContextInitializers(), hasSize(4));
         assertThat(mockConfiguration.getTelemetryInitializers(), empty());
         assertThat(mockConfiguration.getTelemetryProcessors(), empty());
@@ -305,8 +305,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @Test
@@ -319,8 +319,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @Test
@@ -333,8 +333,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @Test
@@ -347,12 +347,12 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
         assertThat(mockConfiguration.getContextInitializers(), Matchers.<ContextInitializer>hasSize(3));
         assertThat(mockConfiguration.getTelemetryInitializers(), Matchers.<TelemetryInitializer>empty());
         assertThat(mockConfiguration.getTelemetryProcessors(), empty());
-        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
     }
 
     @Test
@@ -366,7 +366,7 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.getChannel().isDeveloperMode(), true);
+        assertTrue(mockConfiguration.getChannel().isDeveloperMode());
     }
 
     @Test
@@ -382,16 +382,16 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.getChannel().isDeveloperMode(), false);
+        assertFalse(mockConfiguration.getChannel().isDeveloperMode());
     }
 
     @Test
     public void testEmptyConfiguration() {
         TelemetryConfiguration emptyConfig = TelemetryConfiguration.getActiveWithoutInitializingConfig();
-        Assert.assertEquals(null, emptyConfig.getInstrumentationKey());
+        Assert.assertNull(emptyConfig.getInstrumentationKey());
         Assert.assertSame(NopTelemetryChannel.instance(), emptyConfig.getChannel());
         Assert.assertEquals(0, emptyConfig.getTelemetryModules().size());
-        Assert.assertEquals(false, emptyConfig.isTrackingDisabled());
+        Assert.assertFalse(emptyConfig.isTrackingDisabled());
         Assert.assertEquals(0, emptyConfig.getContextInitializers().size());
         Assert.assertEquals(0, emptyConfig.getTelemetryProcessors().size());
     }
@@ -476,8 +476,8 @@ public final class TelemetryConfigurationFactoryTest {
         try {
             List<TelemetryModule> mods = doPerfModuleTest("true", 2);
 
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(HeartBeatModule.class)));
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(MockPerformanceModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(HeartBeatModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(MockPerformanceModule.class)));
             MockPerformanceModule theModule = Iterables.getOnlyElement(Iterables.filter(mods, MockPerformanceModule.class));
             assertTrue(theModule.initializeWasCalled);
             assertTrue(theModule.addConfigurationDataWasCalled);
@@ -492,9 +492,9 @@ public final class TelemetryConfigurationFactoryTest {
         final String prevPropValue = System.getProperty(TelemetryConfigurationFactory.PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY);
         try {
             List<TelemetryModule> mods = doPerfModuleTest("false", 3);
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(HeartBeatModule.class)));
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(JvmPerformanceCountersModule.class)));
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(ProcessPerformanceCountersModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(HeartBeatModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(JvmPerformanceCountersModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(ProcessPerformanceCountersModule.class)));
         } finally {
             restoreProperties(prevPropValue);
         }

@@ -84,9 +84,9 @@ public class WebSyntheticRequestTelemetryInitializerTest {
         TraceTelemetry telemetry = new TraceTelemetry();
         tested.initialize(telemetry);
 
-        assertEquals(telemetry.getContext().getOperation().getSyntheticSource(), WebSyntheticRequestTelemetryInitializer.SYNTHETIC_SOURCE_NAME);
-        assertEquals(telemetry.getContext().getSession().getId(), "A1");
-        assertEquals(telemetry.getContext().getUser().getId(), "A2");
+        assertEquals(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_SOURCE_NAME, telemetry.getContext().getOperation().getSyntheticSource());
+        assertEquals("A1", telemetry.getContext().getSession().getId());
+        assertEquals("A2", telemetry.getContext().getUser().getId());
     }
 
     @Test
@@ -109,12 +109,12 @@ public class WebSyntheticRequestTelemetryInitializerTest {
         TraceTelemetry telemetry = new TraceTelemetry();
         tested.initialize(telemetry);
 
-        assertEquals(telemetry.getContext().getOperation().getSyntheticSource(), "A");
-        assertEquals(telemetry.getContext().getUser().getId(), "A1");
-        assertEquals(telemetry.getContext().getSession().getId(), "A2");
-        assertEquals(telemetry.getContext().getOperation().getId(), "A3");
-        assertEquals(telemetry.getContext().getProperties().get(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_TEST_NAME), "A4");
-        assertEquals(telemetry.getContext().getProperties().get(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_RUN_ID), "A5");
-        assertEquals(telemetry.getContext().getProperties().get(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_LOCATION), "A6");
+        assertEquals("A", telemetry.getContext().getOperation().getSyntheticSource());
+        assertEquals("A1", telemetry.getContext().getUser().getId());
+        assertEquals("A2", telemetry.getContext().getSession().getId());
+        assertEquals("A3", telemetry.getContext().getOperation().getId());
+        assertEquals("A4", telemetry.getContext().getProperties().get(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_TEST_NAME));
+        assertEquals("A5", telemetry.getContext().getProperties().get(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_RUN_ID));
+        assertEquals("A6", telemetry.getContext().getProperties().get(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_LOCATION));
     }
 }

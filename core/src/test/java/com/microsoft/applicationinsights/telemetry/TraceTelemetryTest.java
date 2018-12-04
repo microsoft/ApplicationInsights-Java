@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public final class TraceTelemetryTest {
     @Test
@@ -38,7 +39,7 @@ public final class TraceTelemetryTest {
     public void testCtor() {
         TraceTelemetry telemetry = new TraceTelemetry("MockMessage");
 
-        assertEquals(telemetry.getMessage(), "MockMessage");
+        assertEquals("MockMessage", telemetry.getMessage());
     }
 
     @Test
@@ -46,7 +47,7 @@ public final class TraceTelemetryTest {
         TraceTelemetry telemetry = new TraceTelemetry("MockMessage");
 
         telemetry.setMessage("MockMessage1");
-        assertEquals(telemetry.getMessage(), "MockMessage1");
+        assertEquals("MockMessage1", telemetry.getMessage());
     }
 
     @Test
@@ -62,7 +63,7 @@ public final class TraceTelemetryTest {
     @Test
     public void testFirstValueIsNull() {
         TraceTelemetry telemetry = new TraceTelemetry("Mock");
-        assertEquals(telemetry.getSeverityLevel(), null);
+        assertNull(telemetry.getSeverityLevel());
     }
 
     private static void testSeverityLevel(SeverityLevel severityLevel) {

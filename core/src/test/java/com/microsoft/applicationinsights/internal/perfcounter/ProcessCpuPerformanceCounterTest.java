@@ -43,14 +43,14 @@ public final class ProcessCpuPerformanceCounterTest {
 
             PerformanceCounterTelemetry pct = (PerformanceCounterTelemetry)telemetry;
             assertTrue(pct.getCategoryName().startsWith("Process("));
-            assertEquals(pct.getCounterName(), Constants.PROCESS_MEM_PC_COUNTER_NAME);
-            assertEquals(pct.getInstanceName(), "");
+            assertEquals(Constants.PROCESS_MEM_PC_COUNTER_NAME, pct.getCounterName());
+            assertEquals("", pct.getInstanceName());
         }
     }
 
     @Test
     public void testGetId() {
         ProcessCpuPerformanceCounter pc = new ProcessCpuPerformanceCounter();
-        assertEquals(pc.getId(), Constants.PROCESS_CPU_PC_ID);
+        assertEquals(Constants.PROCESS_CPU_PC_ID, pc.getId());
     }
 }

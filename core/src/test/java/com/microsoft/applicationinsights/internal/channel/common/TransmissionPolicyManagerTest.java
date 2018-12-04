@@ -30,14 +30,14 @@ public final class TransmissionPolicyManagerTest {
     public void testAfterCtor() {
         TransmissionPolicyManager tested = new TransmissionPolicyManager(true);
         assertNotNull(tested.getTransmissionPolicyState());
-        assertEquals(tested.getTransmissionPolicyState().getCurrentState(), TransmissionPolicy.UNBLOCKED);
+        assertEquals(TransmissionPolicy.UNBLOCKED, tested.getTransmissionPolicyState().getCurrentState());
     }
 
     @Test
     public void testSuspendInSecondsWithUnBlock() {
         TransmissionPolicyManager tested = new TransmissionPolicyManager(true);
         tested.suspendInSeconds(TransmissionPolicy.UNBLOCKED, 10);
-        assertEquals(tested.getTransmissionPolicyState().getCurrentState(), TransmissionPolicy.UNBLOCKED);
+        assertEquals(TransmissionPolicy.UNBLOCKED, tested.getTransmissionPolicyState().getCurrentState());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -53,9 +53,9 @@ public final class TransmissionPolicyManagerTest {
         tested.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, 1);
 
         Thread.sleep(1500);
-        assertEquals(tested.getTransmissionPolicyState().getCurrentState(), TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
+        assertEquals(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, tested.getTransmissionPolicyState().getCurrentState());
         Thread.sleep(1000);
-        assertEquals(tested.getTransmissionPolicyState().getCurrentState(), TransmissionPolicy.UNBLOCKED);
+        assertEquals(TransmissionPolicy.UNBLOCKED, tested.getTransmissionPolicyState().getCurrentState());
     }
 
     @Test
@@ -65,8 +65,8 @@ public final class TransmissionPolicyManagerTest {
         tested.suspendInSeconds(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, 2);
 
         Thread.sleep(1500);
-        assertEquals(tested.getTransmissionPolicyState().getCurrentState(), TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
+        assertEquals(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, tested.getTransmissionPolicyState().getCurrentState());
         Thread.sleep(1000);
-        assertEquals(tested.getTransmissionPolicyState().getCurrentState(), TransmissionPolicy.UNBLOCKED);
+        assertEquals(TransmissionPolicy.UNBLOCKED, tested.getTransmissionPolicyState().getCurrentState());
     }
 }

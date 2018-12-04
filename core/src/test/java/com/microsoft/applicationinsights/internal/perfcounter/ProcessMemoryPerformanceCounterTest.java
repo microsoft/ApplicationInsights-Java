@@ -37,13 +37,13 @@ public final class ProcessMemoryPerformanceCounterTest {
             }
 
             PerformanceCounterTelemetry pct = (PerformanceCounterTelemetry)telemetry;
-            assertEquals(pct.getCounterName(), Constants.PROCESS_MEM_PC_COUNTER_NAME);
+            assertEquals(Constants.PROCESS_MEM_PC_COUNTER_NAME, pct.getCounterName());
         }
     }
 
     @Test
     public void testGetId() {
         ProcessMemoryPerformanceCounter pc = new ProcessMemoryPerformanceCounter();
-        assertEquals(pc.getId(), Constants.PROCESS_MEM_PC_ID);
+        assertEquals(Constants.PROCESS_MEM_PC_ID, pc.getId());
     }
 }

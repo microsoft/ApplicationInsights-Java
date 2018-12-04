@@ -18,7 +18,7 @@ public class MapUtilTest {
         source.put("key2", null);
 
         MapUtil.copy(source, target);
-        Assert.assertEquals(target.size(), 2 /* expected size */);
+        Assert.assertEquals(2, target.size());
     }
 
     @Test
@@ -30,6 +30,6 @@ public class MapUtilTest {
         source.put("key2", null);
 
         MapUtil.copy(source, target);
-        Assert.assertEquals(target.size(), 1 /* expected size */);
+        Assert.assertEquals(1, target.size());
     }
 }

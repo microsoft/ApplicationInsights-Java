@@ -30,12 +30,12 @@ public final class StaticBackOffTimesContainerTest {
     public void testBackOffs() {
         long[] backOffs = new StaticBackOffTimesPolicy().getBackOffTimeoutsInMillis();
         assertNotNull(backOffs);
-        assertEquals(backOffs.length, StaticBackOffTimesPolicy.NUMBER_OF_BACK_OFFS);
+        assertEquals(StaticBackOffTimesPolicy.NUMBER_OF_BACK_OFFS, backOffs.length);
         int couples = StaticBackOffTimesPolicy.NUMBER_OF_BACK_OFFS;
         long oddValue = -1;
         for (int i = 0; i < couples; ++i) {
             if (i % 2 == 0) {
-                assertEquals(backOffs[i], BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS);
+                assertEquals(BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS, backOffs[i]);
             } else {
                 if (i == 1) {
                     oddValue = backOffs[i];

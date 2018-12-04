@@ -52,7 +52,7 @@ public class HeartbeatTests {
     Thread.sleep(100);
     Assert.assertTrue(module.getExcludedHeartBeatProperties() == null ||
     module.getExcludedHeartBeatProperties().size() == 0);
-    Assert.assertEquals(module.getHeartBeatInterval(), HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL);
+    Assert.assertEquals(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
   }
 
   @Test

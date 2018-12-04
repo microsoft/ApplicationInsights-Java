@@ -29,15 +29,15 @@ public final class TransmissionPolicyStateTest {
     @Test
     public void testStateAfterCtor() {
         TransmissionPolicyState tested = new TransmissionPolicyState();
-        assertEquals(tested.getCurrentState(), TransmissionPolicy.UNBLOCKED);
+        assertEquals(TransmissionPolicy.UNBLOCKED, tested.getCurrentState());
     }
 
     @Test
     public void testSetCurrentState() {
         TransmissionPolicyState tested = new TransmissionPolicyState();
         tested.setCurrentState(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
-        assertEquals(tested.getCurrentState(), TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED);
+        assertEquals(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, tested.getCurrentState());
         tested.setCurrentState(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
-        assertEquals(tested.getCurrentState(), TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED);
+        assertEquals(TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED, tested.getCurrentState());
     }
 }

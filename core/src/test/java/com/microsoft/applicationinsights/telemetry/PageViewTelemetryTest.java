@@ -39,18 +39,18 @@ public class PageViewTelemetryTest {
         assertNull(telemetry.getUri());
         assertTrue(telemetry.getMetrics().isEmpty());
         assertTrue(telemetry.getProperties().isEmpty());
-        assertEquals(telemetry.getDuration(), 0);
+        assertEquals(0, telemetry.getDuration());
     }
 
     @Test
     public void testCtor() {
         PageViewTelemetry telemetry = new PageViewTelemetry("MockName");
 
-        assertEquals(telemetry.getName(), "MockName");
+        assertEquals("MockName", telemetry.getName());
         assertNull(telemetry.getUri());
         assertTrue(telemetry.getMetrics().isEmpty());
         assertTrue(telemetry.getProperties().isEmpty());
-        assertEquals(telemetry.getDuration(), 0);
+        assertEquals(0, telemetry.getDuration());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class PageViewTelemetryTest {
         PageViewTelemetry telemetry = new PageViewTelemetry("MockName");
 
         telemetry.setName("MockName1");
-        assertEquals(telemetry.getName(), "MockName1");
+        assertEquals("MockName1", telemetry.getName());
     }
 
     @Test
@@ -66,7 +66,7 @@ public class PageViewTelemetryTest {
         PageViewTelemetry telemetry = new PageViewTelemetry("MockName");
 
         telemetry.setDuration(2001);
-        assertEquals(telemetry.getDuration(), 2001);
+        assertEquals(2001, telemetry.getDuration());
     }
 
     @Test

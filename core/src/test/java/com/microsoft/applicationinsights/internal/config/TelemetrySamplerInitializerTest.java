@@ -47,7 +47,7 @@ public class TelemetrySamplerInitializerTest {
 
         assertNotNull(sampler);
         assertTrue(sampler instanceof FixedRateTelemetrySampler);
-        assertEquals(sampler.getSamplingPercentage(), 99.9, 0.0);
+        assertEquals(99.9, sampler.getSamplingPercentage(), Math.ulp(99.9));
     }
 
     @Test
@@ -64,6 +64,6 @@ public class TelemetrySamplerInitializerTest {
 
         assertNotNull(sampler);
         assertTrue(sampler instanceof AdaptiveTelemetrySampler);
-        assertEquals(sampler.getSamplingPercentage(), 99.9, 0.0);
+        assertEquals(99.9, sampler.getSamplingPercentage(), Math.ulp(99.9));
     }
 }
