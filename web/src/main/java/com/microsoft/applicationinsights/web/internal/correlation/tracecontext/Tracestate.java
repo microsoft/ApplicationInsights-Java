@@ -20,7 +20,7 @@ public class Tracestate {
     /**
      * Internal representation of the tracestate
      */
-    private LinkedHashMap<String, String> internalList = new LinkedHashMap<String, String>(32);
+    private LinkedHashMap<String, String> internalList = new LinkedHashMap<>(32);
 
     /**
      * String representation of the tracestate
