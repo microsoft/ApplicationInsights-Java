@@ -35,6 +35,7 @@ public class AgentBuiltInConfigurationBuilder {
     private boolean hibernateEnabled = false;
     private boolean jedisEnabled = false;
     private boolean jmxEnabled = false;
+    private boolean w3cEnabled = false;
     private long jedisThresholdInMS = 10000L;
     private Long maxSqlQueryLimitInMS = 10000L;
     private DataOfConfigurationForException dataOfConfigurationForException = new DataOfConfigurationForException();
@@ -48,6 +49,7 @@ public class AgentBuiltInConfigurationBuilder {
         return new AgentBuiltInConfiguration(enabled,
                                              simpleBuiltInClasses,
                                              httpEnabled && enabled,
+                                             w3cEnabled,
                                              jdbcEnabled && enabled,
                                              hibernateEnabled && enabled,
                                              jedisEnabled && enabled,
@@ -62,8 +64,9 @@ public class AgentBuiltInConfigurationBuilder {
         return this;
     }
 
-    public AgentBuiltInConfigurationBuilder setHttpEnabled(boolean httpEnabled) {
+    public AgentBuiltInConfigurationBuilder setHttpEnabled(boolean httpEnabled, boolean w3cEnabled) {
         this.httpEnabled = httpEnabled;
+        this.w3cEnabled = w3cEnabled;
         return this;
     }
 

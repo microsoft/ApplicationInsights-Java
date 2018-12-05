@@ -59,7 +59,9 @@ class ApplicationInsightsWebModuleConfiguration {
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
     WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
-        return new WebRequestTrackingTelemetryModule();
+        WebRequestTrackingTelemetryModule w = new WebRequestTrackingTelemetryModule();
+        w.isW3CEnabled = true;
+        return w;
     }
 
   /**

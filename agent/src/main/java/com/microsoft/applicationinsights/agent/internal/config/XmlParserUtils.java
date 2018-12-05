@@ -59,6 +59,17 @@ final class XmlParserUtils {
         return getEnabled(element, attributeName, true);
     }
 
+    /**
+     * Method to get the attribute value for W3C
+     * @param element
+     * @param attributeName
+     * @return boolean
+     */
+    static boolean w3cEnabled(Element element, String attributeName) {
+        assert attributeName.equals("W3C");
+        return getEnabled(element, attributeName, false);
+    }
+
     public static boolean getEnabled(Element element, String elementName, boolean defaultValue) {
         if (element == null) {
             return true;

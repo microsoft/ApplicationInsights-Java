@@ -31,6 +31,7 @@ import java.util.List;
 public class AgentBuiltInConfiguration {
     private final boolean enabled;
     private final boolean httpEnabled;
+    private final boolean w3cEnabled;
     private final boolean jdbcEnabled;
     private final boolean hibernateEnabled;
     private final boolean jedisEnabled;
@@ -43,6 +44,7 @@ public class AgentBuiltInConfiguration {
     public AgentBuiltInConfiguration(boolean enabled,
                                      List<ClassInstrumentationData> simpleBuiltInClasses,
                                      boolean httpEnabled,
+                                     boolean w3cEnabled,
                                      boolean jdbcEnabled,
                                      boolean hibernateEnabled,
                                      boolean jedisEnabled,
@@ -53,6 +55,7 @@ public class AgentBuiltInConfiguration {
         this.simpleBuiltInClasses = simpleBuiltInClasses;
         this.enabled = enabled;
         this.httpEnabled = httpEnabled;
+        this.w3cEnabled = w3cEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.hibernateEnabled = hibernateEnabled;
         this.jmxEnabled = jmxEnabled;
@@ -95,6 +98,10 @@ public class AgentBuiltInConfiguration {
 
     public boolean isJmxEnabled() {
         return jmxEnabled;
+    }
+
+    public boolean isW3cEnabled() {
+        return w3cEnabled;
     }
 
     public DataOfConfigurationForException getDataOfConfigurationForException() {

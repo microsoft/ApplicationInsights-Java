@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
@@ -254,6 +255,42 @@ public class TraceContextCorrelation {
         return new Tracestate(outboundTracestate.toString());
     }
 
+    /**
+     * Generates the target appId
+     * @param requestContext
+     * @return
+     */
+    public static String generateChildDependencyTarget(String requestContext) {
+        if (requestContext == null || requestContext.isEmpty()) {
+            InternalLogger.INSTANCE.trace("generateChildDependencyTarget: won't continue as requestContext is null or empty.");
+            return "";
+        }
+
+        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
+        if (instrumentationKey == null || instrumentationKey.isEmpty()) {
+            InternalLogger.INSTANCE.error("Failed to generate target correlation. InstrumentationKey is null or empty.");
+            return "";
+        }
+
+        // In W3C we only pass requestContext for the response. So it's expected to have only single key-value pair
+        String[] keyValue = requestContext.split("=");
+        assert keyValue.length == 2;
+
+        String headerAppID = null;
+        if (keyValue[0].equals(REQUEST_CONTEXT_HEADER_APPID_KEY)) {
+            headerAppID = keyValue[1];
+        }
+
+        String currAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(TelemetryConfiguration.getActive()
+        .getInstrumentationKey());
+
+        String target = resolve(headerAppID, currAppId);
+        if (target == null) {
+            InternalLogger.INSTANCE.warn("Target value is null and hence returning empty string");
+            return ""; // we want an empty string instead of null so it plays nicer with bytecode injection
+        }
+        return target;
+    }
 
     /**
      * Extracts the appId/roleName out of Tracestate and compares it with the current appId. It then
@@ -268,17 +305,28 @@ public class TraceContextCorrelation {
 
         String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
 
+        return resolve(appId, myAppId);
+    }
+
+    /**
+     * Resolves appId based on appId passed in header and current appId
+     * @param headerAppId
+     * @param currentAppId
+     * @return
+     */
+    private static String resolve(String headerAppId, String currentAppId) {
+
         //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
         //return and let the next request resolve the ikey.
-        if (myAppId == null) {
+        if (currentAppId == null) {
             InternalLogger.INSTANCE.trace("Could not generate source/target correlation as the appId could not be resolved (e.g. task may be pending or failed)");
             return null;
         }
 
         // if the current appId and the incoming appId are send null
         String result = null;
-        if (appId != null && !appId.equals(myAppId)) {
-            result = appId;
+        if (headerAppId != null && !headerAppId.equals(currentAppId)) {
+            result = headerAppId;
         }
 
         return result;
@@ -304,12 +352,40 @@ public class TraceContextCorrelation {
 
     public static String retriveTracestate() {
         //check if context is null - no correlation will happen
-        if (ThreadContext.getRequestTelemetryContext() == null) {
+        if (ThreadContext.getRequestTelemetryContext() == null || ThreadContext.getRequestTelemetryContext().
+                getTracestate() == null) {
             InternalLogger.INSTANCE.warn("No correlation wil happen, Thread context is null");
-            return "";
+            return null;
         }
 
         Tracestate tracestate = ThreadContext.getRequestTelemetryContext().getTracestate();
         return tracestate.toString();
+    }
+
+    public static String generateChildDependencyTraceparent() {
+        try {
+
+            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+
+            //check if context is null - no correlation will happen
+            if (context == null) {
+                InternalLogger.INSTANCE.warn("No Correlation will happen, Thread context is null while generating child dependency");
+                return "";
+            }
+
+            RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
+
+            Traceparent tp = new Traceparent(0, requestTelemetry.getContext().getOperation().getId()
+                , null, 0);
+
+            // We need to propagate full blown traceparent header.
+            return tp.toString();
+        }
+        catch (Exception ex) {
+            InternalLogger.INSTANCE.error("Failed to generate child ID. Exception information: %s", ex.toString());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
+        }
+
+        return null;
     }
 }
