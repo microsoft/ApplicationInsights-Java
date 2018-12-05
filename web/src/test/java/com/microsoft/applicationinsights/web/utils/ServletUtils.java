@@ -24,6 +24,10 @@ package com.microsoft.applicationinsights.web.utils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.servlet.Filter;
@@ -96,6 +100,14 @@ public class ServletUtils {
         for (String headerName : headers.keySet()) {
             when(request.getHeader(headerName)).thenReturn(headers.get(headerName));
         }
+
+        // specifically for W3C
+
+        when(request.getHeaders(TraceContextCorrelation.TRACESTATE_HEADER_NAME)).
+            thenReturn(Collections.enumeration(Arrays.asList(headers.get(TraceContextCorrelation.TRACESTATE_HEADER_NAME))));
+
+        when(request.getHeaders(TraceContextCorrelation.TRACEPARENT_HEADER_NAME)).
+            thenReturn(Collections.enumeration(Arrays.asList(headers.get(TraceContextCorrelation.TRACEPARENT_HEADER_NAME))));
 
         when(request.getRequestURI()).thenReturn("/controller/action.action");
         when(request.getMethod()).thenReturn("POST");

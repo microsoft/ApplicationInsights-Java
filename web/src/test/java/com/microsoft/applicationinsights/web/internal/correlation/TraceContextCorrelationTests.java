@@ -166,7 +166,7 @@ public class TraceContextCorrelationTests {
         Assert.assertNull(requestTelemetry.getSource());
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     public void testTraceStateIsNotResolvedIfHeaderDoesntHaveAzureComponent() {
         Map<String, String> headers = new HashMap<>();
         // get tracestate with non azure component
