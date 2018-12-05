@@ -8,7 +8,7 @@ import org.apache.http.annotation.Experimental;
 /**
  * This class represents the Traceparent data structure based on
  *
- * @author Reily Yang
+ * @author Reiley Yang
  * @author Dhaval Doshi
  * @link https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md
  */
@@ -156,7 +156,7 @@ public class Traceparent {
     }
 
     /**
-     * converts traceparent from String to Traceparent object
+     * Converts traceparent from String to Traceparent object
      *
      * @return Traceparent
      */
@@ -165,10 +165,13 @@ public class Traceparent {
             return null;
         }
         String[] arr = s.split("-");
-        if (arr.length != 4) {
+        if (arr.length < 4) {
             return null;
         }
         if (!isHex(arr[0], 2)) {
+            return null;
+        }
+        if (arr[0].equals("00") && arr.length > 4) {
             return null;
         }
         if (!isHex(arr[3], 2)) {
