@@ -369,7 +369,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         Assert.assertNotNull(ThreadContext.getRequestTelemetryContext().getTracestate());
         Assert.assertEquals(TraceContextCorrelationTests.getTracestateHeaderValue("id2"),
-            ThreadContext.getRequestTelemetryContext().getTracestate().reserved);
+            ThreadContext.getRequestTelemetryContext().getTracestate().toString());
 
     }
 
@@ -401,11 +401,11 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         Assert.assertNotNull(ThreadContext.getRequestTelemetryContext().getTracestate());
         Assert.assertEquals(TraceContextCorrelationTests.getTracestateHeaderValue("id2"),
-            ThreadContext.getRequestTelemetryContext().getTracestate().reserved);
+            ThreadContext.getRequestTelemetryContext().getTracestate().toString());
     }
 
     @Test
-    public void testNewTracestateIsCreatedWhenHeadeIsNotPresent() {
+    public void testNewTracestateIsCreatedWhenHeaderIsNotPresent() {
         //turn on W3C
         defaultModule.isW3CEnabled = true;
 
@@ -431,7 +431,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         Assert.assertNotNull(ThreadContext.getRequestTelemetryContext().getTracestate());
         Assert.assertEquals(TraceContextCorrelationTests.getTracestateHeaderValue("id2"),
-            ThreadContext.getRequestTelemetryContext().getTracestate().reserved);
+            ThreadContext.getRequestTelemetryContext().getTracestate().toString());
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.google.common.base.Joiner;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -7,7 +8,10 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,12 +64,15 @@ public class TraceContextCorrelation {
                 return;
             }
 
+            // According to W3C spec there can be more than 1 traceparents in incoming request
+            Enumeration<String> traceparents = request.getHeaders(TRACEPARENT_HEADER_NAME);
+            List<String> traceparentList = getEnumerationAsCollection(traceparents);
 
-            String traceparent = request.getHeader(TRACEPARENT_HEADER_NAME);
-
+            Traceparent incomingTraceparent = null;
             Traceparent outGoingTraceParent = null;
 
-            if (traceparent == null || traceparent.isEmpty()) {
+            // If no incoming traceparent or multiple traceparent create a  new one.
+            if (traceparentList.size() != 1) {
                 outGoingTraceParent = new Traceparent();
 
                 // represents the id of the current request.
@@ -77,45 +84,89 @@ public class TraceContextCorrelation {
                 // set parentId as null because this is the is the originating request
                 requestTelemetry.getContext().getOperation().setParentId(null);
             } else {
-                Traceparent incomingTraceparent = Traceparent.fromString(traceparent);
 
-                // create outgoing traceParent using the incoming header
-                outGoingTraceParent = new Traceparent(0, incomingTraceparent.getTraceId(),
-                    null, incomingTraceparent.getTraceFlags());
+                try {
+                    incomingTraceparent = Traceparent.fromString(traceparentList.get(0));
+                    // create outgoing traceParent using the incoming header
+                    outGoingTraceParent = new Traceparent(0, incomingTraceparent.getTraceId(),
+                        null, incomingTraceparent.getTraceFlags());
 
-                // set id of this request
-                requestTelemetry.setId(outGoingTraceParent.getTraceId() + "-" + outGoingTraceParent.getSpanId());
+                } catch (IllegalArgumentException e) {
+                    InternalLogger.INSTANCE.error(String.format("Received invalid traceparent header with exception %s, "
+                        + "distributed trace might be broken", ExceptionUtils.getStackTrace(e)));
+                } finally {
+                    if (incomingTraceparent == null) {
 
-                // represents the trace-id of this distributed trace
-                requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
+                        // Invalid incoming traceparent. Create a new outgoing traceparent
+                        outGoingTraceParent = new Traceparent();
+                    }
+                    // set id of this request
+                    requestTelemetry.setId(outGoingTraceParent.getTraceId() + "-" + outGoingTraceParent.getSpanId());
 
-                // represents the parent-id of this request which is combination of traceparent and incoming spanId
-                requestTelemetry.getContext().getOperation().setParentId(outGoingTraceParent.getTraceId() + "-" +
-                    incomingTraceparent.getSpanId());
+                    // represents the trace-id of this distributed trace
+                    requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
+
+                    if (incomingTraceparent != null) {
+                        // represents the parent-id of this request which is combination of traceparent and incoming spanId
+                        requestTelemetry.getContext().getOperation().setParentId(outGoingTraceParent.getTraceId() + "-" +
+                            incomingTraceparent.getSpanId());
+                    } else {
+                        requestTelemetry.getContext().getOperation().setParentId(null);
+                    }
+
+                }
 
             }
 
             // Get Tracestate header
-            String tracestate = request.getHeader(TRACESTATE_HEADER_NAME);
+            Enumeration<String> tracestates = request.getHeaders(TRACESTATE_HEADER_NAME);
+            List<String> tracestateList = getEnumerationAsCollection(tracestates);
+
             String appId = getAppId();
 
-            // appId might be null if the async fetch task is pending. In this case just skip.
-            if (appId != null && !appId.isEmpty()) {
-                Tracestate outboundTracestate = null;
-                // populate outbound tracestate if we get incoming tracestate
-                if (tracestate != null && !tracestate.isEmpty()) {
-                    Tracestate tracestateObject = Tracestate.fromString(tracestate);
-                    Map<String, String> tracestatePropertiesMap = getPropertiesMap(tracestateObject);
+            Tracestate outboundTracestate = null;
 
-                    // create outbound tracestate to be propagated to downstream calls
-                    outboundTracestate = createOutboundTracestate(tracestatePropertiesMap, appId);
+            if (incomingTraceparent != null) {
+                // appId might be null if the async fetch task is pending. In this case just skip.
+                if (appId != null && !appId.isEmpty()) {
 
-                } else {
-                    // No inbound tracestate, create new and pass it.
-                    outboundTracestate = createOutboundTracestate(new HashMap<String, String>(), appId);
+                    // populate outbound tracestate if we get incoming tracestate
+                    if (tracestateList.size() > 0) {
+
+                        try {
+                            Tracestate parentTracestate = Tracestate.fromString(
+                                Joiner.on(",").join(tracestateList));
+
+                            outboundTracestate = new Tracestate(parentTracestate, AZURE_TRACEPARENT_COMPONENT_INITIAL,
+                                appId);
+
+                        } catch (Exception e) {
+                            InternalLogger.INSTANCE.error(String.format("Unable to parse tracestate %s, it will be dropped",
+                                ExceptionUtils.getStackTrace(e)));
+                        } finally {
+                            if (outboundTracestate == null) {
+                                // Failed to parse incoming tracestate. Drop it, and create new.
+                                outboundTracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL,
+                                    appId);
+                            }
+                        }
+
+                    } else {
+                        // No inbound tracestate, create new and pass it.
+                        //outboundTracestate = createOutboundTracestate(new HashMap<String, String>(), appId);
+                        outboundTracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL,
+                            appId);
+                    }
                 }
-                ThreadContext.getRequestTelemetryContext().setTracestate(outboundTracestate);
+            } else {
+
+                // No incoming traceparent. Ignore tracestate and pass a brand new.
+                outboundTracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL,
+                    appId);
             }
+
+            ThreadContext.getRequestTelemetryContext().setTracestate(outboundTracestate);
+
 
             // Let the callee know the caller's AppId
             addTargetAppIdInResponseHeaderViaRequestContext(response);
@@ -124,6 +175,20 @@ public class TraceContextCorrelation {
             InternalLogger.INSTANCE.error("unable to perform correlation :%s", ExceptionUtils.
                 getStackTrace(e));
         }
+    }
+
+    /**
+     * Returns collection from Enumeration
+     * @param e
+     * @return
+     */
+    private static List<String> getEnumerationAsCollection(Enumeration<String> e) {
+
+        List<String> list = new ArrayList<>();
+        while (e.hasMoreElements()) {
+            list.add(e.nextElement());
+        }
+        return list;
     }
 
     /**
@@ -210,10 +275,10 @@ public class TraceContextCorrelation {
                 return;
             }
 
-            Tracestate tracestateObject = Tracestate.fromString(tracestate);
-            Map<String, String> tracestatePropertiesMap = getPropertiesMap(tracestateObject);
+            Tracestate incomingTracestate = Tracestate.fromString(tracestate);
 
-            String source = generateSourceTargetCorrelation(instrumentationKey, tracestatePropertiesMap);
+            String source = generateSourceTargetCorrelation(instrumentationKey,
+                incomingTracestate.get(AZURE_TRACEPARENT_COMPONENT_INITIAL));
 
             // Set the source of this request telemetry which would be equal to AppId of the caller if
             // it's different from current AppId or else null.
@@ -296,12 +361,10 @@ public class TraceContextCorrelation {
      * Extracts the appId/roleName out of Tracestate and compares it with the current appId. It then
      * generates the appropriate source or target.
      */
-    private static String generateSourceTargetCorrelation(String instrumentationKey, Map<String, String> tracestatePropertiesMap) {
+    private static String generateSourceTargetCorrelation(String instrumentationKey, String appId) {
 
         assert instrumentationKey != null;
-        assert tracestatePropertiesMap != null;
-
-        String appId = tracestatePropertiesMap.get(AZURE_TRACEPARENT_COMPONENT_INITIAL);
+        assert appId != null;
 
         String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
 

@@ -19,6 +19,6 @@ public class TracestateTests {
     public void canCreateTraceStateWithString() {
         String tracestate = "az=cid-v1:120";
         Tracestate t1 = new Tracestate(tracestate);
-        Assert.assertEquals(tracestate, t1.reserved);
+        Assert.assertEquals(tracestate, t1.toString());
     }
 }
