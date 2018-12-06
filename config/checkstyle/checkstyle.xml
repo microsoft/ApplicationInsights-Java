@@ -196,7 +196,7 @@
         <module name="CustomImportOrder">
             <property name="sortImportsInGroupAlphabetically" value="true"/>
             <property name="separateLineBetweenGroups" value="true"/>
-            <property name="customImportOrderRules" value="STATIC###THIRD_PARTY_PACKAGE"/>
+            <property name="customImportOrderRules" value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###STATIC"/>
         </module>
         <module name="MethodParamPad"/>
         <module name="NoWhitespaceBefore">
@@ -232,6 +232,12 @@
             <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
             <property name="target"
                       value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
+        </module>
+        <module name="HiddenField" /><!-- warn when fields are being masked -->
+        <module name="MagicNumber" /><!-- don't use magic numbers -->
+        <module name="Header">
+            <property name="headerFile" value="java.header" /> <!-- this file will contain the copyright notice -->
+            <property name="fileExtensions" value="java" />
         </module>
         <module name="JavadocMethod">
             <property name="scope" value="public"/>
