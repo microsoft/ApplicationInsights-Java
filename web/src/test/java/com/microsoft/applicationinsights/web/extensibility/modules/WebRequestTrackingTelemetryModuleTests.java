@@ -435,7 +435,7 @@ public class WebRequestTrackingTelemetryModuleTests {
     }
 
     @Test
-    public void testTracestateIsNotSetWhenAppIdResolutionIsPending() {
+    public void testTracestateIsPassedAsItIsWhenAppIdResolutionIsPending() {
         //turn on W3C
         defaultModule.isW3CEnabled = true;
 
@@ -460,11 +460,13 @@ public class WebRequestTrackingTelemetryModuleTests {
         //run
         defaultModule.onBeginRequest(request, response);
 
-        Assert.assertNull(ThreadContext.getRequestTelemetryContext().getTracestate());
+        Assert.assertNotNull(ThreadContext.getRequestTelemetryContext().getTracestate());
+        Assert.assertEquals(TraceContextCorrelationTests.getTracestateHeaderValue("id1"),
+            ThreadContext.getRequestTelemetryContext().getTracestate().toString());
     }
 
     @Test
-    public void testTracestateIsNotSetWhenAppIdResolutionIsFailed() {
+    public void testTracestateIsPassedAsIsWhenAppIdResolutionIsFailed() {
         //turn on W3C
         defaultModule.isW3CEnabled = true;
 
@@ -489,7 +491,9 @@ public class WebRequestTrackingTelemetryModuleTests {
         //run
         defaultModule.onBeginRequest(request, response);
 
-        Assert.assertNull(ThreadContext.getRequestTelemetryContext().getTracestate());
+        Assert.assertNotNull(ThreadContext.getRequestTelemetryContext().getTracestate());
+        Assert.assertEquals(TraceContextCorrelationTests.getTracestateHeaderValue("id1"),
+            ThreadContext.getRequestTelemetryContext().getTracestate().toString());
     }
 
     @Test

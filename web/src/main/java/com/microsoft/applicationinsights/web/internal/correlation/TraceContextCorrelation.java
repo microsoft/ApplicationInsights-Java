@@ -10,9 +10,7 @@ import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.T
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -87,7 +85,9 @@ public class TraceContextCorrelation {
 
                 try {
                     incomingTraceparent = Traceparent.fromString(traceparentList.get(0));
+
                     // create outgoing traceParent using the incoming header
+                    // correct names
                     outGoingTraceParent = new Traceparent(0, incomingTraceparent.getTraceId(),
                         null, incomingTraceparent.getTraceFlags());
 
@@ -118,60 +118,58 @@ public class TraceContextCorrelation {
 
             }
 
-            // Get Tracestate header
-            Enumeration<String> tracestates = request.getHeaders(TRACESTATE_HEADER_NAME);
-            List<String> tracestateList = getEnumerationAsCollection(tracestates);
+            // Propagate trace-flags
+            ThreadContext.getRequestTelemetryContext().setTraceflag(outGoingTraceParent.getTraceFlags());
 
             String appId = getAppId();
 
-            Tracestate outboundTracestate = null;
+            // Get Tracestate header
+            Tracestate tracestate = null;
 
             if (incomingTraceparent != null) {
-                // appId might be null if the async fetch task is pending. In this case just skip.
-                if (appId != null && !appId.isEmpty()) {
-
-                    // populate outbound tracestate if we get incoming tracestate
-                    if (tracestateList.size() > 0) {
-
-                        try {
-                            Tracestate parentTracestate = Tracestate.fromString(
-                                Joiner.on(",").join(tracestateList));
-
-                            outboundTracestate = new Tracestate(parentTracestate, AZURE_TRACEPARENT_COMPONENT_INITIAL,
-                                appId);
-
-                        } catch (Exception e) {
-                            InternalLogger.INSTANCE.error(String.format("Unable to parse tracestate %s, it will be dropped",
-                                ExceptionUtils.getStackTrace(e)));
-                        } finally {
-                            if (outboundTracestate == null) {
-                                // Failed to parse incoming tracestate. Drop it, and create new.
-                                outboundTracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL,
-                                    appId);
-                            }
-                        }
-
-                    } else {
-                        // No inbound tracestate, create new and pass it.
-                        //outboundTracestate = createOutboundTracestate(new HashMap<String, String>(), appId);
-                        outboundTracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL,
+                Enumeration<String> tracestates = request.getHeaders(TRACESTATE_HEADER_NAME);
+                List<String> tracestateList = getEnumerationAsCollection(tracestates);
+                try {
+                    //create tracestate from incoming header
+                    tracestate = Tracestate.fromString(Joiner.on(",").join(tracestateList));
+                    // add appId to it if it's resolved
+                    if (appId != null && !appId.isEmpty()) {
+                        tracestate = new Tracestate(tracestate, AZURE_TRACEPARENT_COMPONENT_INITIAL,
                             appId);
+                    }
+
+                } catch (Exception e) {
+                    InternalLogger.INSTANCE.error(String.format("Cannot parse incoming tracestate %s",
+                        ExceptionUtils.getStackTrace(e)));
+                    try {
+                        // Pass new tracestate if received invalid tracestate
+                        if (appId != null && !appId.isEmpty()) {
+                            tracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL, appId);
+                        }
+                    } catch (Exception ex) {
+                        InternalLogger.INSTANCE.error(String.format("Cannot create default tracestate %s",
+                            ExceptionUtils.getStackTrace(ex)));
                     }
                 }
             } else {
-
-                // No incoming traceparent. Ignore tracestate and pass a brand new.
-                outboundTracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL,
-                    appId);
+                // pass new tracestate if incoming traceparent is empty
+                try {
+                    if (appId != null && !appId.isEmpty()) {
+                        tracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL, appId);
+                    }
+                } catch (Exception e) {
+                    InternalLogger.INSTANCE.error(String.format("cannot create default traceparent %s",
+                        ExceptionUtils.getStackTrace(e)));
+                }
             }
 
-            ThreadContext.getRequestTelemetryContext().setTracestate(outboundTracestate);
-
+            // add tracestate to threadlocal
+            ThreadContext.getRequestTelemetryContext().setTracestate(tracestate);
 
             // Let the callee know the caller's AppId
             addTargetAppIdInResponseHeaderViaRequestContext(response);
 
-        } catch (Exception e) {
+        } catch (java.lang.Exception e) {
             InternalLogger.INSTANCE.error("unable to perform correlation :%s", ExceptionUtils.
                 getStackTrace(e));
         }
@@ -291,37 +289,9 @@ public class TraceContextCorrelation {
         }
     }
 
-    /**
-     * Creates an outbound source state from Incoming Tracestate map by updating appId if present
-     * @param tracestatePropertiesMap
-     * @param sourceAppId
-     * @return
-     */
-    private static Tracestate createOutboundTracestate(Map<String, String> tracestatePropertiesMap, String sourceAppId) {
-        assert tracestatePropertiesMap != null;
-
-        StringBuffer outboundTracestate = new StringBuffer();
-        for (Map.Entry<String, String> entry : tracestatePropertiesMap.entrySet()) {
-            if (!entry.getKey().equals(AZURE_TRACEPARENT_COMPONENT_INITIAL)) {
-                outboundTracestate.append(entry);
-                outboundTracestate.append(",");
-            }
-        }
-
-        if (sourceAppId != null && sourceAppId.length() > 0) {
-            outboundTracestate.append(AZURE_TRACEPARENT_COMPONENT_INITIAL).append("=").append(sourceAppId);
-        } else {
-            if (outboundTracestate.length() > 0) {
-                // removes the trailing ','
-                outboundTracestate.deleteCharAt(outboundTracestate.length()-1);
-            }
-        }
-
-        return new Tracestate(outboundTracestate.toString());
-    }
 
     /**
-     * Generates the target appId
+     * Generates the target appId to add to Outbound call
      * @param requestContext
      * @return
      */
@@ -396,23 +366,9 @@ public class TraceContextCorrelation {
     }
 
     /**
-     * Parses the tracestate to generate a Map of vendor and their value property.
-     * @param tracestate
+     * Helper method to retrieve Tracestate from ThreadLocal
      * @return
      */
-    private static Map<String, String> getPropertiesMap(Tracestate tracestate) {
-
-        String tracestateAsString = tracestate.toString();
-        String[] vendorProperties = tracestateAsString.split(",");
-        Map<String, String> properties = new HashMap<>();
-
-        for (String s: vendorProperties) {
-            String[] keyval = s.split("=");
-            properties.put(keyval[0], keyval[1]);
-        }
-        return properties;
-    }
-
     public static String retriveTracestate() {
         //check if context is null - no correlation will happen
         if (ThreadContext.getRequestTelemetryContext() == null || ThreadContext.getRequestTelemetryContext().
@@ -425,6 +381,10 @@ public class TraceContextCorrelation {
         return tracestate.toString();
     }
 
+    /**
+     * Generates child TraceParent by retrieving values from ThreadLocal.
+     * @return Outbound Traceparent
+     */
     public static String generateChildDependencyTraceparent() {
         try {
 
@@ -439,7 +399,7 @@ public class TraceContextCorrelation {
             RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
             Traceparent tp = new Traceparent(0, requestTelemetry.getContext().getOperation().getId()
-                , null, 0);
+                , null, context.getTraceflag());
 
             // We need to propagate full blown traceparent header.
             return tp.toString();

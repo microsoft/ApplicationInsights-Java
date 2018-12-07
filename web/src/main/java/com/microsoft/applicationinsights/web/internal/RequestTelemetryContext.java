@@ -42,6 +42,7 @@ public class RequestTelemetryContext {
     private HttpServletRequest servletRequest;
     private final CorrelationContext correlationContext;
     private Tracestate tracestate;
+    private int traceflag;
     private final AtomicInteger currentChildId = new AtomicInteger();
 
     /**
@@ -71,6 +72,14 @@ public class RequestTelemetryContext {
         requestStartTimeTicks = ticks;
         this.servletRequest = servletRequest;
         correlationContext = new CorrelationContext();
+    }
+
+    public int getTraceflag() {
+        return traceflag;
+    }
+
+    public void setTraceflag(int traceflag) {
+        this.traceflag = traceflag;
     }
 
     /**

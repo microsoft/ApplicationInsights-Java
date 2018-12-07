@@ -119,7 +119,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
             mv.visitVarInsn(ALOAD, 2);
             mv.visitLdcInsn("tracestate");
-            mv.visitVarInsn(ALOAD, appCorrelationId);
+            mv.visitVarInsn(ALOAD, tracestate);
 
             mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
