@@ -226,7 +226,6 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
         Element httpElement = XmlParserUtils.getFirst(nodes);
         boolean isW3CEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_ENABLED);
-        System.out.println("!----------"+isW3CEnabled+"------!");
         builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(element, HTTP_TAG),isW3CEnabled);
 
         nodes = builtInElement.getElementsByTagName(JDBC_TAG);

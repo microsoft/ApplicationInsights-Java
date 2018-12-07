@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTra
 import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
@@ -52,7 +53,18 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnWebApplication
 class ApplicationInsightsWebModuleConfiguration {
 
-  /**
+
+    /**
+     * Instance for the container of ApplicationInsights Properties
+     */
+    private ApplicationInsightsProperties applicationInsightsProperties;
+
+    @Autowired
+    public ApplicationInsightsWebModuleConfiguration(ApplicationInsightsProperties properties) {
+        this.applicationInsightsProperties = properties;
+    }
+
+    /**
    * Bean for WebRequestTrackingTelemetryModule
    * @return instance of {@link WebRequestTrackingTelemetryModule}
    */
@@ -60,7 +72,7 @@ class ApplicationInsightsWebModuleConfiguration {
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
     WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
         WebRequestTrackingTelemetryModule w = new WebRequestTrackingTelemetryModule();
-        w.isW3CEnabled = true;
+        w.isW3CEnabled = applicationInsightsProperties.getWeb().isW3C();
         return w;
     }
 
