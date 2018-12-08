@@ -74,10 +74,11 @@ public class TraceContextCorrelation {
                 outGoingTraceParent = new Traceparent();
 
                 // represents the id of the current request.
-                requestTelemetry.setId(outGoingTraceParent.getTraceId() + "-" + outGoingTraceParent.getSpanId());
+                requestTelemetry.setId("|" + outGoingTraceParent.getTraceId() + "." + outGoingTraceParent.getSpanId()
+                + ".");
 
                 // represents the trace-id of this distributed trace
-                requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
+                requestTelemetry.getContext().getOperation().setId("|" + outGoingTraceParent.getTraceId() +".");
 
                 // set parentId as null because this is the is the originating request
                 requestTelemetry.getContext().getOperation().setParentId(null);
@@ -101,15 +102,16 @@ public class TraceContextCorrelation {
                         outGoingTraceParent = new Traceparent();
                     }
                     // set id of this request
-                    requestTelemetry.setId(outGoingTraceParent.getTraceId() + "-" + outGoingTraceParent.getSpanId());
+                    requestTelemetry.setId("|" + outGoingTraceParent.getTraceId() + "." + outGoingTraceParent.getSpanId()
+                    + ".");
 
                     // represents the trace-id of this distributed trace
-                    requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
+                    requestTelemetry.getContext().getOperation().setId("|" + outGoingTraceParent.getTraceId() + ".");
 
                     if (incomingTraceparent != null) {
                         // represents the parent-id of this request which is combination of traceparent and incoming spanId
-                        requestTelemetry.getContext().getOperation().setParentId(outGoingTraceParent.getTraceId() + "-" +
-                            incomingTraceparent.getSpanId());
+                        requestTelemetry.getContext().getOperation().setParentId("|" + outGoingTraceParent.getTraceId() + "." +
+                            incomingTraceparent.getSpanId() + ".");
                     } else {
                         requestTelemetry.getContext().getOperation().setParentId(null);
                     }
@@ -178,7 +180,7 @@ public class TraceContextCorrelation {
     /**
      * Returns collection from Enumeration
      * @param e
-     * @return
+     * @return List of headers
      */
     private static List<String> getEnumerationAsCollection(Enumeration<String> e) {
 
@@ -397,9 +399,12 @@ public class TraceContextCorrelation {
             }
 
             RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
+            String traceId = requestTelemetry.getContext().getOperation().getId();
 
-            Traceparent tp = new Traceparent(0, requestTelemetry.getContext().getOperation().getId()
-                , null, context.getTraceflag());
+            // get the necessary part as traceId in context is of legacy AI format.
+            traceId = traceId.substring(1, traceId.length() - 1);
+
+            Traceparent tp = new Traceparent(0, traceId, null, context.getTraceflag());
 
             // We need to propagate full blown traceparent header.
             return tp.toString();
@@ -410,5 +415,20 @@ public class TraceContextCorrelation {
         }
 
         return null;
+    }
+
+    /**
+     * This is helper method to convert traceparent (W3C) format to AI legacy format for supportability
+     * @param traceparent
+     * @return legacy format traceparent
+     */
+    public static String createChildIdFromTraceparentString(String traceparent) {
+        System.out.println(traceparent + "-------");
+        assert traceparent != null;
+
+        String[] traceparentArr = traceparent.split("-");
+        assert traceparentArr.length == 4;
+
+        return "|" + traceparentArr[0] + "." + traceparentArr[1] + ".";
     }
 }

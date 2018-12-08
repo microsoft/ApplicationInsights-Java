@@ -54,6 +54,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
     private int correlationContextLocal;
     private int appCorrelationId;
     private int tracestate;
+    private int traceparent;
 
     @Override
     public void onMethodEnter() {
@@ -97,6 +98,12 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
             // generate child ID
             mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TraceContextCorrelation",
                 "generateChildDependencyTraceparent", "()Ljava/lang/String;", false);
+            traceparent = this.newLocal(Type.getType(Object.class));
+            mv.visitVarInsn(ASTORE, traceparent);
+
+            mv.visitVarInsn(ALOAD, traceparent);
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TraceContextCorrelation",
+                "createChildIdFromTraceparentString", "(Ljava/lang/String;)Ljava/lang/String;", false);
             childIdLocal = this.newLocal(Type.getType(Object.class));
             mv.visitVarInsn(ASTORE, childIdLocal);
 
@@ -110,7 +117,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
             // 2 because the 1 is the method being instrumented
             mv.visitVarInsn(ALOAD, 2);
             mv.visitLdcInsn("traceparent");
-            mv.visitVarInsn(ALOAD, childIdLocal);
+            mv.visitVarInsn(ALOAD, traceparent);
             mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
             mv.visitVarInsn(ALOAD, tracestate);

@@ -268,14 +268,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertNotNull(requestTelemetry.getId());
         // spanIds are different
-        Assert.assertNotEquals(tp.getTraceId(), requestTelemetry.getId());
+        Assert.assertNotEquals(tp.getTraceId(), formatedID(requestTelemetry.getId()));
         // traceIds are same
-        Assert.assertTrue(requestTelemetry.getId().startsWith(tp.getTraceId()));
+        Assert.assertTrue(requestTelemetry.getId().startsWith(formatedID(tp.getTraceId())));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(tp.getTraceId(), operation.getId());
-        Assert.assertEquals(tp.getTraceId() + "-" + tp.getSpanId(), operation.getParentId());
+        Assert.assertEquals(formatedID(tp.getTraceId()), operation.getId());
+        Assert.assertEquals(formatedID(tp.getTraceId() + "." + tp.getSpanId()), operation.getParentId());
 
         //run onEnd
         defaultModule.onEndRequest(request, null);
@@ -284,6 +284,10 @@ public class WebRequestTrackingTelemetryModuleTests {
         Assert.assertNotNull(requestTelemetry.getSource());
         Assert.assertEquals(TraceContextCorrelationTests.getRequestSourceValue("id1"), requestTelemetry.getSource());
 
+    }
+
+    private String formatedID(String id) {
+        return "|" + id + ".";
     }
 
     @Test
@@ -364,7 +368,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
 
         //validate manually tracked telemetry is a child of the request telemetry
-        Assert.assertEquals(tp.getTraceId(), exceptionTelemetry.getContext().getOperation().getId());
+        Assert.assertEquals(formatedID(tp.getTraceId()), exceptionTelemetry.getContext().getOperation().getId());
         Assert.assertEquals(requestTelemetry.getId(), exceptionTelemetry.getContext().getOperation().getParentId());
 
         Assert.assertNotNull(ThreadContext.getRequestTelemetryContext().getTracestate());
