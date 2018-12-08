@@ -78,7 +78,7 @@ public class TraceContextCorrelation {
                 + ".");
 
                 // represents the trace-id of this distributed trace
-                requestTelemetry.getContext().getOperation().setId("|" + outGoingTraceParent.getTraceId() +".");
+                requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
 
                 // set parentId as null because this is the is the originating request
                 requestTelemetry.getContext().getOperation().setParentId(null);
@@ -106,7 +106,7 @@ public class TraceContextCorrelation {
                     + ".");
 
                     // represents the trace-id of this distributed trace
-                    requestTelemetry.getContext().getOperation().setId("|" + outGoingTraceParent.getTraceId() + ".");
+                    requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
 
                     if (incomingTraceparent != null) {
                         // represents the parent-id of this request which is combination of traceparent and incoming spanId
@@ -401,9 +401,6 @@ public class TraceContextCorrelation {
             RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
             String traceId = requestTelemetry.getContext().getOperation().getId();
 
-            // get the necessary part as traceId in context is of legacy AI format.
-            traceId = traceId.substring(1, traceId.length() - 1);
-
             Traceparent tp = new Traceparent(0, traceId, null, context.getTraceflag());
 
             // We need to propagate full blown traceparent header.
@@ -423,12 +420,11 @@ public class TraceContextCorrelation {
      * @return legacy format traceparent
      */
     public static String createChildIdFromTraceparentString(String traceparent) {
-        System.out.println(traceparent + "-------");
         assert traceparent != null;
 
         String[] traceparentArr = traceparent.split("-");
         assert traceparentArr.length == 4;
 
-        return "|" + traceparentArr[0] + "." + traceparentArr[1] + ".";
+        return "|" + traceparentArr[1] + "." + traceparentArr[2] + ".";
     }
 }

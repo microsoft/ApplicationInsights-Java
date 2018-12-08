@@ -49,7 +49,7 @@ public class TraceContextCorrelationTests {
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(formatedID(t.getTraceId()), operation.getId());
+        Assert.assertEquals(t.getTraceId(), operation.getId());
         Assert.assertEquals(formatedID(t.getTraceId() + "." + t.getSpanId()), operation.getParentId());
     }
 
@@ -73,7 +73,7 @@ public class TraceContextCorrelationTests {
         Assert.assertNotNull(requestTelemetry.getId());
 
         // First trace will have it's own spanId also.
-        Assert.assertTrue(requestTelemetry.getId().startsWith(operation.getId()));
+        Assert.assertTrue(requestTelemetry.getId().startsWith(formatedID(operation.getId())));
         Assert.assertNull(operation.getParentId());
     }
 
@@ -98,7 +98,7 @@ public class TraceContextCorrelationTests {
 
         Assert.assertNotNull(requestTelemetry.getId());
         // First trace will have it's own spanId also.
-        Assert.assertTrue(requestTelemetry.getId().startsWith(operation.getId()));
+        Assert.assertTrue(requestTelemetry.getId().startsWith("|" + operation.getId()));
         Assert.assertNull(operation.getParentId());
     }
 

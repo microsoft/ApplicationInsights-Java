@@ -274,7 +274,7 @@ public class WebRequestTrackingTelemetryModuleTests {
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(formatedID(tp.getTraceId()), operation.getId());
+        Assert.assertEquals(tp.getTraceId(), operation.getId());
         Assert.assertEquals(formatedID(tp.getTraceId() + "." + tp.getSpanId()), operation.getParentId());
 
         //run onEnd
@@ -368,7 +368,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
 
         //validate manually tracked telemetry is a child of the request telemetry
-        Assert.assertEquals(formatedID(tp.getTraceId()), exceptionTelemetry.getContext().getOperation().getId());
+        Assert.assertEquals(tp.getTraceId(), exceptionTelemetry.getContext().getOperation().getId());
         Assert.assertEquals(requestTelemetry.getId(), exceptionTelemetry.getContext().getOperation().getParentId());
 
         Assert.assertNotNull(ThreadContext.getRequestTelemetryContext().getTracestate());
