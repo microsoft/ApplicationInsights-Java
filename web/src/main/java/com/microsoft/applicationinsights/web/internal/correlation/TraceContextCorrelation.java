@@ -62,62 +62,22 @@ public class TraceContextCorrelation {
                 return;
             }
 
-            // According to W3C spec there can be more than 1 traceparents in incoming request
-            Enumeration<String> traceparents = request.getHeaders(TRACEPARENT_HEADER_NAME);
-            List<String> traceparentList = getEnumerationAsCollection(traceparents);
+            Traceparent incomingTraceparent = processIncomingTraceparent(request);
+            Traceparent outGoingTraceParent = createOutgoingTraceparent(incomingTraceparent);
 
-            Traceparent incomingTraceparent = null;
-            Traceparent outGoingTraceParent = null;
-
-            // If no incoming traceparent or multiple traceparent create a  new one.
-            if (traceparentList.size() != 1) {
-                outGoingTraceParent = new Traceparent();
-
-                // represents the id of the current request.
-                requestTelemetry.setId("|" + outGoingTraceParent.getTraceId() + "." + outGoingTraceParent.getSpanId()
+            // represents the id of the current request.
+            requestTelemetry.setId("|" + outGoingTraceParent.getTraceId() + "." + outGoingTraceParent.getSpanId()
                 + ".");
 
-                // represents the trace-id of this distributed trace
-                requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
+            // represents the trace-id of this distributed trace
+            requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
 
-                // set parentId as null because this is the is the originating request
-                requestTelemetry.getContext().getOperation().setParentId(null);
+            // assign parent id
+            if (incomingTraceparent != null) {
+                requestTelemetry.getContext().getOperation().setParentId("|" + outGoingTraceParent.getTraceId() + "." +
+                    incomingTraceparent.getSpanId() + ".");
             } else {
-
-                try {
-                    incomingTraceparent = Traceparent.fromString(traceparentList.get(0));
-
-                    // create outgoing traceParent using the incoming header
-                    // correct names
-                    outGoingTraceParent = new Traceparent(0, incomingTraceparent.getTraceId(),
-                        null, incomingTraceparent.getTraceFlags());
-
-                } catch (IllegalArgumentException e) {
-                    InternalLogger.INSTANCE.error(String.format("Received invalid traceparent header with exception %s, "
-                        + "distributed trace might be broken", ExceptionUtils.getStackTrace(e)));
-                } finally {
-                    if (incomingTraceparent == null) {
-
-                        // Invalid incoming traceparent. Create a new outgoing traceparent
-                        outGoingTraceParent = new Traceparent();
-                    }
-                    // set id of this request
-                    requestTelemetry.setId("|" + outGoingTraceParent.getTraceId() + "." + outGoingTraceParent.getSpanId()
-                    + ".");
-
-                    // represents the trace-id of this distributed trace
-                    requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
-
-                    if (incomingTraceparent != null) {
-                        // represents the parent-id of this request which is combination of traceparent and incoming spanId
-                        requestTelemetry.getContext().getOperation().setParentId("|" + outGoingTraceParent.getTraceId() + "." +
-                            incomingTraceparent.getSpanId() + ".");
-                    } else {
-                        requestTelemetry.getContext().getOperation().setParentId(null);
-                    }
-
-                }
-
+                requestTelemetry.getContext().getOperation().setParentId(null);
             }
 
             // Propagate trace-flags
@@ -126,44 +86,7 @@ public class TraceContextCorrelation {
             String appId = getAppId();
 
             // Get Tracestate header
-            Tracestate tracestate = null;
-
-            if (incomingTraceparent != null) {
-                Enumeration<String> tracestates = request.getHeaders(TRACESTATE_HEADER_NAME);
-                List<String> tracestateList = getEnumerationAsCollection(tracestates);
-                try {
-                    //create tracestate from incoming header
-                    tracestate = Tracestate.fromString(Joiner.on(",").join(tracestateList));
-                    // add appId to it if it's resolved
-                    if (appId != null && !appId.isEmpty()) {
-                        tracestate = new Tracestate(tracestate, AZURE_TRACEPARENT_COMPONENT_INITIAL,
-                            appId);
-                    }
-
-                } catch (Exception e) {
-                    InternalLogger.INSTANCE.error(String.format("Cannot parse incoming tracestate %s",
-                        ExceptionUtils.getStackTrace(e)));
-                    try {
-                        // Pass new tracestate if received invalid tracestate
-                        if (appId != null && !appId.isEmpty()) {
-                            tracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL, appId);
-                        }
-                    } catch (Exception ex) {
-                        InternalLogger.INSTANCE.error(String.format("Cannot create default tracestate %s",
-                            ExceptionUtils.getStackTrace(ex)));
-                    }
-                }
-            } else {
-                // pass new tracestate if incoming traceparent is empty
-                try {
-                    if (appId != null && !appId.isEmpty()) {
-                        tracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL, appId);
-                    }
-                } catch (Exception e) {
-                    InternalLogger.INSTANCE.error(String.format("cannot create default traceparent %s",
-                        ExceptionUtils.getStackTrace(e)));
-                }
-            }
+            Tracestate tracestate = getTracestate(request, incomingTraceparent, appId);
 
             // add tracestate to threadlocal
             ThreadContext.getRequestTelemetryContext().setTracestate(tracestate);
@@ -175,6 +98,101 @@ public class TraceContextCorrelation {
             InternalLogger.INSTANCE.error("unable to perform correlation :%s", ExceptionUtils.
                 getStackTrace(e));
         }
+    }
+
+    /**
+     * Helper method to create extract Incoming Traceparent header. This method can return null.
+     * @param request
+     * @return Incoming Traceparent
+     */
+    private static Traceparent processIncomingTraceparent(HttpServletRequest request) {
+        Traceparent incomingTraceparent = null;
+
+        Enumeration<String> traceparents = request.getHeaders(TRACEPARENT_HEADER_NAME);
+        List<String> traceparentList = getEnumerationAsCollection(traceparents);
+
+        // W3C spec mandates a request should exactly have 1 Traceparent header
+        if (traceparentList.size() != 1) {
+            return null;
+        }
+
+        try {
+            incomingTraceparent = Traceparent.fromString(traceparentList.get(0));
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error(String.format("Received invalid traceparent header with exception %s, "
+                + "distributed trace might be broken", ExceptionUtils.getStackTrace(e)));
+        }
+        return incomingTraceparent;
+    }
+
+    /**
+     * This method takes incoming traceparent object and creates a new outbound traceparent object
+     * @param incomingTraceparent
+     * @return
+     */
+    private static Traceparent createOutgoingTraceparent(Traceparent incomingTraceparent) {
+        Traceparent outgoingTraceparent = null;
+
+        // If incoming traceparent is null create a new Traceparent
+        if (incomingTraceparent == null) {
+            outgoingTraceparent = new Traceparent();
+        } else {
+            // create outbound traceparent inheriting traceId, flags from parent.
+            outgoingTraceparent = new Traceparent(0, incomingTraceparent.getTraceId(), null,
+                incomingTraceparent.getTraceFlags());
+        }
+        return outgoingTraceparent;
+    }
+
+    /**
+     * Helper method that extracts tracestate header from request if available and add's Azure component
+     * to it. If tracestate is not available, a new tracestate with Azure component is created.
+     * @param request
+     * @param incomingTraceparent
+     * @param appId
+     * @return Tracestate
+     */
+    private static Tracestate getTracestate(HttpServletRequest request, Traceparent incomingTraceparent, String appId) {
+
+        Tracestate tracestate= null;
+
+        if (incomingTraceparent != null) {
+            Enumeration<String> tracestates = request.getHeaders(TRACESTATE_HEADER_NAME);
+            List<String> tracestateList = getEnumerationAsCollection(tracestates);
+            try {
+                //create tracestate from incoming header
+                tracestate = Tracestate.fromString(Joiner.on(",").join(tracestateList));
+                // add appId to it if it's resolved
+                if (appId != null && !appId.isEmpty()) {
+                    tracestate = new Tracestate(tracestate, AZURE_TRACEPARENT_COMPONENT_INITIAL,
+                        appId);
+                }
+
+            } catch (Exception e) {
+                InternalLogger.INSTANCE.error(String.format("Cannot parse incoming tracestate %s",
+                    ExceptionUtils.getStackTrace(e)));
+                try {
+                    // Pass new tracestate if received invalid tracestate
+                    if (appId != null && !appId.isEmpty()) {
+                        tracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL, appId);
+                    }
+                } catch (Exception ex) {
+                    InternalLogger.INSTANCE.error(String.format("Cannot create default tracestate %s",
+                        ExceptionUtils.getStackTrace(ex)));
+                }
+            }
+        } else {
+            // pass new tracestate if incoming traceparent is empty
+            try {
+                if (appId != null && !appId.isEmpty()) {
+                    tracestate = new Tracestate(null, AZURE_TRACEPARENT_COMPONENT_INITIAL, appId);
+                }
+            } catch (Exception e) {
+                InternalLogger.INSTANCE.error(String.format("cannot create default traceparent %s",
+                    ExceptionUtils.getStackTrace(e)));
+            }
+        }
+        return tracestate;
     }
 
     /**
