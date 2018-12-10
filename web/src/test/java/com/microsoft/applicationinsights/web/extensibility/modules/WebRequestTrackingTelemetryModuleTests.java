@@ -268,7 +268,8 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertNotNull(requestTelemetry.getId());
         // spanIds are different
-        Assert.assertNotEquals(tp.getTraceId(), formatedID(requestTelemetry.getId()));
+        String[] id = requestTelemetry.getId().split("[.]");
+        Assert.assertNotEquals(tp.getSpanId(), id[1]);
         // traceIds are same
         Assert.assertTrue(requestTelemetry.getId().startsWith(formatedID(tp.getTraceId())));
 
