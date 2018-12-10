@@ -62,26 +62,26 @@ public class TraceContextCorrelation {
                 return;
             }
 
-            Traceparent incomingTraceparent = processIncomingTraceparent(request);
-            Traceparent outGoingTraceParent = createOutgoingTraceparent(incomingTraceparent);
+            Traceparent incomingTraceparent = extractIncomingTraceparent(request);
+            Traceparent processedTraceParent = processIncomingTraceparent(incomingTraceparent);
 
             // represents the id of the current request.
-            requestTelemetry.setId("|" + outGoingTraceParent.getTraceId() + "." + outGoingTraceParent.getSpanId()
+            requestTelemetry.setId("|" + processedTraceParent.getTraceId() + "." + processedTraceParent.getSpanId()
                 + ".");
 
             // represents the trace-id of this distributed trace
-            requestTelemetry.getContext().getOperation().setId(outGoingTraceParent.getTraceId());
+            requestTelemetry.getContext().getOperation().setId(processedTraceParent.getTraceId());
 
             // assign parent id
             if (incomingTraceparent != null) {
-                requestTelemetry.getContext().getOperation().setParentId("|" + outGoingTraceParent.getTraceId() + "." +
+                requestTelemetry.getContext().getOperation().setParentId("|" + processedTraceParent.getTraceId() + "." +
                     incomingTraceparent.getSpanId() + ".");
             } else {
                 requestTelemetry.getContext().getOperation().setParentId(null);
             }
 
             // Propagate trace-flags
-            ThreadContext.getRequestTelemetryContext().setTraceflag(outGoingTraceParent.getTraceFlags());
+            ThreadContext.getRequestTelemetryContext().setTraceflag(processedTraceParent.getTraceFlags());
 
             String appId = getAppId();
 
@@ -105,7 +105,7 @@ public class TraceContextCorrelation {
      * @param request
      * @return Incoming Traceparent
      */
-    private static Traceparent processIncomingTraceparent(HttpServletRequest request) {
+    private static Traceparent extractIncomingTraceparent(HttpServletRequest request) {
         Traceparent incomingTraceparent = null;
 
         Enumeration<String> traceparents = request.getHeaders(TRACEPARENT_HEADER_NAME);
@@ -130,18 +130,18 @@ public class TraceContextCorrelation {
      * @param incomingTraceparent
      * @return
      */
-    private static Traceparent createOutgoingTraceparent(Traceparent incomingTraceparent) {
-        Traceparent outgoingTraceparent = null;
+    private static Traceparent processIncomingTraceparent(Traceparent incomingTraceparent) {
+        Traceparent processedTraceparent = null;
 
         // If incoming traceparent is null create a new Traceparent
         if (incomingTraceparent == null) {
-            outgoingTraceparent = new Traceparent();
+            processedTraceparent = new Traceparent();
         } else {
             // create outbound traceparent inheriting traceId, flags from parent.
-            outgoingTraceparent = new Traceparent(0, incomingTraceparent.getTraceId(), null,
+            processedTraceparent = new Traceparent(0, incomingTraceparent.getTraceId(), null,
                 incomingTraceparent.getTraceFlags());
         }
-        return outgoingTraceparent;
+        return processedTraceparent;
     }
 
     /**
@@ -410,10 +410,11 @@ public class TraceContextCorrelation {
 
             RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
-            //check if context is null - no correlation will happen
+            //check if context is null, no incoming request is present.
+            // This is likely worker role scenario, where a worker is trying
+            // to create a new outbound call, so generate a new traceparent.
             if (context == null) {
-                InternalLogger.INSTANCE.warn("No Correlation will happen, Thread context is null while generating child dependency");
-                return "";
+               return new Traceparent().toString();
             }
 
             RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();

@@ -62,6 +62,11 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         deltaInNS = this.newLocal(Type.LONG_TYPE);
         mv.visitVarInsn(LSTORE, deltaInNS);
 
+        // This byte code instrumentation is responsible for injecting legacy AI correlation headers which include
+        // Request-Id and Request-Context and Correlation-Context. By default this headers are propagated if W3C
+        // is turned off. Please refer to generateChildDependencyId(), retrieveCorrelationContext(),
+        // retrieveApplicationCorrelationId() from TelemetryCorrelationUtils class for details on how these headers
+        // are created.
         if (!isW3CEnabled) {
             // generate child ID
             mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyId", "()Ljava/lang/String;", false);
@@ -95,7 +100,11 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
             mv.visitVarInsn(ALOAD, appCorrelationId);
             mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
         } else {
-            // generate child ID
+            // If W3C is enabled, we propagate Traceparent, Tracecontext headers
+            // to enable correlation. Please refer to generateChildDependencyTraceparent(), generateChildDependencyTraceparent()
+            // from TraceContextCorrelation class on how to generate this headers.
+
+            // generate child Traceparent
             mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TraceContextCorrelation",
                 "generateChildDependencyTraceparent", "()Ljava/lang/String;", false);
             traceparent = this.newLocal(Type.getType(Object.class));
