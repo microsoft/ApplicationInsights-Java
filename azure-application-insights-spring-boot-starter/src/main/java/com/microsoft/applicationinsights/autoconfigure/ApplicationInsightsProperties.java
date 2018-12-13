@@ -408,9 +408,9 @@ public class ApplicationInsightsProperties {
     private boolean enabled = true;
 
     /**
-     * Flag to enable/disable W3C headers. It is disabled by default.
+     * Flag to enable/disable enableW3C headers. It is disabled by default.
      */
-    private boolean W3C = false;
+    private boolean enableW3C = false;
 
     public boolean isEnabled() {
       return enabled;
@@ -420,12 +420,12 @@ public class ApplicationInsightsProperties {
       this.enabled = enabled;
     }
 
-    public boolean isW3C() {
-      return W3C;
+    public boolean isEnableW3C() {
+      return enableW3C;
     }
 
-    public void setW3C(boolean w3C) {
-      W3C = w3C;
+    public void setEnableW3C(boolean enableW3C) {
+      this.enableW3C = enableW3C;
     }
   }
 

@@ -123,7 +123,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
             mv.visitVarInsn(ASTORE, tracestate);
 
             // inject headers
-            // 2 because the 1 is the method being instrumented
+            // load 2nd variable because the 1st is the method being instrumented
             mv.visitVarInsn(ALOAD, 2);
             mv.visitLdcInsn("traceparent");
             mv.visitVarInsn(ALOAD, traceparent);

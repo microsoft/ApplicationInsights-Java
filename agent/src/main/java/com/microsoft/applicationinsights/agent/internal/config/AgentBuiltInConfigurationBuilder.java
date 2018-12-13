@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.util.List;
 
 /**
@@ -46,10 +47,11 @@ public class AgentBuiltInConfigurationBuilder {
             this.dataOfConfigurationForException.setEnabled(false);
         }
 
+        InternalLogger.INSTANCE.trace(String.format("W3C tracing is enabled : %s", w3cEnabled));
         return new AgentBuiltInConfiguration(enabled,
                                              simpleBuiltInClasses,
                                              httpEnabled && enabled,
-                                             w3cEnabled,
+                                             w3cEnabled && enabled,
                                              jdbcEnabled && enabled,
                                              hibernateEnabled && enabled,
                                              jedisEnabled && enabled,
