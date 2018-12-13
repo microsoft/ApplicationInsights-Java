@@ -22,7 +22,7 @@ public class HttpDependencyTest extends AiSmokeTest {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 
         //Now only can get 3 remote dependency. Can not collect non-exist url failed http depnedncy if used Apache http client
-        //assertEquals(4, mockedIngestion.getCountForType("RemoteDependencyData"));
+        assertEquals(4, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         assertEquals(2, mockedIngestion.getCountForType("ExceptionData"));
 
