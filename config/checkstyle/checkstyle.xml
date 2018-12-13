@@ -25,7 +25,10 @@
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
     </module>
-
+    <module name="Header">
+        <property name="headerFile" value="config/java.header" /> <!-- this file will contain the copyright notice -->
+        <property name="fileExtensions" value="java" />
+    </module>
     <module name="TreeWalker">
         <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">
@@ -241,10 +244,6 @@
         </module>
         <module name="HiddenField" /><!-- warn when fields are being masked -->
         <module name="MagicNumber" /><!-- don't use magic numbers -->
-        <module name="Header">
-            <property name="headerFile" value="java.header" /> <!-- this file will contain the copyright notice -->
-            <property name="fileExtensions" value="java" />
-        </module>
         <module name="JavadocMethod">
             <property name="scope" value="public"/>
             <property name="allowMissingParamTags" value="true"/>
