@@ -10,7 +10,7 @@ import org.apache.http.annotation.Experimental;
  *
  * @author Reiley Yang
  * @author Dhaval Doshi
- * @link https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md
+ * @see <a href="https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md">Trace Context</a>
  */
 @Experimental
 public class Traceparent {

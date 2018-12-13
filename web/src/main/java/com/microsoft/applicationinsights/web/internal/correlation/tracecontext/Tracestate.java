@@ -11,10 +11,11 @@ import org.apache.http.annotation.Experimental;
  *
  * @author Reiley Yang
  * @author Dhaval Doshi
- * @link https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md
+ * @see <a href = "https://github.com/w3c/trace-context/blob/master/trace_context/HTTP_HEADER_FORMAT.md">Trace Context</a>
  *
  * Implementations can add vendor specific details here.
  */
+@Experimental
 public class Tracestate {
 
     private static String KEY_WITHOUT_VENDOR_FORMAT = "[a-z][_0-9a-z\\-\\*\\/]{0,255}";
@@ -46,6 +47,7 @@ public class Tracestate {
     /**
      * Ctor that creates tracestate object from given value
      */
+
     public Tracestate(String input) {
         if (input == null) {
             throw new IllegalArgumentException("input is null");
@@ -82,6 +84,7 @@ public class Tracestate {
         }
         if (value == null) {
             throw new IllegalArgumentException("value is null");
+
         }
         if (!VALUE_VALIDATION_RE.matcher(value).find()) {
             throw new IllegalArgumentException("invalid value format");

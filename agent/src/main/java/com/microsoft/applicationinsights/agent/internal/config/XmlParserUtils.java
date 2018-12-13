@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -57,6 +58,29 @@ final class XmlParserUtils {
 
     public static boolean getEnabled(Element element, String attributeName) {
         return getEnabled(element, attributeName, true);
+    }
+
+    /**
+     * Method to get the attribute value for W3C
+     * @param element
+     * @param attributeName
+     * @return boolean
+     */
+    static boolean w3cEnabled(Element element, String attributeName) {
+        assert attributeName.equals("W3C");
+        try {
+            String strValue = element.getAttribute(attributeName);
+            if (!StringUtils.isNullOrEmpty(strValue)) {
+                boolean value = Boolean.valueOf(strValue);
+                return value;
+            }
+            return false;
+
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("cannot parse the correlation format, will default"
+                + "to AI proprietory correlation", ExceptionUtils.getStackTrace(e));
+        }
+        return false;
     }
 
     public static boolean getEnabled(Element element, String elementName, boolean defaultValue) {

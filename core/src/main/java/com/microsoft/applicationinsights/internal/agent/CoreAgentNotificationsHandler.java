@@ -159,13 +159,15 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 		telemetry.setTimestamp(dependencyStartTime);
         telemetry.setId(correlationId);
         telemetry.setResultCode(Integer.toString(result));
-        telemetry.setType("HTTP");
+        telemetry.setType("Http (tracked component)");
 
         // For Backward Compatibility
 		telemetry.getContext().getProperties().put("URI", uri);
 		telemetry.getContext().getProperties().put("Method", method);
 
         if (target != null && !target.isEmpty()) {
+            // AI correlation expects target to be of this format.
+            target = uriObject.getHost() + ":" + uriObject.getPort() + " | " + target;
             if (telemetry.getTarget() == null) {
                 telemetry.setTarget(target);
             } else {
