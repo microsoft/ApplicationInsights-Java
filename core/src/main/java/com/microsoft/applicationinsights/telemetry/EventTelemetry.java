@@ -37,13 +37,13 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "Event";
+    public static final String ENVELOPE_NAME = "Event";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "EventData";
+    public static final String BASE_TYPE = "EventData";
 
     /**
      * Default initialization for a new instance.
@@ -62,6 +62,11 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     public EventTelemetry(String name) {
         this();
         this.setName(name);
+    }
+
+    @Override
+    public int getVer() {
+        return getData().getVer();
     }
 
     /**

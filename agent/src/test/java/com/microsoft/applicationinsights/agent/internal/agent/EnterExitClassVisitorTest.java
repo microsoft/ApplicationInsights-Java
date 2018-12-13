@@ -21,10 +21,19 @@
 
 package com.microsoft.applicationinsights.agent.internal.agent;
 
+
+import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
+import org.junit.*;
+import org.mockito.Mockito;
+
+
 public final class EnterExitClassVisitorTest {
+
+    // TODO fix these tests
+//    @Ignore
 //    @Test
 //    public void testVisitMethodForInterfaceClass() {
-//        MethodInstrumentorsFactory mockFactory = Mockito.mock(MethodInstrumentorsFactory.class);
+//        MethodInstrumentorsFactory mockFactory = mock(MethodInstrumentorsFactory.class);
 //        ClassInstrumentationData classInstrumentationData = new ClassInstrumentationData("java/lang/Runnable", InstrumentedClassType.OTHER);
 //        classInstrumentationData.addMethod("run", null, true, true);
 //        DefaultClassVisitor tested = new DefaultClassVisitor(mockFactory, classInstrumentationData, new ClassWriter(10));
@@ -34,9 +43,10 @@ public final class EnterExitClassVisitorTest {
 //        Mockito.verify(mockFactory, Mockito.never()).getMethodVisitor(any(MethodInstrumentationDecision.class), anyInt(), anyString(), anyString(), anyString(), any(MethodVisitor.class));
 //    }
 //
+//    @Ignore
 //    @Test
 //    public void testVisitCtor1() {
-//        MethodInstrumentorsFactory mockFactory = Mockito.mock(MethodInstrumentorsFactory.class);
+//        MethodInstrumentorsFactory mockFactory = mock(MethodInstrumentorsFactory.class);
 //        ClassInstrumentationData classInstrumentationData = new ClassInstrumentationData("java/lang/Runnable", InstrumentedClassType.OTHER);
 //        DefaultClassVisitor tested = new DefaultClassVisitor(mockFactory, classInstrumentationData, new ClassWriter(10));
 //        tested.visit(Opcodes.ASM5, ~Opcodes.ACC_INTERFACE, "java/lang/String", "()V", null, null);
@@ -45,9 +55,10 @@ public final class EnterExitClassVisitorTest {
 //        Mockito.verify(mockFactory, Mockito.never()).getMethodVisitor(any(MethodInstrumentationDecision.class), anyInt(), anyString(), anyString(), anyString(), any(MethodVisitor.class));
 //    }
 //
+//    @Ignore
 //    @Test
 //    public void testVisitCtor2() {
-//        MethodInstrumentorsFactory mockFactory = Mockito.mock(MethodInstrumentorsFactory.class);
+//        MethodInstrumentorsFactory mockFactory = mock(MethodInstrumentorsFactory.class);
 //        ClassInstrumentationData classInstrumentationData = new ClassInstrumentationData("java/lang/String", InstrumentedClassType.OTHER);
 //        DefaultClassVisitor tested = new DefaultClassVisitor(mockFactory, classInstrumentationData, new ClassWriter(10));
 //        tested.visit(Opcodes.ASM5, ~Opcodes.ACC_INTERFACE, "java/lang/String", "()V", null, null);
@@ -58,7 +69,7 @@ public final class EnterExitClassVisitorTest {
 //
 //    @Test
 //    public void testVisitQualifiedMethod() {
-//        MethodInstrumentorsFactory mockFactory = Mockito.mock(MethodInstrumentorsFactory.class);
+//        MethodInstrumentorsFactory mockFactory = mock(MethodInstrumentorsFactory.class);
 //        ClassInstrumentationData classInstrumentationData = new ClassInstrumentationData("java/lang/String", InstrumentedClassType.OTHER);
 //        classInstrumentationData.addMethod("indexOf", null, true, true);
 //        DefaultClassVisitor tested = new DefaultClassVisitor(mockFactory, classInstrumentationData, new ClassWriter(10));

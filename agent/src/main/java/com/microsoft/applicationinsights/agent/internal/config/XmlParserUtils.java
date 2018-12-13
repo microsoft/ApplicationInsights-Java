@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
-import com.microsoft.applicationinsights.agent.internal.logger.InternalAgentLogger;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -72,7 +72,7 @@ final class XmlParserUtils {
             }
             return defaultValue;
         } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%b) will be used.", ENABLED_ATTRIBUTE, elementName, defaultValue);
+            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%b) will be used.", ENABLED_ATTRIBUTE, elementName, defaultValue);
         }
 
         return defaultValue;
@@ -91,7 +91,7 @@ final class XmlParserUtils {
             }
             return defaultValue;
         } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%d) will be used.", attributeName, elementName, defaultValue);
+            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%d) will be used.", attributeName, elementName, defaultValue);
         }
 
         return defaultValue;
@@ -114,7 +114,7 @@ final class XmlParserUtils {
             }
             return null;
         } catch (Exception e) {
-            InternalAgentLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s'", ENABLED_ATTRIBUTE, elementName);
+            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s'", ENABLED_ATTRIBUTE, elementName);
         }
 
         return null;

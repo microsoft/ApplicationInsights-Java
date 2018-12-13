@@ -315,6 +315,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             } finally{
                 try {
                     output.close();
+                    buffer.close();
+                    fileOutput.close();
                 } catch (Exception e) {
                     return false;
                 }

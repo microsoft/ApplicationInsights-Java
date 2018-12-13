@@ -30,6 +30,9 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
+import com.microsoft.applicationinsights.channel.concrete.nop.NopTelemetryChannel;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel;
@@ -44,14 +47,15 @@ import com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilte
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 
+import org.hamcrest.Matchers;
 import org.junit.*;
 import org.mockito.Mockito;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public final class TelemetryConfigurationFactoryTest {
 
@@ -148,10 +152,10 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
+        assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @Test
@@ -211,37 +215,19 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
-        assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
-        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
+        assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
+        assertThat(mockConfiguration.getTelemetryInitializers(), empty());
+        assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
 
-        assertEquals(mockConfiguration.getTelemetryProcessors().size(), 4);
+        assertThat(mockConfiguration.getTelemetryProcessors(), hasSize(4));
 
-        int rtf = 1;
-        int sf = 1;
-        int cvf1 = 1;
-        int cvf2 = 1;
-        for (TelemetryProcessor processor : mockConfiguration.getTelemetryProcessors()) {
-            if (processor instanceof SyntheticSourceFilter) {
-                --sf;
+        assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(SyntheticSourceFilter.class)));
+        assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(RequestTelemetryFilter.class)));
+        assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(ValidProcessorsWithSetters.class)));
+        assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(TestProcessorWithoutSetters.class)));
             }
-            else if (processor instanceof RequestTelemetryFilter) {
-                --rtf;
-            }
-            else if (processor instanceof ValidProcessorsWithSetters) {
-                --cvf1;
-            }
-            else if (processor instanceof TestProcessorWithoutSetters) {
-                --cvf2;
-            }
-        }
-        assertEquals(rtf, 0);
-        assertEquals(sf, 0);
-        assertEquals(cvf1, 0);
-        assertEquals(cvf2, 0);
-    }
 
     @Test
     public void testTelemetryContextInitializers() {
@@ -261,12 +247,12 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
-        assertEquals(mockConfiguration.getTelemetryInitializers().size(), 1);
-        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
-        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
+        assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
+        assertThat(mockConfiguration.getTelemetryInitializers(), hasSize(1));
+        assertThat(mockConfiguration.getTelemetryProcessors(), empty());
+        assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
     }
 
     @Test
@@ -303,12 +289,12 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 3);
-        assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
-        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
-        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
+        assertThat(mockConfiguration.getContextInitializers(), hasSize(4));
+        assertThat(mockConfiguration.getTelemetryInitializers(), empty());
+        assertThat(mockConfiguration.getTelemetryProcessors(), empty());
+        assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
     }
 
     @Test
@@ -319,8 +305,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @Test
@@ -333,8 +319,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @Test
@@ -347,8 +333,8 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @Test
@@ -361,12 +347,12 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.isTrackingDisabled(), false);
-        assertEquals(mockConfiguration.getInstrumentationKey(), MOCK_IKEY);
-        assertEquals(mockConfiguration.getContextInitializers().size(), 2);
-        assertTrue(mockConfiguration.getTelemetryInitializers().isEmpty());
-        assertTrue(mockConfiguration.getTelemetryProcessors().isEmpty());
-        assertTrue(mockConfiguration.getChannel() instanceof StdOutChannel);
+        assertEquals(false, mockConfiguration.isTrackingDisabled());
+        assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
+        assertThat(mockConfiguration.getContextInitializers(), Matchers.<ContextInitializer>hasSize(3));
+        assertThat(mockConfiguration.getTelemetryInitializers(), Matchers.<TelemetryInitializer>empty());
+        assertThat(mockConfiguration.getTelemetryProcessors(), empty());
+        assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
     }
 
     @Test
@@ -380,7 +366,7 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.getChannel().isDeveloperMode(), true);
+        assertTrue(mockConfiguration.getChannel().isDeveloperMode());
     }
 
     @Test
@@ -396,16 +382,16 @@ public final class TelemetryConfigurationFactoryTest {
 
         initializeWithFactory(mockParser, mockConfiguration);
 
-        assertEquals(mockConfiguration.getChannel().isDeveloperMode(), false);
+        assertFalse(mockConfiguration.getChannel().isDeveloperMode());
     }
 
     @Test
     public void testEmptyConfiguration() {
         TelemetryConfiguration emptyConfig = TelemetryConfiguration.getActiveWithoutInitializingConfig();
-        Assert.assertEquals(null, emptyConfig.getInstrumentationKey());
-        Assert.assertEquals(null, emptyConfig.getChannel());
+        Assert.assertNull(emptyConfig.getInstrumentationKey());
+        Assert.assertSame(NopTelemetryChannel.instance(), emptyConfig.getChannel());
         Assert.assertEquals(0, emptyConfig.getTelemetryModules().size());
-        Assert.assertEquals(false, emptyConfig.isTrackingDisabled());
+        Assert.assertFalse(emptyConfig.isTrackingDisabled());
         Assert.assertEquals(0, emptyConfig.getContextInitializers().size());
         Assert.assertEquals(0, emptyConfig.getTelemetryProcessors().size());
     }
@@ -490,8 +476,8 @@ public final class TelemetryConfigurationFactoryTest {
         try {
             List<TelemetryModule> mods = doPerfModuleTest("true", 2);
 
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(HeartBeatModule.class)));
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(MockPerformanceModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(HeartBeatModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(MockPerformanceModule.class)));
             MockPerformanceModule theModule = Iterables.getOnlyElement(Iterables.filter(mods, MockPerformanceModule.class));
             assertTrue(theModule.initializeWasCalled);
             assertTrue(theModule.addConfigurationDataWasCalled);
@@ -506,9 +492,9 @@ public final class TelemetryConfigurationFactoryTest {
         final String prevPropValue = System.getProperty(TelemetryConfigurationFactory.PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY);
         try {
             List<TelemetryModule> mods = doPerfModuleTest("false", 3);
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(HeartBeatModule.class)));
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(JvmPerformanceCountersModule.class)));
-            assertTrue(Iterables.any(mods, Predicates.instanceOf(ProcessPerformanceCountersModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(HeartBeatModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(JvmPerformanceCountersModule.class)));
+            assertThat(mods, hasItems(Matchers.<TelemetryModule>instanceOf(ProcessPerformanceCountersModule.class)));
         } finally {
             restoreProperties(prevPropValue);
         }

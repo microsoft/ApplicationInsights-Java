@@ -45,7 +45,7 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  *
  * Created by gupele on 12/17/2014.
  */
-public final class TelemetryBuffer {
+public class TelemetryBuffer<T> {
     /**
      * An inner helper class that will let the Sender class to fetch the relevant Telemetries.
      *
@@ -62,15 +62,15 @@ public final class TelemetryBuffer {
         }
 
         @Override
-        public Collection<String> fetch() {
+        public Collection<T> fetch() {
             synchronized (lock) {
                 if (expectedGeneration != generation) {
                     return Collections.emptyList();
                 }
 
                 ++generation;
-                List<String> readyToBeSent = telemetries;
-                telemetries = new ArrayList<String>();
+                List<T> readyToBeSent = telemetries;
+                telemetries = new ArrayList<T>();
 
                 return readyToBeSent;
             }
@@ -78,7 +78,7 @@ public final class TelemetryBuffer {
     }
 
     /// The sender we use to send Telemetry containers
-    private final TelemetriesTransmitter sender;
+    private final TelemetriesTransmitter<T> sender;
 
     /// The maximum amount of Telemetries in a batch. If the buffer is
     /// full before the timeout expired, we will need to send it anyway and not wait for the timeout to expire
@@ -89,7 +89,7 @@ public final class TelemetryBuffer {
     private LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer;
 
     /// The Telemetry instances are kept here
-    private List<String> telemetries;
+    private List<T> telemetries;
 
     /// A way to help incoming threads make sure they are picking up the right Telemetry container
     private long generation = 0;
@@ -103,7 +103,7 @@ public final class TelemetryBuffer {
      * @param maxTelemetriesInBatchEnforcer For getting the number of maximum number of telemetries in a batch within limits
      * @param transmitBufferTimeoutInSecondsEnforcer For getting the number of transmit buffer timeout in seconds within limits
      */
-    public TelemetryBuffer(TelemetriesTransmitter sender, LimitsEnforcer maxTelemetriesInBatchEnforcer, LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer) {
+    public TelemetryBuffer(TelemetriesTransmitter<T> sender, LimitsEnforcer maxTelemetriesInBatchEnforcer, LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer) {
         Preconditions.checkNotNull(sender, "sender must be non-null value");
         Preconditions.checkNotNull(maxTelemetriesInBatchEnforcer, "maxTelemetriesInBatchEnforcer must be non-null value");
         Preconditions.checkNotNull(transmitBufferTimeoutInSecondsEnforcer, "transmitBufferTimeoutInSecondsEnforcer must be non-null value");
@@ -112,7 +112,7 @@ public final class TelemetryBuffer {
 
         this.maxTelemetriesInBatchEnforcer = maxTelemetriesInBatchEnforcer;
         this.maxTelemetriesInBatch = maxTelemetriesInBatchEnforcer.getCurrentValue();
-        telemetries = new ArrayList<String>(this.maxTelemetriesInBatch);
+        telemetries = new ArrayList<>(this.maxTelemetriesInBatch);
 
         this.sender = sender;
         this.transmitBufferTimeoutInSecondsEnforcer = transmitBufferTimeoutInSecondsEnforcer;
@@ -174,7 +174,7 @@ public final class TelemetryBuffer {
      * move from a ready to send buffer to a new one
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} to add to the buffer.
      */
-    public void add(String telemetry) {
+    public void add(T telemetry) {
         Preconditions.checkNotNull(telemetry, "Telemetry must be non null value");
 
         synchronized (lock) {
@@ -220,12 +220,12 @@ public final class TelemetryBuffer {
      *
      * @return The list of {@link Telemetry} instances that are ready to be sent
      */
-    private List<String> prepareTelemetriesForSend() {
+    private List<T> prepareTelemetriesForSend() {
         ++generation;
 
-        final List<String> readyToBeSent = telemetries;
+        final List<T> readyToBeSent = telemetries;
 
-        telemetries = new ArrayList<String>(maxTelemetriesInBatch);
+        telemetries = new ArrayList<T>(maxTelemetriesInBatch);
 
         return readyToBeSent;
     }

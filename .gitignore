@@ -98,3 +98,6 @@ Backend/OrderService/OrderService.iml
 
 # VS Code Workspace settings
 .vscode/settings.json
+
+#Generated POMs
+pom.xml

@@ -21,32 +21,31 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
+import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.internal.agent.AgentConnector;
+import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
+import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
-
 import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.annotation.WebFilter;
-
-import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
-import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
@@ -63,15 +62,13 @@ import org.apache.commons.lang3.time.StopWatch;
  *  </filter-mapping>
  * }
  */
-@WebFilter(urlPatterns = {"/*"},
-        filterName = "ApplicationInsightsWebFilter",
-        description = "Reports request and exception telemetry")
 public final class WebRequestTrackingFilter implements Filter {
     static {
         WebReflectionUtils.initialize();
     }
     // region Members
-    private final static String FILTER_NAME = "ApplicationInsightsWebFilter";
+    // Visible for testing
+    final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
 
     private WebModulesContainer webModulesContainer;
@@ -83,6 +80,7 @@ public final class WebRequestTrackingFilter implements Filter {
     private String appName;
     private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights."
         + "agent.internal.coresync.AgentNotificationsHandler";
+    private String filterName = FILTER_NAME;
 
     // endregion Members
 
@@ -156,7 +154,9 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config) {
         try {
-            initialize(config);
+
+            String appName = extractAppName(config.getServletContext());
+            initializeAgentIfAvailable(config);
 
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
 
@@ -167,8 +167,15 @@ public final class WebRequestTrackingFilter implements Filter {
                 return;
             }
 
+            configureWebAppNameContextInitializer(appName, configuration);
+
             telemetryClient = new TelemetryClient(configuration);
             webModulesContainer = new WebModulesContainer(configuration);
+
+            if (StringUtils.isNotEmpty(config.getFilterName())) {
+                this.filterName = config.getFilterName();
+            }
+
             isInitialized = true;
         } catch (Exception e) {
             String filterName = this.getClass().getSimpleName();
@@ -178,11 +185,20 @@ public final class WebRequestTrackingFilter implements Filter {
         }
     }
 
+    private void configureWebAppNameContextInitializer(String appName, TelemetryConfiguration configuration) {
+        for (ContextInitializer ci : configuration.getContextInitializers()) {
+            if (ci instanceof WebAppNameContextInitializer) {
+                ((WebAppNameContextInitializer)ci).setAppName(appName);
+                return;
+            }
+        }
+    }
+
     /**
      * Destroy the filter by releases resources.
      */
     public void destroy() {
-        //add code to release any resource
+        cleanup();
     }
 
     // endregion Public
@@ -250,8 +266,7 @@ public final class WebRequestTrackingFilter implements Filter {
     public WebRequestTrackingFilter() {
     }
 
-    private synchronized void initialize(FilterConfig filterConfig) {
-
+    private synchronized void initializeAgentIfAvailable(FilterConfig filterConfig) {
         StopWatch sw = StopWatch.createStarted();
 
         //If Agent Jar is not present in the class path skip the process
@@ -263,17 +278,17 @@ public final class WebRequestTrackingFilter implements Filter {
 
         try {
             ServletContext context = filterConfig.getServletContext();
-            String name = getName(context);
+            String name = extractAppName(context);
             String key = registerWebApp(appName);
             setKey(key);
 
-            InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. getName=%s", FILTER_NAME, sw.getNanoTime()/1_000_000.0, name);
+            InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. appName=%s", this.filterName, sw.getNanoTime()/1_000_000.0, name);
 
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", FILTER_NAME, ExceptionUtils.getStackTrace(t));
+                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", this.filterName, ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -308,7 +323,7 @@ public final class WebRequestTrackingFilter implements Filter {
         return key;
     }
 
-    private String getName(ServletContext context) {
+    private String extractAppName(ServletContext context) {
         if (appName != null) {
             return appName;
         }

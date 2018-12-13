@@ -221,7 +221,7 @@ public final class DurationTest {
         Duration duration = new Duration(1, 1, 1, 1, 1);
 
         // 90061001 ms is 1 day, 1 hour, 1 minute, 1 sec and 1 milliseconds.
-        Assert.assertEquals(duration.getTotalMilliseconds(), 90061001);
+        Assert.assertEquals(90061001, duration.getTotalMilliseconds());
     }
 
     @Test
@@ -253,12 +253,12 @@ public final class DurationTest {
                                int expectedSeconds,
                                int expectedMilliseconds,
                                String expectedString) {
-        assertEquals(duration.toString(), expectedString);
-        assertEquals(duration.getDays(), expectedDays);
-        assertEquals(duration.getHours(), expectedHours);
-        assertEquals(duration.getMinutes(), expectedMinutes);
-        assertEquals(duration.getSeconds(), expectedSeconds);
-        assertEquals(duration.getMilliseconds(), expectedMilliseconds);
+        assertEquals(expectedString, duration.toString());
+        assertEquals(expectedDays, duration.getDays());
+        assertEquals(expectedHours, duration.getHours());
+        assertEquals(expectedMinutes, duration.getMinutes());
+        assertEquals(expectedSeconds, duration.getSeconds());
+        assertEquals(expectedMilliseconds, duration.getMilliseconds());
     }
 
 }

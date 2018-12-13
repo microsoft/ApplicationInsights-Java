@@ -23,14 +23,16 @@ package com.microsoft.applicationinsights.internal.config;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.extensibility.initializer.CloudInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import org.hamcrest.Matchers;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Created by gupele on 9/8/2016.
@@ -47,15 +49,11 @@ public class ContextInitializersInitializerTest {
         tested.initialize(xmlElement, mockConfiguration);
 
         List<ContextInitializer> initializerList = mockConfiguration.getContextInitializers();
-        assertEquals(initializerList.size(), 2);
+        assertThat(initializerList, hasSize(3));
 
-        ContextInitializer initializer = initializerList.get(0);
-        if (initializer instanceof SdkVersionContextInitializer) {
-            assertTrue(initializerList.get(1) instanceof DeviceInfoContextInitializer);
-        } else {
-            assertTrue(initializer instanceof DeviceInfoContextInitializer);
-            assertTrue(initializerList.get(1) instanceof SdkVersionContextInitializer);
-        }
+        assertThat(initializerList, Matchers.<ContextInitializer>hasItem(instanceOf(DeviceInfoContextInitializer.class)));
+        assertThat(initializerList, Matchers.<ContextInitializer>hasItem(instanceOf(SdkVersionContextInitializer.class)));
+        assertThat(initializerList, Matchers.<ContextInitializer>hasItem(instanceOf(CloudInfoContextInitializer.class)));
     }
 
 }

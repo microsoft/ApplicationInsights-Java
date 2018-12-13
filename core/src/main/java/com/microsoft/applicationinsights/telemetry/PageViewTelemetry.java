@@ -40,13 +40,13 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     /**
      * Envelope Name for this telemetry.
      */
-    private static final String ENVELOPE_NAME = "PageView";
+    public static final String ENVELOPE_NAME = "PageView";
 
 
     /**
      * Base Type for this telemetry.
      */
-    private static final String BASE_TYPE = "PageViewData";
+    public static final String BASE_TYPE = "PageViewData";
 
     /**
      * Default Ctor
@@ -63,6 +63,11 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     public PageViewTelemetry(String pageName) {
         this();
         setName(pageName);
+    }
+
+    @Override
+    public int getVer() {
+        return getData().getVer();
     }
 
     /**
@@ -92,6 +97,10 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
         }
 
         return result;
+    }
+
+    public String getUrlString() {
+        return getData().getUrl();
     }
 
     /**
@@ -157,5 +166,9 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     @Override
     public String getBaseTypeName() {
         return BASE_TYPE;
+    }
+
+    public Duration getDurationObject() {
+        return getData().getDuration();
     }
 }

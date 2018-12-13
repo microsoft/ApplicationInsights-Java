@@ -26,10 +26,29 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent;
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 
 apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'checkstyle'
 
 tasks.withType(JavaCompile) {
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
+}
+
+checkstyle {
+    toolVersion = '8.15'
+    configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
+    configProperties["rootDir"] = rootDir
+}
+
+jacoco {
+    toolVersion = "0.8.2"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
 }
 
 if (hasProperty("JDKToUse")) {

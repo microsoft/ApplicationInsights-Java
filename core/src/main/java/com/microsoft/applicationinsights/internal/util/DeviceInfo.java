@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -55,20 +56,8 @@ public class DeviceInfo
         return osBean.getArch();
     }
 
-    public static String getHostName()
-    {
-        InetAddress ip;
-        try
-        {
-            ip = InetAddress.getLocalHost();
-            return ip.getCanonicalHostName();
-        }
-        catch (UnknownHostException e)
-        {
-            InternalLogger.INSTANCE.error("Failed to get canonical host name, exception: %s", e.toString());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-        }
-        return null;
+    public static String getHostName() {
+        return CommonUtils.getHostName();
     }
 
     public static String getLocale()

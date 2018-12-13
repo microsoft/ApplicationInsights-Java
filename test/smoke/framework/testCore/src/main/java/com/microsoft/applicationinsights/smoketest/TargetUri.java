@@ -15,4 +15,9 @@ public @interface TargetUri {
      * The delay in milliseconds to wait before calling the target uri.
      */
     long delay() default 0L;
+
+    /**
+     * The number of milliseconds to wait for a response.
+     */
+    long timeout() default 0L;
 }

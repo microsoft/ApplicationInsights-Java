@@ -2,6 +2,9 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
@@ -51,6 +54,15 @@ public class CustomAiTestCases {
 		};
 	}
 
+	public Runnable getTrackMetric(final MetricTelemetry mt) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				tclient.trackMetric(mt);
+			}
+		};
+	}
+
 	public Runnable getTrackException(final Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
 		return new Runnable(){
 			@Override
@@ -87,11 +99,29 @@ public class CustomAiTestCases {
 		};
 	}
 
+	public Runnable getTrackDependency(final RemoteDependencyTelemetry rdt) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				tclient.trackDependency(rdt);
+			}
+		};
+	}
+
 	public Runnable getTrackPageView(final String name) {
 		return new Runnable(){
 			@Override
 			public void run() {
 				tclient.trackPageView(name);
+			}
+		};
+	}
+
+	public Runnable getTrackPageView(final PageViewTelemetry pvt) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				tclient.trackPageView(pvt);
 			}
 		};
 	}

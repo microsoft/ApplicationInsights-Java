@@ -1,10 +1,9 @@
 package com.microsoft.applicationinsights.agent.internal.agent;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Opcodes;
-
 import java.io.IOException;
 import java.io.InputStream;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 
 /**
  * This class overwrites default class writer of ASM to use the ClassLoader

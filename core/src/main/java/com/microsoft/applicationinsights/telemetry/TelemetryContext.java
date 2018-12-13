@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.ComponentContext;
 import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
@@ -54,6 +55,7 @@ public final class TelemetryContext {
     private OperationContext operation;
     private LocationContext location;
     private InternalContext internal;
+    private CloudContext cloud;
 
     /**
      * Default Ctor
@@ -133,6 +135,17 @@ public final class TelemetryContext {
         }
 
         return location;
+    }
+
+    /**
+     * Gets the object describing the role and instnace in the cloud.
+     * @return the cloud context
+     */
+    public CloudContext getCloud() {
+        if (cloud == null) {
+            cloud = new CloudContext(tags);
+        }
+        return cloud;
     }
 
     /**

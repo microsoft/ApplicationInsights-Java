@@ -55,8 +55,8 @@ public class TelemetryProcessorCreatorTest {
         Assert.assertTrue(result instanceof ValidProcessorsWithSetters);
 
         ValidProcessorsWithSetters processor = (ValidProcessorsWithSetters)result;
-        Assert.assertEquals(processor.propertyA, "valueA");
-        Assert.assertEquals(processor.propertyB, "valueB");
+        Assert.assertEquals("valueA", processor.propertyA);
+        Assert.assertEquals("valueB", processor.propertyB);
     }
 
     @Test

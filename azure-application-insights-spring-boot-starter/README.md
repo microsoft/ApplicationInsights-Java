@@ -145,6 +145,14 @@ azure.application-insights.channel.in-process.max-transmission-storage-files-cap
 # Enable/Disable throttling on sending telemetry data. Default value: true.
 azure.application-insights.channel.in-process.throttling=true
 
+#Enable and configure Local Forwarder Telemetry Channel
+azure.application-insights.channel.local-forwarder.endpoint-address=
+# Interval to send telemetry. Must be between 1 and 300. Default value: 5 seconds.
+azure.application-insights.channel.local-forwarder.flush-interval-in-seconds=5
+## Maximum count of telemetries that will be batched before sending. Must be between 1 and 1000. Default value: 500.
+azure.application-insights.channel.local-forwarder.max-telemetry-buffer-capacity=500
+
+
 # Percent of telemetry events that will be sent to Application Insights. Percentage must be close to 100/N where N is an integer.
 # E.g. 50 (=100/2), 33.33 (=100/3), 25 (=100/4), 20, 1 (=100/100), 0.1 (=100/1000). Default value: 100 (all telemetry events).
 azure.application-insights.telemetry-processor.sampling.percentage=100
@@ -167,9 +175,9 @@ azure.application-insights.default-modules.WebUserTelemetryInitializer.enabled=t
 azure.application-insights.default-modules.WebUserAgentTelemetryInitializer.enabled=true
 
 #Collect JMX Counters
-azure.application-insights.jmx.jmx-counters=\
-  java.lang:type=ClassLoading/LoadedClassCount/Current Loaded Class Count, \
-  java.lang:type=Memory/HeapMemoryUsage.init/Initial Heap Memory Usage/Composite
+azure.application-insights.jmx.jmx-counters[0]=java.lang:type=ClassLoading/LoadedClassCount/Current Loaded Class Count
+azure.application-insights.jmx.jmx-counters[1]=java.lang:type=Memory/HeapMemoryUsage.init/Initial Heap Memory Usage/Composite
+azure.application-insights.jmx.jmx-counters[2]=java.lang:name=PS MarkSweep,type=GarbageCollector/CollectionTime/GC MarkSweep Time
 # where the elements separated by / have the following order:
 # 1. objectName 2. AttributeName 3. Display Name and 4. Type  
 

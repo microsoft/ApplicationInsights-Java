@@ -40,9 +40,5 @@ public final class DeviceInfoContextInitializer implements ContextInitializer
         device.setOperatingSystemVersion(DeviceInfo.getOperatingSystemVersion());
         device.setId(DeviceInfo.getHostName());
         device.setLocale(DeviceInfo.getLocale());
-        String hostName = CommonUtils.getHostName();
-        if (!CommonUtils.isNullOrEmpty(hostName)) {
-            device.setRoleInstance(hostName);
-        }
     }
 }

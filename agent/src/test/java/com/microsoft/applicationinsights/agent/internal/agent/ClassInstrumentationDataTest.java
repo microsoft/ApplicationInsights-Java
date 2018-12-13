@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedCla
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public final class ClassInstrumentationDataTest {
@@ -41,9 +42,9 @@ public final class ClassInstrumentationDataTest {
                 .setReportExecutionTime(false);
         assertTrue(test.getMethodInstrumentationInfo().isEmpty());
         assertEquals(test.getClassType(), InstrumentedClassType.HTTP.toString());
-        assertEquals(test.getClassName(), MOCK_CLASS_NAME);
-        assertEquals(test.isReportCaughtExceptions(), true);
-        assertEquals(test.isReportExecutionTime(), false);
+        assertEquals(MOCK_CLASS_NAME, test.getClassName());
+        assertTrue(test.isReportCaughtExceptions());
+        assertFalse(test.isReportExecutionTime());
     }
 
     @Test

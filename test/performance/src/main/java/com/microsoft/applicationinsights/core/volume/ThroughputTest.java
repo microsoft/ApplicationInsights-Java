@@ -68,6 +68,7 @@ public final class ThroughputTest {
         try {
             numberOfTimesToTest = Integer.valueOf(properties.getProperty(NUMBER_OF_TINES_TO_TEST_PROPERTY));
         } catch (NumberFormatException e) {
+            // TODO what should happen here?
         }
         int numberOfContextProperties = DEFAULT_NUMBER_OF_PROPERTIES;
         try {
@@ -167,6 +168,12 @@ public final class ThroughputTest {
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    // don't care.
+                }
             }
         }
 

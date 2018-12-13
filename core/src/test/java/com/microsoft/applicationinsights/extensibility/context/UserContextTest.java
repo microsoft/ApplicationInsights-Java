@@ -36,9 +36,9 @@ public final class UserContextTest {
         UserContext context = new UserContext(map);
         context.setId("mock");
 
-        assertEquals(context.getId(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getUserId()), "mock");
+        assertEquals("mock", context.getId());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getUserId()));
     }
 
     @Test
@@ -47,9 +47,9 @@ public final class UserContextTest {
         UserContext context = new UserContext(map);
         context.setAccountId("mock");
 
-        assertEquals(context.getAccountId(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getUserAccountId()), "mock");
+        assertEquals("mock", context.getAccountId());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getUserAccountId()));
     }
 
     @Test
@@ -60,7 +60,7 @@ public final class UserContextTest {
         context.setAcquisitionDate(date);
 
         assertEquals(context.getAcquisitionDate(), date);
-        assertEquals(map.size(), 1);
+        assertEquals(1, map.size());
     }
 
     @Test
@@ -70,7 +70,7 @@ public final class UserContextTest {
         context.setAcquisitionDate(null);
 
         assertNull(context.getAcquisitionDate());
-        assertEquals(map.size(), 0);
+        assertEquals(0, map.size());
         assertNull(map.get(ContextTagKeys.getKeys().getUserAccountAcquisitionDate()));
     }
 
@@ -80,8 +80,8 @@ public final class UserContextTest {
         UserContext context = new UserContext(map);
         context.setUserAgent("mock");
 
-        assertEquals(context.getUserAgent(), "mock");
-        assertEquals(map.size(), 1);
-        assertEquals(map.get(ContextTagKeys.getKeys().getUserAgent()), "mock");
+        assertEquals("mock", context.getUserAgent());
+        assertEquals(1, map.size());
+        assertEquals("mock", map.get(ContextTagKeys.getKeys().getUserAgent()));
     }
 }

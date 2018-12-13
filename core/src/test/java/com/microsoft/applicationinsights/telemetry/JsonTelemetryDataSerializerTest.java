@@ -37,6 +37,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 public class JsonTelemetryDataSerializerTest {
         private final static class TestClassWithStrings implements JsonSerializable, Serializable {
@@ -274,8 +275,8 @@ public class JsonTelemetryDataSerializerTest {
         tested.close();
         String str = stringWriter.toString();
         Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
-        assertEquals(recoveryMap.get("s1"), "\\'\\f\\b\\f\\n\\r\\t/\\");
-        assertEquals(recoveryMap.get("s2"), "0x0021\t");
+        assertEquals("\\'\\f\\b\\f\\n\\r\\t/\\", recoveryMap.get("s1"));
+        assertEquals("0x0021\t", recoveryMap.get("s2"));
     }
 
     @Test
@@ -288,8 +289,8 @@ public class JsonTelemetryDataSerializerTest {
         tested.close();
         String str = stringWriter.toString();
         Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
-        assertEquals(recoveryMap.get("s1"), "DEFAULT s1");
-        assertEquals(recoveryMap.get("s2"), null);
+        assertEquals("DEFAULT s1", recoveryMap.get("s1"));
+        assertEquals(null, recoveryMap.get("s2"));
     }
 
     @Test
@@ -302,8 +303,8 @@ public class JsonTelemetryDataSerializerTest {
         tested.close();
         String str = stringWriter.toString();
         Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
-        assertEquals(recoveryMap.get("s1"), "DEFAULT s1");
-        assertEquals(recoveryMap.get("s2"), null);
+        assertEquals("DEFAULT s1", recoveryMap.get("s1"));
+        assertNull(recoveryMap.get("s2"));
     }
 
     @Test
@@ -373,10 +374,11 @@ public class JsonTelemetryDataSerializerTest {
 
         Gson gson = new Gson();
         StubClass bac = gson.fromJson(str, StubClass.class);
-        assertEquals(bac.f1, 0, 0.001);
-        assertEquals(bac.f2, 0, 0.001);
-        assertEquals(bac.d1, 0, 0.001);
-        assertEquals(bac.d2, 0, 0.001);
+        final double epsilon = Math.ulp(0.0);
+        assertEquals(0, bac.f1, epsilon);
+        assertEquals(0, bac.f2, epsilon);
+        assertEquals(0, bac.d1, epsilon);
+        assertEquals(0, bac.d2, epsilon);
     }
 
     @Test
@@ -397,9 +399,10 @@ public class JsonTelemetryDataSerializerTest {
 
         Gson gson = new Gson();
         StubClass bac = gson.fromJson(str, StubClass.class);
-        assertEquals(bac.f1, 0, 0.001);
-        assertEquals(bac.f2, 0, 0.001);
-        assertEquals(bac.d1, 0, 0.001);
-        assertEquals(bac.d2, 0, 0.001);
+        final double epsilon = Math.ulp(0.0);
+        assertEquals(0, bac.f1, epsilon);
+        assertEquals(0, bac.f2, epsilon);
+        assertEquals(0, bac.d1, epsilon);
+        assertEquals(0, bac.d2, epsilon);
     }
 }

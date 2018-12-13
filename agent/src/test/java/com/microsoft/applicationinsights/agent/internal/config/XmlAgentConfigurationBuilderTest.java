@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
+import java.util.Map.Entry;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ public final class XmlAgentConfigurationBuilderTest {
         Set<String> excludedPrefixes = configuration.getExcludedPrefixes();
 
         assertNotNull(excludedPrefixes);
-        assertEquals(excludedPrefixes.size(), 2);
+        assertEquals(2, excludedPrefixes.size());
         assertTrue(excludedPrefixes.contains("a.AClass1"));
         assertTrue(excludedPrefixes.contains("a.b.AClass1"));
     }
@@ -61,18 +62,28 @@ public final class XmlAgentConfigurationBuilderTest {
         AgentConfiguration configuration = testConfiguration("InstrumentationTest.xml");
         Map<String, ClassInstrumentationData> classes = configuration.getRequestedClassesToInstrument();
         assertNotNull(classes);
-        assertEquals(classes.size(), 2);
+        assertEquals(2, classes.size());
     }
 
     @Test
     public void testBuiltInConfiguration() throws IOException {
         AgentConfiguration configuration = testConfiguration("BuiltInTest.xml");
         AgentBuiltInConfiguration builtInConfiguration = configuration.getBuiltInConfiguration();
-        assertEquals(builtInConfiguration.isEnabled(), true);
-        assertEquals(builtInConfiguration.isHttpEnabled(), true);
-        assertEquals(builtInConfiguration.isJdbcEnabled(), true);
-        assertEquals(builtInConfiguration.isJdbcEnabled(), true);
-        assertEquals(builtInConfiguration.isHibernateEnabled(), false);
+        assertTrue(builtInConfiguration.isEnabled());
+        assertTrue(builtInConfiguration.isHttpEnabled());
+        assertTrue(builtInConfiguration.isJdbcEnabled());
+        assertTrue(builtInConfiguration.isJdbcEnabled());
+        assertFalse(builtInConfiguration.isHibernateEnabled());
+    }
+
+    @Test
+    public void testLoggingConfiguration() throws IOException {
+        AgentConfiguration configuration = testConfiguration("LoggingTest.xml");
+        Map<String, String> loggingConfig = configuration.getAgentLoggingConfiguration();
+        assertNotNull(loggingConfig);
+        assertEquals("TRACE", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOG_LEVEL_TAG));
+        assertEquals("AI-Agent", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOGGER_UNIQUE_PREFIX_TAG));
+        assertEquals("C:/agent/AIAGENT", loggingConfig.get(XmlAgentConfigurationBuilder.SDK_LOGGER_BASE_FOLDER_PATH_TAG));
     }
 
     private AgentConfiguration testConfiguration(String testFileName) throws IOException {

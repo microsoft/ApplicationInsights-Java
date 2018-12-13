@@ -7,7 +7,6 @@ import javax.servlet.annotation.WebListener;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 
-@WebListener
 public class ApplicationInsightsServletContextListener implements ServletContextListener {
 
 	@Override

@@ -110,6 +110,9 @@ public class ApplicationInsightsXmlConfiguration {
     }
 
     public QuickPulseXmlElement getQuickPulse() {
+        if (quickPulse == null) {
+            quickPulse = new QuickPulseXmlElement();
+        }
         return quickPulse;
     }
 

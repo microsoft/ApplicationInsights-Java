@@ -23,11 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.agent.sql;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassToMethodTransformationData;
 import com.microsoft.applicationinsights.agent.internal.agent.DefaultMethodVisitor;
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 /**
  * Created by gupele on 8/5/2015.

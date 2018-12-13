@@ -1,0 +1,34 @@
+﻿syntax = "proto3";
+package contracts;
+
+option csharp_namespace = "Microsoft.LocalForwarder.Library.Inputs.Contracts";
+option java_package = "com.microsoft.localforwarder.library.inputs.contracts";
+option java_multiple_files = true;
+
+import "google/protobuf/wrappers.proto";
+import "DataPointType.proto";
+
+message DataPoint
+{
+	string ns = 1;
+    
+	string name = 2;
+    
+	// Metric type. Single measurement or aggregated value
+	DataPointType kind = 3;
+    
+	// Single value for a Measurement, sum of individual measurements for an Aggregation
+	double value = 4;
+    
+	// should not be set for a measurement
+	google.protobuf.Int32Value count = 5;
+    
+	// should not be set for a measurement
+	google.protobuf.DoubleValue min = 6;
+    
+	// should not be set for a measurement
+	google.protobuf.DoubleValue max = 7;
+    
+	// should not be set for a measurement
+	google.protobuf.DoubleValue stdDev = 8;
+}

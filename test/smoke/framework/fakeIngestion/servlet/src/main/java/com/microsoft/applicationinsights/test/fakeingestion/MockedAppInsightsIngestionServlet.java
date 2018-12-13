@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.test.fakeingestion;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.io.CharStreams;
@@ -135,7 +136,11 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
         }
     }
 
-    public List<Envelope> waitForItems(final Predicate<Envelope> condition, final int numItems, int timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+    public void awaitAnyItems(long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+        waitForItems(Predicates.alwaysTrue(), 1, timeout, timeUnit);
+    }
+
+    public List<Envelope> waitForItems(final Predicate<Envelope> condition, final int numItems, long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
         final Future<List<Envelope>> future = itemExecutor.submit(new Callable<List<Envelope>>() {
             @Override
             public List<Envelope> call() throws Exception {

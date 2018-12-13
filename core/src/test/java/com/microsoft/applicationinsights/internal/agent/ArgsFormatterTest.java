@@ -35,7 +35,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {null, new Integer[]{new Integer(1), null, new Integer(122)}});
 
         assertNotNull(s);
-        assertEquals(s, "null,[1,null,122]");
+        assertEquals("null,[1,null,122]", s);
     }
 
     @Test
@@ -43,7 +43,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {null, new Integer(1)});
 
         assertNotNull(s);
-        assertEquals(s, "null,1");
+        assertEquals("null,1", s);
     }
 
     @Test
@@ -51,7 +51,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {null});
 
         assertNotNull(s);
-        assertEquals(s, "null");
+        assertEquals("null", s);
     }
 
     @Test
@@ -59,7 +59,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {null, null});
 
         assertNotNull(s);
-        assertEquals(s, "null,null");
+        assertEquals("null,null", s);
     }
 
     @Test
@@ -69,7 +69,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {s1, s2});
 
         assertNotNull(s);
-        assertEquals(s, "tutorial-list,Mysql");
+        assertEquals("tutorial-list,Mysql", s);
     }
 
     @Test
@@ -78,7 +78,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {s1});
 
         assertNotNull(s);
-        assertEquals(s, "1");
+        assertEquals("1", s);
     }
 
     @Test
@@ -91,7 +91,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {s1, s2, strings});
 
         assertNotNull(s);
-        assertEquals(s, "1,2,[a,a1]");
+        assertEquals("1,2,[a,a1]", s);
     }
 
     @Test
@@ -104,7 +104,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {strings, s1, s2});
 
         assertNotNull(s);
-        assertEquals(s, "[a,a1],1,2");
+        assertEquals("[a,a1],1,2", s);
     }
 
     @Test
@@ -117,7 +117,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {s1, s2, strings});
 
         assertNotNull(s);
-        assertEquals(s, "1,2,[a:object,a1:object1]");
+        assertEquals("1,2,[a:object,a1:object1]", s);
     }
 
     @Test
@@ -134,7 +134,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {mapOfStrings});
 
         assertNotNull(s);
-        assertEquals(s, "[a:[a,a1],a1:[a_,a_1]]");
+        assertEquals("[a:[a,a1],a1:[a_,a_1]]", s);
     }
 
     @Test
@@ -145,7 +145,7 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {strings});
 
         assertNotNull(s);
-        assertEquals(s, "[a,a1]");
+        assertEquals("[a,a1]", s);
     }
 
     @Test
@@ -156,6 +156,6 @@ public final class ArgsFormatterTest {
         String s = new ArgsFormatter().format(new Object[] {strings});
 
         assertNotNull(s);
-        assertEquals(s, "[a:object,a1:object1]");
+        assertEquals("[a:object,a1:object1]", s);
     }
 }

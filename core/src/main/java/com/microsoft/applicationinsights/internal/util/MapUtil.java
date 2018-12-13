@@ -35,14 +35,20 @@ import com.google.common.base.Strings;
  */
 public class MapUtil
 {
+    /**
+     * Copies entries from the source map to the target map, overwrites any values in target.
+     * Filters out null values if target is a {@link ConcurrentHashMap}.
+     * @param source the source map. Cannot be null.
+     * @param target the target map. Cannot be null.
+     * @param <Value> The type of the values in both maps
+     * @throws IllegalArgumentException if either {@code source} or {@code target} are null.
+     */
     public static <Value> void copy(Map<String, Value> source, Map<String, Value> target) {
         if (source == null) {
-            Preconditions.checkArgument(source != null, "source must not be null");
-            return;
+            throw new IllegalArgumentException("source must not be null");
         }
         if (target == null) {
-            Preconditions.checkArgument(target != null, "target must not be null");
-            return;
+            throw new IllegalArgumentException("target must not be null");
         }
         for (Map.Entry<String,Value> entry : source.entrySet()) {
             String key = entry.getKey();

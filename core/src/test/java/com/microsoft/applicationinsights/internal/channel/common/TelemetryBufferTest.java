@@ -48,7 +48,7 @@ import static org.mockito.Matchers.anyObject;
 public final class TelemetryBufferTest {
     private final static String MOCK_PROPERTY_NAME = "MockProperty";
 
-    private static class MockSender implements TelemetriesTransmitter {
+    private static class MockSender implements TelemetriesTransmitter<String> {
         private static class ScheduledSendResult {
             public final boolean result;
 
@@ -107,7 +107,7 @@ public final class TelemetryBufferTest {
 
             scheduleSendCallCounter.incrementAndGet();
 
-            assertEquals(timeUnit, TimeUnit.SECONDS);
+            assertEquals(TimeUnit.SECONDS, timeUnit);
 
             scheduler.schedule(new Runnable() {
                 @Override
@@ -275,7 +275,7 @@ public final class TelemetryBufferTest {
 
     @Test
     public void testSendReturnsFalseOnScheduleSend() throws Exception {
-        class StubTelemetriesTransmitter implements TelemetriesTransmitter {
+        class StubTelemetriesTransmitter implements TelemetriesTransmitter<String> {
             private int scheduleSendCounter = 2;
             private Collection<String> sendNowCollection;
 
