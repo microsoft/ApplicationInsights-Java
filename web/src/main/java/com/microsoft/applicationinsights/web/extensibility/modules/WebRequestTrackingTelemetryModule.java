@@ -80,6 +80,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
         if (configurationData.containsKey(W3C_CONFIGURATION_PARAMETER)) {
             isW3CEnabled = Boolean.valueOf(configurationData.get(W3C_CONFIGURATION_PARAMETER));
+            InternalLogger.INSTANCE.trace(String.format("Inbound W3C tracing mode is enabled %s", isW3CEnabled));
         }
 
         if (configurationData.containsKey(W3C_BACKCOMPAT_PARAMETER)) {

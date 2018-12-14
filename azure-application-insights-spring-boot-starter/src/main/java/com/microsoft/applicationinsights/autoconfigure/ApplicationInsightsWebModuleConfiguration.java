@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.autoconfigure;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer;
@@ -73,6 +74,7 @@ class ApplicationInsightsWebModuleConfiguration {
     WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
         WebRequestTrackingTelemetryModule w = new WebRequestTrackingTelemetryModule();
         w.isW3CEnabled = applicationInsightsProperties.getWeb().isEnableW3C();
+        InternalLogger.INSTANCE.trace(String.format("Inbound W3C tracing is enabled %s", w.isW3CEnabled));
         w.setEnableBackCompatibilityForW3C(applicationInsightsProperties.getWeb().isEnableW3CBackcompatMode());
         return w;
     }
