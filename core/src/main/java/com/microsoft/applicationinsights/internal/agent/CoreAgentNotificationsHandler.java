@@ -167,7 +167,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
         if (target != null && !target.isEmpty()) {
             // AI correlation expects target to be of this format.
-            target = uriObject.getHost() + ":" + uriObject.getPort() + " | " + target;
+            target = createTarget(uriObject);
             if (telemetry.getTarget() == null) {
                 telemetry.setTarget(target);
             } else {
@@ -177,6 +177,16 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
        
         InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, deltaInMS);
         telemetryClient.track(telemetry);
+    }
+
+    private String createTarget(URI uriObject) {
+        assert uriObject != null;
+        String target = uriObject.getHost();
+        if (uriObject.getPort() != 80 && uriObject.getPort() != 443) {
+            target += ":" + uriObject.getPort();
+        }
+        target += " | " + target;
+        return target;
     }
 
     @Override

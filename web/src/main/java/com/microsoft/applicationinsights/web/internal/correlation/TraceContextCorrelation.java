@@ -173,13 +173,19 @@ public class TraceContextCorrelation {
 
         String requestId = request.getHeader(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME);
 
-        if (requestId != null && !requestId.isEmpty()) {
-            String legacyOperationId = TelemetryCorrelationUtils.extractRootId(requestId);
-            RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
-            requestTelemetry.getContext().getProperties().putIfAbsent("ai_legacyRootID", legacyOperationId);
-            requestTelemetry.getContext().getOperation().setParentId(requestId);
-            return new Traceparent(0, legacyOperationId, null, 0);
+        try {
+            if (requestId != null && !requestId.isEmpty()) {
+                String legacyOperationId = TelemetryCorrelationUtils.extractRootId(requestId);
+                RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+                requestTelemetry.getContext().getProperties().putIfAbsent("ai_legacyRootID", legacyOperationId);
+                requestTelemetry.getContext().getOperation().setParentId(requestId);
+                return new Traceparent(0, legacyOperationId, null, 0);
+            }
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error(String.format("unable to create traceparent from legacy request-id header"
+                + " %s", ExceptionUtils.getStackTrace(e)));
         }
+
         return null;
     }
 
