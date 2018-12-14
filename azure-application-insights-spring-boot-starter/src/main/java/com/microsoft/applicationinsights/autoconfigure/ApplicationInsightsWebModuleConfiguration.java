@@ -73,6 +73,7 @@ class ApplicationInsightsWebModuleConfiguration {
     WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
         WebRequestTrackingTelemetryModule w = new WebRequestTrackingTelemetryModule();
         w.isW3CEnabled = applicationInsightsProperties.getWeb().isEnableW3C();
+        w.setEnableBackCompatibilityForW3C(applicationInsightsProperties.getWeb().isEnableW3CBackcompatMode());
         return w;
     }
 

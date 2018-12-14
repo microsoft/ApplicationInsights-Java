@@ -412,6 +412,20 @@ public class ApplicationInsightsProperties {
      */
     private boolean enableW3C = false;
 
+    /**
+     * Flag to enable backward compatibility mode for W3C. By default this is
+     * enabled.
+     */
+    private boolean enableW3CBackcompatMode = true;
+
+    public boolean isEnableW3CBackcompatMode() {
+      return enableW3CBackcompatMode;
+    }
+
+    public void setEnableW3CBackcompatMode(boolean enableW3CBackcompatMode) {
+      this.enableW3CBackcompatMode = enableW3CBackcompatMode;
+    }
+
     public boolean isEnabled() {
       return enabled;
     }

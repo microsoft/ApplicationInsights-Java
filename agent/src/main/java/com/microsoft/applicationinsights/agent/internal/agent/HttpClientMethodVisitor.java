@@ -35,6 +35,7 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
     private final static String FINISH_DETECT_METHOD_NAME = "httpMethodFinished";
     private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
     private final boolean isW3CEnabled;
+    private final boolean isW3CBackportEnabled;
 
     public HttpClientMethodVisitor(int access,
                                    String desc,
@@ -42,9 +43,11 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
                                    String methodName,
                                    MethodVisitor methodVisitor,
                                    ClassToMethodTransformationData additionalData,
-                                   boolean isW3CEnabled) {
+                                   boolean isW3CEnabled,
+                                   boolean isW3CBackportEnabled) {
         super(access, desc, owner, methodName, methodVisitor, additionalData);
         this.isW3CEnabled = isW3CEnabled;
+        this.isW3CBackportEnabled = isW3CBackportEnabled;
     }
 
     private int deltaInNS;
@@ -128,6 +131,13 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
             mv.visitLdcInsn("traceparent");
             mv.visitVarInsn(ALOAD, traceparent);
             mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+
+            if (isW3CBackportEnabled) {
+                mv.visitVarInsn(ALOAD, 2);
+                mv.visitLdcInsn("Request-Id");
+                mv.visitVarInsn(ALOAD, childIdLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+            }
 
             mv.visitVarInsn(ALOAD, tracestate);
             Label nullLabel = new Label();

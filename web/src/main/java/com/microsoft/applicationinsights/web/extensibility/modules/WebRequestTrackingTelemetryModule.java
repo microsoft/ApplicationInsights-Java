@@ -53,9 +53,15 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
     public boolean isW3CEnabled = false;
 
     /**
-     * Field to indicate if W3C tracing protocol is enabled.
+     * Tag to indicate if W3C tracing protocol is enabled.
      */
     private final String W3C_CONFIGURATION_PARAMETER = "W3CEnabled";
+
+    /**
+     * Tag to indicate if backward compatibility is turned ON/OFF for W3C.
+     * By default backward compatibility mode is turned ON.
+     */
+    private final String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
 
     // endregion Members
 
@@ -75,8 +81,24 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
         if (configurationData.containsKey(W3C_CONFIGURATION_PARAMETER)) {
             isW3CEnabled = Boolean.valueOf(configurationData.get(W3C_CONFIGURATION_PARAMETER));
         }
+
+        if (configurationData.containsKey(W3C_BACKCOMPAT_PARAMETER)) {
+            boolean enableBackCompatibilityForW3C = Boolean.valueOf(configurationData.get(
+                W3C_BACKCOMPAT_PARAMETER
+            ));
+            TraceContextCorrelation.setIsW3CBackCompatEnabled(enableBackCompatibilityForW3C);
+        }
+
+
     }
 
+    /**
+     * Used for SpringBoot setttings to propogate the switch for W3C to TracecontextCorrelation class
+     * @param enableBackCompatibilityForW3C
+     */
+    public void setEnableBackCompatibilityForW3C(boolean enableBackCompatibilityForW3C) {
+        TraceContextCorrelation.setIsW3CBackCompatEnabled(enableBackCompatibilityForW3C);
+    }
 
     /**
      * Begin request processing.

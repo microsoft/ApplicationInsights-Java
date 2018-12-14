@@ -66,21 +66,20 @@ final class XmlParserUtils {
      * @param attributeName
      * @return boolean
      */
-    static boolean w3cEnabled(Element element, String attributeName) {
-        assert attributeName.equals("W3C");
+    static boolean w3cEnabled(Element element, String attributeName, boolean defaultValue) {
         try {
             String strValue = element.getAttribute(attributeName);
             if (!StringUtils.isNullOrEmpty(strValue)) {
                 boolean value = Boolean.valueOf(strValue);
                 return value;
             }
-            return false;
+            return defaultValue;
 
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("cannot parse the correlation format, will default"
                 + "to AI proprietory correlation", ExceptionUtils.getStackTrace(e));
         }
-        return false;
+        return defaultValue;
     }
 
     public static boolean getEnabled(Element element, String elementName, boolean defaultValue) {

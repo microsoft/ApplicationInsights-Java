@@ -69,6 +69,12 @@ public final class HttpClassDataProvider {
 
     private static boolean isW3CEnabled;
 
+    private static boolean isW3CBackportEnabled;
+
+    public static void setIsW3CBackportEnabled(boolean isW3CBackportEnabled) {
+        HttpClassDataProvider.isW3CBackportEnabled = isW3CBackportEnabled;
+    }
+
     private final Map<String, ClassInstrumentationData> classesToInstrument;
 
     public HttpClassDataProvider(Map<String, ClassInstrumentationData> classesToInstrument) {
@@ -86,7 +92,7 @@ public final class HttpClassDataProvider {
                                             String methodName,
                                             MethodVisitor methodVisitor,
                                             ClassToMethodTransformationData additionalData) {
-                    return new HttpClientMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData, isW3CEnabled);
+                    return new HttpClientMethodVisitor(access, desc, className, methodName, methodVisitor, additionalData, isW3CEnabled, isW3CBackportEnabled);
                 }
             };
 

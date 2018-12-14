@@ -70,6 +70,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
     private final static long JEDIS_ARGS_THRESHOLD_IN_MS = 10000L;
     private final static String W3C_ENABLED = "W3C";
+    private final static String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
 
     private final static String EXCLUDED_PREFIXES_TAG = "ExcludedPrefixes";
     private final static String FORBIDDEN_PREFIX_TAG = "Prefix";
@@ -225,8 +226,9 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
         Element httpElement = XmlParserUtils.getFirst(nodes);
-        boolean isW3CEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_ENABLED);
-        builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(element, HTTP_TAG),isW3CEnabled);
+        boolean isW3CEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_ENABLED, false);
+        boolean isW3CBackportEnabled =XmlParserUtils.w3cEnabled(httpElement, W3C_BACKCOMPAT_PARAMETER, true);
+        builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(element, HTTP_TAG),isW3CEnabled, isW3CBackportEnabled);
 
         nodes = builtInElement.getElementsByTagName(JDBC_TAG);
         builtInConfigurationBuilder.setJdbcEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JDBC_TAG));

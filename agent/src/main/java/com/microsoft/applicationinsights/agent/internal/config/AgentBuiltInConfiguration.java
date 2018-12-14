@@ -32,6 +32,7 @@ public class AgentBuiltInConfiguration {
     private final boolean enabled;
     private final boolean httpEnabled;
     private final boolean w3cEnabled;
+    private final boolean isW3CBackportEnabled;
     private final boolean jdbcEnabled;
     private final boolean hibernateEnabled;
     private final boolean jedisEnabled;
@@ -45,6 +46,7 @@ public class AgentBuiltInConfiguration {
                                      List<ClassInstrumentationData> simpleBuiltInClasses,
                                      boolean httpEnabled,
                                      boolean w3cEnabled,
+                                     boolean isW3CBackportEnabled,
                                      boolean jdbcEnabled,
                                      boolean hibernateEnabled,
                                      boolean jedisEnabled,
@@ -56,6 +58,7 @@ public class AgentBuiltInConfiguration {
         this.enabled = enabled;
         this.httpEnabled = httpEnabled;
         this.w3cEnabled = w3cEnabled;
+        this.isW3CBackportEnabled = isW3CBackportEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.hibernateEnabled = hibernateEnabled;
         this.jmxEnabled = jmxEnabled;
@@ -102,6 +105,10 @@ public class AgentBuiltInConfiguration {
 
     public boolean isW3cEnabled() {
         return w3cEnabled;
+    }
+
+    public boolean isW3CBackportEnabled() {
+        return isW3CBackportEnabled;
     }
 
     public DataOfConfigurationForException getDataOfConfigurationForException() {

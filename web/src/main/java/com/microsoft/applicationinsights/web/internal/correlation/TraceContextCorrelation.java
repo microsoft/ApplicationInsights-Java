@@ -31,6 +31,12 @@ public class TraceContextCorrelation {
     public static final String REQUEST_CONTEXT_HEADER_APPID_KEY = "appId";
 
     /**
+     * Switch to enable W3C Backward compatibility with Legacy AI Correlation.
+     * By default this is turned ON.
+     */
+    private static boolean isW3CBackCompatEnabled = true;
+
+    /**
      * Private constructor as we don't expect to create an object of this class.
      */
     private TraceContextCorrelation() {}
@@ -63,7 +69,7 @@ public class TraceContextCorrelation {
             }
 
             Traceparent incomingTraceparent = extractIncomingTraceparent(request);
-            Traceparent processedTraceParent = processIncomingTraceparent(incomingTraceparent);
+            Traceparent processedTraceParent = processIncomingTraceparent(incomingTraceparent, request);
 
             // represents the id of the current request.
             requestTelemetry.setId("|" + processedTraceParent.getTraceId() + "." + processedTraceParent.getSpanId()
@@ -77,7 +83,10 @@ public class TraceContextCorrelation {
                 requestTelemetry.getContext().getOperation().setParentId("|" + processedTraceParent.getTraceId() + "." +
                     incomingTraceparent.getSpanId() + ".");
             } else {
-                requestTelemetry.getContext().getOperation().setParentId(null);
+                // set parentId only if not already set (legacy processing can set it)
+                if (requestTelemetry.getContext().getOperation().getParentId() == null) {
+                    requestTelemetry.getContext().getOperation().setParentId(null);
+                }
             }
 
             // Propagate trace-flags
@@ -130,18 +139,48 @@ public class TraceContextCorrelation {
      * @param incomingTraceparent
      * @return
      */
-    private static Traceparent processIncomingTraceparent(Traceparent incomingTraceparent) {
+    private static Traceparent processIncomingTraceparent(Traceparent incomingTraceparent,
+        HttpServletRequest request) {
+
         Traceparent processedTraceparent = null;
 
         // If incoming traceparent is null create a new Traceparent
         if (incomingTraceparent == null) {
-            processedTraceparent = new Traceparent();
+
+            // If BackCompt mode is enabled, read the Request-Id Header
+            if (isW3CBackCompatEnabled) {
+                processedTraceparent = processLegacyCorrelation(request);
+            }
+
+            if (processedTraceparent == null){
+                processedTraceparent = new Traceparent();
+            }
+
         } else {
             // create outbound traceparent inheriting traceId, flags from parent.
             processedTraceparent = new Traceparent(0, incomingTraceparent.getTraceId(), null,
                 incomingTraceparent.getTraceFlags());
         }
         return processedTraceparent;
+    }
+
+    /**
+     * This method processes the legacy Request-ID header for backward compatibility.
+     * @param request
+     * @return
+     */
+    private static Traceparent processLegacyCorrelation(HttpServletRequest request) {
+
+        String requestId = request.getHeader(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME);
+
+        if (requestId != null && !requestId.isEmpty()) {
+            String legacyOperationId = TelemetryCorrelationUtils.extractRootId(requestId);
+            RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+            requestTelemetry.getContext().getProperties().putIfAbsent("ai_legacyRootID", legacyOperationId);
+            requestTelemetry.getContext().getOperation().setParentId(requestId);
+            return new Traceparent(0, legacyOperationId, null, 0);
+        }
+        return null;
     }
 
     /**
@@ -288,6 +327,14 @@ public class TraceContextCorrelation {
 
             String tracestate = request.getHeader(TRACESTATE_HEADER_NAME);
             if (tracestate == null || tracestate.isEmpty()) {
+
+                if (isW3CBackCompatEnabled &&
+                        request.getHeader(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME) != null) {
+                    InternalLogger.INSTANCE.trace("Tracestate absent, In backward compatibility mode, will try to resolve "
+                        + "request-context");
+                    TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, instrumentationKey);
+                    return;
+                }
                 InternalLogger.INSTANCE.info("Skip resolving request source as the following header was not found: %s",
                     TRACESTATE_HEADER_NAME);
                 return;
@@ -445,5 +492,11 @@ public class TraceContextCorrelation {
         assert traceparentArr.length == 4;
 
         return "|" + traceparentArr[1] + "." + traceparentArr[2] + ".";
+    }
+
+    public static void setIsW3CBackCompatEnabled(boolean isW3CBackCompatEnabled) {
+        TraceContextCorrelation.isW3CBackCompatEnabled = isW3CBackCompatEnabled;
+        InternalLogger.INSTANCE.trace(String.format("W3C Backport mode enabled on Incoming side %s",
+            isW3CBackCompatEnabled));
     }
 }
