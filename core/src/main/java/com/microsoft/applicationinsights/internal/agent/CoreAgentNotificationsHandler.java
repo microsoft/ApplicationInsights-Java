@@ -179,6 +179,12 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         telemetryClient.track(telemetry);
     }
 
+    /**
+     * This is used to create Target string to be set in the RDD Telemetry
+     * According to spec, we do not include port 80 and 443 in target
+     * @param uriObject
+     * @return
+     */
     private String createTarget(URI uriObject) {
         assert uriObject != null;
         String target = uriObject.getHost();
