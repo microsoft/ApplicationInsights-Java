@@ -103,11 +103,23 @@ public class ServletUtils {
 
         // specifically for W3C
 
-        when(request.getHeaders(TraceContextCorrelation.TRACESTATE_HEADER_NAME)).
-            thenReturn(Collections.enumeration(Arrays.asList(headers.get(TraceContextCorrelation.TRACESTATE_HEADER_NAME))));
+        if (headers.get(TraceContextCorrelation.TRACESTATE_HEADER_NAME)!=null) {
+            when(request.getHeaders(TraceContextCorrelation.TRACESTATE_HEADER_NAME)).
+                thenReturn(Collections.enumeration(Arrays.asList(headers.get(TraceContextCorrelation.TRACESTATE_HEADER_NAME))));
+        } else {
+            when(request.getHeaders(TraceContextCorrelation.TRACESTATE_HEADER_NAME)).
+                thenReturn(Collections.enumeration(Collections.EMPTY_LIST));
+        }
 
-        when(request.getHeaders(TraceContextCorrelation.TRACEPARENT_HEADER_NAME)).
-            thenReturn(Collections.enumeration(Arrays.asList(headers.get(TraceContextCorrelation.TRACEPARENT_HEADER_NAME))));
+
+        if (headers.get(TraceContextCorrelation.TRACEPARENT_HEADER_NAME) != null) {
+            when(request.getHeaders(TraceContextCorrelation.TRACEPARENT_HEADER_NAME)).
+                thenReturn(Collections.enumeration(Arrays.asList(headers.get(TraceContextCorrelation.TRACEPARENT_HEADER_NAME))));
+        } else {
+            when(request.getHeaders(TraceContextCorrelation.TRACEPARENT_HEADER_NAME)).
+                thenReturn(Collections.enumeration(Collections.EMPTY_LIST));
+        }
+
 
         when(request.getRequestURI()).thenReturn("/controller/action.action");
         when(request.getMethod()).thenReturn("POST");
