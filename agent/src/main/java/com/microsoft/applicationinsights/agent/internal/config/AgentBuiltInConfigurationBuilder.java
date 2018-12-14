@@ -49,7 +49,7 @@ public class AgentBuiltInConfigurationBuilder {
         }
 
         InternalLogger.INSTANCE.trace(String.format("Outbound W3C tracing is enabled : %s", w3cEnabled));
-        InternalLogger.INSTANCE.trace(String.format("Outbound W3C backport mode is enabled : %s"), isW3CBackportEnabled);
+        InternalLogger.INSTANCE.trace(String.format("Outbound W3C backport mode is enabled : %s", isW3CBackportEnabled));
 
         return new AgentBuiltInConfiguration(enabled,
                                              simpleBuiltInClasses,
