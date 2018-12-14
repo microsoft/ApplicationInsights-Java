@@ -484,6 +484,54 @@ public class WebRequestTrackingTelemetryModuleTests {
 
     }
 
+    @Test
+    public void testLegacyHeadersAreNotCapturedWhenW3CIsTurnedOnAndBackPortSwitchIsOff() {
+        // Turn W3C on
+        defaultModule.isW3CEnabled = true;
+        defaultModule.setEnableBackCompatibilityForW3C(false);
+
+        //setup: initialize a request telemetry context
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
+        ThreadContext.setRequestTelemetryContext(context);
+
+        //mock a servlet request with cross-component correlation headers
+        Map<String, String> headers = new HashMap<>();
+        Traceparent tp = new Traceparent();
+
+        String incomingId = "|" + tp.getTraceId() + ".bcec871c_1.";
+        headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
+        headers.put(TelemetryCorrelationUtils.REQUEST_CONTEXT_HEADER_NAME, TelemetryCorrelationUtilsTests.getRequestContextHeaderValue("id1", null));
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
+
+        //configure mock appId fetcher to return different appId from what's on the request header
+        mockProfileFetcher.setAppIdToReturn("id2");
+        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
+
+        //run
+        defaultModule.onBeginRequest(request, response);
+
+        // verify ID's are set as expected in request telemetry
+        RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        Assert.assertNotNull(requestTelemetry.getId());
+
+        // old headers are not captured
+        Assert.assertFalse(requestTelemetry.getId().startsWith("|"+tp.getTraceId()));
+
+        //validate operation context ID's
+        OperationContext operation = requestTelemetry.getContext().getOperation();
+        Assert.assertNotEquals(tp.getTraceId(), operation.getId());
+        Assert.assertNotEquals(incomingId, operation.getParentId());
+
+        //run onEnd
+        defaultModule.onEndRequest(request, null);
+
+        //old request-context headers are not checked
+        Assert.assertNull(requestTelemetry.getSource());
+
+        Assert.assertFalse(requestTelemetry.getContext().getProperties().containsKey("ai_legacyRootID"));
+    }
+
 
     private String formatedID(String id) {
         return "|" + id + ".";
