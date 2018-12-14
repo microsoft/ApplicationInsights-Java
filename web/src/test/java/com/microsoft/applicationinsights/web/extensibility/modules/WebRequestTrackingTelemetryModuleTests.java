@@ -21,45 +21,48 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
-import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationTests;
-import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
-import com.microsoft.localforwarder.library.inputs.contracts.Telemetry;
-import org.apache.http.HttpStatus;
-import org.eclipse.jetty.http.HttpMethods;
-import org.junit.*;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import com.microsoft.applicationinsights.web.utils.HttpHelper;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.extensibility.context.OperationContext;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.web.utils.JettyTestServer;
-import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
-import com.microsoft.applicationinsights.web.utils.ServletUtils;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
-import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsTests;
-import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
-import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
-import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.extensibility.context.OperationContext;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
+import com.microsoft.applicationinsights.web.internal.correlation.ProfileFetcherResultTaskStatus;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
+import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsTests;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationTests;
+import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
+import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
+import com.microsoft.applicationinsights.web.utils.HttpHelper;
+import com.microsoft.applicationinsights.web.utils.JettyTestServer;
+import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
+import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.http.HttpStatus;
+import org.eclipse.jetty.http.HttpMethods;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -106,6 +109,7 @@ public class WebRequestTrackingTelemetryModuleTests {
     public void testDestroy() {
         currentModule.isW3CEnabled = false;
         defaultModule.isW3CEnabled = false;
+        defaultModule.setEnableBackCompatibilityForW3C(true);
     }
 
     @AfterClass
