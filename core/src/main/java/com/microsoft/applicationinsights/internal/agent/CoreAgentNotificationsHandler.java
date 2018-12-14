@@ -167,7 +167,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 
         if (target != null && !target.isEmpty()) {
             // AI correlation expects target to be of this format.
-            target = createTarget(uriObject);
+            target = createTarget(uriObject, target);
             if (telemetry.getTarget() == null) {
                 telemetry.setTarget(target);
             } else {
@@ -185,13 +185,13 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
      * @param uriObject
      * @return
      */
-    private String createTarget(URI uriObject) {
+    private String createTarget(URI uriObject, String incomingTarget) {
         assert uriObject != null;
         String target = uriObject.getHost();
         if (uriObject.getPort() != 80 && uriObject.getPort() != 443) {
             target += ":" + uriObject.getPort();
         }
-        target += " | " + target;
+        target += " | " + incomingTarget;
         return target;
     }
 
