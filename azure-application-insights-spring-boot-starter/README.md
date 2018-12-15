@@ -124,6 +124,9 @@ azure.application-insights.enabled=true
 # Enable/Disable web modules. Default value: true.
 azure.application-insights.web.enabled=true
 
+# Enable/Disable W3C correlation protocol. Defaul value: false
+azure.application-insights.web.w3c=true
+
 # Logging type [console, file]. Default value: console.
 azure.application-insights.logger.type=console
 # Logging level [all, trace, info, warn, error, off]. Default value: error.

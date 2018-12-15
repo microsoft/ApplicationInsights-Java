@@ -88,7 +88,10 @@ class DefaultClassDataProvider implements ClassDataProvider {
 
             if (agentConfiguration.getBuiltInConfiguration().isHttpEnabled()) {
 				InternalLogger.INSTANCE.trace("Adding built-in HTTP instrumentation");
-                new HttpClassDataProvider(classesToInstrument).add();
+                HttpClassDataProvider httpClassDataProvider= new HttpClassDataProvider(classesToInstrument);
+                httpClassDataProvider.setIsW3CEnabled(agentConfiguration.getBuiltInConfiguration().isW3cEnabled());
+                httpClassDataProvider.setIsW3CBackportEnabled(agentConfiguration.getBuiltInConfiguration().isW3CBackportEnabled());
+                httpClassDataProvider.add();
             }
 
             if (agentConfiguration.getBuiltInConfiguration().isRedisEnabled()) {

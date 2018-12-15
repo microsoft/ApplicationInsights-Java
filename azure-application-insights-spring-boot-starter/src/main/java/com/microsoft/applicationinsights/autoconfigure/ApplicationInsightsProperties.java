@@ -407,12 +407,39 @@ public class ApplicationInsightsProperties {
      */
     private boolean enabled = true;
 
+    /**
+     * Flag to enable/disable enableW3C headers. It is disabled by default.
+     */
+    private boolean enableW3C = false;
+
+    /**
+     * Flag to enable backward compatibility mode for W3C. By default this is
+     * enabled.
+     */
+    private boolean enableW3CBackcompatMode = true;
+
+    public boolean isEnableW3CBackcompatMode() {
+      return enableW3CBackcompatMode;
+    }
+
+    public void setEnableW3CBackcompatMode(boolean enableW3CBackcompatMode) {
+      this.enableW3CBackcompatMode = enableW3CBackcompatMode;
+    }
+
     public boolean isEnabled() {
       return enabled;
     }
 
     public void setEnabled(boolean enabled) {
       this.enabled = enabled;
+    }
+
+    public boolean isEnableW3C() {
+      return enableW3C;
+    }
+
+    public void setEnableW3C(boolean enableW3C) {
+      this.enableW3C = enableW3C;
     }
   }
 

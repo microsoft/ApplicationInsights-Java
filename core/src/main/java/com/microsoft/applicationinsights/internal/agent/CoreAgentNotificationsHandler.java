@@ -159,13 +159,15 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
 		telemetry.setTimestamp(dependencyStartTime);
         telemetry.setId(correlationId);
         telemetry.setResultCode(Integer.toString(result));
-        telemetry.setType("HTTP");
+        telemetry.setType("Http (tracked component)");
 
         // For Backward Compatibility
 		telemetry.getContext().getProperties().put("URI", uri);
 		telemetry.getContext().getProperties().put("Method", method);
 
         if (target != null && !target.isEmpty()) {
+            // AI correlation expects target to be of this format.
+            target = createTarget(uriObject, target);
             if (telemetry.getTarget() == null) {
                 telemetry.setTarget(target);
             } else {
@@ -175,6 +177,22 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
        
         InternalLogger.INSTANCE.trace("'%s' sent an HTTP method: '%s', uri: '%s', duration=%s ms", identifier, method, uri, deltaInMS);
         telemetryClient.track(telemetry);
+    }
+
+    /**
+     * This is used to create Target string to be set in the RDD Telemetry
+     * According to spec, we do not include port 80 and 443 in target
+     * @param uriObject
+     * @return
+     */
+    private String createTarget(URI uriObject, String incomingTarget) {
+        assert uriObject != null;
+        String target = uriObject.getHost();
+        if (uriObject.getPort() != 80 && uriObject.getPort() != 443) {
+            target += ":" + uriObject.getPort();
+        }
+        target += " | " + incomingTarget;
+        return target;
     }
 
     @Override

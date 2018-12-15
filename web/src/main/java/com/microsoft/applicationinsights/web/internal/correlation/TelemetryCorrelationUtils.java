@@ -375,7 +375,7 @@ public class TelemetryCorrelationUtils {
 	}
 
 
-	private static String extractRootId(String parentId) {
+	 static String extractRootId(String parentId) {
 		// ported from .NET's System.Diagnostics.Activity.cs implementation:
 		// https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
 		

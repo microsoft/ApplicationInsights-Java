@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.util.List;
 
 /**
@@ -35,6 +36,8 @@ public class AgentBuiltInConfigurationBuilder {
     private boolean hibernateEnabled = false;
     private boolean jedisEnabled = false;
     private boolean jmxEnabled = false;
+    private boolean w3cEnabled = false;
+    private boolean isW3CBackportEnabled = true;
     private long jedisThresholdInMS = 10000L;
     private Long maxSqlQueryLimitInMS = 10000L;
     private DataOfConfigurationForException dataOfConfigurationForException = new DataOfConfigurationForException();
@@ -45,9 +48,14 @@ public class AgentBuiltInConfigurationBuilder {
             this.dataOfConfigurationForException.setEnabled(false);
         }
 
+        InternalLogger.INSTANCE.trace(String.format("Outbound W3C tracing is enabled : %s", w3cEnabled));
+        InternalLogger.INSTANCE.trace(String.format("Outbound W3C backport mode is enabled : %s", isW3CBackportEnabled));
+
         return new AgentBuiltInConfiguration(enabled,
                                              simpleBuiltInClasses,
                                              httpEnabled && enabled,
+                                             w3cEnabled && enabled,
+                                             isW3CBackportEnabled && enabled,
                                              jdbcEnabled && enabled,
                                              hibernateEnabled && enabled,
                                              jedisEnabled && enabled,
@@ -62,8 +70,11 @@ public class AgentBuiltInConfigurationBuilder {
         return this;
     }
 
-    public AgentBuiltInConfigurationBuilder setHttpEnabled(boolean httpEnabled) {
+    public AgentBuiltInConfigurationBuilder setHttpEnabled(boolean httpEnabled, boolean w3cEnabled,
+        boolean isW3CBackportEnabled) {
         this.httpEnabled = httpEnabled;
+        this.w3cEnabled = w3cEnabled;
+        this.isW3CBackportEnabled = isW3CBackportEnabled;
         return this;
     }
 

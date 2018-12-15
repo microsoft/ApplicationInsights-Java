@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 2.3.0
+- [#716](https://github.com/Microsoft/ApplicationInsights-Java/issues/716) Introduced W3C Distributed tracing protocol.
+
 # Version 2.2.1
 - Fixed [#767](https://github.com/Microsoft/ApplicationInsights-Java/issues/767). Updated gRPC dependencies which inlcudes latest netty version.
 - Fixed [#751](https://github.com/Microsoft/ApplicationInsights-Java/issues/751). Added support for absolute paths for log file output.
