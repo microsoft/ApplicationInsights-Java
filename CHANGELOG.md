@@ -1,6 +1,8 @@
 # CHANGELOG
 
 # Version 2.3.0
+- Introducing Application Insights SpringBoot Starter 1.1.1 (GA VERSION).
+- Fix [#784](https://github.com/Microsoft/ApplicationInsights-Java/issues/784) Shade guava dependency. 
 - [#716](https://github.com/Microsoft/ApplicationInsights-Java/issues/716) Introduced W3C Distributed tracing protocol.
 
 # Version 2.2.1
