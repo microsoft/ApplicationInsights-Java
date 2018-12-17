@@ -54,6 +54,7 @@ shadowJar {
     classifier=''
     relocate 'org.apache.http', 'com.microsoft.applicationinsights.web.dependencies.http'
     relocate 'org.apache.commons', 'com.microsoft.applicationinsights.web.dependencies.apachecommons'
+    relocate 'com.google', "com.microsoft.applicationinsights.web.dependencies.google"
 }
 
 jar {
