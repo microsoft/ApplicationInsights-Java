@@ -73,7 +73,7 @@ whenPomConfigured = { p ->
     p.dependencies = p.dependencies.findAll { dep ->
         dep.scope == "test" || dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
                 !(dep.groupId in ['org.apache.http', 'org.apache.commons', 'commons-io',
-                                  'org.apache.httpcomponents'])
+                                  'com.google.guava', 'com.google.code.gson', 'org.apache.httpcomponents'])
     }
 }
 
