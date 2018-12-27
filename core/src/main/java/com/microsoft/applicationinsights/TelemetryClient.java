@@ -138,13 +138,8 @@ public class TelemetryClient {
 
         EventTelemetry et = new EventTelemetry(name);
 
-        if (properties != null && properties.size() > 0) {
-            MapUtil.copy(properties, et.getContext().getProperties());
-        }
-
-        if (metrics != null && metrics.size() > 0) {
-            MapUtil.copy(metrics, et.getMetrics());
-        }
+        MapUtil.copy(properties, et.getContext().getProperties());
+        MapUtil.copy(metrics, et.getMetrics());
 
         this.track(et);
     }
@@ -182,9 +177,7 @@ public class TelemetryClient {
 
         TraceTelemetry et = new TraceTelemetry(message, severityLevel);
 
-        if (properties != null && properties.size() > 0) {
-            MapUtil.copy(properties, et.getContext().getProperties());
-        }
+        MapUtil.copy(properties, et.getContext().getProperties());
 
         this.track(et);
     }
@@ -252,9 +245,7 @@ public class TelemetryClient {
         mt.setMin(min);
         mt.setMax(max);
         mt.setStandardDeviation(stdDev);
-        if (properties != null && properties.size() > 0) {
-            MapUtil.copy(properties, mt.getProperties());
-        }
+        MapUtil.copy(properties, mt.getProperties());
         this.track(mt);
     }
 
@@ -289,13 +280,8 @@ public class TelemetryClient {
 
         ExceptionTelemetry et = new ExceptionTelemetry(exception);
 
-        if (properties != null && properties.size() > 0) {
-            MapUtil.copy(properties, et.getContext().getProperties());
-        }
-
-        if (metrics != null && metrics.size() > 0) {
-            MapUtil.copy(metrics, et.getMetrics());
-        }
+        MapUtil.copy(properties, et.getContext().getProperties());
+        MapUtil.copy(metrics, et.getMetrics());
 
         this.track(et);
     }
