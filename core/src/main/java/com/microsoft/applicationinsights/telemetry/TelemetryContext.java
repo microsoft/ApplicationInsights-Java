@@ -200,12 +200,8 @@ public final class TelemetryContext {
         if (Strings.isNullOrEmpty(this.instrumentationKey) && !Strings.isNullOrEmpty(source.getInstrumentationKey()))
             setInstrumentationKey(source.getInstrumentationKey());
 
-        if (source.tags != null && source.tags.size() > 0) {
-            MapUtil.copy(source.tags, this.tags);
-        }
-        if (source.properties != null && source.properties.size() > 0) {
-            MapUtil.copy(source.properties, this.properties);
-        }
+        MapUtil.copy(source.tags, this.tags);
+        MapUtil.copy(source.properties, this.properties);
     }
 
     public InternalContext getInternal() {
