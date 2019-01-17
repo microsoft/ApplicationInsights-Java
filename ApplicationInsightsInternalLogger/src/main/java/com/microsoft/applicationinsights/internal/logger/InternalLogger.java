@@ -156,26 +156,30 @@ public enum InternalLogger {
 
         // if file logging is configured, read additonal properties
         if (file != null) {
-            String prefix = System.getProperty(PropertyKeys.FILE_UNIQUE_PREFIX);
-            if (prefix != null) {
-                props.put(FileLoggerOutput.UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE, prefix);
-            }
-            String basePath = System.getProperty(PropertyKeys.FILE_BASE_FOLDER_PATH);
-            if (basePath != null) {
-                props.put(FileLoggerOutput.LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE, basePath);
-            }
-            String numFiles = System.getProperty(PropertyKeys.FILE_NUMBER_OF_FILES);
-            if (numFiles != null) {
-                props.put(FileLoggerOutput.NUMBER_OF_FILES_ATTRIBUTE, numFiles);
-            }
-            String fileSize = System.getProperty(PropertyKeys.FILE_MAX_LOGFILE_SIZE_IN_MB);
-            if (fileSize != null) {
-                props.put(FileLoggerOutput.TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE, fileSize);
-            }
+            populateMapForFileLogging(props);
         }
 
         initialize(type, props);
         return initialized;
+    }
+
+    private void populateMapForFileLogging(final Map<String, String> props) {
+        String prefix = System.getProperty(PropertyKeys.FILE_UNIQUE_PREFIX);
+        if (prefix != null) {
+            props.put(FileLoggerOutput.UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE, prefix);
+        }
+        String basePath = System.getProperty(PropertyKeys.FILE_BASE_FOLDER_PATH);
+        if (basePath != null) {
+            props.put(FileLoggerOutput.LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE, basePath);
+        }
+        String numFiles = System.getProperty(PropertyKeys.FILE_NUMBER_OF_FILES);
+        if (numFiles != null) {
+            props.put(FileLoggerOutput.NUMBER_OF_FILES_ATTRIBUTE, numFiles);
+        }
+        String fileSize = System.getProperty(PropertyKeys.FILE_MAX_LOGFILE_SIZE_IN_MB);
+        if (fileSize != null) {
+            props.put(FileLoggerOutput.TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE, fileSize);
+        }
     }
 
     /**
