@@ -35,17 +35,6 @@ import static org.junit.Assert.assertNull;
 public final class ExceptionTelemetryTest {
 
     @Test
-    public void testSetException() {
-        NullPointerException exception = new NullPointerException("mock");
-        ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
-
-        NullPointerException exception1 = new NullPointerException("mock");
-        exceptionTelemetry.setException(exception1);
-
-        assertSame(exception1, exceptionTelemetry.getException());
-    }
-
-    @Test
     public void testCtor() {
         NullPointerException exception = new NullPointerException("mock");
         ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);

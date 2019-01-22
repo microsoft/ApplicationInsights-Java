@@ -139,6 +139,17 @@ public enum TelemetryConfigurationFactory {
                 InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
             }
             configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
+            ExceptionsXmlElement exceptionsConfig = applicationInsightsConfig.getExceptions();
+            if (exceptionsConfig != null) {
+                Integer maxStackSize = exceptionsConfig.getMaxStackSize();
+                if (maxStackSize != null) {
+                    configuration.setMaxStackSize(maxStackSize);
+                }
+                Integer maxTraceLength = exceptionsConfig.getMaxTraceLength();
+                if (maxTraceLength != null) {
+                    configuration.setMaxExceptionTraceLength(maxTraceLength);
+                }
+            }
 
             setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
             setTelemetryInitializers(applicationInsightsConfig.getTelemetryInitializers(), configuration);

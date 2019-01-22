@@ -144,6 +144,19 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         telemetryConfiguration.setChannel(telemetryChannel);
         initializeComponents(telemetryConfiguration);
         initializePerformanceCounterContainer();
+
+        ApplicationInsightsProperties.Exceptions exceptionsConfig = applicationInsightsProperties.getExceptions();
+        if (exceptionsConfig != null) {
+            Integer maxStackSize = exceptionsConfig.getMaxStackSize();
+            if (maxStackSize != null) {
+                telemetryConfiguration.setMaxStackSize(maxStackSize);
+            }
+            Integer maxTraceLength = exceptionsConfig.getMaxTraceLength();
+            if (maxTraceLength != null) {
+                telemetryConfiguration.setMaxExceptionTraceLength(maxTraceLength);
+            }
+        }
+
         return telemetryConfiguration;
     }
 
