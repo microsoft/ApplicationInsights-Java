@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.web.internal.correlation.tracecontext;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.http.annotation.Experimental;
 
 /**
@@ -18,25 +17,21 @@ public class Traceparent {
     /**
      * Version number between range [0,255] inclusive
      */
-    @VisibleForTesting
     final int version;
 
     /**
      * 16 byte trace-id that is used to uniquely identify a distributed trace
      */
-    @VisibleForTesting
     final String traceId;
 
     /**
      * It is a 8 byte ID that represents the caller span
      */
-    @VisibleForTesting
     final String spanId;
 
     /**
      * An 8-bit field that controls tracing flags such as sampling, trace level etc.
      */
-    @VisibleForTesting
     final int traceFlags;
 
     private Traceparent(int version, String traceId, String spanId, int traceFlags, boolean check) {
@@ -119,7 +114,6 @@ public class Traceparent {
      *
      * @return n byte hexadecimal string
      */
-    @VisibleForTesting
     static String randomHex(int n) {
         byte[] bytes = new byte[n];
         ThreadLocalRandom.current().nextBytes(bytes);

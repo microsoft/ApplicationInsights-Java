@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
-import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -88,7 +88,7 @@ public enum InternalLogger {
         if (!initialized) {
             try {
                 String loggerLevel = loggerData.get(LOGGER_LEVEL);
-                if (Strings.isNullOrEmpty(loggerLevel)) {
+                if (StringUtils.isEmpty(loggerLevel)) {
                     // The user didn't specify the logging level, therefore by default we set that to 'TRACE'
                     loggingLevel = LoggingLevel.TRACE;
                     setLoggerOutput(loggerOutputType, loggerData);
@@ -251,7 +251,7 @@ public enum InternalLogger {
         }
 
         LoggerOutputType type = LoggerOutputType.CONSOLE;
-        if (!Strings.isNullOrEmpty(loggerOutputType)) {
+        if (StringUtils.isNotEmpty(loggerOutputType)) {
             try {
                 // If the user asked for a logger type
                 type = LoggerOutputType.valueOf(loggerOutputType.toUpperCase());
