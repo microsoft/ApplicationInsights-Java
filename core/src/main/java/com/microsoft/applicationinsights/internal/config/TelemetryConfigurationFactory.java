@@ -145,9 +145,9 @@ public enum TelemetryConfigurationFactory {
                 if (maxStackSize != null) {
                     configuration.setMaxStackSize(maxStackSize);
                 }
-                Integer maxTraceLength = exceptionsConfig.getMaxTraceLength();
-                if (maxTraceLength != null) {
-                    configuration.setMaxExceptionTraceLength(maxTraceLength);
+                Integer maxExceptionTraceLength = exceptionsConfig.getMaxExceptionTraceLength();
+                if (maxExceptionTraceLength != null) {
+                    configuration.setMaxExceptionTraceLength(maxExceptionTraceLength);
                 }
             }
 

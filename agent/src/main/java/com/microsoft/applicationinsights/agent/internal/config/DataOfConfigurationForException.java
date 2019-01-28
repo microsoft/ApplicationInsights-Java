@@ -29,7 +29,7 @@ import java.util.HashSet;
 public final class DataOfConfigurationForException {
     private boolean enabled = false;
     private Integer maxStackSize;
-    private Integer maxTraceLength;
+    private Integer maxExceptionTraceLength;
     private HashSet<String> suppressedExceptions = new HashSet<String>();
     private HashSet<String> validPathForExceptions = new HashSet<String>();
 
@@ -41,12 +41,12 @@ public final class DataOfConfigurationForException {
         this.maxStackSize = maxStackSize;
     }
 
-    public Integer getMaxTraceLength() {
-        return maxTraceLength;
+    public Integer getMaxExceptionTraceLength() {
+        return maxExceptionTraceLength;
     }
 
-    public void setMaxTraceLength(Integer maxTraceLength) {
-        this.maxTraceLength = maxTraceLength;
+    public void setMaxExceptionTraceLength(Integer maxExceptionTraceLength) {
+        this.maxExceptionTraceLength = maxExceptionTraceLength;
     }
 
     public HashSet<String> getSuppressedExceptions() {

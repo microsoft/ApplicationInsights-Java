@@ -65,7 +65,7 @@ public class RuntimeExceptionDeciderTest {
         assertNotNull(result);
         assertTrue(result.valid);
         assertNull(result.maxStackSize);
-        assertNull(result.maxTraceLength);
+        assertNull(result.maxExceptionTraceLength);
     }
 
     @Test

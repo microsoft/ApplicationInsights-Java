@@ -47,7 +47,7 @@ public class ConfigRuntimeExceptionDataBuilderTest {
 
         final Element exceptionTag = createMockElement("enabled", "true");
         addAttribute(exceptionTag, "stackSize", " 1 ");
-        addAttribute(exceptionTag, "traceLength", " 2 ");
+        addAttribute(exceptionTag, "exceptionTraceLength", " 2 ");
         addMockNodeList(exceptionTag, "Suppress", suppressedNodeList);
         addMockNodeList(exceptionTag, "Valid", validNodeList);
 
@@ -77,7 +77,7 @@ public class ConfigRuntimeExceptionDataBuilderTest {
         Assert.assertEquals(exceptionData.getValidPathForExceptions().iterator().next(), "bb.bb");
 
         Assert.assertEquals(1, (int)exceptionData.getMaxStackSize());
-        Assert.assertEquals(2, (int)exceptionData.getMaxTraceLength());
+        Assert.assertEquals(2, (int)exceptionData.getMaxExceptionTraceLength());
     }
 
     @Test

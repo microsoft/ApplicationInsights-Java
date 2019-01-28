@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlElement;
 public class ExceptionsXmlElement {
 
     private Integer maxStackSize;
-    private Integer maxTraceLength;
+    private Integer maxExceptionTraceLength;
 
     public Integer getMaxStackSize() {
         return maxStackSize;
@@ -16,12 +16,12 @@ public class ExceptionsXmlElement {
         this.maxStackSize = maxStackSize;
     }
 
-    public Integer getMaxTraceLength() {
-        return maxTraceLength;
+    public Integer getMaxExceptionTraceLength() {
+        return maxExceptionTraceLength;
     }
 
-    @XmlElement(name="MaxTraceLength")
-    public void setMaxTraceLength(Integer maxTraceLength) {
-        this.maxTraceLength = maxTraceLength;
+    @XmlElement(name="MaxExceptionTraceLength")
+    public void setMaxExceptionTraceLength(Integer maxExceptionTraceLength) {
+        this.maxExceptionTraceLength = maxExceptionTraceLength;
     }
 }

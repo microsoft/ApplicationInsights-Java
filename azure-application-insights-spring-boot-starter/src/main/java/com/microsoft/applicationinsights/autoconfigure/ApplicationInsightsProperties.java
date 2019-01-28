@@ -566,7 +566,7 @@ public class ApplicationInsightsProperties {
     /**
      * Maximum length of trace per exception
      */
-    private Integer maxTraceLength;
+    private Integer maxExceptionTraceLength;
 
     public Integer getMaxStackSize() {
       return maxStackSize;
@@ -576,12 +576,12 @@ public class ApplicationInsightsProperties {
       this.maxStackSize = maxStackSize;
     }
 
-    public Integer getMaxTraceLength() {
-      return maxTraceLength;
+    public Integer getMaxExceptionTraceLength() {
+      return maxExceptionTraceLength;
     }
 
-    public void setMaxTraceLength(Integer maxTraceLength) {
-      this.maxTraceLength = maxTraceLength;
+    public void setMaxExceptionTraceLength(Integer maxExceptionTraceLength) {
+      this.maxExceptionTraceLength = maxExceptionTraceLength;
     }
   }
 

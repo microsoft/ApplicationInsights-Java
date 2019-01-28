@@ -150,7 +150,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
 
     private void updateException(Throwable throwable, ExceptionTelemetryOptions options) {
         ArrayList<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
-        convertExceptionTree(throwable, null, exceptions, options.getMaxStackSize(), options.getMaxTraceLength());
+        convertExceptionTree(throwable, null, exceptions, options.getMaxStackSize(), options.getMaxExceptionTraceLength());
 
         data.setExceptions(exceptions);
     }
@@ -158,7 +158,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     private static void convertExceptionTree(Throwable exception, ExceptionDetails parentExceptionDetails,
                                              List<ExceptionDetails> exceptions,
                                              int maxStackSize,
-                                             int maxTraceLength) {
+                                             int maxExceptionTraceLength) {
         if (exception == null) {
             exception = new Exception("");
         }
@@ -167,17 +167,17 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
             return;
         }
 
-        ExceptionDetails exceptionDetails = createWithStackInfo(exception, parentExceptionDetails, maxTraceLength);
+        ExceptionDetails exceptionDetails = createWithStackInfo(exception, parentExceptionDetails, maxExceptionTraceLength);
         exceptions.add(exceptionDetails);
 
         if (exception.getCause() != null) {
-            convertExceptionTree(exception.getCause(), exceptionDetails, exceptions, maxStackSize - 1, maxTraceLength);
+            convertExceptionTree(exception.getCause(), exceptionDetails, exceptions, maxStackSize - 1, maxExceptionTraceLength);
         }
     }
 
     private static ExceptionDetails createWithStackInfo(Throwable exception,
                                                         ExceptionDetails parentExceptionDetails,
-                                                        int maxTraceLength) {
+                                                        int maxExceptionTraceLength) {
         if (exception == null) {
             throw new IllegalArgumentException("exception cannot be null");
         }
@@ -203,7 +203,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
 
             // We need to present the stack trace in reverse order.
 
-            int length = Math.min(trace.length, maxTraceLength);
+            int length = Math.min(trace.length, maxExceptionTraceLength);
             for (int idx = 0; idx < length; idx++) {
                 StackTraceElement elem = trace[idx];
 

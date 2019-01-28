@@ -269,7 +269,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
     }
 
     @Override
-    public void exceptionThrown(Exception e, Integer maxStackSize, Integer maxTraceLength) {
+    public void exceptionThrown(Exception e, Integer maxStackSize, Integer maxExceptionTraceLength) {
         ThreadData localData = threadDataThreadLocal.get();
         MethodData methodData = null;
         try {
@@ -289,7 +289,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
             localData.methods.addFirst(methodData);
 
             ExceptionTelemetry et = new ExceptionTelemetry(e,
-                    new ExceptionTelemetryOptions(maxStackSize, maxTraceLength));
+                    new ExceptionTelemetryOptions(maxStackSize, maxExceptionTraceLength));
 
             telemetryClient.track(et);
         } catch (ThreadDeath td) {

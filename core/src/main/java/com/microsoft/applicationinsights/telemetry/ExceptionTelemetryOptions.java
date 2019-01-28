@@ -2,11 +2,11 @@ package com.microsoft.applicationinsights.telemetry;
 
 public class ExceptionTelemetryOptions {
     private int maxStackSize;
-    private int maxTraceLength;
+    private int maxExceptionTraceLength;
 
-    public ExceptionTelemetryOptions(Integer maxStackSize, Integer maxTraceLength) {
+    public ExceptionTelemetryOptions(Integer maxStackSize, Integer maxExceptionTraceLength) {
         this.maxStackSize = maxStackSize != null ? maxStackSize : Integer.MAX_VALUE;
-        this.maxTraceLength = maxTraceLength != null ? maxTraceLength : Integer.MAX_VALUE;
+        this.maxExceptionTraceLength = maxExceptionTraceLength != null ? maxExceptionTraceLength : Integer.MAX_VALUE;
     }
 
     public static ExceptionTelemetryOptions empty(){
@@ -17,7 +17,7 @@ public class ExceptionTelemetryOptions {
         return maxStackSize;
     }
 
-    public int getMaxTraceLength() {
-        return maxTraceLength;
+    public int getMaxExceptionTraceLength() {
+        return maxExceptionTraceLength;
     }
 }

@@ -44,7 +44,7 @@ final class ConfigRuntimeExceptionDataBuilder {
     private final static String SUPPRESS_TAG = "Suppress";
     private final static String VALID_TAG = "Valid";
     private final static String MAX_STACK_SIZE_ATTRIBUTE = "stackSize";
-    private final static String MAX_TRACE_LENGTH_ATTRIBUTE = "traceLength";
+    private final static String MAX_EXCEPTION_TRACE_LENGTH_ATTRIBUTE = "exceptionTraceLength";
     private final static String RUNTIME_EXCEPTION_TAG = "RuntimeException";
 
     public void setRuntimeExceptionData(Element enclosingTag, AgentBuiltInConfigurationBuilder builtInConfigurationBuilder) {
@@ -91,7 +91,7 @@ final class ConfigRuntimeExceptionDataBuilder {
 
     private void FetchStackSize(Element rtExceptionElement, DataOfConfigurationForException data) {
         data.setMaxStackSize(fetchInteger(rtExceptionElement, MAX_STACK_SIZE_ATTRIBUTE));
-        data.setMaxTraceLength(fetchInteger(rtExceptionElement, MAX_TRACE_LENGTH_ATTRIBUTE));
+        data.setMaxExceptionTraceLength(fetchInteger(rtExceptionElement, MAX_EXCEPTION_TRACE_LENGTH_ATTRIBUTE));
     }
 
     static Integer fetchInteger(Element rtExceptionElement, String attributeName) {

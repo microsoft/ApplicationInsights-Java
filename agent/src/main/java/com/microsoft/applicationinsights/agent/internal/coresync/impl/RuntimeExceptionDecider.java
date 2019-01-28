@@ -35,20 +35,20 @@ final class RuntimeExceptionDecider {
     public static class ValidationResult {
         public final boolean valid;
         public final Integer maxStackSize;
-        public final Integer maxTraceLength;
+        public final Integer maxExceptionTraceLength;
 
-        public static ValidationResult createValidResult(Integer maxStackSize, Integer maxTraceLength) {
-            return new ValidationResult(true, maxStackSize, maxTraceLength);
+        public static ValidationResult createValidResult(Integer maxStackSize, Integer maxExceptionTraceLength) {
+            return new ValidationResult(true, maxStackSize, maxExceptionTraceLength);
         }
 
         public static ValidationResult createNonValidResult() {
             return new ValidationResult(false, -1, -1);
         }
 
-        private ValidationResult(boolean valid, Integer maxStackSize, Integer maxTraceLength) {
+        private ValidationResult(boolean valid, Integer maxStackSize, Integer maxExceptionTraceLength) {
             this.valid = valid;
             this.maxStackSize = maxStackSize;
-            this.maxTraceLength = maxTraceLength;
+            this.maxExceptionTraceLength = maxExceptionTraceLength;
         }
     }
 
@@ -94,7 +94,7 @@ final class RuntimeExceptionDecider {
         }
 
         return ValidationResult.createValidResult(exceptionData.getMaxStackSize(),
-                exceptionData.getMaxTraceLength());
+                exceptionData.getMaxExceptionTraceLength());
     }
 
     public void setExceptionData(DataOfConfigurationForException exceptionData) {

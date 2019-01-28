@@ -151,9 +151,9 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
             if (maxStackSize != null) {
                 telemetryConfiguration.setMaxStackSize(maxStackSize);
             }
-            Integer maxTraceLength = exceptionsConfig.getMaxTraceLength();
-            if (maxTraceLength != null) {
-                telemetryConfiguration.setMaxExceptionTraceLength(maxTraceLength);
+            Integer maxExceptionTraceLength = exceptionsConfig.getMaxExceptionTraceLength();
+            if (maxExceptionTraceLength != null) {
+                telemetryConfiguration.setMaxExceptionTraceLength(maxExceptionTraceLength);
             }
         }
 
