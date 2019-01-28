@@ -64,13 +64,21 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
 
     /**
      * Initializes a new instance.
-     *
-     * @param options   restrictions in exception size to report
-     * @param exception The exception to track.
+     * @param maxStackSize The max stack size to report.
+     * @param throwable The throwable to track.
      */
-    public ExceptionTelemetry(Throwable exception, ExceptionTelemetryOptions options) {
+    public ExceptionTelemetry(Throwable throwable, int maxStackSize) {
+        this(throwable, new ExceptionTelemetryOptions(maxStackSize, null));
+    }
+
+    /**
+     * Initializes a new instance.
+     *
+     * @param options   restrictions in throwable size to report
+     * @param throwable The throwable to track.
+     */
+    public ExceptionTelemetry(Throwable throwable, ExceptionTelemetryOptions options) {
         this();
-        this.throwable = exception;
         updateException(throwable, options != null ? options : ExceptionTelemetryOptions.empty());
     }
 
@@ -85,6 +93,14 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
 
     public Throwable getThrowable() {
         return throwable;
+    }
+
+    public void setException(Throwable throwable) {
+        setException(throwable, null);
+    }
+
+    public void setException(Throwable throwable, Integer maxStackSize) {
+        updateException(throwable, new ExceptionTelemetryOptions(maxStackSize, null));
     }
 
     /**
@@ -149,6 +165,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     private void updateException(Throwable throwable, ExceptionTelemetryOptions options) {
+        this.throwable = throwable;
         ArrayList<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
         convertExceptionTree(throwable, null, exceptions, options.getMaxStackSize(), options.getMaxExceptionTraceLength());
 

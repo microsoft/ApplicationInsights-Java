@@ -43,6 +43,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetryOptions;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,16 +148,17 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         initializePerformanceCounterContainer();
 
         ApplicationInsightsProperties.Exceptions exceptionsConfig = applicationInsightsProperties.getExceptions();
+        ExceptionTelemetryOptions options;
         if (exceptionsConfig != null) {
-            Integer maxStackSize = exceptionsConfig.getMaxStackSize();
-            if (maxStackSize != null) {
-                telemetryConfiguration.setMaxStackSize(maxStackSize);
-            }
-            Integer maxExceptionTraceLength = exceptionsConfig.getMaxExceptionTraceLength();
-            if (maxExceptionTraceLength != null) {
-                telemetryConfiguration.setMaxExceptionTraceLength(maxExceptionTraceLength);
-            }
+            options = new ExceptionTelemetryOptions(
+                    exceptionsConfig.getMaxStackSize(),
+                    exceptionsConfig.getMaxExceptionTraceLength()
+            );
+        }else{
+            options = ExceptionTelemetryOptions.empty();
         }
+        telemetryConfiguration.setExceptionTelemetryOptions(options);
+        log.debug("Exception Handling Options: {}", options);
 
         return telemetryConfiguration;
     }

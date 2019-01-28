@@ -292,12 +292,7 @@ public class TelemetryClient {
             return;
         }
 
-        ExceptionTelemetry et = new ExceptionTelemetry(exception,
-                new ExceptionTelemetryOptions(
-                        configuration.getMaxStackSize(),
-                        configuration.getMaxExceptionTraceLength()
-                )
-        );
+        ExceptionTelemetry et = new ExceptionTelemetry(exception, configuration.getExceptionTelemetryOptions());
 
         MapUtil.copy(properties, et.getContext().getProperties());
         MapUtil.copy(metrics, et.getMetrics());

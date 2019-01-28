@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetryOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +58,7 @@ public final class TelemetryConfiguration {
 
     private boolean trackingIsDisabled = false;
 
-    private Integer maxStackSize;
-    private Integer maxExceptionTraceLength;
+    private ExceptionTelemetryOptions exceptionTelemetryOptions;
 
     /**
      * Gets the active {@link com.microsoft.applicationinsights.TelemetryConfiguration} instance loaded from the
@@ -141,20 +141,12 @@ public final class TelemetryConfiguration {
     }
 
 
-	public void setMaxStackSize(Integer maxStackSize) {
-		this.maxStackSize = maxStackSize;
-	}
-
-    public Integer getMaxStackSize() {
-        return maxStackSize;
+	public ExceptionTelemetryOptions getExceptionTelemetryOptions() {
+        return exceptionTelemetryOptions;
     }
 
-    public Integer getMaxExceptionTraceLength() {
-        return maxExceptionTraceLength;
-    }
-
-    public void setMaxExceptionTraceLength(Integer maxExceptionTraceLength) {
-        this.maxExceptionTraceLength = maxExceptionTraceLength;
+    public void setExceptionTelemetryOptions(ExceptionTelemetryOptions exceptionTelemetryOptions) {
+        this.exceptionTelemetryOptions = exceptionTelemetryOptions;
     }
 
     /**
