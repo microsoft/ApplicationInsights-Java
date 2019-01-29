@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import com.google.common.base.Joiner;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -13,6 +12,8 @@ import java.util.Enumeration;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -206,7 +207,7 @@ public class TraceContextCorrelation {
             List<String> tracestateList = getEnumerationAsCollection(tracestates);
             try {
                 //create tracestate from incoming header
-                tracestate = Tracestate.fromString(Joiner.on(",").join(tracestateList));
+                tracestate = Tracestate.fromString(StringUtils.join(tracestateList, ","));
                 // add appId to it if it's resolved
                 if (appId != null && !appId.isEmpty()) {
                     tracestate = new Tracestate(tracestate, AZURE_TRACEPARENT_COMPONENT_INITIAL,
