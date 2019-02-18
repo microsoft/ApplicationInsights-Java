@@ -35,14 +35,14 @@ import com.microsoft.applicationinsights.common.CommonUtils;
  * Created by gupele on 8/17/2015.
  */
 public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitializerBase {
-    final static String SYNTHETIC_SOURCE_NAME = "Application Insights Availability Monitoring";
-    final static String SYNTHETIC_TEST_RUN_ID = "SyntheticTest-RunId";
-    final static String SYNTHETIC_TEST_LOCATION = "SyntheticTest-Location";
-    final static String SYNTHETIC_TEST_SOURCE = "SyntheticTest-Source";
-    final static String SYNTHETIC_TEST_TEST_NAME = "SyntheticTest-TestName";
-    final static String SYNTHETIC_TEST_SESSION_ID = "SyntheticTest-SessionId";
-    final static String SYNTHETIC_TEST_USER_ID = "SyntheticTest-UserId";
-    final static String SYNTHETIC_TEST_OPERATION_ID = "SyntheticTest-OperationId";
+    public final static String SYNTHETIC_SOURCE_NAME = "Application Insights Availability Monitoring";
+    public final static String SYNTHETIC_TEST_RUN_ID = "SyntheticTest-RunId";
+    public final static String SYNTHETIC_TEST_LOCATION = "SyntheticTest-Location";
+    public final static String SYNTHETIC_TEST_SOURCE = "SyntheticTest-Source";
+    public final static String SYNTHETIC_TEST_TEST_NAME = "SyntheticTest-TestName";
+    public final static String SYNTHETIC_TEST_SESSION_ID = "SyntheticTest-SessionId";
+    public final static String SYNTHETIC_TEST_USER_ID = "SyntheticTest-UserId";
+    public final static String SYNTHETIC_TEST_OPERATION_ID = "SyntheticTest-OperationId";
 
     @Override
     protected void onInitializeTelemetry(Telemetry telemetry) {
