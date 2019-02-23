@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.web.extensibility.modules;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -35,7 +36,7 @@ import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 /**
  * Created by yonisha on 2/4/2015.
  */
-public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
+public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule{
 
     // region Public
 
@@ -50,12 +51,11 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
     /**
      * Begin request processing.
-     *
-     * @param req The request to process
+     *  @param req The request to process
      * @param res The response to modify
      */
     @Override
-    public void onBeginRequest(ServletRequest req, ServletResponse res) {
+    public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
         HttpServletRequest request = (HttpServletRequest)req;
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
@@ -82,7 +82,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      * @param res The response to modify
      */
     @Override
-    public void onEndRequest(ServletRequest req, ServletResponse res) {
+    public void onEndRequest(HttpServletRequest req, HttpServletResponse res) {
     }
 
     // endregion Public

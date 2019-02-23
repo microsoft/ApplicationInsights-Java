@@ -21,10 +21,6 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -46,14 +42,8 @@ import com.microsoft.applicationinsights.web.utils.HttpHelper;
 import com.microsoft.applicationinsights.web.utils.JettyTestServer;
 import com.microsoft.applicationinsights.web.utils.MockTelemetryChannel;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
-import org.eclipse.jetty.http.HttpMethods;
+import org.eclipse.jetty.http.HttpMethod;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -64,12 +54,23 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 /**
  * Created by yonisha on 2/2/2015.
  */
 public class WebRequestTrackingTelemetryModuleTests {
     private static final String DEFAULT_REQUEST_URI = "/controller/action.action";
-    private static final String DEFAULT_REQUEST_NAME = HttpMethods.GET + " " + DEFAULT_REQUEST_URI;
+    private static final String DEFAULT_REQUEST_NAME = HttpMethod.GET.asString() + " " + DEFAULT_REQUEST_URI;
 
     private static JettyTestServer server = new JettyTestServer();
     private static WebRequestTrackingTelemetryModule defaultModule;
@@ -124,14 +125,15 @@ public class WebRequestTrackingTelemetryModuleTests {
     @Test
     public void testHttpRequestTrackedSuccessfully() throws Exception {
         HttpHelper.sendRequestAndGetResponseCookie(server.getPortNumber());
-
+        Thread.sleep(1000);
         List<RequestTelemetry> items = channel.getTelemetryItems(RequestTelemetry.class);
+
         assertEquals(1, items.size());
         RequestTelemetry requestTelemetry = items.get(0);
 
         assertEquals(String.valueOf(HttpStatus.SC_OK), requestTelemetry.getResponseCode());
-        assertEquals(HttpMethods.GET + " /", requestTelemetry.getName());
-        assertEquals(HttpMethods.GET, requestTelemetry.getHttpMethod());
+        assertEquals(HttpMethod.GET.asString() + " /", requestTelemetry.getName());
+        assertEquals(HttpMethod.GET.asString(), requestTelemetry.getHttpMethod());
         assertEquals("http://localhost:" + server.getPortNumber() + "/", requestTelemetry.getUrl().toString());
     }
 
@@ -158,14 +160,14 @@ public class WebRequestTrackingTelemetryModuleTests {
    
     @Test
     public void testOnBeginRequestCatchAllExceptions() {
-        ServletRequest request = createFaultyServletRequestMock();
+        HttpServletRequest request = mock(HttpServletRequest.class);
 
         defaultModule.onBeginRequest(request, null);
     }
 
     @Test
     public void testOnEndRequestCatchAllExceptions() {
-        ServletRequest request = createFaultyServletRequestMock();
+        HttpServletRequest request = mock(HttpServletRequest.class);
 
         defaultModule.onEndRequest(request, null);
     }
@@ -557,7 +559,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         String correlationContext = "key1=value1, key2=value2";
         headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
 
-        ServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
+        HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
         HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
 
         //run module
@@ -998,7 +1000,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         //another request comes in
         RequestTelemetryContext context2 = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context2);
-        ServletRequest request2 = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletRequest request2 = ServletUtils.createServletRequestWithHeaders(headers);
         
         mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
         
@@ -1016,7 +1018,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         // if another request comes in, it should retrieve appId from cache
         RequestTelemetryContext context3 = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context3);
-        ServletRequest request3 = ServletUtils.createServletRequestWithHeaders(headers);
+        HttpServletRequest request3 = ServletUtils.createServletRequestWithHeaders(headers);
         defaultModule.onBeginRequest(request3, response);
         Assert.assertEquals(3, mockProfileFetcher.callCount());
         
@@ -1035,14 +1037,14 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
 
-        ServletRequest servletRequest = createServletRequest(queryString, pathVariable);
+        HttpServletRequest servletRequest = createServletRequest(queryString, pathVariable);
         defaultModule.onBeginRequest(servletRequest, null);
 
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         Assert.assertEquals("Request name not valid.", DEFAULT_REQUEST_NAME, requestTelemetry.getName());
     }
 
-    private ServletRequest createServletRequest(String queryString, String pathVariable) {
+    private HttpServletRequest createServletRequest(String queryString, String pathVariable) {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         String uri = DEFAULT_REQUEST_URI;
@@ -1051,7 +1053,7 @@ public class WebRequestTrackingTelemetryModuleTests {
         }
 
         when(request.getRequestURI()).thenReturn(uri);
-        when(request.getMethod()).thenReturn(HttpMethods.GET);
+        when(request.getMethod()).thenReturn(HttpMethod.GET.asString());
         when(request.getScheme()).thenReturn("http");
         when(request.getHeader("Host")).thenReturn("localhost:" + server.getPortNumber());
         when(request.getQueryString()).thenReturn(queryString);

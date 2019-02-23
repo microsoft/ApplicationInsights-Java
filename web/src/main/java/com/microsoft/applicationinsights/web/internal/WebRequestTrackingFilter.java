@@ -36,6 +36,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -45,6 +46,9 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
+import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -71,16 +75,17 @@ public final class WebRequestTrackingFilter implements Filter {
     final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
 
-    private WebModulesContainer webModulesContainer;
-    private boolean isInitialized = false;
+    private WebModulesContainer<HttpServletRequest, HttpServletResponse> webModulesContainer;
     private TelemetryClient telemetryClient;
     private String key;
     private boolean agentIsUp = false;
-    private final LinkedList<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
+    private final List<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
     private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights."
         + "agent.internal.coresync.AgentNotificationsHandler";
     private String filterName = FILTER_NAME;
+
+    HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
 
     // endregion Members
 
@@ -96,26 +101,27 @@ public final class WebRequestTrackingFilter implements Filter {
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse) res);
-        setKeyOnTLS(key);
+        if (req instanceof  HttpServletRequest && res instanceof HttpServletResponse) {
+            HttpServletRequest httpRequest = (HttpServletRequest) req;
+            HttpServletResponse httpResponse = (HttpServletResponse) res;
+            setKeyOnTLS(key);
 
-        boolean isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
+            // boolean isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
+            RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
 
-        try {
-            chain.doFilter(req, response);
-            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
-        } catch (ServletException se) {
-            onException(se, req, response, isRequestProcessedSuccessfully);
-            throw se;
-        } catch (IOException ioe) {
-            onException(ioe, req, response, isRequestProcessedSuccessfully);
-            throw ioe;
-        } catch (RuntimeException re) {
-            onException(re, req, response, isRequestProcessedSuccessfully);
-            throw re;
-        } finally {
+            try {
+                chain.doFilter(httpRequest, httpResponse);
+            } catch (ServletException | IOException | RuntimeException e) {
+                handler.handleException(e);
+                throw e;
+            }
+            handler.handleEnd(httpRequest, httpResponse);
             cleanup();
+
+        } else {
+            chain.doFilter(req, res);
         }
+
     }
 
     public WebRequestTrackingFilter(String appName) {
@@ -134,17 +140,6 @@ public final class WebRequestTrackingFilter implements Filter {
             throw td;
         } catch (Throwable t) {
         }
-    }
-
-    private void onException(Exception e, ServletRequest req, ServletResponse res, boolean isRequestProcessedSuccessfully) {
-        try {
-            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", ExceptionUtils.getStackTrace(e));
-            if (telemetryClient != null) {
-                telemetryClient.trackException(e);
-            }
-        } catch (Exception ignoreMe) {
-        }
-        invokeSafeOnEndRequest(req, res, isRequestProcessedSuccessfully);
     }
 
     /**
@@ -170,13 +165,14 @@ public final class WebRequestTrackingFilter implements Filter {
             configureWebAppNameContextInitializer(appName, configuration);
 
             telemetryClient = new TelemetryClient(configuration);
-            webModulesContainer = new WebModulesContainer(configuration);
+            webModulesContainer = new WebModulesContainer<>(configuration);
+
+            handler = new HttpServerHandler<>(new ApplicationInsightsServletExtractor(), webModulesContainer, telemetryClient);
 
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();
             }
 
-            isInitialized = true;
         } catch (Exception e) {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.info(
@@ -204,40 +200,6 @@ public final class WebRequestTrackingFilter implements Filter {
     // endregion Public
 
     // region Private
-
-    private boolean invokeSafeOnBeginRequest(ServletRequest req, ServletResponse res) {
-        if (!isInitialized) {
-            return false;
-        }
-        boolean success = true;
-
-        try {
-            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(), (HttpServletRequest) req);
-            ThreadContext.setRequestTelemetryContext(context);
-
-            webModulesContainer.invokeOnBeginRequest(req, res);
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnBeginRequest on telemetry modules with the following exception: %s",
-                    ExceptionUtils.getStackTrace(e));
-
-            success = false;
-        }
-
-        return success;
-    }
-
-    private void invokeSafeOnEndRequest(ServletRequest req, ServletResponse res, boolean inProgress) {
-        try {
-            if (isInitialized && inProgress) {
-                webModulesContainer.invokeOnEndRequest(req, res);
-            }
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s",
-                    ExceptionUtils.getStackTrace(e));
-        }
-    }
 
     private void setKeyOnTLS(String key) {
         if (agentIsUp) {

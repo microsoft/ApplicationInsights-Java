@@ -27,18 +27,18 @@ import javax.servlet.ServletResponse;
 /**
  * Created by yonisha on 2/2/2015.
  */
-public interface WebTelemetryModule {
+public interface WebTelemetryModule<P, Q> {
     /**
      * Begin request processing.
      * @param req The request to process
      * @param res The response to modify
      */
-    void onBeginRequest(ServletRequest req, ServletResponse res);
+    void onBeginRequest(P req, Q res);
 
     /**
      * End request processing.
      * @param req The request to process
      * @param res The response to modify
      */
-    void onEndRequest(ServletRequest req, ServletResponse res);
+    void onEndRequest(P req, Q res);
 }

@@ -26,8 +26,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
+import javax.servlet.DispatcherType;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.EnumSet;
 
 /**
  * Created by yonisha on 2/3/2015.
@@ -69,7 +71,9 @@ public class JettyTestServer {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         context.addServlet(TestServlet.class, "/");
-        context.addFilter(WebRequestTrackingFilter.class, "/*", FilterMapping.ALL);
+        //context.addFilter(WebRequestTrackingFilter.class, "/*", );
+        context.addFilter(WebRequestTrackingFilter.class, "/*", EnumSet.of(DispatcherType.INCLUDE,
+                DispatcherType.ASYNC, DispatcherType.FORWARD, DispatcherType.REQUEST, DispatcherType.ERROR));
 
         server.setHandler(context);
         server.start();

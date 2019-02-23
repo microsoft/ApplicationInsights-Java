@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.web.internal;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,8 +37,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 /**
  * Created by yonisha on 2/3/2015.
  */
-public class WebModulesContainer {
-    private List<WebTelemetryModule> modules = new ArrayList<WebTelemetryModule>();
+public class WebModulesContainer<P, Q> {
+    private List<WebTelemetryModule<P, Q>> modules = new ArrayList<>();
     private int modulesCount = 0;
 
     /**
@@ -53,8 +55,8 @@ public class WebModulesContainer {
      * @param req The request to process
      * @param res The response to process
      */
-    public void invokeOnBeginRequest(ServletRequest req, ServletResponse res) {
-        for (WebTelemetryModule module : modules) {
+    public void invokeOnBeginRequest(P req, Q res) {
+        for (WebTelemetryModule<P, Q> module : modules) {
             try {
                 module.onBeginRequest(req, res);
             } catch (Exception e) {
@@ -69,8 +71,8 @@ public class WebModulesContainer {
      * @param req The request to process
      * @param res The response to process
      */
-    public void invokeOnEndRequest(ServletRequest req, ServletResponse res) {
-        for (WebTelemetryModule module : modules) {
+    public void invokeOnEndRequest(P req, Q res) {
+        for (WebTelemetryModule<P, Q> module : modules) {
             try {
                 module.onEndRequest(req, res);
             } catch (Exception e) {
@@ -98,7 +100,7 @@ public class WebModulesContainer {
 
         for (TelemetryModule module : configuration.getTelemetryModules()) {
             if (module instanceof WebTelemetryModule) {
-                modules.add((WebTelemetryModule)module);
+                modules.add((WebTelemetryModule<P, Q>)module);
             }
         }
     }

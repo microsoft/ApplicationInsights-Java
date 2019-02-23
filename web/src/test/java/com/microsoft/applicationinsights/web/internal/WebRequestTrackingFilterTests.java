@@ -24,9 +24,13 @@ package com.microsoft.applicationinsights.web.internal;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
+import com.microsoft.applicationinsights.web.internal.httputils.HttpExtractor;
+import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
+import org.apache.http.HttpRequest;
 import org.junit.Assert;
 import org.junit.Test;
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.mockito.Mockito;
@@ -52,10 +56,14 @@ public class WebRequestTrackingFilterTests {
     private static class FilterAndTelemetryClientMock {
         public final Filter filter;
         public final TelemetryClient mockTelemetryClient;
+        final HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
 
-        private FilterAndTelemetryClientMock(Filter filter, TelemetryClient mockTelemetryClient) {
+        private FilterAndTelemetryClientMock(Filter filter, TelemetryClient mockTelemetryClient,
+                                             HttpServerHandler<HttpServletRequest, HttpServletResponse> handler) {
             this.filter = filter;
             this.mockTelemetryClient = mockTelemetryClient;
+            this.handler = handler;
+
         }
     }
 
@@ -214,25 +222,33 @@ public class WebRequestTrackingFilterTests {
 
 
         Field field = WebRequestTrackingFilter.class.getDeclaredField("telemetryClient");
+        Field field1 = WebRequestTrackingFilter.class.getDeclaredField("handler");
         field.setAccessible(true);
 
         TelemetryClient mockTelemetryClient = null;
+
         if (withTelemetryClient) {
             mockTelemetryClient = spy(new TelemetryClient());
             if (clientThrows) {
                 doThrow(new RuntimeException()).when(mockTelemetryClient).trackException(any(Exception.class));
             }
         }
+        HttpExtractor<HttpServletRequest, HttpServletResponse> extractor = (HttpExtractor<HttpServletRequest, HttpServletResponse>)
+                mock(HttpExtractor.class);
+        HttpServerHandler<HttpServletRequest, HttpServletResponse> handler = new HttpServerHandler<>(
+                extractor, mock(WebModulesContainer.class), mockTelemetryClient
+        );
         field.set(filter, mockTelemetryClient);
+        field1.set(filter,  handler);
 
-        return new FilterAndTelemetryClientMock(filter, mockTelemetryClient);
+        return new FilterAndTelemetryClientMock(filter, mockTelemetryClient, handler);
     }
 
     private FilterAndTelemetryClientMock createInitializedFilterWithExposedTelemetryClient() throws Exception {
         Filter filter = createInitializedFilter();
         Field field = WebRequestTrackingFilter.class.getDeclaredField("telemetryClient");
         field.setAccessible(true);
-        return new FilterAndTelemetryClientMock(filter, (TelemetryClient) field.get(filter));
+        return new FilterAndTelemetryClientMock(filter, (TelemetryClient) field.get(filter), null);
     }
     // endregion Private methods
 }
