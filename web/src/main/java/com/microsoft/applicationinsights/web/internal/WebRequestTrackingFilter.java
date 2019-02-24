@@ -31,12 +31,12 @@ import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
+import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.StopWatch;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -46,12 +46,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
-import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.time.StopWatch;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -85,6 +84,9 @@ public final class WebRequestTrackingFilter implements Filter {
         + "agent.internal.coresync.AgentNotificationsHandler";
     private String filterName = FILTER_NAME;
 
+    /**
+     * Utility handler used to instrument request start and end
+     */
     HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
 
     // endregion Members
@@ -106,7 +108,6 @@ public final class WebRequestTrackingFilter implements Filter {
             HttpServletResponse httpResponse = (HttpServletResponse) res;
             setKeyOnTLS(key);
 
-            // boolean isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
 
             try {

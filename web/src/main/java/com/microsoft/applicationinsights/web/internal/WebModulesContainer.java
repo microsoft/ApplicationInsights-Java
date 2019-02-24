@@ -21,18 +21,14 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by yonisha on 2/3/2015.
