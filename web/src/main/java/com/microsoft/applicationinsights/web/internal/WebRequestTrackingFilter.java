@@ -120,6 +120,7 @@ public final class WebRequestTrackingFilter implements Filter {
             cleanup();
 
         } else {
+            // we are only interested in Http Requests. Keep all other untouched.
             chain.doFilter(req, res);
         }
 
@@ -168,6 +169,8 @@ public final class WebRequestTrackingFilter implements Filter {
             telemetryClient = new TelemetryClient(configuration);
             webModulesContainer = new WebModulesContainer<>(configuration);
 
+            // Todo: Should we provide this via depenedncy injection? Can there be a scenario where user
+            // can provide his own handler?
             handler = new HttpServerHandler<>(new ApplicationInsightsServletExtractor(), webModulesContainer, telemetryClient);
 
             if (StringUtils.isNotEmpty(config.getFilterName())) {

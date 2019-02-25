@@ -84,9 +84,6 @@ public class ServletUtils {
         StringBuffer url =
                 new StringBuffer("http://30thh.loc:8480/app/test%3F/a%3F+b;jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a");
         HttpServletRequest request =  mock(HttpServletRequest.class);
-//        when(request.getRequestURL()).thenReturn(new StringBuffer("http://www.google.com"));
-////        when(request.getHeader("User-Agent")).thenReturn("User-Agent");
-        when(request.getRequestURL()).thenReturn(url);
         when(request.getMethod()).thenReturn("GET");
         when(request.getServerName()).thenReturn("30thh.loc");
         when(request.getQueryString()).thenReturn("p+1=c+d&p+2=e+f");

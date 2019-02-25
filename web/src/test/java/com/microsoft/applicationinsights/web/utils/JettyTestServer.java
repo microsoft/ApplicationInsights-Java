@@ -71,7 +71,6 @@ public class JettyTestServer {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         context.addServlet(TestServlet.class, "/");
-        //context.addFilter(WebRequestTrackingFilter.class, "/*", );
         context.addFilter(WebRequestTrackingFilter.class, "/*", EnumSet.of(DispatcherType.INCLUDE,
                 DispatcherType.ASYNC, DispatcherType.FORWARD, DispatcherType.REQUEST, DispatcherType.ERROR));
 
