@@ -21,22 +21,20 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import java.util.Date;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
+import java.util.Date;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by yonisha on 2/7/2015.
  */
-public class WebUserTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
+public class WebUserTrackingTelemetryModule implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
 
     /**
      * Initializes the telemetry module.
@@ -49,18 +47,16 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
 
     /**
      * Begin request processing.
-     *
-     * @param req The request to process
+     *  @param req The request to process
      * @param res The response to modify
      */
     @Override
-    public void onBeginRequest(ServletRequest req, ServletResponse res) {
-        HttpServletRequest request = (HttpServletRequest)req;
+    public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
 
         UserCookie userCookie =
-                com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
-                        UserCookie.class, request, UserCookie.COOKIE_NAME);
+            com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+                UserCookie.class, req, UserCookie.COOKIE_NAME);
 
         if (userCookie == null) {
             return;
@@ -83,7 +79,7 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
      * @param res The response to modify
      */
     @Override
-    public void onEndRequest(ServletRequest req, ServletResponse res) {
+    public void onEndRequest(HttpServletRequest req, HttpServletResponse res) {
     }
 
     // endregion Public

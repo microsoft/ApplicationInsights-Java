@@ -23,27 +23,23 @@ package com.microsoft.applicationinsights.web.extensibility.modules;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
-import java.util.Date;
-import java.util.Map;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  * Created by yonisha on 2/2/2015.
  */
-public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
+public class WebRequestTrackingTelemetryModule
+    implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
 
     // region Members
 
@@ -107,7 +103,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
      * @param res The response to modify
      */
     @Override
-    public void onBeginRequest(ServletRequest req, ServletResponse res) {
+    public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
         if (!isInitialized) {
             // Avoid logging to not spam the log. It is sufficient that the module initialization failure
             // has been logged.
@@ -118,38 +114,13 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
             RequestTelemetry telemetry = context.getHttpRequestTelemetry();
 
-            HttpServletRequest request = (HttpServletRequest) req;
-            String method = request.getMethod();
-            String rURI = request.getRequestURI();
-            String scheme = request.getScheme();
-            String host = request.getHeader("Host");
-            String query = request.getQueryString();
-            String userAgent = request.getHeader("User-Agent");
-
-            telemetry.setHttpMethod(method);
-            if (!CommonUtils.isNullOrEmpty(query)) {
-                telemetry.setUrl(String.format("%s://%s%s?%s", scheme, host, rURI, query));
-            }
-            else {
-                telemetry.setUrl(String.format("%s://%s%s", scheme, host, rURI));
-            }
-
-            // TODO: this is a very naive implementation, which doesn't take into account various MVC f/ws implementation.
-            // Next step is to implement the smart request name calculation which will support the leading MVC f/ws.
-            String rUriWithoutSessionId = removeSessionIdFromUri(rURI);
-            telemetry.setName(String.format("%s %s", method, rUriWithoutSessionId));
-            telemetry.getContext().getUser().setUserAgent(userAgent);
-            telemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
-
             // Look for cross-component correlation headers and resolve correlation ID's
-            HttpServletResponse response = (HttpServletResponse) res;
             if (isW3CEnabled) {
-                TraceContextCorrelation.resolveCorrelation(request, response, telemetry);
+                TraceContextCorrelation.resolveCorrelation(req, res, telemetry);
             } else {
                 // Default correlation experience
-                TelemetryCorrelationUtils.resolveCorrelation(request, response, telemetry);
+                TelemetryCorrelationUtils.resolveCorrelation(req, res, telemetry);
             }
-
 
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
@@ -163,7 +134,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
      * @param res The response to modify
      */
     @Override
-    public void onEndRequest(ServletRequest req, ServletResponse res) {
+    public void onEndRequest(HttpServletRequest req, HttpServletResponse res) {
         if (!isInitialized) {
             // Avoid logging to not spam the log. It is sufficient that the module initialization failure
             // has been logged.
@@ -174,23 +145,11 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
             RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
             RequestTelemetry telemetry = context.getHttpRequestTelemetry();
 
-            long endTime = new Date().getTime();
-
-            ApplicationInsightsHttpResponseWrapper response = ((ApplicationInsightsHttpResponseWrapper)res);
-            if (response != null) {
-                telemetry.setSuccess(response.getStatus() < 400);
-                telemetry.setResponseCode(Integer.toString(response.getStatus()));
-            } else {
-                InternalLogger.INSTANCE.error("Failed to get response status for request ID: %s", telemetry.getId());
-            }
-
-            telemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
-            
             String instrumentationKey = this.telemetryClient.getContext().getInstrumentationKey();
             if (isW3CEnabled) {
-                TraceContextCorrelation.resolveRequestSource((HttpServletRequest) req, telemetry, instrumentationKey);
+                TraceContextCorrelation.resolveRequestSource(req, telemetry, instrumentationKey);
             } else {
-                TelemetryCorrelationUtils.resolveRequestSource((HttpServletRequest) req, telemetry, instrumentationKey);
+                TelemetryCorrelationUtils.resolveRequestSource(req, telemetry, instrumentationKey);
             }
 
             telemetryClient.track(telemetry);
@@ -216,24 +175,4 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
 
     // endregion Public
 
-    // region Private
-
-    /*
-     * Servlets sometimes rewrite the request url to include a session id represented by ';jsessionid=<some_string>',
-     * in order to cope with client which have cookies disabled.
-     * We want to strip the url from any unique identifiers.
-     */
-    private String removeSessionIdFromUri(String uri) {
-        int separatorIndex = uri.indexOf(';');
-
-        if (separatorIndex == -1) {
-            return uri;
-        }
-
-        String urlWithoutSessionId = uri.substring(0, separatorIndex);
-
-        return urlWithoutSessionId;
-    }
-
-    // endregion Private
 }
