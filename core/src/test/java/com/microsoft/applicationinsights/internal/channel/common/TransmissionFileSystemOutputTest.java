@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -72,6 +73,7 @@ public final class TransmissionFileSystemOutputTest {
         testSuccessfulSends(12, 3, new Integer(SIZE_OF_MOCK_TRANSMISSION), null);
     }
 
+    @Ignore("Tests run flaky on Mac OS")
     @Test
     public void testFetchOldestFiles() throws Exception {
         File folder = tmpFolder.newFolder(TEMP_TEST_FOLDER+"2");
