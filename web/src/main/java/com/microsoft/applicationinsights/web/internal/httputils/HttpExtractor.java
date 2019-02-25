@@ -59,8 +59,18 @@ public interface HttpExtractor<P /* >>> extends @NonNull Object*/, Q> {
      */
     int getStatusCode(Q response);
 
+    /**
+     * Returns the uri of the given request
+     * @param request HttpRequest entity
+     * @return uri string
+     */
     String getURI(P request);
 
+    /**
+     * Returns the scheme of the given request
+     * @param request  HttpRequest entity
+     * @return scheme string
+     */
     String getScheme(P request);
 
 
