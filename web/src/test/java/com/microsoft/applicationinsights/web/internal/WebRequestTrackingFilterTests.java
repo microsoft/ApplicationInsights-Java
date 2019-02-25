@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.web.internal;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
+import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
 import org.apache.http.HttpRequest;
@@ -233,8 +234,7 @@ public class WebRequestTrackingFilterTests {
                 doThrow(new RuntimeException()).when(mockTelemetryClient).trackException(any(Exception.class));
             }
         }
-        HttpExtractor<HttpServletRequest, HttpServletResponse> extractor = (HttpExtractor<HttpServletRequest, HttpServletResponse>)
-                mock(HttpExtractor.class);
+        HttpExtractor<HttpServletRequest, HttpServletResponse> extractor = spy(new ApplicationInsightsServletExtractor());
         HttpServerHandler<HttpServletRequest, HttpServletResponse> handler = new HttpServerHandler<>(
                 extractor, mock(WebModulesContainer.class), mockTelemetryClient
         );

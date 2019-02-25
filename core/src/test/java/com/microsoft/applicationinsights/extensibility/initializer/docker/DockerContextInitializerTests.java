@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -119,6 +120,7 @@ public class DockerContextInitializerTests {
         verify(contextPollerMock, times(0)).getDockerContext();
     }
 
+    @Ignore
     @Test
     public void testSDKInfoFileIsWrittenWithInstrumentationKey() throws IOException {
         // The expected instrumentation key below is taken from the ApplicationInsights.xml under the resources folder.

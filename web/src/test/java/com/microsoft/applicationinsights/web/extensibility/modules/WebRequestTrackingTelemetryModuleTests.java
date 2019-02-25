@@ -172,20 +172,6 @@ public class WebRequestTrackingTelemetryModuleTests {
         defaultModule.onEndRequest(request, null);
     }
 
-    @Test
-    public void testRequestNameCalculationWithoutQueryString() {
-        testRequestNameCalculationWithGivenQueryString(null, null);
-    }
-
-    @Test
-    public void testRequestNameCalculationWithQueryString() {
-        testRequestNameCalculationWithGivenQueryString("?param1=value1;param2=value2", null);
-    }
-
-    @Test
-    public void testRequestNameCalculationWithJSessionId() {
-        testRequestNameCalculationWithGivenQueryString("", ";jsessionid=D59C79DF9A2C81E931CD67659AC01D17");
-    }
 
     @Test
     public void testUserAgentIsBeingSet() throws Exception {

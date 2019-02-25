@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.web.internal.httputils;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -73,12 +74,21 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
 
         String method = extractor.getMethod(request);
         String userAgent = extractor.getUserAgent(request);
-        String url = extractor.getUrl(request);
+
+        String uriWithoutSessionId = extractor.getURI(request);
+        String scheme = extractor.getScheme(request);
+        String host = extractor.getHost(request);
+        String query = extractor.getQuery(request);
+
+        if (!CommonUtils.isNullOrEmpty(query)) {
+            requestTelemetry.setUrl(scheme + "://" + host + uriWithoutSessionId + "?" + query);
+        } else {
+            requestTelemetry.setUrl(scheme + "://" + host + uriWithoutSessionId);
+        }
 
         requestTelemetry.setHttpMethod(method);
-        requestTelemetry.setUrl(extractor.getUrl(request));
 
-        requestTelemetry.setName(String.format("%s %s", method, url));
+        requestTelemetry.setName(method + " " + uriWithoutSessionId);
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
         requestTelemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
 

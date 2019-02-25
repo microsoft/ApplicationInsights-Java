@@ -4,8 +4,10 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 import org.hamcrest.CoreMatchers;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,15 +43,35 @@ public class HttpServerHandlerTest {
     @InjectMocks HttpServerHandler<HttpServletRequest, HttpServletResponse> httpServerHandler;
     @Mock HttpServletRequest request;
     @Mock HttpServletResponse response;
+    @Mock HttpServletRequest requestWithQueryString;
     private String url = "http://www.abc.com/xyz/opq";
+    private String url1 = "http://30thh.loc:8480/app/test%3F/a%3F+b;jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a";
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(extractor.getUrl(request)).thenReturn(url);
+        when(extractor.getURI(request)).thenReturn("/xyz/opq");
+        when(extractor.getScheme(request)).thenReturn("http");
+        when(extractor.getHost(request)).thenReturn("www.abc.com");
+        when(extractor.getQuery(request)).thenReturn("");
         when(extractor.getMethod(request)).thenReturn("GET");
         when(extractor.getUserAgent(request)).thenReturn("User-Agent");
         when(extractor.getStatusCode(response)).thenReturn(500);
+
+        when(extractor.getUrl(requestWithQueryString)).thenReturn(url1);
+        when(extractor.getMethod(requestWithQueryString)).thenReturn("GET");
+        when(extractor.getHost(requestWithQueryString)).thenReturn("30thh.loc:8480");
+        when(extractor.getQuery(requestWithQueryString)).thenReturn("p+1=c+d&p+2=e+f");
+        when(extractor.getUserAgent(requestWithQueryString)).thenReturn("Test");
+        when(extractor.getURI(requestWithQueryString)).thenReturn("/app/test%3F/a%3F+b");
+        when(extractor.getScheme(requestWithQueryString)).thenReturn("http");
+        when(extractor.getStatusCode(response)).thenReturn(500);
+    }
+
+    @After
+    public void clean() {
+        ThreadContext.remove();
     }
 
     @Test
@@ -122,7 +144,7 @@ public class HttpServerHandlerTest {
         RequestTelemetry rt = rtc.getHttpRequestTelemetry();
         assertThat(rt.getId(), is(CoreMatchers.<String>notNullValue()));
         assertThat(rt.getName(), containsString("GET"));
-        assertThat(rt.getName(), containsString(url));
+        assertThat(rt.getName(), containsString("/xyz/opq"));
         assertThat(rt.getUrl().toString(), equalTo(url));
         assertThat(rt.getContext().getUser().getUserAgent(), equalTo("User-Agent"));
         assertThat(rt.getTimestamp(), is(CoreMatchers.<Date>notNullValue()));
@@ -134,7 +156,7 @@ public class HttpServerHandlerTest {
         RequestTelemetry rt = rtc.getHttpRequestTelemetry();
         assertThat(rt.getId(), is(CoreMatchers.<String>notNullValue()));
         assertThat(rt.getName(), containsString("GET"));
-        assertThat(rt.getName(), containsString(url));
+        assertThat(rt.getName(), containsString("/xyz/opq"));
         assertThat(rt.getUrl().toString(), equalTo(url));
         assertThat(rt.getContext().getUser().getUserAgent(), equalTo("User-Agent"));
         assertThat(rt.getTimestamp(), is(CoreMatchers.<Date>notNullValue()));
@@ -146,4 +168,5 @@ public class HttpServerHandlerTest {
         assertThat(rt.getResponseCode(), equalTo("500"));
         assertThat(rt.isSuccess(), equalTo(false));
     }
+
 }

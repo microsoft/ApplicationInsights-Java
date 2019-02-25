@@ -174,24 +174,4 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule<Htt
 
     // endregion Public
 
-    // region Private
-
-    /*
-     * Servlets sometimes rewrite the request url to include a session id represented by ';jsessionid=<some_string>',
-     * in order to cope with client which have cookies disabled.
-     * We want to strip the url from any unique identifiers.
-     */
-    private String removeSessionIdFromUri(String uri) {
-        int separatorIndex = uri.indexOf(';');
-
-        if (separatorIndex == -1) {
-            return uri;
-        }
-
-        String urlWithoutSessionId = uri.substring(0, separatorIndex);
-
-        return urlWithoutSessionId;
-    }
-
-    // endregion Private
 }
