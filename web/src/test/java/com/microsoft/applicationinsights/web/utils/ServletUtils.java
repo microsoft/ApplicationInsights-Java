@@ -25,14 +25,12 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.Collections;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
@@ -82,12 +80,24 @@ public class ServletUtils {
         return container;
     }
 
-    public static ServletRequest generateDummyServletRequest() {
-        return mock(HttpServletRequest.class);
+    public static HttpServletRequest generateDummyServletRequest() {
+        StringBuffer url =
+            new StringBuffer("http://30thh.loc:8480/app/test%3F/a%3F+b;jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a");
+        HttpServletRequest request =  mock(HttpServletRequest.class);
+        when(request.getMethod()).thenReturn("GET");
+        when(request.getServerName()).thenReturn("30thh.loc");
+        when(request.getQueryString()).thenReturn("p+1=c+d&p+2=e+f");
+        when(request.getHeader("User-Agent")).thenReturn("Test");
+        when(request.getRequestURI()).thenReturn("/app/test%3F/a%3F+b");
+        when(request.getScheme()).thenReturn("http");
+        when(request.getServerPort()).thenReturn(8480);
+        return request;
     }
 
-    public static ServletResponse generateDummyServletResponse() {
-        return mock(HttpServletResponse.class);
+    public static HttpServletResponse generateDummyServletResponse() {
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        when(response.getStatus()).thenReturn(500);
+        return response;
     }
 
     public static HttpServletRequest createServletRequestWithHeaders(Map<String, String> headers) {
@@ -133,14 +143,14 @@ public class ServletUtils {
                 private String item1 = "key1=value1, key2=value2";
                 private String item2 = "key3=value3";
 
-				@Override
-				public boolean hasMoreElements() {
+                @Override
+                public boolean hasMoreElements() {
                     return itemCount > 0;
-				}
+                }
 
-				@Override
-				public String nextElement() {
-					if (itemCount == 2) {
+                @Override
+                public String nextElement() {
+                    if (itemCount == 2) {
                         itemCount--;
                         return item2;
                     } else if (itemCount == 1) {
@@ -149,7 +159,7 @@ public class ServletUtils {
                     } else {
                         return null;
                     }
-				}
+                }
 
             }
         );
