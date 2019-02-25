@@ -35,14 +35,14 @@ import com.microsoft.applicationinsights.common.CommonUtils;
  * Created by gupele on 8/17/2015.
  */
 public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitializerBase {
-    public final static String SYNTHETIC_SOURCE_NAME = "Application Insights Availability Monitoring";
-    public final static String SYNTHETIC_TEST_RUN_ID = "SyntheticTest-RunId";
-    public final static String SYNTHETIC_TEST_LOCATION = "SyntheticTest-Location";
-    public final static String SYNTHETIC_TEST_SOURCE = "SyntheticTest-Source";
-    public final static String SYNTHETIC_TEST_TEST_NAME = "SyntheticTest-TestName";
-    public final static String SYNTHETIC_TEST_SESSION_ID = "SyntheticTest-SessionId";
-    public final static String SYNTHETIC_TEST_USER_ID = "SyntheticTest-UserId";
-    public final static String SYNTHETIC_TEST_OPERATION_ID = "SyntheticTest-OperationId";
+    public final static String APPINSIGHTS_AVAILABILITY_SYNTHETIC_SOURCE_NAME = "Application Insights Availability Monitoring";
+    public final static String APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_RUN_ID = "SyntheticTest-RunId";
+    public final static String APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_LOCATION = "SyntheticTest-Location";
+    public final static String APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_SOURCE = "SyntheticTest-Source";
+    public final static String APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_TEST_NAME = "SyntheticTest-TestName";
+    public final static String APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_SESSION_ID = "SyntheticTest-SessionId";
+    public final static String APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_USER_ID = "SyntheticTest-UserId";
+    public final static String APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_OPERATION_ID = "SyntheticTest-OperationId";
 
     @Override
     protected void onInitializeTelemetry(Telemetry telemetry) {
@@ -57,7 +57,7 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
             return;
         }
 
-        String syntheticSourceHeader = request.getHeader(SYNTHETIC_TEST_SOURCE);
+        String syntheticSourceHeader = request.getHeader(APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_SOURCE);
         if (CommonUtils.isNullOrEmpty(syntheticSourceHeader)) {
             handlePossibleGSMSyntheticRequest(telemetry, request);
         } else {
@@ -66,14 +66,14 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
     }
 
     private void handlePossibleGSMSyntheticRequest(Telemetry telemetry, HttpServletRequest request) {
-        String gsmSyntheticTestRunId = request.getHeader(SYNTHETIC_TEST_RUN_ID);
+        String gsmSyntheticTestRunId = request.getHeader(APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_RUN_ID);
         if (CommonUtils.isNullOrEmpty(gsmSyntheticTestRunId)) {
             return;
         }
 
         String syntheticSource = telemetry.getContext().getOperation().getSyntheticSource();
         if (CommonUtils.isNullOrEmpty(syntheticSource)) {
-            telemetry.getContext().getOperation().setSyntheticSource(SYNTHETIC_SOURCE_NAME);
+            telemetry.getContext().getOperation().setSyntheticSource(APPINSIGHTS_AVAILABILITY_SYNTHETIC_SOURCE_NAME);
         }
 
         String sessionId = telemetry.getContext().getSession().getId();
@@ -83,7 +83,7 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
 
         String userId = telemetry.getContext().getUser().getId();
         if (CommonUtils.isNullOrEmpty(userId)) {
-            String header = request.getHeader(SYNTHETIC_TEST_LOCATION);
+            String header = request.getHeader(APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_LOCATION);
             telemetry.getContext().getUser().setId(header);
         }
     }
@@ -96,23 +96,23 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
 
         String userId = telemetry.getContext().getUser().getId();
         if (CommonUtils.isNullOrEmpty(userId)) {
-            String header = request.getHeader(SYNTHETIC_TEST_USER_ID);
+            String header = request.getHeader(APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_USER_ID);
             telemetry.getContext().getUser().setId(header);
         }
 
         String sessionId = telemetry.getContext().getSession().getId();
         if (CommonUtils.isNullOrEmpty(sessionId)) {
-            String header = request.getHeader(SYNTHETIC_TEST_SESSION_ID);
+            String header = request.getHeader(APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_SESSION_ID);
             telemetry.getContext().getSession().setId(header);
         }
 
         String operationId = telemetry.getContext().getOperation().getId();
         if (CommonUtils.isNullOrEmpty(operationId)) {
-            String header = request.getHeader(SYNTHETIC_TEST_OPERATION_ID);
+            String header = request.getHeader(APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_OPERATION_ID);
             telemetry.getContext().getOperation().setId(header);
         }
 
-        putInProperties(telemetry, request, SYNTHETIC_TEST_TEST_NAME, SYNTHETIC_TEST_RUN_ID, SYNTHETIC_TEST_LOCATION);
+        putInProperties(telemetry, request, APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_TEST_NAME, APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_RUN_ID, APPINSIGHTS_AVAILABILITY_SYNTHETIC_TEST_LOCATION);
     }
 
     private void putInProperties(Telemetry telemetry, HttpServletRequest request, String... headers) {
