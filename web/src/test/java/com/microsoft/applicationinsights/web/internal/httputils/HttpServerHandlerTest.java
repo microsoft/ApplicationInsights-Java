@@ -50,8 +50,8 @@ public class HttpServerHandlerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(extractor.getUniformResourceLocator(request)).thenReturn(url);
-        when(extractor.getUniformResourceIdentifier(request)).thenReturn("/xyz/opq");
+        when(extractor.getUrl(request)).thenReturn(url);
+        when(extractor.getUri(request)).thenReturn("/xyz/opq");
         when(extractor.getScheme(request)).thenReturn("http");
         when(extractor.getHost(request)).thenReturn("www.abc.com");
         when(extractor.getQuery(request)).thenReturn("");
@@ -59,12 +59,12 @@ public class HttpServerHandlerTest {
         when(extractor.getUserAgent(request)).thenReturn("User-Agent");
         when(extractor.getStatusCode(response)).thenReturn(500);
 
-        when(extractor.getUniformResourceLocator(requestWithQueryString)).thenReturn(url1);
+        when(extractor.getUrl(requestWithQueryString)).thenReturn(url1);
         when(extractor.getMethod(requestWithQueryString)).thenReturn("GET");
         when(extractor.getHost(requestWithQueryString)).thenReturn("30thh.loc:8480");
         when(extractor.getQuery(requestWithQueryString)).thenReturn("p+1=c+d&p+2=e+f");
         when(extractor.getUserAgent(requestWithQueryString)).thenReturn("Test");
-        when(extractor.getUniformResourceIdentifier(requestWithQueryString)).thenReturn("/app/test%3F/a%3F+b");
+        when(extractor.getUri(requestWithQueryString)).thenReturn("/app/test%3F/a%3F+b");
         when(extractor.getScheme(requestWithQueryString)).thenReturn("http");
         when(extractor.getStatusCode(response)).thenReturn(500);
     }
