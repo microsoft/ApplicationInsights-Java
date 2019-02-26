@@ -71,29 +71,22 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
         RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(),null);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         ThreadContext.setRequestTelemetryContext(context);
-
         String method = extractor.getMethod(request);
         String userAgent = extractor.getUserAgent(request);
-
         String uriWithoutSessionId = extractor.getURI(request);
         String scheme = extractor.getScheme(request);
         String host = extractor.getHost(request);
         String query = extractor.getQuery(request);
-
         if (!CommonUtils.isNullOrEmpty(query)) {
             requestTelemetry.setUrl(scheme + "://" + host + uriWithoutSessionId + "?" + query);
         } else {
             requestTelemetry.setUrl(scheme + "://" + host + uriWithoutSessionId);
         }
-
         requestTelemetry.setHttpMethod(method);
-
         requestTelemetry.setName(method + " " + uriWithoutSessionId);
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
         requestTelemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
-
         webModulesContainer.invokeOnBeginRequest(request, response);
-
         return context;
     }
 

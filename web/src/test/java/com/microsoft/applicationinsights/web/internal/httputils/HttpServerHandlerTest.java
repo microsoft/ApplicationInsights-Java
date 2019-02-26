@@ -162,7 +162,6 @@ public class HttpServerHandlerTest {
         assertThat(rt.getTimestamp(), is(CoreMatchers.<Date>notNullValue()));
 
         httpServerHandler.handleEnd(request, response);
-
         // ensure same request telemetry is modified (picked from TLS)
         assertThat(rt.getDuration().getTotalMilliseconds(), is(not(0L)));
         assertThat(rt.getResponseCode(), equalTo("500"));
