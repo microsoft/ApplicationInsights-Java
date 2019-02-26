@@ -48,11 +48,11 @@ public class ApplicationInsightsServletExtractorTest {
         assertThat(extractor.getHost(httpServletRequest), equalTo("30thh.loc:8480"));
         assertThat(extractor.getUserAgent(httpServletRequest), equalTo("Test"));
         assertThat(extractor.getStatusCode(httpServletResponse), equalTo(0));
-        assertThat(extractor.getUrl(httpServletRequest), equalTo(url.toString()));
+        assertThat(extractor.getUniformResourceLocator(httpServletRequest), equalTo(url.toString()));
     }
 
     @Test
     public void requestUriDoesntHaveSessionIdWhenExtracted() {
-        assertThat(extractor.getURI(httpServletRequest), not(containsString("jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a")));
+        assertThat(extractor.getUniformResourceIdentifier(httpServletRequest), not(containsString("jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a")));
     }
 }

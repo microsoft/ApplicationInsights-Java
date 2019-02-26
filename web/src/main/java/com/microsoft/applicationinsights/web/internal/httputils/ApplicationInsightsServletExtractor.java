@@ -29,7 +29,7 @@ public class ApplicationInsightsServletExtractor implements HttpExtractor<HttpSe
     private static final String USER_AGENT_HEADER = "User-Agent";
 
     @Override
-    public String getUrl(HttpServletRequest request) {
+    public String getUniformResourceLocator(HttpServletRequest request) {
         return request.getRequestURL().toString();
     }
 
@@ -67,7 +67,7 @@ public class ApplicationInsightsServletExtractor implements HttpExtractor<HttpSe
     }
 
     @Override
-    public String getURI(HttpServletRequest request) {
+    public String getUniformResourceIdentifier(HttpServletRequest request) {
         return removeSessionIdFromUri(request.getRequestURI());
     }
 
