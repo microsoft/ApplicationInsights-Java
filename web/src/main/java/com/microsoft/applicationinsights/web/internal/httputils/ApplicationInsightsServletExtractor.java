@@ -67,7 +67,7 @@ public class ApplicationInsightsServletExtractor implements HttpExtractor<HttpSe
     }
 
     @Override
-    public String getURI(HttpServletRequest request) {
+    public String getUri(HttpServletRequest request) {
         return removeSessionIdFromUri(request.getRequestURI());
     }
 

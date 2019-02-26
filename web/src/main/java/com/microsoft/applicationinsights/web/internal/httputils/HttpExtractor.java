@@ -64,7 +64,7 @@ public interface HttpExtractor<P /* >>> extends @NonNull Object*/, Q> {
      * @param request HttpRequest entity
      * @return uri string
      */
-    String getURI(P request);
+    String getUri(P request);
 
     /**
      * Returns the scheme of the given request

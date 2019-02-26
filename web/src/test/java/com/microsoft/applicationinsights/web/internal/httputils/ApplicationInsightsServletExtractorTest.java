@@ -53,6 +53,6 @@ public class ApplicationInsightsServletExtractorTest {
 
     @Test
     public void requestUriDoesntHaveSessionIdWhenExtracted() {
-        assertThat(extractor.getURI(httpServletRequest), not(containsString("jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a")));
+        assertThat(extractor.getUri(httpServletRequest), not(containsString("jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a")));
     }
 }
