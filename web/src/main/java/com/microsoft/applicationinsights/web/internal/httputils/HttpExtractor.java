@@ -53,7 +53,7 @@ public interface HttpExtractor<P /* >>> extends @NonNull Object*/, Q> {
     String getUserAgent(P request);
 
     /**
-     * Returns the status code of request
+     * Returns the status code of request. Returns 0 if no response is available.
      * @param response HttpResponse entity
      * @return response code integer
      */
