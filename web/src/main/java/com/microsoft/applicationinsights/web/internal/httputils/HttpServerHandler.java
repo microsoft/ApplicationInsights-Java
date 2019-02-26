@@ -73,7 +73,7 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
         ThreadContext.setRequestTelemetryContext(context);
         String method = extractor.getMethod(request);
         String userAgent = extractor.getUserAgent(request);
-        String uriWithoutSessionId = extractor.getUniformResourceIdentifier(request);
+        String uriWithoutSessionId = extractor.getUri(request);
         String scheme = extractor.getScheme(request);
         String host = extractor.getHost(request);
         String query = extractor.getQuery(request);
