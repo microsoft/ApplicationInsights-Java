@@ -15,7 +15,7 @@ public interface HttpExtractor<P /* >>> extends @NonNull Object*/, Q> {
      * @param request HttpRequest Entity
      * @return URL String
      */
-    String getUrl(P request);
+    String getUniformResourceLocator(P request);
 
     /**
      * Returns the HTTP method like - GET, POST etc.
@@ -64,7 +64,7 @@ public interface HttpExtractor<P /* >>> extends @NonNull Object*/, Q> {
      * @param request HttpRequest entity
      * @return uri string
      */
-    String getURI(P request);
+    String getUniformResourceIdentifier(P request);
 
     /**
      * Returns the scheme of the given request
