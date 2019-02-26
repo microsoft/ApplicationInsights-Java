@@ -112,7 +112,8 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
      */
     public void handleException(Exception e) {
         try {
-            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.trace("Unhandled exception while processing request: %s",
+                ExceptionUtils.getStackTrace(e));
             if (telemetryClient != null) {
                 telemetryClient.trackException(e);
             }
