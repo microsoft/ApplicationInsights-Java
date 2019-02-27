@@ -96,10 +96,10 @@ public final class WebRequestTrackingFilter implements Filter {
     /**
      * Processing the given request and response.
      *
-     * @param req   The servlet request.
-     * @param res   The servlet response.
+     * @param req The servlet request.
+     * @param res The servlet response.
      * @param chain The filters chain
-     * @throws IOException      Exception that can be thrown from invoking the filters chain.
+     * @throws IOException Exception that can be thrown from invoking the filters chain.
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
@@ -107,9 +107,7 @@ public final class WebRequestTrackingFilter implements Filter {
             HttpServletRequest httpRequest = (HttpServletRequest) req;
             HttpServletResponse httpResponse = (HttpServletResponse) res;
             setKeyOnTLS(key);
-
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
-
             try {
                 chain.doFilter(httpRequest, httpResponse);
             } catch (ServletException | IOException | RuntimeException e) {
@@ -118,12 +116,10 @@ public final class WebRequestTrackingFilter implements Filter {
             }
             handler.handleEnd(httpRequest, httpResponse);
             cleanup();
-
         } else {
             // we are only interested in Http Requests. Keep all other untouched.
             chain.doFilter(req, res);
         }
-
     }
 
     public WebRequestTrackingFilter(String appName) {
@@ -133,7 +129,6 @@ public final class WebRequestTrackingFilter implements Filter {
     private void cleanup() {
         try {
             ThreadContext.remove();
-
             setKeyOnTLS(null);
             for (ThreadLocalCleaner cleaner : cleaners) {
                 cleaner.clean();
@@ -151,36 +146,28 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config) {
         try {
-
             String appName = extractAppName(config.getServletContext());
             initializeAgentIfAvailable(config);
-
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
-
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
                     "Java SDK configuration cannot be null. Web request tracking filter will be disabled.");
 
                 return;
             }
-
             configureWebAppNameContextInitializer(appName, configuration);
-
             telemetryClient = new TelemetryClient(configuration);
             webModulesContainer = new WebModulesContainer<>(configuration);
-
             // Todo: Should we provide this via depenedncy injection? Can there be a scenario where user
             // can provide his own handler?
             handler = new HttpServerHandler<>(new ApplicationInsightsServletExtractor(), webModulesContainer, telemetryClient);
-
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();
             }
-
         } catch (Exception e) {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.info(
-                "Application Insights filter %s has been failed to initialized.\n" +
+                "Application Insights filter %s has failed to initialized.\n" +
                     "Web request tracking filter will be disabled. Exception: %s", filterName, ExceptionUtils.getStackTrace(e));
         }
     }
@@ -234,7 +221,6 @@ public final class WebRequestTrackingFilter implements Filter {
 
     private synchronized void initializeAgentIfAvailable(FilterConfig filterConfig) {
         StopWatch sw = StopWatch.createStarted();
-
         //If Agent Jar is not present in the class path skip the process
         if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
             this.getClass().getClassLoader())) {
@@ -247,14 +233,14 @@ public final class WebRequestTrackingFilter implements Filter {
             String name = extractAppName(context);
             String key = registerWebApp(appName);
             setKey(key);
-
-            InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. appName=%s", this.filterName, sw.getNanoTime()/1_000_000.0, name);
-
+            InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. appName=%s",
+                this.filterName, sw.getNanoTime()/1_000_000.0, name);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", this.filterName, ExceptionUtils.getStackTrace(t));
+                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'",
+                    this.filterName, ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -270,12 +256,14 @@ public final class WebRequestTrackingFilter implements Filter {
             InternalLogger.INSTANCE.info("Registering WebApp with name '%s'", name);
             AgentConnector.RegistrationResult result = AgentConnector.INSTANCE.register(this.getClass().getClassLoader(), name);
             if (result == null) {
-                InternalLogger.INSTANCE.error("Did not get a result when registered '%s'. No way to have RDD telemetries for this WebApp", name);
+                InternalLogger.INSTANCE.error("Did not get a result when registered '%s'. "
+                    + "No way to have RDD telemetries for this WebApp", name);
             }
             key = result.getKey();
 
             if (CommonUtils.isNullOrEmpty(key)) {
-                InternalLogger.INSTANCE.error("Key for '%s' key is null'. No way to have RDD telemetries for this WebApp", name);
+                InternalLogger.INSTANCE.error("Key for '%s' key is null'. "
+                    + "No way to have RDD telemetries for this WebApp", name);
             } else {
                 if (result.getCleaner() != null) {
                     cleaners.add(result.getCleaner());
@@ -285,7 +273,6 @@ public final class WebRequestTrackingFilter implements Filter {
         } else {
             InternalLogger.INSTANCE.error("WebApp name is not found, unable to register WebApp");
         }
-
         return key;
     }
 
@@ -323,7 +310,6 @@ public final class WebRequestTrackingFilter implements Filter {
             } catch (Throwable t2) {
                 // chomp
             }
-
         }
         appName = name;
         return name;
