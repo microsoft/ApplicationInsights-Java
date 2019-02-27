@@ -47,26 +47,21 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule<HttpSe
 
     /**
      * Begin request processing.
-     *  @param req The request to process
+     * @param req The request to process
      * @param res The response to modify
      */
     @Override
     public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-
         UserCookie userCookie =
             com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                 UserCookie.class, req, UserCookie.COOKIE_NAME);
-
         if (userCookie == null) {
             return;
         }
-
         String userId = userCookie.getUserId();
         Date acquisitionDate = userCookie.getAcquisitionDate();
-
         context.setUserCookie(userCookie);
-
         UserContext userContext = context.getHttpRequestTelemetry().getContext().getUser();
         userContext.setId(userId);
         userContext.setAcquisitionDate(acquisitionDate);

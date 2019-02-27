@@ -39,7 +39,6 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
 
     /**
      * Initializes the telemetry module.
-     *
      * @param configuration The configuration to used to initialize the module.
      */
     @Override
@@ -48,23 +47,19 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
 
     /**
      * Begin request processing.
-     *  @param req The request to process
+     * @param req The request to process
      * @param res The response to modify
      */
     @Override
     public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-
         SessionCookie sessionCookie =
             com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                 SessionCookie.class, req, SessionCookie.COOKIE_NAME);
-
         if (sessionCookie == null) {
             return;
         }
-
         context.setSessionCookie(sessionCookie);
-
         String sessionId = sessionCookie.getSessionId();
         getTelemetrySessionContext(context).setId(sessionId);
     }
