@@ -8,20 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Adopter to extract information from {@link HttpServletRequest} and {@link HttpServletResponse}
- *
- * Example:
- * Servlet is mapped as /test%3F/* and the application is deployed under /app.
- *
- * http://30thh.loc:8480/app/test%3F/a%3F+b;jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a
- *
- * Method              URL-Decoded Result
- * ----------------------------------------------------
- * getMethod()                     GET
- * getQuery()              no      p+1=c+d&p+2=e+f
- * getRequestURI()         no      /app/test%3F/a%3F+b;jsessionid=S+ID
- * getRequestURL()         no      http://30thh.loc:8480/app/test%3F/a%3F+b;jsessionid=S+ID
- * getScheme()                     http
- * getHost()                       30thh.loc
  */
 @Experimental
 public class ApplicationInsightsServletExtractor implements HttpExtractor<HttpServletRequest, HttpServletResponse> {
