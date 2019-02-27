@@ -73,7 +73,6 @@ public final class TransmissionFileSystemOutputTest {
         testSuccessfulSends(12, 3, new Integer(SIZE_OF_MOCK_TRANSMISSION), null);
     }
 
-    @Ignore("Tests run flaky on Mac OS")
     @Test
     public void testFetchOldestFiles() throws Exception {
         File folder = tmpFolder.newFolder(TEMP_TEST_FOLDER+"2");

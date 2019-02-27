@@ -120,7 +120,6 @@ public class DockerContextInitializerTests {
         verify(contextPollerMock, times(0)).getDockerContext();
     }
 
-    @Ignore("Tests run flaky on Mac OS")
     @Test
     public void testSDKInfoFileIsWrittenWithInstrumentationKey() throws IOException {
         // The expected instrumentation key below is taken from the ApplicationInsights.xml under the resources folder.
