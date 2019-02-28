@@ -21,22 +21,27 @@
 
 package com.microsoft.applicationinsights.extensibility.initializer.docker;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.Constants;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContext;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContextPoller;
+import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.FileFactory;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static org.mockito.Mockito.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Created by yonisha on 7/29/2015.

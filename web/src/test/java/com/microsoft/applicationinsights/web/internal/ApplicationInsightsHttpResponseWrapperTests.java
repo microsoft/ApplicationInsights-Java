@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.web.internal;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.mock;
 /**
  * Created by yonisha on 5/27/2015.
  */
+@Ignore
 public class ApplicationInsightsHttpResponseWrapperTests {
 
     private HttpServletResponse responseMock = mock(HttpServletResponse.class);

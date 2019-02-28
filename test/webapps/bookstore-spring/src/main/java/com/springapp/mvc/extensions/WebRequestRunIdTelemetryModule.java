@@ -27,10 +27,8 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by yonisha on 6/21/2015.
@@ -39,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
  * as a property to the RequestTelemetry sent to AI.
  * This run ID is then used to identify requests sent as part of a test suite.
  */
-public class WebRequestRunIdTelemetryModule implements WebTelemetryModule, TelemetryModule {
+public class WebRequestRunIdTelemetryModule implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
 
     protected static final String RUN_ID_QUERY_PARAM_NAME = "runid";
 
@@ -48,9 +46,8 @@ public class WebRequestRunIdTelemetryModule implements WebTelemetryModule, Telem
     }
 
     @Override
-    public void onBeginRequest(ServletRequest req, ServletResponse res) {
-        HttpServletRequest httpRequest = (HttpServletRequest) req;
-        String queryString = httpRequest.getQueryString();
+    public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
+        String queryString = req.getQueryString();
 
         String runId = getRunIdFromQueryString(queryString);
 
@@ -83,6 +80,6 @@ public class WebRequestRunIdTelemetryModule implements WebTelemetryModule, Telem
     }
 
     @Override
-    public void onEndRequest(ServletRequest req, ServletResponse res) {
+    public void onEndRequest(HttpServletRequest req, HttpServletResponse res) {
     }
 }
