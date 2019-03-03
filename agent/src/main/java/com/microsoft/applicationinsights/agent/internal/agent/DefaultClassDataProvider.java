@@ -48,7 +48,6 @@ class DefaultClassDataProvider implements ClassDataProvider {
         "org/sqlite/",
         "org/hsqldb/",
         "org/postgresql/",
-        "org/postgresql/",
         "sun/nio/",
         "sun/rmi/",
         "com/sun/jmx/",
