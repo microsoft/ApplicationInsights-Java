@@ -59,10 +59,10 @@ public final class FileLoggerOutput implements LoggerOutput {
     private static String SDK_LOGS_DEFAULT_FOLDER = "javasdklogs";
     private static String SDK_LOGS_BASE_FOLDER_PATH = LocalFileSystemUtils.getTempDir().getAbsolutePath();
     private final static String LOG_FILE_SUFFIX_FOR_LISTING = "jsl";
-    private final static String NUMBER_OF_FILES_ATTRIBUTE = "NumberOfFiles";
-    private final static String TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE = "NumberOfTotalSizeInMB";
-    private final static String LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE = "BaseFolderPath";
-    private final static String UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE = "UniquePrefix";
+    public final static String NUMBER_OF_FILES_ATTRIBUTE = "NumberOfFiles";
+    public final static String TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE = "NumberOfTotalSizeInMB";
+    public final static String LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE = "BaseFolderPath";
+    public final static String UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE = "UniquePrefix";
     private static final String DATE_FORMAT_NOW = "yyyy-MM-dd-HH-mm-ss";
 
     private static class FileAndDate {
