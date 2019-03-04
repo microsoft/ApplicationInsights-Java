@@ -21,6 +21,16 @@
 
 // region Common configurations
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
+        classpath 'org.owasp:dependency-check-gradle:4.0.2'
+    }
+}
+
 ext.buildScriptsDir = "$rootDir/gradle"
 
 apply from: "$buildScriptsDir/common.gradle"
