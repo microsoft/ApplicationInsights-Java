@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# Version 2.4.0
+- Introduced support for Manual Async and Explicit Multithreading correlation. 
+- Removed `InherritableThreadLocal` for storing context objects.
+- Introduced `setRequestTelemetryContext` API in `WebTelemetryModule` Interface.
+- Introduced experimental API's `AIHttpServletListner`, `HttpServerHandler`, `ApplicationInsightsServletExtractor`
+  and `HttpExtractor`.
+  
 # Version 2.3.1
 - Fixed [#799](https://github.com/Microsoft/ApplicationInsights-Java/issues/799) Removed dependency on Guava vulnerable to [CVE-2018-10237](https://nvd.nist.gov/vuln/detail/CVE-2018-10237).
 
