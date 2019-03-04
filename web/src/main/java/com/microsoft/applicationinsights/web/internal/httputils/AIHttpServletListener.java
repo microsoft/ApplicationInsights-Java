@@ -30,7 +30,7 @@ public final class AIHttpServletListener implements Closeable, AsyncListener {
     private final HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
 
     public AIHttpServletListener(HttpServerHandler<HttpServletRequest, HttpServletResponse> handler,
-                                    RequestTelemetryContext context) {
+                                 RequestTelemetryContext context) {
         Validate.notNull(handler, "HttpServerHandler");
         Validate.notNull(context, "RequestTelemetryContext");
         this.handler = handler;

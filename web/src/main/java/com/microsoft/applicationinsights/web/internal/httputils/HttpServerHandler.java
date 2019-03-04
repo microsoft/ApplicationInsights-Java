@@ -108,7 +108,7 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
      * @param context RequestTelemetryContext object
      */
     public void handleEnd(P request, Q response,
-        RequestTelemetryContext context) {
+                          RequestTelemetryContext context) {
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         long endTime = new Date().getTime();
         requestTelemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
