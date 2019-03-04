@@ -31,8 +31,10 @@ import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
+import com.microsoft.applicationinsights.web.internal.httputils.AIHttpServletListener;
 import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
+import javax.servlet.AsyncContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -108,14 +110,20 @@ public final class WebRequestTrackingFilter implements Filter {
             HttpServletResponse httpResponse = (HttpServletResponse) res;
             setKeyOnTLS(key);
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
+            AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
                 chain.doFilter(httpRequest, httpResponse);
             } catch (ServletException | IOException | RuntimeException e) {
                 handler.handleException(e);
                 throw e;
             }
-            handler.handleEnd(httpRequest, httpResponse);
-            cleanup();
+            if (httpRequest.isAsyncStarted()) {
+                AsyncContext context = httpRequest.getAsyncContext();
+                context.addListener(aiHttpServletListener, httpRequest, httpResponse);
+            } else {
+                handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+            }
+            setKeyOnTLS(null);
         } else {
             // we are only interested in Http Requests. Keep all other untouched.
             chain.doFilter(req, res);
@@ -124,19 +132,6 @@ public final class WebRequestTrackingFilter implements Filter {
 
     public WebRequestTrackingFilter(String appName) {
         this.appName = appName;
-    }
-
-    private void cleanup() {
-        try {
-            ThreadContext.remove();
-            setKeyOnTLS(null);
-            for (ThreadLocalCleaner cleaner : cleaners) {
-                cleaner.clean();
-            }
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-        }
     }
 
     /**
@@ -158,9 +153,10 @@ public final class WebRequestTrackingFilter implements Filter {
             configureWebAppNameContextInitializer(appName, configuration);
             telemetryClient = new TelemetryClient(configuration);
             webModulesContainer = new WebModulesContainer<>(configuration);
-            // Todo: Should we provide this via depenedncy injection? Can there be a scenario where user
+            // Todo: Should we provide this via dependency injection? Can there be a scenario where user
             // can provide his own handler?
-            handler = new HttpServerHandler<>(new ApplicationInsightsServletExtractor(), webModulesContainer, telemetryClient);
+            handler = new HttpServerHandler<>(new ApplicationInsightsServletExtractor(), webModulesContainer,
+                                                cleaners, telemetryClient);
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();
             }
@@ -184,9 +180,7 @@ public final class WebRequestTrackingFilter implements Filter {
     /**
      * Destroy the filter by releases resources.
      */
-    public void destroy() {
-        cleanup();
-    }
+    public void destroy() {}
 
     // endregion Public
 
