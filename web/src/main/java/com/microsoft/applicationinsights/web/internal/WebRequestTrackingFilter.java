@@ -147,7 +147,6 @@ public final class WebRequestTrackingFilter implements Filter {
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
                     "Java SDK configuration cannot be null. Web request tracking filter will be disabled.");
-
                 return;
             }
             configureWebAppNameContextInitializer(appName, configuration);
