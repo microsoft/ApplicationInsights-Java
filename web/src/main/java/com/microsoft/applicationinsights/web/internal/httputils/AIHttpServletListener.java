@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.web.internal.httputils;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import java.io.Closeable;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.annotation.Experimental;
 
 /**
@@ -70,6 +72,9 @@ public final class AIHttpServletListener implements Closeable, AsyncListener {
                 if (throwable instanceof Exception) {
                     // AI SDK can only track Exceptions. It doesn't support tracking Throwable
                     handler.handleException((Exception) throwable);
+                } else {
+                    InternalLogger.INSTANCE.warn(String.format("Throwable is not instance of exception,"
+                        + "cannot be captured. Stack trace is : %s", ExceptionUtils.getStackTrace(throwable)));
                 }
             } finally{
                 handler.handleEnd((HttpServletRequest) request, (HttpServletResponse) response, context);
