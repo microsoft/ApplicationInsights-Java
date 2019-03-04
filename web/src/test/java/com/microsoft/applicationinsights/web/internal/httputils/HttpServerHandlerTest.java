@@ -100,6 +100,12 @@ public class HttpServerHandlerTest {
     }
 
     @Test
+    public void handleStartShouldSetContextInWebModulesContainer() throws MalformedURLException {
+        RequestTelemetryContext context = httpServerHandler.handleStart(request, response);
+        verify(webModulesContainer, times(1)).setRequestTelemetryContext(context);
+    }
+
+    @Test
     public void handleEndThrowsWhenCalledBeforeHandleStart() {
         thrown.expect(NullPointerException.class);
         httpServerHandler.handleEnd(request, response, mock(RequestTelemetryContext.class));
