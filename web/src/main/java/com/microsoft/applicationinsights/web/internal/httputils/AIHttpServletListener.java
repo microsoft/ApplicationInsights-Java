@@ -13,10 +13,20 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.annotation.Experimental;
 
+/**
+ * This class implements {@link AsyncListener} to handle span completion for async request handling.
+ */
 @Experimental
 public final class AIHttpServletListener implements Closeable, AsyncListener {
 
+    /**
+     * Instance of {@link RequestTelemetryContext}
+     */
     private final RequestTelemetryContext context;
+
+    /**
+     * Instance of {@link HttpServerHandler}
+     */
     private final HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
 
     public AIHttpServletListener(HttpServerHandler<HttpServletRequest, HttpServletResponse> handler,
@@ -58,7 +68,7 @@ public final class AIHttpServletListener implements Closeable, AsyncListener {
             try {
                 Throwable throwable = event.getThrowable();
                 if (throwable instanceof Exception) {
-                    // AI SDK can only track Exceptions.
+                    // AI SDK can only track Exceptions. It doesn't support tracking Throwable
                     handler.handleException((Exception) throwable);
                 }
             } finally{
