@@ -38,6 +38,22 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
     // region Public
 
     /**
+     * The {@link RequestTelemetryContext} instance propogated from
+     * {@link com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler}
+     */
+    private RequestTelemetryContext requestTelemetryContext;
+
+    public void setRequestTelemetryContext(
+        RequestTelemetryContext requestTelemetryContext) {
+        this.requestTelemetryContext = requestTelemetryContext;
+    }
+
+    /** Used for test */
+    RequestTelemetryContext getRequestTelemetryContext() {
+        return this.requestTelemetryContext;
+    }
+
+    /**
      * Initializes the telemetry module.
      * @param configuration The configuration to used to initialize the module.
      */
@@ -52,7 +68,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
      */
     @Override
     public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
-        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+        RequestTelemetryContext context = this.requestTelemetryContext;
         SessionCookie sessionCookie =
             com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                 SessionCookie.class, req, SessionCookie.COOKIE_NAME);
