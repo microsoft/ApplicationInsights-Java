@@ -1,6 +1,7 @@
 package com.springbootstartertest.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
@@ -42,12 +43,12 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 
 	@Test
 	@TargetUri("/throwsException")
-	public void testResultCodeWhenRestControllerThrows() throws Exception {
-		assertEquals(2, mockedIngestion.getCountForType("RequestData"));
+	public void testResultCodeWhenRestControllerThrows() {
+		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 		RequestData d = getTelemetryDataForType(0, "RequestData");
 		final String expectedResponseCode = "500";
 		assertEquals(expectedResponseCode, d.getResponseCode());
-		assertEquals(false, d.getSuccess());
+		assertFalse( d.getSuccess());
 	}
 
 	@Test
