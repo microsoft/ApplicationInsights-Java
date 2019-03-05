@@ -11,8 +11,8 @@ buildscript {
 
 apply plugin: 'org.springframework.boot'
 
-compileJava.sourceCompatibility = 1.7
-compileJava.targetCompatibility = 1.7
+compileJava.sourceCompatibility = 1.8
+compileJava.targetCompatibility = 1.8
 compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
@@ -20,6 +20,7 @@ dependencies {
     compile springBootStarterJar
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.9.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.9.RELEASE'
+    compile group: 'org.apache.httpcomponents', name:'httpclient', version: '4.5.7'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 

@@ -6,10 +6,12 @@ import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
+import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.localforwarder.library.inputs.contracts.Request;
 import org.junit.Test;
 
+@UseAgent
 public class SpringbootSmokeTest extends AiSmokeTest{
 
 	@Test
@@ -46,5 +48,12 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 		final String expectedResponseCode = "500";
 		assertEquals(expectedResponseCode, d.getResponseCode());
 		assertEquals(false, d.getSuccess());
+	}
+
+	@Test
+	@TargetUri("/asyncDependencyCall")
+	public void testAsyncDependencyCall() {
+		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+		assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 	}
 }
