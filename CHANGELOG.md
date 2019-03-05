@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 2.4.0
+- Fixed [#826](https://github.com/Microsoft/ApplicationInsights-Java/issues/826) Remove duplicate provider.
+
 # Version 2.3.1
 - Fixed [#799](https://github.com/Microsoft/ApplicationInsights-Java/issues/799) Removed dependency on Guava vulnerable to [CVE-2018-10237](https://nvd.nist.gov/vuln/detail/CVE-2018-10237).
 
