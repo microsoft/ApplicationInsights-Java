@@ -6,6 +6,7 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
+import java.util.List;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -44,6 +45,7 @@ public class HttpServerHandlerTest {
     @Mock HttpServletRequest request;
     @Mock HttpServletResponse response;
     @Mock HttpServletRequest requestWithQueryString;
+    @Mock List threadLocalCleaners;
     private String url = "http://www.abc.com/xyz/opq";
     private String url1 = "http://30thh.loc:8480/app/test%3F/a%3F+b;jsessionid=S%3F+ID?p+1=c+d&p+2=e+f#a";
 
@@ -77,18 +79,18 @@ public class HttpServerHandlerTest {
     @Test
     public void httpServerHandlerDoesNotExceptNullExtractor() {
         thrown.expect(NullPointerException.class);
-        new HttpServerHandler<>(null, webModulesContainer, telemetryClient);
+        new HttpServerHandler<>(null, webModulesContainer, threadLocalCleaners, telemetryClient);
     }
 
     @Test
     public void httpServerHandlerDoesNotExceptNullWebModulesContainer() {
         thrown.expect(NullPointerException.class);
-        new HttpServerHandler<>(extractor, null, telemetryClient);
+        new HttpServerHandler<>(extractor, null, threadLocalCleaners, telemetryClient);
     }
 
     @Test
     public void httpServerHandlerAcceptsNullTelemetryClient() {
-        new HttpServerHandler<>(extractor, webModulesContainer, null);
+        new HttpServerHandler<>(extractor, webModulesContainer, threadLocalCleaners,null);
     }
 
     @Test
@@ -100,13 +102,13 @@ public class HttpServerHandlerTest {
     @Test
     public void handleEndThrowsWhenCalledBeforeHandleStart() {
         thrown.expect(NullPointerException.class);
-        httpServerHandler.handleEnd(request, response);
+        httpServerHandler.handleEnd(request, response, mock(RequestTelemetryContext.class));
     }
 
     @Test
     public void handleEndSucceedsWhenHandleStartIsCalledFirst() throws MalformedURLException {
-        httpServerHandler.handleStart(request, response);
-        httpServerHandler.handleEnd(request, response);
+        RequestTelemetryContext context = httpServerHandler.handleStart(request, response);
+        httpServerHandler.handleEnd(request, response, context);
     }
 
     @Test
@@ -117,15 +119,15 @@ public class HttpServerHandlerTest {
 
     @Test
     public void webModuleContainersOnEndIsCalledWhenHandleEndInvoked() throws MalformedURLException {
-        httpServerHandler.handleStart(request, response);
-        httpServerHandler.handleEnd(request, response);
+        RequestTelemetryContext context = httpServerHandler.handleStart(request, response);
+        httpServerHandler.handleEnd(request, response, context);
         verify(webModulesContainer, times(1)).invokeOnEndRequest(request, response);
     }
 
     @Test
     public void onBeginIsCalledBeforeOnEnd() throws MalformedURLException {
-        httpServerHandler.handleStart(request, response);
-        httpServerHandler.handleEnd(request, response);
+        RequestTelemetryContext context = httpServerHandler.handleStart(request, response);
+        httpServerHandler.handleEnd(request, response, context);
         InOrder inOrder = inOrder(webModulesContainer);
         inOrder.verify(webModulesContainer).invokeOnBeginRequest(request, response);
         inOrder.verify(webModulesContainer).invokeOnEndRequest(request, response);
@@ -161,7 +163,7 @@ public class HttpServerHandlerTest {
         assertThat(rt.getContext().getUser().getUserAgent(), equalTo("User-Agent"));
         assertThat(rt.getTimestamp(), is(CoreMatchers.<Date>notNullValue()));
 
-        httpServerHandler.handleEnd(request, response);
+        httpServerHandler.handleEnd(request, response, rtc);
         // ensure same request telemetry is modified (picked from TLS)
         assertThat(rt.getDuration().getTotalMilliseconds(), is(not(0L)));
         assertThat(rt.getResponseCode(), equalTo("500"));
