@@ -28,6 +28,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
+apply plugin: 'org.owasp.dependencycheck'
 
 tasks.withType(JavaCompile) {
     sourceCompatibility = 1.7
