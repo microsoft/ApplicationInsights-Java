@@ -140,10 +140,11 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
      */
     private void cleanup() {
         try {
-            ThreadContext.remove();
             for (ThreadLocalCleaner cleaner : cleaners) {
                 cleaner.clean();
             }
+            // clean context after cleaners are run, in-case cleaners need the context object
+            ThreadContext.remove();
         } catch (Exception t) {
             InternalLogger.INSTANCE.warn(String.format("unable to perform TLS Cleaning: %s",
                 ExceptionUtils.getStackTrace(t)));
