@@ -60,7 +60,7 @@ public class ThreadContextTests {
     }
 
     @Test
-    public void testNewCreatedThreadDoesNotGetsTheParentContextByDefault() throws InterruptedException {
+    public void testNewCreatedThreadTheParentContextByDefault() throws InterruptedException {
         final String expectedRequestName = "inherited_context";
         RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
         requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName);
@@ -78,7 +78,39 @@ public class ThreadContextTests {
         thread.start();
         thread.join();
 
-        Assert.assertNull(context[0]);
+        Assert.assertNotNull(context[0]);
+        Assert.assertSame(expectedRequestName, ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry()
+            .getName());
+    }
+
+    @Test
+    public void testChildThreadDoesnotGetContextUpdatedWhenrelyingonItls()
+        throws InterruptedException {
+        final String expectedRequestName = "inherited_context";
+        RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
+        requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName);
+
+        ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
+
+        final RequestTelemetryContext[] context = new RequestTelemetryContext[1];
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                context[0] = ThreadContext.getRequestTelemetryContext();
+            }
+        });
+
+        thread.start();
+        thread.join();
+
+
+        final String expectedRequestName1 = "inherited_context1";
+        RequestTelemetryContext requestTelemetryContext1 = new RequestTelemetryContext(0);
+        requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName1);
+        ThreadContext.setRequestTelemetryContext(requestTelemetryContext1);
+
+        Assert.assertNotSame(expectedRequestName, ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry()
+            .getName());
     }
 
     @Test

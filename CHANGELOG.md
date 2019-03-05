@@ -2,7 +2,6 @@
 
 # Version 2.4.0
 - Introduced support for Manual Async and Explicit Multithreading correlation. 
-- Removed `InherritableThreadLocal` for storing context objects.
 - Introduced `setRequestTelemetryContext` API in `WebTelemetryModule` Interface.
 - Introduced experimental API's `AIHttpServletListner`, `HttpServerHandler`, `ApplicationInsightsServletExtractor`
   and `HttpExtractor`.

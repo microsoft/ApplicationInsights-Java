@@ -29,7 +29,7 @@ public class ThreadContext {
     // No object creation allowed for this class.
     private ThreadContext() {}
 
-    private static final ThreadLocal<RequestTelemetryContext> threadLocal = new ThreadLocal<>();
+    private static final InheritableThreadLocal<RequestTelemetryContext> threadLocal = new InheritableThreadLocal<>();
 
     /**
      * Set the context in ThreadLocal
