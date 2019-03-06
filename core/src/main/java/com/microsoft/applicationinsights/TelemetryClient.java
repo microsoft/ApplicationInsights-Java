@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 // Created by gupele
 /**
@@ -386,6 +387,10 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void track(Telemetry telemetry) {
+
+        Exception e = new Exception();
+        e.setStackTrace(Thread.currentThread().getStackTrace());
+        InternalLogger.INSTANCE.info("track() stack trace: \n"+ExceptionUtils.getStackTrace(e));
 
         if (generateCounter.incrementAndGet() % 10000 == 0) {
             InternalLogger.INSTANCE.info("Total events generated till now %d", generateCounter.get());

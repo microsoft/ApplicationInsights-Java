@@ -118,9 +118,11 @@ public final class WebRequestTrackingFilter implements Filter {
                 throw e;
             }
             if (httpRequest.isAsyncStarted()) {
+                InternalLogger.INSTANCE.trace("FILTER ("+this.toString()+"): ASYNC -- ADDING LISTENER");
                 AsyncContext context = httpRequest.getAsyncContext();
                 context.addListener(aiHttpServletListener, httpRequest, httpResponse);
             } else {
+                InternalLogger.INSTANCE.trace("FILTER: ("+this.toString()+") END REQUEST");
                 handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
             }
             setKeyOnTLS(null);
