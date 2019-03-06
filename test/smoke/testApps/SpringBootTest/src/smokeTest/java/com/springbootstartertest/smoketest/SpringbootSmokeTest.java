@@ -3,6 +3,7 @@ package com.springbootstartertest.smoketest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
@@ -10,6 +11,7 @@ import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.localforwarder.library.inputs.contracts.Request;
+import java.util.List;
 import org.junit.Test;
 
 @UseAgent
@@ -54,6 +56,10 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 	@Test
 	@TargetUri("/asyncDependencyCall")
 	public void testAsyncDependencyCall() {
+		List<Envelope> list = mockedIngestion.getItemsByType("RequestData");
+		for (Envelope e: list) {
+      		System.out.println(e);
+		}
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 		assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 	}
