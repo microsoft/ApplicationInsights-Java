@@ -194,20 +194,15 @@ public abstract class AiSmokeTest {
 			// NOTE this happens after @After :)
 			String containerId = currentContainerInfo.getContainerId();
 			System.out.println("Test failure detected.");
-			
-			System.out.println("\nFetching appserver logs");
-			try {
-				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
-			}
-			catch (Exception e) {
-				System.err.println("Error executing tailLastLog.sh");
-				e.printStackTrace();
-			}
-			
+			// FIXME tailLastLog consistantly timeouts after 10s. container logs generally contain enough information. remove tailLastLog.sh in the future if this continues
+//			runTailLastLog(containerId);
+			printContainerLogs(containerId);
+		}
+
+		private void printContainerLogs(String containerId) {
 			try {
 				System.out.println("\nFetching container logs for "+containerId);
 				docker.printContainerLogs(containerId);
-
 			}
 			catch (Exception e) {
 				System.err.println("Error copying logs to stream");
@@ -215,6 +210,17 @@ public abstract class AiSmokeTest {
 			}
 			finally {
 				System.out.println("\nFinished gathering logs.");
+			}
+		}
+
+		private void runTailLastLog(String containerId) {
+			System.out.println("\nFetching appserver logs");
+			try {
+				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
+			}
+			catch (Exception e) {
+				System.err.println("Error executing tailLastLog.sh");
+				e.printStackTrace();
 			}
 		}
 	};
