@@ -56,9 +56,10 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 	@Test
 	@TargetUri("/asyncDependencyCall")
 	public void testAsyncDependencyCall() {
-		List<Envelope> list = mockedIngestion.getItemsByType("RequestData");
-		for (Envelope e: list) {
-      		System.out.println(e);
+		List<RequestData> list = mockedIngestion.getTelemetryDataByType("RequestData");
+		for (RequestData e: list) {
+      		System.out.println("------" + e.getUrl());
+      		System.out.println("--------------" + e.getDuration());
 		}
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 		assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
