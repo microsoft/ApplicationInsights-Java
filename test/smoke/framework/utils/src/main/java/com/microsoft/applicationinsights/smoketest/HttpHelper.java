@@ -11,12 +11,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
 public class HttpHelper {
+
 	public static String get(String url) throws UnsupportedOperationException, IOException {
-		CloseableHttpClient client = HttpClients.createDefault();
+		CloseableHttpClient client = getHttpClient();
 		try {
 			HttpGet get = new HttpGet(url);
 			CloseableHttpResponse resp1 = client.execute(get);
@@ -27,8 +28,14 @@ public class HttpHelper {
 		}
 	}
 
+	private static CloseableHttpClient getHttpClient() {
+		return HttpClientBuilder.create()
+				.disableAutomaticRetries()
+				.build();
+	}
+
 	public static String post(String url, String body) throws ClientProtocolException, IOException {
-		CloseableHttpClient client = HttpClients.createDefault();
+		CloseableHttpClient client = getHttpClient();
 		try {
 			HttpPost post = new HttpPost(url);
 			post.setEntity(new StringEntity("PING"));
