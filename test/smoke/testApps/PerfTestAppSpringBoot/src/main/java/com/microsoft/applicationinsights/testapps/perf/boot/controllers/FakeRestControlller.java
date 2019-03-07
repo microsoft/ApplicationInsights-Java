@@ -1,9 +1,10 @@
-package com.microsoft.applicationinsights.testapps.perf.servlets;
+package com.microsoft.applicationinsights.testapps.perf.boot.controllers;
 
 import com.google.common.io.CharStreams;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.testapps.perf.TestCaseRunnable;
+import com.microsoft.applicationinsights.testapps.perf.boot.SpringBootPerfTestHelper;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -11,28 +12,28 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 
-@WebServlet({"/fakeRest"})
-public class FakeRestServlet extends APerfTestServlet {
-    @Override
-    protected void reallyDoGet(final HttpServletRequest req, HttpServletResponse resp) {
-        new TestCaseRunnable(new Runnable() {
+@RestController
+public class FakeRestControlller {
+
+    @GetMapping("/fakeRest")
+    public String fakeRest(@RequestParam("url") final String pUrl) {
+        return SpringBootPerfTestHelper.runTest(new TestCaseRunnable(new Runnable() {
             @Override
             public void run() {
                 TelemetryClient tc = new TelemetryClient();
-                final String pUrl = req.getParameter("url");
                 final String url = (pUrl == null)
                         ? "http://www.msn.com"
                         : ((pUrl.startsWith("http://"))
-                            ? pUrl
-                            : "http://"+pUrl);
+                        ? pUrl
+                        : "http://"+pUrl);
 
                 CloseableHttpClient client = HttpClients.createDefault();
                 try {
@@ -70,6 +71,6 @@ public class FakeRestServlet extends APerfTestServlet {
                 tc.trackMetric("FakeRestMetric", 1.0);
                 tc.trackTrace("FakeRestTrace");
             }
-        }, "fakeRest operation").run();
+        }, "fakeRest operation"));
     }
 }

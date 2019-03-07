@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class BaselineController {
     @GetMapping("/baseline")
     public String baseline() {
-        return SpringBootPerfTestHelper.runTest(new TestCaseRunnable(null));
+        return SpringBootPerfTestHelper.runTest(new TestCaseRunnable(null, "baseline"));
     }
 }
