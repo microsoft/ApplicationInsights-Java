@@ -1,13 +1,15 @@
 package com.springbootstartertest.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
+import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
+import java.util.List;
 import org.junit.Test;
 
 @UseAgent
@@ -43,10 +45,13 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 	@TargetUri("/throwsException")
 	public void testResultCodeWhenRestControllerThrows() {
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+		List<Envelope> exceptionEnvelopeList = mockedIngestion.getItemsByType("ExceptionTelemetry");
+		assertEquals(1, exceptionEnvelopeList.size());
+
+		Envelope exceptionEnvelope = exceptionEnvelopeList.get(0);
 		RequestData d = getTelemetryDataForType(0, "RequestData");
-		final String expectedResponseCode = "500";
-		assertEquals(expectedResponseCode, d.getResponseCode());
-		assertFalse( d.getSuccess());
+		String requestOperationId = d.getId();
+		assertEquals(requestOperationId, exceptionEnvelope.getTags().getOrDefault("OperationId", null));
 	}
 
 	@Test
