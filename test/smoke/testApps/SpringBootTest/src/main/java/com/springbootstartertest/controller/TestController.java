@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import javax.servlet.ServletException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -49,7 +50,7 @@ public class TestController {
 
 	@GetMapping("/throwsException")
 	public void resultCodeTest() throws Exception {
-		throw new Exception("This is an exception");
+		throw new ServletException("This is an exception");
 	}
 
 	@Async
