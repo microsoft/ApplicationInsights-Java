@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
+import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
@@ -50,7 +51,7 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 		Envelope exceptionEnvelope = exceptionEnvelopeList.get(0);
 		RequestData d = getTelemetryDataForType(0, "RequestData");
 		String requestOperationId = d.getId();
-		assertEquals(requestOperationId, exceptionEnvelope.getTags().getOrDefault("OperationId", null));
+		assertEquals(requestOperationId, exceptionEnvelope.getTags().getOrDefault("ai.operation.id", null));
 	}
 
 	@Test
@@ -58,5 +59,9 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 	public void testAsyncDependencyCall() {
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 		assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+		RequestData d = getTelemetryDataForType(0, "RequestData");
+		String requestOperationId = d.getId();
+		RemoteDependencyData rdd = getTelemetryDataForType(0,"RemoteDependencyData");
+		assertEquals(requestOperationId, rdd.getId());
 	}
 }
