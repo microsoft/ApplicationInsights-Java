@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.web.internal.httputils.AIHttpServletLis
 import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
 import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -121,7 +122,11 @@ public final class WebRequestTrackingFilter implements Filter {
                 AsyncContext context = httpRequest.getAsyncContext();
                 context.addListener(aiHttpServletListener, httpRequest, httpResponse);
             } else {
-                handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+                // In some cases filter can be called twice based on Web Servers while handling
+                // async requests. We should only process a request once.
+                if (!DispatcherType.ASYNC.equals(httpRequest.getDispatcherType())) {
+                    handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+                }
             }
             setKeyOnTLS(null);
         } else {

@@ -84,7 +84,7 @@ public class ThreadContextTests {
     }
 
     @Test
-    public void testChildThreadDoesnotGetContextUpdatedWhenrelyingonItls()
+    public void childThreadDoesNotGetContextUpdatedWithITLS()
         throws InterruptedException {
         final String expectedRequestName = "inherited_context";
         RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
