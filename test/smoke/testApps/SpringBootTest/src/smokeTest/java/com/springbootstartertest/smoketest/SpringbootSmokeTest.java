@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
@@ -45,7 +44,7 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 	@TargetUri("/throwsException")
 	public void testResultCodeWhenRestControllerThrows() {
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-		List<Envelope> exceptionEnvelopeList = mockedIngestion.getItemsByType("ExceptionTelemetry");
+		List<Envelope> exceptionEnvelopeList = mockedIngestion.getItemsEnvelopeDataType("ExceptionData");
 		assertEquals(1, exceptionEnvelopeList.size());
 
 		Envelope exceptionEnvelope = exceptionEnvelopeList.get(0);
