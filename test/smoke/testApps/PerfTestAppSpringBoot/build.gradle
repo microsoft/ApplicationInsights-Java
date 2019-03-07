@@ -1,14 +1,15 @@
-apply plugin: 'war'
-
 buildscript {
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE'
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.19.RELEASE'
     }
 }
 
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'war'
 apply plugin: 'org.springframework.boot'
 
 compileJava.sourceCompatibility = 1.7
@@ -18,10 +19,14 @@ compileSmokeTestJava.targetCompatibility = 1.8
 
 dependencies {
     compile springBootStarterJar
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.9.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.9.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat'
     compile 'com.google.guava:guava:20.0'
     compile 'org.apache.httpcomponents:httpclient:4.5.3'
+
+    compileOnly 'org.apache.tomcat.embed:tomcat-embed-jasper'
+//    compile 'org.eclipse.jdt.core.compiler:ecj:4.6.1'
+    compile 'javax.servlet:jstl'
 
     compile project(':test:smoke:framework:testCases')
 

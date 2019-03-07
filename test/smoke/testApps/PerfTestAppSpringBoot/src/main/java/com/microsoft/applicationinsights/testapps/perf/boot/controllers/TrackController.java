@@ -6,6 +6,7 @@ import com.microsoft.applicationinsights.testapps.perf.TestCaseRunnable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import static com.microsoft.applicationinsights.testapps.perf.boot.SpringBootPerfTestHelper.runTest;
 
 @RestController
+@RequestMapping("/track")
 public class TrackController {
 
     public TelemetryClient telemetryClient;
@@ -28,11 +30,11 @@ public class TrackController {
     }
 
     private void printUri() {
-        System.out.println("GET "+request.getPathInfo());
+        System.out.println("GET "+request.getRequestURI());
     }
 
-    @GetMapping("/metric/{level:[full|helper]]}/{type:[measurement|aggregate]]}")
-    public String trackMetric(@PathVariable("level") String level, @PathVariable("type") String type) {
+    @GetMapping("/metric/{level}/{type}")
+    public String trackMetric(@PathVariable String level, @PathVariable String type) {
         printUri();
         final TestCaseRunnable tcr;
         String name = String.format("metric %s %s", level, type);
@@ -69,8 +71,8 @@ public class TrackController {
         return runTest(new TestCaseRunnable(testCases.getTrackHttpRequest_Success(), "http request"));
     }
 
-    @GetMapping("/dependency/{level}")
-    public String trackDependency(@PathVariable("level") String level) {
+    @GetMapping({"/dependency/{level}", "/dependency"})
+    public String trackDependency(@PathVariable(value = "level", required = false) String level) {
         printUri();
         final TestCaseRunnable tcr;
         if ("full".equals(level)) {
@@ -95,8 +97,8 @@ public class TrackController {
         return runTest(new TestCaseRunnable(testCases.getTrackTrace(), "trace"));
     }
 
-    @GetMapping("/pageView/{level}")
-    public String trackPageView(@PathVariable("level") String level) {
+    @GetMapping({"/pageView/{level}", "/pageView"})
+    public String trackPageView(@PathVariable(value = "level", required = false) String level) {
         printUri();
         final TestCaseRunnable tcr;
         if ("full".equals(level)) {

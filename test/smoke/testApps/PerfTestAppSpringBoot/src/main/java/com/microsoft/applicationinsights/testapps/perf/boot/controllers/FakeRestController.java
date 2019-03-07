@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,14 +22,16 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 
 @RestController
-public class FakeRestControlller {
+public class FakeRestController {
+
+    @Autowired
+    TelemetryClient tc;
 
     @GetMapping("/fakeRest")
-    public String fakeRest(@RequestParam("url") final String pUrl) {
+    public String fakeRest(@RequestParam(value = "url", required = false) final String pUrl) {
         return SpringBootPerfTestHelper.runTest(new TestCaseRunnable(new Runnable() {
             @Override
             public void run() {
-                TelemetryClient tc = new TelemetryClient();
                 final String url = (pUrl == null)
                         ? "http://www.msn.com"
                         : ((pUrl.startsWith("http://"))
