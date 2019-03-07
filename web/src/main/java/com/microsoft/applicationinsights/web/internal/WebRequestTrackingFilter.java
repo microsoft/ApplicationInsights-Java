@@ -117,19 +117,19 @@ public final class WebRequestTrackingFilter implements Filter {
             } catch (ServletException | IOException | RuntimeException e) {
                 handler.handleException(e);
                 throw e;
-            }
-            if (httpRequest.isAsyncStarted()) {
-                InternalLogger.INSTANCE.trace("FILTER ("+this.toString()+"): ASYNC -- ADDING LISTENER");
-                AsyncContext context = httpRequest.getAsyncContext();
-                context.addListener(aiHttpServletListener, httpRequest, httpResponse);
-            } else {
-                // In some cases filter can be called twice based on Web Servers while handling
-                // async requests. We should only process a request once.
-                if (!DispatcherType.ASYNC.equals(httpRequest.getDispatcherType())) {
-                    handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+            } finally {
+                if (httpRequest.isAsyncStarted()) {
+                    AsyncContext context = httpRequest.getAsyncContext();
+                    context.addListener(aiHttpServletListener, httpRequest, httpResponse);
+                } else {
+                    // In some cases filter can be called twice based on Web Servers while handling
+                    // async requests. We should only process a request once.
+                    if (!DispatcherType.ASYNC.equals(httpRequest.getDispatcherType())) {
+                        handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+                    }
                 }
+                setKeyOnTLS(null);
             }
-            setKeyOnTLS(null);
         } else {
             // we are only interested in Http Requests. Keep all other untouched.
             chain.doFilter(req, res);
