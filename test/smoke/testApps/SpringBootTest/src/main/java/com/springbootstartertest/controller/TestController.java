@@ -55,6 +55,7 @@ public class TestController {
 	@Async
 	@GetMapping("/asyncDependencyCall")
 	public CompletableFuture<Integer> asyncDependencyCall() throws IOException {
+		System.out.println("************* ASYNC CALL!!");
         String url = "https://www.google.com";
         HttpGet get = new HttpGet(url);
         try (CloseableHttpResponse response = httpClient.execute(get)){
