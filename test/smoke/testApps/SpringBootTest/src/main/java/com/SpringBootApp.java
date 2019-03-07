@@ -64,6 +64,7 @@ public class SpringBootApp extends SpringBootServletInitializer {
 			if (ThreadContext.getRequestTelemetryContext() != null) {
 				ThreadContext.remove();
 			}
+			System.out.println("*****Id is:" + rtc.getHttpRequestTelemetry().getId());
 			ThreadContext.setRequestTelemetryContext(rtc);
 			task.run();
 		}
