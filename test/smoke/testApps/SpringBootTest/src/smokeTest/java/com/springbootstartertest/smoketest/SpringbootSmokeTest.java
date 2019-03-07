@@ -1,6 +1,7 @@
 package com.springbootstartertest.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
@@ -51,7 +52,8 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 		Envelope exceptionEnvelope = exceptionEnvelopeList.get(0);
 		RequestData d = getTelemetryDataForType(0, "RequestData");
 		String requestOperationId = d.getId();
-		assertEquals(requestOperationId, exceptionEnvelope.getTags().getOrDefault("ai.operation.id", null));
+		assertTrue(requestOperationId.contains(exceptionEnvelope.getTags().
+			getOrDefault("ai.operation.id", null)));
 	}
 
 	@Test
