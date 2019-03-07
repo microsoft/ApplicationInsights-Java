@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+
 /**
  * Created by yonisha on 2/2/2015.
  */
@@ -38,4 +40,10 @@ public interface WebTelemetryModule<P, Q> {
      * @param res The response to modify
      */
     void onEndRequest(P req, Q res);
+
+    /**
+     * Set the context in the TelemetryModule
+     * @param context
+     */
+    void setRequestTelemetryContext(RequestTelemetryContext context);
 }

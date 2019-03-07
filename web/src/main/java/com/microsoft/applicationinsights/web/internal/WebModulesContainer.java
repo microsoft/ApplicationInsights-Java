@@ -25,10 +25,9 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by yonisha on 2/3/2015.
@@ -36,6 +35,12 @@ import java.util.List;
 public class WebModulesContainer<P, Q> {
     private List<WebTelemetryModule<P, Q>> modules = new ArrayList<>();
     private int modulesCount = 0;
+    private RequestTelemetryContext requestTelemetryContext;
+
+    public void setRequestTelemetryContext(
+        RequestTelemetryContext requestTelemetryContext) {
+        this.requestTelemetryContext = requestTelemetryContext;
+    }
 
     /**
      * Constructs new WebModulesContainer object from the given configuration.
@@ -54,6 +59,7 @@ public class WebModulesContainer<P, Q> {
     public void invokeOnBeginRequest(P req, Q res) {
         for (WebTelemetryModule<P, Q> module : modules) {
             try {
+                module.setRequestTelemetryContext(requestTelemetryContext);
                 module.onBeginRequest(req, res);
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Web module %s failed on BeginRequest with exception: %s", module.getClass().getSimpleName(), e.toString());

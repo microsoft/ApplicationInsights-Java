@@ -27,13 +27,11 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
-
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -59,17 +57,31 @@ public class WebRequestTrackingTelemetryModule
      */
     private final String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
 
+    /**
+     * The {@link RequestTelemetryContext} instance propogated from
+     * {@link com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler}
+     */
+    private RequestTelemetryContext requestTelemetryContext;
+
+    public void setRequestTelemetryContext(
+        RequestTelemetryContext requestTelemetryContext) {
+        this.requestTelemetryContext = requestTelemetryContext;
+    }
+
+    /** Used for test */
+    RequestTelemetryContext getRequestTelemetryContext() {
+        return this.requestTelemetryContext;
+    }
+
     // endregion Members
 
     // region Public
 
-    public WebRequestTrackingTelemetryModule() {
-
-    }
+    public WebRequestTrackingTelemetryModule() {}
 
     /**
      * Ctor that parses incoming configuration.
-     * @param configurationData
+     * @param configurationData SDK config Object
      */
     public WebRequestTrackingTelemetryModule(Map<String, String> configurationData) {
         assert configurationData != null;
@@ -111,8 +123,8 @@ public class WebRequestTrackingTelemetryModule
         }
 
         try {
-            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-            RequestTelemetry telemetry = context.getHttpRequestTelemetry();
+            //RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+            RequestTelemetry telemetry = this.requestTelemetryContext.getHttpRequestTelemetry();
 
             // Look for cross-component correlation headers and resolve correlation ID's
             if (isW3CEnabled) {
@@ -142,8 +154,8 @@ public class WebRequestTrackingTelemetryModule
         }
 
         try {
-            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-            RequestTelemetry telemetry = context.getHttpRequestTelemetry();
+            //RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+            RequestTelemetry telemetry = this.requestTelemetryContext.getHttpRequestTelemetry();
 
             String instrumentationKey = this.telemetryClient.getContext().getInstrumentationKey();
             if (isW3CEnabled) {

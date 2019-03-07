@@ -78,8 +78,8 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
      */
     public RequestTelemetryContext handleStart(P request, Q response) throws MalformedURLException {
         RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(),null);
-        // TODO: uncomment this line in final integration
-        //webModulesContainer.setRequestTelemetryContext(context);
+        // set the context object in WebModuleContainer (Container that holds web modules)
+        webModulesContainer.setRequestTelemetryContext(context);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         ThreadContext.setRequestTelemetryContext(context);
         String method = extractor.getMethod(request);
@@ -102,7 +102,9 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
     }
 
     /**
-     * This method is used to indicate request end instrumentation, complete correlation and record timing, response
+     * This method is used to indicate request end instrumentation, complete correlation and record timing, response.
+     * Context object is needed as a parameter because in Async requests, handleEnd() can be called
+     * on separate thread then where handleStart() was called.
      * @param request HttpRequest object
      * @param response HttpResponse object
      * @param context RequestTelemetryContext object

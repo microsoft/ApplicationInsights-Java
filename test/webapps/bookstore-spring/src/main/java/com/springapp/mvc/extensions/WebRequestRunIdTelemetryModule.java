@@ -26,7 +26,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -40,6 +40,22 @@ import javax.servlet.http.HttpServletResponse;
 public class WebRequestRunIdTelemetryModule implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
 
     protected static final String RUN_ID_QUERY_PARAM_NAME = "runid";
+
+    /**
+     * The {@link RequestTelemetryContext} instance propogated from
+     * {@link com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler}
+     */
+    private RequestTelemetryContext requestTelemetryContext;
+
+    public void setRequestTelemetryContext(
+        RequestTelemetryContext requestTelemetryContext) {
+        this.requestTelemetryContext = requestTelemetryContext;
+    }
+
+    /** Used for test */
+    RequestTelemetryContext getRequestTelemetryContext() {
+        return this.requestTelemetryContext;
+    }
 
     @Override
     public void initialize(TelemetryConfiguration telemetryConfiguration) {
@@ -55,7 +71,7 @@ public class WebRequestRunIdTelemetryModule implements WebTelemetryModule<HttpSe
             return;
         }
 
-        RequestTelemetry httpRequestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+        RequestTelemetry httpRequestTelemetry = this.requestTelemetryContext.getHttpRequestTelemetry();
         httpRequestTelemetry.getProperties().put(RUN_ID_QUERY_PARAM_NAME, runId);
     }
 

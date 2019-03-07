@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
+import java.util.List;
 import org.apache.http.HttpRequest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -236,7 +237,7 @@ public class WebRequestTrackingFilterTests {
         }
         HttpExtractor<HttpServletRequest, HttpServletResponse> extractor = spy(new ApplicationInsightsServletExtractor());
         HttpServerHandler<HttpServletRequest, HttpServletResponse> handler = new HttpServerHandler<>(
-            extractor, mock(WebModulesContainer.class), mockTelemetryClient
+            extractor, mock(WebModulesContainer.class), mock(List.class), mockTelemetryClient
         );
         field.set(filter, mockTelemetryClient);
         field1.set(filter,  handler);
