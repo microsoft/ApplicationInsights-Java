@@ -42,13 +42,14 @@
 	<TelemetryProcessors>
 		<BuiltInProcessors>
 			<Processor type="FixedRateSamplingTelemetryProcessor">
-				<Add name="SamplingPercentage" value="50" />
+				<Add name="SamplingPercentage" value="50">
 					<ExcludedTypes>
 						<ExcludedType>Request</ExcludedType>
 					</ExcludedTypes>
 					<IncludedTypes>
 						<IncludedType>Event</IncludedType>
 					</IncludedTypes>
+				</Add>
 			</Processor>
 		</BuiltInProcessors>
 	</TelemetryProcessors>
