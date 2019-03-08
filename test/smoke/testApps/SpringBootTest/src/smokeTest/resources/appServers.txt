@@ -1,3 +1,1 @@
-tomcat7
-tomcat8
 tomcat85
