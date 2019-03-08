@@ -7,9 +7,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import javax.servlet.ServletException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -22,7 +24,7 @@ public class TestController {
 	@Autowired
 	TelemetryClient client;
 
-	private CloseableHttpClient httpClient = HttpClients.createDefault();
+	private CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
 
 	@GetMapping("/")
 	public String rootPage() {
@@ -57,7 +59,7 @@ public class TestController {
 	@GetMapping("/asyncDependencyCall")
 	public CompletableFuture<Integer> asyncDependencyCall() throws IOException {
 		System.out.println("************* ASYNC CALL!!");
-        String url = "https://www.google.com";
+        String url = "https://www.bing.com";
         HttpGet get = new HttpGet(url);
         try (CloseableHttpResponse response = httpClient.execute(get)){
             return CompletableFuture.completedFuture(response.getStatusLine().getStatusCode());
