@@ -11,7 +11,7 @@ public class FixedRateSamplingTest extends AiSmokeTest {
     @TargetUri("/fixedRateSampling")
     public void testFixedRateSamplingInExcludedTypes() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(100.0, getSampleRate("RequestData", 0), 0);
+        assertEquals(100.0, getSampleRate("RequestData", 0), Math.ulp(50.0));
     }
 
     @Test
@@ -19,14 +19,14 @@ public class FixedRateSamplingTest extends AiSmokeTest {
     public void testFixedRateSamplingInIncludedTypes() {
         int count = mockedIngestion.getCountForType("EventData");
         assertTrue(40 <= count && 60 >= count);
-        assertEquals(50.0, getSampleRate("EventData", 0), 0);
+        assertEquals(50.0, getSampleRate("EventData", 0), Math.ulp(50.0));
     }
 
     @Test
     @TargetUri("/fixedRateSampling")
     public void testFixedRateSamplingNotInExcludedTypes() {
         assertEquals(1, mockedIngestion.getCountForType("MessageData"));
-        assertEquals(100.0, getSampleRate("MessageData", 0), 0);
+        assertEquals(100.0, getSampleRate("MessageData", 0), Math.ulp(50.0));
     }
 
     protected double getSampleRate(String type, int index) {
