@@ -115,6 +115,9 @@ public final class WebRequestTrackingFilter implements Filter {
             HttpServletRequest httpRequest = (HttpServletRequest) req;
             HttpServletResponse httpResponse = (HttpServletResponse) res;
             boolean hasAlreadyBeenFiltered = httpRequest.getAttribute(ALREADY_FILTERED) != null;
+            System.out.println(httpRequest.getRequestURL().toString() +
+                "Already filterd : " + hasAlreadyBeenFiltered);
+            System.out.println("Request dispatch type :" + httpRequest.getDispatcherType().name());
 
             // Prevent duplicate Telemetry creation
             if (hasAlreadyBeenFiltered) {
