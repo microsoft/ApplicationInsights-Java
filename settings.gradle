@@ -66,4 +66,4 @@ if (System.env.'COLLECTD_HOME') {
 
 include ':test:smoke:testApps:SpringBootTest'
 
-
+include ':test:smoke:testApps:FixedRateSampling'
