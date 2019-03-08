@@ -25,7 +25,7 @@ public class SimpleFixedRateSamplingServlet extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        ServletFuncs.geRrenderHtml(request, response);
+        ServletFuncs.getRenderedHtml(request, response);
         client.trackTrace("Trace Test.");
         int i = 0;
         while (i < 100) {
