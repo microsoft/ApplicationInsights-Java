@@ -115,6 +115,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
             if (hasAlreadyBeenFiltered) {
                 chain.doFilter(httpRequest, httpResponse);
+                return;
             }
 
             setKeyOnTLS(key);
