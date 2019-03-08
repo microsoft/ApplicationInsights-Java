@@ -60,8 +60,10 @@ public final class PreparedStatementClassDataProvider {
             factory = classFactoryForMySql();
             doAdd(factory, "com/mysql/jdbc/PreparedStatement");
 
-            factory = classFactoryForPostgreSql();
+            factory = classFactoryForOldPostgreSql();
             doAdd(factory, "org/postgresql/jdbc2/AbstractJdbc2Statement");
+            factory = classFactoryForNewPostgreSql();
+            doAdd(factory, "org/postgresql/jdbc/PgConnection");
 
             factory = classFactoryForOracle();
             doAdd(factory, "oracle/jdbc/driver/OraclePreparedStatement");
@@ -219,20 +221,31 @@ public final class PreparedStatementClassDataProvider {
         return classVisitorFactory;
     }
 
-    private ClassVisitorFactory classFactoryForPostgreSql() {
-
-        ClassVisitorFactory classVisitorFactory = new ClassVisitorFactory() {
+    private ClassVisitorFactory classFactoryForOldPostgreSql() {
+        return new ClassVisitorFactory() {
             @Override
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
                 HashSet<String> ctorSignatures = new HashSet<String>();
                 ctorSignatures.add("(Lorg/postgresql/jdbc2/AbstractJdbc2Connection;Ljava/lang/String;ZII)V");
+                ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Ljava/lang/String;ZII)V");
                 final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
                 metaData1.sqlStringInCtor = 2;
                 return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);
             }
         };
+    }
 
-        return classVisitorFactory;
+    private ClassVisitorFactory classFactoryForNewPostgreSql() {
+        return new ClassVisitorFactory() {
+            @Override
+            public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
+                HashSet<String> ctorSignatures = new HashSet<String>();
+                ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Ljava/lang/String;ZII)V");
+                final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
+                metaData1.sqlStringInCtor = 2;
+                return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);
+            }
+        };
     }
 
     private ClassVisitorFactory classFactoryForOracle() {
