@@ -122,6 +122,8 @@ public class TelemetryCorrelationUtils {
 
 			RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
 
+			InternalLogger.INSTANCE.info("Request-Id in generateChildDependency is: " + requestTelemetry.getId());
+
 			String parentId = requestTelemetry.getContext().getOperation().getParentId();
 
 			// if parentId is non-hierarchical, it means the incoming requestId

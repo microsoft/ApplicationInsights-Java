@@ -111,6 +111,7 @@ public final class WebRequestTrackingFilter implements Filter {
             HttpServletResponse httpResponse = (HttpServletResponse) res;
             setKeyOnTLS(key);
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
+            InternalLogger.INSTANCE.info("Request-id in filter is :" + requestTelemetryContext.getHttpRequestTelemetry().getId());
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
                 chain.doFilter(httpRequest, httpResponse);
