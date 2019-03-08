@@ -87,6 +87,8 @@ public final class WebRequestTrackingFilter implements Filter {
         + "agent.internal.coresync.AgentNotificationsHandler";
     private String filterName = FILTER_NAME;
 
+    private final String ALREADY_FILTERED = "AI_FILTER_PROCESSED";
+
     /**
      * Utility handler used to instrument request start and end
      */
@@ -109,11 +111,18 @@ public final class WebRequestTrackingFilter implements Filter {
         if (req instanceof  HttpServletRequest && res instanceof HttpServletResponse) {
             HttpServletRequest httpRequest = (HttpServletRequest) req;
             HttpServletResponse httpResponse = (HttpServletResponse) res;
+            boolean hasAlreadyBeenFiltered = httpRequest.getAttribute(ALREADY_FILTERED) != null;
+
+            if (hasAlreadyBeenFiltered) {
+                chain.doFilter(httpRequest, httpResponse);
+            }
+
             setKeyOnTLS(key);
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
             InternalLogger.INSTANCE.info("Request-id in filter is :" + requestTelemetryContext.getHttpRequestTelemetry().getId());
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
+                httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
                 chain.doFilter(httpRequest, httpResponse);
             } catch (ServletException | IOException | RuntimeException e) {
                 handler.handleException(e);
@@ -340,4 +349,5 @@ public final class WebRequestTrackingFilter implements Filter {
             }
         }
     }
+
 }
