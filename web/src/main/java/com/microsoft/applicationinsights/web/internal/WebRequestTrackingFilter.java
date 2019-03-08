@@ -88,6 +88,11 @@ public final class WebRequestTrackingFilter implements Filter {
     private String filterName = FILTER_NAME;
 
     /**
+     * Constant for marking already processed request
+     */
+    private final String ALREADY_FILTERED = "AI_FILTER_PROCESSED";
+
+    /**
      * Utility handler used to instrument request start and end
      */
     HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
@@ -109,10 +114,19 @@ public final class WebRequestTrackingFilter implements Filter {
         if (req instanceof  HttpServletRequest && res instanceof HttpServletResponse) {
             HttpServletRequest httpRequest = (HttpServletRequest) req;
             HttpServletResponse httpResponse = (HttpServletResponse) res;
+            boolean hasAlreadyBeenFiltered = httpRequest.getAttribute(ALREADY_FILTERED) != null;
+
+            // Prevent duplicate Telemetry creation
+            if (hasAlreadyBeenFiltered) {
+                chain.doFilter(httpRequest, httpResponse);
+                return;
+            }
+
             setKeyOnTLS(key);
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
+                httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
                 chain.doFilter(httpRequest, httpResponse);
             } catch (ServletException | IOException | RuntimeException e) {
                 handler.handleException(e);
@@ -122,11 +136,7 @@ public final class WebRequestTrackingFilter implements Filter {
                     AsyncContext context = httpRequest.getAsyncContext();
                     context.addListener(aiHttpServletListener, httpRequest, httpResponse);
                 } else {
-                    // In some cases filter can be called twice based on Web Servers while handling
-                    // async requests. We should only process a request once.
-                    if (!DispatcherType.ASYNC.equals(httpRequest.getDispatcherType())) {
-                        handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
-                    }
+                    handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
                 }
                 setKeyOnTLS(null);
             }
@@ -339,4 +349,5 @@ public final class WebRequestTrackingFilter implements Filter {
             }
         }
     }
+
 }
