@@ -112,7 +112,6 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
     public void handleEnd(P request, Q response,
                           RequestTelemetryContext context) {
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
-        InternalLogger.INSTANCE.info("Request-Id in handleEnd: " + requestTelemetry.getId());
         long endTime = new Date().getTime();
         requestTelemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
         int resultCode = extractor.getStatusCode(response);
@@ -148,7 +147,6 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
             }
             // clean context after cleaners are run, in-case cleaners need the context object
             ThreadContext.remove();
-            InternalLogger.INSTANCE.info("Cleaner is called and cleaup happened.....");
         } catch (Exception t) {
             InternalLogger.INSTANCE.warn(String.format("unable to perform TLS Cleaning: %s",
                 ExceptionUtils.getStackTrace(t)));

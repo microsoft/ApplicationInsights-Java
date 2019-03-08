@@ -87,6 +87,9 @@ public final class WebRequestTrackingFilter implements Filter {
         + "agent.internal.coresync.AgentNotificationsHandler";
     private String filterName = FILTER_NAME;
 
+    /**
+     * Constant for marking already processed request
+     */
     private final String ALREADY_FILTERED = "AI_FILTER_PROCESSED";
 
     /**
@@ -113,6 +116,7 @@ public final class WebRequestTrackingFilter implements Filter {
             HttpServletResponse httpResponse = (HttpServletResponse) res;
             boolean hasAlreadyBeenFiltered = httpRequest.getAttribute(ALREADY_FILTERED) != null;
 
+            // Prevent duplicate Telemetry creation
             if (hasAlreadyBeenFiltered) {
                 chain.doFilter(httpRequest, httpResponse);
                 return;
@@ -120,7 +124,6 @@ public final class WebRequestTrackingFilter implements Filter {
 
             setKeyOnTLS(key);
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
-            InternalLogger.INSTANCE.info("Request-id in filter is :" + requestTelemetryContext.getHttpRequestTelemetry().getId());
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
                 httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
@@ -133,11 +136,7 @@ public final class WebRequestTrackingFilter implements Filter {
                     AsyncContext context = httpRequest.getAsyncContext();
                     context.addListener(aiHttpServletListener, httpRequest, httpResponse);
                 } else {
-                    // In some cases filter can be called twice based on Web Servers while handling
-                    // async requests. We should only process a request once.
-                    if (!DispatcherType.ASYNC.equals(httpRequest.getDispatcherType())) {
-                        handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
-                    }
+                    handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
                 }
                 setKeyOnTLS(null);
             }
