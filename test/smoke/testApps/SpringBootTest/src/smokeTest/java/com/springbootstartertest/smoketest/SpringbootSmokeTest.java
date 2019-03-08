@@ -67,10 +67,10 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 
 		List<Envelope> rddDataList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
 		Envelope rddEnv = rddDataList.get(0);
+		String rddId = rddEnv.getTags().getOrDefault("ai.operation.id", null);
 
     	System.out.println("*****Request Id in smoke test is: " + requestOperationId);
-    	System.out.println("*****DependencyTelemetry Operation Id in smoke test is: " +
-			rddEnv.getTags().getOrDefault("ai.operation.id", null));
-		//assertEquals(requestOperationId + "1.", rdd.getId());
+    	System.out.println("*****DependencyTelemetry Operation Id in smoke test is: " + rddId);
+		assertEquals(requestOperationId + "1.", rddId);
 	}
 }
