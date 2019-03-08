@@ -71,6 +71,6 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 
     	System.out.println("*****Request Id in smoke test is: " + requestOperationId);
     	System.out.println("*****DependencyTelemetry Operation Id in smoke test is: " + rddId);
-		assertEquals(requestOperationId + "1.", rddId);
+		assertTrue(rddId.contains(requestOperationId));
 	}
 }
