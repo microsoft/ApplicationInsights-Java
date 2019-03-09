@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 
 /**
  * Servlet implementation class SimpleFixedRateSamplingServlet
@@ -27,11 +28,11 @@ public class SimpleFixedRateSamplingServlet extends HttpServlet {
             throws ServletException, IOException {
         ServletFuncs.getRenderedHtml(request, response);
         client.trackTrace("Trace Test.");
-        int i = 0;
-        while (i < 100) {
+        for (int i = 0; i < 100; i++) {
             String str = String.format("Event Test %s", i);
-            client.trackEvent(str);
-            i++;
-        }        
+            EventTelemetry et = new EventTelemetry(str);
+            et.getContext().getOperation().setId(String.valueOf(i));
+            client.trackEvent(et);
+        }
     }
 }
