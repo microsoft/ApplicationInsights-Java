@@ -65,9 +65,6 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 		RemoteDependencyData rdd = getTelemetryDataForType(0,"RemoteDependencyData");
 		String requestOperationId = d.getId();
 		String rddId = rdd.getId();
-
-    	System.out.println("*****Request Id in smoke test is: " + requestOperationId);
-    	System.out.println("*****DependencyTelemetry Operation Id in smoke test is: " + rddId);
 		assertTrue(rddId.contains(requestOperationId));
 	}
 }
