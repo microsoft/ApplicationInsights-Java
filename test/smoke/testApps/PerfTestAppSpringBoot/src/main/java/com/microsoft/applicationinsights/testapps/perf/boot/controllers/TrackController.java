@@ -17,15 +17,12 @@ import static com.microsoft.applicationinsights.testapps.perf.boot.SpringBootPer
 @RequestMapping("/track")
 public class TrackController {
 
-    public TelemetryClient telemetryClient;
 
     private FixedAiTestCases testCases;
-
     @Autowired
-    HttpServletRequest request;
+    private HttpServletRequest request;
 
     public TrackController(TelemetryClient telemetryClient) {
-        this.telemetryClient = telemetryClient;
         testCases = new FixedAiTestCases(telemetryClient);
     }
 

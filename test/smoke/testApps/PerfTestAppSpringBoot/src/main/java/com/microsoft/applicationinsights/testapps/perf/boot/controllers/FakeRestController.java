@@ -25,7 +25,7 @@ import java.io.StringWriter;
 public class FakeRestController {
 
     @Autowired
-    TelemetryClient tc;
+    private TelemetryClient tc;
 
     @GetMapping("/fakeRest")
     public String fakeRest(@RequestParam(value = "url", required = false) final String pUrl) {
