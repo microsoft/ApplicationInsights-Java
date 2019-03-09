@@ -59,7 +59,6 @@ public class TestController {
 	@Async
 	@GetMapping("/asyncDependencyCall")
 	public AsyncResult<Integer> asyncDependencyCall() throws IOException {
-		System.out.println("************* ASYNC CALL!!");
         String url = "https://www.bing.com";
         HttpGet get = new HttpGet(url);
         try (CloseableHttpResponse response = httpClient.execute(get)){
