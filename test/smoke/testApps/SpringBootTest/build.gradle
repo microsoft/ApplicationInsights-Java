@@ -11,8 +11,8 @@ buildscript {
 
 apply plugin: 'org.springframework.boot'
 
-compileJava.sourceCompatibility = 1.8
-compileJava.targetCompatibility = 1.8
+compileJava.sourceCompatibility = 1.7
+compileJava.targetCompatibility = 1.7
 compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
