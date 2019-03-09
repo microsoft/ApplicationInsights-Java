@@ -25,7 +25,6 @@ dependencies {
     compile 'org.apache.httpcomponents:httpclient:4.5.3'
 
     compileOnly 'org.apache.tomcat.embed:tomcat-embed-jasper'
-//    compile 'org.eclipse.jdt.core.compiler:ecj:4.6.1'
     compile 'javax.servlet:jstl'
 
     compile project(':test:smoke:framework:testCases')
