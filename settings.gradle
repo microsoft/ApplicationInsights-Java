@@ -59,11 +59,11 @@ include ':test:smoke:testApps:TraceLog4j1_2'
 include ':test:smoke:testApps:TraceLogBack'
 include ':test:smoke:testApps:TraceLog4j2'
 include ':test:smoke:testApps:HeartBeat'
+include ':test:smoke:testApps:SpringBootTest'
+include ':test:smoke:testApps:FixedRateSampling'
 
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
 
-include ':test:smoke:testApps:SpringBootTest'
 
-include ':test:smoke:testApps:FixedRateSampling'
