@@ -216,6 +216,7 @@ public final class AgentImplementation {
             Enumeration<JarEntry> e = jarFile.entries();
 
             URL[] urls = {new URL("jar:file:" + coreJarName + "!/")};
+            // TODO close this classloader?
             URLClassLoader cl = URLClassLoader.newInstance(urls);
 
             while (e.hasMoreElements()) {
