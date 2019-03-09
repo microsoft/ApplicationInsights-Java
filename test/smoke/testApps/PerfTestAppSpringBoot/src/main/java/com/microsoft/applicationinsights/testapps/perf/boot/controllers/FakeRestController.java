@@ -10,7 +10,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,11 +38,9 @@ public class FakeRestController {
                         ? pUrl
                         : "http://"+pUrl);
 
-                CloseableHttpClient client = HttpClients.createDefault();
-                try {
+                try (CloseableHttpClient client = HttpClientBuilder.create().disableAutomaticRetries().build()) {
                     HttpGet get = new HttpGet(url);
-                    CloseableHttpResponse getResp = client.execute(get);
-                    try {
+                    try (CloseableHttpResponse getResp = client.execute(get)) {
                         HttpEntity entity = getResp.getEntity();
                         StringWriter cw = new StringWriter();
                         CharStreams.copy(new InputStreamReader(entity.getContent()), cw);
@@ -51,23 +49,13 @@ public class FakeRestController {
                         System.out.printf("GET %s responded %d %s. response size: %d%n", url, status.getStatusCode(), status.getReasonPhrase(), cw.toString().length());
                     }
                     catch (IOException e) {
-                        System.err.println("Error parsing response to "+url+".");
+                        System.err.println("Error requesting "+url+".");
                         e.printStackTrace();
-                    }
-                    finally {
-                        getResp.close();
                     }
                 }
                 catch (IOException e) {
-                    System.err.println("Error sending request to "+url+".");
+                    System.err.println("Error creating http client");
                     e.printStackTrace();
-                }
-                finally {
-                    try {
-                        client.close();
-                    } catch (Exception e) {
-                        // nop
-                    }
                 }
                 tc.trackDependency("FakeRestDependency", "fakeRestCommand", new Duration(123L), true);
                 tc.trackEvent("FakeRestEvent");
