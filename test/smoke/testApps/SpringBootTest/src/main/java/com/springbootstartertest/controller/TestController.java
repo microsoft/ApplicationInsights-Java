@@ -15,6 +15,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -57,12 +58,12 @@ public class TestController {
 
 	@Async
 	@GetMapping("/asyncDependencyCall")
-	public CompletableFuture<Integer> asyncDependencyCall() throws IOException {
+	public AsyncResult<Integer> asyncDependencyCall() throws IOException {
 		System.out.println("************* ASYNC CALL!!");
         String url = "https://www.bing.com";
         HttpGet get = new HttpGet(url);
         try (CloseableHttpResponse response = httpClient.execute(get)){
-            return CompletableFuture.completedFuture(response.getStatusLine().getStatusCode());
+        	return new AsyncResult<>(response.getStatusLine().getStatusCode());
         }
 	}
 }
