@@ -14,8 +14,7 @@ import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 /**
  * Servlet implementation class SimpleFixedRateSamplingServlet
  */
-@WebServlet(description = "Performs given calculation", urlPatterns = { "/fixedRateSampling" })
-
+@WebServlet(description = "sends 100 event telemetry items with different op ids", urlPatterns = { "/fixedRateSampling" })
 public class SimpleFixedRateSamplingServlet extends HttpServlet {
     private static final long serialVersionUID = -5889330779672565409L;
     private TelemetryClient client = new TelemetryClient();
