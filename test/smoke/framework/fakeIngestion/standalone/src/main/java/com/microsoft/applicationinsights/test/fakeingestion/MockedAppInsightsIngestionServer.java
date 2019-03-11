@@ -68,16 +68,16 @@ public class MockedAppInsightsIngestionServer implements AutoCloseable {
 
 	public int getCountForType(String type) {
 		Preconditions.checkNotNull(type, "type");
-		return getItemsByType(type).size();
+		return getItemsEnvelopeDataType(type).size();
 	}
 
-	public List<Envelope> getItemsByType(String type) {
+	public List<Envelope> getItemsEnvelopeDataType(String type) {
 		return this.servlet.getItemsByType(type);
 	}
 
 	public <T extends Domain> List<T> getTelemetryDataByType(String type) {
 		Preconditions.checkNotNull(type, "type");
-		List<Envelope> items = getItemsByType(type);
+		List<Envelope> items = getItemsEnvelopeDataType(type);
 		List<T> dataItems = new ArrayList<T>();
 		for (Envelope e : items) {
 			Data<T> dt = (Data<T>) e.getData();
@@ -87,7 +87,7 @@ public class MockedAppInsightsIngestionServer implements AutoCloseable {
 	}
 
 	public <T extends Domain> T getBaseDataForType(int index, String type) {
-		Data<T> data = (Data<T>) getItemsByType(type).get(index).getData();
+		Data<T> data = (Data<T>) getItemsEnvelopeDataType(type).get(index).getData();
 		return data.getBaseData();
 	}
 

@@ -1,15 +1,19 @@
 package com.springbootstartertest.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
+import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.localforwarder.library.inputs.contracts.Request;
+import com.microsoft.applicationinsights.smoketest.UseAgent;
+import java.util.List;
 import org.junit.Test;
 
+@UseAgent
 public class SpringbootSmokeTest extends AiSmokeTest{
 
 	@Test
@@ -40,11 +44,27 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 
 	@Test
 	@TargetUri("/throwsException")
-	public void testResultCodeWhenRestControllerThrows() throws Exception {
+	public void testResultCodeWhenRestControllerThrows() {
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+		List<Envelope> exceptionEnvelopeList = mockedIngestion.getItemsEnvelopeDataType("ExceptionData");
+		assertEquals(1, exceptionEnvelopeList.size());
+
+		Envelope exceptionEnvelope = exceptionEnvelopeList.get(0);
 		RequestData d = getTelemetryDataForType(0, "RequestData");
-		final String expectedResponseCode = "500";
-		assertEquals(expectedResponseCode, d.getResponseCode());
-		assertEquals(false, d.getSuccess());
+		String requestOperationId = d.getId();
+		assertTrue(requestOperationId.contains(exceptionEnvelope.getTags().
+			getOrDefault("ai.operation.id", null)));
+	}
+
+	@Test
+	@TargetUri("/asyncDependencyCall")
+	public void testAsyncDependencyCall() {
+		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+		assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+		RequestData d = getTelemetryDataForType(0, "RequestData");
+		RemoteDependencyData rdd = getTelemetryDataForType(0,"RemoteDependencyData");
+		String requestOperationId = d.getId();
+		String rddId = rdd.getId();
+		assertTrue(rddId.contains(requestOperationId));
 	}
 }

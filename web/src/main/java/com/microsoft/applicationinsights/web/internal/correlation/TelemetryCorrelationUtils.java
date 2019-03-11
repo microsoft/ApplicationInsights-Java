@@ -121,7 +121,6 @@ public class TelemetryCorrelationUtils {
 			}
 
 			RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
-
 			String parentId = requestTelemetry.getContext().getOperation().getParentId();
 
 			// if parentId is non-hierarchical, it means the incoming requestId
