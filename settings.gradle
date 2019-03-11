@@ -51,6 +51,7 @@ include ':test:smoke:framework:fakeIngestion:servlet'
 include ':test:smoke:framework:fakeIngestion:standalone'
 
 include ':test:smoke:testApps:PerfTestApp'
+include ':test:smoke:testApps:PerfTestAppSpringBoot'
 //include ':test:smoke:testApps:SimpleCalculator'
 include ':test:smoke:testApps:CachingCalculator'
 include ':test:smoke:testApps:CoreAndFilter'
@@ -60,6 +61,7 @@ include ':test:smoke:testApps:TraceLogBack'
 include ':test:smoke:testApps:TraceLog4j2'
 include ':test:smoke:testApps:HeartBeat'
 include ':test:smoke:testApps:SpringBootTest'
+include ':test:smoke:testApps:FixedRateSampling'
 
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'

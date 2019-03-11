@@ -1,0 +1,48 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.19.RELEASE'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'war'
+apply plugin: 'org.springframework.boot'
+
+compileJava.sourceCompatibility = 1.7
+compileJava.targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+dependencies {
+    compile springBootStarterJar
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat'
+    compile 'com.google.guava:guava:20.0'
+    compile 'org.apache.httpcomponents:httpclient:4.5.3'
+
+    compileOnly 'org.apache.tomcat.embed:tomcat-embed-jasper'
+    compile 'javax.servlet:jstl'
+
+    compile project(':test:smoke:framework:testCases')
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    providedRuntime 'mysql:mysql-connector-java:5.1.44'
+
+    smokeTestCompile 'com.google.guava:guava:23.0'
+    testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+configurations {
+    smokeTestCompile.exclude group:'org.springframework.boot'
+    smokeTestRuntime.exclude group:'org.springframework.boot'
+}
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName
