@@ -440,9 +440,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     }
 
     public Element getTopTag(File configurationFile) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder;
-        dBuilder = dbFactory.newDocumentBuilder();
+        DocumentBuilder dBuilder = createDocumentBuilder();
         Document doc = dBuilder.parse(configurationFile);
         doc.getDocumentElement().normalize();
 
@@ -458,5 +456,14 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         Element topElementTag = (Element)topNodeTag;
         return topElementTag;
+    }
+
+    private DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        // mitigates CWE-611: https://cwe.mitre.org/data/definitions/611.html
+        dbFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbFactory.setXIncludeAware(false);
+        dbFactory.setExpandEntityReferences(false);
+        return dbFactory.newDocumentBuilder();
     }
 }
