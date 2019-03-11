@@ -30,7 +30,7 @@ public class FixedRateSamplingTest extends AiSmokeTest {
     }
 
     protected double getSampleRate(String type, int index) {
-        Envelope envelope = mockedIngestion.getItemsByType(type).get(index);
+        Envelope envelope = mockedIngestion.getItemsEnvelopeDataType(type).get(index);
         return envelope.getSampleRate();
     }
 
