@@ -240,6 +240,9 @@ public final class PreparedStatementClassDataProvider {
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
                 HashSet<String> ctorSignatures = new HashSet<String>();
                 ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Ljava/lang/String;III)V");
+                // NOTE: this constructor cannot be added as it does not have a String in position 2.
+                // On first analysis it looks like, for this to be added, PreparedStatementMetaData
+                // should be modified to accept a sqlStringInCtor for each signature.
                 //ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Lorg/postgresql/core/CachedQuery;III)V");
                 final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
                 metaData1.sqlStringInCtor = 2;
