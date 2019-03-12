@@ -240,7 +240,7 @@ public final class PreparedStatementClassDataProvider {
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
                 HashSet<String> ctorSignatures = new HashSet<String>();
                 ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Ljava/lang/String;III)V");
-                ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Lorg/postgresql/core/CachedQuery;III)V");
+                //ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Lorg/postgresql/core/CachedQuery;III)V");
                 final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
                 metaData1.sqlStringInCtor = 2;
                 return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);
