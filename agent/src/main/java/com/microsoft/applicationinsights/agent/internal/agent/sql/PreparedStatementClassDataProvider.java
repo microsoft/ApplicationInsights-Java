@@ -63,7 +63,7 @@ public final class PreparedStatementClassDataProvider {
             factory = classFactoryForOldPostgreSql();
             doAdd(factory, "org/postgresql/jdbc2/AbstractJdbc2Statement");
             factory = classFactoryForNewPostgreSql();
-            doAdd(factory, "org/postgresql/jdbc/PgConnection");
+            doAdd(factory, "org/postgresql/jdbc/PgPreparedStatement");
 
             factory = classFactoryForOracle();
             doAdd(factory, "oracle/jdbc/driver/OraclePreparedStatement");
@@ -227,7 +227,6 @@ public final class PreparedStatementClassDataProvider {
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
                 HashSet<String> ctorSignatures = new HashSet<String>();
                 ctorSignatures.add("(Lorg/postgresql/jdbc2/AbstractJdbc2Connection;Ljava/lang/String;ZII)V");
-                ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Ljava/lang/String;ZII)V");
                 final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
                 metaData1.sqlStringInCtor = 2;
                 return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);
@@ -240,7 +239,7 @@ public final class PreparedStatementClassDataProvider {
             @Override
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
                 HashSet<String> ctorSignatures = new HashSet<String>();
-                ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Ljava/lang/String;ZII)V");
+                ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Lorg/postgresql/core/CachedQuery;III)V");
                 final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
                 metaData1.sqlStringInCtor = 2;
                 return new PreparedStatementClassVisitor(classInstrumentationData, classWriter, metaData1);
