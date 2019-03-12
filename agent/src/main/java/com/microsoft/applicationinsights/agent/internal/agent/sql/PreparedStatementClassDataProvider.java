@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -41,6 +42,10 @@ import org.objectweb.asm.MethodVisitor;
  * Created by gupele on 8/3/2015.
  */
 public final class PreparedStatementClassDataProvider {
+
+    public static final String POSTGRESQL_JDBC2_STATEMENT = "org/postgresql/jdbc2/AbstractJdbc2Statement";
+    public static final String POSTGRESQL_JDBC4_STATEMENT = "org/postgresql/jdbc/PgPreparedStatement";
+
     private final Map<String, ClassInstrumentationData> classesToInstrument;
 
     public PreparedStatementClassDataProvider(Map<String, ClassInstrumentationData> classesToInstrument) {
@@ -59,10 +64,10 @@ public final class PreparedStatementClassDataProvider {
             factory = classFactoryForMySql();
             doAdd(factory, "com/mysql/jdbc/PreparedStatement");
 
-            factory = classFactoryForOldPostgreSql();
-            doAdd(factory, "org/postgresql/jdbc2/AbstractJdbc2Statement");
-            factory = classFactoryForNewPostgreSql();
-            doAdd(factory, "org/postgresql/jdbc/PgPreparedStatement");
+            factory = classFactoryForJdbc2PostgreSql();
+            doAdd(factory, POSTGRESQL_JDBC2_STATEMENT);
+            factory = classFactoryForJdbc4PostgreSql();
+            doAdd(factory, POSTGRESQL_JDBC4_STATEMENT);
 
             factory = classFactoryForOracle();
             doAdd(factory, "oracle/jdbc/driver/OraclePreparedStatement");
@@ -220,11 +225,11 @@ public final class PreparedStatementClassDataProvider {
         return classVisitorFactory;
     }
 
-    private ClassVisitorFactory classFactoryForOldPostgreSql() {
+    private ClassVisitorFactory classFactoryForJdbc2PostgreSql() {
         return new ClassVisitorFactory() {
             @Override
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
-                HashSet<String> ctorSignatures = new HashSet<String>();
+                Set<String> ctorSignatures = new HashSet<String>();
                 ctorSignatures.add("(Lorg/postgresql/jdbc2/AbstractJdbc2Connection;Ljava/lang/String;ZII)V");
                 final PreparedStatementMetaData metaData1 = new PreparedStatementMetaData(ctorSignatures);
                 metaData1.sqlStringInCtor = 2;
@@ -233,11 +238,11 @@ public final class PreparedStatementClassDataProvider {
         };
     }
 
-    private ClassVisitorFactory classFactoryForNewPostgreSql() {
+    private ClassVisitorFactory classFactoryForJdbc4PostgreSql() {
         return new ClassVisitorFactory() {
             @Override
             public ClassVisitor create(ClassInstrumentationData classInstrumentationData, ClassWriter classWriter) {
-                HashSet<String> ctorSignatures = new HashSet<String>();
+                Set<String> ctorSignatures = new HashSet<String>();
                 ctorSignatures.add("(Lorg/postgresql/jdbc/PgConnection;Ljava/lang/String;III)V");
                 // NOTE: this constructor cannot be added as it does not have a String in position 2.
                 // On first analysis it looks like, for this to be added, PreparedStatementMetaData
