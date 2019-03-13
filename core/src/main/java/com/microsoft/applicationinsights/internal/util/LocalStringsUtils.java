@@ -23,9 +23,12 @@ package com.microsoft.applicationinsights.internal.util;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class LocalStringsUtils {
+    private LocalStringsUtils(){} // no instances please
+
     /**
      * Determine whether a string is null or empty.
      * @param value The string value
@@ -53,18 +56,10 @@ public class LocalStringsUtils {
         return uuid;
     }
 
-    /**
-     * Lazy init pattern.
-     */
-    private static class RandomHolder {
-        static final Random RANDOM = new Random();
-    }
-
     public static String generateRandomIntegerId() {
-        Random random = RandomHolder.RANDOM;
-        long abs = Math.abs(random.nextLong());
-
-        return String.valueOf(abs);
+        // avoid using Math.abs(rand.nextLong()) because Math.abs(Long.MIN_VALUE) is negative
+        long rand = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
+        return String.valueOf(rand);
     }
 
     public static DateFormat getDateFormatter() {
