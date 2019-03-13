@@ -19,6 +19,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
+import org.apache.commons.lang3.StringUtils;
 
 public class AiDockerClient {
 	
@@ -205,7 +206,7 @@ public class AiDockerClient {
 
 	private static String getFirstLineOfProcessOutput(Process p) throws IOException {
 		List<String> lines = CharStreams.readLines(new InputStreamReader(p.getInputStream()));
-		return lines.get(0);
+		return StringUtils.strip(StringUtils.trim(lines.get(0)));
 	}
 
 	public String deleteNetwork(String nameOrId) throws IOException, InterruptedException {
@@ -224,9 +225,27 @@ public class AiDockerClient {
 			return null;
 		}
 		String containerName = getFirstLineOfProcessOutput(p);
-		if (containerName.startsWith("/")) {
-			return containerName.substring(1); // this was found during testing; name is prefixed with '/'
-		}
+		int start = findFirstLetterPosition(containerName);
+		int end = findLastLetterPosition(containerName);
+		// TODO handle -1
+		containerName = containerName.substring(start, end+1);
 		return containerName;
+	}
+
+	private static int findFirstLetterPosition(String input) {
+		for (int i = 0; i < input.length(); i++) {
+			if (Character.isAlphabetic(input.codePointAt(i))) {
+				return i;
+			}
+		}
+		return -1; // not found
+	}
+	private static  int findLastLetterPosition(String input) {
+		for (int i = input.length()-1; i >= 0; i--) {
+			if (Character.isAlphabetic(input.codePointAt(i))) {
+				return i;
+			}
+		}
+		return -1; // not found
 	}
 }
