@@ -124,9 +124,8 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
-            } finally {
-                throw t;
             }
+            throw t;
         }
     }
 
@@ -152,9 +151,8 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
-            } finally {
-                throw t;
             }
+            throw t;
         }
     }
 }
