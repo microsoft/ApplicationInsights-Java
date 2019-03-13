@@ -122,7 +122,6 @@ public final class WebRequestTrackingFilter implements Filter {
                 return;
             }
 
-            setKeyOnTLS(key);
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
@@ -138,7 +137,6 @@ public final class WebRequestTrackingFilter implements Filter {
                 } else {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
                 }
-                setKeyOnTLS(null);
             }
         } else {
             // we are only interested in Http Requests. Keep all other untouched.
@@ -195,7 +193,9 @@ public final class WebRequestTrackingFilter implements Filter {
     /**
      * Destroy the filter by releases resources.
      */
-    public void destroy() {}
+    public void destroy() {
+        setKeyOnTLS(null);
+    }
 
     // endregion Public
 
@@ -242,6 +242,9 @@ public final class WebRequestTrackingFilter implements Filter {
             String name = extractAppName(context);
             String key = registerWebApp(appName);
             setKey(key);
+
+            // binds the current web filter to agent for it's entire lifespan
+            setKeyOnTLS(key);
             InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. appName=%s",
                 this.filterName, sw.getNanoTime()/1_000_000.0, name);
         } catch (ThreadDeath td) {
