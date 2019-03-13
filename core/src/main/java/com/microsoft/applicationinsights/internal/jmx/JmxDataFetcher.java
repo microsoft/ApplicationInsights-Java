@@ -36,8 +36,8 @@ import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.TabularDataSupport;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
 import java.lang.management.ManagementFactory;
 
 /**
@@ -129,7 +129,7 @@ public class JmxDataFetcher {
 
         String[] inners = attributeName.split("\\.");
         for (ObjectName object : objects) {
-            CompositeDataSupport compositeData = (CompositeDataSupport) server.getAttribute(object, inners[0]);
+            CompositeData compositeData = (CompositeData) server.getAttribute(object, inners[0]);
             if (compositeData == null) {
                 InternalLogger.INSTANCE.warn("Could not find composite attribute named '%s' for '%s' in object '%s'", inners[0], attributeName, object);
                 continue;
@@ -149,13 +149,13 @@ public class JmxDataFetcher {
 
         String[] inners = attributeName.split("\\.");
         for (ObjectName object : objects) {
-            TabularDataSupport tabularData = (TabularDataSupport) server.getAttribute(object, inners[0]);
+            TabularData tabularData = (TabularData) server.getAttribute(object, inners[0]);
             if (tabularData == null) {
                 InternalLogger.INSTANCE.warn("Could not find tabular attribute named '%s' for '%s' in object '%s'", inners[0], attributeName, object);
                 continue;
             }
 
-            CompositeDataSupport compositeData = (CompositeDataSupport) tabularData.get(inners[1]);
+            CompositeData compositeData = tabularData.get(new Object[] { inners[1] });
             if (compositeData == null) {
                 InternalLogger.INSTANCE.warn("Could not find tabular attribute named '%s' for '%s' in object '%s'", inners[1], attributeName, object);
                 continue;
