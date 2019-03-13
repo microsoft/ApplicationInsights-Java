@@ -31,13 +31,16 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by gupele on 8/3/2015.
  */
 public final class PreparedStatementClassVisitor extends ClassVisitor {
 
-    private final HashMap<String, String> nameAndSignature = new HashMap<String, String>();
+    private final Map<String, Set<String>> nameAndSignatures = new HashMap<String, Set<String>>();
 
     protected final ClassInstrumentationData instrumentationData;
     private final PreparedStatementMetaData metaData;
@@ -49,26 +52,33 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
         this.instrumentationData = instrumentationData;
         this.metaData = metaData;
 
-        nameAndSignature.put("setBoolean", "(IZ)V");
-        nameAndSignature.put("setInt", "(II)V");
-        nameAndSignature.put("setShort", "(IS)V");
-        nameAndSignature.put("setDouble", "(ID)V");
-        nameAndSignature.put("setFloat", "(IF)V");
-        nameAndSignature.put("setString", "(ILjava/lang/String;)V");
+        addSignature("setBoolean", "(IZ)V");
+        addSignature("setInt", "(II)V");
+        addSignature("setShort", "(IS)V");
+        addSignature("setDouble", "(ID)V");
+        addSignature("setFloat", "(IF)V");
+        addSignature("setString", "(ILjava/lang/String;)V");
 
-        nameAndSignature.put("setBigDecimal", "(ILjava/math/BigDecimal;)V");
+        addSignature("setBigDecimal", "(ILjava/math/BigDecimal;)V");
 
-        nameAndSignature.put("setObject", "(ILjava/lang/Object;)V");
-        nameAndSignature.put("setTimestamp", "(ILjava/sql/Timestamp;)V");
-        nameAndSignature.put("setTimestamp", "(ILjava/sql/Timestamp;Ljava/util/Calendar)V");
-        nameAndSignature.put("setTime", "(ILjava/sql/Time;)V");
-        nameAndSignature.put("setDate", "(ILjava/sql/Date;)V");
+        addSignature("setObject", "(ILjava/lang/Object;)V");
+        addSignature("setTimestamp", "(ILjava/sql/Timestamp;)V");
+        addSignature("setTimestamp", "(ILjava/sql/Timestamp;Ljava/util/Calendar)V");
+        addSignature("setTime", "(ILjava/sql/Time;)V");
+        addSignature("setDate", "(ILjava/sql/Date;)V");
 
-        nameAndSignature.put("setBlob", "(ILjava/sql/Blob;)V");
+        addSignature("setBlob", "(ILjava/sql/Blob;)V");
 
-        nameAndSignature.put("setNull", "(II)V");
-/*
-		*/
+        addSignature("setNull", "(II)V");
+    }
+
+    private void addSignature(String methodName, String parameterSignature) {
+        Set<String> sigs = nameAndSignatures.get(methodName);
+        if (sigs == null) {
+            sigs = new HashSet<String>();
+            nameAndSignatures.put(methodName, sigs);
+        }
+        sigs.add(parameterSignature);
     }
 
     @Override
@@ -104,8 +114,8 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
             return new PreparedStatementCtorMethodVisitor(access, desc, instrumentationData.getClassName(), name, originalMV, metaData);
         }
 
-        String foundDesc = nameAndSignature.get(name);
-        if (desc != null && desc.equals(foundDesc)) {
+        Set<String> foundDesc = nameAndSignatures.get(name);
+        if (desc != null && foundDesc.contains(desc)) {
             return new PreparedStatementSetMethod(access, desc, instrumentationData.getClassName(), name, originalMV, metaData);
         }
 
