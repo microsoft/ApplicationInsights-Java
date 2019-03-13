@@ -65,9 +65,8 @@ public final class MetricTelemetryFilter implements TelemetryProcessor {
             } catch (Throwable t2) {
                 // chomp
             } finally {
-                throw t;
             }
-
+            throw t;
         }
     }
 
