@@ -19,7 +19,7 @@ import org.apache.http.annotation.Experimental;
  * This class implements {@link AsyncListener} to handle span completion for async request handling.
  */
 @Experimental
-public final class AIHttpServletListener implements Closeable, AsyncListener {
+public final class AIHttpServletListener implements AsyncListener {
 
     /**
      * Instance of {@link RequestTelemetryContext}
@@ -47,7 +47,6 @@ public final class AIHttpServletListener implements Closeable, AsyncListener {
             && response instanceof HttpServletResponse) {
             handler.handleEnd((HttpServletRequest) request, (HttpServletResponse) response, context);
         }
-        this.close();
     }
 
     @Override
@@ -58,7 +57,6 @@ public final class AIHttpServletListener implements Closeable, AsyncListener {
             && response instanceof HttpServletResponse) {
             handler.handleEnd((HttpServletRequest) request, (HttpServletResponse) response, context);
         }
-        this.close();
     }
 
     @Override
@@ -80,7 +78,6 @@ public final class AIHttpServletListener implements Closeable, AsyncListener {
                 handler.handleEnd((HttpServletRequest) request, (HttpServletResponse) response, context);
             }
         }
-        this.close();
     }
 
     @Override
@@ -90,7 +87,4 @@ public final class AIHttpServletListener implements Closeable, AsyncListener {
             asyncContext.addListener(this, event.getSuppliedRequest(), event.getSuppliedResponse());
         }
     }
-
-    @Override
-    public void close() throws IOException {}
 }

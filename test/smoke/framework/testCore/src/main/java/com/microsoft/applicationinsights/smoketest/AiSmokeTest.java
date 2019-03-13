@@ -559,6 +559,12 @@ public abstract class AiSmokeTest {
 		stopAllContainers();
 		cleanUpDockerNetwork();
 		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
+		System.out.println("Stopping mocked ingestion...");
+		try {
+			mockedIngestion.stopServer();
+		} catch (Exception e) {
+			System.err.println("Exception stopping mocked ingestion: "+e);
+		}
 	}
 
 	public static void stopAllContainers() throws Exception {
