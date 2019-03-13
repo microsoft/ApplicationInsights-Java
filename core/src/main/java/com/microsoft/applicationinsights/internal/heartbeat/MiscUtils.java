@@ -32,10 +32,7 @@ public class MiscUtils {
     catch (Exception e) {
       //chomp;
     }
-    finally{
-      return set;
-    }
-
+    return set;
   }
 
 }
