@@ -106,9 +106,6 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor originalMV = super.visitMethod(access, name, desc, signature, exceptions);
         originalMV = new JSRInlinerAdapter(originalMV, access, name, desc, signature, exceptions);
-        if (originalMV == null) {
-            return originalMV;
-        }
 
         if (ByteCodeUtils.isConstructor(name) && metaData.ctorSignatures.contains(desc)) {
             return new PreparedStatementCtorMethodVisitor(access, desc, instrumentationData.getClassName(), name, originalMV, metaData);
