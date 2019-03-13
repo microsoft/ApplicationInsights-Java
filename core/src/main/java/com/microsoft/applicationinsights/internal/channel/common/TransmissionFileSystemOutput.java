@@ -54,6 +54,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class knows how to manage {@link Transmission} that needs
@@ -203,6 +204,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
                 }
             }
         } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Error fetching oldest file: %s", ExceptionUtils.getStackTrace(e));
         }
 
         return null;
@@ -256,7 +258,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             InternalLogger.INSTANCE.error("Failed to load transmission, non transmission, exception: %s", e.toString());
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to load transmission, io exception: %s", e.toString());
-                }
+        }
 
         return Optional.fromNullable(transmission);
     }
@@ -297,6 +299,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.toString());
         }
+
         return false;
     }
 
