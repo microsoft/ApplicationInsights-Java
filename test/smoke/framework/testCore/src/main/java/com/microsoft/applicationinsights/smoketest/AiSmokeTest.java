@@ -480,6 +480,7 @@ public abstract class AiSmokeTest {
 			ContainerInfo depConInfo = new ContainerInfo(containerId, containerName);
 			depConInfo.setContainerName(containerName);
 			depConInfo.setDependencyContainerInfo(dc);
+			System.out.printf("Dependency container name for %s: %s%n", imageName, containerName);
 			allContainers.push(depConInfo);
 			TimeUnit.MILLISECONDS.sleep(500); // wait a bit after starting a server.
 		}
@@ -540,7 +541,8 @@ public abstract class AiSmokeTest {
 			if (Strings.isNullOrEmpty(containerName)) {
 				throw new SmokeTestException("Null/empty container name for dependency container");
 			}
-			map.put(varname, info.getContainerName());
+			map.put(varname, containerName);
+			System.out.printf("Adding env var to test app container: %s=%s%n", varname, containerName);
 		}
 		return map;
 	}
