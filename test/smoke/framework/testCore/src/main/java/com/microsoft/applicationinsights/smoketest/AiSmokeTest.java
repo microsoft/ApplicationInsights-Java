@@ -559,6 +559,16 @@ public abstract class AiSmokeTest {
 		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
 	}
 
+	@AfterClass
+	public static void tearDownClass() {
+		System.out.println("Stopping mocked ingestion...");
+		try {
+			mockedIngestion.stopServer();
+		} catch (Exception e) {
+			System.err.println("Exception stopping mocked ingestion: "+e);
+		}
+	}
+
 	public static void stopAllContainers() throws Exception {
 		if (allContainers.isEmpty()) {
 			System.out.println("No containers to stop");
