@@ -313,6 +313,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             } catch (IOException e) {
                 InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.toString());
             } finally{
+                // TODO fix return statements in finally; compare with modification in fixResources branch
                 try {
                     output.close();
                     buffer.close();
