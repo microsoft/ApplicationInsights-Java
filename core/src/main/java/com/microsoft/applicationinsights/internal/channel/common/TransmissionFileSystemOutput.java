@@ -245,9 +245,9 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private Optional<Transmission> loadTransmission(File file) {
         Transmission transmission = null;
 
-            if (file == null) {
-                return Optional.absent();
-            }
+        if (file == null) {
+            return Optional.absent();
+        }
         try (ObjectInput input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
