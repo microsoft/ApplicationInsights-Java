@@ -557,10 +557,6 @@ public abstract class AiSmokeTest {
 		stopAllContainers();
 		cleanUpDockerNetwork();
 		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
-	}
-
-	@AfterClass
-	public static void tearDownClass() {
 		System.out.println("Stopping mocked ingestion...");
 		try {
 			mockedIngestion.stopServer();
