@@ -64,7 +64,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
       final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
-      Set<String> enabledProperties = MiscUtils.except(disableFields, defaultFields);
+      Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
       @Override
       public Boolean call() {
         boolean hasSetValues = false;
