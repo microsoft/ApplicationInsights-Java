@@ -292,7 +292,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
 
     private boolean saveTransmission(File transmissionFile, Transmission transmission) {
         try (ObjectOutput output = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(transmissionFile)))) {
-                output.writeObject(transmission);
+            output.writeObject(transmission);
             return true;
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.toString());
