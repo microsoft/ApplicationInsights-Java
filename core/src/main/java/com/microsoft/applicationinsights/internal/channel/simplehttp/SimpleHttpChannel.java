@@ -84,33 +84,17 @@ final class SimpleHttpChannel implements TelemetryChannel
             StringEntity body = new StringEntity(payload, ContentType.create("application/x-json-stream"));
             request.setEntity(body);
 
-            CloseableHttpClient httpClient = HttpClients.createDefault();
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                try (CloseableHttpResponse response = httpClient.execute(request)) {
+                    HttpEntity respEntity = response.getEntity();
+                    if (respEntity != null)
+                        respEntity.getContent().close();
 
-            CloseableHttpResponse response = null;
-            try
-            {
-                response = httpClient.execute(request);
-                HttpEntity respEntity = response.getEntity();
-                if (respEntity != null)
-                    respEntity.getContent().close();
-
-                if (developerMode) {
-                    InternalLogger.INSTANCE.trace("SimpleHttpChannel, response: %s", response.getStatusLine());
-                }
-            }
-            catch (IOException ioe)
-            {
-                try
-                {
-                    if (response != null)
-                    {
-                        response.close();
+                    if (developerMode) {
+                        InternalLogger.INSTANCE.trace("SimpleHttpChannel, response: %s", response.getStatusLine());
                     }
-                }
-                catch (IOException ioeIn)
-                {
-                }
-            }
+                } // response
+            } // httpclient
         }
         catch (IOException ioe)
         {
