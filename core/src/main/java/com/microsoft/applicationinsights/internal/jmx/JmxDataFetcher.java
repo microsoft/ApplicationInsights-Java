@@ -29,9 +29,14 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeDataSupport;
+import javax.management.openmbean.TabularDataSupport;
 import java.lang.management.ManagementFactory;
 
 /**
@@ -83,9 +88,6 @@ public class JmxDataFetcher {
     private static Collection<Object> fetch(MBeanServer server, Set<ObjectName> objects, String attributeName, String attributeType) throws Exception {
         ArrayList<Object> result = new ArrayList<Object>();
 
-        String attr = attributeName;
-        String[] inners = null;
-
         AttributeType innerAttributeType = AttributeType.REGULAR;
         if (COMPOSITE_ATTRIBUTE_TYPE.equals(attributeType)) {
             innerAttributeType = AttributeType.COMPOSITE;
@@ -93,35 +95,69 @@ public class JmxDataFetcher {
             innerAttributeType = AttributeType.TABULAR;
         }
 
-        if (innerAttributeType != AttributeType.REGULAR) {
-            inners = attributeName.split("\\.");
+        switch (innerAttributeType) {
+            case TABULAR:
+                fetchTabularObjects(server, objects, attributeName, result);
+                break;
+            case COMPOSITE:
+                fetchCompositeObjects(server, objects, attributeName, result);
+                break;
+            case REGULAR:
+                fetchRegularObjects(server, objects, attributeName, result);
+                break;
         }
 
+        return result;
+    }
+
+    static void fetchRegularObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, ArrayList<Object> result)
+            throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
+
         for (ObjectName object : objects) {
-
-            Object obj;
-
-            if (innerAttributeType != AttributeType.REGULAR) {
-                obj = server.getAttribute(object, inners[0]);
-
-                javax.management.openmbean.CompositeDataSupport compositeData = null;
-                if (innerAttributeType == AttributeType.TABULAR) {
-                    javax.management.openmbean.TabularDataSupport tabularData = (javax.management.openmbean.TabularDataSupport)obj;
-                    compositeData = (CompositeDataSupport) tabularData.get(inners[1]);
-                    obj = compositeData.get(inners[2]);
-                } else {
-                    compositeData = (javax.management.openmbean.CompositeDataSupport)obj;
-                    obj = compositeData.get(inners[1]);
-                }
-            } else {
-                obj = server.getAttribute(object, attr);
-            }
+            Object obj = server.getAttribute(object, attributeName);
             if (obj != null) {
                 result.add(obj);
             }
         }
+    }
 
-        return result;
+    static void fetchCompositeObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, ArrayList<Object> result)
+            throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
+
+        String[] inners = attributeName.split("\\.");
+        for (ObjectName object : objects) {
+            CompositeDataSupport compositeData = (CompositeDataSupport) server.getAttribute(object, inners[0]);
+            if (compositeData == null) {
+                continue;
+            }
+            Object obj = compositeData.get(inners[1]);
+
+            if (obj != null) {
+                result.add(obj);
+            }
+        }
+    }
+
+    static void fetchTabularObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, ArrayList<Object> result)
+            throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
+
+        String[] inners = attributeName.split("\\.");
+        for (ObjectName object : objects) {
+            TabularDataSupport tabularData = (TabularDataSupport) server.getAttribute(object, inners[0]);
+            if (tabularData != null) {
+                continue;
+            }
+
+            CompositeDataSupport compositeData = (CompositeDataSupport) tabularData.get(inners[1]);
+            if (compositeData == null) {
+                continue;
+            }
+
+            Object obj = compositeData.get(inners[2]);
+            if (obj != null) {
+                result.add(obj);
+            }
+        }
     }
 
     private JmxDataFetcher() {
