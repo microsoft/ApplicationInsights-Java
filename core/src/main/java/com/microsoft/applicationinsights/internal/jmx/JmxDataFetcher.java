@@ -117,6 +117,8 @@ public class JmxDataFetcher {
             Object obj = server.getAttribute(object, attributeName);
             if (obj != null) {
                 result.add(obj);
+            } else {
+                InternalLogger.INSTANCE.warn("Could not find JMX attribute named '%s' in object '%s'", attributeName, object);
             }
         }
     }
@@ -128,12 +130,15 @@ public class JmxDataFetcher {
         for (ObjectName object : objects) {
             CompositeDataSupport compositeData = (CompositeDataSupport) server.getAttribute(object, inners[0]);
             if (compositeData == null) {
+                InternalLogger.INSTANCE.warn("Could not find composite attribute named '%s' for '%s' in object '%s'", inners[0], attributeName, object);
                 continue;
             }
             Object obj = compositeData.get(inners[1]);
 
             if (obj != null) {
                 result.add(obj);
+            } else {
+                InternalLogger.INSTANCE.warn("Could not find composite attribute named '%s' for '%s' in object '%s'", inners[1], attributeName, object);
             }
         }
     }
@@ -144,18 +149,22 @@ public class JmxDataFetcher {
         String[] inners = attributeName.split("\\.");
         for (ObjectName object : objects) {
             TabularDataSupport tabularData = (TabularDataSupport) server.getAttribute(object, inners[0]);
-            if (tabularData != null) {
+            if (tabularData == null) {
+                InternalLogger.INSTANCE.warn("Could not find tabular attribute named '%s' for '%s' in object '%s'", inners[0], attributeName, object);
                 continue;
             }
 
             CompositeDataSupport compositeData = (CompositeDataSupport) tabularData.get(inners[1]);
             if (compositeData == null) {
+                InternalLogger.INSTANCE.warn("Could not find tabular attribute named '%s' for '%s' in object '%s'", inners[1], attributeName, object);
                 continue;
             }
 
             Object obj = compositeData.get(inners[2]);
             if (obj != null) {
                 result.add(obj);
+            } else {
+                InternalLogger.INSTANCE.warn("Could not find tabular attribute named '%s' for '%s' in object '%s'", inners[2], attributeName, object);
             }
         }
     }
