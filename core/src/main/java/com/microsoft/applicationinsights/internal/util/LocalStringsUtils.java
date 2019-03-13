@@ -53,8 +53,15 @@ public class LocalStringsUtils {
         return uuid;
     }
 
+    /**
+     * Lazy init pattern.
+     */
+    private static class RandomHolder {
+        static final Random RANDOM = new Random();
+    }
+
     public static String generateRandomIntegerId() {
-        Random random = new Random();
+        Random random = RandomHolder.RANDOM;
         long abs = Math.abs(random.nextLong());
 
         return String.valueOf(abs);
