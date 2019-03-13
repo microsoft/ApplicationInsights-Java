@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
@@ -110,7 +111,7 @@ public class JmxDataFetcher {
         return result;
     }
 
-    static void fetchRegularObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, ArrayList<Object> result)
+    static void fetchRegularObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, List<Object> result)
             throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
 
         for (ObjectName object : objects) {
@@ -123,7 +124,7 @@ public class JmxDataFetcher {
         }
     }
 
-    static void fetchCompositeObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, ArrayList<Object> result)
+    static void fetchCompositeObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, List<Object> result)
             throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
 
         String[] inners = attributeName.split("\\.");
@@ -143,7 +144,7 @@ public class JmxDataFetcher {
         }
     }
 
-    static void fetchTabularObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, ArrayList<Object> result)
+    static void fetchTabularObjects(MBeanServer server, Set<ObjectName> objects, String attributeName, List<Object> result)
             throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
 
         String[] inners = attributeName.split("\\.");
