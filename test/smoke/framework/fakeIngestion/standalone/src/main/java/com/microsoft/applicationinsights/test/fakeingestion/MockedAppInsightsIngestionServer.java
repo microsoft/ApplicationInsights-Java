@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class MockedAppInsightsIngestionServer implements AutoCloseable {
+public class MockedAppInsightsIngestionServer {
 	public static final int DEFAULT_PORT = 60606;
 
 	private final MockedAppInsightsIngestionServlet servlet;
@@ -119,11 +119,6 @@ public class MockedAppInsightsIngestionServer implements AutoCloseable {
 	 */
 	public List<Envelope> waitForItems(Predicate<Envelope> condition, int numItems, int timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
 		return this.servlet.waitForItems(condition, numItems, timeout, timeUnit);
-	}
-
-	@Override
-	public void close() throws Exception {
-		stopServer();
 	}
 
 

@@ -1,6 +1,6 @@
 # CHANGELOG
 
-# Version 2.4.0
+# Version 2.4.0 (Unreleased)
 - Introduced support for Manual Async and Explicit Multithreading correlation. 
 - Introduced `setRequestTelemetryContext` API in `WebTelemetryModule` Interface.
 - Introduced experimental API's `AIHttpServletListner`, `HttpServerHandler`, `ApplicationInsightsServletExtractor`
