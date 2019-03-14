@@ -1,0 +1,23 @@
+apply plugin: 'war'
+
+dependencies {
+    compile aiCoreJar
+    compile aiWebJar
+    compile 'com.google.guava:guava:20.0'
+    
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    providedRuntime 'mysql:mysql-connector-java:5.1.44'
+
+    smokeTestCompile 'com.google.guava:guava:23.0'
+    
+    testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+}
+
+compileJava.sourceCompatibility = 1.7
+compileJava.targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName

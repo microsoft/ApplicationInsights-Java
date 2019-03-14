@@ -53,7 +53,7 @@ public class TelemetryClient {
     }
 
     private final TelemetryConfiguration configuration;
-    private TelemetryContext context;
+    private volatile TelemetryContext context;
     private TelemetryChannel channel;
 
     private static final Object TELEMETRY_STOP_HOOK_LOCK = new Object();
