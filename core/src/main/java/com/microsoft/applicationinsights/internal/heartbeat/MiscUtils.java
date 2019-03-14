@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,30 +13,21 @@ import java.util.Set;
 public class MiscUtils {
 
   /**
-   * Returns a list which contains result of List - Set
-   * @param list2
-   * @param set
+   * Returns a set which contains result of List - Set
+   * @param target
+   * @param toRemove
    * @return
    */
-   public static Set<String> except(List<String> list2, Set<String> set) {
-    try {
-      if (set == null) {
+   public static Set<String> except(Collection<String> target, Collection<String> toRemove) {
+      if (toRemove == null) {
         throw new IllegalArgumentException("Input is null");
       }
-      if( list2 == null) {
+      if(target == null) {
         throw new IllegalArgumentException("Input is null");
       }
-      Set<String> result = new HashSet<>(list2);
-      result.removeAll(set);
+      Set<String> result = new HashSet<>(target);
+      result.removeAll(toRemove);
       return result;
-    }
-    catch (Exception e) {
-      //chomp;
-    }
-    finally{
-      return set;
-    }
-
   }
 
 }
