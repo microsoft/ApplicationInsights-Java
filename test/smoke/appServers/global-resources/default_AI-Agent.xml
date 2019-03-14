@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ApplicationInsightsAgent>
     <Instrumentation>
-        <BuiltIn enabled="true" />
+        <BuiltIn enabled="true">
+            <Jedis enabled="false"/>
+        </BuiltIn>
     </Instrumentation>
     <AgentLogger />
 </ApplicationInsightsAgent>
