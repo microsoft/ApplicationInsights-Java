@@ -291,6 +291,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
     public String register(ClassLoader classLoader, AgentNotificationsHandler handler) {
+        System.out.println("agent class loader: "  +this.getClass().getClassLoader());
         try {
             if (handler == null) {
                 throw new IllegalArgumentException("AgentNotificationsHandler must be a non-null value");
@@ -303,6 +304,9 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
 
             notificationHandlersData.put(implementationName, new RegistrationData(classLoader, handler, implementationName));
 
+            // Main handler is always used in any case. therefore the Agent will not work with multi-apps in single tomcat
+            // service.
+            mainHandler = handler;
             return implementationName;
         } catch (ThreadDeath td) {
             throw td;
@@ -337,6 +341,15 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
+    /**
+     * Set the mainHandler for handling the dependency tracking operations.
+     * @param handler
+     * @return
+     */
+    public void setMainHandler(AgentNotificationsHandler handler) {
+        this.mainHandler = handler;
+    }
+
     public void setRedisThresholdInMS(long thresholdInMS) {
         redisThresholdInNS = thresholdInMS * 1000000;
         if (redisThresholdInNS < 0) {
@@ -358,19 +371,12 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
-    public void setExceptionData    (DataOfConfigurationForException exceptionData) {
+    public void setExceptionData (DataOfConfigurationForException exceptionData) {
         this.runtimeExceptionDecider.setExceptionData(exceptionData);
     }
 
-    private AgentNotificationsHandler getImplementation() {
-        String key = AgentTLS.getTLSKey();
-        if (key != null && key.length() > 0) {
-            RegistrationData implementation = notificationHandlersData.get(key);
-            if (implementation != null) {
-                return implementation.handler;
-            }
-        }
 
+    private AgentNotificationsHandler getImplementation() {
         return mainHandler;
     }
 }

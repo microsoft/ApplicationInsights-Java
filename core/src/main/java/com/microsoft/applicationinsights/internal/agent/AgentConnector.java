@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
+import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
@@ -43,6 +44,7 @@ public enum AgentConnector {
     private String agentKey;
     private RegistrationType registrationType = RegistrationType.NONE;
     private CoreAgentNotificationsHandler coreDataAgent = null;
+    private RegistrationResult registrationResult;
 
     public static class RegistrationResult {
         private final String key;
@@ -151,5 +153,20 @@ public enum AgentConnector {
                 InternalLogger.INSTANCE.error("Unknown registration type '%s' found", registrationType);
                 return false;
         }
+    }
+
+    /**
+     * Single method to register agent with SDK.
+     * @return RegistrationResult
+     */
+    public RegistrationResult universalAgentRegisterer() {
+        if (this.registrationResult != null) {
+            return this.registrationResult;
+        }
+        coreDataAgent = new CoreAgentNotificationsHandler("Universal-Registration");
+        ImplementationsCoordinator.INSTANCE.setMainHandler(coreDataAgent);
+        InternalLogger.INSTANCE.trace("Connected to Agent!");
+        this.registrationResult = new RegistrationResult(coreDataAgent.getName(), coreDataAgent.getCleaner());
+        return this.registrationResult;
     }
 }
