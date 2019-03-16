@@ -111,9 +111,11 @@ public final class PreparedStatementClassVisitor extends ClassVisitor {
             return new PreparedStatementCtorMethodVisitor(access, desc, instrumentationData.getClassName(), name, originalMV, metaData);
         }
 
-        Set<String> foundDesc = nameAndSignatures.get(name);
-        if (desc != null && foundDesc.contains(desc)) {
-            return new PreparedStatementSetMethod(access, desc, instrumentationData.getClassName(), name, originalMV, metaData);
+        if (desc != null) {
+            Set<String> foundDesc = nameAndSignatures.get(name);
+            if (foundDesc != null && foundDesc.contains(desc)) {
+                return new PreparedStatementSetMethod(access, desc, instrumentationData.getClassName(), name, originalMV, metaData);
+            }
         }
 
         return instrumentationData.getMethodVisitor(access, name, desc, originalMV, metaData);

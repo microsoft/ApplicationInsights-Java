@@ -12,7 +12,7 @@ public class SpringBootPerfTestHelper {
             runnable.run();
         } finally {
             sw.stop();
-            return String.valueOf(sw.elapsed(TimeUnit.MILLISECONDS));
         }
+        return String.valueOf(sw.elapsed(TimeUnit.MILLISECONDS));
     }
 }

@@ -1,6 +1,7 @@
 # CHANGELOG
 
 # Version 2.4.0 (Unreleased)
+- Fixed [#749](https://github.com/Microsoft/ApplicationInsights-Java/issues/749) introduce support for postgresql jdbc4 prepared statements.
 - Introduced support for Manual Async and Explicit Multithreading correlation. 
 - Introduced `setRequestTelemetryContext` API in `WebTelemetryModule` Interface.
 - Introduced experimental API's `AIHttpServletListner`, `HttpServerHandler`, `ApplicationInsightsServletExtractor`
