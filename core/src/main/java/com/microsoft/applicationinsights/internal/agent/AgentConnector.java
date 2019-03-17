@@ -76,6 +76,7 @@ public enum AgentConnector {
      * @return The key that will represent the caller, null if the registration failed.
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public synchronized RegistrationResult register(ClassLoader classLoader, String name) {
         switch (registrationType) {
             case NONE:
