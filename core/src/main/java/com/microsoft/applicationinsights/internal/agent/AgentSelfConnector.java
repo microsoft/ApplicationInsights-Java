@@ -28,7 +28,7 @@ package com.microsoft.applicationinsights.internal.agent;
  * Created by gupele on 9/11/2016.
  */
 public class AgentSelfConnector {
-    public AgentSelfConnector() throws Exception {
+    public AgentSelfConnector() {
         AgentConnector.INSTANCE.universalAgentRegisterer();
     }
 }

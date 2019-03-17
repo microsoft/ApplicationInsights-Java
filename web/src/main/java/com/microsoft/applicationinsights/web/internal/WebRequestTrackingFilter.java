@@ -93,6 +93,11 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
 
+    /**
+     * Used to indicate if agent is registered to webapp.
+     */
+    private boolean agentIsRegistered;
+
     // endregion Members
 
     // region Public
@@ -151,8 +156,9 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config) {
         try {
+            long start = System.currentTimeMillis();
             this.appName = extractAppName(config.getServletContext());
-            initializeAgentIfAvailable(config, appName);
+            this.agentIsRegistered = initializeAgentIfAvailable();
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
@@ -169,6 +175,8 @@ public final class WebRequestTrackingFilter implements Filter {
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();
             }
+            long end = System.currentTimeMillis();
+            InternalLogger.INSTANCE.trace("Initialized Application Insights Filter in " + (end - start) + " ms");
         } catch (Exception e) {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.info(
@@ -189,7 +197,11 @@ public final class WebRequestTrackingFilter implements Filter {
     /**
      * Destroy the filter by releases resources.
      */
-    public void destroy() {}
+    public void destroy() {
+        if (agentIsRegistered) {
+            AgentConnector.INSTANCE.unregisterAgent();
+        }
+    }
 
     public WebRequestTrackingFilter() {}
 
@@ -197,20 +209,19 @@ public final class WebRequestTrackingFilter implements Filter {
 
     // region Private
 
-    private synchronized void initializeAgentIfAvailable(FilterConfig filterConfig, String appName) {
-        StopWatch sw = StopWatch.createStarted();
+    private boolean initializeAgentIfAvailable() {
         //If Agent Jar is not present in the class path skip the process
         if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
             this.getClass().getClassLoader())) {
-            InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration in %.3fms", sw.getNanoTime()/1_000_000.0);
-            return;
+            InternalLogger.INSTANCE.trace("Agent was not found. Skipping the agent registration");
+            return false;
         }
 
         try {
             RegistrationResult registrationResult = AgentConnector.INSTANCE.universalAgentRegisterer();
             cleaners.add(registrationResult.getCleaner());
-            InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. appName=%s",
-                this.filterName, sw.getNanoTime()/1_000_000.0, appName);
+            InternalLogger.INSTANCE.trace("Successfully registered the filter with appName=%s", this.appName);
+            return true;
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
@@ -222,6 +233,7 @@ public final class WebRequestTrackingFilter implements Filter {
             } catch (Throwable t2) {
                 // chomp
             }
+            return false;
         }
     }
 

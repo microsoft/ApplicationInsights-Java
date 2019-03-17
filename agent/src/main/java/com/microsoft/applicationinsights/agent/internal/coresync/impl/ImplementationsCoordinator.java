@@ -49,17 +49,16 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     private volatile long maxSqlMaxQueryThresholdInMS = 10000L;
     private volatile long redisThresholdInNS = 10000L * 1000000;
 
-    private static RuntimeExceptionDecider runtimeExceptionDecider;
+    private final RuntimeExceptionDecider runtimeExceptionDecider = new RuntimeExceptionDecider();
 
     private static ConcurrentHashMap<String, RegistrationData> notificationHandlersData = new ConcurrentHashMap<String, RegistrationData>();
 
-    private AgentNotificationsHandler mainHandler;
+    AgentNotificationsHandler mainHandler;
     private ConcurrentHashMap<String, String> classNameToType = new ConcurrentHashMap<String, String>();
 
     public void initialize(AgentConfiguration configurationData) {
         maxSqlMaxQueryThresholdInMS = configurationData.getBuiltInConfiguration().getSqlMaxQueryLimitInMS();
         setRedisThresholdInMS(configurationData.getBuiltInConfiguration().getRedisThresholdInMS());
-        runtimeExceptionDecider = new RuntimeExceptionDecider();
     }
 
     /**
@@ -84,7 +83,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void httpMethodFinished(String identifier, String method, String correlationId, String uri, String target, int result, long delta) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.httpMethodFinished(identifier, method, correlationId, uri, target, result, delta);
             }
@@ -98,7 +97,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void exceptionCaught(String classAndMethodNames, Throwable throwable) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.exceptionCaught(classAndMethodNames, throwable);
             }
@@ -111,7 +110,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void httpMethodStarted(String classAndMethodName, String url) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.httpMethodStarted(classAndMethodName, url);
             }
@@ -124,7 +123,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void preparedStatementMethodStarted(String classAndMethodName, PreparedStatement statement, String sqlStatement, Object[] args) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.preparedStatementMethodStarted(classAndMethodName, statement, sqlStatement, args);
             }
@@ -137,7 +136,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void methodFinished(String classAndMethodName, long deltaInNS, Object[] args, Throwable throwable) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.methodFinished(classAndMethodName, deltaInNS, args, throwable);
             }
@@ -157,7 +156,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void preparedStatementExecuteBatchMethodStarted(String name, PreparedStatement statement, String sqlStatement, int batchCounter) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.preparedStatementExecuteBatchMethodStarted(name, statement, sqlStatement, batchCounter);
             }
@@ -170,7 +169,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void sqlStatementExecuteQueryPossibleQueryPlan(String name, Statement statement, String sqlStatement) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.sqlStatementExecuteQueryPossibleQueryPlan(name, statement, sqlStatement);
             }
@@ -183,7 +182,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void sqlStatementMethodStarted(String name, Statement statement, String sqlStatement) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.sqlStatementMethodStarted(name, statement, sqlStatement);
             }
@@ -197,7 +196,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void jedisMethodStarted(String name) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.jedisMethodStarted(name);
             }
@@ -210,7 +209,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void methodStarted(String name) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             String classType;
             if (implementation != null) {
                 if (!StringUtils.isNullOrEmpty(name)) {
@@ -232,7 +231,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void methodFinished(String name, Throwable throwable) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.methodFinished(name, throwable);
             }
@@ -245,7 +244,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
      @Override
     public void methodFinished(String name, long thresholdInMS) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation != null) {
                 implementation.methodFinished(name, thresholdInMS);
             }
@@ -258,12 +257,12 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     @Override
     public void exceptionThrown(Exception e) {
         try {
-            AgentNotificationsHandler implementation = getImplementation();
+            AgentNotificationsHandler implementation = getNotificationHandler();
             if (implementation == null) {
                 return;
             }
 
-            RuntimeExceptionDecider.ValidationResult decision = runtimeExceptionDecider.isValid(e);
+            RuntimeExceptionDecider.ValidationResult decision = this.runtimeExceptionDecider.isValid(e);
             if (!decision.valid) {
                 return;
             }
@@ -290,8 +289,13 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         return null;
     }
 
+    /**
+     * @deprecated
+     * @param classLoader
+     * @param handler
+     * @return
+     */
     public String register(ClassLoader classLoader, AgentNotificationsHandler handler) {
-        System.out.println("agent class loader: "  +this.getClass().getClassLoader());
         try {
             if (handler == null) {
                 throw new IllegalArgumentException("AgentNotificationsHandler must be a non-null value");
@@ -304,9 +308,6 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
 
             notificationHandlersData.put(implementationName, new RegistrationData(classLoader, handler, implementationName));
 
-            // Main handler is always used in any case. therefore the Agent will not work with multi-apps in single tomcat
-            // service.
-            mainHandler = handler;
             return implementationName;
         } catch (ThreadDeath td) {
             throw td;
@@ -321,6 +322,10 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
         }
     }
 
+    /**
+     * @deprecated
+     * @param handler
+     */
     public void registerSelf(AgentNotificationsHandler handler) {
         try {
             if (handler == null) {
@@ -343,7 +348,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
 
     /**
      * Set the mainHandler for handling the dependency tracking operations.
-     * @param handler
+     * @param handler instance of {@link AgentNotificationsHandler}
      * @return
      */
     public void setMainHandler(AgentNotificationsHandler handler) {
@@ -376,7 +381,7 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     }
 
 
-    private AgentNotificationsHandler getImplementation() {
+    public AgentNotificationsHandler getNotificationHandler() {
         return mainHandler;
     }
 }

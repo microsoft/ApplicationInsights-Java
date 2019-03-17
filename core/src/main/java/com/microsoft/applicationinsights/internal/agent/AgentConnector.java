@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler;
 import com.microsoft.applicationinsights.agent.internal.coresync.impl.ImplementationsCoordinator;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
@@ -44,7 +43,9 @@ public enum AgentConnector {
     private String agentKey;
     private RegistrationType registrationType = RegistrationType.NONE;
     private CoreAgentNotificationsHandler coreDataAgent = null;
-    private RegistrationResult registrationResult;
+    /** visible for testing **/
+    RegistrationResult registrationResult;
+    private final String UNIVERSAL_AGENT_NOTIFICATION_HANDLER_NAME = "Universal-Registration";
 
     public static class RegistrationResult {
         private final String key;
@@ -65,6 +66,7 @@ public enum AgentConnector {
     }
 
     /**
+     * @deprecated use {@link #universalAgentRegisterer()} instead.
      * Registers the caller, and returning a key to represent that data. The method should not throw!
      * <p>
      * The method is basically delegating the call to the relevant Agent class.
@@ -111,6 +113,7 @@ public enum AgentConnector {
     }
 
     /**
+     * @deprecated use {@link #universalAgentRegisterer()} instead.
      * Registers the caller, and returning a key to represent that data. The method should not throw!
      * <p>
      * The method is basically delegating the call to the relevant Agent class.
@@ -118,6 +121,7 @@ public enum AgentConnector {
      * @return A boolean value representing the agent registration
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public synchronized boolean registerSelf() {
         switch (registrationType) {
             case NONE:
@@ -161,12 +165,26 @@ public enum AgentConnector {
      */
     public RegistrationResult universalAgentRegisterer() {
         if (this.registrationResult != null) {
+            InternalLogger.INSTANCE.trace("SDK is already connected to agent ...");
             return this.registrationResult;
         }
-        coreDataAgent = new CoreAgentNotificationsHandler("Universal-Registration");
+        coreDataAgent = new CoreAgentNotificationsHandler(UNIVERSAL_AGENT_NOTIFICATION_HANDLER_NAME);
         ImplementationsCoordinator.INSTANCE.setMainHandler(coreDataAgent);
         InternalLogger.INSTANCE.trace("Connected to Agent!");
         this.registrationResult = new RegistrationResult(coreDataAgent.getName(), coreDataAgent.getCleaner());
         return this.registrationResult;
+    }
+
+    /**
+     * This is used to unregister the agent. Typical usage is before application is destroyed.
+     */
+    public void unregisterAgent() {
+        if (this.registrationResult == null) {
+            InternalLogger.INSTANCE.trace("Agent never registered ....");
+            return;
+        }
+        ImplementationsCoordinator.INSTANCE.setMainHandler(null);
+        registrationResult = null;
+        InternalLogger.INSTANCE.trace("Agent successfully unregistered ....");
     }
 }
