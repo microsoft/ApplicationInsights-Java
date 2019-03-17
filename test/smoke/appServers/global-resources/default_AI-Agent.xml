@@ -2,7 +2,6 @@
 <ApplicationInsightsAgent>
     <Instrumentation>
         <BuiltIn enabled="true">
-            <Jedis enabled="false"/>
         </BuiltIn>
     </Instrumentation>
     <AgentLogger />
