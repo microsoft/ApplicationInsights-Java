@@ -1,7 +1,7 @@
 # CHANGELOG
 
-# Version 2.4.0 (Unreleased)
-- Deprecated support for multiple apps instrumented with single JVM Agent. Instrumentation will only work for single apps
+# Version 2.4.0-BETA (Unreleased)
+- Removed support for multiple apps instrumented with single JVM Agent. Instrumentation will only work for single apps
   in application server. 
 - Fixed [#749](https://github.com/Microsoft/ApplicationInsights-Java/issues/749) introduce support for PostGre sql jdbc4 prepared statements.
 - Introduced support for Manual Async and Explicit Multithreading correlation. 

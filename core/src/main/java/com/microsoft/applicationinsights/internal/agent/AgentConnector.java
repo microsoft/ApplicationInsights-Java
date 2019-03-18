@@ -34,6 +34,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public enum AgentConnector {
     INSTANCE;
 
+    @Deprecated
     enum RegistrationType {
         NONE,
         WEB,
