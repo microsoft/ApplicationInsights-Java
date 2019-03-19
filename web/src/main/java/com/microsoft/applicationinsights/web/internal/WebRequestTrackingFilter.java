@@ -51,7 +51,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.time.StopWatch;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -176,7 +175,7 @@ public final class WebRequestTrackingFilter implements Filter {
                 this.filterName = config.getFilterName();
             }
             long end = System.currentTimeMillis();
-            InternalLogger.INSTANCE.trace("Initialized Application Insights Filter in " + (end - start) + " ms");
+            InternalLogger.INSTANCE.trace("Initialized Application Insights Filter in %.3fms", (end - start));
         } catch (Exception e) {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.info(
