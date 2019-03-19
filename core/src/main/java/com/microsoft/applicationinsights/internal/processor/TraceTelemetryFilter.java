@@ -51,9 +51,6 @@ import java.util.Map;
 public final class TraceTelemetryFilter implements TelemetryProcessor {
     private SeverityLevel fromSeverityLevel = null;
 
-    public TraceTelemetryFilter() {
-    }
-
     @Override
     public boolean process(Telemetry telemetry) {
         if (telemetry == null) {
@@ -77,14 +74,15 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
             return true;
         }
 
-        if (tt.getSeverityLevel().compareTo(this.fromSeverityLevel) < 0) {
-            return false;
-        }
-
-        return true;
+        return tt.getSeverityLevel().compareTo(this.fromSeverityLevel) >= 0;
     }
 
-    public void setFromSeverityLevel(String fromSeverityLevel) throws Throwable {
+
+    /**
+     * @deprecated Not intended for public use. Visibility will be reduced in a future release.
+     */
+    @Deprecated /* @VisibleForTesting : FIXME next major release, make package-private; do not remove; used in tests */
+    public void setFromSeverityLevel(String fromSeverityLevel) {
         try {
             String trimmed = fromSeverityLevel.trim();
             if (trimmed.toUpperCase().equals("OFF")) {
@@ -114,9 +112,8 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
-            } finally {
-                throw t;
             }
+            throw t;
         }
     }
 }
