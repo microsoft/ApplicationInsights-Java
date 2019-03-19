@@ -220,7 +220,7 @@ public final class WebRequestTrackingFilter implements Filter {
         try {
             RegistrationResult registrationResult = AgentConnector.INSTANCE.universalAgentRegisterer();
             cleaners.add(registrationResult.getCleaner());
-            InternalLogger.INSTANCE.trace("Successfully registered the filter with appName=%s", this.appName);
+            InternalLogger.INSTANCE.info("Successfully registered the filter with appName=%s", this.appName);
             return true;
         } catch (ThreadDeath td) {
             throw td;
