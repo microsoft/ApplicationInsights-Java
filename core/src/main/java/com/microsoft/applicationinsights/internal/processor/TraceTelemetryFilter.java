@@ -77,8 +77,12 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
         return tt.getSeverityLevel().compareTo(this.fromSeverityLevel) >= 0;
     }
 
-    /* @VisibleForTesting */
-    void setFromSeverityLevel(String fromSeverityLevel) {
+
+    /**
+     * @deprecated Not intended for public use. Visibility will be reduced in a future release.
+     */
+    @Deprecated /* @VisibleForTesting : FIXME next major release, make package-private; do not remove; used in tests */
+    public void setFromSeverityLevel(String fromSeverityLevel) {
         try {
             String trimmed = fromSeverityLevel.trim();
             if (trimmed.toUpperCase().equals("OFF")) {
