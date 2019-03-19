@@ -23,10 +23,10 @@ package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.agent.AgentConnector;
+import com.microsoft.applicationinsights.internal.agent.AgentConnector.RegistrationResult;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
@@ -34,12 +34,12 @@ import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNa
 import com.microsoft.applicationinsights.web.internal.httputils.AIHttpServletListener;
 import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.LinkedList;
+import java.util.List;
 import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.time.StopWatch;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -49,11 +49,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -79,8 +76,6 @@ public final class WebRequestTrackingFilter implements Filter {
 
     private WebModulesContainer<HttpServletRequest, HttpServletResponse> webModulesContainer;
     private TelemetryClient telemetryClient;
-    private String key;
-    private boolean agentIsUp = false;
     private final List<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
     private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights."
@@ -96,6 +91,11 @@ public final class WebRequestTrackingFilter implements Filter {
      * Utility handler used to instrument request start and end
      */
     HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
+
+    /**
+     * Used to indicate if agent is registered to webapp.
+     */
+    private boolean agentIsRegistered;
 
     // endregion Members
 
@@ -122,7 +122,6 @@ public final class WebRequestTrackingFilter implements Filter {
                 return;
             }
 
-            setKeyOnTLS(key);
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
@@ -138,7 +137,6 @@ public final class WebRequestTrackingFilter implements Filter {
                 } else {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
                 }
-                setKeyOnTLS(null);
             }
         } else {
             // we are only interested in Http Requests. Keep all other untouched.
@@ -157,8 +155,9 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config) {
         try {
-            String appName = extractAppName(config.getServletContext());
-            initializeAgentIfAvailable(config);
+            long start = System.currentTimeMillis();
+            this.appName = extractAppName(config.getServletContext());
+            this.agentIsRegistered = initializeAgentIfAvailable();
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
@@ -175,6 +174,8 @@ public final class WebRequestTrackingFilter implements Filter {
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();
             }
+            long end = System.currentTimeMillis();
+            InternalLogger.INSTANCE.trace("Initialized Application Insights Filter in %.3fms", (end - start));
         } catch (Exception e) {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.info(
@@ -195,55 +196,31 @@ public final class WebRequestTrackingFilter implements Filter {
     /**
      * Destroy the filter by releases resources.
      */
-    public void destroy() {}
+    public void destroy() {
+        if (agentIsRegistered) {
+            AgentConnector.INSTANCE.unregisterAgent();
+        }
+    }
+
+    public WebRequestTrackingFilter() {}
 
     // endregion Public
 
     // region Private
 
-    private void setKeyOnTLS(String key) {
-        if (agentIsUp) {
-            try {
-                AgentTLS.setTLSKey(key);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                try {
-                    if (e instanceof ClassNotFoundException ||
-                        e instanceof NoClassDefFoundError) {
-                        // This means that the Agent is not present and therefore we will stop trying
-                        agentIsUp = false;
-                        InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'",
-                            ExceptionUtils.getStackTrace(e));
-                    }
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
-    }
-
-    public WebRequestTrackingFilter() {
-    }
-
-    private synchronized void initializeAgentIfAvailable(FilterConfig filterConfig) {
-        StopWatch sw = StopWatch.createStarted();
+    private boolean initializeAgentIfAvailable() {
         //If Agent Jar is not present in the class path skip the process
         if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
             this.getClass().getClassLoader())) {
-            InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration in %.3fms", sw.getNanoTime()/1_000_000.0);
-            return;
+            InternalLogger.INSTANCE.trace("Agent was not found. Skipping the agent registration");
+            return false;
         }
 
         try {
-            ServletContext context = filterConfig.getServletContext();
-            String name = extractAppName(context);
-            String key = registerWebApp(appName);
-            setKey(key);
-            InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. appName=%s",
-                this.filterName, sw.getNanoTime()/1_000_000.0, name);
+            RegistrationResult registrationResult = AgentConnector.INSTANCE.universalAgentRegisterer();
+            cleaners.add(registrationResult.getCleaner());
+            InternalLogger.INSTANCE.info("Successfully registered the filter with appName=%s", this.appName);
+            return true;
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
@@ -255,34 +232,8 @@ public final class WebRequestTrackingFilter implements Filter {
             } catch (Throwable t2) {
                 // chomp
             }
+            return false;
         }
-    }
-
-    private String registerWebApp(String name) {
-        String key = null;
-
-        if (!CommonUtils.isNullOrEmpty(name)) {
-            InternalLogger.INSTANCE.info("Registering WebApp with name '%s'", name);
-            AgentConnector.RegistrationResult result = AgentConnector.INSTANCE.register(this.getClass().getClassLoader(), name);
-            if (result == null) {
-                InternalLogger.INSTANCE.error("Did not get a result when registered '%s'. "
-                    + "No way to have RDD telemetries for this WebApp", name);
-            }
-            key = result.getKey();
-
-            if (CommonUtils.isNullOrEmpty(key)) {
-                InternalLogger.INSTANCE.error("Key for '%s' key is null'. "
-                    + "No way to have RDD telemetries for this WebApp", name);
-            } else {
-                if (result.getCleaner() != null) {
-                    cleaners.add(result.getCleaner());
-                }
-                InternalLogger.INSTANCE.info("Registered WebApp '%s' key='%s'", name, key);
-            }
-        } else {
-            InternalLogger.INSTANCE.error("WebApp name is not found, unable to register WebApp");
-        }
-        return key;
     }
 
     private String extractAppName(ServletContext context) {
@@ -320,34 +271,6 @@ public final class WebRequestTrackingFilter implements Filter {
                 // chomp
             }
         }
-        appName = name;
         return name;
     }
-
-    private void setKey(String key) {
-        if (CommonUtils.isNullOrEmpty(key)) {
-            agentIsUp = false;
-            this.key = key;
-            return;
-        }
-
-        try {
-            AgentTLS.getTLSKey();
-            agentIsUp = true;
-            this.key = key;
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable throwable) {
-            try {
-                agentIsUp = false;
-                this.key = null;
-                InternalLogger.INSTANCE.error("setKey: Failed to find AgentTLS, Exception : %s", ExceptionUtils.getStackTrace(throwable));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-    }
-
 }

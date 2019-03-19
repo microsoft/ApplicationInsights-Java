@@ -28,9 +28,7 @@ package com.microsoft.applicationinsights.internal.agent;
  * Created by gupele on 9/11/2016.
  */
 public class AgentSelfConnector {
-    public AgentSelfConnector() throws Exception {
-        if (!AgentConnector.INSTANCE.registerSelf()) {
-            throw new Exception("Failed to register Core in Agent");
-        }
+    public AgentSelfConnector() {
+        AgentConnector.INSTANCE.universalAgentRegisterer();
     }
 }
