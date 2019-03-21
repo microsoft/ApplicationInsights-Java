@@ -78,13 +78,14 @@ public class AiDockerClient {
 		return new ProcessBuilder(cmdLine).redirectErrorStream(true);
 	}
 
-	public String startContainer(String image, String portMapping, String network) throws IOException, InterruptedException {
-		return startContainer(image, portMapping, network, null, null);
+	public String startContainer(String image, String portMapping, String network, String containerName) throws IOException, InterruptedException {
+		return startContainer(image, portMapping, containerName, network, null);
 	}
 
-	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars) throws IOException, InterruptedException {
+	public String startContainer(String image, String portMapping, String containerName, String network, Map<String, String> envVars) throws IOException, InterruptedException {
 		Preconditions.checkNotNull(image, "image");
 		Preconditions.checkNotNull(portMapping, "portMapping");
+		Preconditions.checkNotNull(containerName, "containerName");
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
 		List<String> cmd = new ArrayList<>(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));

@@ -459,24 +459,15 @@ public abstract class AiSmokeTest {
 			return;
 		}
 
-		for (DependencyContainer dc : dependencyImages) {
+		for (int i = 0; i < dependencyImages.size(); i++) {
+			DependencyContainer dc = dependencyImages.get(i);
 			String imageName = Strings.isNullOrEmpty(dc.imageName()) ? dc.value() : dc.imageName();
 			System.out.printf("Starting container: %s%n", imageName);
-			final String containerId = docker.startContainer(imageName, dc.portMapping(), networkId);
-			assertFalse("'containerId' was null/empty attempting to start container: "+imageName, Strings.isNullOrEmpty(containerId));
-			System.out.printf("Dependency container started: %s (%s)%n", imageName, containerId);
+			String containerName = "aiDependency" + StringUtils.capitalize(imageName) + i;
+			final String containerId = docker.startContainer(imageName, dc.portMapping(), networkId, containerName);
+			assertFalse("'containerId' was null/empty attempting to start container: " + imageName, Strings.isNullOrEmpty(containerId));
+			System.out.printf("Dependency container started: %s (%s:%s)%n", imageName, containerId, containerName);
 
-			String containerName = docker.getRunningContainerName(containerId);
-			if (containerName == null) {
-				String message = String.format("Could not get container name for id=%s. ", containerId);
-				if (docker.isContainerRunning(containerId)) {
-					message += "It appears to be running.";
-				} else {
-					message += "It appears to have stopped.";
-				}
-				System.err.println(message);
-				throw new SmokeTestException("Couldn't get container name for image="+imageName);
-			}
 			ContainerInfo depConInfo = new ContainerInfo(containerId, containerName);
 			depConInfo.setContainerName(containerName);
 			depConInfo.setDependencyContainerInfo(dc);
@@ -488,7 +479,8 @@ public abstract class AiSmokeTest {
 	private static void startTestApplicationContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
 		Map<String, String> envVars = generateAppContainerEnvVarMap();
-		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, null, envVars);
+		final String containerName = "aiSmokeTestTargetApp";
+		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", containerName, networkId, envVars);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
@@ -497,6 +489,7 @@ public abstract class AiSmokeTest {
 		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
 
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
+		currentContainerInfo.setContainerName(containerName);
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Verifying appserver has started (%s)...%n", url);
