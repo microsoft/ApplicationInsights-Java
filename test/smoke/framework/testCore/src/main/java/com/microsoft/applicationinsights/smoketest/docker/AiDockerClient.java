@@ -88,7 +88,7 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(containerName, "containerName");
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
-		List<String> cmd = new ArrayList<>(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
+		List<String> cmd = new ArrayList<>(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp, "--rm"));
 		if (!Strings.isNullOrEmpty(network)) {
 		    // TODO assert the network exists
 		    cmd.add("--network");
@@ -138,13 +138,13 @@ public class AiDockerClient {
 		Preconditions.checkNotNull(cmd, "cmd");
 
 		List<String> cmdList = new ArrayList<>();
-		cmdList.addAll(Arrays.asList(new String[]{dockerExePath, "container", "exec", id, cmd}));
+		cmdList.addAll(Arrays.asList(dockerExePath, "container", "exec", id, cmd));
 		if (args.length > 0) {
 			cmdList.addAll(Arrays.asList(args));
 		}
 		Process p = buildProcess(cmdList).start();
 		try {
-			waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("executing command on container: '%s'", id, Joiner.on(' ').join(cmdList)));
+			waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("executing command on container: '%s %s'", id, Joiner.on(' ').join(cmdList)));
 			flushStdout(p);
 		}
 		catch (Exception e) {
