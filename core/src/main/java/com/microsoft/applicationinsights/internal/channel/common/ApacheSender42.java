@@ -35,29 +35,36 @@ import org.apache.http.params.HttpParams;
 /**
  * Created by gupele on 6/4/2015.
  */
+@SuppressWarnings("deprecation") // PoolingClientConnectionManager, DefaultHttpClient, HttpClient.getParams
 final class ApacheSender42 implements ApacheSender {
 
-    private final PoolingClientConnectionManager cm;
-    private final HttpClient httpClient;
+    private final Object lock = new Object();
+    private volatile PoolingClientConnectionManager cm;
+    private volatile HttpClient httpClient;
 
-    public ApacheSender42() {
-        cm = new PoolingClientConnectionManager();
-        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
-        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-        
-        httpClient = new DefaultHttpClient(cm);
+    ApacheSender42() {
+        InternalLogger.INSTANCE.info("Using Apache HttpClient 4.2");
+    }
 
-        HttpParams params = httpClient.getParams();
+    private PoolingClientConnectionManager initializeConnectionManager() {
+        PoolingClientConnectionManager pccm = new PoolingClientConnectionManager();
+        pccm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
+        pccm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+        return pccm;
+    }
+
+    private HttpClient initializeHttpClient(PoolingClientConnectionManager pccm) {
+        HttpClient client = new DefaultHttpClient(pccm);
+
+        HttpParams params = client.getParams();
         HttpConnectionParams.setConnectionTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
         HttpConnectionParams.setSoTimeout(params, REQUEST_TIMEOUT_IN_MILLIS);
-
-        InternalLogger.INSTANCE.info("Using Apache HttpClient 4.2");
+        return client;
     }
 
     @Override
     public HttpResponse sendPostRequest(HttpPost post) throws IOException {
-        HttpResponse response = httpClient.execute(post);
-        return response;
+        return httpClient.execute(post);
     }
 
     @Override
@@ -66,16 +73,26 @@ final class ApacheSender42 implements ApacheSender {
 
     @Override
     public void close() {
-        try {
-            cm.shutdown();
-        } catch (Exception e) {
-            // chomp
+        synchronized (lock) {
+            if (cm != null) {
+                cm.shutdown();
+            }
         }
     }
 
     @Override
     public HttpClient getHttpClient() {
-        return httpClient;
+        HttpClient result = httpClient;
+        if (result == null) {
+            synchronized (lock) {
+                result = httpClient;
+                if (result == null) {
+                    cm = initializeConnectionManager();
+                    result = httpClient = initializeHttpClient(cm);
+                }
+            }
+        }
+        return result;
     }
 
     @Override
