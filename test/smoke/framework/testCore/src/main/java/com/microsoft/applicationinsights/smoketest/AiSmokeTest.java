@@ -193,7 +193,7 @@ public abstract class AiSmokeTest {
 		protected void failed(Throwable t, Description description) {
 			// NOTE this happens after @After :)
 			String containerId = currentContainerInfo.getContainerId();
-			System.out.println("Test failure detected.");
+			System.out.printf("Test failure detected in %s.%s%n", description.getTestClass().getSimpleName(), description.getMethodName());
 			// FIXME tailLastLog consistantly timeouts after 10s. container logs generally contain enough information. remove tailLastLog.sh in the future if this continues
 //			runTailLastLog(containerId);
 			printContainerLogs(containerId);
