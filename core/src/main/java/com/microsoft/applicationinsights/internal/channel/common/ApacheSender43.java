@@ -93,14 +93,14 @@ final class ApacheSender43 implements ApacheSender {
         return result;
     }
 
-    private PoolingHttpClientConnectionManager initializeConnectionManager() {
+    private static PoolingHttpClientConnectionManager initializeConnectionManager() {
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
         return cm;
     }
 
-    private CloseableHttpClient initializeClient(HttpClientConnectionManager cm) {
+    private static CloseableHttpClient initializeClient(HttpClientConnectionManager cm) {
         return HttpClients.custom()
                 .setConnectionManager(cm)
                 .setConnectionManagerShared(true)

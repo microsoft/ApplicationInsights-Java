@@ -46,14 +46,14 @@ final class ApacheSender42 implements ApacheSender {
         InternalLogger.INSTANCE.info("Using Apache HttpClient 4.2");
     }
 
-    private PoolingClientConnectionManager initializeConnectionManager() {
+    private static PoolingClientConnectionManager initializeConnectionManager() {
         PoolingClientConnectionManager pccm = new PoolingClientConnectionManager();
         pccm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
         pccm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
         return pccm;
     }
 
-    private HttpClient initializeHttpClient(PoolingClientConnectionManager pccm) {
+    private static HttpClient initializeHttpClient(PoolingClientConnectionManager pccm) {
         HttpClient client = new DefaultHttpClient(pccm);
 
         HttpParams params = client.getParams();
