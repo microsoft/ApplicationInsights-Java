@@ -22,22 +22,15 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -46,29 +39,13 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
  * Created by gupele on 6/4/2015.
  */
 final class ApacheSender43 implements ApacheSender {
+    private final Object lock = new Object();
+    private volatile CloseableHttpClient httpClient;
+    private volatile PoolingHttpClientConnectionManager connectionManager;
 
-    private final AtomicReference<CloseableHttpClient> httpClientRef = new AtomicReference<>();
-    private volatile boolean isClientInitialized = false;
-    private final ExecutorService initializer = new ThreadPoolExecutor(0, 1, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(),
-            ThreadPoolUtils.createNamedDaemonThreadFactory(ApacheSender43.class.getSimpleName()+"_initializer"));
-
-    public ApacheSender43() {
-        initializer.execute(new Runnable() {
-
-            @Override
-            public void run() {
-                PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-                cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
-                cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-
-                httpClientRef.compareAndSet(null, HttpClients.custom()
-                        .setConnectionManager(cm)
-                        .useSystemProperties()
-                        .build());
-            }
-        });
-        SDKShutdownActivity.INSTANCE.register(initializer);
-     }
+    ApacheSender43() {
+        InternalLogger.INSTANCE.info("Using Apache HttpClient 4.3");
+    }
 
     @Override
     public HttpResponse sendPostRequest(HttpPost post) throws IOException {
@@ -91,27 +68,44 @@ final class ApacheSender43 implements ApacheSender {
         try {
             ((CloseableHttpClient)getHttpClient()).close();
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to close http client, exception: %s", e.toString());
+            InternalLogger.INSTANCE.error("Failed to close http httpClient, exception: %s", e.toString());
+        } finally {
+            synchronized (lock) {
+                if (connectionManager != null) {
+                    connectionManager.shutdown();
+                }
+            }
         }
     }
 
     @Override
     public HttpClient getHttpClient() {
-        if (!isClientInitialized) {
-            synchronized (this) {
-                if (!isClientInitialized) {
-                    while (httpClientRef.get() == null) {
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(3);
-                        } catch (InterruptedException e){
-                        }
-                    }
-                    isClientInitialized = true;
+        CloseableHttpClient result = httpClient;
+        if (result == null) {
+            synchronized (lock) {
+                connectionManager = initializeConnectionManager();
+                result = httpClient;
+                if (result == null) {
+                    httpClient = result = initializeClient(connectionManager);
                 }
             }
         }
+        return result;
+    }
 
-        return httpClientRef.get();
+    private PoolingHttpClientConnectionManager initializeConnectionManager() {
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
+        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+        return cm;
+    }
+
+    private CloseableHttpClient initializeClient(HttpClientConnectionManager cm) {
+        return HttpClients.custom()
+                .setConnectionManager(cm)
+                .setConnectionManagerShared(true)
+                .useSystemProperties()
+                .build();
     }
 
     @Override
