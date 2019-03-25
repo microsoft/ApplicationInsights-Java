@@ -65,7 +65,5 @@ include ':test:smoke:testApps:FixedRateSampling'
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
-
-
-
+include 'springbootsample'
 
