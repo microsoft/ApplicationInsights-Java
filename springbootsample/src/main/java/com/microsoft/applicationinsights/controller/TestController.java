@@ -25,11 +25,11 @@ public class TestController {
     @GetMapping("/trackDependencyAutomatically")
     public int trackDependencyAutomatically() throws IOException {
         HttpGet httpGet = new HttpGet("https://www.google.com");
+        int status;
         try (CloseableHttpResponse response = closeableHttpClient.execute(httpGet)) {
-            response.getStatusLine().getStatusCode();
+            status = response.getStatusLine().getStatusCode();
         }
-        // Failure
-        return 500;
+        return status;
     }
 
     @GetMapping("/trackManualEvent")

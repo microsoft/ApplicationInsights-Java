@@ -1,6 +1,6 @@
 # Run SpringBoot Application with ApplicationInsights
 
-This example shows how to run instrument Springboot application with Azure Application Insights
+This example shows how to instrument Spring Boot application with Azure Application Insights
 Springboot Starter and Application Insights Java Agent to track dependencies.
 
 
