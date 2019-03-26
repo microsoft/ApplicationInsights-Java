@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationInsightsAgent>
+    <Instrumentation debug="true">
+        <BuiltIn enabled="true" />
+    </Instrumentation>
+    <AgentLogger></AgentLogger>
+</ApplicationInsightsAgent>
