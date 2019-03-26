@@ -5,16 +5,14 @@ Springboot Starter and Application Insights Java Agent to track dependencies.
 
 ### Update the configuration
 
-- Add the instrumentation key in the application.properties by updating the your-ikey section with instrumentation key.
+Add the instrumentation key in the `application.properties` file:
+
 `azure.application-insights.instrumentation-key=<your-ikey>` 
 
 ### Build
-- Run the following command:
 `gradlew :springbootsample:clean :springbootsample:build`
 
 ### Run
-
-To start the application run the following command:
 
 `java -javaagent:./springbootsample/src/main/resources/applicationinsights-agent-2.4.0-BETA-SNAPSHOT.jar -jar ./spring
  bootsample/build/libs/springbootsample-0.0.1-SNAPSHOT.jar`
