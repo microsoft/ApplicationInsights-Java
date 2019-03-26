@@ -4,14 +4,14 @@ This example shows how to instrument Spring Boot application with Azure Applicat
 Springboot Starter and Application Insights Java Agent to track dependencies.
 
 
-### How to Build the application?
+### Build
 1. Add the instrumentation key in the application.properties by updating the your-ikey section with instrumentation key.
 `azure.application-insights.instrumentation-key=<your-ikey>` 
 
 2. In order to build the application run the following command:
 `gradlew :springbootsample:clean :springbootsample:build`
 
-### How to Run the application?
+### Run
 
 To start the application run the following command:
 
