@@ -22,8 +22,10 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.Date;
+import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -39,10 +41,12 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private final ArrayBlockingQueue<HttpPost> sendQueue;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private String postPrefix;
+    private final String sdkVersion;
 
     public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpPost> sendQueue, final String ikey, final String instanceName, final String quickPulseId) {
         quickPulsePostUri = QP_BASE_URI + "post?ikey=" + ikey;
         this.sendQueue = sendQueue;
+        sdkVersion = getCurrentSdkVersion();
         final StringBuilder sb = new StringBuilder();
         sb.append("[{");
         formatDocuments(sb);
@@ -53,6 +57,21 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("\"StreamId\": \"" + quickPulseId + "\",");
         
         postPrefix = sb.toString();
+    }
+
+    /**
+     * Get SDK Version from properties
+     * @return current SDK version
+     */
+     /* Visible for testing */ String getCurrentSdkVersion() {
+        String prefix = "java";
+        Properties sdkVersionProps = PropertyHelper.getSdkVersionProperties();
+        if (sdkVersionProps != null) {
+            String version = sdkVersionProps.getProperty("version");
+            return prefix + ":" + version;
+        }
+        // return unknown version if no version number found.
+        return prefix + ":" + "unknown";
     }
 
     @Override
@@ -90,7 +109,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         long ms = System.currentTimeMillis();
         sb.append(ms);
         sb.append(")\\/\",");
-        sb.append("\"Version\": \"2.2.0-738\"");
+        sb.append("\"Version\": \"" + sdkVersion + "\"");
         sb.append("}]");
         ByteArrayEntity bae = new ByteArrayEntity(sb.toString().getBytes());
         return bae;
