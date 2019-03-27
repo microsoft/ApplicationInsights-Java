@@ -177,6 +177,15 @@ public enum QuickPulseDataCollector {
     }
 
     private void addDependency(RemoteDependencyTelemetry telemetry) {
+        Counters counters = this.counters.get();
+        if (counters == null) {
+            return;
+        }
+        counters.rddsAndDuations.addAndGet(
+                Counters.encodeCountAndDuration(1, telemetry.getDuration().getMilliseconds()));
+        if (!telemetry.getSuccess()) {
+            counters.unsuccessfulRdds.incrementAndGet();
+        }
     }
 
     private void addException() {
