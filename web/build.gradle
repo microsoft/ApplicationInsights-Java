@@ -40,20 +40,22 @@ dependencies {
     provided group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
     provided group: 'javax.enterprise', name: 'cdi-api', version: '1.1' // Java EE
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.0'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '7.0.0.M0'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '7.0.0.M0'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '7.0.0.M0'
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.14.v20181114'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.15.v20190215'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '9.4.15.v20190215'
     testCompile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
     testCompile group: 'org.json', name:'json', version:'20090211'
     testCompile group: 'com.microsoft.azure', name: 'azure-storage', version: '2.1.0'
     testCompile group: 'com.google.guava', name: 'guava', version: '20.0'
+    testCompile group:'org.hamcrest', name:'hamcrest-library', version:'1.3'
 }
 
 shadowJar {
     classifier=''
     relocate 'org.apache.http', 'com.microsoft.applicationinsights.web.dependencies.http'
     relocate 'org.apache.commons', 'com.microsoft.applicationinsights.web.dependencies.apachecommons'
+    relocate 'com.google', "com.microsoft.applicationinsights.web.dependencies.google"
 }
 
 jar {
@@ -72,7 +74,7 @@ whenPomConfigured = { p ->
     p.dependencies = p.dependencies.findAll { dep ->
         dep.scope == "test" || dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
                 !(dep.groupId in ['org.apache.http', 'org.apache.commons', 'commons-io',
-                                  'org.apache.httpcomponents'])
+                                  'com.google.guava', 'com.google.code.gson', 'org.apache.httpcomponents'])
     }
 }
 

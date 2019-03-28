@@ -21,13 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,10 +59,10 @@ public final class FileLoggerOutput implements LoggerOutput {
     private static String SDK_LOGS_DEFAULT_FOLDER = "javasdklogs";
     private static String SDK_LOGS_BASE_FOLDER_PATH = LocalFileSystemUtils.getTempDir().getAbsolutePath();
     private final static String LOG_FILE_SUFFIX_FOR_LISTING = "jsl";
-    private final static String NUMBER_OF_FILES_ATTRIBUTE = "NumberOfFiles";
-    private final static String TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE = "NumberOfTotalSizeInMB";
-    private final static String LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE = "BaseFolderPath";
-    private final static String UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE = "UniquePrefix";
+    public final static String NUMBER_OF_FILES_ATTRIBUTE = "NumberOfFiles";
+    public final static String TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE = "NumberOfTotalSizeInMB";
+    public final static String LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE = "BaseFolderPath";
+    public final static String UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE = "UniquePrefix";
     private static final String DATE_FORMAT_NOW = "yyyy-MM-dd-HH-mm-ss";
 
     private static class FileAndDate {
@@ -88,7 +87,7 @@ public final class FileLoggerOutput implements LoggerOutput {
 
     public FileLoggerOutput(Map<String, String> loggerData) {
         uniquePrefix = loggerData.get(UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE);
-        if (Strings.isNullOrEmpty(uniquePrefix)) {
+        if (StringUtils.isEmpty(uniquePrefix)) {
             throw new IllegalArgumentException(String.format("Unique log file prefix is not defined"));
         }
 
@@ -107,7 +106,7 @@ public final class FileLoggerOutput implements LoggerOutput {
     private int getRequest(Map<String, String> loggerData, String requestName, int defaultValue) {
         int requestValue = defaultValue;
         String requestValueAsString = loggerData.get(requestName);
-        if (!Strings.isNullOrEmpty(requestValueAsString)) {
+        if (StringUtils.isNotEmpty(requestValueAsString)) {
             try {
                 requestValue = Integer.valueOf(loggerData.get(requestName));
             } catch (Exception e) {
@@ -122,7 +121,7 @@ public final class FileLoggerOutput implements LoggerOutput {
         currentLogFileIndex = 0;
         Path logFilePath;
 
-        if (Strings.isNullOrEmpty(baseFolderPath)) {
+        if (StringUtils.isEmpty(baseFolderPath)) {
             baseFolderPath = SDK_LOGS_BASE_FOLDER_PATH;
 
             // If no path is specified by user create log file directory in temp with default folder
@@ -284,7 +283,7 @@ public final class FileLoggerOutput implements LoggerOutput {
             Collection<File> oldLogs = FileUtils.listFiles(baseFolder, new String[]{LOG_FILE_SUFFIX_FOR_LISTING}, false);
             List<File> asList;
             if (!(oldLogs instanceof List)) {
-                asList = Lists.newArrayList(oldLogs);
+                asList = new ArrayList<>(oldLogs);
             } else {
                 asList = (List<File>)oldLogs;
             }

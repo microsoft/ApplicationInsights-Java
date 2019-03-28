@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.agent.internal.agent.ClassInstrumentationData;
 import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
 import com.microsoft.applicationinsights.agent.internal.coresync.InstrumentedClassType;
@@ -60,15 +59,18 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     private final static String JMX_TAG = "AgentJmx";
     private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
 
-    @VisibleForTesting final static String AGENT_LOGGER_TAG = "AgentLogger";
-    @VisibleForTesting final static String SDK_LOGGER_TYPE_TAG = "type";
-    @VisibleForTesting final static String SDK_LOG_LEVEL_TAG = "Level";
-    @VisibleForTesting final static String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
-    @VisibleForTesting final static String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
-    @VisibleForTesting final static String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
-    @VisibleForTesting final static String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
+    // visible for testing
+    final static String AGENT_LOGGER_TAG = "AgentLogger";
+    final static String SDK_LOGGER_TYPE_TAG = "type";
+    final static String SDK_LOG_LEVEL_TAG = "Level";
+    final static String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
+    final static String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
+    final static String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
+    final static String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
 
     private final static long JEDIS_ARGS_THRESHOLD_IN_MS = 10000L;
+    private final static String W3C_ENABLED = "W3C";
+    private final static String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
 
     private final static String EXCLUDED_PREFIXES_TAG = "ExcludedPrefixes";
     private final static String FORBIDDEN_PREFIX_TAG = "Prefix";
@@ -223,7 +225,10 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         new ConfigRuntimeExceptionDataBuilder().setRuntimeExceptionData(builtInElement, builtInConfigurationBuilder);
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
-        builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), HTTP_TAG));
+        Element httpElement = XmlParserUtils.getFirst(nodes);
+        boolean isW3CEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_ENABLED, false);
+        boolean isW3CBackportEnabled =XmlParserUtils.w3cEnabled(httpElement, W3C_BACKCOMPAT_PARAMETER, true);
+        builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(element, HTTP_TAG),isW3CEnabled, isW3CBackportEnabled);
 
         nodes = builtInElement.getElementsByTagName(JDBC_TAG);
         builtInConfigurationBuilder.setJdbcEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JDBC_TAG));
@@ -435,9 +440,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     }
 
     public Element getTopTag(File configurationFile) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder;
-        dBuilder = dbFactory.newDocumentBuilder();
+        DocumentBuilder dBuilder = createDocumentBuilder();
         Document doc = dBuilder.parse(configurationFile);
         doc.getDocumentElement().normalize();
 
@@ -453,5 +456,14 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         Element topElementTag = (Element)topNodeTag;
         return topElementTag;
+    }
+
+    private DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        // mitigates CWE-611: https://cwe.mitre.org/data/definitions/611.html
+        dbFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbFactory.setXIncludeAware(false);
+        dbFactory.setExpandEntityReferences(false);
+        return dbFactory.newDocumentBuilder();
     }
 }

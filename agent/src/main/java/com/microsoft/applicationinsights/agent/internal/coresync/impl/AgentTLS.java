@@ -27,6 +27,7 @@ package com.microsoft.applicationinsights.agent.internal.coresync.impl;
  *
  * Created by gupele on 5/6/2015.
  */
+@Deprecated
 public final class AgentTLS  {
 
     private static final InheritableThreadLocal<String> tlsData = new InheritableThreadLocal<String>();

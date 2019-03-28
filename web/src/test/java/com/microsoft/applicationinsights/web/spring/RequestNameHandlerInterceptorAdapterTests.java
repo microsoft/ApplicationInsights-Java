@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.web.spring;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.eclipse.jetty.http.HttpMethods;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
+import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +32,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.web.method.HandlerMethod;
-import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,14 +58,14 @@ public class RequestNameHandlerInterceptorAdapterTests {
     @Test
     public void testAdapterSetRequestNameCorrectly() throws Exception {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getMethod()).thenReturn(HttpMethods.GET);
+        when(request.getMethod()).thenReturn(HttpMethod.GET.asString());
 
         interceptorAdapter.preHandle(request, null, handlerMethod);
 
         String requestName = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getName();
 
         String expectedRequestName =
-                String.format("%s %s/%s", HttpMethods.GET, DEFAULT_CONTROLLER_NAME, DEFAULT_ACTION_NAME);
+            String.format("%s %s/%s", HttpMethod.GET.asString(), DEFAULT_CONTROLLER_NAME, DEFAULT_ACTION_NAME);
 
         Assert.assertEquals(expectedRequestName, requestName);
     }

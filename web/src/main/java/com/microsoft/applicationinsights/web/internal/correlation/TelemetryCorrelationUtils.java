@@ -121,7 +121,6 @@ public class TelemetryCorrelationUtils {
 			}
 
 			RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
-
 			String parentId = requestTelemetry.getContext().getOperation().getParentId();
 
 			// if parentId is non-hierarchical, it means the incoming requestId
@@ -375,7 +374,7 @@ public class TelemetryCorrelationUtils {
 	}
 
 
-	private static String extractRootId(String parentId) {
+	 static String extractRootId(String parentId) {
 		// ported from .NET's System.Diagnostics.Activity.cs implementation:
 		// https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
 		

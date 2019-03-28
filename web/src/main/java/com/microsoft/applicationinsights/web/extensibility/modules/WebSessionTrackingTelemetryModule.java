@@ -21,27 +21,39 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by yonisha on 2/4/2015.
  */
-public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
+public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule{
 
     // region Public
 
     /**
+     * The {@link RequestTelemetryContext} instance propogated from
+     * {@link com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler}
+     */
+    private RequestTelemetryContext requestTelemetryContext;
+
+    public void setRequestTelemetryContext(
+        RequestTelemetryContext requestTelemetryContext) {
+        this.requestTelemetryContext = requestTelemetryContext;
+    }
+
+    /** Used for test */
+    RequestTelemetryContext getRequestTelemetryContext() {
+        return this.requestTelemetryContext;
+    }
+
+    /**
      * Initializes the telemetry module.
-     *
      * @param configuration The configuration to used to initialize the module.
      */
     @Override
@@ -50,25 +62,19 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
 
     /**
      * Begin request processing.
-     *
      * @param req The request to process
      * @param res The response to modify
      */
     @Override
-    public void onBeginRequest(ServletRequest req, ServletResponse res) {
-        HttpServletRequest request = (HttpServletRequest)req;
-        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-
+    public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
+        RequestTelemetryContext context = this.requestTelemetryContext;
         SessionCookie sessionCookie =
-                com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
-                        SessionCookie.class, request, SessionCookie.COOKIE_NAME);
-
+            com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+                SessionCookie.class, req, SessionCookie.COOKIE_NAME);
         if (sessionCookie == null) {
             return;
         }
-
         context.setSessionCookie(sessionCookie);
-
         String sessionId = sessionCookie.getSessionId();
         getTelemetrySessionContext(context).setId(sessionId);
     }
@@ -82,7 +88,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
      * @param res The response to modify
      */
     @Override
-    public void onEndRequest(ServletRequest req, ServletResponse res) {
+    public void onEndRequest(HttpServletRequest req, HttpServletResponse res) {
     }
 
     // endregion Public

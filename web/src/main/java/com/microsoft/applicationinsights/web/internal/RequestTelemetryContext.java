@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.http.HttpServletRequest;
 
@@ -40,6 +41,8 @@ public class RequestTelemetryContext {
     private boolean isNewSession = false;
     private HttpServletRequest servletRequest;
     private final CorrelationContext correlationContext;
+    private Tracestate tracestate;
+    private int traceflag;
     private final AtomicInteger currentChildId = new AtomicInteger();
 
     /**
@@ -48,6 +51,15 @@ public class RequestTelemetryContext {
      */
     public RequestTelemetryContext(long ticks) {
         this(ticks, null);
+    }
+
+    public Tracestate getTracestate() {
+        return tracestate;
+    }
+
+    public void setTracestate(
+        Tracestate tracestate) {
+        this.tracestate = tracestate;
     }
 
     /**
@@ -60,6 +72,14 @@ public class RequestTelemetryContext {
         requestStartTimeTicks = ticks;
         this.servletRequest = servletRequest;
         correlationContext = new CorrelationContext();
+    }
+
+    public int getTraceflag() {
+        return traceflag;
+    }
+
+    public void setTraceflag(int traceflag) {
+        this.traceflag = traceflag;
     }
 
     /**

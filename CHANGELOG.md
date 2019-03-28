@@ -1,5 +1,27 @@
 # CHANGELOG
 
+# Version 2.4.0-BETA (Unreleased)
+- Removed support for multiple apps instrumented with single JVM Agent. Instrumentation will only work for single apps
+  in application server. 
+- Fixed [#749](https://github.com/Microsoft/ApplicationInsights-Java/issues/749) introduce support for PostGre sql jdbc4 prepared statements.
+- Introduced support for Manual Async and Explicit Multithreading correlation. 
+- Introduced `setRequestTelemetryContext` API in `WebTelemetryModule` Interface.
+- Introduced experimental API's `AIHttpServletListner`, `HttpServerHandler`, `ApplicationInsightsServletExtractor`
+  and `HttpExtractor`.
+- Deprecated `ApplicationInsightsHttpResponseWrapper`
+- Fixed [#826](https://github.com/Microsoft/ApplicationInsights-Java/issues/826) Remove duplicate provider.
+- Fix incorrect sdk version being sent in Quick Pulse payload.
+- Fix [#882](https://github.com/Microsoft/ApplicationInsights-Java/issues/882) Dependency metrics does not show up on 
+Livemetrics UX.
+  
+# Version 2.3.1
+- Fixed [#799](https://github.com/Microsoft/ApplicationInsights-Java/issues/799) Removed dependency on Guava vulnerable to [CVE-2018-10237](https://nvd.nist.gov/vuln/detail/CVE-2018-10237).
+
+# Version 2.3.0
+- Introducing Application Insights SpringBoot Starter 1.1.1 (GA VERSION).
+- Fix [#784](https://github.com/Microsoft/ApplicationInsights-Java/issues/784) Shade guava dependency. 
+- [#716](https://github.com/Microsoft/ApplicationInsights-Java/issues/716) Introduced W3C Distributed tracing protocol.
+
 # Version 2.2.1
 - Fixed [#767](https://github.com/Microsoft/ApplicationInsights-Java/issues/767). Updated gRPC dependencies which inlcudes latest netty version.
 - Fixed [#751](https://github.com/Microsoft/ApplicationInsights-Java/issues/751). Added support for absolute paths for log file output.

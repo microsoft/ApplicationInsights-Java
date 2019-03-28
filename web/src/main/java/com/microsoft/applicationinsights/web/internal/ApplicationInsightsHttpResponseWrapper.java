@@ -30,6 +30,7 @@ import java.io.IOException;
  * This wrapper is used to support servlet API 2.5, which lacks the api to get response status.
  * Created by yonisha on 5/27/2015.
  */
+@Deprecated
 public class ApplicationInsightsHttpResponseWrapper extends HttpServletResponseWrapper {
 
     private int httpStatusCode = SC_OK;

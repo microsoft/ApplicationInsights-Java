@@ -194,20 +194,15 @@ public abstract class AiSmokeTest {
 			// NOTE this happens after @After :)
 			String containerId = currentContainerInfo.getContainerId();
 			System.out.println("Test failure detected.");
-			
-			System.out.println("\nFetching appserver logs");
-			try {
-				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
-			}
-			catch (Exception e) {
-				System.err.println("Error executing tailLastLog.sh");
-				e.printStackTrace();
-			}
-			
+			// FIXME tailLastLog consistantly timeouts after 10s. container logs generally contain enough information. remove tailLastLog.sh in the future if this continues
+//			runTailLastLog(containerId);
+			printContainerLogs(containerId);
+		}
+
+		private void printContainerLogs(String containerId) {
 			try {
 				System.out.println("\nFetching container logs for "+containerId);
 				docker.printContainerLogs(containerId);
-
 			}
 			catch (Exception e) {
 				System.err.println("Error copying logs to stream");
@@ -215,6 +210,17 @@ public abstract class AiSmokeTest {
 			}
 			finally {
 				System.out.println("\nFinished gathering logs.");
+			}
+		}
+
+		private void runTailLastLog(String containerId) {
+			System.out.println("\nFetching appserver logs");
+			try {
+				docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
+			}
+			catch (Exception e) {
+				System.err.println("Error executing tailLastLog.sh");
+				e.printStackTrace();
 			}
 		}
 	};
@@ -474,6 +480,7 @@ public abstract class AiSmokeTest {
 			ContainerInfo depConInfo = new ContainerInfo(containerId, containerName);
 			depConInfo.setContainerName(containerName);
 			depConInfo.setDependencyContainerInfo(dc);
+			System.out.printf("Dependency container name for %s: %s%n", imageName, containerName);
 			allContainers.push(depConInfo);
 			TimeUnit.MILLISECONDS.sleep(500); // wait a bit after starting a server.
 		}
@@ -534,7 +541,8 @@ public abstract class AiSmokeTest {
 			if (Strings.isNullOrEmpty(containerName)) {
 				throw new SmokeTestException("Null/empty container name for dependency container");
 			}
-			map.put(varname, info.getContainerName());
+			map.put(varname, containerName);
+			System.out.printf("Adding env var to test app container: %s=%s%n", varname, containerName);
 		}
 		return map;
 	}
@@ -551,6 +559,12 @@ public abstract class AiSmokeTest {
 		stopAllContainers();
 		cleanUpDockerNetwork();
 		TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
+		System.out.println("Stopping mocked ingestion...");
+		try {
+			mockedIngestion.stopServer();
+		} catch (Exception e) {
+			System.err.println("Exception stopping mocked ingestion: "+e);
+		}
 	}
 
 	public static void stopAllContainers() throws Exception {

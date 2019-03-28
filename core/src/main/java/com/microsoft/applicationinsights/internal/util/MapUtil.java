@@ -38,18 +38,20 @@ public class MapUtil
     /**
      * Copies entries from the source map to the target map, overwrites any values in target.
      * Filters out null values if target is a {@link ConcurrentHashMap}.
-     * @param source the source map. Cannot be null.
+     * @param source the source map. If null or empty, this is a nop.
      * @param target the target map. Cannot be null.
      * @param <Value> The type of the values in both maps
      * @throws IllegalArgumentException if either {@code source} or {@code target} are null.
      */
     public static <Value> void copy(Map<String, Value> source, Map<String, Value> target) {
-        if (source == null) {
-            throw new IllegalArgumentException("source must not be null");
-        }
         if (target == null) {
             throw new IllegalArgumentException("target must not be null");
         }
+
+        if (source == null || source.isEmpty()) {
+            return;
+        }
+
         for (Map.Entry<String,Value> entry : source.entrySet()) {
             String key = entry.getKey();
             if (Strings.isNullOrEmpty(key)) {

@@ -51,9 +51,8 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
-            } finally {
-                throw new RuntimeException("Failed to create ProcessCpuPerformanceCounter", t);
             }
+            throw new RuntimeException("Failed to create ProcessCpuPerformanceCounter", t);
         }
     }
 

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import com.microsoft.applicationinsights.web.utils.ThreadContextValidator;
@@ -40,7 +41,7 @@ public class ThreadContextTests {
 
     @Test
     public void testConcurrentThreadsGetTheirOwnContext() throws InterruptedException {
-        ArrayList<ThreadContextValidator> threadContextValidators = new ArrayList<ThreadContextValidator>();
+        List<ThreadContextValidator> threadContextValidators = new ArrayList<ThreadContextValidator>();
 
         // Initializing validators.
         for (int i = 0; i < NUMBER_OF_VALIDATOR_THREADS; i++) {
@@ -59,7 +60,7 @@ public class ThreadContextTests {
     }
 
     @Test
-    public void testNewCreatedThreadGetsTheParentContext() throws InterruptedException {
+    public void testNewCreatedThreadTheParentContextByDefault() throws InterruptedException {
         final String expectedRequestName = "inherited_context";
         RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
         requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName);
@@ -78,6 +79,81 @@ public class ThreadContextTests {
         thread.join();
 
         Assert.assertNotNull(context[0]);
-        Assert.assertEquals(expectedRequestName, context[0].getHttpRequestTelemetry().getName());
+        Assert.assertSame(expectedRequestName, ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry()
+            .getName());
+    }
+
+    @Test
+    public void childThreadDoesNotGetContextUpdatedWithITLS()
+        throws InterruptedException {
+        final String expectedRequestName = "inherited_context";
+        RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
+        requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName);
+
+        ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
+
+        final RequestTelemetryContext[] context = new RequestTelemetryContext[1];
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                context[0] = ThreadContext.getRequestTelemetryContext();
+            }
+        });
+
+        thread.start();
+        thread.join();
+
+
+        final String expectedRequestName1 = "inherited_context1";
+        RequestTelemetryContext requestTelemetryContext1 = new RequestTelemetryContext(0);
+        requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName1);
+        ThreadContext.setRequestTelemetryContext(requestTelemetryContext1);
+
+        Assert.assertNotSame(expectedRequestName, ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry()
+            .getName());
+    }
+
+    @Test
+    public void testNewThreadCreatedWithWrappedRunnableGetsTheParentContext() throws InterruptedException {
+        final String expectedRequestName = "inherited_context";
+        RequestTelemetryContext requestTelemetryContext = new RequestTelemetryContext(0);
+        requestTelemetryContext.getHttpRequestTelemetry().setName(expectedRequestName);
+
+        ThreadContext.setRequestTelemetryContext(requestTelemetryContext);
+
+        final RequestTelemetryContext[] context = new RequestTelemetryContext[1];
+        Thread thread = new Thread(new MyRunnable(new Runnable() {
+            @Override
+            public void run() {
+                    context[0] = ThreadContext.getRequestTelemetryContext();
+            }
+        }, requestTelemetryContext));
+
+        thread.start();
+        thread.join();
+
+        Assert.assertNotNull(context[0]);
+        Assert.assertSame(expectedRequestName, ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry()
+                            .getName());
+    }
+
+    private static class MyRunnable implements Runnable {
+        private final Runnable task;
+        private final RequestTelemetryContext rtc;
+
+        MyRunnable(Runnable task,
+            RequestTelemetryContext rtc) {
+            this.task = task;
+            this.rtc = rtc;
+        }
+
+        @Override
+        public void run() {
+            if (ThreadContext.getRequestTelemetryContext() != null) {
+                ThreadContext.remove();
+            }
+            ThreadContext.setRequestTelemetryContext(rtc);
+            task.run();
+        }
     }
 }

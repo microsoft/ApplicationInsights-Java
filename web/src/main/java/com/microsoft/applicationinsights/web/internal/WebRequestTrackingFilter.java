@@ -23,19 +23,23 @@ package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.coresync.impl.AgentTLS;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.agent.AgentConnector;
+import com.microsoft.applicationinsights.internal.agent.AgentConnector.RegistrationResult;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
+import com.microsoft.applicationinsights.web.internal.httputils.AIHttpServletListener;
+import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
+import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
+import javax.servlet.AsyncContext;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -47,7 +51,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.time.StopWatch;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -71,16 +74,28 @@ public final class WebRequestTrackingFilter implements Filter {
     final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
 
-    private WebModulesContainer webModulesContainer;
-    private boolean isInitialized = false;
+    private WebModulesContainer<HttpServletRequest, HttpServletResponse> webModulesContainer;
     private TelemetryClient telemetryClient;
-    private String key;
-    private boolean agentIsUp = false;
-    private final LinkedList<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
+    private final List<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
     private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights."
         + "agent.internal.coresync.AgentNotificationsHandler";
     private String filterName = FILTER_NAME;
+
+    /**
+     * Constant for marking already processed request
+     */
+    private final String ALREADY_FILTERED = "AI_FILTER_PROCESSED";
+
+    /**
+     * Utility handler used to instrument request start and end
+     */
+    HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
+
+    /**
+     * Used to indicate if agent is registered to webapp.
+     */
+    private boolean agentIsRegistered;
 
     // endregion Members
 
@@ -89,62 +104,48 @@ public final class WebRequestTrackingFilter implements Filter {
     /**
      * Processing the given request and response.
      *
-     * @param req   The servlet request.
-     * @param res   The servlet response.
+     * @param req The servlet request.
+     * @param res The servlet response.
      * @param chain The filters chain
-     * @throws IOException      Exception that can be thrown from invoking the filters chain.
+     * @throws IOException Exception that can be thrown from invoking the filters chain.
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        ApplicationInsightsHttpResponseWrapper response = new ApplicationInsightsHttpResponseWrapper((HttpServletResponse) res);
-        setKeyOnTLS(key);
+        if (req instanceof  HttpServletRequest && res instanceof HttpServletResponse) {
+            HttpServletRequest httpRequest = (HttpServletRequest) req;
+            HttpServletResponse httpResponse = (HttpServletResponse) res;
+            boolean hasAlreadyBeenFiltered = httpRequest.getAttribute(ALREADY_FILTERED) != null;
 
-        boolean isRequestProcessedSuccessfully = invokeSafeOnBeginRequest(req, response);
+            // Prevent duplicate Telemetry creation
+            if (hasAlreadyBeenFiltered) {
+                chain.doFilter(httpRequest, httpResponse);
+                return;
+            }
 
-        try {
-            chain.doFilter(req, response);
-            invokeSafeOnEndRequest(req, response, isRequestProcessedSuccessfully);
-        } catch (ServletException se) {
-            onException(se, req, response, isRequestProcessedSuccessfully);
-            throw se;
-        } catch (IOException ioe) {
-            onException(ioe, req, response, isRequestProcessedSuccessfully);
-            throw ioe;
-        } catch (RuntimeException re) {
-            onException(re, req, response, isRequestProcessedSuccessfully);
-            throw re;
-        } finally {
-            cleanup();
+            RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
+            AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
+            try {
+                httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
+                chain.doFilter(httpRequest, httpResponse);
+            } catch (ServletException | IOException | RuntimeException e) {
+                handler.handleException(e);
+                throw e;
+            } finally {
+                if (httpRequest.isAsyncStarted()) {
+                    AsyncContext context = httpRequest.getAsyncContext();
+                    context.addListener(aiHttpServletListener, httpRequest, httpResponse);
+                } else {
+                    handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+                }
+            }
+        } else {
+            // we are only interested in Http Requests. Keep all other untouched.
+            chain.doFilter(req, res);
         }
     }
 
     public WebRequestTrackingFilter(String appName) {
         this.appName = appName;
-    }
-
-    private void cleanup() {
-        try {
-            ThreadContext.remove();
-
-            setKeyOnTLS(null);
-            for (ThreadLocalCleaner cleaner : cleaners) {
-                cleaner.clean();
-            }
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-        }
-    }
-
-    private void onException(Exception e, ServletRequest req, ServletResponse res, boolean isRequestProcessedSuccessfully) {
-        try {
-            InternalLogger.INSTANCE.trace("Unhandled application exception: %s", ExceptionUtils.getStackTrace(e));
-            if (telemetryClient != null) {
-                telemetryClient.trackException(e);
-            }
-        } catch (Exception ignoreMe) {
-        }
-        invokeSafeOnEndRequest(req, res, isRequestProcessedSuccessfully);
     }
 
     /**
@@ -154,34 +155,32 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void init(FilterConfig config) {
         try {
-
-            String appName = extractAppName(config.getServletContext());
-            initializeAgentIfAvailable(config);
-
+            long start = System.currentTimeMillis();
+            this.appName = extractAppName(config.getServletContext());
+            this.agentIsRegistered = initializeAgentIfAvailable();
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
-
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
-                        "Java SDK configuration cannot be null. Web request tracking filter will be disabled.");
-
+                    "Java SDK configuration cannot be null. Web request tracking filter will be disabled.");
                 return;
             }
-
             configureWebAppNameContextInitializer(appName, configuration);
-
             telemetryClient = new TelemetryClient(configuration);
-            webModulesContainer = new WebModulesContainer(configuration);
-
+            webModulesContainer = new WebModulesContainer<>(configuration);
+            // Todo: Should we provide this via dependency injection? Can there be a scenario where user
+            // can provide his own handler?
+            handler = new HttpServerHandler<>(new ApplicationInsightsServletExtractor(), webModulesContainer,
+                                                cleaners, telemetryClient);
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();
             }
-
-            isInitialized = true;
+            long end = System.currentTimeMillis();
+            InternalLogger.INSTANCE.trace("Initialized Application Insights Filter in %.3fms", (end - start));
         } catch (Exception e) {
             String filterName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.info(
-                    "Application Insights filter %s has been failed to initialized.\n" +
-                            "Web request tracking filter will be disabled. Exception: %s", filterName, ExceptionUtils.getStackTrace(e));
+                "Application Insights filter %s has failed to initialized.\n" +
+                    "Web request tracking filter will be disabled. Exception: %s", filterName, ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -198,129 +197,43 @@ public final class WebRequestTrackingFilter implements Filter {
      * Destroy the filter by releases resources.
      */
     public void destroy() {
-        cleanup();
+        if (agentIsRegistered) {
+            AgentConnector.INSTANCE.unregisterAgent();
+        }
     }
+
+    public WebRequestTrackingFilter() {}
 
     // endregion Public
 
     // region Private
 
-    private boolean invokeSafeOnBeginRequest(ServletRequest req, ServletResponse res) {
-        if (!isInitialized) {
-            return false;
-        }
-        boolean success = true;
-
-        try {
-            RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(), (HttpServletRequest) req);
-            ThreadContext.setRequestTelemetryContext(context);
-
-            webModulesContainer.invokeOnBeginRequest(req, res);
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnBeginRequest on telemetry modules with the following exception: %s",
-                    ExceptionUtils.getStackTrace(e));
-
-            success = false;
-        }
-
-        return success;
-    }
-
-    private void invokeSafeOnEndRequest(ServletRequest req, ServletResponse res, boolean inProgress) {
-        try {
-            if (isInitialized && inProgress) {
-                webModulesContainer.invokeOnEndRequest(req, res);
-            }
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error(
-                    "Failed to invoke OnEndRequest on telemetry modules with the following exception: %s",
-                    ExceptionUtils.getStackTrace(e));
-        }
-    }
-
-    private void setKeyOnTLS(String key) {
-        if (agentIsUp) {
-            try {
-                AgentTLS.setTLSKey(key);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                try {
-                    if (e instanceof ClassNotFoundException ||
-                            e instanceof NoClassDefFoundError) {
-                        // This means that the Agent is not present and therefore we will stop trying
-                        agentIsUp = false;
-                        InternalLogger.INSTANCE.error("setKeyOnTLS: Failed to find AgentTLS: '%s'",
-                                ExceptionUtils.getStackTrace(e));
-                    }
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
-    }
-
-    public WebRequestTrackingFilter() {
-    }
-
-    private synchronized void initializeAgentIfAvailable(FilterConfig filterConfig) {
-        StopWatch sw = StopWatch.createStarted();
-
+    private boolean initializeAgentIfAvailable() {
         //If Agent Jar is not present in the class path skip the process
         if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
             this.getClass().getClassLoader())) {
-            InternalLogger.INSTANCE.info("Agent was not found. Skipping the agent registration in %.3fms", sw.getNanoTime()/1_000_000.0);
-            return;
+            InternalLogger.INSTANCE.trace("Agent was not found. Skipping the agent registration");
+            return false;
         }
 
         try {
-            ServletContext context = filterConfig.getServletContext();
-            String name = extractAppName(context);
-            String key = registerWebApp(appName);
-            setKey(key);
-
-            InternalLogger.INSTANCE.info("Successfully registered the filter '%s' in %.3fms. appName=%s", this.filterName, sw.getNanoTime()/1_000_000.0, name);
-
+            RegistrationResult registrationResult = AgentConnector.INSTANCE.universalAgentRegisterer();
+            cleaners.add(registrationResult.getCleaner());
+            InternalLogger.INSTANCE.info("Successfully registered the filter with appName=%s", this.appName);
+            return true;
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'", this.filterName, ExceptionUtils.getStackTrace(t));
+                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'",
+                    this.filterName, ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
             }
+            return false;
         }
-    }
-
-    private String registerWebApp(String name) {
-        String key = null;
-
-        if (!CommonUtils.isNullOrEmpty(name)) {
-            InternalLogger.INSTANCE.info("Registering WebApp with name '%s'", name);
-            AgentConnector.RegistrationResult result = AgentConnector.INSTANCE.register(this.getClass().getClassLoader(), name);
-            if (result == null) {
-                InternalLogger.INSTANCE.error("Did not get a result when registered '%s'. No way to have RDD telemetries for this WebApp", name);
-            }
-            key = result.getKey();
-
-            if (CommonUtils.isNullOrEmpty(key)) {
-                InternalLogger.INSTANCE.error("Key for '%s' key is null'. No way to have RDD telemetries for this WebApp", name);
-            } else {
-                if (result.getCleaner() != null) {
-                    cleaners.add(result.getCleaner());
-                }
-                InternalLogger.INSTANCE.info("Registered WebApp '%s' key='%s'", name, key);
-            }
-        } else {
-            InternalLogger.INSTANCE.error("WebApp name is not found, unable to register WebApp");
-        }
-
-        return key;
     }
 
     private String extractAppName(ServletContext context) {
@@ -357,35 +270,7 @@ public final class WebRequestTrackingFilter implements Filter {
             } catch (Throwable t2) {
                 // chomp
             }
-
         }
-        appName = name;
         return name;
-    }
-
-    private void setKey(String key) {
-        if (CommonUtils.isNullOrEmpty(key)) {
-            agentIsUp = false;
-            this.key = key;
-            return;
-        }
-
-        try {
-            AgentTLS.getTLSKey();
-            agentIsUp = true;
-            this.key = key;
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable throwable) {
-            try {
-                agentIsUp = false;
-                this.key = null;
-                InternalLogger.INSTANCE.error("setKey: Failed to find AgentTLS, Exception : %s", ExceptionUtils.getStackTrace(throwable));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
     }
 }

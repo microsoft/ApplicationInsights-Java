@@ -54,6 +54,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class knows how to manage {@link Transmission} that needs
@@ -203,6 +204,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
                 }
             }
         } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Error fetching oldest file: %s", ExceptionUtils.getStackTrace(e));
         }
 
         return null;
@@ -245,16 +247,10 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private Optional<Transmission> loadTransmission(File file) {
         Transmission transmission = null;
 
-        InputStream fileInput = null;
-        ObjectInput input = null;
-        try {
-            if (file == null) {
-                return Optional.absent();
-            }
-
-            fileInput = new FileInputStream(file);
-            InputStream buffer = new BufferedInputStream(fileInput);
-            input = new ObjectInputStream (buffer);
+        if (file == null) {
+            return Optional.absent();
+        }
+        try (ObjectInput input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
             InternalLogger.INSTANCE.error("Failed to load transmission, file not found, exception: %s", e.toString());
@@ -262,13 +258,6 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             InternalLogger.INSTANCE.error("Failed to load transmission, non transmission, exception: %s", e.toString());
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to load transmission, io exception: %s", e.toString());
-        } finally{
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                }
-            }
         }
 
         return Optional.fromNullable(transmission);
@@ -304,23 +293,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     }
 
     private boolean saveTransmission(File transmissionFile, Transmission transmission) {
-        try {
-            OutputStream fileOutput = new FileOutputStream(transmissionFile);
-            OutputStream buffer = new BufferedOutputStream(fileOutput);
-            ObjectOutput output = new ObjectOutputStream(buffer);
-            try{
-                output.writeObject(transmission);
-            } catch (IOException e) {
-                InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.toString());
-            } finally{
-                try {
-                    output.close();
-                    buffer.close();
-                    fileOutput.close();
-                } catch (Exception e) {
-                    return false;
-                }
-            }
+        try (ObjectOutput output = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(transmissionFile)))) {
+            output.writeObject(transmission);
             return true;
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.toString());

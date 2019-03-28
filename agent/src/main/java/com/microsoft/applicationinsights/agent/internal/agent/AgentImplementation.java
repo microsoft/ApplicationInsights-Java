@@ -212,44 +212,42 @@ public final class AgentImplementation {
 
         InternalLogger.INSTANCE.trace("Found jar: %s", coreJarName);
 
-        JarFile jarFile = null;
-        try {
-            jarFile = new JarFile(coreJarName);
+        try (JarFile jarFile = new JarFile(coreJarName)) {
+            Enumeration<JarEntry> e = jarFile.entries();
+
+            URL[] urls = {new URL("jar:file:" + coreJarName + "!/")};
+            URLClassLoader cl = URLClassLoader.newInstance(urls);
+
+            while (e.hasMoreElements()) {
+                JarEntry je = e.nextElement();
+                if (je.isDirectory() || !je.getName().endsWith(".class")) {
+                    continue;
+                }
+                try {
+                    Class clazz = cl.loadClass(CORE_SELF_REGISTRATOR_CLASS_NAME);
+                    clazz.getDeclaredConstructor().newInstance();
+                    InternalLogger.INSTANCE.trace("Loaded core jar");
+                    break;
+                } catch (ClassNotFoundException e1) {
+                    InternalLogger.INSTANCE.error("Could not load class: %s, ClassNotFoundException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                    throw e1;
+                } catch (InvocationTargetException e1) {
+                    InternalLogger.INSTANCE.error("Could not load class: %s, InvocationTargetException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                    throw e1;
+                } catch (NoSuchMethodException e1) {
+                    InternalLogger.INSTANCE.error("Could not load class: %s, NoSuchMethodException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                    throw e1;
+                } catch (InstantiationException e1) {
+                    InternalLogger.INSTANCE.error("Could not load class: %s, InstantiationException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                    throw e1;
+                } catch (IllegalAccessException e1) {
+                    InternalLogger.INSTANCE.error("Could not load class: %s, IllegalAccessException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
+                    throw e1;
+                }
+            }
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Could not load jar: %s", coreJarName);
             throw e;
-        }
-        Enumeration<JarEntry> e = jarFile.entries();
-
-        URL[] urls = {new URL("jar:file:" + coreJarName + "!/")};
-        URLClassLoader cl = URLClassLoader.newInstance(urls);
-
-        while (e.hasMoreElements()) {
-            JarEntry je = e.nextElement();
-            if (je.isDirectory() || !je.getName().endsWith(".class")) {
-                continue;
-            }
-            try {
-                Class clazz = cl.loadClass(CORE_SELF_REGISTRATOR_CLASS_NAME);
-                clazz.getDeclaredConstructor().newInstance();
-                InternalLogger.INSTANCE.trace("Loaded core jar");
-                break;
-            } catch (ClassNotFoundException e1) {
-                InternalLogger.INSTANCE.error("Could not load class: %s, ClassNotFoundException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
-                throw e1;
-            } catch (InvocationTargetException e1) {
-                InternalLogger.INSTANCE.error("Could not load class: %s, InvocationTargetException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
-                throw e1;
-            } catch (NoSuchMethodException e1) {
-                InternalLogger.INSTANCE.error("Could not load class: %s, NoSuchMethodException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
-                throw e1;
-            } catch (InstantiationException e1) {
-                InternalLogger.INSTANCE.error("Could not load class: %s, InstantiationException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
-                throw e1;
-            } catch (IllegalAccessException e1) {
-                InternalLogger.INSTANCE.error("Could not load class: %s, IllegalAccessException", CORE_SELF_SHORT_REGISTRATOR_CLASS_NAME);
-                throw e1;
-            }
         }
     }
 }

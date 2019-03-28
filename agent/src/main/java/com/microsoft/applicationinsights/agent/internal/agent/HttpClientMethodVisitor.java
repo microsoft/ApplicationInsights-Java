@@ -34,14 +34,20 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
     private final static String FINISH_DETECT_METHOD_NAME = "httpMethodFinished";
     private final static String FINISH_METHOD_RETURN_SIGNATURE = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)V";
+    private final boolean isW3CEnabled;
+    private final boolean isW3CBackportEnabled;
 
     public HttpClientMethodVisitor(int access,
                                    String desc,
                                    String owner,
                                    String methodName,
                                    MethodVisitor methodVisitor,
-                                   ClassToMethodTransformationData additionalData) {
+                                   ClassToMethodTransformationData additionalData,
+                                   boolean isW3CEnabled,
+                                   boolean isW3CBackportEnabled) {
         super(access, desc, owner, methodName, methodVisitor, additionalData);
+        this.isW3CEnabled = isW3CEnabled;
+        this.isW3CBackportEnabled = isW3CBackportEnabled;
     }
 
     private int deltaInNS;
@@ -50,6 +56,8 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
     private int childIdLocal;
     private int correlationContextLocal;
     private int appCorrelationId;
+    private int tracestate;
+    private int traceparent;
 
     @Override
     public void onMethodEnter() {
@@ -57,36 +65,94 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
         deltaInNS = this.newLocal(Type.LONG_TYPE);
         mv.visitVarInsn(LSTORE, deltaInNS);
 
-        // generate child ID
-        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyId", "()Ljava/lang/String;", false);
-        childIdLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, childIdLocal);
-        
-        // retrieve correlation context
-        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveCorrelationContext", "()Ljava/lang/String;", false);
-        correlationContextLocal = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, correlationContextLocal);
-        
-        // retrieve request context
-        mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveApplicationCorrelationId", "()Ljava/lang/String;", false);
-        appCorrelationId = this.newLocal(Type.getType(Object.class));
-        mv.visitVarInsn(ASTORE, appCorrelationId);
+        // This byte code instrumentation is responsible for injecting legacy AI correlation headers which include
+        // Request-Id and Request-Context and Correlation-Context. By default this headers are propagated if W3C
+        // is turned off. Please refer to generateChildDependencyId(), retrieveCorrelationContext(),
+        // retrieveApplicationCorrelationId() from TelemetryCorrelationUtils class for details on how these headers
+        // are created.
+        if (!isW3CEnabled) {
+            // generate child ID
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyId", "()Ljava/lang/String;", false);
+            childIdLocal = this.newLocal(Type.getType(Object.class));
+            mv.visitVarInsn(ASTORE, childIdLocal);
 
-        // inject headers
-        mv.visitVarInsn(ALOAD, 2);
-        mv.visitLdcInsn("Request-Id");
-        mv.visitVarInsn(ALOAD, childIdLocal);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+            // retrieve correlation context
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveCorrelationContext", "()Ljava/lang/String;", false);
+            correlationContextLocal = this.newLocal(Type.getType(Object.class));
+            mv.visitVarInsn(ASTORE, correlationContextLocal);
 
-        mv.visitVarInsn(ALOAD, 2);
-        mv.visitLdcInsn("Correlation-Context");
-        mv.visitVarInsn(ALOAD, correlationContextLocal);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
-        
-        mv.visitVarInsn(ALOAD, 2);
-        mv.visitLdcInsn("Request-Context");
-        mv.visitVarInsn(ALOAD, appCorrelationId);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+            // retrieve request context
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "retrieveApplicationCorrelationId", "()Ljava/lang/String;", false);
+            appCorrelationId = this.newLocal(Type.getType(Object.class));
+            mv.visitVarInsn(ASTORE, appCorrelationId);
+
+            // inject headers
+            // 2 because the 1 is the method being instrumented
+            mv.visitVarInsn(ALOAD, 2);
+            mv.visitLdcInsn("Request-Id");
+            mv.visitVarInsn(ALOAD, childIdLocal);
+            mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+
+            mv.visitVarInsn(ALOAD, 2);
+            mv.visitLdcInsn("Correlation-Context");
+            mv.visitVarInsn(ALOAD, correlationContextLocal);
+            mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+
+            mv.visitVarInsn(ALOAD, 2);
+            mv.visitLdcInsn("Request-Context");
+            mv.visitVarInsn(ALOAD, appCorrelationId);
+            mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+        } else {
+            // If W3C is enabled, we propagate Traceparent, Tracecontext headers
+            // to enable correlation. Please refer to generateChildDependencyTraceparent(), generateChildDependencyTraceparent()
+            // from TraceContextCorrelation class on how to generate this headers.
+
+            // generate child Traceparent
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TraceContextCorrelation",
+                "generateChildDependencyTraceparent", "()Ljava/lang/String;", false);
+            traceparent = this.newLocal(Type.getType(Object.class));
+            mv.visitVarInsn(ASTORE, traceparent);
+
+            mv.visitVarInsn(ALOAD, traceparent);
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TraceContextCorrelation",
+                "createChildIdFromTraceparentString", "(Ljava/lang/String;)Ljava/lang/String;", false);
+            childIdLocal = this.newLocal(Type.getType(Object.class));
+            mv.visitVarInsn(ASTORE, childIdLocal);
+
+            // retrieve tracestate
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TraceContextCorrelation",
+                "retriveTracestate", "()Ljava/lang/String;", false);
+            tracestate = this.newLocal(Type.getType(Object.class));
+            mv.visitVarInsn(ASTORE, tracestate);
+
+            // inject headers
+            // load 2nd variable because the 1st is the method being instrumented
+            mv.visitVarInsn(ALOAD, 2);
+            mv.visitLdcInsn("traceparent");
+            mv.visitVarInsn(ALOAD, traceparent);
+            mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+
+            if (isW3CBackportEnabled) {
+                mv.visitVarInsn(ALOAD, 2);
+                mv.visitLdcInsn("Request-Id");
+                mv.visitVarInsn(ALOAD, childIdLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+            }
+
+            mv.visitVarInsn(ALOAD, tracestate);
+            Label nullLabel = new Label();
+            mv.visitJumpInsn(IFNULL, nullLabel);
+
+            mv.visitVarInsn(ALOAD, 2);
+            mv.visitLdcInsn("tracestate");
+            mv.visitVarInsn(ALOAD, tracestate);
+
+            mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "addHeader", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+
+            // skip adding tracestate
+            mv.visitLabel(nullLabel);
+        }
+
 
         mv.visitVarInsn(ALOAD, 2);
         mv.visitMethodInsn(INVOKEINTERFACE, "org/apache/http/HttpRequest", "getRequestLine", "()Lorg/apache/http/RequestLine;", true);
@@ -153,11 +219,20 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
                 int headerValueLocal = this.newLocal(Type.getType(Object.class));
                 mv.visitVarInsn(ASTORE, headerValueLocal);
 
-                //generate target
-                mv.visitVarInsn(ALOAD, headerValueLocal);
-                mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyTarget", "(Ljava/lang/String;)Ljava/lang/String;", false);
                 int targetLocal = this.newLocal(Type.getType(Object.class));
-                mv.visitVarInsn(ASTORE, targetLocal);
+                if (!isW3CEnabled) {
+                    //generate target
+                    mv.visitVarInsn(ALOAD, headerValueLocal);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TelemetryCorrelationUtils", "generateChildDependencyTarget", "(Ljava/lang/String;)Ljava/lang/String;", false);
+                    mv.visitVarInsn(ASTORE, targetLocal);
+                } else {
+                    //generate target
+                    mv.visitVarInsn(ALOAD, headerValueLocal);
+                    mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/web/internal/correlation/TraceContextCorrelation",
+                        "generateChildDependencyTarget", "(Ljava/lang/String;)Ljava/lang/String;", false);
+                    mv.visitVarInsn(ASTORE, targetLocal);
+                }
+
 
                 mv.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");
 

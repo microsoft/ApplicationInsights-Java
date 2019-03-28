@@ -21,10 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.logger;
 
-import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -43,6 +44,17 @@ public enum InternalLogger {
 
     private final static String LOGGER_LEVEL = "Level";
     private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSSZ");
+
+    public class PropertyKeys {
+        private static final String SDKLOGGER_PREFIX = "applicationinsights.logger.";
+
+        public static final String CONSOLE_LEVEL =                  SDKLOGGER_PREFIX + "console.level";
+        public static final String FILE_LEVEL =                     SDKLOGGER_PREFIX + "file.level";
+        public static final String FILE_UNIQUE_PREFIX =             SDKLOGGER_PREFIX + "file.uniquePrefix";
+        public static final String FILE_BASE_FOLDER_PATH =          SDKLOGGER_PREFIX + "file.baseFolderPath";
+        public static final String FILE_NUMBER_OF_FILES =           SDKLOGGER_PREFIX + "file.numberOfFiles";
+        public static final String FILE_MAX_LOGFILE_SIZE_IN_MB =    SDKLOGGER_PREFIX + "file.numberOfTotalSizeInMB";
+    }
 
     public enum LoggingLevel {
         ALL(Integer.MIN_VALUE),
@@ -68,7 +80,12 @@ public enum InternalLogger {
         FILE
     }
 
-    private boolean initialized = false;
+    private volatile boolean initialized = false;
+
+    /**
+     * Flag so system properties are not checked each time if already checked once.
+     */
+    private volatile boolean propsNotFound = false;
 
     private LoggingLevel loggingLevel = LoggingLevel.OFF;
 
@@ -85,32 +102,82 @@ public enum InternalLogger {
      * @param loggerData The data for the internal logger
      */
     public synchronized void initialize(String loggerOutputType, Map<String, String> loggerData) {
-        if (!initialized) {
-            try {
-                String loggerLevel = loggerData.get(LOGGER_LEVEL);
-                if (Strings.isNullOrEmpty(loggerLevel)) {
-                    // The user didn't specify the logging level, therefore by default we set that to 'TRACE'
-                    loggingLevel = LoggingLevel.TRACE;
-                    setLoggerOutput(loggerOutputType, loggerData);
-                } else {
-                    try {
-                        // Try to match the user request logging level into our enum.
-                        loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
-                        setLoggerOutput(loggerOutputType, loggerData);
-                    } catch (Exception e) {
-                        onInitializationError(String.format("Error: Illegal value '%s' for the SDK internal logger. Logging level is therefore set to 'OFF'", loggerLevel));
-                    }
-                }
+        if (initialized) {
+            return;
+        }
 
-                final String utcId = "UTC";
+        try {
+            String loggerLevel = loggerData.get(LOGGER_LEVEL);
+                if (StringUtils.isEmpty(loggerLevel)) {
+                // The user didn't specify the logging level, therefore by default we set that to 'TRACE'
+                loggingLevel = LoggingLevel.TRACE;
+                setLoggerOutput(loggerOutputType, loggerData);
+            } else {
                 try {
-                    dateFormatter.setTimeZone(TimeZone.getTimeZone(utcId));
+                    // Try to match the user request logging level into our enum.
+                    loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+                    setLoggerOutput(loggerOutputType, loggerData);
                 } catch (Exception e) {
-                    new ConsoleLoggerOutput().log(String.format("Failed to find timezone with id='%s'. Using default '%s'", utcId, dateFormatter.getTimeZone().getDisplayName()));
+                    onInitializationError(String.format("Error: Illegal value '%s' for the SDK internal logger. Logging level is therefore set to 'OFF'", loggerLevel));
                 }
-            } finally {
-                initialized = true;
             }
+
+            final String utcId = "UTC";
+            try {
+                dateFormatter.setTimeZone(TimeZone.getTimeZone(utcId));
+            } catch (Exception e) {
+                new ConsoleLoggerOutput().log(String.format("Failed to find timezone with id='%s'. Using default '%s'", utcId, dateFormatter.getTimeZone().getDisplayName()));
+            }
+        } finally {
+            initialized = true;
+        }
+    }
+
+    public synchronized boolean systemPropertyInitialize() {
+        // if the logger is already initialized, don't init again
+        // if the system properties have already been examined, don't check again
+        if (propsNotFound || initialized) {
+            return initialized;
+        }
+
+        // check for logger properties
+        String console = System.getProperty(PropertyKeys.CONSOLE_LEVEL);
+        String file = System.getProperty(PropertyKeys.FILE_LEVEL);
+        String level = StringUtils.defaultString(console, file);
+        if (level == null) {
+            propsNotFound = true;
+            return initialized;
+        }
+
+        String type = console == null ? LoggerOutputType.FILE.toString() : LoggerOutputType.CONSOLE.toString();
+        Map<String, String> props = new HashMap<>();
+        props.put(LOGGER_LEVEL, level);
+
+        // if file logging is configured, read additonal properties
+        if (file != null) {
+            populateMapForFileLogging(props);
+        }
+
+        initialize(type, props);
+        return initialized;
+    }
+
+    private void populateMapForFileLogging(final Map<String, String> props) {
+        String prefix = System.getProperty(PropertyKeys.FILE_UNIQUE_PREFIX);
+        if (prefix != null) {
+            props.put(FileLoggerOutput.UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE, prefix);
+        }
+        String basePath = System.getProperty(PropertyKeys.FILE_BASE_FOLDER_PATH);
+        if (basePath != null) {
+            props.put(FileLoggerOutput.LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE, basePath);
+        }
+        String numFiles = System.getProperty(PropertyKeys.FILE_NUMBER_OF_FILES);
+        if (numFiles != null) {
+            props.put(FileLoggerOutput.NUMBER_OF_FILES_ATTRIBUTE, numFiles);
+        }
+        String fileSize = System.getProperty(PropertyKeys.FILE_MAX_LOGFILE_SIZE_IN_MB);
+        if (fileSize != null) {
+            props.put(FileLoggerOutput.TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE, fileSize);
         }
     }
 
@@ -212,6 +279,7 @@ public enum InternalLogger {
      * @param message - The message to print
      * @param args - The arguments that are part of the message
      */
+    @Deprecated
     public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
         String logMessage = createMessage(requestLevel.toString(), message, args);
         if (!initialized || loggerOutput == null) {
@@ -251,12 +319,12 @@ public enum InternalLogger {
         }
 
         LoggerOutputType type = LoggerOutputType.CONSOLE;
-        if (!Strings.isNullOrEmpty(loggerOutputType)) {
+        if (StringUtils.isNotEmpty(loggerOutputType)) {
             try {
                 // If the user asked for a logger type
                 type = LoggerOutputType.valueOf(loggerOutputType.toUpperCase());
             } catch (Exception e) {
-                System.out.println(e);
+                System.err.println(e);
                 onInitializationError(String.format("Error: Illegal value '%s' for the SDK Internal Logger type.", loggerOutputType));
                 return;
             }
@@ -292,6 +360,9 @@ public enum InternalLogger {
     }
 
     private void log(LoggingLevel requestLevel, String message, Object... args) {
+        if (!initialized && !systemPropertyInitialize()) {
+            return;
+        }
         if (requestLevel.getValue() >= loggingLevel.getValue()) {
             loggerOutput.log(createMessage(requestLevel.toString(), message, args));
         }

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.autoconfigure;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer;
@@ -30,6 +31,7 @@ import com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTra
 import com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule;
 import com.microsoft.applicationinsights.web.internal.perfcounter.WebPerformanceCounterModule;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
@@ -52,14 +54,29 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnWebApplication
 class ApplicationInsightsWebModuleConfiguration {
 
-  /**
+
+    /**
+     * Instance for the container of ApplicationInsights Properties
+     */
+    private ApplicationInsightsProperties applicationInsightsProperties;
+
+    @Autowired
+    public ApplicationInsightsWebModuleConfiguration(ApplicationInsightsProperties properties) {
+        this.applicationInsightsProperties = properties;
+    }
+
+    /**
    * Bean for WebRequestTrackingTelemetryModule
    * @return instance of {@link WebRequestTrackingTelemetryModule}
    */
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.default-modules.WebRequestTrackingTelemetryModule.enabled", havingValue = "true", matchIfMissing = true)
     WebRequestTrackingTelemetryModule webRequestTrackingTelemetryModule() {
-        return new WebRequestTrackingTelemetryModule();
+        WebRequestTrackingTelemetryModule w = new WebRequestTrackingTelemetryModule();
+        w.isW3CEnabled = applicationInsightsProperties.getWeb().isEnableW3C();
+        InternalLogger.INSTANCE.trace(String.format("Inbound W3C tracing is enabled %s", w.isW3CEnabled));
+        w.setEnableBackCompatibilityForW3C(applicationInsightsProperties.getWeb().isEnableW3CBackcompatMode());
+        return w;
     }
 
   /**

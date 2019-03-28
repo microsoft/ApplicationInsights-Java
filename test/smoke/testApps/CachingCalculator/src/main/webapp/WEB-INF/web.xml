@@ -19,4 +19,7 @@
     <welcome-file>default.jsp</welcome-file>
     -->
   </welcome-file-list>
+  <listener>
+    <listener-class>com.microsoft.applicationinsights.web.internal.ApplicationInsightsServletContextListener</listener-class>
+  </listener>
 </web-app>
