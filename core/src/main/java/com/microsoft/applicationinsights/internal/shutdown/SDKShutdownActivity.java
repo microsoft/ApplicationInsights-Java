@@ -97,7 +97,7 @@ public enum SDKShutdownActivity {
                 // For making sure the JVM exists ASAP.
                 return;
             }
-
+            InternalLogger.INSTANCE.info("Shutting down Applciation Insights");
             try {
                 stopChannels();
                 stopStoppables();
@@ -219,7 +219,6 @@ public enum SDKShutdownActivity {
                     try {
                         shutdownAction = new SDKShutdownAction();
                         Thread t = new Thread(shutdownAction, SDKShutdownActivity.class.getSimpleName()+"-ShutdownHook");
-                        t.setDaemon(true);
                         Runtime.getRuntime().addShutdownHook(t);
                     } catch (Exception e) {
                         InternalLogger.INSTANCE.error("Error while adding shutdown hook in getShutDownThread call");
