@@ -155,6 +155,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
     @Override
     public synchronized void stop(long timeout, TimeUnit timeUnit) {
         ThreadPoolUtils.stop(threads, timeout, timeUnit);
+        this.backoffManager.remove();
     }
 
     /**
