@@ -84,7 +84,7 @@ public final class PropertyHelper {
     /**
      * A method that loads the properties file that contains the AI SpringBootStarter version number
      * @return The properties or null if not found.
-     * @deprecated Use {@link #getStarterVersionString()} to get teh cached starter version value.
+     * @deprecated Use {@link #getStarterVersionString()} to get the cached starter version value.
      */
     @Deprecated
     public static Properties getStarterVersionProperties() {
