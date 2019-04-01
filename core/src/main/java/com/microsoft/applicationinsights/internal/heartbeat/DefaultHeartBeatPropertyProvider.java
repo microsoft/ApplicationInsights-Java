@@ -2,13 +2,12 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -136,16 +135,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * SDK version.
    */
   private String getSdkVersion() {
-
-    String sdkVersion = "java";
-
-    Properties sdkVersionProps = PropertyHelper.getSdkVersionProperties();
-    if (sdkVersionProps != null) {
-      String version = sdkVersionProps.getProperty("version");
-      sdkVersion = String.format("java:%s", version);
-      return sdkVersion;
-    }
-    return sdkVersion + ":unknown-version";
+    return PropertyHelper.getSdkVersionString();
   }
 
   /**
