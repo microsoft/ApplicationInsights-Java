@@ -26,8 +26,6 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.management.OperatingSystemMXBean;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -65,6 +63,7 @@ public class DeviceInfo
         final String languageTagMethodName = "toLanguageTag";
         Locale defaultLocale = Locale.getDefault();
         try {
+            // FIXME toLanguageTag is since 1.7; reflection isn't needed anymore.
             return (String)Locale.class.getMethod(languageTagMethodName).invoke(defaultLocale);
         } catch (Exception e) {
             // Just log - we'll handle it in the fallback path below
@@ -72,6 +71,7 @@ public class DeviceInfo
                     languageTagMethodName, ExceptionUtils.getStackTrace(e));
         }
 
+        // TODO cache values?
         final String localeFileName = "locales.properties";
         Properties localesMap = null;
         try {
