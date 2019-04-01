@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.Date;
-import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -64,14 +63,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
      * @return current SDK version
      */
      /* Visible for testing */ String getCurrentSdkVersion() {
-        String prefix = "java";
-        Properties sdkVersionProps = PropertyHelper.getSdkVersionProperties();
-        if (sdkVersionProps != null) {
-            String version = sdkVersionProps.getProperty("version");
-            return prefix + ":" + version;
-        }
-        // return unknown version if no version number found.
-        return prefix + ":" + "unknown";
+        return PropertyHelper.getSdkVersionString();
     }
 
     @Override
@@ -109,10 +101,10 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         long ms = System.currentTimeMillis();
         sb.append(ms);
         sb.append(")\\/\",");
-        sb.append("\"Version\": \"" + sdkVersion + "\"");
-        sb.append("}]");
-        ByteArrayEntity bae = new ByteArrayEntity(sb.toString().getBytes());
-        return bae;
+        sb.append("\"Version\": \"");
+        sb.append(sdkVersion);
+        sb.append("\"}]");
+        return new ByteArrayEntity(sb.toString().getBytes());
     }
 
     private void formatDocuments(StringBuilder sb) {
