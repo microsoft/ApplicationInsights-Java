@@ -7,7 +7,6 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -81,6 +80,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
                 break;
               case SPRING_BOOT_STARTER_VERSION:
                 provider.addHeartBeatProperty(fieldName, getSpringBootStarterVersionNumber(), true);
+                break;
               default:
                 //We won't accept unknown properties in default providers.
                 InternalLogger.INSTANCE.trace("Encountered unknown default property");
@@ -128,11 +128,7 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
    * @return the AI SpringBoot starter version number
    */
   private String getSpringBootStarterVersionNumber() {
-    Properties starterVersionProperties = PropertyHelper.getStarterVersionProperties();
-    if (starterVersionProperties != null) {
-      return starterVersionProperties.getProperty("version");
-    }
-    return "undefined";
+    return PropertyHelper.getStarterVersionString();
   }
 
 }
