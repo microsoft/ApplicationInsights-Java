@@ -32,8 +32,13 @@ import java.util.Properties;
  * Helper class for reading data from a properties file found on the class path.
  */
 public final class PropertyHelper {
-    public final static String SDK_VERSION_FILE_NAME = "sdk-version.properties";
-    final static String STARTER_VERSION_FILE_NAME = "starter-version.properties";
+    public static final String SDK_VERSION_FILE_NAME = "sdk-version.properties";
+    static final String STARTER_VERSION_FILE_NAME = "starter-version.properties";
+
+    public static final String VERSION_STRING_PREFIX = "java:";
+    public static final String VERSION_PROPERTY_NAME = "version";
+
+    public static final String UNKNOWN_VERSION_VALUE = "unknown";
 
     /**
      * Reads the properties from a properties file.
@@ -63,13 +68,14 @@ public final class PropertyHelper {
     /**
      * A method that loads the properties file that contains SDK-Version data.
      * @return The properties or null if not found.
+     * @deprecated Use {@link #getSdkVersionString()} to get the cached sdk version value.
      */
+    @Deprecated
     public static Properties getSdkVersionProperties() {
         try {
             return getProperties(SDK_VERSION_FILE_NAME);
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Could not find sdk version file '%s'", SDK_VERSION_FILE_NAME);
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.error("Could not find sdk version file '%s': %s", SDK_VERSION_FILE_NAME, ExceptionUtils.getStackTrace(e));
         }
 
         return null;
@@ -78,16 +84,73 @@ public final class PropertyHelper {
     /**
      * A method that loads the properties file that contains the AI SpringBootStarter version number
      * @return The properties or null if not found.
+     * @deprecated Use {@link #getStarterVersionString()} to get teh cached starter version value.
      */
+    @Deprecated
     public static Properties getStarterVersionProperties() {
         try {
             return getProperties(STARTER_VERSION_FILE_NAME);
         }
         catch (IOException e) {
-            InternalLogger.INSTANCE.trace("Could not find starter version file: %s,"
-                + "stack trace is: ", SDK_VERSION_FILE_NAME, ExceptionUtils.getStackTrace(e));
+            InternalLogger.INSTANCE.error("Could not find starter version file '%s': %s", SDK_VERSION_FILE_NAME, ExceptionUtils.getStackTrace(e));
         }
         return null;
+    }
+
+    /**
+     * Returns the SDK version string, the <i>version-number</i> prefixed with "java:".
+     * The <i>version-number</i> is the value of the {@value #VERSION_PROPERTY_NAME} property in {@value #SDK_VERSION_FILE_NAME}.
+     * If the properties file cannot be read, {@value #UNKNOWN_VERSION_VALUE} is used for the <i>version-number</i>.
+     *
+     * @return "java:<i>version-number</i>" or "java:unknown"
+     */
+    public static String getSdkVersionString() {
+        return SdkPropertyValues.SDK_VERSION_STRING;
+    }
+
+    public static String getSdkVersionNumber() {
+        return SdkPropertyValues.SDK_VERSION_NUMBER;
+    }
+
+    /**
+     * Returns the starter version string, the <i>version-number</i> prefixed with "java:".
+     * The <i>version-number</i> is the value of the {@value #VERSION_PROPERTY_NAME} property in {@value #STARTER_VERSION_FILE_NAME}.
+     * If the properties file cannot be read, {@value #UNKNOWN_VERSION_VALUE} is used for the <i>version-number</i>.
+     *
+     * @return "java:<i>version-number</i>" or "java:unknown"
+     */
+    public static String getStarterVersionString() {
+        return StarterPropertyValues.STARTER_VERSION_STRING;
+    }
+
+    private static class SdkPropertyValues {
+        private static final String SDK_VERSION_STRING;
+        private static final String SDK_VERSION_NUMBER;
+        private SdkPropertyValues(){}
+        static {
+            final Properties properties = getSdkVersionProperties();
+            if (properties == null) {
+                SDK_VERSION_NUMBER = UNKNOWN_VERSION_VALUE;
+            } else {
+                SDK_VERSION_NUMBER = properties.getProperty(VERSION_PROPERTY_NAME, UNKNOWN_VERSION_VALUE);
+            }
+            SDK_VERSION_STRING = VERSION_STRING_PREFIX + SDK_VERSION_NUMBER;
+        }
+    }
+
+    private static class StarterPropertyValues {
+        private static final String STARTER_VERSION_NUMBER;
+        private static final String STARTER_VERSION_STRING;
+        private StarterPropertyValues() {}
+        static {
+            final Properties properties = getStarterVersionProperties();
+            if (properties == null) {
+                STARTER_VERSION_NUMBER = UNKNOWN_VERSION_VALUE;
+            } else {
+                STARTER_VERSION_NUMBER = properties.getProperty(VERSION_PROPERTY_NAME, UNKNOWN_VERSION_VALUE);
+            }
+            STARTER_VERSION_STRING = VERSION_STRING_PREFIX + STARTER_VERSION_NUMBER;
+        }
     }
 
     private PropertyHelper() {
