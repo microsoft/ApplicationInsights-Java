@@ -15,7 +15,7 @@ public final class CdsProfileFetcherPolicy {
     /**
      * The interval in minutes for retry counters and pending tasks to be cleaned.
      */
-    public long cachePurgePeriodInMinutes;
+    public long resetPeriodInMinutes;
 
     /**
      * Cached instance to be reused across SDK for CDS Profile fetch calls.
@@ -26,25 +26,25 @@ public final class CdsProfileFetcherPolicy {
         return maxInstantRetries;
     }
 
-    public long getCachePurgePeriodInMinutes() {
-        return cachePurgePeriodInMinutes;
+    public long getResetPeriodInMinutes() {
+        return resetPeriodInMinutes;
     }
 
     public void setMaxInstantRetries(int maxInstantRetries) {
         this.maxInstantRetries = maxInstantRetries;
     }
 
-    public void setCachePurgePeriodInMinutes(long cachePurgePeriodInMinutes) {
-        this.cachePurgePeriodInMinutes = cachePurgePeriodInMinutes;
+    public void setResetPeriodInMinutes(long resetPeriodInMinutes) {
+        this.resetPeriodInMinutes = resetPeriodInMinutes;
     }
 
     /**
      * Private Constructor that sets the default value of maxInstantRetries to 3
-     * and default cachePurgePeriodInMinutes to 240.
+     * and default resetPeriodInMinutes to 240.
      */
     private CdsProfileFetcherPolicy() {
         maxInstantRetries = 3;
-        cachePurgePeriodInMinutes = 240;
+        resetPeriodInMinutes = 240;
     }
 
     /**
@@ -64,9 +64,9 @@ public final class CdsProfileFetcherPolicy {
     public void resetConfiguration() {
         if (instance != null) {
             InternalLogger.INSTANCE.warn(String.format("Resetting instance of CdsProfileFetcherRetryConfiguration - maxInstantRetries, " +
-                    "cachePurgePeriodInMinutes to %d, % d minutes",maxInstantRetries, cachePurgePeriodInMinutes));
+                    "resetPeriodInMinutes to %d, % d minutes",maxInstantRetries, resetPeriodInMinutes));
             maxInstantRetries = 3;
-            cachePurgePeriodInMinutes = 240;
+            resetPeriodInMinutes = 240;
         } else {
             InternalLogger.INSTANCE.warn("No instance of CdsProfileFetcherRetryConfiguration is created");
         }

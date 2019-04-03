@@ -32,18 +32,18 @@ public class CdsProfileFetcherPolicyTests {
     public void defaultConfigurationIsSetWhenNewInstanceIsCreated() {
         CdsProfileFetcherPolicy policy = CdsProfileFetcherPolicy.getInstance();
         assertThat(policy.getMaxInstantRetries(), equalTo(3));
-        assertThat(policy.getCachePurgePeriodInMinutes(), equalTo(240L));
+        assertThat(policy.getResetPeriodInMinutes(), equalTo(240L));
     }
 
     @Test
     public void defaultConfigurationCanBeOverriden() {
         CdsProfileFetcherPolicy policy = CdsProfileFetcherPolicy.getInstance();
         assertThat(policy.getMaxInstantRetries(), equalTo(3));
-        assertThat(policy.getCachePurgePeriodInMinutes(), equalTo(240L));
+        assertThat(policy.getResetPeriodInMinutes(), equalTo(240L));
 
-        policy.setCachePurgePeriodInMinutes(1);
+        policy.setResetPeriodInMinutes(1);
         policy.setMaxInstantRetries(1);
         assertThat(policy.getMaxInstantRetries(), equalTo(1));
-        assertThat(policy.getCachePurgePeriodInMinutes(), equalTo(1L));
+        assertThat(policy.getResetPeriodInMinutes(), equalTo(1L));
     }
 }

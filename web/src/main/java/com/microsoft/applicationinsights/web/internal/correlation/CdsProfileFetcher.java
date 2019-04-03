@@ -84,7 +84,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         this.policyConfiguration = CdsProfileFetcherPolicy.getInstance();
         resetService = Executors.newSingleThreadScheduledExecutor(
                 ThreadPoolUtils.createDaemonThreadFactory(CdsProfileFetcher.class, "CdsProfilePurgeService"));
-        long cachePurgeInterval = policyConfiguration.getCachePurgePeriodInMinutes();
+        long cachePurgeInterval = policyConfiguration.getResetPeriodInMinutes();
         resetService.scheduleAtFixedRate(new CachePurgingRunnable(), cachePurgeInterval, cachePurgeInterval,
                 TimeUnit.MINUTES);
         this.httpClient.start();
@@ -111,7 +111,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
                 policyConfiguration.getMaxInstantRetries()) {
             InternalLogger.INSTANCE.warn(String.format(
                     "The profile fetch task will not execute for next %d hours. Max number of retries reached.",
-                    policyConfiguration.getCachePurgePeriodInMinutes()));
+                    policyConfiguration.getResetPeriodInMinutes()));
             return result;
         }
 

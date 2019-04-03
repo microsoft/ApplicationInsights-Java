@@ -173,7 +173,7 @@ public class CdsProfileFetcherTests {
         clientWrapper.setFailureOn(false);
 
         CdsProfileFetcherPolicy configuration = CdsProfileFetcherPolicy.getInstance();
-        configuration.setCachePurgePeriodInMinutes(1);
+        configuration.setResetPeriodInMinutes(1);
         CdsProfileFetcher fetcher = new CdsProfileFetcher();
         fetcher.setHttpClient(clientWrapper.getClient());
 
@@ -204,7 +204,7 @@ public class CdsProfileFetcherTests {
         clientWrapper.setFailureOn(false);
 
         CdsProfileFetcherPolicy configuration = CdsProfileFetcherPolicy.getInstance();
-        configuration.setCachePurgePeriodInMinutes(1);
+        configuration.setResetPeriodInMinutes(1);
         CdsProfileFetcher fetcher = new CdsProfileFetcher();
         fetcher.setHttpClient(clientWrapper.getClient());
 
