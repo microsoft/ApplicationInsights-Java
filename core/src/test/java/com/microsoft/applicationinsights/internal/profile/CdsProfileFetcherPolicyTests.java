@@ -47,3 +47,4 @@ public class CdsProfileFetcherPolicyTests {
         assertThat(policy.getResetPeriodInMinutes(), equalTo(1L));
     }
 }
+
