@@ -61,7 +61,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
      * Executor service that rests the retry counter and pending unresolved tasks periodically
      * based on configuration provided.
      */
-    private final ScheduledExecutorService cachePurgeService;
+    private final ScheduledExecutorService resetService;
 
     // cache of tasks per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Future<HttpResponse>> tasks;
@@ -82,10 +82,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .build());
 
         this.policyConfiguration = CdsProfileFetcherPolicy.getInstance();
-        cachePurgeService = Executors.newSingleThreadScheduledExecutor(
+        resetService = Executors.newSingleThreadScheduledExecutor(
                 ThreadPoolUtils.createDaemonThreadFactory(CdsProfileFetcher.class, "CdsProfilePurgeService"));
         long cachePurgeInterval = policyConfiguration.getCachePurgePeriodInMinutes();
-        cachePurgeService.scheduleAtFixedRate(new CachePurgingRunnable(), cachePurgeInterval, cachePurgeInterval,
+        resetService.scheduleAtFixedRate(new CachePurgingRunnable(), cachePurgeInterval, cachePurgeInterval,
                 TimeUnit.MINUTES);
         this.httpClient.start();
 
@@ -94,7 +94,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
         this.endpointAddress = DefaultProfileQueryEndpointAddress;
         SDKShutdownActivity.INSTANCE.register(this);
-        SDKShutdownActivity.INSTANCE.register(cachePurgeService);
+        SDKShutdownActivity.INSTANCE.register(resetService);
     }
 
 	@Override
@@ -195,6 +195,8 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         public void run() {
             tasks.clear();
             failureCounters.clear();
+            InternalLogger.INSTANCE.info("CDS Profile fetch retry counter has been Reset. Pending fetch tasks" +
+                    "have been abandoned.");
         }
     }
 }

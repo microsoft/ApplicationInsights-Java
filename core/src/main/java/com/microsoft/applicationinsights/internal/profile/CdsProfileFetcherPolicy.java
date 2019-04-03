@@ -7,7 +7,14 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  */
 public final class CdsProfileFetcherPolicy {
 
+    /**
+     * Maximum number of instant retries to CDS to resolve ikey to AppId.
+     */
     public int maxInstantRetries;
+
+    /**
+     * The interval in minutes for retry counters and pending tasks to be cleaned.
+     */
     public long cachePurgePeriodInMinutes;
 
     /**
