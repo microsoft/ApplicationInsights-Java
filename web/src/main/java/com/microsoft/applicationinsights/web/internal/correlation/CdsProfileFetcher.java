@@ -92,7 +92,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >=
                 CdsRetryPolicy.INSTANCE.getMaxInstantRetries()) {
             InternalLogger.INSTANCE.warn(String.format(
-                    "The profile fetch task will not execute for next %d hours. Max number of retries reached.",
+                    "The profile fetch task will not execute for next %d minutes. Max number of retries reached.",
                     CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes()));
             return result;
         }
