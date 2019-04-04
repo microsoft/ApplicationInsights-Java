@@ -21,9 +21,11 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import com.microsoft.applicationinsights.internal.profile.CdsProfileFetcherPolicy;
+import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
+import com.microsoft.applicationinsights.internal.util.TimerTaskUtil;
 import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockHttpAsyncClientWrapper;
 import org.apache.http.ParseException;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,6 +38,11 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class CdsProfileFetcherTests {
+
+    @After
+    public void cleanUp() {
+        TimerTaskUtil.reset();
+    }
     
     @Test
     public void testFetchApplicationId() throws InterruptedException, ExecutionException, ParseException, IOException {
@@ -172,7 +179,7 @@ public class CdsProfileFetcherTests {
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
 
-        CdsProfileFetcherPolicy configuration = CdsProfileFetcherPolicy.getInstance();
+        CdsRetryPolicy configuration = CdsRetryPolicy.INSTANCE;
         configuration.setResetPeriodInMinutes(1);
         CdsProfileFetcher fetcher = new CdsProfileFetcher();
         fetcher.setHttpClient(clientWrapper.getClient());
@@ -203,7 +210,7 @@ public class CdsProfileFetcherTests {
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
 
-        CdsProfileFetcherPolicy configuration = CdsProfileFetcherPolicy.getInstance();
+        CdsRetryPolicy configuration = CdsRetryPolicy.INSTANCE;
         configuration.setResetPeriodInMinutes(1);
         CdsProfileFetcher fetcher = new CdsProfileFetcher();
         fetcher.setHttpClient(clientWrapper.getClient());

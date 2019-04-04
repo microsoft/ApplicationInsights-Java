@@ -21,22 +21,10 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.profile.CdsProfileFetcherPolicy;
+import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import com.microsoft.applicationinsights.internal.util.TimerTaskUtil;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
@@ -45,23 +33,21 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 public class CdsProfileFetcher implements AppProfileFetcher {
 
 	private CloseableHttpAsyncClient httpClient;
     private String endpointAddress;
     private static final String ProfileQueryEndpointAppIdFormat = "%s/api/profiles/%s/appId";
     private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
-
-    /**
-     * Instance that holds the configuration for Cds Profile Fetch
-     */
-    private final CdsProfileFetcherPolicy policyConfiguration;
-
-    /**
-     * Executor service that rests the retry counter and pending unresolved tasks periodically
-     * based on configuration provided.
-     */
-    private final ScheduledExecutorService resetService;
 
     // cache of tasks per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Future<HttpResponse>> tasks;
@@ -81,12 +67,9 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .useSystemProperties()
             .build());
 
-        this.policyConfiguration = CdsProfileFetcherPolicy.getInstance();
-        resetService = Executors.newSingleThreadScheduledExecutor(
-                ThreadPoolUtils.createDaemonThreadFactory(CdsProfileFetcher.class, "CdsProfilePurgeService"));
-        long cachePurgeInterval = policyConfiguration.getResetPeriodInMinutes();
-        resetService.scheduleAtFixedRate(new CachePurgingRunnable(), cachePurgeInterval, cachePurgeInterval,
-                TimeUnit.MINUTES);
+        long cachePurgeInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
+        TimerTaskUtil.executePeriodicTask(new CachePurgingRunnable(), cachePurgeInterval,
+                cachePurgeInterval, TimeUnit.MINUTES, CdsProfileFetcher.class, "CdsProfilePurgeTask");
         this.httpClient.start();
 
         this.tasks = new ConcurrentHashMap<>();
@@ -94,7 +77,6 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
         this.endpointAddress = DefaultProfileQueryEndpointAddress;
         SDKShutdownActivity.INSTANCE.register(this);
-        SDKShutdownActivity.INSTANCE.register(resetService);
     }
 
 	@Override
@@ -108,10 +90,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
         // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
         if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >=
-                policyConfiguration.getMaxInstantRetries()) {
+                CdsRetryPolicy.INSTANCE.getMaxInstantRetries()) {
             InternalLogger.INSTANCE.warn(String.format(
                     "The profile fetch task will not execute for next %d hours. Max number of retries reached.",
-                    policyConfiguration.getResetPeriodInMinutes()));
+                    CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes()));
             return result;
         }
 
