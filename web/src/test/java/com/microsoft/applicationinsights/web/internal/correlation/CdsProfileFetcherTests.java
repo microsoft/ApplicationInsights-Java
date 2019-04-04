@@ -33,9 +33,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 public class CdsProfileFetcherTests {
 
@@ -199,8 +199,8 @@ public class CdsProfileFetcherTests {
 
         TimeUnit.MINUTES.sleep(2);
 
-        assertThat(fetcher.failureCounters.size(), equalTo(0));
-        assertThat(fetcher.tasks.size(), equalTo(0));
+        assertThat(fetcher.failureCounters.values(), hasSize(0));
+        assertThat(fetcher.tasks.values(), hasSize(0));
     }
 
     @Test
@@ -224,8 +224,8 @@ public class CdsProfileFetcherTests {
 
         TimeUnit.MINUTES.sleep(2);
 
-        assertThat(fetcher.failureCounters.size(), equalTo(0));
-        assertThat(fetcher.tasks.size(), equalTo(0));
+        assertThat(fetcher.failureCounters.values(), hasSize(0));
+        assertThat(fetcher.tasks.values(), hasSize(0));
     }
 
 }

@@ -67,9 +67,9 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .useSystemProperties()
             .build());
 
-        long cachePurgeInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
-        TimerTaskUtil.executePeriodicTask(new CachePurgingRunnable(), cachePurgeInterval,
-                cachePurgeInterval, TimeUnit.MINUTES, CdsProfileFetcher.class, "CdsProfilePurgeTask");
+        long resetInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
+        TimerTaskUtil.executePeriodicTask(new CachePurgingRunnable(), resetInterval,
+                resetInterval, TimeUnit.MINUTES, CdsProfileFetcher.class, "CdsProfilePurgeTask");
         this.httpClient.start();
 
         this.tasks = new ConcurrentHashMap<>();
@@ -161,7 +161,6 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             this.failureCounters.put(instrumentationKey, 0);
         }
         this.failureCounters.put(instrumentationKey, this.failureCounters.get(instrumentationKey) + 1);
-
     }
 
 	@Override
