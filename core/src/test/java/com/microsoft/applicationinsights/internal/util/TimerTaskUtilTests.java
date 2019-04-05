@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.mockito.Matchers.isNull;
+import static org.hamcrest.core.IsNull.notNullValue;
+
 
 @RunWith(JUnit4.class)
 public class TimerTaskUtilTests {
@@ -28,7 +28,7 @@ public class TimerTaskUtilTests {
         ScheduledExecutorService service = TimerTaskUtil.getServiceTaskName("Test");
         assertThat(service.isShutdown(), is(false));
         assertThat(service.isTerminated(), is(false));
-        assertThat(TimerTaskUtil.getServiceTaskName("Test"), not(isNull()));
+        assertThat(TimerTaskUtil.getServiceTaskName("Test"), notNullValue());
     }
 
     @Test(expected = IllegalArgumentException.class)
