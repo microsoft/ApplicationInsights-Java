@@ -2,27 +2,37 @@ package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A utility task to execute tasks on a schedule.
+ * A utility clss to execute tasks on a schedule.
  */
 public final class TimerTaskUtil {
 
     /**
      * A Map that keeps a list of registered tasks in the SDK.
      */
-    private static final Map<String, ScheduledExecutorService> executorServiceMap =
-            new HashMap<>();
+    private static final Map<String, ScheduledFuture<?>> executorServiceMap =
+            new ConcurrentHashMap<>();
+
+    private static final ScheduledExecutorService timerTaskService;
+
+    private static final String TASK_POOL_NAME = "AI-SDK-TimerTask-Pool";
+
+    private static final int poolSize;
 
     private TimerTaskUtil() {}
 
-    public static void executePeriodicTask(Runnable command, long initialDelay,
-                                                          long period, TimeUnit unit, Class cls, String taskId) {
+    public static void initializer() {
+    }
+
+    public static ScheduledFuture<?> executePeriodicTask(Runnable command, long initialDelay,
+                                                      long period, TimeUnit unit, Class cls, String taskId) {
 
         if (command == null) {
             throw new IllegalArgumentException("Task cannot be null");
@@ -54,9 +64,22 @@ public final class TimerTaskUtil {
             throw new IllegalStateException("Cannot have duplicate task Id's for tasks");
         }
 
-        executorServiceMap.put(taskId, service);
-        service.scheduleAtFixedRate(command, initialDelay, period, unit);
+        ScheduledFuture<?> scheduledFuture = service.scheduleAtFixedRate(command, initialDelay, period, unit);
+        executorServiceMap.put(taskId, scheduledFuture);
         SDKShutdownActivity.INSTANCE.register(service);
+        return scheduledFuture;
+    }
+
+
+    public static class PeriodicTask {
+        private final Runnable command;
+        private final long initialDelay;
+        private final long period;
+        private final TimeUnit unit;
+        private final Class cls;
+        private final String taskId;
+
+
     }
 
     /**
@@ -68,7 +91,7 @@ public final class TimerTaskUtil {
     }
 
     /* Visible for Testing */
-    static ScheduledExecutorService getServiceTaskName(String taskName) {
+    static ScheduledFuture<?> getTask(String taskName) {
         return executorServiceMap.get(taskName);
     }
 

@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,12 +23,11 @@ public class TimerTaskUtilTests {
 
     @Test
     public void testNewTaskCanBeSubmittedAndIsRunning() {
-        TimerTaskUtil.executePeriodicTask(new TestRunnable(), 0, 1, TimeUnit.SECONDS, TimerTaskUtil.class,
+        ScheduledFuture<?> future = TimerTaskUtil.executePeriodicTask(
+                new TestRunnable(), 0, 1, TimeUnit.SECONDS, TimerTaskUtil.class,
                 "Test");
-        ScheduledExecutorService service = TimerTaskUtil.getServiceTaskName("Test");
-        assertThat(service.isShutdown(), is(false));
-        assertThat(service.isTerminated(), is(false));
-        assertThat(TimerTaskUtil.getServiceTaskName("Test"), notNullValue());
+        assertThat(future.isCancelled(), is(false));
+        assertThat(TimerTaskUtil.getTask("Test"), notNullValue());
     }
 
     @Test(expected = IllegalArgumentException.class)
