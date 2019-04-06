@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.internal.util.TimerTaskUtil;
+import com.microsoft.applicationinsights.internal.util.PeriodicTaskManager;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class CdsProfileFetcher implements AppProfileFetcher {
@@ -56,6 +57,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     /* Visible for Testing */ final ConcurrentMap<String, Integer> failureCounters;
 
     public CdsProfileFetcher() {
+
+        // TODO: Remove the initialization of PeriodicTaskManager from here. Should be done in configuration.
+        PeriodicTaskManager.initializer(1);
+
         RequestConfig requestConfig = RequestConfig.custom()
             .setSocketTimeout(5000)
             .setConnectTimeout(5000)
@@ -68,8 +73,9 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .build());
 
         long resetInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
-        TimerTaskUtil.executePeriodicTask(new CachePurgingRunnable(), resetInterval,
-                resetInterval, TimeUnit.MINUTES, CdsProfileFetcher.class, "CdsProfilePurgeTask");
+        PeriodicTaskManager.PeriodicTask cdsRetryClearTask = PeriodicTaskManager.PeriodicTask.getInstance(new CachePurgingRunnable(),
+                resetInterval, resetInterval, TimeUnit.MINUTES, "cdsRetryClearTask");
+        ScheduledFuture<?> future = PeriodicTaskManager.INSTANCE.executePeriodicTask(cdsRetryClearTask);
         this.httpClient.start();
 
         this.tasks = new ConcurrentHashMap<>();

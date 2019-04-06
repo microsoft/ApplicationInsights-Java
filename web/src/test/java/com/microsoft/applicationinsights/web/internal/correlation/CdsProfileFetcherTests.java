@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
-import com.microsoft.applicationinsights.internal.util.TimerTaskUtil;
+import com.microsoft.applicationinsights.internal.util.PeriodicTaskManager;
 import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockHttpAsyncClientWrapper;
 import org.apache.http.ParseException;
 import org.junit.After;
@@ -41,7 +41,7 @@ public class CdsProfileFetcherTests {
 
     @After
     public void cleanUp() {
-        TimerTaskUtil.reset();
+        PeriodicTaskManager.INSTANCE.stopAndClear();
     }
     
     @Test

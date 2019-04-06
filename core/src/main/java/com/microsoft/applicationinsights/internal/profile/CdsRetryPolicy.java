@@ -1,7 +1,7 @@
 package com.microsoft.applicationinsights.internal.profile;
 
 /**
- * Responsible for Cds Retry Policy configuration.
+ * Responsible for CDS Retry Policy configuration.
  */
 public enum CdsRetryPolicy {
     /**
@@ -29,14 +29,14 @@ public enum CdsRetryPolicy {
 
     public void setMaxInstantRetries(int maxInstantRetries) {
         if (maxInstantRetries < 1) {
-            throw new IllegalArgumentException("Number of CDS instant retries should be atleast 1");
+            throw new IllegalArgumentException("CDS maxInstantRetries should be at least 1");
         }
         this.maxInstantRetries = maxInstantRetries;
     }
 
     public void setResetPeriodInMinutes(long resetPeriodInMinutes) {
         if (resetPeriodInMinutes < 1) {
-            throw new IllegalArgumentException("Reset interval for CDS retries should be atelast 1 minute");
+            throw new IllegalArgumentException("CDS retries reset interval should be at least 1 minute");
         }
         this.resetPeriodInMinutes = resetPeriodInMinutes;
     }
