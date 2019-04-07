@@ -27,6 +27,8 @@ import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockHttp
 import org.apache.http.ParseException;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -38,6 +40,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 public class CdsProfileFetcherTests {
+
+    @BeforeClass
+    public static void prepare() {
+        PeriodicTaskManager.INSTANCE.stopAndClear();
+    }
 
     @After
     public void cleanUp() {
