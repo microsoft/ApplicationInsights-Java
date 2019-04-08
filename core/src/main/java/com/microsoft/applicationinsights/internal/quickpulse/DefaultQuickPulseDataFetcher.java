@@ -52,7 +52,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         formatDocuments(sb);
         sb.append("\"Instance\": \"" + instanceName + "\",");
         sb.append("\"InstrumentationKey\": \"" + ikey + "\",");
-        sb.append("\"InvariantVersion\": 2,");      
+        sb.append("\"InvariantVersion\": 1,");
         sb.append("\"MachineName\": \"" + instanceName + "\",");
         sb.append("\"StreamId\": \"" + quickPulseId + "\",");
         
