@@ -102,7 +102,7 @@ public class AiDockerClient {
 		    for (Entry<String, String> entry : envVars.entrySet()) {
 		    	if (entry.getKey() == null || entry.getValue() == null) {
 		    		continue;
-				}
+		    	}
 		        cmd.add("--env");
 		        cmd.add(String.format("%s=%s", entry.getKey(), entry.getValue()));
             }
