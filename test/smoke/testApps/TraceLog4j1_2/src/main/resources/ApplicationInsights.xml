@@ -8,6 +8,8 @@
 
 	<!-- HTTP request component (not required for bare API) -->
 
+	<QuickPulse enabled="false" />
+
 	<TelemetryModules>
 		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule" />
 		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule" />
