@@ -252,7 +252,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri(value="/requestSlow", timeout=25_000) // the servlet sleeps for 20 seconds
+    @TargetUri(value="/requestSlow", timeout=35_000) // the servlet sleeps for 20 seconds
     public void testRequestSlowWithResponseTime() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
 
@@ -260,7 +260,12 @@ public class CoreAndFilterTests extends AiSmokeTest {
         long actual = rd1.getDuration().getTotalMilliseconds();
         long expected = (new Duration(0, 0, 0, 20, 0).getTotalMilliseconds());
         long tolerance = 2 * 1000; // 2 seconds
-        assertThat(actual, both(greaterThanOrEqualTo(expected - tolerance)).and(lessThan(expected + tolerance)));
+
+        final long min = expected - tolerance;
+        final long max = expected + tolerance;
+
+        System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
+        assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
     }
 
     @Ignore // See github issue #600. This should pass when that is fixed.
