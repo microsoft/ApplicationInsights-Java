@@ -60,6 +60,7 @@ final class ApacheSender43 implements ApacheSender {
                 PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
                 cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
                 cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+                cm.setValidateAfterInactivity(REQUEST_TIMEOUT_IN_MILLIS);
 
                 httpClientRef.compareAndSet(null, HttpClients.custom()
                         .setConnectionManager(cm)
@@ -120,7 +121,7 @@ final class ApacheSender43 implements ApacheSender {
                 .setConnectionRequestTimeout(REQUEST_TIMEOUT_IN_MILLIS)
                 .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS)
                 .setConnectTimeout(REQUEST_TIMEOUT_IN_MILLIS)
-                .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS).build();
+                .build();
 
         request.setConfig(requestConfig);
     }

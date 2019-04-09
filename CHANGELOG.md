@@ -1,6 +1,10 @@
 # CHANGELOG
 
-# Version 2.4.0-BETA (Unreleased)
+# Version 2.4.0
+- Fix [#898](https://github.com/Microsoft/ApplicationInsights-Java/issues/898) Increase persistent http connection validation
+timeout period.
+
+# Version 2.4.0-BETA
 - Removed support for multiple apps instrumented with single JVM Agent. Instrumentation will only work for single apps
   in application server. 
 - Fixed [#749](https://github.com/Microsoft/ApplicationInsights-Java/issues/749) introduce support for PostGre sql jdbc4 prepared statements.
