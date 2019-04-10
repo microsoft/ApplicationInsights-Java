@@ -21,19 +21,10 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-
+import com.microsoft.applicationinsights.internal.util.PeriodicTaskManager;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
@@ -42,21 +33,34 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 public class CdsProfileFetcher implements AppProfileFetcher {
 
 	private CloseableHttpAsyncClient httpClient;
     private String endpointAddress;
     private static final String ProfileQueryEndpointAppIdFormat = "%s/api/profiles/%s/appId";
     private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
-	private static final int MAX_RETRIES = 3;
 
     // cache of tasks per ikey
-    private final ConcurrentMap<String, Future<HttpResponse>> tasks;
+    /* Visible for Testing */ final ConcurrentMap<String, Future<HttpResponse>> tasks;
     
     // failure counters per ikey
-    private final Map<String, Integer> failureCounters;
+    /* Visible for Testing */ final ConcurrentMap<String, Integer> failureCounters;
 
     public CdsProfileFetcher() {
+
+        // TODO: Remove the initialization of PeriodicTaskManager from here. Should be done in configuration.
+        PeriodicTaskManager.initializer(1);
+
         RequestConfig requestConfig = RequestConfig.custom()
             .setSocketTimeout(5000)
             .setConnectTimeout(5000)
@@ -67,13 +71,18 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .setDefaultRequestConfig(requestConfig)
             .useSystemProperties()
             .build());
-        
+
+        long resetInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
+        PeriodicTaskManager.PeriodicRunnableTask cdsRetryClearTask = PeriodicTaskManager.PeriodicRunnableTask.getInstance(new CachePurgingRunnable(),
+                resetInterval, resetInterval, TimeUnit.MINUTES, "cdsRetryClearTask");
+        ScheduledFuture<?> future = PeriodicTaskManager.INSTANCE.executePeriodicRunnableTask(cdsRetryClearTask);
         this.httpClient.start();
 
-        this.tasks = new ConcurrentHashMap<String, Future<HttpResponse>>();
-        this.failureCounters = new HashMap<String, Integer>();
+        this.tasks = new ConcurrentHashMap<>();
+        this.failureCounters = new ConcurrentHashMap<>();
 
         this.endpointAddress = DefaultProfileQueryEndpointAddress;
+        SDKShutdownActivity.INSTANCE.register(this);
     }
 
 	@Override
@@ -86,9 +95,11 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         ProfileFetcherResult result = new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.PENDING);
 
         // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
-        Integer failureCounter = this.failureCounters.get(instrumentationKey);
-        if (failureCounter != null && failureCounter.intValue() >= MAX_RETRIES) {
-            InternalLogger.INSTANCE.warn("The profile fetch task will not execute. Max number of retries reached.");
+        if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >=
+                CdsRetryPolicy.INSTANCE.getMaxInstantRetries()) {
+            InternalLogger.INSTANCE.warn(String.format(
+                    "The profile fetch task will not execute for next %d minutes. Max number of retries reached.",
+                    CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes()));
             return result;
         }
 
@@ -134,9 +145,8 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         }
     }
 
-	public void setHttpClient(CloseableHttpAsyncClient client) {
+    void setHttpClient(CloseableHttpAsyncClient client) {
         this.httpClient = client;
-        SDKShutdownActivity.INSTANCE.register(this.httpClient);
     }
 
     public void setEndpointAddress(String endpoint) throws MalformedURLException {
@@ -152,17 +162,28 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         return this.httpClient.execute(request, null);
     }
 
-    private synchronized void incrementFailureCount(String instrumentationKey) {
-        Integer failureCounter = this.failureCounters.get(instrumentationKey);
-        if (failureCounter == null) {
-            this.failureCounters.put(instrumentationKey, new Integer(1));
-        } else {
-            this.failureCounters.put(instrumentationKey, new Integer(failureCounter.intValue() + 1));
+    private void incrementFailureCount(String instrumentationKey) {
+        if (!this.failureCounters.containsKey(instrumentationKey)) {
+            this.failureCounters.put(instrumentationKey, 0);
         }
+        this.failureCounters.put(instrumentationKey, this.failureCounters.get(instrumentationKey) + 1);
     }
 
 	@Override
 	public void close() throws IOException {
         this.httpClient.close();
 	}
+
+    /**
+     * Runnable that is used to clear the retry counters and pending unresolved tasks.
+     */
+	private class CachePurgingRunnable implements Runnable {
+        @Override
+        public void run() {
+            tasks.clear();
+            failureCounters.clear();
+            InternalLogger.INSTANCE.info("CDS Profile fetch retry counter has been Reset. Pending fetch tasks" +
+                    "have been abandoned.");
+        }
+    }
 }

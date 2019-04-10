@@ -21,14 +21,35 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import com.microsoft.applicationinsights.web.internal.correlation.mocks.*;
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
+import com.microsoft.applicationinsights.internal.util.PeriodicTaskManager;
+import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockHttpAsyncClientWrapper;
 import org.apache.http.ParseException;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+
 public class CdsProfileFetcherTests {
+
+    @BeforeClass
+    public static void prepare() {
+        PeriodicTaskManager.INSTANCE.stopAndClear();
+    }
+
+    @After
+    public void cleanUp() {
+        PeriodicTaskManager.INSTANCE.stopAndClear();
+    }
     
     @Test
     public void testFetchApplicationId() throws InterruptedException, ExecutionException, ParseException, IOException {
@@ -158,20 +179,60 @@ public class CdsProfileFetcherTests {
         Assert.assertNull(result.getAppId());
     }
 
-    /*@Test
-    public void testFetchApplicationIdAgainstRealService() throws InterruptedException, ExecutionException, ParseException, IOException {
+    @Test
+    public void testCachePurgeServiceClearsRetryCounters() throws InterruptedException, ExecutionException, IOException {
+        //setup
+        MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
+        clientWrapper.setAppId("AppId");
+        clientWrapper.setFailureOn(false);
 
-        CdsProfileFetcher.INSTANCE.setEndpointAddress("https://dc.services.visualstudio.com/v2/track");
-       
-        ProfileFetcherResult result = CdsProfileFetcher.INSTANCE.fetchAppProfile("d3207117-0df4-4674-ad6e-a43d3eb5a2df");
-        System.out.println(result.getAppId());
-        System.out.println(result.getStatus());
-        
-        Thread.sleep(2000);
-        System.out.println("Wake up!");
+        CdsRetryPolicy configuration = CdsRetryPolicy.INSTANCE;
+        configuration.setResetPeriodInMinutes(1);
+        CdsProfileFetcher fetcher = new CdsProfileFetcher();
+        fetcher.setHttpClient(clientWrapper.getClient());
 
-        result = CdsProfileFetcher.INSTANCE.fetchAppProfile("d3207117-0df4-4674-ad6e-a43d3eb5a2df");
-        System.out.println(result.getAppId());
-        System.out.println(result.getStatus());
-    }*/
+        clientWrapper.setTaskAsPending();
+        ProfileFetcherResult result = fetcher.fetchAppProfile("ikey");
+        Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
+        Assert.assertNull(result.getAppId());
+
+        // mimic task completion
+        clientWrapper.setTaskAsComplete();
+        clientWrapper.setStatusCode(500);
+        result = fetcher.fetchAppProfile("ikey");
+        Assert.assertEquals(ProfileFetcherResultTaskStatus.FAILED, result.getStatus());
+
+        assertThat(fetcher.failureCounters.size(), not(0));
+
+        TimeUnit.MINUTES.sleep(2);
+
+        assertThat(fetcher.failureCounters.values(), hasSize(0));
+        assertThat(fetcher.tasks.values(), hasSize(0));
+    }
+
+    @Test
+    public void testCachePurgeServiceClearsTasksCache() throws InterruptedException, ExecutionException, IOException {
+        //setup
+        MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
+        clientWrapper.setAppId("AppId");
+        clientWrapper.setFailureOn(false);
+
+        CdsRetryPolicy configuration = CdsRetryPolicy.INSTANCE;
+        configuration.setResetPeriodInMinutes(1);
+        CdsProfileFetcher fetcher = new CdsProfileFetcher();
+        fetcher.setHttpClient(clientWrapper.getClient());
+
+        clientWrapper.setTaskAsPending();
+        ProfileFetcherResult result = fetcher.fetchAppProfile("ikey");
+        Assert.assertEquals(ProfileFetcherResultTaskStatus.PENDING, result.getStatus());
+        Assert.assertNull(result.getAppId());
+
+        assertThat(fetcher.tasks.size(), not(0));
+
+        TimeUnit.MINUTES.sleep(2);
+
+        assertThat(fetcher.failureCounters.values(), hasSize(0));
+        assertThat(fetcher.tasks.values(), hasSize(0));
+    }
+
 }
