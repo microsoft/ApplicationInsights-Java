@@ -41,7 +41,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 final class ApacheSender43 implements ApacheSender {
     private final Object lock = new Object();
     private volatile CloseableHttpClient httpClient;
-    private volatile PoolingHttpClientConnectionManager connectionManager;
 
     ApacheSender43() {
         InternalLogger.INSTANCE.info("Using Apache HttpClient 4.3");
@@ -69,12 +68,6 @@ final class ApacheSender43 implements ApacheSender {
             ((CloseableHttpClient)getHttpClient()).close();
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to close http httpClient, exception: %s", e.toString());
-        } finally {
-            synchronized (lock) {
-                if (connectionManager != null) {
-                    connectionManager.shutdown();
-                }
-            }
         }
     }
 
@@ -83,9 +76,9 @@ final class ApacheSender43 implements ApacheSender {
         CloseableHttpClient result = httpClient;
         if (result == null) {
             synchronized (lock) {
-                connectionManager = initializeConnectionManager();
                 result = httpClient;
                 if (result == null) {
+                    PoolingHttpClientConnectionManager connectionManager = initializeConnectionManager();
                     httpClient = result = initializeClient(connectionManager);
                 }
             }
@@ -103,7 +96,6 @@ final class ApacheSender43 implements ApacheSender {
     private static CloseableHttpClient initializeClient(HttpClientConnectionManager cm) {
         return HttpClients.custom()
                 .setConnectionManager(cm)
-                .setConnectionManagerShared(true)
                 .useSystemProperties()
                 .build();
     }
@@ -114,7 +106,7 @@ final class ApacheSender43 implements ApacheSender {
                 .setConnectionRequestTimeout(REQUEST_TIMEOUT_IN_MILLIS)
                 .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS)
                 .setConnectTimeout(REQUEST_TIMEOUT_IN_MILLIS)
-                .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS).build();
+                .build();
 
         request.setConfig(requestConfig);
     }
