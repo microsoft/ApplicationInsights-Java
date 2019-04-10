@@ -73,9 +73,9 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .build());
 
         long resetInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
-        PeriodicTaskManager.PeriodicTask cdsRetryClearTask = PeriodicTaskManager.PeriodicTask.getInstance(new CachePurgingRunnable(),
+        PeriodicTaskManager.PeriodicRunnableTask cdsRetryClearTask = PeriodicTaskManager.PeriodicRunnableTask.getInstance(new CachePurgingRunnable(),
                 resetInterval, resetInterval, TimeUnit.MINUTES, "cdsRetryClearTask");
-        ScheduledFuture<?> future = PeriodicTaskManager.INSTANCE.executePeriodicTask(cdsRetryClearTask);
+        ScheduledFuture<?> future = PeriodicTaskManager.INSTANCE.executePeriodicRunnableTask(cdsRetryClearTask);
         this.httpClient.start();
 
         this.tasks = new ConcurrentHashMap<>();

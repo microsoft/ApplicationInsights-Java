@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <h3>Usage example</h3>
  *
- * Here is a class that uses PeriodicTaskManager to execute {@link PeriodicTask}
+ * Here is a class that uses PeriodicTaskManager to execute {@link PeriodicRunnableTask}
  *
  * <pre> {@code
  * import com.microsoft.applicationinsights.internal.util.PeriodicTaskManager;
@@ -27,13 +27,13 @@ import java.util.concurrent.TimeUnit;
  *            public void run() { System.out.println("beep"); }
  *         };
  *
- *         // create the PeriodicTask from runnable
- *         PeriodicTaskManager.PeriodicTask periodicTask = PeriodicTaskManager.PeriodicTask.getInstance(beeper,
+ *         // create the PeriodicRunnableTask from runnable
+ *         PeriodicTaskManager.PeriodicRunnableTask periodicTask = PeriodicTaskManager.PeriodicRunnableTask.getInstance(beeper,
  *                 0, 1, TimeUnit.SECONDS, PeriodicTaskManager.class,
  *                 "Beeper");
- *         ScheduledFuture<?> future = PeriodicTaskManager.INSTANCE.executePeriodicTask(periodicTask);
+ *         ScheduledFuture<?> future = PeriodicTaskManager.INSTANCE.executePeriodicRunnableTask(periodicTask);
  *
- *         // Cancel the PeriodicTask
+ *         // Cancel the PeriodicRunnableTask
  *         PeriodicTaskManager.INSTANCE.cancelPeriodicTask(periodicTask);
  *     }
  * }}</pre>
@@ -44,7 +44,7 @@ public final class PeriodicTaskManager {
     /**
      * A Map which stores the currently active PeriodicTasks and it's associate future.
      */
-    private final Map<PeriodicTask, ScheduledFuture<?>> periodicTaskMap;
+    private final Map<PeriodicRunnableTask, ScheduledFuture<?>> periodicTaskMap;
 
     /**
      * The executor service which is responsible for running the tasks
@@ -93,11 +93,11 @@ public final class PeriodicTaskManager {
     }
 
     /**
-     * Executes a {@link PeriodicTask}
-     * @param task PeriodicTask
+     * Executes a {@link PeriodicRunnableTask}
+     * @param task PeriodicRunnableTask
      * @return ScheduledFuture associated with the scheduled task.
      */
-    public ScheduledFuture<?> executePeriodicTask(PeriodicTask task) {
+    public ScheduledFuture<?> executePeriodicRunnableTask(PeriodicRunnableTask task) {
 
         if (task == null) {
             throw new NullPointerException(" Task cannot be null");
@@ -116,10 +116,10 @@ public final class PeriodicTaskManager {
 
     /**
      * Cancels the task, if it's running and removes it from the periodicTaskMap.
-     * @param task PeriodicTask
+     * @param task PeriodicRunnableTask
      * @return true if task is cancelled successfully
      */
-    public boolean cancelPeriodicTask(PeriodicTask task) {
+    public boolean cancelPeriodicTask(PeriodicRunnableTask task) {
 
         if (task == null) {
             throw new NullPointerException("Task cannot be null");
@@ -146,14 +146,14 @@ public final class PeriodicTaskManager {
      * A Class that holds the instance of {@link Runnable} command along with it's unique taskId, initial delay,
      * repetition period and TimeUnit of repetition period
      */
-    public static final class PeriodicTask {
+    public static final class PeriodicRunnableTask {
         private final Runnable command;
         private final long initialDelay;
         private final long period;
         private final TimeUnit unit;
         private final String taskId;
 
-        private PeriodicTask(Runnable command, long initialDelay, long period, TimeUnit unit, String taskId) {
+        private PeriodicRunnableTask(Runnable command, long initialDelay, long period, TimeUnit unit, String taskId) {
             this.command = command;
             this.initialDelay = initialDelay;
             this.period = period;
@@ -161,10 +161,10 @@ public final class PeriodicTaskManager {
             this.taskId = taskId;
         }
 
-        public static PeriodicTask getInstance(Runnable command, long initialDelay, long period,
-                                               TimeUnit unit, String taskId) {
+        public static PeriodicRunnableTask getInstance(Runnable command, long initialDelay, long period,
+                                                       TimeUnit unit, String taskId) {
             validate(command, initialDelay, period, unit, taskId);
-            return new PeriodicTask(command, initialDelay, period, unit, taskId);
+            return new PeriodicRunnableTask(command, initialDelay, period, unit, taskId);
         }
 
         /**
@@ -217,7 +217,7 @@ public final class PeriodicTaskManager {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            PeriodicTask that = (PeriodicTask) o;
+            PeriodicRunnableTask that = (PeriodicRunnableTask) o;
             return taskId.equals(that.taskId);
         }
 
@@ -228,7 +228,7 @@ public final class PeriodicTaskManager {
 
         @Override
         public String toString() {
-            return "PeriodicTask{" +
+            return "PeriodicRunnableTask{" +
                     "command=" + command +
                     ", initialDelay=" + initialDelay +
                     ", period=" + period +
@@ -242,7 +242,7 @@ public final class PeriodicTaskManager {
      * Stop all the tasks and removes them from the collection.
      */
     public void stopAndClear() {
-        for (Map.Entry<PeriodicTask, ScheduledFuture<?>> entry : periodicTaskMap.entrySet()) {
+        for (Map.Entry<PeriodicRunnableTask, ScheduledFuture<?>> entry : periodicTaskMap.entrySet()) {
             ScheduledFuture<?> futureToRemove = entry.getValue();
             if (!futureToRemove.isDone() && !futureToRemove.isCancelled()) {
                 futureToRemove.cancel(true);
@@ -253,7 +253,7 @@ public final class PeriodicTaskManager {
     }
 
     /* Visible for Testing */
-    ScheduledFuture<?> getTask(PeriodicTask task) {
+    ScheduledFuture<?> getTask(PeriodicRunnableTask task) {
         return periodicTaskMap.get(task);
     }
 }
