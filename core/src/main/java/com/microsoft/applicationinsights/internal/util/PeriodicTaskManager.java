@@ -103,8 +103,6 @@ public final class PeriodicTaskManager {
             throw new NullPointerException(" Task cannot be null");
         }
 
-        task.validate();
-
         if (periodicTaskMap.containsKey(task)) {
             throw new IllegalStateException("Cannot have duplicate tasks");
         }
@@ -165,13 +163,15 @@ public final class PeriodicTaskManager {
 
         public static PeriodicTask getInstance(Runnable command, long initialDelay, long period,
                                                TimeUnit unit, String taskId) {
+            validate(command, initialDelay, period, unit, taskId);
             return new PeriodicTask(command, initialDelay, period, unit, taskId);
         }
 
         /**
          * Method to validate if the properties of task are valid.
          */
-        private void validate() {
+        private static void validate(Runnable command, long initialDelay, long period,
+                                     TimeUnit unit, String taskId) {
             if (command == null) {
                 throw new IllegalArgumentException("Task cannot be null");
             }
