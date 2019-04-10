@@ -1,5 +1,7 @@
 package com.microsoft.ajl.simplecalc;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -24,9 +26,20 @@ public class SimpleTestRequestSlowWithResponseTime extends HttpServlet {
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
+        int sleepTime = 25;
+        final String customSleepTime = request.getParameter("sleeptime");
+        if (StringUtils.isNotBlank(customSleepTime)) {
+            try {
+                sleepTime = Integer.parseInt(customSleepTime);
+            } catch (NumberFormatException e) {
+                System.err.printf("Invalid value for 'sleeptime': '%s'%n", customSleepTime);
+            }
+        }
         try {
-            TimeUnit.SECONDS.sleep(20);
-        } catch (Exception ex) {
+            System.out.printf("Sleeping for %d seconds.%n", sleepTime);
+            TimeUnit.SECONDS.sleep(sleepTime);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 }
