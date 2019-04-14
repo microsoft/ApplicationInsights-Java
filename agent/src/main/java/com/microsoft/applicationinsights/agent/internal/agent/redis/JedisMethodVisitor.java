@@ -301,7 +301,7 @@ final class JedisMethodVisitor extends DefaultMethodVisitor {
         return argumentTypes.length;
     }
 
-    protected Type[] getArgumentTypes() {
+    public Type[] getArgumentTypes() {
         return argumentTypes;
     }
 }

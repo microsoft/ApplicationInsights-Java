@@ -153,7 +153,7 @@ public abstract class AdvancedAdviceAdapter extends AdviceAdapter {
         return methodName;
     }
 
-    protected Type getReturnType() {
+    public Type getReturnType() {
         return Type.getReturnType(desc);
     }
 
