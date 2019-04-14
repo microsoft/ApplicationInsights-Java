@@ -108,7 +108,7 @@ if (java7JreDir) {
         bootClasspath += "$archivePath;"
     }
     tasks.withType(JavaCompile) {
-        options.bootClasspath = bootClasspath
+        options.bootstrapClasspath = bootClasspath
     }
 } else {
     def msg = "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
@@ -134,7 +134,7 @@ sourceSets {
 task integrationTest(type: Test, dependsOn: jar) {
     group 'Verification'
     description 'Runs the integration tests.'
-    testClassesDir = sourceSets.integrationTest.output.classesDir
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
