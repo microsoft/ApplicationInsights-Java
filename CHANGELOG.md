@@ -4,6 +4,7 @@
 - Fix [#898](https://github.com/Microsoft/ApplicationInsights-Java/issues/898) Increase persistent http connection validation
 timeout period.
 - Upgrade gradle to 5.3.1
+- Java 11 fixes
 
 # Version 2.4.0-BETA
 - Removed support for multiple apps instrumented with single JVM Agent. Instrumentation will only work for single apps
