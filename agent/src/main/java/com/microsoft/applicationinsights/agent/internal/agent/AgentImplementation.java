@@ -167,7 +167,7 @@ public final class AgentImplementation {
         }
 
         String stringPath = AgentImplementation.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        return URLDecoder.decode(stringPath, "UTF-8");
+        return new File(URLDecoder.decode(stringPath, "UTF-8")).getParent();
     }
 
     private static void SetNonWebAppModeIfAskedByConf(String sdkPath) throws Throwable {
