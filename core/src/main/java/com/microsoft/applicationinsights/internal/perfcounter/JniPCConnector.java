@@ -193,7 +193,11 @@ public final class JniPCConnector {
     }
 
     private static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
-        InputStream in = JniPCConnector.class.getClassLoader().getResourceAsStream(libraryToLoad);
+        ClassLoader classLoader = JniPCConnector.class.getClassLoader();
+        if (classLoader == null) {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
+        InputStream in = classLoader.getResourceAsStream(libraryToLoad);
         if (in == null) {
             throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
         }
