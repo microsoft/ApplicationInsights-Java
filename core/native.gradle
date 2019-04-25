@@ -189,8 +189,7 @@ def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform t
             logger.warn "Unexpected targetPlatform encountered - skipping setting the file name bitness part"
     }
 
-    def debugPart = buildType.name == "debug" ? "" : ""
-    def newName = "$baseName$bitnessPart$debugPart.$extension"
+    def newName = "$baseName$bitnessPart.$extension"
     def newFile = new File(filePath, newName)
     logger.info "Reconstructed file name: $originalFile => $newFile"
     newFile
