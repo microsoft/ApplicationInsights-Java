@@ -10,7 +10,7 @@ RUN apt-get update \
 	&& apt-get install -y wget procps
 
 ENV TOMCAT_MAJOR_VERSION 8
-ENV TOMCAT_FULL_VERSION 8.5.28
+ENV TOMCAT_FULL_VERSION 8.5.40
 
 # install tomcat
 RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
