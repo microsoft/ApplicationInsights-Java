@@ -68,7 +68,7 @@ public final class PropertyHelper {
     /**
      * A method that loads the properties file that contains SDK-Version data.
      * @return The properties or null if not found.
-     * @deprecated Use {@link #getSdkVersionString()} to get the cached sdk version value.
+     * @deprecated Use {@link #getQualifiedSdkVersionString()} to get the cached sdk version value.
      */
     @Deprecated
     public static Properties getSdkVersionProperties() {
@@ -104,7 +104,7 @@ public final class PropertyHelper {
      *
      * @return "java:<i>version-number</i>" or "java:unknown"
      */
-    public static String getSdkVersionString() {
+    public static String getQualifiedSdkVersionString() {
         return SdkPropertyValues.SDK_VERSION_STRING;
     }
 

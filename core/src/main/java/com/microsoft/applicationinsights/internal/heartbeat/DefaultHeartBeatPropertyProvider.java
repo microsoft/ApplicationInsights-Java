@@ -135,7 +135,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * SDK version.
    */
   private String getSdkVersion() {
-    return PropertyHelper.getSdkVersionString();
+    return PropertyHelper.getQualifiedSdkVersionString();
   }
 
   /**

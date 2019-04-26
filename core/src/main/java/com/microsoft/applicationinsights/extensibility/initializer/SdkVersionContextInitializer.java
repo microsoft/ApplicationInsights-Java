@@ -31,6 +31,6 @@ import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 public final class SdkVersionContextInitializer implements ContextInitializer {
     @Override
     public void initialize(TelemetryContext context) {
-        context.getInternal().setSdkVersion(PropertyHelper.getSdkVersionString());
+        context.getInternal().setSdkVersion(PropertyHelper.getQualifiedSdkVersionString());
     }
 }
