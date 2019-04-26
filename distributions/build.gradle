@@ -20,7 +20,7 @@
  */
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
@@ -73,4 +73,4 @@ gradle.projectsEvaluated {
 }
 
 // Building the shadow (fat) jar after compiling sources.
-tasks.assemble.doLast { tasks.shadowJar.execute() }
+assemble.dependsOn(shadowJar)

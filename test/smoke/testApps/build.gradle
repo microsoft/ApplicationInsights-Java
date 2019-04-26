@@ -39,11 +39,7 @@ subprojects {
 		// TODO this adds the whole tree rooted at :appServers. Could this depend on :appServers which depends on :appServers:*:build?
 		dependsOn project(':test:smoke:appServers').getTasksByName('buildDockerImage', true)
 		
-		if (gradle.gradleVersion.startsWith('4')) {
-			testClassesDirs = files(sourceSets.smokeTest.output.classesDir)
-		} else {
-			testClassesDir = file(sourceSets.smokeTest.output.classesDir) // deprecated in Gradle v4
-		}
+		testClassesDirs = files(sourceSets.smokeTest.output.classesDirs)
 
 		classpath = sourceSets.smokeTest.runtimeClasspath
 		outputs.upToDateWhen { false }

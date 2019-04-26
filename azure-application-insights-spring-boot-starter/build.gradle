@@ -21,7 +21,7 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
  * DEALINGS IN THE SOFTWARE.
  */
 plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
