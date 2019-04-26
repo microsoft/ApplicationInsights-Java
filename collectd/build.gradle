@@ -66,5 +66,5 @@ dependencies {
 }
 
 // Building the shadow (fat) jar after compiling sources.
-tasks.assemble.doLast { tasks.shadowJar.execute() }
+assemble.dependsOn(shadowJar)
 

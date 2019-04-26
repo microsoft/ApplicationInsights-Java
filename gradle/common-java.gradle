@@ -105,10 +105,10 @@ if (java7JreDir) {
             throw new ProjectConfigurationException("Archive $archivePath required for building in Java 7 could not be found.", null)
         }
         logger.info "Archive '$archivePath' added to boot class path"
-        bootClasspath += "$archivePath;"
     }
+    
     tasks.withType(JavaCompile) {
-        options.bootstrapClasspath = bootClasspath
+        options.bootstrapClasspath = files(java7JreDir + "/lib/rt.jar", java7JreDir + "/lib/jsse.jar")
     }
 } else {
     def msg = "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
