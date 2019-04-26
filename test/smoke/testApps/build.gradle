@@ -50,14 +50,19 @@ subprojects {
 
 	processSmokeTestResources {
 		outputs.upToDateWhen { false }
+		dependsOn assemble
 		doLast {
+			def testAppFile = new File(testAppArtifactDir, testAppArtifactFilename)
+			if (!testAppFile.exists()) {
+				throw new GradleException("Missing $testAppArtifactFilename from $testAppArtifactDir")
+			}
 			copy {
 				from testAppArtifactDir
 				into processSmokeTestResources.destinationDir
 				include testAppArtifactFilename
 			}
 			copy {
-				from "$sharedResourcesDir"
+				from sharedResourcesDir
 				into processSmokeTestResources.destinationDir
 				include '**/*'
 			}
