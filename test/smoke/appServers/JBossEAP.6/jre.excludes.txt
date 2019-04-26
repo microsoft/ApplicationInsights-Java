@@ -1,2 +1,6 @@
-openjdk:7-jre
-azul/zulu-openjdk:7
+openjdk:9-jre
+azul/zulu-openjdk:9
+openjdk:10-jre
+azul/zulu-openjdk:10
+openjdk:11-jre
+azul/zulu-openjdk:11
