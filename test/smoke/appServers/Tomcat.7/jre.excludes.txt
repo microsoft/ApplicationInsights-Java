@@ -1,2 +1,0 @@
-openjdk:9-jre
-azul/zulu-openjdk:9
