@@ -215,7 +215,7 @@ public final class JniPCConnector {
 
         dllPath = new File(dllPath.toString(), AI_BASE_FOLDER);
         dllPath = new File(dllPath.toString(), AI_NATIVE_FOLDER);
-        dllPath = new File(dllPath.toString(), PropertyHelper.getSdkVersionNumber()); // FIXME throw if version is unknown?
+        dllPath = new File(dllPath.toString(), PropertyHelper.getSdkVersionNumber());
 
         if (!dllPath.exists()) {
             dllPath.mkdirs();
