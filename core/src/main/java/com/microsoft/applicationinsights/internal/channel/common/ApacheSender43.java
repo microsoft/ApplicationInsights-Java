@@ -38,7 +38,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -64,7 +63,6 @@ final class ApacheSender43 implements ApacheSender {
 
                 httpClientRef.compareAndSet(null, HttpClients.custom()
                         .setConnectionManager(cm)
-                        .setConnectionReuseStrategy(new NoConnectionReuseStrategy())
                         .useSystemProperties()
                         .build());
             }
