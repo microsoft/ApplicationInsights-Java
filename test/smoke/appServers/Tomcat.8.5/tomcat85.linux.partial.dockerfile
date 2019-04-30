@@ -14,8 +14,8 @@ ENV TOMCAT_FULL_VERSION 8.5.40
 
 # install tomcat
 RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
-	&& wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
-	&& sha1sum --check apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
+	&& wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha512 \
+	&& sha512sum --check apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha1 \
 	&& tar xzvf apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
 	&& mv ./apache-tomcat-$TOMCAT_FULL_VERSION /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 
