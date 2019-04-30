@@ -1,7 +1,7 @@
 apply plugin: 'java'
+apply plugin: 'application'
 
 repositories {
-	jcenter()
 	mavenCentral()
 }
 
@@ -10,8 +10,10 @@ dependencies {
 	compile 'junit:junit:4.12'
 	compile 'org.eclipse.jetty.aggregate:jetty-all:9.4.7.v20170914'
 	compile 'com.google.code.gson:gson:2.8.2'
-	compile aiCoreJar
-	compile project(':test:smoke:framework:fakeIngestion:servlet')
+	compile project(':core')
+	compile project(':test:fakeIngestion:servlet')
 }
+
+mainClassName = 'com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer'
 
 compileJava.sourceCompatibility = 1.8
