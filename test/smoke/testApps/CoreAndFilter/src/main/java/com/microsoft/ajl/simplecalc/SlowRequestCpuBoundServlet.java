@@ -45,14 +45,14 @@ public class SlowRequestCpuBoundServlet extends HttpServlet {
         }
 
         final long responseTimeMillis = responseTime * 1000L;
-        BigDecimal productAccumulator = BigDecimal.ONE;
+        BigDecimal sum = BigDecimal.ONE;
         int iterations = 0;
         for (; durationSince(startTime) < responseTimeMillis; iterations++) {
-                final BigDecimal operand = BigDecimal.valueOf(rand.nextDouble()).add(MAX_VALUE);
-                productAccumulator = productAccumulator.multiply(operand);
+                final BigDecimal operand = BigDecimal.valueOf(rand.nextDouble()).multiply(MAX_VALUE);
+                sum = sum.add(operand);
         }
         // this is just to use the value so JIT doesn't remove any computation
-        System.out.printf("Accumulated product: %s (%d iterations)%n", productAccumulator.toString(), iterations);
+        System.out.printf("Accumulated sum: %s (%d iterations)%n", sum.toString(), iterations);
     }
 
     private static long durationSince(long startTime) {
