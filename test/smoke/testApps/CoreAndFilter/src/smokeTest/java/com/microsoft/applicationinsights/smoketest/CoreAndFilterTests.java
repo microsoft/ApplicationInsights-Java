@@ -32,7 +32,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		int expectedItems = 2;
 		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
                 expectedItems, totalItems);
-                
+
         // TODO get dependency data envelope and verify value
         RemoteDependencyData d = getTelemetryDataForType(0, "RemoteDependencyData");
 
@@ -42,9 +42,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         assertEquals(expectedName, d.getName());
         assertEquals(expectedData, d.getData());
-        assertEquals(expectedDuration, d.getDuration());  
+        assertEquals(expectedDuration, d.getDuration());
 	}
-	
+
 	@Test
 	@TargetUri("/trackEvent")
 	public void testTrackEvent() throws Exception {
@@ -102,12 +102,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(SeverityLevel.Error, d3.getSeverityLevel());
     }
 
-    private ExceptionDetails getExceptionDetails(ExceptionData exceptionData) {
-        List<ExceptionDetails> details = exceptionData.getExceptions();
-        ExceptionDetails ex = details.get(0);
-        return ex;
-	}
-	
+
+
 	@Test
     @TargetUri("/trackHttpRequest")
     public void testHttpRequest() throws Exception {
@@ -117,11 +113,11 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		int expectedItems = 5;
 		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
                 expectedItems, totalItems);
-                
+
         // TODO get HttpRequest data envelope and verify value
         //true
         RequestData d = getTelemetryDataForType(0, "RequestData");
-        
+
         final String expectedName = "HttpRequestDataTest";
         final String expectedResponseCode = "200";
 
@@ -157,7 +153,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("https://www.bingasdasdasdasda.com/", rd2.getUrl());
 
 	}
-    
+
 	@Test
     @TargetUri("/trackMetric")
     public void trackMetric() throws Exception {
@@ -167,13 +163,13 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		int expectedItems = 2;
 		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
                 expectedItems, totalItems);
-                
+
         // TODO get Metric data envelope and verify value
         MetricData d = getTelemetryDataForType(0, "MetricData");
         List<DataPoint> metrics = d.getMetrics();
 		assertEquals(1, metrics.size());
         DataPoint dp = metrics.get(0);
-        
+
 		final double expectedValue = 111222333.0;
 		final double epsilon = Math.ulp(expectedValue);
 		assertEquals(DataPointType.Measurement, dp.getKind());
@@ -185,7 +181,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		assertNull("getMax was non-null", dp.getMax());
 		assertNull("getStdDev was non-null", dp.getStdDev());
 	}
-	
+
 	@Test
 	@TargetUri("/trackTrace")
 	public void testTrackTrace() throws Exception {
@@ -196,7 +192,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
 				expectedItems, totalItems);
 
-		// TODO get trace data envelope and verify value	
+		// TODO get trace data envelope and verify value
 		MessageData d = getTelemetryDataForType(0, "MessageData");
 		final String expectedMessage = "This is first trace message.";
 		assertEquals(expectedMessage, d.getMessage());
@@ -213,13 +209,13 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		assertEquals(SeverityLevel.Information, d3.getSeverityLevel());
 		assertEquals(expectedValue, d3.getProperties().get("key"));
     }
-    
+
     @Test
     @TargetUri("/trackPageView")
     public void testTrackPageView() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(2, mockedIngestion.getCountForType("PageViewData"));
-        
+
         PageViewData pv1 = getTelemetryDataForType(0, "PageViewData");
         assertEquals("test-page", pv1.getName());
         assertEquals(new Duration(0), pv1.getDuration());
@@ -235,7 +231,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     public void testTrackPageView_JSP() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("PageViewData"));
-        
+
         PageViewData pv1 = getTelemetryDataForType(0, "PageViewData");
         assertEquals("doPageView", pv1.getName());
         assertEquals(new Duration(0), pv1.getDuration());
@@ -254,18 +250,13 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @Test
     @TargetUri(value="/requestSlow", timeout=35_000) // the servlet sleeps for 20 seconds
     public void testRequestSlowWithResponseTime() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        validateSlowTest(25);
+    }
 
-        RequestData rd1 = getTelemetryDataForType(0, "RequestData");
-        long actual = rd1.getDuration().getTotalMilliseconds();
-        long expected = (new Duration(0, 0, 0, 20, 0).getTotalMilliseconds());
-        long tolerance = 2 * 1000; // 2 seconds
-
-        final long min = expected - tolerance;
-        final long max = expected + tolerance;
-
-        System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
-        assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
+    @Test
+    @TargetUri(value="/slowLoop", timeout=35_000) // the servlet sleeps for 20 seconds
+    public void testSlowRequestUsingCpuBoundLoop() {
+        validateSlowTest(25);
     }
 
     @Ignore // See github issue #600. This should pass when that is fixed.
@@ -289,6 +280,27 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @TargetUri("/index.jsp")
     public void testRequestJSP() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+    }
+
+    private static ExceptionDetails getExceptionDetails(ExceptionData exceptionData) {
+        List<ExceptionDetails> details = exceptionData.getExceptions();
+        ExceptionDetails ex = details.get(0);
+        return ex;
+    }
+
+    private void validateSlowTest(int expectedDurationSeconds) {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+
+        RequestData rd1 = getTelemetryDataForType(0, "RequestData");
+        long actual = rd1.getDuration().getTotalMilliseconds();
+        long expected = (new Duration(0, 0, 0, expectedDurationSeconds, 0).getTotalMilliseconds());
+        long tolerance = 2 * 1000; // 2 seconds
+
+        final long min = expected - tolerance;
+        final long max = expected + tolerance;
+
+        System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
+        assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
     }
 
 }
