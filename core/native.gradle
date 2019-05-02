@@ -88,9 +88,6 @@ model {
 
                 }
                 if (toolChain in VisualCpp) {
-                    logger.info "***** installDir='${toolChain.installDir}'"
-                    logger.info "***** windowsSdkDir='${toolChain.windowsSdkDir}'"
-
                     // Visual Studio Compiler Options: https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx
                     // Visual Studio Linker Options:   https://msdn.microsoft.com/en-us/library/y0zzbyt4.aspx
 
