@@ -21,9 +21,24 @@
 
 // region Shared java configuration
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
+        classpath 'org.owasp:dependency-check-gradle:4.0.2'
+        classpath 'javax.xml.bind:jaxb-api:2.3.1'
+        classpath 'com.sun.xml.bind:jaxb-core:2.3.0'
+        classpath 'com.sun.xml.bind:jaxb-impl:2.3.0'
+    }
+}
+
+
 import org.gradle.internal.os.OperatingSystem;
 import org.gradle.api.tasks.testing.logging.TestLogEvent;
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
+import org.apache.tools.ant.taskdefs.condition.Os;
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
@@ -31,14 +46,14 @@ apply plugin: 'checkstyle'
 apply plugin: 'org.owasp.dependencycheck'
 
 tasks.withType(JavaCompile) {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 11
+    targetCompatibility = 11
 }
 
 checkstyle {
-    toolVersion = '8.15'
+    toolVersion = '8.20'
     configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
-    configProperties["rootDir"] = rootDir
+    // configProperties["rootDir"] = rootDir
 }
 
 jacoco {
@@ -86,7 +101,12 @@ if (hasProperty("JDKToUse")) {
 updateTestDirectories()
 
 // setting this variable is highly recommended
-def java7JreDir = System.env.'JAVA_JRE_7'
+def javaJreDir = System.env.'JAVA_HOME'
+if (!javaJreDir) {
+    javaJreDir = System.properties["java.home"]
+}
+logger.info("Java directory: "+javaJreDir)
+
 def isJava7 = JavaVersion.current().isJava7()
 def isJava7Compatible = JavaVersion.current().isJava7Compatible()
 
@@ -96,26 +116,29 @@ if (!isJava7Compatible) {
         throw new GradleException("incompatible JDK version: ${JavaVersion.current()}; needs 1.7+")
     }
 }
-if (java7JreDir) {
+
+if (javaJreDir) {
+    if (0) {
     def requiredJavaBootArchives = ["rt.jar", "jsse.jar"]
     def bootClasspath = ""
     requiredJavaBootArchives.each { a ->
-        def archivePath = new File(java7JreDir, "lib/$a")
+        def archivePath = new File(javaJreDir, "lib/$a")
         if (!archivePath.exists()) {
             throw new ProjectConfigurationException("Archive $archivePath required for building in Java 7 could not be found.", null)
         }
         logger.info "Archive '$archivePath' added to boot class path"
     }
-    
+    }
+
     tasks.withType(JavaCompile) {
-        options.bootstrapClasspath = files(java7JreDir + "/lib/rt.jar", java7JreDir + "/lib/jsse.jar")
+        // options.bootstrapClasspath = files(javaJreDir + "/lib/rt.jar", javaJreDir + "/lib/jsse.jar")
     }
 } else {
-    def msg = "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
+    def msg = "IMPORTANT: Environment variable 'JAVA_HOME' is not defined - Install JRE 7+ and set 'JAVA_HOME' to prevent runtime compatibility issues!"
     if (!isJava7) {
         if (isBuildServer || isRelease) {
             logger.error msg
-            throw new GradleException("JAVA_JRE_7 must be set")
+            throw new GradleException("JAVA_HOME must be set")
         } else {
             logger.warn msg
         }

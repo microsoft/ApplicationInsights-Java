@@ -30,6 +30,7 @@ public class CustomClassWriterTest {
 
     }
 
+/*
     @Test
     public void testCommonSuperClass() {
 
@@ -47,5 +48,6 @@ public class CustomClassWriterTest {
         Assert.assertEquals(objectClassBinaryName, classWriter.getCommonSuperClass(classABinaryName, objectClassBinaryName));
 
     }
+*/
 
 }
