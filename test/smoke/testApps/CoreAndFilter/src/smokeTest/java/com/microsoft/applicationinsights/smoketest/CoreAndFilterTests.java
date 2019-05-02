@@ -248,7 +248,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri(value="/requestSlow", timeout=35_000) // the servlet sleeps for 20 seconds
+    @TargetUri(value="/requestSlow?sleeptime=25", timeout=35_000) // the servlet sleeps for 25 seconds
     public void testRequestSlowWithResponseTime() {
         validateSlowTest(25);
     }

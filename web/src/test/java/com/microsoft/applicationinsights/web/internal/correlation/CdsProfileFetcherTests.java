@@ -27,6 +27,7 @@ import org.apache.http.ParseException;
 import org.junit.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -39,6 +40,7 @@ public class CdsProfileFetcherTests {
 
     @Before
     public void prepare() {
+        CdsRetryPolicy.INSTANCE.setResetPeriodInMinutes(1);
         testFetcher = new CdsProfileFetcher();
     }
 
@@ -178,8 +180,6 @@ public class CdsProfileFetcherTests {
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
 
-        CdsRetryPolicy configuration = CdsRetryPolicy.INSTANCE;
-        configuration.setResetPeriodInMinutes(1);
         testFetcher.setHttpClient(clientWrapper.getClient());
 
         clientWrapper.setTaskAsPending();
@@ -195,7 +195,10 @@ public class CdsProfileFetcherTests {
 
         assertThat(testFetcher.failureCounters.size(), not(0));
 
-        TimeUnit.MINUTES.sleep(2);
+        TimeUnit.SECONDS.sleep(75);
+
+        assertEquals("failureCounters map should be empty, but was "+ Arrays.toString(testFetcher.failureCounters.values().toArray()), 0, testFetcher.failureCounters.values().size());
+        assertEquals("tasks map should be empty, but was "+Arrays.toString(testFetcher.tasks.values().toArray()), 0, testFetcher.tasks.values().size());
 
         assertThat(testFetcher.failureCounters.values(), hasSize(0));
         assertThat(testFetcher.tasks.values(), hasSize(0));
@@ -219,7 +222,7 @@ public class CdsProfileFetcherTests {
 
         assertThat(testFetcher.tasks.size(), not(0));
 
-        TimeUnit.MINUTES.sleep(2);
+        TimeUnit.SECONDS.sleep(75);
 
         assertThat(testFetcher.failureCounters.values(), hasSize(0));
         assertThat(testFetcher.tasks.values(), hasSize(0));
