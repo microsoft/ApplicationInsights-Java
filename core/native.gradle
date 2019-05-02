@@ -36,13 +36,18 @@ def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)'
 def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
 
+def winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH ?: "C:\\Program Files (x86)\\Windows Kits\\8.1"
+def vsToolsDir = System.env.APPINSIGHTS_VS_PATH ?: "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0"
+
 // region Native binary definition and configuration
-ext {
-    isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
-}
 model {
+    toolChains {
+        visualCpp(VisualCpp) {
+            windowsSdkDir winSdkDir
+            installDir vsToolsDir
+        }
+    }
     buildTypes {
-        debug
         release
     }
     platforms {
@@ -54,12 +59,6 @@ model {
         "windows"(NativeLibrarySpec) {
             targetPlatform "x86"
             targetPlatform "x64"
-
-            if (isRelease) {
-                targetBuildTypes "release"
-            } else {
-                targetBuildTypes "debug"
-            }
 
             baseName = "applicationinsights-core-native-win"
 
@@ -89,6 +88,9 @@ model {
 
                 }
                 if (toolChain in VisualCpp) {
+                    logger.info "***** installDir='${toolChain.installDir}'"
+                    logger.info "***** windowsSdkDir='${toolChain.windowsSdkDir}'"
+
                     // Visual Studio Compiler Options: https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx
                     // Visual Studio Linker Options:   https://msdn.microsoft.com/en-us/library/y0zzbyt4.aspx
 
@@ -116,17 +118,6 @@ model {
                     cppCompiler.define "UNICODE"
                     cppCompiler.define "_UNICODE"
                     cppCompiler.define "_WINDLL"
-
-                    if (System.env.WIN_SDK_LIB_PATH) {
-                        logger.info "WIN_SDK_LIB_PATH=${System.env.WIN_SDK_LIB_PATH}"
-                        if (targetPlatform == platforms.x86) {
-                            linker.args "/LIBPATH:${System.env.WIN_SDK_LIB_PATH}\\um\\x86"
-                        } else if (targetPlatform == platforms.x64) {
-                            linker.args "/LIBPATH:${System.env.WIN_SDK_LIB_PATH}\\um\\x64"
-                        }
-                    } else {
-                        logger.warn "WIN_SDK_LIB_PATH not set. Native build may fail. Use -DskipWinNative=true to skip"
-                    }
 
                     if (buildType == buildTypes.release) {
                         cppCompiler.define 'NDEBUG'
