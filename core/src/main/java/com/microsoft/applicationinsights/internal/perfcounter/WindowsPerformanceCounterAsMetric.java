@@ -54,7 +54,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
             throw new IllegalStateException("Must be used under Windows OS.");
         }
         if (pcsData == null) {
-            throw new IllegalArgumentException("pcsData must be non-null value.");
+            throw new NullPointerException("pcsData must be non-null value.");
         }
 
         // indicate that this is used for performance counters, not custom metrics.
