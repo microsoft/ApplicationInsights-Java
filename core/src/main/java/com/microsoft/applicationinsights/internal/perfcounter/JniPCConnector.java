@@ -24,12 +24,11 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,13 +98,24 @@ public final class JniPCConnector {
      * @param category The category must be non null non empty value.
      * @param counter The counter must be non null non empty value.
      * @param instance The instance.
-     * @return True on success.
+     * @return The key for retrieving counter data.
      */
     public static String addPerformanceCounter(String category, String counter, String instance) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(category), "category must be non-null non empty string.");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(counter), "counter must be non-null non empty string.");
+        if (StringUtils.isEmpty(category)) {
+           throw new IllegalArgumentException("category must be non-null non empty string.");
+        }
+        if (StringUtils.isEmpty(counter)) {
+            throw new IllegalArgumentException("counter must be non-null non empty string.");
+        }
 
-        return addCounter(category, counter, instance);
+        if (InternalLogger.INSTANCE.isTraceEnabled()) {
+            InternalLogger.INSTANCE.trace("Registering performance counter: %s\\%s [%s]", category, counter, StringUtils.trimToEmpty(instance));
+        }
+        final String s = addCounter(category, counter, instance);
+        if (StringUtils.isEmpty(s) && InternalLogger.INSTANCE.isWarnEnabled()) {
+            InternalLogger.INSTANCE.warn("Performance coutner registration failed for %s\\%s [%s]", category, counter, StringUtils.trimToEmpty(instance));
+        }
+        return s;
     }
 
     /**
@@ -118,7 +128,7 @@ public final class JniPCConnector {
      */
     public static String translateInstanceName(String instanceName) throws Exception {
         if (PROCESS_SELF_INSTANCE_NAME.equals(instanceName)) {
-            if (Strings.isNullOrEmpty(currentInstanceName)) {
+            if (StringUtils.isEmpty(currentInstanceName)) {
                 throw new Exception("Cannot translate instance name: Unknown current instance name");
             }
 
@@ -134,7 +144,9 @@ public final class JniPCConnector {
      * @return The current value.
      */
     public static double getValueOfPerformanceCounter(String name) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "name must be non-null non empty value.");
+        if(StringUtils.isEmpty(name)) {
+            throw new IllegalArgumentException("name must be non-null non empty value.");
+        }
 
         return getPerformanceCounterValue(name);
     }
@@ -143,7 +155,7 @@ public final class JniPCConnector {
         int processId = Integer.parseInt(SystemInformation.INSTANCE.getProcessId());
 
         currentInstanceName = getInstanceName(processId);
-        if (Strings.isNullOrEmpty(currentInstanceName)) {
+        if (StringUtils.isEmpty(currentInstanceName)) {
             InternalLogger.INSTANCE.error("Failed to fetch current process instance name, process counters for for the process level will not be activated.");
         } else {
             InternalLogger.INSTANCE.trace("Java process name is set to '%s'", currentInstanceName);
