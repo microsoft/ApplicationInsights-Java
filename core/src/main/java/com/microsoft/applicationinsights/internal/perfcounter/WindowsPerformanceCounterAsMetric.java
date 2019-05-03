@@ -29,8 +29,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -51,8 +50,12 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
      * connect to the native code. or Exception if the constructor is not called under Windows OS.
      */
     public WindowsPerformanceCounterAsMetric(Iterable<WindowsPerformanceCounterData> pcsData) throws Throwable {
-        Preconditions.checkState(SystemInformation.INSTANCE.isWindows(), "Must be used under Windows OS.");
-        Preconditions.checkNotNull(pcsData, "pcsData must be non-null value.");
+        if (!SystemInformation.INSTANCE.isWindows()) {
+            throw new IllegalStateException("Must be used under Windows OS.");
+        }
+        if (pcsData == null) {
+            throw new IllegalArgumentException("pcsData must be non-null value.");
+        }
 
         // indicate that this is used for performance counters, not custom metrics.
         telemetry.markAsCustomPerfCounter();
@@ -107,7 +110,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
         for (WindowsPerformanceCounterData data : pcsData) {
             try {
                 String key = JniPCConnector.addPerformanceCounter(data.categoryName, data.counterName, data.instanceName);
-                if (!Strings.isNullOrEmpty(key)) {
+                if (!StringUtils.isEmpty(key)) {
                     keyToDisplayName.put(key, data.displayName);
                 }
             } catch (ThreadDeath td) {
