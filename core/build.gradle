@@ -83,6 +83,7 @@ sourceSets {
 
 clean {
     delete 'src/main/generated'
+    delete "${System.properties['java.io.tmpdir']}/AISDK/native" // see JniPCConnector.java for jni directory
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
