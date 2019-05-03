@@ -65,7 +65,7 @@ public:
 		String^ key = performanceCounterCategoryName + performanceCounterCounterName + performanceCounterInstanceName;
 		if (pcDictionary->ContainsKey(key))
 		{
-			return nullptr;
+			return key;
 		}
 
 		PerformanceCounter^ pc = gcnew PerformanceCounter(performanceCounterCategoryName, performanceCounterCounterName, performanceCounterInstanceName);
@@ -213,10 +213,14 @@ JNIEXPORT jstring JNICALL Java_com_microsoft_applicationinsights_internal_perfco
 		env->ReleaseStringUTFChars(rawPerformanceCounterCounterName, performanceCounterCounterName);
 		env->ReleaseStringUTFChars(rawPerformanceCounterInstance, performanceCounterInstance);
 
-		std::string a;
-		MarshalString(value, a);
-		jstring r = env->NewStringUTF(a.c_str());
-		return r;
+		if (value == nullptr) {
+			return nullptr;
+		} else {
+			std::string a;
+			MarshalString(value, a);
+			jstring r = env->NewStringUTF(a.c_str());
+			return r;
+		}
 	}
 	catch (...)
 	{
