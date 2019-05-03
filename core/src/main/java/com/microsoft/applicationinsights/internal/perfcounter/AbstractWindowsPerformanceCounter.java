@@ -8,6 +8,10 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 public abstract class AbstractWindowsPerformanceCounter implements PerformanceCounter {
 
     protected void reportError(double value, String displayName) {
+        if (!InternalLogger.INSTANCE.isErrorEnabled()) {
+            return;
+        }
+
         if (value == -1) {
             InternalLogger.INSTANCE.error("Native code exception in wrapper while fetching counter value '%s'", displayName);
         } else if (value == -4) {
