@@ -27,9 +27,9 @@ Microsoft Application Insights Java Software Development Kit consists of materia
 4.	Apache Commons-io version 2.6 (http://commons.apache.org/proper/commons-io/)
 5.	Apache HttpComponents Client version 4.5.3 (http://hc.apache.org/downloads.cgi)
 6.	Apache HttpComponents Core  version 4.4.6 (http://hc.apache.org/downloads.cgi)
-7.	ASM version 5.2 (http://asm.ow2.org/)
-8.	ASM Commons version 5.2 (http://asm.ow2.org/)
-9.	Guava version 26.0-android (http://code.google.com/p/guava-libraries/)
+7.	ASM version 7.0 (http://asm.ow2.org/)
+8.	ASM Commons version 7.0 (http://asm.ow2.org/)
+9.	Guava version 27.1-android (https://github.com/google/guava)
 10.	INFOMAS PCM Application Suite version 3.0.4 (https://github.com/rmuller/infomas-asl)
 11.	JSR-305 version 2.0.1 (http://code.google.com/p/jsr-305/)
 12. Protobuf-java version 3.6.1 (https://github.com/protocolbuffers/protobuf)
@@ -37,6 +37,16 @@ Microsoft Application Insights Java Software Development Kit consists of materia
 14. gRPC Protobuf version 1.16.1 (https://github.com/grpc/grpc-java)
 15. gRPC Netty-shaded version 1.16.1 (https://github.com/grpc/grpc-java)
 16. XStream version 1.4.11.1 (https://github.com/x-stream/xstream)
+17. SLF4J 1.7.26 (https://github.com/qos-ch/slf4j)
+18. Logback 1.2.3 (https://github.com/qos-ch/logback)
+19. Guava dependency: FindBugs JSR305 annotations 3.0.2 (https://github.com/findbugsproject/findbugs)
+20. Guava dependency: CheckerFramework annotations 2.5.2 (https://github.com/typetools/checker-framework/tree/master/checker-qual)
+21. Guava dependency: Google ErrorProne annotations 2.2.0 (https://github.com/google/error-prone/tree/master/annotations)
+22. Guava dependency: Google J2ObjC annotations 1.1 (https://github.com/google/j2objc/tree/master/annotations)
+23. Guava dependency: Animal Sniffer annotations 1.17 (https://github.com/mojohaus/animal-sniffer/tree/master/animal-sniffer-annotations)
+24. Glowroot Instrumentation 0.14.0 (https://github.com/glowroot/instrumentation)
+25. CheckerFramework annotations for Java 6 1.0.0 (https://github.com/trask/checker-framework-annotations-for-jdk6)
+26. Gson 2.8.5 (https://github.com/google/gson)
 
 %% Apache Commons-codec NOTICES, INFORMATION, AND LICENSE BEGIN HERE
 =========================================
@@ -407,40 +417,6 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
 =========================================
 END OF ASM NOTICES, INFORMATION, AND LICENSE
-
-%% ASM Commons NOTICES, INFORMATION, AND LICENSE BEGIN HERE
-=========================================
-Copyright (c) 2000-2011 INRIA, France Telecom
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-
-1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holders nor the names of its
- contributors may be used to endorse or promote products derived from
- this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-THE POSSIBILITY OF SUCH DAMAGE.
-=========================================
-END OF ASM Commons NOTICES, INFORMATION, AND LICENSE
 
 %% Guava NOTICES, INFORMATION, AND LICENSE BEGIN HERE
 =========================================
@@ -1106,3 +1082,132 @@ WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGE.
 =========================================
 END OF XStream NOTICES, INFORMATION, AND LICENSE
+
+%% SLF4J NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Copyright (c) 2004-2007 QOS.ch
+All rights reserved.
+
+Permission is hereby granted, free  of charge, to any person obtaining
+a  copy  of this  software  and  associated  documentation files  (the
+"Software"), to  deal in  the Software without  restriction, including
+without limitation  the rights to  use, copy, modify,  merge, publish,
+distribute,  sublicense, and/or sell  copies of  the Software,  and to
+permit persons to whom the Software  is furnished to do so, subject to
+the following conditions:
+
+The  above  copyright  notice  and  this permission  notice  shall  be
+included in all copies or substantial portions of the Software.
+
+THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+=========================================
+END OF SLF4J NOTICES, INFORMATION, AND LICENSE
+
+%% Logback NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Logback: the reliable, generic, fast and flexible logging framework.
+Copyright (C) 1999-2015, QOS.ch. All rights reserved.
+
+This program and the accompanying materials are dual-licensed under
+either the terms of the Eclipse Public License v1.0 as published by
+the Eclipse Foundation
+
+  or (per the licensee's choosing)
+
+under the terms of the GNU Lesser General Public License version 2.1
+as published by the Free Software Foundation.
+=========================================
+END OF Logback NOTICES, INFORMATION, AND LICENSE
+
+%% FindBugs JSR305 annotations NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Licensed under the Apache License, Version 2.0
+=========================================
+END OF FindBugs JSR305 annotations NOTICES, INFORMATION, AND LICENSE
+
+%% CheckerFramework annotations NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+The Checker Framework
+Copyright 2004-present by the Checker Framework developers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+=========================================
+END OF CheckerFramework annotations NOTICES, INFORMATION, AND LICENSE
+
+%% Google ErrorProne annotations NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Licensed under the Apache License, Version 2.0
+=========================================
+END OF Google ErrorProne annotations NOTICES, INFORMATION, AND LICENSE
+
+%% Google J2ObjC annotations NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Licensed under the Apache License, Version 2.0
+=========================================
+END OF Google J2ObjC annotations NOTICES, INFORMATION, AND LICENSE
+
+%% Animal Sniffer annotations NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+The MIT License
+
+Copyright (c) 2009 codehaus.org.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+=========================================
+END OF Animal Sniffer annotations NOTICES, INFORMATION, AND LICENSE
+
+%% Glowroot Instrumentation NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Licensed under the Apache License, Version 2.0
+=========================================
+END OF Glowroot Instrumentation NOTICES, INFORMATION, AND LICENSE
+
+%% CheckerFramework annotations for Java 6 NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Licensed under the Apache License, Version 2.0
+=========================================
+END OF CheckerFramework annotations for Java 6 NOTICES, INFORMATION, AND LICENSE
+
+%% Gson NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Licensed under the Apache License, Version 2.0
+=========================================
+END OF Gson NOTICES, INFORMATION, AND LICENSE

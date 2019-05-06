@@ -1,7 +1,5 @@
 package com;
 
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import java.util.concurrent.Executor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -33,39 +31,12 @@ public class SpringBootApp extends SpringBootServletInitializer {
 
 	@Bean
 	public Executor taskExecutor() {
-		ThreadPoolTaskExecutor executor = new MyThreadPoolTaskExecutor();
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(2);
 		executor.setMaxPoolSize(2);
 		executor.setQueueCapacity(500);
 		executor.setThreadNamePrefix("AsyncTaskExecutor-");
 		executor.initialize();
 		return executor;
-	}
-
-	private final class MyThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
-
-		@Override
-		public void execute(Runnable command) {
-			super.execute(new Wrapped(command, ThreadContext.getRequestTelemetryContext()));
-		}
-	}
-
-	private final class Wrapped implements Runnable {
-		private final Runnable task;
-		private final RequestTelemetryContext rtc;
-
-		Wrapped(Runnable task, RequestTelemetryContext rtc) {
-			this.task = task;
-			this.rtc = rtc;
-		}
-
-		@Override
-		public void run() {
-			if (ThreadContext.getRequestTelemetryContext() != null) {
-				ThreadContext.remove();
-			}
-			ThreadContext.setRequestTelemetryContext(rtc);
-			task.run();
-		}
 	}
 }

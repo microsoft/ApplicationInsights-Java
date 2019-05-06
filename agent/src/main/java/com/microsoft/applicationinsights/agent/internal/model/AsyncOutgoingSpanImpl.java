@@ -19,8 +19,28 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.model;
 
-@Deprecated
-public class AgentSelfConnector {
+import org.glowroot.instrumentation.api.AsyncSpan;
+import org.glowroot.instrumentation.api.MessageSupplier;
+import org.glowroot.instrumentation.api.Timer;
+import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+
+class AsyncOutgoingSpanImpl extends OutgoingSpanImpl implements AsyncSpan {
+
+    public AsyncOutgoingSpanImpl(String type, String text, long startTimeMillis, String outgoingSpanId,
+                                 MessageSupplier messageSupplier) {
+        super(type, text, startTimeMillis, outgoingSpanId, messageSupplier);
+    }
+
+    @Override
+    public void stopSyncTimer() {
+        // timers are not used by ApplicationInsights
+    }
+
+    @Override
+    public Timer extendSyncTimer() {
+        // timers are not used by ApplicationInsights
+        return NopTransactionService.TIMER;
+    }
 }

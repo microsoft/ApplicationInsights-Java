@@ -108,7 +108,6 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 archivesBaseName = 'applicationinsights-core'
 
 dependencies {
-    compileOnly (project(':agent')) { transitive = false }
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])
@@ -123,7 +122,8 @@ dependencies {
     compile ([group: 'io.grpc', name: 'grpc-stub', version: '1.16.1'])
     compile ([group: 'io.grpc', name: 'grpc-protobuf', version: '1.16.1'])
     runtime ([group: 'io.grpc', name: 'grpc-netty-shaded', version: '1.16.1'])
-    testCompile (project(':agent')) { transitive = false }
+    // update transitive dependency version
+    runtime ([group: 'com.google.guava', name: 'guava', version: '27.1-android'])
     testCompile group: 'org.hamcrest', name:'hamcrest-core', version:'1.3'
     testCompile group: 'org.hamcrest', name:'hamcrest-library', version:'1.3'
     testCompile group: 'org.mockito', name: 'mockito-core', version: '1.10.19'

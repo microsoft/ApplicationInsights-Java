@@ -21,105 +21,67 @@
 
 package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.microsoft.applicationinsights.agent.internal.common.StringUtils;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/**
- * Created by gupele on 8/17/2016.
- */
-final class XmlParserUtils {
-    private final static String ENABLED_ATTRIBUTE = "enabled";
+class XmlParserUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(XmlParserUtils.class);
+
+    private static final String ENABLED_ATTRIBUTE = "enabled";
 
     public static Element getFirst(NodeList nodes) {
         if (nodes == null || nodes.getLength() == 0) {
             return null;
         }
-
         Node node = nodes.item(0);
         if (node.getNodeType() != Node.ELEMENT_NODE) {
             return null;
         }
-
-        return (Element)node;
-    }
-
-    public static String getAttribute(Element element, String attributeName) {
-        if (element == null) {
-            return null;
-        }
-
-        String attributeValue = element.getAttribute(attributeName);
-        return attributeValue;
+        return (Element) node;
     }
 
     public static boolean getEnabled(Element element, String attributeName) {
         return getEnabled(element, attributeName, true);
     }
 
-    /**
-     * Method to get the attribute value for W3C
-     * @param element
-     * @param attributeName
-     * @return boolean
-     */
-    static boolean w3cEnabled(Element element, String attributeName, boolean defaultValue) {
-        try {
-            String strValue = element.getAttribute(attributeName);
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                boolean value = Boolean.valueOf(strValue);
-                return value;
-            }
-            return defaultValue;
-
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("cannot parse the correlation format, will default"
-                + "to AI proprietory correlation", ExceptionUtils.getStackTrace(e));
-        }
-        return defaultValue;
-    }
-
-    public static boolean getEnabled(Element element, String elementName, boolean defaultValue) {
+    public static boolean getEnabled(Element element, String attributeName, boolean defaultValue) {
         if (element == null) {
-            return true;
+            return defaultValue;
         }
-
         try {
             String strValue = element.getAttribute(ENABLED_ATTRIBUTE);
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                boolean value = Boolean.valueOf(strValue);
-                return value;
+            if (!Strings.isNullOrEmpty(strValue)) {
+                return Boolean.valueOf(strValue);
             }
             return defaultValue;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%b) will be used.", ENABLED_ATTRIBUTE, elementName, defaultValue);
+            logger.error("Failed to parse attribute '{}' of '{}', default value ({}) will be used.", ENABLED_ATTRIBUTE,
+                    attributeName, defaultValue);
         }
-
         return defaultValue;
     }
 
-    public static long getLongAttribute(Element element, String elementName, String attributeName, long defaultValue) {
+    /**
+     * Method to get the attribute value for W3C.
+     */
+    static boolean w3cEnabled(Element element, String attributeName, boolean defaultValue) {
         if (element == null) {
             return defaultValue;
         }
-
         try {
             String strValue = element.getAttribute(attributeName);
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                try {
-                    return Long.parseLong(strValue);
-                } catch (NumberFormatException nfe) {
-                    InternalLogger.INSTANCE.warn("Invalid attribute value. Expected number but was '%s'", strValue);
-                }
+            if (!Strings.isNullOrEmpty(strValue)) {
+                return Boolean.valueOf(strValue);
             }
             return defaultValue;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%d) will be used.", attributeName, elementName, defaultValue);
+            logger.error("cannot parse the correlation format, will default to AI proprietary correlation", e);
         }
-
         return defaultValue;
     }
 
@@ -127,22 +89,19 @@ final class XmlParserUtils {
         if (element == null) {
             return null;
         }
-
         try {
             Node node = element.getFirstChild();
             if (node == null) {
                 return null;
             }
             String strValue = node.getTextContent();
-            if (!StringUtils.isNullOrEmpty(strValue)) {
-                Long value = Long.valueOf(strValue);
-                return value;
+            if (!Strings.isNullOrEmpty(strValue)) {
+                return Long.parseLong(strValue);
             }
             return null;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s'", ENABLED_ATTRIBUTE, elementName);
+            logger.error("Failed to parse attribute '{}' of '{}'", ENABLED_ATTRIBUTE, elementName);
         }
-
         return null;
     }
 }

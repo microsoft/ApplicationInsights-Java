@@ -26,15 +26,16 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.agent.AgentConnector;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector.RegistrationResult;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
+import com.microsoft.applicationinsights.web.internal.agent.SdkBridgeImpl;
 import com.microsoft.applicationinsights.web.internal.httputils.AIHttpServletListener;
 import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.LinkedList;
@@ -209,24 +210,24 @@ public final class WebRequestTrackingFilter implements Filter {
     // region Private
 
     private boolean initializeAgentIfAvailable() {
-        //If Agent Jar is not present in the class path skip the process
-        if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
-            this.getClass().getClassLoader())) {
-            InternalLogger.INSTANCE.trace("Agent was not found. Skipping the agent registration");
+        Class<?> globalClass;
+        try {
+            globalClass = Class.forName("com.microsoft.applicationinsights.agent.internal.model.Global", false, null);
+        } catch (ClassNotFoundException e) {
             return false;
         }
 
         try {
-            RegistrationResult registrationResult = AgentConnector.INSTANCE.universalAgentRegisterer();
-            cleaners.add(registrationResult.getCleaner());
-            InternalLogger.INSTANCE.info("Successfully registered the filter with appName=%s", this.appName);
+            Class<?> bridgeClass = Class.forName("com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge", false, null);
+            Method method = globalClass.getMethod("setSdkBridge", bridgeClass);
+            method.invoke(null, new SdkBridgeImpl());
             return true;
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'",
-                    this.filterName, ExceptionUtils.getStackTrace(t));
+                InternalLogger.INSTANCE.error("Failed to initialize agent, exception: '%s'",
+                        ExceptionUtils.getStackTrace(t));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
