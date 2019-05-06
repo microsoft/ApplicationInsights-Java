@@ -47,30 +47,5 @@ dependencies {
     compile project(':logging:logback')
 }
 
-gradle.projectsEvaluated {
-    project.configurations.compile.dependencies.each { dep ->
-        ConfigurationContainer cc = dep.dependencyProject.configurations
-
-        def providedConfiguration = cc.findByName("provided")
-        if (providedConfiguration != null) {
-            providedConfiguration.dependencies.each { provDep ->
-                shadowJar {
-                    dependencies {
-                        if (provDep instanceof ProjectDependency) {
-                            def projPath = provDep.dependencyProject.path
-                            logger.info "Excluding provided project dependency for project $projPath"
-                            exclude(project(projPath))
-                        } else if (provDep instanceof ExternalModuleDependency) {
-                            def gav = "$provDep.group:$provDep.name:$provDep.version"
-                            logger.info "Excluding provided external dependency for artifact $gav"
-                            exclude(dependency(gav))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 // Building the shadow (fat) jar after compiling sources.
 shadowJar.dependsOn assemble
