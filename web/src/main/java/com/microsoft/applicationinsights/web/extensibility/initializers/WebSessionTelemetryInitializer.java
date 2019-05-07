@@ -54,6 +54,8 @@ public class WebSessionTelemetryInitializer extends WebTelemetryInitializerBase 
         session.setId(requestSessionContext.getId());
 
         Boolean isFirst = requestSessionContext.getIsFirst();
-        session.setIsFirst(isFirst != null ? isFirst : false);
+        if (isFirst != null) {
+            session.setIsFirst(isFirst);
+        }
     }
 }
