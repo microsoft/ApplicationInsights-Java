@@ -56,7 +56,6 @@ public class TestController {
 		throw new ServletException("This is an exception");
 	}
 
-	@Async
 	@GetMapping("/asyncDependencyCall")
 	public AsyncResult<Integer> asyncDependencyCall() throws IOException {
         String url = "https://www.bing.com";
