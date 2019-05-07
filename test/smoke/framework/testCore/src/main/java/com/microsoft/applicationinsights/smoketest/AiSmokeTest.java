@@ -502,7 +502,7 @@ public abstract class AiSmokeTest {
 	private static void startTestApplicationContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
 		Map<String, String> envVars = generateAppContainerEnvVarMap();
-		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, null, envVars);
+		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, null, envVars, false);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 

@@ -81,15 +81,21 @@ public class AiDockerClient {
 	        int index = envVar.indexOf('=');
 	        envVarMap.put(envVar.substring(0, index), envVar.substring(index + 1));
 	    }
-	    return startContainer(image, portMapping, network, null, envVarMap);
+	    return startContainer(image, portMapping, network, null, envVarMap, true);
 	}
 
-	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars) throws IOException, InterruptedException {
+	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars,
+	                             boolean dependencyContainer) throws IOException, InterruptedException {
 		Preconditions.checkNotNull(image, "image");
 		Preconditions.checkNotNull(portMapping, "portMapping");
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
-		List<String> cmd = new ArrayList<>(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
+		List<String> cmd = new ArrayList<>();
+		cmd.addAll(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
+		if (!dependencyContainer) {
+		    // port 5005 is exposed for hooking up IDE debugger
+		    cmd.addAll(Arrays.asList("-p", "5005:5005"));
+		}
 		if (!Strings.isNullOrEmpty(network)) {
 		    // TODO assert the network exists
 		    cmd.add("--network");
