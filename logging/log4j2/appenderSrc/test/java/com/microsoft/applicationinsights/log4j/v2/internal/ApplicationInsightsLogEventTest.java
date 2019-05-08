@@ -71,85 +71,10 @@ public final class ApplicationInsightsLogEventTest {
     }
 
     private static void testSeverityLevel(final Level level, SeverityLevel expected) {
-        org.apache.logging.log4j.core.LogEvent logEvent = new LogEvent() {
-            @Override
-            public Map<String, String> getContextMap() {
-                return null;
-            }
-
-            @Override
-            public ThreadContext.ContextStack getContextStack() {
-                return null;
-            }
-
-            @Override
-            public String getLoggerFqcn() {
-                return null;
-            }
-
+        org.apache.logging.log4j.core.LogEvent logEvent = new AbstractLogEvent() {
             @Override
             public Level getLevel() {
                 return level;
-            }
-
-            @Override
-            public String getLoggerName() {
-                return null;
-            }
-
-            @Override
-            public Marker getMarker() {
-                return null;
-            }
-
-            @Override
-            public Message getMessage() {
-                return null;
-            }
-
-            @Override
-            public long getTimeMillis() {
-                return 0;
-            }
-
-            @Override
-            public StackTraceElement getSource() {
-                return null;
-            }
-
-            @Override
-            public String getThreadName() {
-                return null;
-            }
-
-            @Override
-            public Throwable getThrown() {
-                return null;
-            }
-
-            @Override
-            public ThrowableProxy getThrownProxy() {
-                return null;
-            }
-
-            @Override
-            public boolean isEndOfBatch() {
-                return false;
-            }
-
-            @Override
-            public boolean isIncludeLocation() {
-                return false;
-            }
-
-            @Override
-            public void setEndOfBatch(boolean endOfBatch) {
-                /* NOP */
-            }
-
-            @Override
-            public void setIncludeLocation(boolean locationRequired) {
-                /* NOP */
             }
         };
         ApplicationInsightsLogEvent event = new ApplicationInsightsLogEvent(logEvent);
