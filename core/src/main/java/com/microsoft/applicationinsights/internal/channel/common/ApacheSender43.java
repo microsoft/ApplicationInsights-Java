@@ -60,11 +60,11 @@ final class ApacheSender43 implements ApacheSender {
                         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
                         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
 
-                        synchronized (sender.httpClientRef) {
                             sender.httpClientRef.compareAndSet(null, HttpClients.custom()
                                 .setConnectionManager(cm)
                                 .useSystemProperties()
                                 .build());
+                        synchronized (sender.httpClientRef) {
                             sender.httpClientRef.notifyAll();
                         }
                     }
