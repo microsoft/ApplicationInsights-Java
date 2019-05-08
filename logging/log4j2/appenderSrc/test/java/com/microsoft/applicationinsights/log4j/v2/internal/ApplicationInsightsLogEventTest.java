@@ -71,7 +71,7 @@ public final class ApplicationInsightsLogEventTest {
     }
 
     private static void testSeverityLevel(final Level level, SeverityLevel expected) {
-        org.apache.logging.log4j.core.LogEvent logEvent = new AbstractLogEvent() {
+        org.apache.logging.log4j.core.LogEvent logEvent = new org.apache.logging.log4j.core.AbstractLogEvent() {
             @Override
             public Level getLevel() {
                 return level;
