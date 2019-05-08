@@ -66,5 +66,5 @@ dependencies {
 }
 
 // Building the shadow (fat) jar after compiling sources.
-assemble.dependsOn(shadowJar)
+shadowJar.dependsOn assemble
 

@@ -19,14 +19,14 @@ public class SimpleTestTraceLog4j2Servlet extends HttpServlet {
 
 	private static final long serialVersionUID = 3048578125004678364L;
 
+	private static final Logger logger = LogManager.getRootLogger();
+
 	/**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
-        
-        Logger logger = LogManager.getRootLogger();
         logger.trace("This is log4j2 trace.");
         logger.debug("This is log4j2 debug.");
         logger.info("This is log4j2 info.");

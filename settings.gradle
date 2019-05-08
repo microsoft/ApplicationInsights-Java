@@ -29,9 +29,11 @@ include 'web'
 include 'azure-application-insights-spring-boot-starter'
 include 'ApplicationInsightsInternalLogger'
 include 'distributions'
-include 'samples'
-include 'test:performance'
-include 'test:webapps:bookstore-spring'
+//  TODO rewrite samples; current ones are not representative of "real-world" usage
+if (System.properties.AI_SAMPLES) {
+    include 'samples'
+    include 'test:webapps:bookstore-spring'
+}
 
 // Projects for smokeTests
 include ':test:smoke'
