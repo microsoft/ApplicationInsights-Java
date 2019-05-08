@@ -48,28 +48,33 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 final class ApacheSender43 implements ApacheSender {
 
     private final AtomicReference<CloseableHttpClient> httpClientRef = new AtomicReference<>();
-    private volatile boolean isClientInitialized = false;
-    private final ExecutorService initializer = new ThreadPoolExecutor(0, 1, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(),
-            ThreadPoolUtils.createNamedDaemonThreadFactory(ApacheSender43.class.getSimpleName()+"_initializer"));
 
-    public ApacheSender43() {
-        initializer.execute(new Runnable() {
+    static ApacheSender43 create() {
+        final ApacheSender43 sender = new ApacheSender43();
+        Thread initThread = new Thread(
+                new Runnable() {
 
-            @Override
-            public void run() {
-                PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-                cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
-                cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-                cm.setValidateAfterInactivity(REQUEST_TIMEOUT_IN_MILLIS);
+                    @Override
+                    public void run() {
+                        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+                        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
+                        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
 
-                httpClientRef.compareAndSet(null, HttpClients.custom()
-                        .setConnectionManager(cm)
-                        .useSystemProperties()
-                        .build());
-            }
-        });
-        SDKShutdownActivity.INSTANCE.register(initializer);
-     }
+                        synchronized (sender.httpClientRef) {
+                            sender.httpClientRef.compareAndSet(null, HttpClients.custom()
+                                .setConnectionManager(cm)
+                                .useSystemProperties()
+                                .build());
+                            sender.httpClientRef.notifyAll();
+                        }
+                    }
+                }, ApacheSender43.class.getSimpleName()+"_initializer");
+        initThread.setDaemon(true);
+        initThread.start();
+        return sender;
+    }
+
+    private ApacheSender43() {}
 
     @Override
     public HttpResponse sendPostRequest(HttpPost post) throws IOException {
@@ -98,20 +103,15 @@ final class ApacheSender43 implements ApacheSender {
 
     @Override
     public HttpClient getHttpClient() {
-        if (!isClientInitialized) {
-            synchronized (this) {
-                if (!isClientInitialized) {
-                    while (httpClientRef.get() == null) {
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(3);
-                        } catch (InterruptedException e){
-                        }
-                    }
-                    isClientInitialized = true;
+        synchronized (httpClientRef) {
+            try {
+                while (httpClientRef.get() == null) {
+                    httpClientRef.wait();
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
-
         return httpClientRef.get();
     }
 
