@@ -62,7 +62,7 @@ public class SessionCookieTests {
 
         SessionCookie sessionCookie = new SessionCookie(defaultCookie);
         requestTelemetryContextMock = mock(RequestTelemetryContext.class);
-        when(requestTelemetryContextMock.getSessionCookie()).thenReturn(sessionCookie);
+        when(requestTelemetryContextMock.getSessionCookie()).thenReturn(sessionCookie.getSessionId());
     }
 
     // region Tests

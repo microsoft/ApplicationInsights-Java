@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -30,10 +33,7 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.servlet.http.HttpServletRequest;
-
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
 
 public class WebSyntheticRequestTelemetryInitializerTest {
     @Test
@@ -54,10 +54,9 @@ public class WebSyntheticRequestTelemetryInitializerTest {
 
         WebSyntheticRequestTelemetryInitializer tested = new WebSyntheticRequestTelemetryInitializer();
 
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.doReturn("").when(mockRequest).getHeader(anyString());
+        Map<String, String> requestHeaders = new HashMap<>();
 
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime(), mockRequest);
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime(), requestHeaders);
         ThreadContext.setRequestTelemetryContext(context);
 
         TraceTelemetry telemetry = new TraceTelemetry();
@@ -73,12 +72,12 @@ public class WebSyntheticRequestTelemetryInitializerTest {
 
         WebSyntheticRequestTelemetryInitializer tested = new WebSyntheticRequestTelemetryInitializer();
 
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.doReturn("").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_SOURCE);
-        Mockito.doReturn("A1").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_RUN_ID);
-        Mockito.doReturn("A2").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_LOCATION);
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_SOURCE, "");
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_RUN_ID, "A1");
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_LOCATION, "A2");
 
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime(), mockRequest);
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime(), requestHeaders);
         ThreadContext.setRequestTelemetryContext(context);
 
         TraceTelemetry telemetry = new TraceTelemetry();
@@ -94,16 +93,16 @@ public class WebSyntheticRequestTelemetryInitializerTest {
 
         WebSyntheticRequestTelemetryInitializer tested = new WebSyntheticRequestTelemetryInitializer();
 
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.doReturn("A").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_SOURCE);
-        Mockito.doReturn("A1").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_USER_ID);
-        Mockito.doReturn("A2").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_SESSION_ID);
-        Mockito.doReturn("A3").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_OPERATION_ID);
-        Mockito.doReturn("A4").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_TEST_NAME);
-        Mockito.doReturn("A5").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_RUN_ID);
-        Mockito.doReturn("A6").when(mockRequest).getHeader(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_LOCATION);
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_SOURCE, "A");
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_USER_ID, "A1");
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_SESSION_ID, "A2");
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_OPERATION_ID, "A3");
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_TEST_NAME, "A4");
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_RUN_ID, "A5");
+        requestHeaders.put(WebSyntheticRequestTelemetryInitializer.SYNTHETIC_TEST_LOCATION, "A6");
 
-        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime(), mockRequest);
+        RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime(), requestHeaders);
         ThreadContext.setRequestTelemetryContext(context);
 
         TraceTelemetry telemetry = new TraceTelemetry();

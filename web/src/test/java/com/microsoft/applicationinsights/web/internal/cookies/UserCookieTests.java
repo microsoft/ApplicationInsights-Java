@@ -63,7 +63,7 @@ public class UserCookieTests {
 
         UserCookie userCookie = new UserCookie(defaultCookie);
         requestTelemetryContextMock = mock(RequestTelemetryContext.class);
-        when(requestTelemetryContextMock.getUserCookie()).thenReturn(userCookie);
+        when(requestTelemetryContextMock.getUserCookie()).thenReturn(userCookie.getUserId());
     }
 
     // region Tests

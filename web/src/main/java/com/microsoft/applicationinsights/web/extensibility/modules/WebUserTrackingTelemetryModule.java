@@ -71,7 +71,7 @@ public class WebUserTrackingTelemetryModule implements WebTelemetryModule, Telem
         }
         String userId = userCookie.getUserId();
         Date acquisitionDate = userCookie.getAcquisitionDate();
-        context.setUserCookie(userCookie);
+        context.setUserCookie(userCookie.getUserId());
         UserContext userContext = context.getHttpRequestTelemetry().getContext().getUser();
         userContext.setId(userId);
         userContext.setAcquisitionDate(acquisitionDate);

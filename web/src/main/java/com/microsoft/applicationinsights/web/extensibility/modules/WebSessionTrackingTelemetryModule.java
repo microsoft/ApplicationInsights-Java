@@ -69,7 +69,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, Te
         if (sessionCookie == null) {
             return;
         }
-        context.setSessionCookie(sessionCookie);
+        context.setSessionCookie(sessionCookie.getSessionId());
         String sessionId = sessionCookie.getSessionId();
         getTelemetrySessionContext(context).setId(sessionId);
     }

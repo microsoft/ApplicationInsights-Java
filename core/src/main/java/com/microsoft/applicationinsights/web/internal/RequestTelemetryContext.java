@@ -21,14 +21,12 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.servlet.http.HttpServletRequest;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
-import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 import com.microsoft.applicationinsights.web.internal.correlation.CorrelationContext;
+import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -36,10 +34,10 @@ import com.microsoft.applicationinsights.web.internal.correlation.CorrelationCon
 public class RequestTelemetryContext {
     private RequestTelemetry requestTelemetry;
     private long requestStartTimeTicks;
-    private SessionCookie sessionCookie;
-    private UserCookie userCookie;
+    private String sessionCookie;
+    private String userCookie;
     private boolean isNewSession = false;
-    private HttpServletRequest servletRequest;
+    private Map<String, String> requestHeaders;
     private final CorrelationContext correlationContext;
     private Tracestate tracestate;
     private int traceflag;
@@ -67,10 +65,10 @@ public class RequestTelemetryContext {
      * @param ticks The time in ticks
      * @param servletRequest The servlet request
      */
-    public RequestTelemetryContext(long ticks, HttpServletRequest servletRequest) {
+    public RequestTelemetryContext(long ticks, Map<String, String> requestHeaders) {
         requestTelemetry = new RequestTelemetry();
         requestStartTimeTicks = ticks;
-        this.servletRequest = servletRequest;
+        this.requestHeaders = requestHeaders;
         correlationContext = new CorrelationContext();
     }
 
@@ -110,7 +108,7 @@ public class RequestTelemetryContext {
      * Sets the session cookie.
      * @param sessionCookie The session cookie.
      */
-    public void setSessionCookie(SessionCookie sessionCookie) {
+    public void setSessionCookie(String sessionCookie) {
         this.sessionCookie = sessionCookie;
     }
 
@@ -118,7 +116,7 @@ public class RequestTelemetryContext {
      * Gets the session cookie.
      * @return Session cookie.
      */
-    public SessionCookie getSessionCookie() {
+    public String getSessionCookie() {
         return sessionCookie;
     }
 
@@ -126,7 +124,7 @@ public class RequestTelemetryContext {
      * Sets the user cookie.
      * @param userCookie The user cookie.
      */
-    public void setUserCookie(UserCookie userCookie) {
+    public void setUserCookie(String userCookie) {
         this.userCookie = userCookie;
     }
 
@@ -134,7 +132,7 @@ public class RequestTelemetryContext {
      * Gets the user cookie.
      * @return The user cookie.
      */
-    public UserCookie getUserCookie() {
+    public String getUserCookie() {
         return userCookie;
     }
 
@@ -154,8 +152,8 @@ public class RequestTelemetryContext {
         return isNewSession;
     }
 
-    public HttpServletRequest getHttpServletRequest() {
-        return servletRequest;
+    public Map<String, String> getRequestHeaders() {
+        return requestHeaders;
     }
 
     /**
