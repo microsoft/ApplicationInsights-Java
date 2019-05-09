@@ -39,7 +39,7 @@ subprojects {
 		// TODO this adds the whole tree rooted at :appServers. Could this depend on :appServers which depends on :appServers:*:build?
 		dependsOn project(':test:smoke:appServers').getTasksByName('buildDockerImage', true)
 		
-		testClassesDirs = files(sourceSets.smokeTest.output.classesDirs)
+		testClassesDirs = sourceSets.smokeTest.output.classesDirs
 
 		classpath = sourceSets.smokeTest.runtimeClasspath
 		outputs.upToDateWhen { false }
