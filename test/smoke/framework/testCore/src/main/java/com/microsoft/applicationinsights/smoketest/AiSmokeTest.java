@@ -308,7 +308,13 @@ public abstract class AiSmokeTest {
 			waitForApplicationToStart();
 			System.out.println("Environment preparation complete.");
 		} catch (Exception e) {
-			System.err.printf("Could not configure environment: %s%n", ExceptionUtils.getStackTrace(e));
+			final String additionalMessage;
+			if (e instanceof TimeoutException) {
+				additionalMessage = e.getLocalizedMessage();
+			} else {
+				additionalMessage = ExceptionUtils.getStackTrace(e);
+			}
+			System.err.printf("Could not configure environment: %s%n", additionalMessage);
 			throw e;
 		}
 	}
@@ -507,6 +513,13 @@ public abstract class AiSmokeTest {
 		}
 		catch (Exception e) {
 			System.err.println("Error starting app server");
+			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
+				System.out.println("Container is not running.");
+			} else {
+				System.out.println("Yet, the container is running.");
+			}
+			System.out.println("Printing container logs: ");
+			docker.printContainerLogs(currentContainerInfo.getContainerId());
 			throw e;
 		}
 
