@@ -32,7 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Created by yonisha on 2/4/2015.
  */
-public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule{
+public class WebSessionTrackingTelemetryModule
+        implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
 
     // region Public
 
@@ -42,8 +43,9 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
      */
     private RequestTelemetryContext requestTelemetryContext;
 
+    @Override
     public void setRequestTelemetryContext(
-        RequestTelemetryContext requestTelemetryContext) {
+                                           RequestTelemetryContext requestTelemetryContext) {
         this.requestTelemetryContext = requestTelemetryContext;
     }
 
@@ -68,13 +70,12 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
     @Override
     public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
         RequestTelemetryContext context = this.requestTelemetryContext;
-        SessionCookie sessionCookie =
-            com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+        SessionCookie sessionCookie = com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                 SessionCookie.class, req, SessionCookie.COOKIE_NAME);
         if (sessionCookie == null) {
             return;
         }
-        context.setSessionCookie(sessionCookie);
+        context.setSessionCookie(sessionCookie.getSessionId());
         String sessionId = sessionCookie.getSessionId();
         getTelemetrySessionContext(context).setId(sessionId);
     }

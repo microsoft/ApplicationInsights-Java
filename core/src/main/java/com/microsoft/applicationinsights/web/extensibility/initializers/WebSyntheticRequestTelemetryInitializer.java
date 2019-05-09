@@ -21,15 +21,13 @@
 
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-
-import com.microsoft.applicationinsights.common.CommonUtils;
 
 /**
  * Created by gupele on 8/17/2015.
@@ -52,21 +50,21 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
             return;
         }
 
-        HttpServletRequest request = telemetryContext.getHttpServletRequest();
-        if (request == null) {
+        Map<String, String> requestHeaders = telemetryContext.getRequestHeaders();
+        if (requestHeaders == null) {
             return;
         }
 
-        String syntheticSourceHeader = request.getHeader(SYNTHETIC_TEST_SOURCE);
+        String syntheticSourceHeader = requestHeaders.get(SYNTHETIC_TEST_SOURCE);
         if (CommonUtils.isNullOrEmpty(syntheticSourceHeader)) {
-            handlePossibleGSMSyntheticRequest(telemetry, request);
+            handlePossibleGSMSyntheticRequest(telemetry, requestHeaders);
         } else {
-            handleCommonSyntheticRequest(syntheticSourceHeader, telemetry, request);
+            handleCommonSyntheticRequest(syntheticSourceHeader, telemetry, requestHeaders);
         }
     }
 
-    private void handlePossibleGSMSyntheticRequest(Telemetry telemetry, HttpServletRequest request) {
-        String gsmSyntheticTestRunId = request.getHeader(SYNTHETIC_TEST_RUN_ID);
+    private void handlePossibleGSMSyntheticRequest(Telemetry telemetry, Map<String, String> requestHeaders) {
+        String gsmSyntheticTestRunId = requestHeaders.get(SYNTHETIC_TEST_RUN_ID);
         if (CommonUtils.isNullOrEmpty(gsmSyntheticTestRunId)) {
             return;
         }
@@ -83,12 +81,13 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
 
         String userId = telemetry.getContext().getUser().getId();
         if (CommonUtils.isNullOrEmpty(userId)) {
-            String header = request.getHeader(SYNTHETIC_TEST_LOCATION);
+            String header = requestHeaders.get(SYNTHETIC_TEST_LOCATION);
             telemetry.getContext().getUser().setId(header);
         }
     }
 
-    private void handleCommonSyntheticRequest(String syntheticSourceHeader, Telemetry telemetry, HttpServletRequest request) {
+    private void handleCommonSyntheticRequest(String syntheticSourceHeader, Telemetry telemetry,
+                                              Map<String, String> requestHeaders) {
         String syntheticSource = telemetry.getContext().getOperation().getSyntheticSource();
         if (CommonUtils.isNullOrEmpty(syntheticSource)) {
             telemetry.getContext().getOperation().setSyntheticSource(syntheticSourceHeader);
@@ -96,29 +95,30 @@ public class WebSyntheticRequestTelemetryInitializer extends WebTelemetryInitial
 
         String userId = telemetry.getContext().getUser().getId();
         if (CommonUtils.isNullOrEmpty(userId)) {
-            String header = request.getHeader(SYNTHETIC_TEST_USER_ID);
+            String header = requestHeaders.get(SYNTHETIC_TEST_USER_ID);
             telemetry.getContext().getUser().setId(header);
         }
 
         String sessionId = telemetry.getContext().getSession().getId();
         if (CommonUtils.isNullOrEmpty(sessionId)) {
-            String header = request.getHeader(SYNTHETIC_TEST_SESSION_ID);
+            String header = requestHeaders.get(SYNTHETIC_TEST_SESSION_ID);
             telemetry.getContext().getSession().setId(header);
         }
 
         String operationId = telemetry.getContext().getOperation().getId();
         if (CommonUtils.isNullOrEmpty(operationId)) {
-            String header = request.getHeader(SYNTHETIC_TEST_OPERATION_ID);
+            String header = requestHeaders.get(SYNTHETIC_TEST_OPERATION_ID);
             telemetry.getContext().getOperation().setId(header);
         }
 
-        putInProperties(telemetry, request, SYNTHETIC_TEST_TEST_NAME, SYNTHETIC_TEST_RUN_ID, SYNTHETIC_TEST_LOCATION);
+        putInProperties(telemetry, requestHeaders, SYNTHETIC_TEST_TEST_NAME, SYNTHETIC_TEST_RUN_ID,
+                SYNTHETIC_TEST_LOCATION);
     }
 
-    private void putInProperties(Telemetry telemetry, HttpServletRequest request, String... headers) {
+    private void putInProperties(Telemetry telemetry, Map<String, String> requestHeaders, String... headers) {
         ConcurrentMap<String, String> properties = telemetry.getContext().getProperties();
         for (String header : headers) {
-            String headerValue = request.getHeader(header);
+            String headerValue = requestHeaders.get(header);
             if (headerValue != null) {
                 properties.put(header, headerValue);
             }
