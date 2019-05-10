@@ -36,8 +36,16 @@ def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)'
 def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
 
-def winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH ?: "C:\\Program Files (x86)\\Windows Kits\\8.1"
-def vsToolsDir = System.env.APPINSIGHTS_VS_PATH ?: "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0"
+def winSdkDir = "C:\\Program Files (x86)\\Windows Kits\\8.1"
+if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
+    winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH
+    println "Using custom Windows SDK path: $winSdkDir"
+}
+def vsToolsDir = "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0"
+if (System.env.APPINSIGHTS_VS_PATH) {
+    vsToolsDir = System.env.APPINSIGHTS_VS_PATH
+    println "Using customer Visual Studio Tools path: $vsToolsDir"
+}
 
 // region Native binary definition and configuration
 model {
