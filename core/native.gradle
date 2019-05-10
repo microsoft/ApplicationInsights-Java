@@ -44,7 +44,7 @@ if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
 def vsToolsDir = "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0"
 if (System.env.APPINSIGHTS_VS_PATH) {
     vsToolsDir = System.env.APPINSIGHTS_VS_PATH
-    println "Using customer Visual Studio Tools path: $vsToolsDir"
+    println "Using custom Visual Studio Tools path: $vsToolsDir"
 }
 
 // region Native binary definition and configuration
