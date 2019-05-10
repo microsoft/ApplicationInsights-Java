@@ -776,9 +776,12 @@ public class TelemetryCorrelationUtilsTests {
 
     @Test
     public void testLeadingZerosGuid() {
-        assertEquals("bb1141acf7984a6c000076774462e31f", TelemetryCorrelationUtils.uuidToStringNoDashes(UUID.fromString("bb1141ac-f798-4a6c-0000-76774462e31f")));
-        assertEquals("000076774462e31fbb1141acf7984a6c", TelemetryCorrelationUtils.uuidToStringNoDashes(UUID.fromString("00007677-4462-e31f-bb11-41acf7984a6c")));
-        assertEquals("00000000000000000000000000000000", TelemetryCorrelationUtils.uuidToStringNoDashes(UUID.fromString("00000000-0000-0000-0000-000000000000")));
+        assertEquals("bb1141acf7984a6c000076774462e31f",
+                 TelemetryCorrelationUtilsCore.uuidToStringNoDashes(UUID.fromString("bb1141ac-f798-4a6c-0000-76774462e31f")));
+        assertEquals("000076774462e31fbb1141acf7984a6c",
+                TelemetryCorrelationUtilsCore.uuidToStringNoDashes(UUID.fromString("00007677-4462-e31f-bb11-41acf7984a6c")));
+        assertEquals("00000000000000000000000000000000",
+                TelemetryCorrelationUtilsCore.uuidToStringNoDashes(UUID.fromString("00000000-0000-0000-0000-000000000000")));
     }
 
     public static String getRequestContextHeaderValue(String appId, String roleName) {
