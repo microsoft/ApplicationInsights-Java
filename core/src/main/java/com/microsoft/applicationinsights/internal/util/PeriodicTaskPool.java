@@ -2,6 +2,8 @@ package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
+import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * }}</pre>
  * @since 2.4.0
  */
-public final class PeriodicTaskManager {
+public class PeriodicTaskPool implements Stoppable {
 
     /**
      * A Map which stores the currently active PeriodicTasks and it's associate future.
@@ -52,44 +54,21 @@ public final class PeriodicTaskManager {
     private final ScheduledExecutorService periodicTaskService;
 
     /**
-     * Identifier for the executor service
-     */
-    private final String TASK_POOL_NAME = "AI-SDK-PeriodicTaskManager-Pool";
-
-    /**
      * Number of threads in the TheadPool associated with periodicTaskService.
      */
     private final int poolSize;
 
-    /**
-     * The INSTANCE of {@link PeriodicTaskManager} class
-     */
-    public static PeriodicTaskManager INSTANCE = null;
-
-    private PeriodicTaskManager(int poolSize) {
-        this.poolSize = poolSize;
-        this.periodicTaskService = new ScheduledThreadPoolExecutor(this.poolSize,
-                ThreadPoolUtils.createDaemonThreadFactory(PeriodicTaskManager.class, TASK_POOL_NAME));
-        this.periodicTaskMap = new ConcurrentHashMap<>();
-        SDKShutdownActivity.INSTANCE.register(this.periodicTaskService);
-    }
-
-    /**
-     * Initializer used to initialize the INSTANCE of {@link PeriodicTaskManager}
-     * @param poolSize
-     */
-    public static void initializer(int poolSize) {
-
+    public PeriodicTaskPool(int poolSize, String poolName) {
         if (poolSize < 1) {
             throw new IllegalArgumentException("ThreadPool size should be at least 1.");
         }
-        if (INSTANCE == null) {
-            synchronized (PeriodicTaskManager.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new PeriodicTaskManager(poolSize);
-                }
-            }
+        if (StringUtils.isBlank(poolName)) {
+            throw new IllegalArgumentException("poolName must be non-empty");
         }
+        this.poolSize = poolSize;
+        this.periodicTaskService = new ScheduledThreadPoolExecutor(this.poolSize,
+                ThreadPoolUtils.createNamedDaemonThreadFactory(poolName));
+        this.periodicTaskMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -141,6 +120,21 @@ public final class PeriodicTaskManager {
         return futureToCancel.cancel(true);
     }
 
+    @Override
+    public void stop(long timeout, TimeUnit timeUnit) {
+        periodicTaskService.shutdown();
+        try {
+            if (!periodicTaskService.awaitTermination(timeout, timeUnit)) {
+                periodicTaskService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            periodicTaskService.shutdownNow();
+            Thread.currentThread().interrupt();
+        } finally {
+            stopAndClear();
+        }
+    }
+
 
     /**
      * A Class that holds the instance of {@link Runnable} command along with it's unique taskId, initial delay,
@@ -154,6 +148,7 @@ public final class PeriodicTaskManager {
         private final String taskId;
 
         private PeriodicRunnableTask(Runnable command, long initialDelay, long period, TimeUnit unit, String taskId) {
+            validate(command, initialDelay, period, unit, taskId);
             this.command = command;
             this.initialDelay = initialDelay;
             this.period = period;
@@ -161,9 +156,17 @@ public final class PeriodicTaskManager {
             this.taskId = taskId;
         }
 
-        public static PeriodicRunnableTask getInstance(Runnable command, long initialDelay, long period,
-                                                       TimeUnit unit, String taskId) {
-            validate(command, initialDelay, period, unit, taskId);
+        /**
+         * Creates a PeriodicRunnableTask
+         * @param command The Runnable to execute
+         * @param initialDelay initial delay before running task for the first time.
+         * @param period after initial delay, period to execute task.
+         * @param unit timeUnit for initial delay and period
+         * @param taskId identifier for task
+         * @return
+         */
+        public static PeriodicRunnableTask createTask(Runnable command, long initialDelay, long period,
+                                                      TimeUnit unit, String taskId) {
             return new PeriodicRunnableTask(command, initialDelay, period, unit, taskId);
         }
 
