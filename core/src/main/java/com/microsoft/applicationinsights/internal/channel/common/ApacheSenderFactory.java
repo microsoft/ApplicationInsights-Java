@@ -30,22 +30,10 @@ import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 public enum ApacheSenderFactory {
     INSTANCE;
 
-    private ApacheSender apacheSender;
+    private ApacheSender apacheSender = ApacheSender43.create();
 
     public synchronized ApacheSender create() {
-        if (apacheSender != null) {
-            return apacheSender;
-        }
-
-        if (!ClassDataUtils.INSTANCE.verifyClassExists("org.apache.http.conn.HttpClientConnectionManager")) {
-
-            InternalLogger.INSTANCE.warn("Found an old version of HttpClient jar, for best performance consider upgrading to version 4.3+");
-
-            apacheSender = new ApacheSender42();
-        } else {
-            InternalLogger.INSTANCE.trace("Using Http Client version 4.3+");
-            apacheSender = new ApacheSender43();
-        }
+        InternalLogger.INSTANCE.trace("Using Http Client version 4.3+");
         return apacheSender;
     }
 }
