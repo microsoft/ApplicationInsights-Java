@@ -221,14 +221,14 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                 catch (Exception e) {
                     e.printStackTrace();
                     resp.sendError(500, e.getLocalizedMessage());
-                    return;
                 }
                 finally {
                     w.close();
                 }
+                break;
             default:
                 resp.sendError(404, "Unknown URI");
-                return;
+                break;
         }
     }
 

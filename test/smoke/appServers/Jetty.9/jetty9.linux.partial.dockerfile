@@ -6,7 +6,7 @@ WORKDIR /usr/local/docker-compile
 RUN apt-get update \
 	&& apt-get install -y wget procps
 
-ENV JETTY_FULL_VERSION 9.4.9.v20180320
+ENV JETTY_FULL_VERSION 9.4.17.v20190418
 
 # install jetty
 RUN wget http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_FULL_VERSION/jetty-distribution-$JETTY_FULL_VERSION.tar.gz \

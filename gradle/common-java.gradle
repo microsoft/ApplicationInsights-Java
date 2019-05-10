@@ -97,18 +97,13 @@ if (!isJava7Compatible) {
     }
 }
 if (java7JreDir) {
-    def requiredJavaBootArchives = ["rt.jar", "jsse.jar"]
-    def bootClasspath = ""
-    requiredJavaBootArchives.each { a ->
-        def archivePath = new File(java7JreDir, "lib/$a")
-        if (!archivePath.exists()) {
-            throw new ProjectConfigurationException("Archive $archivePath required for building in Java 7 could not be found.", null)
-        }
-        logger.info "Archive '$archivePath' added to boot class path"
-        bootClasspath += "$archivePath;"
+    def jre7libDir = fileTree(dir: "$java7JreDir/lib", include: '*.jar')
+    if (!jre7libDir.any()) {
+        throw new GradleException("Invalid JAVA_JRE_7 directory. ${jre7libDir.dir} was empty")
     }
+    
     tasks.withType(JavaCompile) {
-        options.bootClasspath = bootClasspath
+        options.bootstrapClasspath = jre7libDir
     }
 } else {
     def msg = "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
@@ -134,7 +129,7 @@ sourceSets {
 task integrationTest(type: Test, dependsOn: jar) {
     group 'Verification'
     description 'Runs the integration tests.'
-    testClassesDir = sourceSets.integrationTest.output.classesDir
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 }
 

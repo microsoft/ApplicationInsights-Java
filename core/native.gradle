@@ -31,25 +31,23 @@ buildscript {
 }
 
 import org.apache.commons.io.FilenameUtils
-import org.gradle.nativeplatform.BuildType
-import org.gradle.nativeplatform.NativeBinarySpec
-import org.gradle.nativeplatform.NativeLibrarySpec
-import org.gradle.nativeplatform.SharedLibraryBinarySpec
-import org.gradle.nativeplatform.StaticLibraryBinarySpec
-import org.gradle.nativeplatform.platform.NativePlatform
-import org.gradle.nativeplatform.toolchain.VisualCpp
 
 def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)'
 def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
 
+def winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH ?: "C:\\Program Files (x86)\\Windows Kits\\8.1"
+def vsToolsDir = System.env.APPINSIGHTS_VS_PATH ?: "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0"
+
 // region Native binary definition and configuration
-ext {
-    isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
-}
 model {
+    toolChains {
+        visualCpp(VisualCpp) {
+            windowsSdkDir winSdkDir
+            installDir vsToolsDir
+        }
+    }
     buildTypes {
-        debug
         release
     }
     platforms {
@@ -62,12 +60,6 @@ model {
             targetPlatform "x86"
             targetPlatform "x64"
 
-            if (isRelease) {
-                targetBuildTypes "release"
-            } else {
-                targetBuildTypes "debug"
-            }
-
             baseName = "applicationinsights-core-native-win"
 
             sources {
@@ -78,6 +70,7 @@ model {
                     }
                 }
             }
+            
             binaries.all {
                 if (delegate instanceof StaticLibraryBinarySpec) {
                     buildable = false
@@ -184,8 +177,7 @@ def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform t
             logger.warn "Unexpected targetPlatform encountered - skipping setting the file name bitness part"
     }
 
-    def debugPart = buildType.name == "debug" ? "dbg" : ""
-    def newName = "$baseName$bitnessPart$debugPart.$extension"
+    def newName = "$baseName$bitnessPart.$extension"
     def newFile = new File(filePath, newName)
     logger.info "Reconstructed file name: $originalFile => $newFile"
     newFile

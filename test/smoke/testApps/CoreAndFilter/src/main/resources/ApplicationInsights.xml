@@ -11,6 +11,8 @@
 		<UniquePrefix>JavaSDKLog</UniquePrefix>
 	</SDKLogger>
 
+	<QuickPulse enabled="false" />
+
 	<!-- HTTP request component (not required for bare API) -->
 
 	<TelemetryModules>

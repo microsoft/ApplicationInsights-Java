@@ -6,6 +6,7 @@
 
 	<InstrumentationKey>00000000-0000-0000-0000-0FEEDDADBEEF</InstrumentationKey>
 
+	<QuickPulse enabled="false" />
 	<!-- HTTP request component (not required for bare API) -->
 
 	<TelemetryModules>

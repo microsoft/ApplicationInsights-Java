@@ -151,7 +151,8 @@ public abstract class AiSmokeTest {
 	public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
 	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
 	public static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
-	public static final int HEALTH_CHECK_RETRIES = 2;
+	public static final int HEALTH_CHECK_RETRIES = 1;
+	public static final int APPSERVER_HEALTH_CHECK_TIMEOUT = 75;
 	//endregion
 
 	private static final Properties testProps = new Properties();
@@ -308,7 +309,13 @@ public abstract class AiSmokeTest {
 			waitForApplicationToStart();
 			System.out.println("Environment preparation complete.");
 		} catch (Exception e) {
-			System.err.printf("Could not configure environment: %s%n", ExceptionUtils.getStackTrace(e));
+			final String additionalMessage;
+			if (e instanceof TimeoutException) {
+				additionalMessage = e.getLocalizedMessage();
+			} else {
+				additionalMessage = ExceptionUtils.getStackTrace(e);
+			}
+			System.err.printf("Could not configure environment: %s%n", additionalMessage);
 			throw e;
 		}
 	}
@@ -502,11 +509,18 @@ public abstract class AiSmokeTest {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Verifying appserver has started (%s)...%n", url);
 
-			waitForUrlWithRetries(url, 120, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
+			waitForUrlWithRetries(url, APPSERVER_HEALTH_CHECK_TIMEOUT, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
 			System.out.println("App server is ready.");
 		}
 		catch (Exception e) {
 			System.err.println("Error starting app server");
+			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
+				System.out.println("Container is not running.");
+			} else {
+				System.out.println("Yet, the container is running.");
+			}
+			System.out.println("Printing container logs: ");
+			docker.printContainerLogs(currentContainerInfo.getContainerId());
 			throw e;
 		}
 
