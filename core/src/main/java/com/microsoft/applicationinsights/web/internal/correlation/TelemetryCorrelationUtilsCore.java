@@ -51,18 +51,13 @@ public class TelemetryCorrelationUtilsCore {
      * @param request The servlet request.
      * @param requestTelemetry The request telemetry to be populated with correlation ID's.
      */
-    public static <Req, Res> void resolveCorrelation(Req request, RequestHeaderGetter<Req> requestHeaderGetter,
-                                                     Res response, ResponseHeaderSetter<Res> responseHeaderSetter,
-                                                     RequestTelemetry requestTelemetry) {
+    public static <Req, Res> void resolveCorrelationForRequest(Req request,
+                                                               RequestHeaderGetter<Req> requestHeaderGetter,
+                                                               RequestTelemetry requestTelemetry) {
 
         try {
             if (request == null) {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. request is null.");
-                return;
-            }
-
-            if (response == null) {
-                InternalLogger.INSTANCE.error("Failed to resolve correlation. response is null.");
                 return;
             }
     
@@ -93,6 +88,21 @@ public class TelemetryCorrelationUtilsCore {
 
             // let us resolve the context now.
             resolveCorrelationContext(request, requestHeaderGetter, requestTelemetry);
+        }
+        catch(Exception ex) {
+            InternalLogger.INSTANCE.error("Failed to resolve correlation. Exception information: %s", ex.toString());
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
+        }
+    }
+
+    public static <Req, Res> void resolveCorrelationForResponse(Res response, 
+                                                                ResponseHeaderSetter<Res> responseHeaderSetter) {
+
+        try {
+            if (response == null) {
+                InternalLogger.INSTANCE.error("Failed to resolve correlation. response is null.");
+                return;
+            }
 
             //add the target appId for the response header
             addTargetAppIdForResponseHeader(response, responseHeaderSetter);

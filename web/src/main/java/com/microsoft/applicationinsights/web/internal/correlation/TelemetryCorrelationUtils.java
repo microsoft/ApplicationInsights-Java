@@ -50,7 +50,8 @@ public class TelemetryCorrelationUtils {
      * @param requestTelemetry The request telemetry to be populated with correlation ID's.
      */
     public static void resolveCorrelation(HttpServletRequest request, HttpServletResponse response, RequestTelemetry requestTelemetry) {
-        TelemetryCorrelationUtilsCore.resolveCorrelation(request, REQUEST_HEADER_GETTER, response, RESPONSE_HEADER_SETTER, requestTelemetry);
+        TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(request, REQUEST_HEADER_GETTER, requestTelemetry);
+        TelemetryCorrelationUtilsCore.resolveCorrelationForResponse(response, RESPONSE_HEADER_SETTER);
     }
 
     /**
