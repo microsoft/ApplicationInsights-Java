@@ -34,8 +34,10 @@ public class TraceContextCorrelation {
      */
     public static void resolveCorrelation(HttpServletRequest request, HttpServletResponse response,
                                           RequestTelemetry requestTelemetry) {
-        TraceContextCorrelationCore.resolveCorrelation(request, TelemetryCorrelationUtils.REQUEST_HEADER_GETTER,
-                response, TelemetryCorrelationUtils.RESPONSE_HEADER_SETTER, requestTelemetry);
+        TraceContextCorrelationCore.resolveCorrelationForRequest(request,
+                TelemetryCorrelationUtils.REQUEST_HEADER_GETTER, requestTelemetry);
+        TraceContextCorrelationCore.resolveCorrelationForResponse(response,
+                TelemetryCorrelationUtils.RESPONSE_HEADER_SETTER);
     }
 
     /**

@@ -50,18 +50,13 @@ public class TraceContextCorrelationCore {
      * @param response
      * @param requestTelemetry
      */
-    public static <Req, Res> void resolveCorrelation(Req request, RequestHeaderGetter<Req> requestHeaderGetter,
-                                                     Res response, ResponseHeaderSetter<Res> responseHeaderSetter,
-                                                     RequestTelemetry requestTelemetry) {
+    public static <Req, Res> void resolveCorrelationForRequest(Req request,
+                                                               RequestHeaderGetter<Req> requestHeaderGetter,
+                                                               RequestTelemetry requestTelemetry) {
 
         try {
             if (request == null) {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. request is null.");
-                return;
-            }
-
-            if (response == null) {
-                InternalLogger.INSTANCE.error("Failed to resolve correlation. response is null.");
                 return;
             }
 
@@ -101,6 +96,20 @@ public class TraceContextCorrelationCore {
 
             // add tracestate to threadlocal
             ThreadContext.getRequestTelemetryContext().setTracestate(tracestate);
+
+        } catch (java.lang.Exception e) {
+            InternalLogger.INSTANCE.error("unable to perform correlation :%s", ExceptionUtils.
+                getStackTrace(e));
+        }
+    }
+
+    public static <Req, Res> void resolveCorrelationForResponse(Res response, ResponseHeaderSetter<Res> responseHeaderSetter) {
+
+        try {
+            if (response == null) {
+                InternalLogger.INSTANCE.error("Failed to resolve correlation. response is null.");
+                return;
+            }
 
             // Let the callee know the caller's AppId
             addTargetAppIdInResponseHeaderViaRequestContext(response, responseHeaderSetter);
