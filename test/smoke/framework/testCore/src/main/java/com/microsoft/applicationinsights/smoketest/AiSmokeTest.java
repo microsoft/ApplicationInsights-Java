@@ -40,6 +40,7 @@ import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,7 +135,8 @@ public abstract class AiSmokeTest {
 	protected static String currentImageName;
 	protected static short appServerPort;
 	protected static String warFileName;
-	protected static String agentMode;
+    protected static String aiAgentConfig;
+    protected static String applicationInsightsConfig;
 	protected static String networkId;
 	protected static String networkName = "aismoke-net";
 	//endregion
@@ -252,8 +254,10 @@ public abstract class AiSmokeTest {
 			System.out.println("Configuring test class...");
 			UseAgent ua = description.getAnnotation(UseAgent.class);
 			if (ua != null) {
-				agentMode = ua.value();
-				System.out.println("AGENT MODE: "+agentMode);
+				aiAgentConfig = ua.aiAgentConfig();
+                applicationInsightsConfig = ua.applicationInsightsConfig();
+                System.out.println("AI AGENT CONFIG: "+aiAgentConfig);
+                System.out.println("APPLICATION INSIGHTS CONFIG: "+applicationInsightsConfig);
 			}
 			WithDependencyContainers wdc = description.getAnnotation(WithDependencyContainers.class);
 			if (wdc != null) {
@@ -270,15 +274,17 @@ public abstract class AiSmokeTest {
 		@Override
 		protected void finished(Description description) {
 			String message = "";
-			if (agentMode != null) {
-				message += "Resetting agentMode. ";
-			}
+            if (aiAgentConfig != null) {
+                message += "Resetting aiAgentConfig. ";
+                message += "Resetting applicationInsightsConfig. ";
+            }
 			if (!dependencyImages.isEmpty()) {
 				message += "Clearing dependency images. ";
 			}
 			System.out.printf("Finished test class. %s%n", message);
 			dependencyImages.clear();
-			agentMode = null;
+            aiAgentConfig = null;
+            applicationInsightsConfig = null;
 		}
 	};
 
@@ -460,7 +466,7 @@ public abstract class AiSmokeTest {
 		startTestApplicationContainer();
 	}
 
-	private static void startDependencyContainers() throws IOException, InterruptedException {
+	private static void startDependencyContainers() throws IOException, URISyntaxException, InterruptedException {
 		if (dependencyImages.isEmpty()) {
 			System.out.println("No dependency containers to start.");
 			return;
@@ -539,9 +545,10 @@ public abstract class AiSmokeTest {
 
 	private static Map<String, String> generateAppContainerEnvVarMap() {
 		Map<String, String> map = new HashMap<>();
-		if (agentMode != null) {
-			map.put("AI_AGENT_MODE", agentMode);
-		}
+        if (aiAgentConfig != null) {
+            map.put("AI_AGENT_CONFIG", aiAgentConfig);
+            map.put("APPLICATION_INSIGHTS_CONFIG", applicationInsightsConfig);
+        }
 		for (ContainerInfo info : allContainers) {
 			if (!info.isDependency()) {
 				continue;

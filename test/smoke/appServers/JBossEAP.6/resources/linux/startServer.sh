@@ -5,9 +5,11 @@ if [ -z "$JBOSS_HOME" ]; then
 	exit 1
 fi
 
-if [ ! -z "$AI_AGENT_MODE" ]; then
-    echo "AI_AGENT_MODE=$AI_AGENT_MODE"
-    cp -f ./${AI_AGENT_MODE}_AI-Agent.xml ./aiagent/AI-Agent.xml
+if [ ! -z "$AI_AGENT_CONFIG" ]; then
+    echo "AI_AGENT_CONFIG=$AI_AGENT_CONFIG"
+    echo "APPLICATION_INSIGHTS_CONFIG=$APPLICATION_INSIGHTS_CONFIG"
+    cp -f ./${AI_AGENT_CONFIG}_AI-Agent.xml ./aiagent/AI-Agent.xml
+    cp -f ./${APPLICATION_INSIGHTS_CONFIG}_ApplicationInsights.xml ./aiagent/ApplicationInsights.xml
 
     # there should only be one jar in this folder; so this command will work as long as that condition holds
     JBOSS_LOG_MANAGER_JAR=`ls $JBOSS_HOME/modules/system/layers/base/org/jboss/logmanager/main/*.jar`

@@ -22,8 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
 
-	@Autowired
-	TelemetryClient client;
+	private static final TelemetryClient client = new TelemetryClient();
 
 	private CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
 

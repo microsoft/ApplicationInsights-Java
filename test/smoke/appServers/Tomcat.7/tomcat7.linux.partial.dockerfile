@@ -32,6 +32,7 @@ RUN mkdir /root/docker-stage/aiagent
 ENV AGENT_JAR_NAME @AGENT_JAR_NAME@
 ADD ./aiagent/ /root/docker-stage/aiagent/
 ADD ./*_AI-Agent.xml /root/docker-stage/
+ADD ./*_ApplicationInsights.xml /root/docker-stage/
 
 EXPOSE 8080
 

@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+@UseAgent
 public class CoreAndFilterTests extends AiSmokeTest {
 	
 	@Test
@@ -259,7 +260,6 @@ public class CoreAndFilterTests extends AiSmokeTest {
         validateSlowTest(25);
     }
 
-    @Ignore // See github issue #600. This should pass when that is fixed.
     @Test
     @TargetUri("/autoExceptionWithFailedRequest")
     public void testAutoExceptionWithFailedRequest() {
