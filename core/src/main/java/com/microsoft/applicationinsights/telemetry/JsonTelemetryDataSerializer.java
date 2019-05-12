@@ -243,26 +243,22 @@ public final class JsonTelemetryDataSerializer {
 
     public <T> void write(String name, Map<String, T> map) throws IOException {
 
-        if (map == null) {
+        if (map == null || map.isEmpty()) {
             return;
         }
 
         writeName(name);
         try {
-            if (map.size() < 1) {
-                out.write("null");
-            } else {
-                out.write(JSON_START_OBJECT);
+            out.write(JSON_START_OBJECT);
 
-                separator = "";
-                for (Map.Entry<String, T> entry : map.entrySet()) {
-                    writeName(sanitizeKey(entry.getKey()));
-                    write(entry.getValue());
-                    separator = JSON_SEPARATOR;
-                }
-
-                out.write(JSON_CLOSE_OBJECT);
+            separator = "";
+            for (Map.Entry<String, T> entry : map.entrySet()) {
+                writeName(sanitizeKey(entry.getKey()));
+                write(entry.getValue());
+                separator = JSON_SEPARATOR;
             }
+
+            out.write(JSON_CLOSE_OBJECT);
         } finally {
             separator = JSON_SEPARATOR;
         }
