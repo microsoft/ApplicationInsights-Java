@@ -25,6 +25,11 @@
 
 #include <string>
 
+#using <System.dll> as_friend
+#using <mscorlib.dll> as_friend
+#using <System.Data.dll> as_friend
+#using <System.Xml.dll> as_friend
+
 using System::Text::Encoding;
 using namespace System::Reflection;
 using namespace System;
