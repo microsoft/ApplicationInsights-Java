@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.internal.util.PeriodicTaskManager;
+import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
@@ -56,10 +56,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     // failure counters per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Integer> failureCounters;
 
-    public CdsProfileFetcher() {
+    private final PeriodicTaskPool taskThreadPool;
 
-        // TODO: Remove the initialization of PeriodicTaskManager from here. Should be done in configuration.
-        PeriodicTaskManager.initializer(1);
+    public CdsProfileFetcher() {
+        taskThreadPool = new PeriodicTaskPool(1, CdsProfileFetcher.class.getSimpleName());
 
         RequestConfig requestConfig = RequestConfig.custom()
             .setSocketTimeout(5000)
@@ -73,15 +73,16 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .build());
 
         long resetInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
-        PeriodicTaskManager.PeriodicRunnableTask cdsRetryClearTask = PeriodicTaskManager.PeriodicRunnableTask.getInstance(new CachePurgingRunnable(),
+        PeriodicTaskPool.PeriodicRunnableTask cdsRetryClearTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new CachePurgingRunnable(),
                 resetInterval, resetInterval, TimeUnit.MINUTES, "cdsRetryClearTask");
-        ScheduledFuture<?> future = PeriodicTaskManager.INSTANCE.executePeriodicRunnableTask(cdsRetryClearTask);
-        this.httpClient.start();
 
         this.tasks = new ConcurrentHashMap<>();
         this.failureCounters = new ConcurrentHashMap<>();
-
         this.endpointAddress = DefaultProfileQueryEndpointAddress;
+
+        ScheduledFuture<?> future = taskThreadPool.executePeriodicRunnableTask(cdsRetryClearTask);
+        this.httpClient.start();
+
         SDKShutdownActivity.INSTANCE.register(this);
     }
 
@@ -172,6 +173,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 	@Override
 	public void close() throws IOException {
         this.httpClient.close();
+        this.taskThreadPool.stop(5, TimeUnit.SECONDS);
 	}
 
     /**
