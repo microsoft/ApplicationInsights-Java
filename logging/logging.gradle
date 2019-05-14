@@ -61,14 +61,14 @@ findbugs.sourceSets = [sourceSets.main]
 // region Publishing properties
 
 whenPomConfigured = { p ->
-    p.dependencies = p.dependencies.findAll { dep -> dep.scope == "test" || dep.artifactId != "junit" && dep.artifactId != "mockito-all" }
+    p.dependencies = p.dependencies.findAll { dep -> dep.scope == "test" || dep.artifactId != "junit" && dep.artifactId != "mockito-core" }
 }
 
 // endregion Publishing properties
 
 dependencies {
     compile project(':core')
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.10.19'
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
 }
 

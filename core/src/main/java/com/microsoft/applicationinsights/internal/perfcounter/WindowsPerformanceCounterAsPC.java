@@ -81,8 +81,9 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': '%s'", entry.getValue().displayName, e.toString());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                        InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': %s", entry.getValue().displayName, ExceptionUtils.getStackTrace(e));
+                    }
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
@@ -123,8 +124,9 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Exception while registering windows performance counter as PC");
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                        InternalLogger.INSTANCE.error("Exception while registering windows performance counter as PC: %s", ExceptionUtils.getStackTrace(e));
+                    }
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {

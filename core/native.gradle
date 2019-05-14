@@ -33,11 +33,18 @@ buildscript {
 import org.apache.commons.io.FilenameUtils
 
 def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
-def programFilesX86 = System.env.'ProgramFiles(x86)'
-def referenceAssembliesDir = new File("$programFilesX86\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.5")
+def programFilesX86 = System.env.'ProgramFiles(x86)' ?: 'C:\\Program Files (x86)'
 
-def winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH ?: "C:\\Program Files (x86)\\Windows Kits\\8.1"
-def vsToolsDir = System.env.APPINSIGHTS_VS_PATH ?: "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0"
+def winSdkDir = "$programFilesX86\\Windows Kits\\8.1"
+if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
+    winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH
+    println "Using custom Windows SDK path: $winSdkDir"
+}
+def vsToolsDir = "$programFilesX86\\Microsoft Visual Studio 14.0"
+if (System.env.APPINSIGHTS_VS_PATH) {
+    vsToolsDir = System.env.APPINSIGHTS_VS_PATH
+    println "Using custom Visual Studio Tools path: $vsToolsDir"
+}
 
 // region Native binary definition and configuration
 model {
@@ -97,12 +104,6 @@ model {
 
                     // Produces an output file to run on the common language runtime.
                     cppCompiler.args "/clr"
-
-                    // Forces the use of a file name as if it had been passed to the #using directive.
-                    cppCompiler.args "/FU$referenceAssembliesDir\\mscorlib.dll"
-                    cppCompiler.args "/FU$referenceAssembliesDir\\System.Data.dll"
-                    cppCompiler.args "/FU$referenceAssembliesDir\\System.dll"
-                    cppCompiler.args "/FU$referenceAssembliesDir\\System.Xml.dll"
 
                     // Sets warning level.
                     cppCompiler.args "/W3"
