@@ -121,7 +121,7 @@ projectPomName = project.msftAppInsightsJavaSdk + " Spring Boot starter"
 projectPomDescription = "This is the Spring Boot starter of " + project.msftAppInsightsJavaSdk
 
 whenPomConfigured = { p ->
-    def agentArtifactId = project(":agent").jar.baseName
+    def agentArtifactId = project(":agent-old").jar.baseName
     def loggerArtifactId = project(":ApplicationInsightsInternalLogger").jar.baseName
     p.dependencies = p.dependencies.findAll { dep -> dep.scope == "test" ||
             dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&

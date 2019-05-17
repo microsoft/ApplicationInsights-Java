@@ -29,7 +29,7 @@ apply from: "$buildScriptsDir/publishing.gradle"
 archivesBaseName = 'applicationinsights-web'
 
 dependencies {
-    compileOnly (project(':agent')) { transitive = false }
+    compileOnly (project(':agent-old')) { transitive = false }
     compile (project(':core')) { transitive = false }
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
@@ -39,7 +39,7 @@ dependencies {
     compileOnly 'org.springframework:spring-webmvc:3.1.0.RELEASE'
     compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
     compileOnly group: 'javax.enterprise', name: 'cdi-api', version: '1.1' // Java EE
-    testCompile (project(':agent')) { transitive = false }
+    testCompile (project(':agent-old')) { transitive = false }
     testCompile 'com.opensymphony:xwork:2.0.4' // Struts 2
     testCompile 'org.springframework:spring-webmvc:3.1.0.RELEASE'
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
@@ -75,7 +75,7 @@ projectPomName = project.msftAppInsights + " Java SDK Web Module"
 projectPomDescription = "This is the web module of " + project.msftAppInsightsJavaSdk
 
 whenPomConfigured = { p ->
-    def agentArtifactId = project(":agent").jar.baseName
+    def agentArtifactId = project(":agent-old").jar.baseName
     def loggerArtifactId = project(":ApplicationInsightsInternalLogger").jar.baseName
     p.dependencies = p.dependencies.findAll { dep ->
         dep.scope == "test" || dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
