@@ -38,7 +38,7 @@ repositories {
 apply from: "$buildScriptsDir/common-java.gradle"
 
 
-def shadowPrefix = 'com.microsoft.applicationinsights.agent3.shadow'
+def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
 def xyzzyVersion = '0.5.0-SNAPSHOT'
 shadowJar {
     classifier = ''
@@ -75,7 +75,7 @@ jar {
     dependsOn shadowJar
     enabled = false
     manifest {
-        attributes("Premain-Class": "com.microsoft.applicationinsights.agent3.Premain",
+        attributes("Premain-Class": "com.microsoft.applicationinsights.agent.internal.Premain",
                     "Can-Redefine-Classes": "true",
                     "Can-Retransform-Classes": "true",
                     "agent-sdk-version":project.version

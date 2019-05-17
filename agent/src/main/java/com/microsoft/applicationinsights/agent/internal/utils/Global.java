@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3.utils;
+package com.microsoft.applicationinsights.agent.internal.utils;
 
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 

@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3.dev;
+package com.microsoft.applicationinsights.agent.internal.dev;
 
 public class DevLogger {
     private final String className;

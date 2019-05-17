@@ -1,9 +1,9 @@
-package com.microsoft.applicationinsights.agent3.model;
+package com.microsoft.applicationinsights.agent.internal.model;
 
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent3.utils.Global;
+import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.checkerframework.checker.nullness.qual.Nullable;

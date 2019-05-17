@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3;
+package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class Premain {
 
             instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(agentJarFile));
 
-            Class<?> mainEntryPointClass = Class.forName("com.microsoft.applicationinsights.agent3.MainEntryPoint",
+            Class<?> mainEntryPointClass = Class.forName("com.microsoft.applicationinsights.agent.internal.MainEntryPoint",
                     true, Premain.class.getClassLoader());
             Method premainMethod = mainEntryPointClass.getMethod("premain", Instrumentation.class, File.class);
             premainMethod.invoke(null, instrumentation, agentJarFile);

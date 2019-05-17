@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3.model;
+package com.microsoft.applicationinsights.agent.internal.model;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent3.utils.Global;
+import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;

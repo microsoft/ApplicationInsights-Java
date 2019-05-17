@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3.model;
+package com.microsoft.applicationinsights.agent.internal.model;
 
 import java.util.concurrent.TimeUnit;
 

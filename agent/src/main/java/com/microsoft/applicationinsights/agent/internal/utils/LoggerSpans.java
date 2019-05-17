@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3.utils;
+package com.microsoft.applicationinsights.agent.internal.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3;
+package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.util.Arrays;
@@ -8,12 +8,12 @@ import java.util.Enumeration;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent3.dev.DevLogger;
-import com.microsoft.applicationinsights.agent3.model.IncomingSpanImpl;
-import com.microsoft.applicationinsights.agent3.model.NopThreadContext;
-import com.microsoft.applicationinsights.agent3.model.NopThreadSpan;
-import com.microsoft.applicationinsights.agent3.model.ThreadContextImpl;
-import com.microsoft.applicationinsights.agent3.utils.Global;
+import com.microsoft.applicationinsights.agent.internal.dev.DevLogger;
+import com.microsoft.applicationinsights.agent.internal.model.IncomingSpanImpl;
+import com.microsoft.applicationinsights.agent.internal.model.NopThreadContext;
+import com.microsoft.applicationinsights.agent.internal.model.NopThreadSpan;
+import com.microsoft.applicationinsights.agent.internal.model.ThreadContextImpl;
+import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.config.ConfigurationFileLocator;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
@@ -52,7 +52,7 @@ public class AgentImpl implements AgentSPI {
             }
         }
         client = new TelemetryClient(configuration);
-        client.trackEvent("Agent3 Init");
+        client.trackEvent("Agent Init");
         out.info("tracked init event");
     }
 

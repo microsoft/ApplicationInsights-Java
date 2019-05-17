@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3;
+package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.agent3.utils.Global;
+import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import org.glowroot.xyzzy.engine.config.InstrumentationDescriptor;
 import org.glowroot.xyzzy.engine.config.InstrumentationDescriptors;
 import org.glowroot.xyzzy.engine.impl.InstrumentationServiceImpl.ConfigServiceFactory;
@@ -24,7 +24,7 @@ public class MainEntryPoint {
     public static void premain(Instrumentation instrumentation, File agentJarFile) {
         Logger startupLogger;
         try {
-            startupLogger = MainEntryPointUtil.initLogging("com.microsoft.applicationinsights.agent3", instrumentation);
+            startupLogger = MainEntryPointUtil.initLogging("com.microsoft.applicationinsights.agent", instrumentation);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {

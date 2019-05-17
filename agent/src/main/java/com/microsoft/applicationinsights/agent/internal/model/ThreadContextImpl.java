@@ -1,10 +1,10 @@
-package com.microsoft.applicationinsights.agent3.model;
+package com.microsoft.applicationinsights.agent.internal.model;
 
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent3.utils.Global;
-import com.microsoft.applicationinsights.agent3.utils.LoggerSpans;
+import com.microsoft.applicationinsights.agent.internal.utils.Global;
+import com.microsoft.applicationinsights.agent.internal.utils.LoggerSpans;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;

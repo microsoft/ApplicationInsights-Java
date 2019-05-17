@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent3.model;
+package com.microsoft.applicationinsights.agent.internal.model;
 
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
 import org.glowroot.xyzzy.instrumentation.api.AsyncSpan;
