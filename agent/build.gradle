@@ -69,7 +69,7 @@ shadowJar {
         resource = 'META-INF/xyzzy.instrumentation.list'
     }
 }
-archivesBaseName = 'applicationinsights-agent3'
+archivesBaseName = 'applicationinsights-agent'
 
 jar {
     dependsOn shadowJar

@@ -9,8 +9,8 @@ ext {
 	dockerExe = findDockerExe()
 	dockerCliExe = findDockerCliExe()
 	globalResourcesDir = "$projectDir/global-resources"
-	agentLibsDir = file("${project(':agent3').buildDir}/libs") // is there a better way to get this?
-	agentJarName = project(':agent3').jar.archiveName
+	agentLibsDir = file("${project(':agent').buildDir}/libs") // is there a better way to get this?
+	agentJarName = project(':agent').jar.archiveName
 }
 
 subprojects {
@@ -78,7 +78,7 @@ subprojects {
 	task buildDockerImage {
 		description 'Builds Docker images'
 
-		dependsOn ':agent3:assemble'
+		dependsOn ':agent:assemble'
 		dependsOn generateDockerfiles
 		inputs.files(fileTree(dir: dockerfileOutputDir, include: '*.dockerfile'))
 
