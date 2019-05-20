@@ -51,7 +51,11 @@ shadowJar {
     relocate('com.fasterxml.jackson', "${shadowPrefix}.fasterxml.jackson")
     relocate('org.checkerframework.checker', "${shadowPrefix}.checkerframework.checker")
 
-    relocate('org.apache.commons', "${shadowPrefix}.apache.commons")
+    // need to avoid relocating org.apache.commons.httpclient until implement two-phase shadow 
+    relocate('org.apache.commons.codec', "${shadowPrefix}.apache.commons.codec")
+    relocate('org.apache.commons.io', "${shadowPrefix}.apache.commons.io")
+    relocate('org.apache.commons.lang3', "${shadowPrefix}.apache.commons.lang3")
+    relocate('org.apache.commons.logging', "${shadowPrefix}.apache.commons.logging")
     relocate('com.microsoft.applicationinsights.internal.logger', "${shadowPrefix}.internallogger")
 
     exclude 'META-INF/maven/**'

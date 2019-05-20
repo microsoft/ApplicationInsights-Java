@@ -56,15 +56,27 @@ public class SpringbootSmokeTest extends AiSmokeTest{
 			getOrDefault("ai.operation.id", null)));
 	}
 
-	@Test
-	@TargetUri("/asyncDependencyCall")
-	public void testAsyncDependencyCall() {
-		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-		assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-		RequestData d = getTelemetryDataForType(0, "RequestData");
-		RemoteDependencyData rdd = getTelemetryDataForType(0,"RemoteDependencyData");
-		String requestOperationId = d.getId();
-		String rddId = rdd.getId();
-		assertTrue(rddId.contains(requestOperationId));
-	}
+    @Test
+    @TargetUri("/asyncDependencyCall")
+    public void testAsyncDependencyCall() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RemoteDependencyData rdd = getTelemetryDataForType(0,"RemoteDependencyData");
+        String requestOperationId = d.getId();
+        String rddId = rdd.getId();
+        assertTrue(rddId.contains(requestOperationId));
+    }
+
+    @Test
+    @TargetUri("/asyncDependencyCallWithApacheHttpClient3")
+    public void testAsyncDependencyCallWithApacheHttpClient3() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RemoteDependencyData rdd = getTelemetryDataForType(0,"RemoteDependencyData");
+        String requestOperationId = d.getId();
+        String rddId = rdd.getId();
+        assertTrue(rddId.contains(requestOperationId));
+    }
 }

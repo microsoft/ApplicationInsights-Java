@@ -1,20 +1,21 @@
 package com.springbootstartertest.controller;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+
+import com.microsoft.applicationinsights.TelemetryClient;
 import javax.servlet.ServletException;
-import org.apache.http.client.HttpClient;
+import org.apache.commons.httpclient.Cookie;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.cookie.CookiePolicy;
+import org.apache.commons.httpclient.cookie.CookieSpecBase;
+import org.apache.commons.httpclient.cookie.MalformedCookieException;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +26,7 @@ public class TestController {
 	private static final TelemetryClient client = new TelemetryClient();
 
 	private CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
-
+	
 	@GetMapping("/")
 	public String rootPage() {
 		return "OK";
@@ -55,12 +56,30 @@ public class TestController {
 		throw new ServletException("This is an exception");
 	}
 
-	@GetMapping("/asyncDependencyCall")
-	public AsyncResult<Integer> asyncDependencyCall() throws IOException {
+    @GetMapping("/asyncDependencyCall")
+    public AsyncResult<Integer> asyncDependencyCall() throws IOException {
         String url = "https://www.bing.com";
         HttpGet get = new HttpGet(url);
         try (CloseableHttpResponse response = httpClient.execute(get)){
-        	return new AsyncResult<>(response.getStatusLine().getStatusCode());
+            return new AsyncResult<>(response.getStatusLine().getStatusCode());
         }
-	}
+    }
+
+    @GetMapping("/asyncDependencyCallWithApacheHttpClient3")
+    public AsyncResult<Integer> asyncDependencyCallWithApacheHttpClient3() throws IOException {
+        HttpClient httpClient3 = new org.apache.commons.httpclient.HttpClient();
+        CookiePolicy.registerCookieSpec("PermitAllCookiesSpec", PermitAllCookiesSpec.class);
+        httpClient3.getParams().setCookiePolicy("PermitAllCookiesSpec");
+        String url = "https://www.bing.com";
+        GetMethod httpGet = new GetMethod(url);
+        httpClient3.executeMethod(httpGet);
+        httpGet.releaseConnection();
+        return new AsyncResult<>(httpGet.getStatusCode());
+    }
+
+    public static class PermitAllCookiesSpec extends CookieSpecBase {
+        public void validate(String host, int port, String path, boolean secure, final Cookie cookie)
+                throws MalformedCookieException {
+        }
+    }
 }
