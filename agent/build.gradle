@@ -97,6 +97,7 @@ dependencies {
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-spring:$xyzzyVersion" // need for operation name
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-redis:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-apache-http-client:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-okhttp:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-log4j:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-logback:$xyzzyVersion"
 
