@@ -1,11 +1,10 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
 import org.glowroot.xyzzy.instrumentation.api.AsyncQuerySpan;
 import org.glowroot.xyzzy.instrumentation.api.QueryMessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.Timer;
-
-import com.microsoft.applicationinsights.TelemetryClient;
 
 public class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
 

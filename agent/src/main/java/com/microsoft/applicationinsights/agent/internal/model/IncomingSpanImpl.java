@@ -1,10 +1,5 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import java.net.MalformedURLException;
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -16,17 +11,18 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.ResponseHeaderSetter;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.Getter;
-import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.Setter;
-import org.glowroot.xyzzy.instrumentation.api.Span;
+import org.glowroot.xyzzy.instrumentation.api.*;
 import org.glowroot.xyzzy.instrumentation.api.ThreadContext.ServletRequestInfo;
-import org.glowroot.xyzzy.instrumentation.api.Timer;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
+
+import javax.annotation.Nullable;
+import java.net.MalformedURLException;
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

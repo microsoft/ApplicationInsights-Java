@@ -1,14 +1,7 @@
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.dev.DevLogger;
 import com.microsoft.applicationinsights.agent.internal.model.IncomingSpanImpl;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadContext;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadSpan;
@@ -28,11 +21,15 @@ import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.TimerName;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+
 public class AgentImpl implements AgentSPI {
 
     private final TelemetryClient client;
-
-    private static final DevLogger out = new DevLogger(AgentImpl.class);
 
     AgentImpl(File agentJarFile) {
         String configDirPropName = ConfigurationFileLocator.CONFIG_DIR_PROPERTY;
@@ -42,7 +39,6 @@ public class AgentImpl implements AgentSPI {
             System.setProperty(configDirPropName, agentJarFile.getParent());
             configuration = TelemetryConfiguration.getActive();
         } catch (Throwable t) {
-            t.printStackTrace();
             throw new RuntimeException(t);
         } finally {
             if (propValue == null) {
@@ -53,7 +49,6 @@ public class AgentImpl implements AgentSPI {
         }
         client = new TelemetryClient(configuration);
         client.trackEvent("Agent Init");
-        out.info("tracked init event");
     }
 
     @Override

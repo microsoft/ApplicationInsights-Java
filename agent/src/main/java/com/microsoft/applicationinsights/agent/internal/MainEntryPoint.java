@@ -1,12 +1,5 @@
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.File;
-import java.lang.instrument.Instrumentation;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import org.glowroot.xyzzy.engine.config.InstrumentationDescriptor;
 import org.glowroot.xyzzy.engine.config.InstrumentationDescriptors;
@@ -15,6 +8,13 @@ import org.glowroot.xyzzy.engine.impl.SimpleConfigServiceFactory;
 import org.glowroot.xyzzy.engine.init.EngineModule;
 import org.glowroot.xyzzy.engine.init.MainEntryPointUtil;
 import org.slf4j.Logger;
+
+import java.io.File;
+import java.lang.instrument.Instrumentation;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainEntryPoint {
 
