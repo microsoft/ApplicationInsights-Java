@@ -363,9 +363,6 @@ public final class JsonTelemetryDataSerializer {
             else if(curr == '\\'){
                 result.append("\\\\");
             }
-            else if(curr == '/'){
-                result.append("\\/");
-            }
             else if(curr == '\b'){
                 result.append("\\b");
             }
