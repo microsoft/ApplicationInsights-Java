@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 // Created by gupele
 /**
@@ -519,7 +520,12 @@ public class TelemetryClient {
             	throw td;
             } catch (Throwable t) {
                 try {
-                    InternalLogger.INSTANCE.error("Exception in context initializer: '%s'", t.toString());                } catch (ThreadDeath td) {
+                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                        InternalLogger.INSTANCE.error("Exception in context initializer%s: %s",
+                                init == null ? " (context initializer is null)" : ", "+init.getClass().getSimpleName(),
+                                ExceptionUtils.getStackTrace(t));
+                    }
+                } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
                     // chomp
