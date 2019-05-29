@@ -51,7 +51,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     public static final String BASE_TYPE = "ExceptionData";
 
 
-    private ExceptionTelemetry() {
+    public ExceptionTelemetry() {
         super();
         data = new ExceptionData();
         initialize(data.getProperties());
