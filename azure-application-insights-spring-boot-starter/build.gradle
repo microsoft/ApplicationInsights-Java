@@ -51,12 +51,16 @@ dependencies {
     compile(project(':web'))
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
-    provided('org.springframework.boot:spring-boot:1.5.9.RELEASE')
-    provided('org.springframework.boot:spring-boot-autoconfigure:1.5.9.RELEASE')
-    provided('org.springframework.boot:spring-boot-starter-web:1.5.9.RELEASE')
-    provided('org.springframework.boot:spring-boot-configuration-processor:1.5.9.RELEASE')
+    compileOnly('org.springframework.boot:spring-boot:1.5.9.RELEASE')
+    compileOnly('org.springframework.boot:spring-boot-autoconfigure:1.5.9.RELEASE')
+    compileOnly('org.springframework.boot:spring-boot-starter-web:1.5.9.RELEASE')
+    compileOnly('org.springframework.boot:spring-boot-configuration-processor:1.5.9.RELEASE')
     testCompile('junit:junit:4.12')
     testCompile('org.springframework.boot:spring-boot-starter-test:1.5.9.RELEASE')
+    testCompile('org.springframework.boot:spring-boot:1.5.9.RELEASE')
+    testCompile('org.springframework.boot:spring-boot-autoconfigure:1.5.9.RELEASE')
+    testCompile('org.springframework.boot:spring-boot-starter-web:1.5.9.RELEASE')
+    testCompile('org.springframework.boot:spring-boot-configuration-processor:1.5.9.RELEASE')
     testCompile('org.assertj:assertj-core:2.6.0')
 }
 
@@ -117,7 +121,7 @@ projectPomName = project.msftAppInsightsJavaSdk + " Spring Boot starter"
 projectPomDescription = "This is the Spring Boot starter of " + project.msftAppInsightsJavaSdk
 
 whenPomConfigured = { p ->
-    def agentArtifactId = project(":agent").jar.baseName
+    def agentArtifactId = project(":agent-old").jar.baseName
     def loggerArtifactId = project(":ApplicationInsightsInternalLogger").jar.baseName
     p.dependencies = p.dependencies.findAll { dep -> dep.scope == "test" ||
             dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&

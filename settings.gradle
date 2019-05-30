@@ -21,6 +21,7 @@
 
 
 include 'agent'
+include 'agent-old'
 include 'core'
 include 'logging:log4j1_2'
 include 'logging:log4j2'

@@ -21,12 +21,13 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
+import java.util.Date;
+
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
-import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
  * Created by yonisha on 2/7/2015.
  */
 public class WebUserTrackingTelemetryModule implements
-    WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
+        WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
 
     /**
      * The {@link RequestTelemetryContext} instance propogated from
@@ -42,8 +43,8 @@ public class WebUserTrackingTelemetryModule implements
      */
     private RequestTelemetryContext requestTelemetryContext;
 
-    public void setRequestTelemetryContext(
-        RequestTelemetryContext requestTelemetryContext) {
+    @Override
+    public void setRequestTelemetryContext(RequestTelemetryContext requestTelemetryContext) {
         this.requestTelemetryContext = requestTelemetryContext;
     }
 
@@ -69,15 +70,14 @@ public class WebUserTrackingTelemetryModule implements
     @Override
     public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
         RequestTelemetryContext context = this.requestTelemetryContext;
-        UserCookie userCookie =
-            com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
+        UserCookie userCookie = com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                 UserCookie.class, req, UserCookie.COOKIE_NAME);
         if (userCookie == null) {
             return;
         }
         String userId = userCookie.getUserId();
         Date acquisitionDate = userCookie.getAcquisitionDate();
-        context.setUserCookie(userCookie);
+        context.setUserCookie(userCookie.getUserId());
         UserContext userContext = context.getHttpRequestTelemetry().getContext().getUser();
         userContext.setId(userId);
         userContext.setAcquisitionDate(acquisitionDate);

@@ -16,6 +16,6 @@ public class SampleTestWithDependencyContainer extends AiSmokeTest {
 		assertTrue("mocked ingestion has 0 items", mockedIngestion.getItemCount() > 0);
 		
 		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-		assertEquals(2, mockedIngestion.getCountForType("RemoteDependencyData"));
+		assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 	}
 }

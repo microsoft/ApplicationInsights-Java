@@ -6,6 +6,7 @@ import org.junit.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+@UseAgent(applicationInsightsConfig = "FixedRateSampling")
 public class FixedRateSamplingTest extends AiSmokeTest {
     @Test
     @TargetUri("/fixedRateSampling")

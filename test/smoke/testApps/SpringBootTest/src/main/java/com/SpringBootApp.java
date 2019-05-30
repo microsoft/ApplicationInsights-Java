@@ -1,8 +1,5 @@
 package com;
 
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import java.util.concurrent.Executor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -15,57 +12,32 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableAsync
 public class SpringBootApp extends SpringBootServletInitializer {
 
-	public SpringBootApp() {
-		super();
+    public SpringBootApp() {
+        super();
 
-		// This lets tomcat handle error and hence filter catches exception.
-		// Disables Springboot error handling which prevents response from propagating up.
-		// See: https://github.com/spring-projects/spring-boot/commit/6381a07c71310c56dc29cf99709adf5fe6e6406a
-		setRegisterErrorPageFilter(false);
-	}
-	@Override
-	protected  SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
-		return applicationBuilder.sources(SpringBootApp.class);
-	}
-  public static void main(String[] args) {
-	  SpringApplication.run(SpringBootApp.class, args);
-  }
+        // This lets tomcat handle error and hence filter catches exception.
+        // Disables Springboot error handling which prevents response from propagating up.
+        // See: https://github.com/spring-projects/spring-boot/commit/6381a07c71310c56dc29cf99709adf5fe6e6406a
+        setRegisterErrorPageFilter(false);
+    }
 
-	@Bean
-	public Executor taskExecutor() {
-		ThreadPoolTaskExecutor executor = new MyThreadPoolTaskExecutor();
-		executor.setCorePoolSize(2);
-		executor.setMaxPoolSize(2);
-		executor.setQueueCapacity(500);
-		executor.setThreadNamePrefix("AsyncTaskExecutor-");
-		executor.initialize();
-		return executor;
-	}
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
+        return applicationBuilder.sources(SpringBootApp.class);
+    }
 
-	private final class MyThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
+    @Bean
+    public ThreadPoolTaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("Async-");
+        executor.initialize();
+        return executor;
+    }
 
-		@Override
-		public void execute(Runnable command) {
-			super.execute(new Wrapped(command, ThreadContext.getRequestTelemetryContext()));
-		}
-	}
-
-	private final class Wrapped implements Runnable {
-		private final Runnable task;
-		private final RequestTelemetryContext rtc;
-
-		Wrapped(Runnable task, RequestTelemetryContext rtc) {
-			this.task = task;
-			this.rtc = rtc;
-		}
-
-		@Override
-		public void run() {
-			if (ThreadContext.getRequestTelemetryContext() != null) {
-				ThreadContext.remove();
-			}
-			ThreadContext.setRequestTelemetryContext(rtc);
-			task.run();
-		}
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SpringBootApp.class, args);
+    }
 }

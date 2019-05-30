@@ -23,14 +23,55 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
+configurations.all {
+    // this is only needed while using xyzzy SNAPSHOTS
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+repositories {
+    // this is only needed while using xyzzy SNAPSHOTS
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+}
+
 apply from: "$buildScriptsDir/common-java.gradle"
 
+
+def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
+def xyzzyVersion = '0.5.0-SNAPSHOT'
 shadowJar {
     classifier = ''
-    relocate 'org.objectweb.asm', 'com.microsoft.applicationinsights.agent.dependencies.asm'
-    relocate 'org.apache.commons', 'com.microsoft.applicationinsights.agent.dependencies.apachecommons'
-    relocate 'com.microsoft.applicationinsights.internal.logger', 'com.microsoft.applicationinsights.agent.dependencies.internallogger'
-    relocate 'com.google', 'com.microsoft.applicationinsights.agent.dependencies.com.google'
+    mergeServiceFiles()
+
+//    relocate('org.glowroot', "${shadowPrefix}.glowroot")
+    relocate('org.objectweb.asm', "${shadowPrefix}.objectweb.asm")
+    relocate('org.slf4j', "${shadowPrefix}.slf4j")
+    relocate('com.google', "${shadowPrefix}.google")
+    relocate('com.fasterxml.jackson', "${shadowPrefix}.fasterxml.jackson")
+    relocate('org.checkerframework.checker', "${shadowPrefix}.checkerframework.checker")
+
+    // need to avoid relocating org.apache.commons.httpclient until implement two-phase shadow 
+    relocate('org.apache.commons.codec', "${shadowPrefix}.apache.commons.codec")
+    relocate('org.apache.commons.io', "${shadowPrefix}.apache.commons.io")
+    relocate('org.apache.commons.lang3', "${shadowPrefix}.apache.commons.lang3")
+    relocate('org.apache.commons.logging', "${shadowPrefix}.apache.commons.logging")
+    relocate('com.microsoft.applicationinsights.internal.logger', "${shadowPrefix}.internallogger")
+
+    exclude 'META-INF/maven/**'
+    exclude 'META-INF/LICENSE*'
+    exclude 'META-INF/NOTICE*'
+    exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
+
+//    dependencies {
+//        exclude(dependency("org.glowroot:glowroot-engine:$xyzzyVersion"))
+//        exclude(dependency("org.glowroot:glowroot-instrumentation-api:$xyzzyVersion"))
+//        exclude(dependency("org.glowroot.instrumentation:glowroot-instrumentation-all:$xyzzyVersion"))
+//    }
+
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
+        resource = 'META-INF/xyzzy.instrumentation.list'
+    }
 }
 archivesBaseName = 'applicationinsights-agent'
 
@@ -38,8 +79,7 @@ jar {
     dependsOn shadowJar
     enabled = false
     manifest {
-        attributes("Agent-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                   "Premain-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
+        attributes("Premain-Class": "com.microsoft.applicationinsights.agent.internal.Premain",
                     "Can-Redefine-Classes": "true",
                     "Can-Retransform-Classes": "true",
                     "agent-sdk-version":project.version
@@ -48,12 +88,25 @@ jar {
 }
 
 dependencies {
-    compile(project(':ApplicationInsightsInternalLogger'))
-    compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.2'
-    compile group: 'org.ow2.asm', name: 'asm-all', version: '5.2'
-    compile group: 'org.apache.commons', name:'commons-lang3', version:'3.7'
-    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.10.19'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+//    compile project(':ApplicationInsightsInternalLogger') // TODO include? or use slf4j?
+    compile 'org.slf4j:slf4j-api:1.7.25'
 
+    compile "org.glowroot.xyzzy:xyzzy-engine:$xyzzyVersion"
+    compile "org.glowroot.xyzzy:xyzzy-instrumentation-api:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-executor:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-servlet:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-spring:$xyzzyVersion" // need for operation name
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-redis:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-apache-http-client:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-okhttp:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-log4j:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-logback:$xyzzyVersion"
+
+    compile(project(':core'))
+
+    compile group: 'org.apache.commons', name:'commons-lang3', version:'3.7'
+
+//    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+}

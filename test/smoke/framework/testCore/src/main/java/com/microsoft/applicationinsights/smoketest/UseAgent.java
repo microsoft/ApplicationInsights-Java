@@ -27,5 +27,7 @@ public @interface UseAgent {
     /**
      * Sets the agent mode, i.e. chooses the config file to use.
      */
-    String value() default "default";
+    String aiAgentConfig() default "default";
+    
+    String applicationInsightsConfig() default "default";
 }

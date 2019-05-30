@@ -20,7 +20,6 @@
  */
 
 apply plugin: 'maven'
-apply from: "$buildScriptsDir/provided-configuration.gradle"
 
 ext {
     projectPomName = ""
@@ -131,8 +130,6 @@ def updatePomWithGeneralProjectInformation(pomObject) {
             }
         }
 
-        scopeMappings.addMapping(MavenPlugin.PROVIDED_COMPILE_PRIORITY, configurations.getByName("provided"), Conf2ScopeMappingContainer.PROVIDED)
-
         withXml {
             // Append license text to pom.xml
             def pomText = asString()
@@ -150,7 +147,7 @@ def updatePomWithGeneralProjectInformation(pomObject) {
 
 javadoc {
     source = sourceSets.main.allJava
-    classpath = configurations.compile + configurations.provided
+    classpath = configurations.compile
 }
 
 task prepareSourcesArchive(type: Jar) {

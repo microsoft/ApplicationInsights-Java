@@ -13,6 +13,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+@UseAgent
 public class TraceLogBackTest extends AiSmokeTest {
 
     @Before
@@ -30,31 +31,31 @@ public class TraceLogBackTest extends AiSmokeTest {
         MessageData md1 = getTelemetryDataForType(0, "MessageData");
         assertEquals("This is logback trace.", md1.getMessage());
         assertEquals(SeverityLevel.Verbose, md1.getSeverityLevel());
-        assertEquals("LOGBack", md1.getProperties().get("SourceType"));
+        assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("TRACE", md1.getProperties().get("LoggingLevel"));
 
         MessageData md2 = getTelemetryDataForType(1, "MessageData");
         assertEquals("This is logback debug.", md2.getMessage());
         assertEquals(SeverityLevel.Verbose, md2.getSeverityLevel());
-        assertEquals("LOGBack", md2.getProperties().get("SourceType"));
+        assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("DEBUG", md2.getProperties().get("LoggingLevel"));
 
         MessageData md3 = getTelemetryDataForType(2, "MessageData");
         assertEquals("This is logback info.", md3.getMessage());
         assertEquals(SeverityLevel.Information, md3.getSeverityLevel());
-        assertEquals("LOGBack", md3.getProperties().get("SourceType"));
+        assertEquals("Logger", md3.getProperties().get("SourceType"));
         assertEquals("INFO", md3.getProperties().get("LoggingLevel"));
 
         MessageData md4 = getTelemetryDataForType(3, "MessageData");
         assertEquals("This is logback warn.", md4.getMessage());
         assertEquals(SeverityLevel.Warning, md4.getSeverityLevel());
-        assertEquals("LOGBack", md4.getProperties().get("SourceType"));
+        assertEquals("Logger", md4.getProperties().get("SourceType"));
         assertEquals("WARN", md4.getProperties().get("LoggingLevel"));
 
         MessageData md5 = getTelemetryDataForType(4, "MessageData");
         assertEquals("This is logback error.", md5.getMessage());
         assertEquals(SeverityLevel.Error, md5.getSeverityLevel());
-        assertEquals("LOGBack", md5.getProperties().get("SourceType"));
+        assertEquals("Logger", md5.getProperties().get("SourceType"));
         assertEquals("ERROR", md5.getProperties().get("LoggingLevel"));
     }
 
@@ -70,7 +71,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals("Fake Exception", ex.getMessage());
         assertEquals(SeverityLevel.Error, ed1.getSeverityLevel());
         assertEquals("This is an exception!", ed1.getProperties().get("Logger Message"));
-        assertEquals("LOGBack", ed1.getProperties().get("SourceType"));
+        assertEquals("Logger", ed1.getProperties().get("SourceType"));
         assertEquals("ERROR", ed1.getProperties().get("LoggingLevel"));
     }
 }
