@@ -5,12 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
@@ -79,8 +75,13 @@ public class AiDockerClient {
 		return new ProcessBuilder(cmdLine).redirectErrorStream(true);
 	}
 
-	public String startContainer(String image, String portMapping, String network) throws IOException, InterruptedException {
-		return startContainer(image, portMapping, network, null, null);
+	public String startDependencyContainer(String image, String[] envVars, String portMapping, String network) throws IOException, InterruptedException {
+	    Map<String, String> envVarMap = new HashMap<>();
+	    for (String envVar : envVars) {
+	        int index = envVar.indexOf('=');
+	        envVarMap.put(envVar.substring(0, index), envVar.substring(index + 1));
+	    }
+	    return startContainer(image, portMapping, network, null, envVarMap);
 	}
 
 	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars) throws IOException, InterruptedException {
