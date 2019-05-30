@@ -236,14 +236,14 @@ public final class HttpClientMethodVisitor extends AbstractHttpMethodVisitor {
 
                 mv.visitFieldInsn(Opcodes.GETSTATIC, internalName, "INSTANCE", "L" + internalName + ";");
 
-                mv.visitLdcInsn(getMethodName());
-                mv.visitVarInsn(ALOAD, methodLocal);
+                mv.visitLdcInsn(getMethodName()); // identifier
+                mv.visitVarInsn(ALOAD, methodLocal);  // method
                 //Path is populated in CoreAgentNotificationHandler httpMethodFinished() method
-                mv.visitVarInsn(ALOAD, childIdLocal);
-                mv.visitVarInsn(ALOAD, uriLocal);
-                mv.visitVarInsn(ALOAD, targetLocal); //using derived target
-                mv.visitVarInsn(ILOAD, statusCodeLocal);
-                mv.visitVarInsn(LLOAD, deltaInNS);
+                mv.visitVarInsn(ALOAD, childIdLocal); // correlationId
+                mv.visitVarInsn(ALOAD, uriLocal); // uri
+                mv.visitVarInsn(ALOAD, targetLocal); // target; using derived target
+                mv.visitVarInsn(ILOAD, statusCodeLocal); // result
+                mv.visitVarInsn(LLOAD, deltaInNS); // delta
                 mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internalName, FINISH_DETECT_METHOD_NAME, FINISH_METHOD_RETURN_SIGNATURE, false);
 
                 //skip the following instructions
