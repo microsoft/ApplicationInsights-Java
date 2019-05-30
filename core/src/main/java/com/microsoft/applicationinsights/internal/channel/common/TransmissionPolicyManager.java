@@ -129,7 +129,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
     public void clearBackoff() {
         policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         backoffManager.onDoneSending();
-        InternalLogger.INSTANCE.info("Backoff has been reset.");
+//        InternalLogger.INSTANCE.info("Backoff has been reset.");
     }
 
     /**

@@ -5,6 +5,8 @@
 timeout period.
 - Upgrade gradle to 5.3.1
 - Java 11 fixes
+- Fix [#907](https://github.com/microsoft/ApplicationInsights-Java/issues/907) - ensure string compare is case insensitive when running a SQL explain on a select statement. 
+
 
 # Version 2.4.0-BETA
 - Removed support for multiple apps instrumented with single JVM Agent. Instrumentation will only work for single apps

@@ -26,33 +26,27 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.management.OperatingSystemMXBean;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.Properties;
 
 /**
  * A view into the context information specific to device information.
  */
-public class DeviceInfo
-{
+public class DeviceInfo {
     private static OperatingSystemMXBean osBean = java.lang.management.ManagementFactory.getOperatingSystemMXBean();
 
-    public static String getOperatingSystem()
-    {
+    public static String getOperatingSystem() {
         return osBean.getName();
     }
 
-    public static String getOperatingSystemVersion()
-    {
+    public static String getOperatingSystemVersion() {
         // Note: osBean.getName will return a string like "Windows 8.1" which should be good enough for this field.
         // Calling osBean.getVersion on the other hand will only return 6.3 (Windows NT version) which will be less
         // intuitive to customers.
         return osBean.getName();
     }
 
-    public static String getOperatingVersionArchitecture()
-    {
+    public static String getOperatingVersionArchitecture() {
         return osBean.getArch();
     }
 
@@ -60,29 +54,7 @@ public class DeviceInfo
         return CommonUtils.getHostName();
     }
 
-    public static String getLocale()
-    {
-        final String languageTagMethodName = "toLanguageTag";
-        Locale defaultLocale = Locale.getDefault();
-        try {
-            return (String)Locale.class.getMethod(languageTagMethodName).invoke(defaultLocale);
-        } catch (Exception e) {
-            // Just log - we'll handle it in the fallback path below
-            InternalLogger.INSTANCE.trace("Method '%s' could not be found in Locale class - moving to fallback path. Stack trace generated is %s",
-                    languageTagMethodName, ExceptionUtils.getStackTrace(e));
-        }
-
-        final String localeFileName = "locales.properties";
-        Properties localesMap = null;
-        try {
-            localesMap = PropertyHelper.getProperties(localeFileName);
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Could not find locale mapping file '%s'", localeFileName);
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-        }
-
-        String localeString = defaultLocale.toString();
-        String localeTag = localesMap != null ?  localesMap.getProperty(localeString) : null;
-        return localeTag != null ? localeTag : localeString;
+    public static String getLocale() {
+        return Locale.getDefault().toLanguageTag();
     }
 }

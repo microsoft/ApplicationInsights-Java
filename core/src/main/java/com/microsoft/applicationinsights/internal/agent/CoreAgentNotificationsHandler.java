@@ -556,7 +556,7 @@ final class CoreAgentNotificationsHandler implements AgentNotificationsHandler {
         Statement explain = null;
         ResultSet rs = null;
         try {
-            if (commandName.startsWith("SELECT ")) {
+            if (commandName.toLowerCase().startsWith("select ")) {
                 Connection connection = (Connection)object;
                 if (connection == null) {
                     return explainSB;

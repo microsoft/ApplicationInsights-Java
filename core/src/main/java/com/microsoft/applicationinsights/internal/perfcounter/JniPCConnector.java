@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Properties;
 
 /**
  * This class serves as the connection to the native code that does the work with Windows.
@@ -194,7 +193,11 @@ public final class JniPCConnector {
     }
 
     private static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
-        InputStream in = JniPCConnector.class.getClassLoader().getResourceAsStream(libraryToLoad);
+        ClassLoader classLoader = JniPCConnector.class.getClassLoader();
+        if (classLoader == null) {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
+        InputStream in = classLoader.getResourceAsStream(libraryToLoad);
         if (in == null) {
             throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
         }
@@ -224,21 +227,11 @@ public final class JniPCConnector {
     }
 
     private static File buildDllLocalPath() {
-        Properties properties = PropertyHelper.getSdkVersionProperties();
-        if (properties == null) {
-            throw new RuntimeException("Failed to find SDK Version Properties file.");
-        }
-
-        String version = properties.getProperty("version");
-        if (version == null) {
-            throw new RuntimeException("Failed to find SDK version.");
-        }
-
         File dllPath = LocalFileSystemUtils.getTempDir();
 
         dllPath = new File(dllPath.toString(), AI_BASE_FOLDER);
         dllPath = new File(dllPath.toString(), AI_NATIVE_FOLDER);
-        dllPath = new File(dllPath.toString(), version);
+        dllPath = new File(dllPath.toString(), PropertyHelper.getSdkVersionNumber());
 
         if (!dllPath.exists()) {
             dllPath.mkdirs();
