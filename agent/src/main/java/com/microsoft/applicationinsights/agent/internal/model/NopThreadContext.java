@@ -1,10 +1,10 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextPlus;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
 import org.glowroot.xyzzy.instrumentation.api.*;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 
 public class NopThreadContext implements ThreadContextPlus {
@@ -39,19 +39,19 @@ public class NopThreadContext implements ThreadContextPlus {
     }
 
     @Override
-    public QuerySpan startQuerySpan(String queryType, String queryText, QueryMessageSupplier queryMessageSupplier,
+    public QuerySpan startQuerySpan(String type, String dest, String text, QueryMessageSupplier queryMessageSupplier,
                                     TimerName timerName) {
         return NopTransactionService.QUERY_SPAN;
     }
 
     @Override
-    public QuerySpan startQuerySpan(String queryType, String queryText, long queryExecutionCount,
+    public QuerySpan startQuerySpan(String type, String dest, String text, long queryExecutionCount,
                                     QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
         return NopTransactionService.QUERY_SPAN;
     }
 
     @Override
-    public AsyncQuerySpan startAsyncQuerySpan(String queryType, String queryText,
+    public AsyncQuerySpan startAsyncQuerySpan(String type, String dest, String text,
                                               QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
         return NopTransactionService.ASYNC_QUERY_SPAN;
     }

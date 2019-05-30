@@ -18,7 +18,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class OutgoingSpanImpl implements Span {
 
@@ -50,7 +49,7 @@ public class OutgoingSpanImpl implements Span {
     }
 
     @Override
-    public void endWithLocationStackTrace(long threshold, TimeUnit unit) {
+    public void endWithLocationStackTrace(long thresholdNanos) {
         endInternal();
     }
 

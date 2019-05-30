@@ -64,22 +64,21 @@ public class ThreadContextImpl implements ThreadContextPlus {
     }
 
     @Override
-    public QuerySpan startQuerySpan(String queryType, String queryText, QueryMessageSupplier queryMessageSupplier,
+    public QuerySpan startQuerySpan(String type, String dest, String text, QueryMessageSupplier queryMessageSupplier,
                                     TimerName timerName) {
-        return new QuerySpanImpl(queryType, System.currentTimeMillis(), queryText, queryMessageSupplier, client);
+        return new QuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis(), client);
     }
 
     @Override
-    public QuerySpan startQuerySpan(String queryType, String queryText, long queryExecutionCount,
+    public QuerySpan startQuerySpan(String type, String dest, String text, long queryExecutionCount,
                                     QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        // TODO pass along queryExecutionCount
-        return new QuerySpanImpl(queryType, System.currentTimeMillis(), queryText, queryMessageSupplier, client);
+        return new QuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis(), client);
     }
 
     @Override
-    public AsyncQuerySpan startAsyncQuerySpan(String queryType, String queryText,
+    public AsyncQuerySpan startAsyncQuerySpan(String type, String dest, String text,
                                               QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        return new AsyncQuerySpanImpl(queryType, System.currentTimeMillis(), queryText, queryMessageSupplier, client);
+        return new AsyncQuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis(), client);
     }
 
     @Override

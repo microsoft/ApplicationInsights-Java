@@ -8,8 +8,6 @@ import org.glowroot.xyzzy.instrumentation.api.Setter;
 import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.Timer;
 
-import java.util.concurrent.TimeUnit;
-
 public class NopThreadSpan implements Span {
 
     private final ThreadContextThreadLocal.Holder threadContextHolder;
@@ -24,7 +22,7 @@ public class NopThreadSpan implements Span {
     }
 
     @Override
-    public void endWithLocationStackTrace(long threshold, TimeUnit unit) {
+    public void endWithLocationStackTrace(long thresholdNanos) {
         endInternal();
     }
 

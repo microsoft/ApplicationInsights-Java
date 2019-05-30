@@ -6,10 +6,10 @@ import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
 
-import javax.annotation.Nullable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -41,7 +41,7 @@ public class LoggerSpans {
         }
 
         Map<String, String> properties = telemetry.getContext().getProperties();
-        
+
         // TODO SourceType? e.g. "Log4j", "LOGBack"
         properties.put("SourceType", "Logger");
         properties.put("TimeStamp", getFormattedDate(timeMillis));

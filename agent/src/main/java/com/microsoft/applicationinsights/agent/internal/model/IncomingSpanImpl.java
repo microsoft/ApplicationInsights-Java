@@ -12,17 +12,16 @@ import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorre
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.ResponseHeaderSetter;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
 import org.glowroot.xyzzy.instrumentation.api.*;
 import org.glowroot.xyzzy.instrumentation.api.ThreadContext.ServletRequestInfo;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
 
-import javax.annotation.Nullable;
 import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -105,7 +104,7 @@ public class IncomingSpanImpl implements Span {
     }
 
     @Override
-    public void endWithLocationStackTrace(long threshold, TimeUnit unit) {
+    public void endWithLocationStackTrace(long thresholdNanos) {
         endInternal();
     }
 

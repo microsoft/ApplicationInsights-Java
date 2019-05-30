@@ -8,9 +8,9 @@ import org.glowroot.xyzzy.instrumentation.api.Timer;
 
 public class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
 
-    public AsyncQuerySpanImpl(String type, long startTimeMillis, String queryText, QueryMessageSupplier messageSupplier,
-                              TelemetryClient client) {
-        super(type, startTimeMillis, queryText, messageSupplier, client);
+    public AsyncQuerySpanImpl(String type, String dest, String text, QueryMessageSupplier messageSupplier,
+                              long startTimeMillis, TelemetryClient client) {
+        super(type, dest, text, messageSupplier, startTimeMillis, client);
     }
 
     @Override

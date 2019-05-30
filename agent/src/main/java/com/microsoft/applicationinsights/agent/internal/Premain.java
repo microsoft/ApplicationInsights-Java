@@ -23,8 +23,9 @@ public class Premain {
 
             instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(agentJarFile));
 
-            Class<?> mainEntryPointClass = Class.forName("com.microsoft.applicationinsights.agent.internal.MainEntryPoint",
-                    true, Premain.class.getClassLoader());
+            Class<?> mainEntryPointClass = Class.forName(
+                    "com.microsoft.applicationinsights.agent.internal.MainEntryPoint", true,
+                    Premain.class.getClassLoader());
             Method premainMethod = mainEntryPointClass.getMethod("premain", Instrumentation.class, File.class);
             premainMethod.invoke(null, instrumentation, agentJarFile);
 

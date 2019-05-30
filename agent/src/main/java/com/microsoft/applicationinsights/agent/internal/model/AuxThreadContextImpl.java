@@ -10,8 +10,6 @@ import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
 import org.glowroot.xyzzy.instrumentation.api.*;
 
-import java.util.concurrent.TimeUnit;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class AuxThreadContextImpl implements AuxThreadContext {
@@ -71,7 +69,7 @@ public class AuxThreadContextImpl implements AuxThreadContext {
         }
 
         @Override
-        public void endWithLocationStackTrace(long threshold, TimeUnit unit) {
+        public void endWithLocationStackTrace(long thresholdNanos) {
             endInternal();
         }
 

@@ -11,10 +11,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MainEntryPoint {
 
@@ -69,10 +66,17 @@ public class MainEntryPoint {
         servletConfiguration.put("captureRequestServerPort", true);
         servletConfiguration.put("captureRequestScheme", true);
 
+        Map<String, Object> jdbcConfiguration = new HashMap<>();
+        jdbcConfiguration.put("captureBindParametersIncludes", Collections.emptyList());
+        jdbcConfiguration.put("captureResultSetNavigate", false);
+        jdbcConfiguration.put("captureGetConnection", false);
+        jdbcConfiguration.put("explainPlanThresholdMillis", 10000);
+
         Map<String, Object> springConfiguration = new HashMap<>();
         springConfiguration.put("useAltTransactionNaming", true);
 
         instrumentationConfiguration.put("servlet", servletConfiguration);
+        instrumentationConfiguration.put("jdbc", jdbcConfiguration);
         instrumentationConfiguration.put("spring", springConfiguration);
 
         return instrumentationConfiguration;
