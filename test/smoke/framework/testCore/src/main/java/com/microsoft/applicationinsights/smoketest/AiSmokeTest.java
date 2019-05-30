@@ -475,7 +475,7 @@ public abstract class AiSmokeTest {
 		for (DependencyContainer dc : dependencyImages) {
 			String imageName = Strings.isNullOrEmpty(dc.imageName()) ? dc.value() : dc.imageName();
 			System.out.printf("Starting container: %s%n", imageName);
-			final String containerId = docker.startContainer(imageName, dc.portMapping(), networkId);
+			final String containerId = docker.startDependencyContainer(imageName, dc.environmentVariables(), dc.portMapping(), networkId);
 			assertFalse("'containerId' was null/empty attempting to start container: "+imageName, Strings.isNullOrEmpty(containerId));
 			System.out.printf("Dependency container started: %s (%s)%n", imageName, containerId);
 
@@ -554,7 +554,7 @@ public abstract class AiSmokeTest {
 				continue;
 			}
 			DependencyContainer dc = info.getDependencyContainerInfo();
-			String varname = dc.environmentVariable();
+			String varname = dc.hostnameEnvironmentVariable();
 			if (Strings.isNullOrEmpty(varname)) {
 				varname = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, dc.value());
 			}
