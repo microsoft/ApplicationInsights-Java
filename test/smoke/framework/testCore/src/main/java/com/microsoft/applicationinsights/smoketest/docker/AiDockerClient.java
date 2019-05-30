@@ -75,13 +75,13 @@ public class AiDockerClient {
 		return new ProcessBuilder(cmdLine).redirectErrorStream(true);
 	}
 
-	public String startDependencyContainer(String image, String[] envVars, String portMapping, String network) throws IOException, InterruptedException {
+	public String startDependencyContainer(String image, String[] envVars, String portMapping, String network, String containerName) throws IOException, InterruptedException {
 	    Map<String, String> envVarMap = new HashMap<>();
 	    for (String envVar : envVars) {
 	        int index = envVar.indexOf('=');
 	        envVarMap.put(envVar.substring(0, index), envVar.substring(index + 1));
 	    }
-	    return startContainer(image, portMapping, network, null, envVarMap, true);
+	    return startContainer(image, portMapping, network, containerName, envVarMap, true);
 	}
 
 	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars,
@@ -254,7 +254,7 @@ public class AiDockerClient {
 	}
 	private static  int findLastLetterPosition(String input) {
 		for (int i = input.length()-1; i >= 0; i--) {
-			if (Character.isAlphabetic(input.codePointAt(i))) {
+			if (Character.isAlphabetic(input.codePointAt(i)) || Character.isDigit(input.codePointAt(i))) {
 				return i;
 			}
 		}
