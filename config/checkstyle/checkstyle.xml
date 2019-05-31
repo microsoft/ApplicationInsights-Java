@@ -25,7 +25,11 @@
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
     </module>
-
+    <!-- doublecheck that it works well on Linux and Mac -->
+    <module name="Header">
+        <property name="headerFile" value="config/java.header" /> <!-- this file will contain the copyright notice -->
+        <property name="fileExtensions" value="java" />
+    </module>
     <module name="TreeWalker">
         <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">

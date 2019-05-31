@@ -34,7 +34,9 @@ import org.apache.http.params.HttpParams;
 
 /**
  * Created by gupele on 6/4/2015.
+ * @deprecated The TelemetryClient will always use the HTTP Client version shaded in core.
  */
+@Deprecated
 final class ApacheSender42 implements ApacheSender {
 
     private final PoolingClientConnectionManager cm;

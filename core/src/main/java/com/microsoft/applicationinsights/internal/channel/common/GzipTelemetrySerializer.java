@@ -97,8 +97,6 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
 
     private boolean compress(GZIPOutputStream zipStream, Collection<String> telemetries) throws IOException {
         int counter = 0;
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
 
         // The format is:
         // 1. Separate each Telemetry by newline
@@ -114,11 +112,6 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 ++counter;
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
-            }
-
-            if (counter < telemetries.size()) {
-                writer.getBuffer().setLength(0);
-                jsonWriter.reset(writer);
             }
         }
 

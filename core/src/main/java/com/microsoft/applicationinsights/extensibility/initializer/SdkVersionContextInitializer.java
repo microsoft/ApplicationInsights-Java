@@ -25,24 +25,12 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 
-import java.util.Properties;
-
 /**
  * Initializer for SDK version.
  */
 public final class SdkVersionContextInitializer implements ContextInitializer {
-    final String sdkPrefix = "java";
-
     @Override
     public void initialize(TelemetryContext context) {
-        String sdkVersion = sdkPrefix;
-
-        Properties sdkVersionProps = PropertyHelper.getSdkVersionProperties();
-        if (sdkVersionProps != null) {
-            String version = sdkVersionProps.getProperty("version");
-            sdkVersion = String.format("%s:%s", sdkPrefix, version);
-        }
-
-        context.getInternal().setSdkVersion(sdkVersion.toLowerCase());
+        context.getInternal().setSdkVersion(PropertyHelper.getQualifiedSdkVersionString());
     }
 }

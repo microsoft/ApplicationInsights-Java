@@ -18,16 +18,16 @@ import org.apache.logging.log4j.Logger;
 public class SimpleTestTraceLog4j2WithExceptionServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 9101440811626233466L;
+    private static final Logger logger = LogManager.getRootLogger();
 
-	/**
+    /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
-        Logger logger = LogManager.getRootLogger();
-        logger.error("This is an exception!", new Exception("Fake Exception")); 
+        logger.error("This is an exception!", new Exception("Fake Exception"));
 
     }
 }

@@ -46,14 +46,17 @@ apply plugin: 'checkstyle'
 apply plugin: 'org.owasp.dependencycheck'
 
 tasks.withType(JavaCompile) {
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
 }
 
 checkstyle {
     toolVersion = '8.20'
     configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
-    // configProperties["rootDir"] = rootDir
+    configProperties = [
+        'configDir': rootProject.file('config/checkstyle'),
+        'baseDir': rootDir
+    ]
 }
 
 jacoco {
@@ -101,6 +104,9 @@ if (hasProperty("JDKToUse")) {
 updateTestDirectories()
 
 // setting this variable is highly recommended
+def java7JreDir = System.env.'JAVA_JRE_7'
+
+// autodetect current JRE home
 def javaJreDir = System.env.'JAVA_HOME'
 if (!javaJreDir) {
     javaJreDir = System.properties["java.home"]
@@ -116,31 +122,20 @@ if (!isJava7Compatible) {
         throw new GradleException("incompatible JDK version: ${JavaVersion.current()}; needs 1.7+")
     }
 }
-
-if (javaJreDir) {
-    if (0) {
-    def requiredJavaBootArchives = ["rt.jar", "jsse.jar"]
-    def bootClasspath = ""
-    requiredJavaBootArchives.each { a ->
-        def archivePath = new File(javaJreDir, "lib/$a")
-        if (!archivePath.exists()) {
-            throw new ProjectConfigurationException("Archive $archivePath required for building in Java 7 could not be found.", null)
-        }
-        logger.info "Archive '$archivePath' added to boot class path"
+if (java7JreDir) {
+    def jre7libDir = fileTree(dir: "$java7JreDir/lib", include: '*.jar')
+    if (!jre7libDir.any()) {
+        throw new GradleException("Invalid JAVA_JRE_7 directory. ${jre7libDir.dir} was empty")
     }
-    }
-
+    
     tasks.withType(JavaCompile) {
-        // options.bootstrapClasspath = files(javaJreDir + "/lib/rt.jar", javaJreDir + "/lib/jsse.jar")
+        options.bootstrapClasspath = jre7libDir
     }
 } else {
-    def msg = "IMPORTANT: Environment variable 'JAVA_HOME' is not defined - Install JRE 7+ and set 'JAVA_HOME' to prevent runtime compatibility issues!"
+    def msg = "Environment variable 'JAVA_JRE_7' is not defined. Using external dependency for JAXB."
     if (!isJava7) {
         if (isBuildServer || isRelease) {
-            logger.error msg
-            throw new GradleException("JAVA_HOME must be set")
-        } else {
-            logger.warn msg
+            logger.info msg
         }
     }
 }

@@ -155,7 +155,7 @@ public class AiDockerClient {
 		}
 	}
 
-	private static void waitAndCheckCodeForProcess(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
+	private void waitAndCheckCodeForProcess(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
 		waitForProcessToReturn(p, timeout, unit, actionName);
 		if (p.exitValue() != 0) {
 			flushStdout(p);
@@ -164,9 +164,11 @@ public class AiDockerClient {
 		}
 	}
 
-	private static void waitForProcessToReturn(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
+	private void waitForProcessToReturn(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
 		if (!p.waitFor(timeout, unit)) {
-			p.destroyForcibly();
+		    String containerId = getFirstLineOfProcessOutput(p);
+		    printContainerLogs(containerId);
+		    p.destroyForcibly();
 			flushStdout(p);
 			throw new TimeoutException(
 					Strings.isNullOrEmpty(actionName) ? "process" : actionName,
