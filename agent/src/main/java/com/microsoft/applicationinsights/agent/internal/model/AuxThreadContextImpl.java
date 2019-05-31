@@ -12,7 +12,7 @@ import org.glowroot.xyzzy.instrumentation.api.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class AuxThreadContextImpl implements AuxThreadContext {
+class AuxThreadContextImpl implements AuxThreadContext {
 
     private final IncomingSpanImpl incomingSpan;
 
@@ -46,7 +46,7 @@ public class AuxThreadContextImpl implements AuxThreadContext {
             }
             return NopTransactionService.LOCAL_SPAN;
         }
-        threadContext = new ThreadContextImpl(threadContextHolder, incomingSpan, telemetryContext, 0, 0, true, client);
+        threadContext = new ThreadContextImpl(incomingSpan, telemetryContext, 0, 0, true, client);
         threadContextHolder.set(threadContext);
         if (completeAsyncTransaction) {
             threadContext.setTransactionAsyncComplete();

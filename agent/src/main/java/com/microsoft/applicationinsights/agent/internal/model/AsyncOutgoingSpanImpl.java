@@ -6,7 +6,7 @@ import org.glowroot.xyzzy.instrumentation.api.AsyncSpan;
 import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.Timer;
 
-public class AsyncOutgoingSpanImpl extends OutgoingSpanImpl implements AsyncSpan {
+class AsyncOutgoingSpanImpl extends OutgoingSpanImpl implements AsyncSpan {
 
     public AsyncOutgoingSpanImpl(String type, String text, long startTimeMillis, String outgoingSpanId,
                                  MessageSupplier messageSupplier, TelemetryClient client) {

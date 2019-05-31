@@ -4,7 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
 import org.glowroot.xyzzy.instrumentation.api.*;
 
@@ -21,7 +21,7 @@ public class QuerySpanImpl implements QuerySpan {
 
     private final TelemetryClient client;
 
-    private volatile @Nullable Throwable exception;
+    private volatile @MonotonicNonNull Throwable exception;
 
     private volatile long totalMillis = -1;
 

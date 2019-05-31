@@ -8,15 +8,14 @@ import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorre
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextPlus;
-import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
 import org.glowroot.xyzzy.instrumentation.api.*;
 
 import java.util.concurrent.TimeUnit;
 
-public class ThreadContextImpl implements ThreadContextPlus {
+import static com.google.common.base.Preconditions.checkNotNull;
 
-    private final ThreadContextThreadLocal.Holder threadContextHolder;
+public class ThreadContextImpl implements ThreadContextPlus {
 
     private final IncomingSpanImpl incomingSpan;
 
@@ -29,20 +28,15 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     private final TelemetryClient client;
 
-    public ThreadContextImpl(ThreadContextThreadLocal.Holder threadContextHolder, IncomingSpanImpl incomingSpan,
-                             @Nullable RequestTelemetryContext telemetryContext, int rootNestingGroupId,
-                             int rootSuppressionKeyId, boolean auxThread, TelemetryClient client) {
-        this.threadContextHolder = threadContextHolder;
+    public ThreadContextImpl(IncomingSpanImpl incomingSpan, @Nullable RequestTelemetryContext telemetryContext,
+                             int rootNestingGroupId, int rootSuppressionKeyId, boolean auxThread,
+                             TelemetryClient client) {
         this.incomingSpan = incomingSpan;
         this.telemetryContext = telemetryContext;
         currentNestingGroupId = rootNestingGroupId;
         currentSuppressionKeyId = rootSuppressionKeyId;
         auxThreadAsyncCompletion = auxThread ? new TwoPartCompletion() : null;
         this.client = client;
-    }
-
-    ThreadContextThreadLocal.Holder getThreadContextHolder() {
-        return threadContextHolder;
     }
 
     @Override
@@ -142,10 +136,6 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     @Override
     public void setTransactionUser(@Nullable String user, int priority) {
-        // currently ignoring priority, which is ok since just using core xyzzy instrumentation
-        if (user != null) {
-            incomingSpan.setUser(user);
-        }
     }
 
     @Override
@@ -190,7 +180,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
     }
 
     @Override
-    public void setServletRequestInfo(@Nullable ServletRequestInfo servletRequestInfo) {
+    public void setServletRequestInfo(ServletRequestInfo servletRequestInfo) {
         incomingSpan.setServletRequestInfo(servletRequestInfo);
     }
 
@@ -215,6 +205,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
     }
 
     public void endAuxThreadContext() {
+        checkNotNull(auxThreadAsyncCompletion);
         if (auxThreadAsyncCompletion.setPart2()) {
             incomingSpan.setAsyncComplete();
         }
@@ -223,6 +214,10 @@ public class ThreadContextImpl implements ThreadContextPlus {
     private static <C> String propagate(Setter<C> setter, C carrier) {
         if (Global.isW3CEnabled) {
             String traceparent = TraceContextCorrelationCore.generateChildDependencyTraceparent();
+            if (traceparent == null) {
+                // this means an error occurred (and was logged) in above method, so just return a valid outgoingSpanId
+                return TelemetryCorrelationUtilsCore.generateChildDependencyId();
+            }
             String outgoingSpanId = TraceContextCorrelationCore.createChildIdFromTraceparentString(traceparent);
             String tracestate = TraceContextCorrelationCore.retriveTracestate();
             setter.put(carrier, "traceparent", traceparent);

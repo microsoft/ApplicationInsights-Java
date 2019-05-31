@@ -37,7 +37,7 @@ public class Premain {
         }
     }
 
-    static File getAgentJarFile(CodeSource cs) throws IOException, URISyntaxException {
+    private static File getAgentJarFile(CodeSource cs) throws IOException, URISyntaxException {
         if (cs == null) {
             throw new IOException("Could not determine agent jar location.");
         }

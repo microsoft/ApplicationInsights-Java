@@ -11,7 +11,10 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainEntryPoint {
 
@@ -54,7 +57,7 @@ public class MainEntryPoint {
 
         EngineModule.createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),
                 instrumentationDescriptors, configServiceFactory, agent,
-                Arrays.asList("com.microsoft.applicationinsights."), agentJarFile);
+                Collections.singletonList("com.microsoft.applicationinsights."), agentJarFile);
     }
 
     private static Map<String, Map<String, Object>> getInstrumentationConfig() {

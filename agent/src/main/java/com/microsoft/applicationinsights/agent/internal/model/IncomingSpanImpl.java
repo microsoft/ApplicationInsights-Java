@@ -12,6 +12,7 @@ import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorre
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.ResponseHeaderSetter;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
@@ -32,20 +33,18 @@ public class IncomingSpanImpl implements Span {
     private final ThreadContextThreadLocal.Holder threadContextHolder;
     private final long startTimeMillis;
 
-    private volatile @Nullable ServletRequestInfo servletRequestInfo;
+    private volatile @MonotonicNonNull ServletRequestInfo servletRequestInfo;
 
-    private volatile @Nullable String user;
+    private volatile @MonotonicNonNull Throwable exception;
 
-    private volatile @Nullable Throwable exception;
+    private volatile @MonotonicNonNull TwoPartCompletion asyncCompletion;
 
-    private volatile @Nullable TwoPartCompletion asyncCompletion;
-
-    private final @Nullable RequestTelemetry requestTelemetry;
+    private final RequestTelemetry requestTelemetry;
 
     private final TelemetryClient client;
 
     public IncomingSpanImpl(MessageSupplier messageSupplier, ThreadContextThreadLocal.Holder threadContextHolder,
-                            long startTimeMillis, @Nullable RequestTelemetry requestTelemetry, TelemetryClient client) {
+                            long startTimeMillis, RequestTelemetry requestTelemetry, TelemetryClient client) {
         this.messageSupplier = messageSupplier;
         this.threadContextHolder = threadContextHolder;
         this.startTimeMillis = startTimeMillis;
@@ -58,7 +57,7 @@ public class IncomingSpanImpl implements Span {
         return servletRequestInfo;
     }
 
-    void setServletRequestInfo(@Nullable ServletRequestInfo servletRequestInfo) {
+    void setServletRequestInfo(ServletRequestInfo servletRequestInfo) {
         this.servletRequestInfo = servletRequestInfo;
         String contextPath = servletRequestInfo.getContextPath();
         if (!contextPath.isEmpty()) {
@@ -86,10 +85,6 @@ public class IncomingSpanImpl implements Span {
             tn = servletRequestInfo.getMethod() + " " + tn;
         }
         requestTelemetry.setName(tn);
-    }
-
-    void setUser(String user) {
-        this.user = user;
     }
 
     void setException(Throwable t) {
@@ -131,11 +126,11 @@ public class IncomingSpanImpl implements Span {
         if (Global.isW3CEnabled) {
             // TODO eliminate wrapper object instantiation
             TraceContextCorrelationCore.resolveCorrelationForResponse(response,
-                    new ResponseHeaderSetterImpl<R>(setter));
+                    new ResponseHeaderSetterImpl<>(setter));
         } else {
             // TODO eliminate wrapper object instantiation
             TelemetryCorrelationUtilsCore.resolveCorrelationForResponse(response,
-                    new ResponseHeaderSetterImpl<R>(setter));
+                    new ResponseHeaderSetterImpl<>(setter));
         }
     }
 

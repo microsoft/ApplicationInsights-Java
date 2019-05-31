@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextPlus;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
@@ -9,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NopThreadContext implements ThreadContextPlus {
 
-    private @Nullable ServletRequestInfo servletRequestInfo;
+    private @MonotonicNonNull ServletRequestInfo servletRequestInfo;
 
     private int currentNestingGroupId;
     private int currentSuppressionKeyId;

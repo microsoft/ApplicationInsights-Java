@@ -6,7 +6,7 @@ import org.glowroot.xyzzy.instrumentation.api.AsyncQuerySpan;
 import org.glowroot.xyzzy.instrumentation.api.QueryMessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.Timer;
 
-public class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
+class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
 
     public AsyncQuerySpanImpl(String type, String dest, String text, QueryMessageSupplier messageSupplier,
                               long startTimeMillis, TelemetryClient client) {

@@ -80,9 +80,9 @@ jar {
     enabled = false
     manifest {
         attributes("Premain-Class": "com.microsoft.applicationinsights.agent.internal.Premain",
-                    "Can-Redefine-Classes": "true",
-                    "Can-Retransform-Classes": "true",
-                    "agent-sdk-version":project.version
+                "Can-Redefine-Classes": "true",
+                "Can-Retransform-Classes": "true",
+                "agent-sdk-version": project.version
         )
     }
 }
@@ -105,7 +105,7 @@ dependencies {
 
     compile(project(':core'))
 
-    compile group: 'org.apache.commons', name:'commons-lang3', version:'3.7'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
 
 //    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
     testCompile group: 'junit', name: 'junit', version: '4.12'

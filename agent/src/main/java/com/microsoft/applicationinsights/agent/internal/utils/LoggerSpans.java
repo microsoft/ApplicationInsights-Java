@@ -25,18 +25,22 @@ public class LoggerSpans {
         Map<String, ?> detail = message.getDetail();
 
         String level = (String) detail.get("Level");
-        SeverityLevel severityLevel = toSeverityLevel(level);
+        SeverityLevel severityLevel = level == null ? null : toSeverityLevel(level);
 
         String loggerName = (String) detail.get("Logger name");
 
         Telemetry telemetry;
         if (throwable == null) {
             TraceTelemetry traceTelemetry = new TraceTelemetry(formattedMessage);
-            traceTelemetry.setSeverityLevel(severityLevel);
+            if (severityLevel != null) {
+                traceTelemetry.setSeverityLevel(severityLevel);
+            }
             telemetry = traceTelemetry;
         } else {
             ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(throwable);
-            exceptionTelemetry.setSeverityLevel(severityLevel);
+            if (severityLevel != null) {
+                exceptionTelemetry.setSeverityLevel(severityLevel);
+            }
             telemetry = exceptionTelemetry;
         }
 
@@ -67,11 +71,11 @@ public class LoggerSpans {
         client.track(telemetry);
     }
 
-    protected static String getFormattedDate(long dateInMilliseconds) {
+    private static String getFormattedDate(long dateInMilliseconds) {
         return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).format(new Date(dateInMilliseconds));
     }
 
-    private static SeverityLevel toSeverityLevel(@Nullable String level) {
+    private static SeverityLevel toSeverityLevel(String level) {
         switch (level) {
             case "FATAL":
                 return SeverityLevel.Critical;

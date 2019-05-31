@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
-public class TwoPartCompletion {
+class TwoPartCompletion {
 
     private volatile boolean part1;
     private volatile boolean part2;

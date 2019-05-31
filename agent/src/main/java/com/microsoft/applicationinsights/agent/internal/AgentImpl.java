@@ -22,12 +22,11 @@ import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.TimerName;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 
-public class AgentImpl implements AgentSPI {
+class AgentImpl implements AgentSPI {
 
     private final TelemetryClient client;
 
@@ -76,23 +75,23 @@ public class AgentImpl implements AgentSPI {
         requestTelemetry.setName(transactionName);
         requestTelemetry.setTimestamp(new Date(startTimeMillis));
 
-        String userAgent = (String) getter.get(carrier, "User-Agent");
+        String userAgent = getter.get(carrier, "User-Agent");
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
 
         if (Global.isW3CEnabled) {
             // TODO eliminate wrapper object instantiation
-            TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, new RequestHeaderGetterImpl<C>(getter),
+            TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, new RequestHeaderGetterImpl<>(getter),
                     requestTelemetry);
         } else {
             // TODO eliminate wrapper object instantiation
-            TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(carrier, new RequestHeaderGetterImpl<C>(getter),
+            TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(carrier, new RequestHeaderGetterImpl<>(getter),
                     requestTelemetry);
         }
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(messageSupplier, threadContextHolder, startTimeMillis,
                 requestTelemetry, client);
 
-        ThreadContextImpl mainThreadContext = new ThreadContextImpl(threadContextHolder, incomingSpan, telemetryContext,
+        ThreadContextImpl mainThreadContext = new ThreadContextImpl(incomingSpan, telemetryContext,
                 rootNestingGroupId, rootSuppressionKeyId, false, client);
         threadContextHolder.set(mainThreadContext);
 
@@ -118,7 +117,7 @@ public class AgentImpl implements AgentSPI {
             if (value == null) {
                 return Collections.emptyEnumeration();
             } else {
-                return Collections.enumeration(Arrays.asList(value));
+                return Collections.enumeration(Collections.singletonList(value));
             }
         }
     }

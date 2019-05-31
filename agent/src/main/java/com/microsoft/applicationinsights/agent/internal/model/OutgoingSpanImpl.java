@@ -9,6 +9,7 @@ import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
 import org.glowroot.xyzzy.instrumentation.api.*;
@@ -29,9 +30,9 @@ public class OutgoingSpanImpl implements Span {
 
     private final TelemetryClient client;
 
-    private volatile @Nullable String requestContext; // only used for HTTP
+    private volatile @MonotonicNonNull String requestContext; // only used for HTTP
 
-    private volatile @Nullable Throwable exception;
+    private volatile @MonotonicNonNull Throwable exception;
 
     public OutgoingSpanImpl(String type, String text, long startTimeMillis, String outgoingSpanId,
                             MessageSupplier messageSupplier, TelemetryClient client) {
@@ -117,42 +118,40 @@ public class OutgoingSpanImpl implements Span {
 
         // FIXME change xyzzy to not add prefixes, then can use message.getText() directly
 
-        String host = (String) detail.get("Host");
         String method = (String) detail.get("Method");
         Integer result = (Integer) detail.get("Result");
 
         // from HttpClientMethodVisitor and CoreAgentNotificationsHandler:
-
-        try {
-            URI uriObject = new URI(uri);
-            String target;
-            if (requestContext == null) {
-                target = uriObject.getHost();
-            } else if (Global.isW3CEnabled) {
-                target = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
-            } else {
-                target = TelemetryCorrelationUtilsCore.generateChildDependencyTarget(requestContext);
-            }
-            telemetry.setName(method + " " + uriObject.getPath());
-            if (target != null && !target.isEmpty()) {
-                // AI correlation expects target to be of this format.
-                target = createTarget(uriObject, target);
-                if (telemetry.getTarget() == null) {
-                    telemetry.setTarget(target);
-                } else {
-                    telemetry.setTarget(telemetry.getTarget() + " | " + target);
-                }
-            }
-        } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.error("%s", e.toString());
-            InternalLogger.INSTANCE.trace("Stack trace is%n%s", ExceptionUtils.getStackTrace(e));
-        }
 
         if (method != null) {
             // for backward compatibility (same comment from CoreAgentNotificationsHandler)
             telemetry.getProperties().put("Method", method);
         }
         if (uri != null) {
+            try {
+                URI uriObject = new URI(uri);
+                String target;
+                if (requestContext == null) {
+                    target = uriObject.getHost();
+                } else if (Global.isW3CEnabled) {
+                    target = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
+                } else {
+                    target = TelemetryCorrelationUtilsCore.generateChildDependencyTarget(requestContext);
+                }
+                telemetry.setName(method + " " + uriObject.getPath());
+                if (target != null && !target.isEmpty()) {
+                    // AI correlation expects target to be of this format.
+                    target = createTarget(uriObject, target);
+                    if (telemetry.getTarget() == null) {
+                        telemetry.setTarget(target);
+                    } else {
+                        telemetry.setTarget(telemetry.getTarget() + " | " + target);
+                    }
+                }
+            } catch (URISyntaxException e) {
+                InternalLogger.INSTANCE.error("%s", e.toString());
+                InternalLogger.INSTANCE.trace("Stack trace is%n%s", ExceptionUtils.getStackTrace(e));
+            }
             telemetry.setCommandName(uri);
             // for backward compatibility (same comment from CoreAgentNotificationsHandler)
             telemetry.getProperties().put("URI", uri);
