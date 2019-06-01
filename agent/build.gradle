@@ -38,36 +38,38 @@ repositories {
 apply from: "$buildScriptsDir/common-java.gradle"
 
 
-def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
 def xyzzyVersion = '0.5.0-SNAPSHOT'
+
+def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
+def corePrefix = 'com.microsoft.applicationinsights.core.dependencies' // some dependencies are already shaded in core
+
 shadowJar {
     classifier = ''
     mergeServiceFiles()
 
-//    relocate('org.glowroot', "${shadowPrefix}.glowroot")
-    relocate('org.objectweb.asm', "${shadowPrefix}.objectweb.asm")
-    relocate('org.slf4j', "${shadowPrefix}.slf4j")
-    relocate('com.google', "${shadowPrefix}.google")
-    relocate('com.fasterxml.jackson', "${shadowPrefix}.fasterxml.jackson")
-    relocate('org.checkerframework.checker', "${shadowPrefix}.checkerframework.checker")
+    relocate('org.objectweb.asm', "${shadowPrefix}.org.objectweb.asm")
+    relocate('org.slf4j', "${shadowPrefix}.org.slf4j")
+    // FIXME need to relocate logback also, but currently causes instrumentation to be relocated
+    // relocate('ch.qos.logback', "${shadowPrefix}.ch.qos.logback")
+    relocate('com.fasterxml.jackson', "${shadowPrefix}.com.fasterxml.jackson")
 
-    // need to avoid relocating org.apache.commons.httpclient until implement two-phase shadow 
-    relocate('org.apache.commons.codec', "${shadowPrefix}.apache.commons.codec")
-    relocate('org.apache.commons.io', "${shadowPrefix}.apache.commons.io")
-    relocate('org.apache.commons.lang3', "${shadowPrefix}.apache.commons.lang3")
-    relocate('org.apache.commons.logging', "${shadowPrefix}.apache.commons.logging")
-    relocate('com.microsoft.applicationinsights.internal.logger', "${shadowPrefix}.internallogger")
+    // core
+    relocate 'com.google', "${corePrefix}.google"
+    relocate 'org.checkerframework', "${corePrefix}.checkerframework"
+    relocate 'org.apache.commons.logging', "${corePrefix}.apachecommons.logging"
+
+    relocate('logback.configurationFile', 'ai.logback.configurationFile')
+    relocate('logback.xml', 'ai.logback.xml')
+    relocate('logback.groovy', 'ai.logback.groovy') // to prevent accidentally picking up user's logback.groovy
+    relocate('logback-test.xml', 'ai.logback-test.xml') // to prevent accidentally picking up user's logback-test.xml
 
     exclude 'META-INF/maven/**'
     exclude 'META-INF/LICENSE*'
+    exclude 'META-INF/DEPENDENCIES'
     exclude 'META-INF/NOTICE*'
     exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
-
-//    dependencies {
-//        exclude(dependency("org.glowroot:glowroot-engine:$xyzzyVersion"))
-//        exclude(dependency("org.glowroot:glowroot-instrumentation-api:$xyzzyVersion"))
-//        exclude(dependency("org.glowroot.instrumentation:glowroot-instrumentation-all:$xyzzyVersion"))
-//    }
+    exclude 'mozilla/**'
+    exclude 'commons-logging.properties'
 
     transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
         resource = 'META-INF/xyzzy.instrumentation.list'
@@ -88,7 +90,7 @@ jar {
 }
 
 dependencies {
-//    compile project(':ApplicationInsightsInternalLogger') // TODO include? or use slf4j?
+    compile project(':ApplicationInsightsInternalLogger') // TODO include? or use slf4j?
     compile 'org.slf4j:slf4j-api:1.7.25'
 
     compile "org.glowroot.xyzzy:xyzzy-engine:$xyzzyVersion"
@@ -103,11 +105,7 @@ dependencies {
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-log4j:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-logback:$xyzzyVersion"
 
-    compile(project(':core'))
+    compile(project(path: ':core', configuration: 'shadow'))
 
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
-
-//    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
 }
