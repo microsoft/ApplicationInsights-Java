@@ -75,6 +75,8 @@ public class MainEntryPoint {
         EngineModule.createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),
                 instrumentationDescriptors, configServiceFactory, agent,
                 Collections.singletonList("com.microsoft.applicationinsights."), agentJarFile);
+
+        instrumentation.addTransformer(new SpringApplicationClassFileTransformer());
     }
 
     private static List<InstrumentationDescriptor> getInstrumentationDescriptors(AgentConfiguration agentConfiguration)

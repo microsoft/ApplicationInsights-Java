@@ -59,11 +59,16 @@ public class IncomingSpanImpl implements Span {
 
     void setServletRequestInfo(ServletRequestInfo servletRequestInfo) {
         this.servletRequestInfo = servletRequestInfo;
-        String contextPath = servletRequestInfo.getContextPath();
-        if (!contextPath.isEmpty()) {
-            contextPath = contextPath.substring(1);
+        String cloudRole = Global.getCloudRole();
+        if (cloudRole == null) {
+            String contextPath = servletRequestInfo.getContextPath();
+            if (contextPath.isEmpty()) {
+                cloudRole = "";
+            } else {
+                cloudRole = contextPath.substring(1);
+            }
         }
-        requestTelemetry.getContext().getCloud().setRole(contextPath);
+        requestTelemetry.getContext().getCloud().setRole(cloudRole);
         // TODO this won't be needed once xyzzy servlet instrumentation passes in METHOD as part of transactionName
         requestTelemetry.setName(servletRequestInfo.getMethod() + " " + servletRequestInfo.getUri());
     }
