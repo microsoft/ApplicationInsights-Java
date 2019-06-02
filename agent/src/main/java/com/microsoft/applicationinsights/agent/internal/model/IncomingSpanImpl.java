@@ -1,7 +1,7 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
+import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -41,15 +41,12 @@ public class IncomingSpanImpl implements Span {
 
     private final RequestTelemetry requestTelemetry;
 
-    private final TelemetryClient client;
-
     public IncomingSpanImpl(MessageSupplier messageSupplier, ThreadContextThreadLocal.Holder threadContextHolder,
-                            long startTimeMillis, RequestTelemetry requestTelemetry, TelemetryClient client) {
+                            long startTimeMillis, RequestTelemetry requestTelemetry) {
         this.messageSupplier = messageSupplier;
         this.threadContextHolder = threadContextHolder;
         this.startTimeMillis = startTimeMillis;
         this.requestTelemetry = requestTelemetry;
-        this.client = client;
     }
 
     @Nullable
@@ -59,16 +56,14 @@ public class IncomingSpanImpl implements Span {
 
     void setServletRequestInfo(ServletRequestInfo servletRequestInfo) {
         this.servletRequestInfo = servletRequestInfo;
-        String cloudRole = Global.getCloudRole();
-        if (cloudRole == null) {
+        CloudContext cloud = Global.getTelemetryClient().getContext().getCloud();
+        if (cloud.getRole() == null) {
+            // hasn't been set yet
             String contextPath = servletRequestInfo.getContextPath();
-            if (contextPath.isEmpty()) {
-                cloudRole = "";
-            } else {
-                cloudRole = contextPath.substring(1);
+            if (!contextPath.isEmpty()) {
+                cloud.setRole(contextPath.substring(1));
             }
         }
-        requestTelemetry.getContext().getCloud().setRole(cloudRole);
         // TODO this won't be needed once xyzzy servlet instrumentation passes in METHOD as part of transactionName
         requestTelemetry.setName(servletRequestInfo.getMethod() + " " + servletRequestInfo.getUri());
     }
@@ -158,10 +153,10 @@ public class IncomingSpanImpl implements Span {
         long endTimeMillis = System.currentTimeMillis();
 
         if (exception != null) {
-            client.trackException(toExceptionTelemetry(endTimeMillis, requestTelemetry.getContext()));
+            Global.getTelemetryClient().trackException(toExceptionTelemetry(endTimeMillis, requestTelemetry.getContext()));
         }
         finishBuildingTelemetry(endTimeMillis);
-        client.track(requestTelemetry);
+        Global.getTelemetryClient().track(requestTelemetry);
     }
 
     private void finishBuildingTelemetry(long endTimeMillis) {

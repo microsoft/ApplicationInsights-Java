@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
@@ -19,20 +19,16 @@ public class QuerySpanImpl implements QuerySpan {
     private final QueryMessageSupplier messageSupplier;
     private final long startTimeMillis;
 
-    private final TelemetryClient client;
-
     private volatile @MonotonicNonNull Throwable exception;
 
     private volatile long totalMillis = -1;
 
-    QuerySpanImpl(String type, String dest, String text, QueryMessageSupplier messageSupplier, long startTimeMillis,
-                  TelemetryClient client) {
+    QuerySpanImpl(String type, String dest, String text, QueryMessageSupplier messageSupplier, long startTimeMillis) {
         this.type = type;
         this.dest = dest;
         this.text = text;
         this.messageSupplier = messageSupplier;
         this.startTimeMillis = startTimeMillis;
-        this.client = client;
     }
 
     @Override
@@ -152,10 +148,10 @@ public class QuerySpanImpl implements QuerySpan {
             telemetry.getProperties().put("Query Plan", sb.toString());
         }
 
-        client.track(telemetry);
+        Global.getTelemetryClient().track(telemetry);
         if (exception != null) {
             ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
-            client.track(exceptionTelemetry);
+            Global.getTelemetryClient().track(exceptionTelemetry);
         }
     }
 }

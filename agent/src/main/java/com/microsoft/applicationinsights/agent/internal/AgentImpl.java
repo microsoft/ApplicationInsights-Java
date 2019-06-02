@@ -28,8 +28,6 @@ import java.util.Enumeration;
 
 class AgentImpl implements AgentSPI {
 
-    private final TelemetryClient client;
-
     AgentImpl(File agentJarFile) {
         String configDirPropName = ConfigurationFileLocator.CONFIG_DIR_PROPERTY;
         String propValue = System.getProperty(configDirPropName);
@@ -46,8 +44,8 @@ class AgentImpl implements AgentSPI {
                 System.setProperty(configDirPropName, propValue);
             }
         }
-        client = new TelemetryClient(configuration);
-        client.trackEvent("Agent Init");
+        configuration.getContextInitializers().add(new Global.CloudRoleContextInitializer());
+        Global.setTelemetryClient(new TelemetryClient(configuration));
     }
 
     @Override
@@ -89,10 +87,10 @@ class AgentImpl implements AgentSPI {
         }
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(messageSupplier, threadContextHolder, startTimeMillis,
-                requestTelemetry, client);
+                requestTelemetry);
 
         ThreadContextImpl mainThreadContext = new ThreadContextImpl(incomingSpan, telemetryContext,
-                rootNestingGroupId, rootSuppressionKeyId, false, client);
+                rootNestingGroupId, rootSuppressionKeyId, false);
         threadContextHolder.set(mainThreadContext);
 
         return incomingSpan;

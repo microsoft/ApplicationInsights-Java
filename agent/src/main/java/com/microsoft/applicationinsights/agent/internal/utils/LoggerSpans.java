@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.agent.internal.utils;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
@@ -17,8 +16,7 @@ import java.util.Map;
 
 public class LoggerSpans {
 
-    public static void track(MessageSupplier messageSupplier, @Nullable Throwable throwable, long timeMillis,
-                             TelemetryClient client) {
+    public static void track(MessageSupplier messageSupplier, @Nullable Throwable throwable, long timeMillis) {
 
         ReadableMessage message = (ReadableMessage) messageSupplier.get();
         String formattedMessage = message.getText();
@@ -68,7 +66,7 @@ public class LoggerSpans {
         // TODO: Username, domain and identity should be included as in .NET version.
         // TODO: Should check, seems that it is not included in Log4j2.
 
-        client.track(telemetry);
+        Global.getTelemetryClient().track(telemetry);
     }
 
     private static String getFormattedDate(long dateInMilliseconds) {

@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -18,13 +17,9 @@ class AuxThreadContextImpl implements AuxThreadContext {
 
     private final @Nullable RequestTelemetryContext telemetryContext;
 
-    private final TelemetryClient client;
-
-    public AuxThreadContextImpl(IncomingSpanImpl incomingSpan, @Nullable RequestTelemetryContext telemetryContext,
-                                TelemetryClient client) {
+    public AuxThreadContextImpl(IncomingSpanImpl incomingSpan, @Nullable RequestTelemetryContext telemetryContext) {
         this.incomingSpan = incomingSpan;
         this.telemetryContext = telemetryContext;
-        this.client = client;
     }
 
     @Override
@@ -46,7 +41,7 @@ class AuxThreadContextImpl implements AuxThreadContext {
             }
             return NopTransactionService.LOCAL_SPAN;
         }
-        threadContext = new ThreadContextImpl(incomingSpan, telemetryContext, 0, 0, true, client);
+        threadContext = new ThreadContextImpl(incomingSpan, telemetryContext, 0, 0, true);
         threadContextHolder.set(threadContext);
         if (completeAsyncTransaction) {
             threadContext.setTransactionAsyncComplete();

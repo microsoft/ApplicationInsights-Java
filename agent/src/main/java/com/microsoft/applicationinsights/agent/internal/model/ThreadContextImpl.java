@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.agent.internal.utils.LoggerSpans;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
@@ -26,17 +25,13 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     private final @Nullable TwoPartCompletion auxThreadAsyncCompletion;
 
-    private final TelemetryClient client;
-
     public ThreadContextImpl(IncomingSpanImpl incomingSpan, @Nullable RequestTelemetryContext telemetryContext,
-                             int rootNestingGroupId, int rootSuppressionKeyId, boolean auxThread,
-                             TelemetryClient client) {
+                             int rootNestingGroupId, int rootSuppressionKeyId, boolean auxThread) {
         this.incomingSpan = incomingSpan;
         this.telemetryContext = telemetryContext;
         currentNestingGroupId = rootNestingGroupId;
         currentSuppressionKeyId = rootSuppressionKeyId;
         auxThreadAsyncCompletion = auxThread ? new TwoPartCompletion() : null;
-        this.client = client;
     }
 
     @Override
@@ -60,19 +55,19 @@ public class ThreadContextImpl implements ThreadContextPlus {
     @Override
     public QuerySpan startQuerySpan(String type, String dest, String text, QueryMessageSupplier queryMessageSupplier,
                                     TimerName timerName) {
-        return new QuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis(), client);
+        return new QuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis());
     }
 
     @Override
     public QuerySpan startQuerySpan(String type, String dest, String text, long queryExecutionCount,
                                     QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        return new QuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis(), client);
+        return new QuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis());
     }
 
     @Override
     public AsyncQuerySpan startAsyncQuerySpan(String type, String dest, String text,
                                               QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        return new AsyncQuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis(), client);
+        return new AsyncQuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis());
     }
 
     @Override
@@ -80,7 +75,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
                                       MessageSupplier messageSupplier, TimerName timerName) {
         // TODO revisit the point of text
         String outgoingSpanId = propagate(setter, carrier);
-        return new OutgoingSpanImpl(type, text, System.currentTimeMillis(), outgoingSpanId, messageSupplier, client);
+        return new OutgoingSpanImpl(type, text, System.currentTimeMillis(), outgoingSpanId, messageSupplier);
     }
 
     @Override
@@ -88,13 +83,12 @@ public class ThreadContextImpl implements ThreadContextPlus {
                                                 MessageSupplier messageSupplier, TimerName timerName) {
         // TODO revisit the point of text
         String outgoingSpanId = propagate(setter, carrier);
-        return new AsyncOutgoingSpanImpl(type, text, System.currentTimeMillis(), outgoingSpanId, messageSupplier,
-                client);
+        return new AsyncOutgoingSpanImpl(type, text, System.currentTimeMillis(), outgoingSpanId, messageSupplier);
     }
 
     @Override
     public void captureLoggerSpan(MessageSupplier messageSupplier, @Nullable Throwable throwable) {
-        LoggerSpans.track(messageSupplier, throwable, System.currentTimeMillis(), client);
+        LoggerSpans.track(messageSupplier, throwable, System.currentTimeMillis());
     }
 
     @Override
@@ -105,7 +99,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     @Override
     public AuxThreadContext createAuxThreadContext() {
-        return new AuxThreadContextImpl(incomingSpan, telemetryContext, client);
+        return new AuxThreadContextImpl(incomingSpan, telemetryContext);
     }
 
     @Override

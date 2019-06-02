@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.google.common.io.Files;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -9,7 +8,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
-import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 

@@ -37,7 +37,6 @@ public class MainEntryPoint {
         }
 
         try {
-            System.out.println("Starting Application Insights Agent v3");
             start(instrumentation, agentJarFile);
         } catch (ThreadDeath td) {
             throw td;

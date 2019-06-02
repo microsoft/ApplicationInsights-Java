@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
@@ -28,20 +27,17 @@ public class OutgoingSpanImpl implements Span {
     private final String outgoingSpanId;
     private final MessageSupplier messageSupplier;
 
-    private final TelemetryClient client;
-
     private volatile @MonotonicNonNull String requestContext; // only used for HTTP
 
     private volatile @MonotonicNonNull Throwable exception;
 
     public OutgoingSpanImpl(String type, String text, long startTimeMillis, String outgoingSpanId,
-                            MessageSupplier messageSupplier, TelemetryClient client) {
+                            MessageSupplier messageSupplier) {
         this.type = type;
         this.text = text;
         this.startTimeMillis = startTimeMillis;
         this.outgoingSpanId = outgoingSpanId;
         this.messageSupplier = messageSupplier;
-        this.client = client;
     }
 
     @Override
@@ -93,10 +89,10 @@ public class OutgoingSpanImpl implements Span {
             telemetry.setType(type);
         }
         if (telemetry != null) {
-            client.track(telemetry);
+            Global.getTelemetryClient().track(telemetry);
             if (exception != null) {
                 ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
-                client.track(exceptionTelemetry);
+                Global.getTelemetryClient().track(exceptionTelemetry);
             }
         }
     }
