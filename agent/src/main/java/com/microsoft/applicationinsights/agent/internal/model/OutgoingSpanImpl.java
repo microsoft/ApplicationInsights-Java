@@ -28,13 +28,11 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
@@ -44,10 +42,14 @@ import org.glowroot.xyzzy.instrumentation.api.Setter;
 import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.Timer;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class OutgoingSpanImpl implements Span {
+
+    private static final Logger logger = LoggerFactory.getLogger(OutgoingSpanImpl.class);
 
     private final String type;
     private final String text;
@@ -175,8 +177,8 @@ public class OutgoingSpanImpl implements Span {
                     }
                 }
             } catch (URISyntaxException e) {
-                InternalLogger.INSTANCE.error("%s", e.toString());
-                InternalLogger.INSTANCE.trace("Stack trace is%n%s", ExceptionUtils.getStackTrace(e));
+                logger.error(e.getMessage());
+                logger.debug(e.getMessage(), e);
             }
             telemetry.setCommandName(uri);
             // for backward compatibility (same comment from CoreAgentNotificationsHandler)

@@ -22,13 +22,15 @@
 package com.microsoft.applicationinsights.agent.internal.config.builder;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 class XmlParserUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(XmlParserUtils.class);
 
     private static final String ENABLED_ATTRIBUTE = "enabled";
 
@@ -54,8 +56,8 @@ class XmlParserUtils {
             }
             return true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%b) will be used.",
-                    ENABLED_ATTRIBUTE, attributeName, true);
+            logger.error("Failed to parse attribute '{}' of '{}', default value ({}) will be used.", ENABLED_ATTRIBUTE,
+                    attributeName, true);
         }
         return true;
     }
@@ -64,6 +66,9 @@ class XmlParserUtils {
      * Method to get the attribute value for W3C.
      */
     static boolean w3cEnabled(Element element, String attributeName, boolean defaultValue) {
+        if (element == null) {
+            return defaultValue;
+        }
         try {
             String strValue = element.getAttribute(attributeName);
             if (!Strings.isNullOrEmpty(strValue)) {
@@ -71,8 +76,7 @@ class XmlParserUtils {
             }
             return defaultValue;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("cannot parse the correlation format, will default"
-                    + "to AI proprietary correlation", ExceptionUtils.getStackTrace(e));
+            logger.error("cannot parse the correlation format, will default to AI proprietary correlation", e);
         }
         return defaultValue;
     }
@@ -88,8 +92,8 @@ class XmlParserUtils {
             }
             return defaultValue;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s', default value (%d) will be used.",
-                    attributeName, elementName, defaultValue);
+            logger.error("Failed to parse attribute '{}' of '{}', default value ({}) will be used.", attributeName,
+                    elementName, defaultValue);
         }
         return defaultValue;
     }
@@ -109,7 +113,7 @@ class XmlParserUtils {
             }
             return null;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s'", ENABLED_ATTRIBUTE, elementName);
+            logger.error("Failed to parse attribute '{}' of '{}'", ENABLED_ATTRIBUTE, elementName);
         }
         return null;
     }

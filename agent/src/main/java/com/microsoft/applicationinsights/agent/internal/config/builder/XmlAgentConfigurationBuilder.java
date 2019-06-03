@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,7 +32,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -41,6 +41,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class XmlAgentConfigurationBuilder {
+
+    private static final Logger logger = LoggerFactory.getLogger(XmlAgentConfigurationBuilder.class);
 
     private static final String AGENT_XML_CONFIGURATION_NAME = "AI-Agent.xml";
 
@@ -56,15 +58,6 @@ public class XmlAgentConfigurationBuilder {
     private static final String LOGGING_TAG = "Logging";
     private static final String JMX_TAG = "AgentJmx";
     private static final String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
-
-    // visible for testing
-    private static final String AGENT_LOGGER_TAG = "AgentLogger";
-    private static final String SDK_LOGGER_TYPE_TAG = "type";
-    private static final String SDK_LOG_LEVEL_TAG = "Level";
-    private static final String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
-    private static final String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
-    private static final String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
-    private static final String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
 
     private static final String W3C_ENABLED = "W3C";
     private static final String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
@@ -91,18 +84,16 @@ public class XmlAgentConfigurationBuilder {
 
         File configurationFile = new File(configurationFileName);
         if (!configurationFile.exists()) {
-            InternalLogger.INSTANCE.trace("Did not find Agent configuration file in '%s'", configurationFileName);
+            logger.trace("Did not find Agent configuration file in '{}'", configurationFileName);
             return agentConfiguration;
         }
 
-        InternalLogger.INSTANCE.trace("Found Agent configuration file in '%s'", configurationFileName);
+        logger.trace("Found Agent configuration file in '{}'", configurationFileName);
         try {
             Element topElementTag = getTopTag(configurationFile);
             if (topElementTag == null) {
                 return agentConfiguration;
             }
-
-            initializeAgentLogger(topElementTag);
 
             getForbiddenPaths(topElementTag);
 
@@ -142,7 +133,7 @@ public class XmlAgentConfigurationBuilder {
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.error("Exception while parsing Agent configuration file: '%s'", e.toString());
+                logger.error("Exception while parsing Agent configuration file: '{}'", e.toString());
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -156,7 +147,7 @@ public class XmlAgentConfigurationBuilder {
         NodeList nodes = parent.getElementsByTagName(EXCLUDED_PREFIXES_TAG);
         Element forbiddenElement = XmlParserUtils.getFirst(nodes);
         if (forbiddenElement != null) {
-            InternalLogger.INSTANCE.warn(EXCLUDED_PREFIXES_TAG + " tag in AI-Agent.xml is no longer used");
+            logger.warn("{} tag in AI-Agent.xml is no longer used", EXCLUDED_PREFIXES_TAG);
         }
     }
 
@@ -187,7 +178,7 @@ public class XmlAgentConfigurationBuilder {
         nodes = builtInElement.getElementsByTagName(RUNTIME_EXCEPTION_TAG);
         Element rtExceptionElement = XmlParserUtils.getFirst(nodes);
         if (rtExceptionElement != null) {
-            InternalLogger.INSTANCE.warn(RUNTIME_EXCEPTION_TAG + " tag in AI-Agent.xml is no longer used");
+            logger.warn("{} tag in AI-Agent.xml is no longer used", RUNTIME_EXCEPTION_TAG);
         }
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
@@ -207,7 +198,7 @@ public class XmlAgentConfigurationBuilder {
         nodes = builtInElement.getElementsByTagName(JMX_TAG);
         Element jmxElement = XmlParserUtils.getFirst(nodes);
         if (jmxElement != null) {
-            InternalLogger.INSTANCE.warn(JMX_TAG + " tag in AI-Agent.xml is no longer used");
+            logger.warn("{} tag in AI-Agent.xml is no longer used", JMX_TAG);
         }
 
         nodes = builtInElement.getElementsByTagName(MAX_STATEMENT_QUERY_LIMIT_TAG);
@@ -283,61 +274,6 @@ public class XmlAgentConfigurationBuilder {
         return XmlParserUtils.getFirst(customTags);
     }
 
-    /**
-     * This method is responsible for parsing the Agent Logging Configuration and mimics the configuration
-     * style for Core SDK.
-     */
-    private synchronized void initializeAgentLogger(Element topElementTag) {
-        NodeList customTags = topElementTag.getElementsByTagName(AGENT_LOGGER_TAG);
-        Element loggerTag = XmlParserUtils.getFirst(customTags);
-        if (loggerTag == null) {
-            return;
-        }
-
-        // Map that stores the configuration for agent logger
-        Map<String, String> loggerConfig = new HashMap<>();
-
-        // Get Type Attribute
-        String loggerType = loggerTag.getAttribute(SDK_LOGGER_TYPE_TAG);
-
-        customTags = loggerTag.getElementsByTagName(SDK_LOG_LEVEL_TAG);
-        Element levelTag = XmlParserUtils.getFirst(customTags);
-
-        if (levelTag != null && !levelTag.getTextContent().trim().isEmpty()) {
-            loggerConfig.put(SDK_LOG_LEVEL_TAG, levelTag.getTextContent().trim());
-        }
-
-        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_UNIQUE_PREFIX_TAG);
-        Element uniquePrefixTag = XmlParserUtils.getFirst(customTags);
-
-        if (uniquePrefixTag != null && !uniquePrefixTag.getTextContent().trim().isEmpty()) {
-            loggerConfig.put(SDK_LOGGER_UNIQUE_PREFIX_TAG, uniquePrefixTag.getTextContent().trim());
-        }
-
-        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_BASE_FOLDER_PATH_TAG);
-        Element baseFolderPathTag = XmlParserUtils.getFirst(customTags);
-
-        if (baseFolderPathTag != null && !baseFolderPathTag.getTextContent().trim().isEmpty()) {
-            loggerConfig.put(SDK_LOGGER_BASE_FOLDER_PATH_TAG, baseFolderPathTag.getTextContent().trim());
-        }
-
-        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES);
-        Element maxNoLogFilesTag = XmlParserUtils.getFirst(customTags);
-
-        if (maxNoLogFilesTag != null && !maxNoLogFilesTag.getTextContent().trim().isEmpty()) {
-            loggerConfig.put(SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES, maxNoLogFilesTag.getTextContent().trim());
-        }
-
-        customTags = loggerTag.getElementsByTagName(SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB);
-        Element totalLogFileSizeTag = XmlParserUtils.getFirst(customTags);
-
-        if (totalLogFileSizeTag != null && !totalLogFileSizeTag.getTextContent().trim().isEmpty()) {
-            loggerConfig.put(SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB, totalLogFileSizeTag.getTextContent().trim());
-        }
-
-        InternalLogger.INSTANCE.initialize(loggerType, loggerConfig);
-    }
-
     private NodeList getAllClassesToInstrument(Element tag) {
         return tag.getElementsByTagName(CLASS_TAG);
     }
@@ -394,9 +330,8 @@ public class XmlAgentConfigurationBuilder {
                 try {
                     thresholdInMS = Long.valueOf(valueStr);
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE
-                            .error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'",
-                                    THRESHOLD_ATTRIBUTE, methodElement.getTagName());
+                    logger.error("Failed to parse attribute '{}' of '{}', default value (true) will be used.'",
+                            THRESHOLD_ATTRIBUTE, methodElement.getTagName());
                 }
             }
 

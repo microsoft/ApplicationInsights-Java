@@ -32,7 +32,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -42,7 +41,6 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.ResponseHeaderSetter;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
@@ -54,11 +52,15 @@ import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.ThreadContext.ServletRequestInfo;
 import org.glowroot.xyzzy.instrumentation.api.Timer;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 // currently only for "Web" transactions
 public class IncomingSpanImpl implements Span {
+
+    private static final Logger logger = LoggerFactory.getLogger(IncomingSpanImpl.class);
 
     private static final Splitter cookieSplitter = Splitter.on('|');
 
@@ -209,8 +211,8 @@ public class IncomingSpanImpl implements Span {
         try {
             requestTelemetry.setUrl(removeSessionIdFromUri(getUrl(detail)));
         } catch (MalformedURLException e) {
-            InternalLogger.INSTANCE.error("%s", e.toString());
-            InternalLogger.INSTANCE.trace("Stack trace is%n%s", ExceptionUtils.getStackTrace(e));
+            logger.error(e.getMessage());
+            logger.debug(e.getMessage(), e);
         }
 
         Integer responseCode = (Integer) detail.get("Response code");
@@ -250,14 +252,14 @@ public class IncomingSpanImpl implements Span {
     private void processAiUserCookie(String aiUser) {
         List<String> split = cookieSplitter.splitToList(aiUser);
         if (split.size() < 2) {
-            InternalLogger.INSTANCE.warn("ai_user cookie is not in the correct format: %s", aiUser);
+            logger.warn("ai_user cookie is not in the correct format: {}", aiUser);
         }
         String userId = split.get(0);
         Date acquisitionDate;
         try {
             acquisitionDate = DateTimeUtils.parseRoundTripDateString(split.get(1));
         } catch (ParseException e) {
-            InternalLogger.INSTANCE.warn("could not parse ai_user cookie: %s", aiUser);
+            logger.warn("could not parse ai_user cookie: {}", aiUser);
             return;
         }
         UserContext userContext = requestTelemetry.getContext().getUser();

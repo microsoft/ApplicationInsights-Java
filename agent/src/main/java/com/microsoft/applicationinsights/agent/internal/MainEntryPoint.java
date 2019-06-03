@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.config.InstrumentationDescriptor;
 import org.glowroot.xyzzy.engine.impl.InstrumentationServiceImpl.ConfigServiceFactory;
 import org.glowroot.xyzzy.engine.impl.SimpleConfigServiceFactory;
@@ -47,30 +48,35 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class MainEntryPoint {
 
+    private static @Nullable Logger startupLogger;
+
     private MainEntryPoint() {
     }
 
     public static void premain(Instrumentation instrumentation, File agentJarFile) {
-        Logger startupLogger;
         try {
-            startupLogger = MainEntryPointUtil.initLogging("com.microsoft.applicationinsights.agent", instrumentation);
+            startupLogger = initLogging(instrumentation, agentJarFile);
             addLibJars(instrumentation, agentJarFile);
+            instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
             instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            System.err.println("Agent failed to start: " + t.getMessage());
-            t.printStackTrace();
-            return;
-        }
-
-        try {
             start(instrumentation, agentJarFile);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             startupLogger.error("Agent failed to start.", t);
             t.printStackTrace();
+        }
+    }
+
+    public static Logger initLogging(Instrumentation instrumentation, File agentJarFile) {
+        File logbackXmlOverride = new File(agentJarFile.getParentFile(), "ai.logback.xml");
+        if (logbackXmlOverride.exists()) {
+            System.setProperty("ai.logback.configurationFile", logbackXmlOverride.getAbsolutePath());
+        }
+        try {
+            return MainEntryPointUtil.initLogging("com.microsoft.applicationinsights", instrumentation);
+        } finally {
+            System.clearProperty("ai.logback.configurationFile");
         }
     }
 

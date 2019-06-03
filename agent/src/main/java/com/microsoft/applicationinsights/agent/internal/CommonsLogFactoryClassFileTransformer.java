@@ -18,7 +18,6 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package com.microsoft.applicationinsights.agent.internal;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -32,27 +31,32 @@ import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.objectweb.asm.Opcodes.ARETURN;
 import static org.objectweb.asm.Opcodes.ASM7;
-import static org.objectweb.asm.Opcodes.DUP;
-import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
-import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
-class SpringApplicationClassFileTransformer implements ClassFileTransformer {
+// this is needed because gradle shadow doesn't shade META-INF/services/org.apache.commons.logging.LogFactory
+class CommonsLogFactoryClassFileTransformer implements ClassFileTransformer {
 
-    private static final Logger logger = LoggerFactory.getLogger(SpringApplicationClassFileTransformer.class);
+    private static final Logger logger = LoggerFactory.getLogger(CommonsLogFactoryClassFileTransformer.class);
+
+    // using constant here so that it will get shaded appropriately
+    // VERY IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER MAY INLINE IT
+    public static String SERVICE_ID = "org.apache.commons.logging.LogFactory";
 
     @Override public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
                                                     @Nullable Class<?> classBeingRedefined,
                                                     @Nullable ProtectionDomain protectionDomain,
                                                     byte[] classfileBuffer) {
 
-        if (!"org/springframework/boot/SpringApplication".equals(className)) {
+        if (!"org/apache/commons/logging/LogFactory".equals(className)) {
+            return null;
+        }
+        if (!className.startsWith("com/microsoft/applicationinsights")) {
+            // only apply if shaded
             return null;
         }
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            ClassVisitor cv = new SpringApplicationClassVisitor(cw);
+            ClassVisitor cv = new CommonsLogFactoryClassVisitor(cw);
             ClassReader cr = new ClassReader(classfileBuffer);
             cr.accept(cv, 0);
             return cw.toByteArray();
@@ -62,11 +66,11 @@ class SpringApplicationClassFileTransformer implements ClassFileTransformer {
         }
     }
 
-    private static class SpringApplicationClassVisitor extends ClassVisitor {
+    private static class CommonsLogFactoryClassVisitor extends ClassVisitor {
 
         private final ClassWriter cw;
 
-        private SpringApplicationClassVisitor(ClassWriter cw) {
+        private CommonsLogFactoryClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
             this.cw = cw;
         }
@@ -75,32 +79,26 @@ class SpringApplicationClassFileTransformer implements ClassFileTransformer {
         public MethodVisitor visitMethod(int access, String name, String descriptor, @Nullable String signature,
                                          String /*@Nullable*/[] exceptions) {
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-            if (name.equals("run") && descriptor.startsWith("([Ljava/lang/String;)")) {
-                return new SpringApplicationMethodVisitor(mv);
+            if (name.equals("getFactory") && descriptor.startsWith("()")) {
+                return new CommonsLogFactoryMethodVisitor(mv);
             } else {
                 return mv;
             }
         }
     }
 
-    private static class SpringApplicationMethodVisitor extends MethodVisitor {
+    private static class CommonsLogFactoryMethodVisitor extends MethodVisitor {
 
-        private SpringApplicationMethodVisitor(MethodVisitor mv) {
+        private CommonsLogFactoryMethodVisitor(MethodVisitor mv) {
             super(ASM7, mv);
         }
 
-        public void visitInsn(int opcode) {
-            if (opcode == ARETURN) {
-                visitInsn(DUP);
-                visitMethodInsn(INVOKEINTERFACE, "org/springframework/core/env/EnvironmentCapable", "getEnvironment",
-                        "()Lorg/springframework/core/env/Environment;", true);
-                visitLdcInsn("spring.application.name");
-                visitMethodInsn(INVOKEINTERFACE, "org/springframework/core/env/PropertyResolver", "getProperty",
-                        "(Ljava/lang/String;)Ljava/lang/String;", true);
-                visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/internal/utils/Global",
-                        "setCloudRole", "(Ljava/lang/String;)V", false);
+        public void visitLdcInsn(Object value) {
+            if ("META-INF/services/org.apache.commons.logging.LogFactory".equals(value)) {
+                super.visitLdcInsn("META-INF/services/" + SERVICE_ID);
+            } else {
+                super.visitLdcInsn(value);
             }
-            mv.visitInsn(opcode);
         }
     }
 }

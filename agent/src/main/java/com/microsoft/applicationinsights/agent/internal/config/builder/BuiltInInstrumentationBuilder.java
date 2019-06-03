@@ -22,9 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.config.builder;
 
 import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BuiltInInstrumentationBuilder {
+
+    private static final Logger logger = LoggerFactory.getLogger(BuiltInInstrumentationBuilder.class);
 
     private boolean enabled;
     private boolean httpEnabled;
@@ -37,9 +40,8 @@ public class BuiltInInstrumentationBuilder {
 
     public BuiltInInstrumentation create() {
 
-        InternalLogger.INSTANCE.trace(String.format("Outbound W3C tracing is enabled : %s", w3cEnabled));
-        InternalLogger.INSTANCE.trace(String.format("Outbound W3C backport mode is enabled : %s",
-                isW3CBackportEnabled));
+        logger.trace("Outbound W3C tracing is enabled: {}", w3cEnabled);
+        logger.trace("Outbound W3C backport mode is enabled: {}", isW3CBackportEnabled);
 
         return new BuiltInInstrumentation(enabled,
                 httpEnabled && enabled,

@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
@@ -35,10 +34,14 @@ import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class LoggerSpans {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoggerSpans.class);
 
     public static void track(MessageSupplier messageSupplier, @Nullable Throwable throwable, long timeMillis) {
 
@@ -115,7 +118,7 @@ public class LoggerSpans {
             case "ALL":
                 return SeverityLevel.Verbose;
             default:
-                InternalLogger.INSTANCE.error("Unexpected level %s, using TRACE level as default", level);
+                logger.error("Unexpected level {}, using TRACE level as default", level);
                 return SeverityLevel.Verbose;
         }
     }

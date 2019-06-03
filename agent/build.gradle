@@ -43,28 +43,37 @@ def xyzzyVersion = '0.5.0-SNAPSHOT'
 def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
 def corePrefix = 'com.microsoft.applicationinsights.core.dependencies' // some dependencies are already shaded in core
 
-shadowJar {
-    classifier = ''
+shadowJar() {
+
+    archiveClassifier = 'intermediate'
     mergeServiceFiles()
+
+    dependencies {
+        exclude(dependency('org.glowroot.xyzzy.instrumentation:'))
+        exclude(dependency('com.google.guava:guava')) // already brought in via core
+        exclude(dependency('com.github.trask:checker-framework-annotations-for-jdk6')) // already brought in via core
+    }
 
     relocate('org.objectweb.asm', "${shadowPrefix}.org.objectweb.asm")
     relocate('org.slf4j', "${shadowPrefix}.org.slf4j")
-    // FIXME need to relocate logback also, but currently causes instrumentation to be relocated
-    // relocate('ch.qos.logback', "${shadowPrefix}.ch.qos.logback")
+    relocate('ch.qos.logback', "${shadowPrefix}.ch.qos.logback")
 
     // this shades internal use of java util logging which is needed to prevent java util logging from being initialized
     // early (e.g. in the case of jboss which wants to do some setup before jul is initialized)
     relocate('java.util.logging', 'org.glowroot.xyzzy.engine.jul')
 
     // core
+    relocate 'org.apache.commons.logging', "${corePrefix}.apachecommons.logging" // needed for jcl-over-slf4j
     relocate 'com.google', "${corePrefix}.google"
     relocate 'org.checkerframework', "${corePrefix}.checkerframework"
     relocate 'org.apache.commons.logging', "${corePrefix}.apachecommons.logging"
 
     relocate('logback.configurationFile', 'ai.logback.configurationFile')
     relocate('logback.xml', 'ai.logback.xml')
-    relocate('logback.groovy', 'ai.logback.groovy') // to prevent accidentally picking up user's logback.groovy
-    relocate('logback-test.xml', 'ai.logback-test.xml') // to prevent accidentally picking up user's logback-test.xml
+    relocate('logback.groovy', 'ai.logback.groovy') // to prevent accidentally picking up from user's class path
+    relocate('logback-test.xml', 'ai.logback-test.xml') // to prevent accidentally picking up from user's class path
+
+    relocate('commons-logging.properties', 'ai.commons-logging.properties') // to prevent accidentally picking up from user's class path
 
     exclude 'META-INF/maven/**'
     exclude 'META-INF/LICENSE*'
@@ -73,16 +82,29 @@ shadowJar {
     exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
     exclude 'mozilla/**'
     exclude 'commons-logging.properties'
+}
+
+task shadowJar2(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+
+    dependsOn shadowJar
+
+    from {
+        zipTree(shadowJar.archiveFile)
+    }
+
+    configurations = [project.configurations.runtime]
+
+    archiveClassifier = ''
+    mergeServiceFiles()
+
+    dependencies {
+        include(dependency('org.glowroot.xyzzy.instrumentation:'))
+    }
 
     transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
         resource = 'META-INF/xyzzy.instrumentation.list'
     }
-}
-archivesBaseName = 'applicationinsights-agent'
 
-jar {
-    dependsOn shadowJar
-    enabled = false
     manifest {
         attributes("Premain-Class": "com.microsoft.applicationinsights.agent.internal.Premain",
                 "Can-Redefine-Classes": "true",
@@ -92,9 +114,17 @@ jar {
     }
 }
 
+archivesBaseName = 'applicationinsights-agent'
+
+jar {
+    dependsOn shadowJar2
+    enabled = false
+}
+
 dependencies {
-    compile project(':ApplicationInsightsInternalLogger') // TODO include? or use slf4j?
-    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'org.slf4j:slf4j-api:1.7.26'
+    compile 'org.slf4j:jcl-over-slf4j:1.7.26' // this is needed to pick up logging from apache http client
+    compile 'ch.qos.logback:logback-classic:1.2.3'
 
     compile "org.glowroot.xyzzy:xyzzy-engine:$xyzzyVersion"
     compile "com.google.guava:guava:27.1-android"
@@ -111,6 +141,4 @@ dependencies {
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-logback:$xyzzyVersion"
 
     compile(project(path: ':core', configuration: 'shadow'))
-
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
 }

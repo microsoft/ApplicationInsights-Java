@@ -34,14 +34,17 @@ import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrument
 import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
 import com.microsoft.applicationinsights.agent.internal.config.MethodInfo;
 import com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.glowroot.xyzzy.engine.config.AdviceConfig;
 import org.glowroot.xyzzy.engine.config.ImmutableAdviceConfig;
 import org.glowroot.xyzzy.engine.config.ImmutableInstrumentationDescriptor;
 import org.glowroot.xyzzy.engine.config.InstrumentationDescriptor;
 import org.glowroot.xyzzy.engine.config.InstrumentationDescriptors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class AIAgentXmlLoader {
+
+    private static final Logger logger = LoggerFactory.getLogger(AIAgentXmlLoader.class);
 
     static AgentConfiguration load(File agentJarParentFile) {
         return new XmlAgentConfigurationBuilder().parseConfigurationFile(agentJarParentFile.getAbsolutePath());
@@ -157,7 +160,7 @@ class AIAgentXmlLoader {
                         MethodInfo methodInfo = entry3.getValue();
 
                         if (methodInfo.isReportCaughtExceptions()) {
-                            InternalLogger.INSTANCE.warn("reportCaughtExceptions attribute is no longer supported");
+                            logger.warn("reportCaughtExceptions attribute is no longer supported");
                         }
                         if (methodInfo.isReportExecutionTime()) {
 
@@ -169,7 +172,7 @@ class AIAgentXmlLoader {
 
                             if (!signature.equals(ClassInstrumentationData.ANY_SIGNATURE_MARKER)) {
                                 // TODO parse signature and call addAllMethodParameterTypes() and methodReturnType()
-                                InternalLogger.INSTANCE.warn("signature attribute is not currently supported");
+                                logger.warn("signature attribute is not currently supported");
                             }
 
                             adviceConfigs.add(builder
