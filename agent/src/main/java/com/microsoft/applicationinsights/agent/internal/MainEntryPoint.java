@@ -6,7 +6,9 @@ import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentat
 import com.microsoft.applicationinsights.agent.internal.config.MethodInfo;
 import com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
+import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.glowroot.xyzzy.engine.config.*;
 import org.glowroot.xyzzy.engine.impl.InstrumentationServiceImpl.ConfigServiceFactory;
 import org.glowroot.xyzzy.engine.impl.SimpleConfigServiceFactory;
@@ -18,6 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class MainEntryPoint {
 
@@ -49,7 +55,11 @@ public class MainEntryPoint {
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {
 
         File agentJarParentFile = agentJarFile.getParentFile();
-        File tmpDir = new File(agentJarParentFile, "tmp");
+        File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
+        File tmpDir = new File(javaTmpDir, "ai-java");
+        if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+            throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
+        }
 
         AgentImpl agent = new AgentImpl(agentJarFile);
 
@@ -71,9 +81,18 @@ public class MainEntryPoint {
         ConfigServiceFactory configServiceFactory = new SimpleConfigServiceFactory(instrumentationDescriptors,
                 getInstrumentationConfig(builtInConfiguration));
 
-        EngineModule.createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),
-                instrumentationDescriptors, configServiceFactory, agent,
-                Collections.singletonList("com.microsoft.applicationinsights."), agentJarFile);
+        final EngineModule engineModule = EngineModule
+                .createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),
+                        instrumentationDescriptors, configServiceFactory, agent,
+                        Collections.singletonList("com.microsoft.applicationinsights."), agentJarFile);
+
+        ThreadFactory threadFactory = ThreadPoolUtils.createDaemonThreadFactory(TransmitterImpl.class);
+        Executors.newSingleThreadScheduledExecutor(threadFactory)
+                .scheduleWithFixedDelay(new Runnable() {
+                    @Override public void run() {
+                        engineModule.getPreloadSomeSuperTypesCache().writeToFileAsync();
+                    }
+                }, 5, 5, SECONDS);
 
         instrumentation.addTransformer(new SpringApplicationClassFileTransformer());
     }
