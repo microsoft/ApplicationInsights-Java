@@ -25,8 +25,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector.RegistrationResult;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
@@ -34,23 +32,17 @@ import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNa
 import com.microsoft.applicationinsights.web.internal.httputils.AIHttpServletListener;
 import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.LinkedList;
 import java.util.List;
-import javax.servlet.AsyncContext;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by yonisha on 2/2/2015.
@@ -78,8 +70,6 @@ public final class WebRequestTrackingFilter implements Filter {
     private TelemetryClient telemetryClient;
     private final List<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
-    private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights."
-        + "agent.internal.coresync.AgentNotificationsHandler";
     private String filterName = FILTER_NAME;
 
     /**
@@ -92,10 +82,11 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
 
+
     /**
-     * Used to indicate if agent is registered to webapp.
+     * Used to indicate if agent is running.
      */
-    private boolean agentIsRegistered;
+    private boolean agentRunning;
 
     // endregion Members
 
@@ -111,21 +102,32 @@ public final class WebRequestTrackingFilter implements Filter {
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        if (req instanceof  HttpServletRequest && res instanceof HttpServletResponse) {
-            HttpServletRequest httpRequest = (HttpServletRequest) req;
-            HttpServletResponse httpResponse = (HttpServletResponse) res;
-            boolean hasAlreadyBeenFiltered = httpRequest.getAttribute(ALREADY_FILTERED) != null;
 
-            // Prevent duplicate Telemetry creation
-            if (hasAlreadyBeenFiltered) {
-                chain.doFilter(httpRequest, httpResponse);
-                return;
-            }
+        if (!(req instanceof HttpServletRequest) || !(res instanceof HttpServletResponse)) {
+            // we are only interested in Http Requests. Keep all other untouched.
+            chain.doFilter(req, res);
+            return;
+        }
 
+        HttpServletRequest httpRequest = (HttpServletRequest) req;
+        HttpServletResponse httpResponse = (HttpServletResponse) res;
+        boolean hasAlreadyBeenFiltered = httpRequest.getAttribute(ALREADY_FILTERED) != null;
+
+        // Prevent duplicate Telemetry creation
+        if (hasAlreadyBeenFiltered) {
+            chain.doFilter(httpRequest, httpResponse);
+            return;
+        }
+
+        httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
+
+        if (agentRunning) {
+            handler.handleStartUnderAgent(httpRequest, httpResponse);
+            chain.doFilter(httpRequest, httpResponse);
+        } else {
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
-                httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
                 chain.doFilter(httpRequest, httpResponse);
             } catch (ServletException | IOException | RuntimeException e) {
                 handler.handleException(e);
@@ -138,9 +140,6 @@ public final class WebRequestTrackingFilter implements Filter {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
                 }
             }
-        } else {
-            // we are only interested in Http Requests. Keep all other untouched.
-            chain.doFilter(req, res);
         }
     }
 
@@ -156,8 +155,8 @@ public final class WebRequestTrackingFilter implements Filter {
     public void init(FilterConfig config) {
         try {
             long start = System.currentTimeMillis();
-            this.appName = extractAppName(config.getServletContext());
-            this.agentIsRegistered = initializeAgentIfAvailable();
+            appName = extractAppName(config.getServletContext());
+            agentRunning = isAgentRunning();
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
@@ -197,9 +196,6 @@ public final class WebRequestTrackingFilter implements Filter {
      * Destroy the filter by releases resources.
      */
     public void destroy() {
-        if (agentIsRegistered) {
-            AgentConnector.INSTANCE.unregisterAgent();
-        }
     }
 
     public WebRequestTrackingFilter() {}
@@ -208,30 +204,11 @@ public final class WebRequestTrackingFilter implements Filter {
 
     // region Private
 
-    private boolean initializeAgentIfAvailable() {
-        //If Agent Jar is not present in the class path skip the process
-        if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
-            this.getClass().getClassLoader())) {
-            InternalLogger.INSTANCE.trace("Agent was not found. Skipping the agent registration");
-            return false;
-        }
-
+    private boolean isAgentRunning() {
         try {
-            RegistrationResult registrationResult = AgentConnector.INSTANCE.universalAgentRegisterer();
-            cleaners.add(registrationResult.getCleaner());
-            InternalLogger.INSTANCE.info("Successfully registered the filter with appName=%s", this.appName);
+            Class.forName("com.microsoft.applicationinsights.agent.internal.utils.Global");
             return true;
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'",
-                    this.filterName, ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
+        } catch (ClassNotFoundException e) {
             return false;
         }
     }

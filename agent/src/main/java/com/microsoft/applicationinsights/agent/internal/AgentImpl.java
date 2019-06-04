@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.model.IncomingSpanImpl;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadContext;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadSpan;
@@ -51,7 +52,9 @@ class AgentImpl implements AgentSPI {
                                       ThreadContextThreadLocal.Holder threadContextHolder, int rootNestingGroupId,
                                       int rootSuppressionKeyId) {
 
-        if (!transactionType.equals("Web")) {
+        TelemetryClient telemetryClient = Global.getTelemetryClient();
+
+        if (telemetryClient == null || !transactionType.equals("Web")) {
             // this is a little more complicated than desired, but part of the contract of startIncomingSpan is that it
             // sets a ThreadContext in the threadContextHolder before returning, and NopThreadSpan makes sure to clear
             // the threadContextHolder at the end of the thread
@@ -75,7 +78,7 @@ class AgentImpl implements AgentSPI {
 
         // TODO eliminate wrapper object instantiation
         RequestHeaderGetterImpl<C> requestHeaderGetter = new RequestHeaderGetterImpl<>(getter);
-        String instrumentationKey = Global.getTelemetryClient().getContext().getInstrumentationKey();
+        String instrumentationKey = telemetryClient.getContext().getInstrumentationKey();
         if (Global.isOutboundW3CEnabled) {
             TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
             TraceContextCorrelationCore

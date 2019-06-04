@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -34,6 +35,8 @@ import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class LoggerSpans {
 
@@ -87,7 +90,10 @@ public class LoggerSpans {
         // TODO: Username, domain and identity should be included as in .NET version.
         // TODO: Should check, seems that it is not included in Log4j2.
 
-        Global.getTelemetryClient().track(telemetry);
+        // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
+        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
+
+        telemetryClient.track(telemetry);
     }
 
     private static String getFormattedDate(long dateInMilliseconds) {

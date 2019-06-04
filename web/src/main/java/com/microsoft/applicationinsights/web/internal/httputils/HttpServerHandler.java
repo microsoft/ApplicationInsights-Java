@@ -101,6 +101,12 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
         return context;
     }
 
+    public void handleStartUnderAgent(P request, Q response) {
+        // this will need to be fixed when WebTelemetryModule concurrency fix is merged
+        webModulesContainer.setRequestTelemetryContext(ThreadContext.getRequestTelemetryContext());
+        webModulesContainer.invokeOnBeginRequest(request, response);
+    }
+
     /**
      * This method is used to indicate request end instrumentation, complete correlation and record timing, response.
      * Context object is needed as a parameter because in Async requests, handleEnd() can be called

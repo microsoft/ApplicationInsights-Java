@@ -66,7 +66,9 @@ public final class ConfigurationFileLocator {
             configurationFile = getConfigurationAbsolutePath(configDirFromProperty);
         } else {
 
-            inputStream = ConfigurationFileLocator.class.getClassLoader().getResourceAsStream(configurationFileName);
+            // need to use thread context class loader for when this class lives in the agent (bootstrap class loader)
+            // and it is being used via a user application (SDK)
+            inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(configurationFileName);
             if (inputStream != null) {
                 InternalLogger.INSTANCE.info("Configuration file has been successfully found as resource");
                 return inputStream;

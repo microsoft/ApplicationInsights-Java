@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Splitter;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
@@ -88,7 +89,11 @@ public class IncomingSpanImpl implements Span {
 
     void setServletRequestInfo(ServletRequestInfo servletRequestInfo) {
         this.servletRequestInfo = servletRequestInfo;
-        CloudContext cloud = Global.getTelemetryClient().getContext().getCloud();
+
+        // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
+        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
+
+        CloudContext cloud = telemetryClient.getContext().getCloud();
         if (cloud.getRole() == null) {
             // hasn't been set yet
             String contextPath = servletRequestInfo.getContextPath();
@@ -184,12 +189,14 @@ public class IncomingSpanImpl implements Span {
     private void send() {
         long endTimeMillis = System.currentTimeMillis();
 
+        // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
+        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
+
         if (exception != null) {
-            Global.getTelemetryClient()
-                    .trackException(toExceptionTelemetry(endTimeMillis, requestTelemetry.getContext()));
+            telemetryClient.track(toExceptionTelemetry(endTimeMillis, requestTelemetry.getContext()));
         }
         finishBuildingTelemetry(endTimeMillis);
-        Global.getTelemetryClient().track(requestTelemetry);
+        telemetryClient.track(requestTelemetry);
     }
 
     private void finishBuildingTelemetry(long endTimeMillis) {

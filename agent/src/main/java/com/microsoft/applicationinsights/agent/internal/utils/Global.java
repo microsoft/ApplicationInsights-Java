@@ -41,7 +41,7 @@ public class Global {
 
     public static boolean isInboundW3CEnabled;
 
-    private static @Nullable TelemetryClient telemetryClient;
+    private static volatile @Nullable TelemetryClient telemetryClient;
 
     // priority
     // * configured tag
@@ -60,15 +60,14 @@ public class Global {
     private Global() {
     }
 
-    public static TelemetryClient getTelemetryClient() {
-        if (telemetryClient == null) {
-            throw new IllegalStateException("Global.telemetryClient access too early");
-        }
+    public static @Nullable TelemetryClient getTelemetryClient() {
         return telemetryClient;
     }
 
     public static void setTelemetryClient(TelemetryClient telemetryClient) {
-        Global.telemetryClient = telemetryClient;
+        if (Global.telemetryClient == null) {
+            Global.telemetryClient = telemetryClient;
+        }
     }
 
     public static ThreadContextThreadLocal getThreadContextThreadLocal() {

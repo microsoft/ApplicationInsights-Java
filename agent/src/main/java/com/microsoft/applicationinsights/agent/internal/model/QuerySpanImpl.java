@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.model;
 import java.util.Date;
 import java.util.Map;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -35,6 +36,8 @@ import org.glowroot.xyzzy.instrumentation.api.QueryMessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.QuerySpan;
 import org.glowroot.xyzzy.instrumentation.api.Setter;
 import org.glowroot.xyzzy.instrumentation.api.Timer;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class QuerySpanImpl implements QuerySpan {
 
@@ -173,10 +176,12 @@ public class QuerySpanImpl implements QuerySpan {
             telemetry.getProperties().put("Query Plan", sb.toString());
         }
 
-        Global.getTelemetryClient().track(telemetry);
+        // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
+        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
+
+        telemetryClient.track(telemetry);
         if (exception != null) {
-            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
-            Global.getTelemetryClient().track(exceptionTelemetry);
+            telemetryClient.track(new ExceptionTelemetry(exception));
         }
     }
 }

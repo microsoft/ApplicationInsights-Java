@@ -117,7 +117,7 @@ class ApplicationInsightsXmlLoader {
         final boolean userTracking;
         final boolean sessionTracking;
 
-        private ExtraConfiguration(boolean userTracking, boolean sessionTracking) {
+        ExtraConfiguration(boolean userTracking, boolean sessionTracking) {
             this.userTracking = userTracking;
             this.sessionTracking = sessionTracking;
         }

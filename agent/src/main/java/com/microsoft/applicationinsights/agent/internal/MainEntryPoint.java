@@ -54,6 +54,7 @@ public class MainEntryPoint {
         try {
             startupLogger = MainEntryPointUtil.initLogging("com.microsoft.applicationinsights.agent", instrumentation);
             addLibJars(instrumentation, agentJarFile);
+            instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
@@ -97,9 +98,15 @@ public class MainEntryPoint {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        // important to load ApplicationInsights.xml first, since it sets a couple of Global
-        ApplicationInsightsXmlLoader.Result result = ApplicationInsightsXmlLoader.load(agentJarFile);
-        Global.setTelemetryClient(new TelemetryClient(result.telemetryConfiguration));
+        ApplicationInsightsXmlLoader.ExtraConfiguration extraConfiguration;
+        File applicationInsightsXmlFile = new File(agentJarParentFile, "ApplicationInsights.xml");
+        if (applicationInsightsXmlFile.exists()) {
+            ApplicationInsightsXmlLoader.Result result = ApplicationInsightsXmlLoader.load(agentJarFile);
+            Global.setTelemetryClient(new TelemetryClient(result.telemetryConfiguration));
+            extraConfiguration = result.extraConfiguration;
+        } else {
+            extraConfiguration = new ApplicationInsightsXmlLoader.ExtraConfiguration(false, false);
+        }
 
         AgentConfiguration agentConfiguration = AIAgentXmlLoader.load(agentJarParentFile);
 
@@ -117,7 +124,7 @@ public class MainEntryPoint {
                 AIAgentXmlLoader.getInstrumentationDescriptors(agentConfiguration);
 
         ConfigServiceFactory configServiceFactory = new SimpleConfigServiceFactory(instrumentationDescriptors,
-                AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation, result.extraConfiguration));
+                AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation, extraConfiguration));
 
         final EngineModule engineModule = EngineModule
                 .createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),

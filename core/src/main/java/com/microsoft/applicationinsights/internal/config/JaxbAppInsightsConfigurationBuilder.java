@@ -45,7 +45,13 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
             return null;
         }
 
+        Thread currentThread = Thread.currentThread();
+        ClassLoader priorContextClassLoader = currentThread.getContextClassLoader();
         try {
+            // when the agent is running and this class is in the bootstrap class loader, we need to load JAXB also
+            // from the bootstrap class loader, otherwise when thread context class loader is the restrictive JBoss
+            // Modules Class Loader, it will throw ClassNotFoundException: com.sun.xml.internal.bind.v2.ContextFactory
+            currentThread.setContextClassLoader(JaxbAppInsightsConfigurationBuilder.class.getClassLoader());
             JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             XMLStreamReader resourceFileReader = getXmlStreamReader(resourceFile);
@@ -54,20 +60,16 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
                 return null;
             }
 
-            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFileReader);
+            ApplicationInsightsXmlConfiguration applicationInsights =
+                    (ApplicationInsightsXmlConfiguration) unmarshaller.unmarshal(resourceFileReader);
 
             return applicationInsights;
-        } catch (JAXBException e) {
-            if (e.getCause() != null) {
-                InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
-                        ExceptionUtils.getStackTrace(e));
-            } else {
-                InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
-                        ExceptionUtils.getStackTrace(e));
-            }
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'", ExceptionUtils.getStackTrace(e));
+            // write directly to STDOUT, since config failed to load and so internal logger may not be configured
             e.printStackTrace();
         } finally {
+            currentThread.setContextClassLoader(priorContextClassLoader);
             try {
                 resourceFile.close();
             } catch (IOException e) {
