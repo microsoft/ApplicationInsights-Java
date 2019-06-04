@@ -95,6 +95,6 @@ public class TraceContextCorrelation {
     }
 
     public static void setIsW3CBackCompatEnabled(boolean isW3CBackCompatEnabled) {
-        TraceContextCorrelationCore.setIsW3CBackCompatEnabled(isW3CBackCompatEnabled);
+        TraceContextCorrelationCore.setIsInboundW3CBackCompatEnabled(isW3CBackCompatEnabled);
     }
 }

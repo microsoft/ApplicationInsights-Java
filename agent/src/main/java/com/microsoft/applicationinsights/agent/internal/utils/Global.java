@@ -35,8 +35,10 @@ import java.util.WeakHashMap;
 // to reduce memory footprint
 public class Global {
 
-    public static boolean isW3CEnabled;
-    public static boolean isW3CBackportEnabled;
+    public static boolean isOutboundW3CEnabled;
+    public static boolean isOutboundW3CBackportEnabled;
+
+    public static boolean isInboundW3CEnabled;
 
     private static @Nullable TelemetryClient telemetryClient;
 

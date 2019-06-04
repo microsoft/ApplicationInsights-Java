@@ -226,7 +226,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
     }
 
     private static <C> String propagate(Setter<C> setter, C carrier) {
-        if (Global.isW3CEnabled) {
+        if (Global.isOutboundW3CEnabled) {
             String traceparent = TraceContextCorrelationCore.generateChildDependencyTraceparent();
             if (traceparent == null) {
                 // this means an error occurred (and was logged) in above method, so just return a valid outgoingSpanId
@@ -235,7 +235,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
             String outgoingSpanId = TraceContextCorrelationCore.createChildIdFromTraceparentString(traceparent);
             String tracestate = TraceContextCorrelationCore.retriveTracestate();
             setter.put(carrier, "traceparent", traceparent);
-            if (Global.isW3CBackportEnabled) {
+            if (Global.isOutboundW3CBackportEnabled) {
                 setter.put(carrier, "Request-Id", outgoingSpanId);
             }
             if (tracestate != null) {

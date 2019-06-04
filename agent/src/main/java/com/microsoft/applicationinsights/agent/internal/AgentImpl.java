@@ -20,14 +20,11 @@
  */
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.model.IncomingSpanImpl;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadContext;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadSpan;
 import com.microsoft.applicationinsights.agent.internal.model.ThreadContextImpl;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
-import com.microsoft.applicationinsights.internal.config.ConfigurationFileLocator;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -41,32 +38,11 @@ import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.TimerName;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 
 class AgentImpl implements AgentSPI {
-
-    AgentImpl(File agentJarFile) {
-        String configDirPropName = ConfigurationFileLocator.CONFIG_DIR_PROPERTY;
-        String propValue = System.getProperty(configDirPropName);
-        TelemetryConfiguration configuration;
-        try {
-            System.setProperty(configDirPropName, agentJarFile.getParent());
-            configuration = TelemetryConfiguration.getActive();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        } finally {
-            if (propValue == null) {
-                System.clearProperty(configDirPropName);
-            } else {
-                System.setProperty(configDirPropName, propValue);
-            }
-        }
-        configuration.getContextInitializers().add(new Global.CloudRoleContextInitializer());
-        Global.setTelemetryClient(new TelemetryClient(configuration));
-    }
 
     @Override
     public <C> Span startIncomingSpan(String transactionType, String transactionName, Getter<C> getter, C carrier,
@@ -99,7 +75,7 @@ class AgentImpl implements AgentSPI {
         // TODO eliminate wrapper object instantiation
         RequestHeaderGetterImpl<C> requestHeaderGetter = new RequestHeaderGetterImpl<>(getter);
         String instrumentationKey = Global.getTelemetryClient().getContext().getInstrumentationKey();
-        if (Global.isW3CEnabled) {
+        if (Global.isOutboundW3CEnabled) {
             TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
             TraceContextCorrelationCore
                     .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
