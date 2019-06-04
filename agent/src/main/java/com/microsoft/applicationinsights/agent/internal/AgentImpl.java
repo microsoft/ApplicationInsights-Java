@@ -96,14 +96,17 @@ class AgentImpl implements AgentSPI {
         String userAgent = getter.get(carrier, "User-Agent");
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
 
+        // TODO eliminate wrapper object instantiation
+        RequestHeaderGetterImpl<C> requestHeaderGetter = new RequestHeaderGetterImpl<>(getter);
+        String instrumentationKey = Global.getTelemetryClient().getContext().getInstrumentationKey();
         if (Global.isW3CEnabled) {
-            // TODO eliminate wrapper object instantiation
-            TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, new RequestHeaderGetterImpl<>(getter),
-                    requestTelemetry);
+            TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
+            TraceContextCorrelationCore
+                    .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
         } else {
-            // TODO eliminate wrapper object instantiation
-            TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(carrier, new RequestHeaderGetterImpl<>(getter),
-                    requestTelemetry);
+            TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
+            TelemetryCorrelationUtilsCore
+                    .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
         }
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(messageSupplier, threadContextHolder, startTimeMillis,
