@@ -78,8 +78,6 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
      */
     public RequestTelemetryContext handleStart(P request, Q response) throws MalformedURLException {
         RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(),null);
-        // set the context object in WebModuleContainer (Container that holds web modules)
-        webModulesContainer.setRequestTelemetryContext(context);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         ThreadContext.setRequestTelemetryContext(context);
         String method = extractor.getMethod(request);
