@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.jar.JarFile;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
@@ -52,6 +53,7 @@ public class MainEntryPoint {
         Logger startupLogger;
         try {
             startupLogger = MainEntryPointUtil.initLogging("com.microsoft.applicationinsights.agent", instrumentation);
+            addLibJars(instrumentation, agentJarFile);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
@@ -67,6 +69,22 @@ public class MainEntryPoint {
         } catch (Throwable t) {
             startupLogger.error("Agent failed to start.", t);
             t.printStackTrace();
+        }
+    }
+
+    private static void addLibJars(Instrumentation instrumentation, File agentJarFile) throws Exception {
+        File libDir = new File(agentJarFile.getParentFile(), "lib");
+        if (!libDir.exists()) {
+            return;
+        }
+        File[] files = libDir.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            if (file.getName().endsWith(".jar")) {
+                instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(file));
+            }
         }
     }
 
