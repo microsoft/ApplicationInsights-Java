@@ -101,6 +101,7 @@ dependencies {
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-jdbc:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-redis:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-apache-http-client:$xyzzyVersion"
+    runtime "org.glowroot.xyzzy.instrumentation:instrumentation-http-url-connection:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-okhttp:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-log4j:$xyzzyVersion"
     runtime "org.glowroot.xyzzy.instrumentation:instrumentation-logback:$xyzzyVersion"
