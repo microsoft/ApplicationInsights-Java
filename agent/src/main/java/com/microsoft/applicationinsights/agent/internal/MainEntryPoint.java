@@ -21,7 +21,7 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.config.AgentBuiltInConfiguration;
+import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
@@ -82,21 +82,21 @@ public class MainEntryPoint {
 
         AgentConfiguration agentConfiguration = AIAgentXmlLoader.load(agentJarParentFile);
 
-        AgentBuiltInConfiguration agentBuiltInConfiguration = agentConfiguration.getBuiltInConfiguration();
+        BuiltInInstrumentation builtInInstrumentation = agentConfiguration.getBuiltInInstrumentation();
 
-        if (!agentBuiltInConfiguration.isEnabled()) {
+        if (!builtInInstrumentation.isEnabled()) {
             // TODO this has consequences if app is using AI SDK
             return;
         }
 
-        Global.isOutboundW3CEnabled = agentBuiltInConfiguration.isW3cEnabled();
-        Global.isOutboundW3CBackportEnabled = agentBuiltInConfiguration.isW3CBackportEnabled();
+        Global.isOutboundW3CEnabled = builtInInstrumentation.isW3cEnabled();
+        Global.isOutboundW3CBackportEnabled = builtInInstrumentation.isW3CBackportEnabled();
 
         List<InstrumentationDescriptor> instrumentationDescriptors =
                 AIAgentXmlLoader.getInstrumentationDescriptors(agentConfiguration);
 
         ConfigServiceFactory configServiceFactory = new SimpleConfigServiceFactory(instrumentationDescriptors,
-                AIAgentXmlLoader.getInstrumentationConfig(agentBuiltInConfiguration));
+                AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation));
 
         final EngineModule engineModule = EngineModule
                 .createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),

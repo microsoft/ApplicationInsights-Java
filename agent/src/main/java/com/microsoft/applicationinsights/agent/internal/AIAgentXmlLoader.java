@@ -20,7 +20,7 @@
  */
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.agent.internal.config.AgentBuiltInConfiguration;
+import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
 import com.microsoft.applicationinsights.agent.internal.config.MethodInfo;
@@ -41,9 +41,10 @@ class AIAgentXmlLoader {
     static List<InstrumentationDescriptor> getInstrumentationDescriptors(AgentConfiguration agentConfiguration)
             throws IOException {
 
-        AgentBuiltInConfiguration builtInConfiguration = agentConfiguration.getBuiltInConfiguration();
+        BuiltInInstrumentation builtInConfiguration = agentConfiguration.getBuiltInInstrumentation();
         boolean httpEnabled = builtInConfiguration.isHttpEnabled();
         boolean jdbcEnabled = builtInConfiguration.isJdbcEnabled();
+        boolean loggingEnabled = builtInConfiguration.isLoggingEnabled();
         boolean redisEnabled = builtInConfiguration.isRedisEnabled();
 
         List<InstrumentationDescriptor> instrumentationDescriptors = new ArrayList<>();
@@ -58,6 +59,12 @@ class AIAgentXmlLoader {
                     break;
                 case "jdbc":
                     if (jdbcEnabled) {
+                        instrumentationDescriptors.add(instrumentationDescriptor);
+                    }
+                    break;
+                case "log4j":
+                case "logback":
+                    if (loggingEnabled) {
                         instrumentationDescriptors.add(instrumentationDescriptor);
                     }
                     break;
@@ -80,7 +87,7 @@ class AIAgentXmlLoader {
         return instrumentationDescriptors;
     }
 
-    static Map<String, Map<String, Object>> getInstrumentationConfig(AgentBuiltInConfiguration builtInConfiguration) {
+    static Map<String, Map<String, Object>> getInstrumentationConfig(BuiltInInstrumentation builtInConfiguration) {
 
         Map<String, Map<String, Object>> instrumentationConfiguration = new HashMap<>();
 

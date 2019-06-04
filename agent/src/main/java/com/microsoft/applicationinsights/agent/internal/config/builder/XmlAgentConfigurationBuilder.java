@@ -51,6 +51,7 @@ public class XmlAgentConfigurationBuilder {
     private final static String JEDIS_TAG = "Jedis";
     private final static String HTTP_TAG = "HTTP";
     private final static String JDBC_TAG = "JDBC";
+    private final static String LOGGING_TAG = "Logging";
     private final static String JMX_TAG = "AgentJmx";
     private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
 
@@ -159,7 +160,7 @@ public class XmlAgentConfigurationBuilder {
 
     private void setBuiltInInstrumentation(AgentConfiguration agentConfiguration,
                                            Element instrumentationTags) {
-        AgentBuiltInConfigurationBuilder builtInConfigurationBuilder = new AgentBuiltInConfigurationBuilder();
+        BuiltInInstrumentationBuilder builtInConfigurationBuilder = new BuiltInInstrumentationBuilder();
 
         NodeList nodes = instrumentationTags.getElementsByTagName(BUILT_IN_TAG);
         Element builtInElement = XmlParserUtils.getFirst(nodes);
@@ -196,6 +197,10 @@ public class XmlAgentConfigurationBuilder {
 
         nodes = builtInElement.getElementsByTagName(JDBC_TAG);
         builtInConfigurationBuilder.setJdbcEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JDBC_TAG));
+
+        nodes = builtInElement.getElementsByTagName(LOGGING_TAG);
+        builtInConfigurationBuilder
+                .setLoggingEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), LOGGING_TAG));
 
         nodes = builtInElement.getElementsByTagName(JMX_TAG);
         Element jmxElement = XmlParserUtils.getFirst(nodes);

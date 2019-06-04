@@ -20,28 +20,31 @@
  */
 package com.microsoft.applicationinsights.agent.internal.config;
 
-public class AgentBuiltInConfiguration {
+public class BuiltInInstrumentation {
 
     private final boolean enabled;
     private final boolean httpEnabled;
     private final boolean w3cEnabled;
     private final boolean isW3CBackportEnabled;
     private final boolean jdbcEnabled;
+    private final boolean loggingEnabled;
     private final boolean jedisEnabled;
     private final long queryPlanThresholdInMS;
 
-    public AgentBuiltInConfiguration(boolean enabled,
-                                     boolean httpEnabled,
-                                     boolean w3cEnabled,
-                                     boolean isW3CBackportEnabled,
-                                     boolean jdbcEnabled,
-                                     boolean jedisEnabled,
-                                     Long queryPlanThresholdInMS) {
+    public BuiltInInstrumentation(boolean enabled,
+                                  boolean httpEnabled,
+                                  boolean w3cEnabled,
+                                  boolean isW3CBackportEnabled,
+                                  boolean jdbcEnabled,
+                                  boolean loggingEnabled,
+                                  boolean jedisEnabled,
+                                  Long queryPlanThresholdInMS) {
         this.enabled = enabled;
         this.httpEnabled = httpEnabled;
         this.w3cEnabled = w3cEnabled;
         this.isW3CBackportEnabled = isW3CBackportEnabled;
         this.jdbcEnabled = jdbcEnabled;
+        this.loggingEnabled = loggingEnabled;
         if (queryPlanThresholdInMS == null) {
             throw new IllegalArgumentException("queryPlanThresholdInMS cannot be null");
         }
@@ -63,6 +66,10 @@ public class AgentBuiltInConfiguration {
 
     public long getQueryPlanThresholdInMS() {
         return queryPlanThresholdInMS;
+    }
+
+    public boolean isLoggingEnabled() {
+        return loggingEnabled;
     }
 
     public boolean isRedisEnabled() {

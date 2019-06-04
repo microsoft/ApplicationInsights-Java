@@ -20,30 +20,32 @@
  */
 package com.microsoft.applicationinsights.agent.internal.config.builder;
 
-import com.microsoft.applicationinsights.agent.internal.config.AgentBuiltInConfiguration;
+import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
-public class AgentBuiltInConfigurationBuilder {
+public class BuiltInInstrumentationBuilder {
 
-    private boolean enabled = false;
-    private boolean httpEnabled = false;
-    private boolean jdbcEnabled = false;
-    private boolean jedisEnabled = false;
-    private boolean w3cEnabled = false;
+    private boolean enabled;
+    private boolean httpEnabled;
+    private boolean jdbcEnabled;
+    private boolean loggingEnabled;
+    private boolean jedisEnabled;
+    private boolean w3cEnabled;
     private boolean isW3CBackportEnabled = true;
     private Long queryPlanThresholdInMS = 10000L;
 
-    public AgentBuiltInConfiguration create() {
+    public BuiltInInstrumentation create() {
 
         InternalLogger.INSTANCE.trace(String.format("Outbound W3C tracing is enabled : %s", w3cEnabled));
         InternalLogger.INSTANCE.trace(String.format("Outbound W3C backport mode is enabled : %s",
                 isW3CBackportEnabled));
 
-        return new AgentBuiltInConfiguration(enabled,
+        return new BuiltInInstrumentation(enabled,
                 httpEnabled && enabled,
                 w3cEnabled && enabled,
                 isW3CBackportEnabled && enabled,
                 jdbcEnabled && enabled,
+                loggingEnabled && enabled,
                 jedisEnabled && enabled,
                 queryPlanThresholdInMS);
     }
@@ -60,6 +62,10 @@ public class AgentBuiltInConfigurationBuilder {
 
     public void setJdbcEnabled(boolean jdbcEnabled) {
         this.jdbcEnabled = jdbcEnabled;
+    }
+
+    public void setLoggingEnabled(boolean loggingEnabled) {
+        this.loggingEnabled = loggingEnabled;
     }
 
     public void setQueryPlanThresholdInMS(Long queryPlanThresholdInMS) {

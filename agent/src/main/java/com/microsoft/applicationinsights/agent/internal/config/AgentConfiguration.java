@@ -20,7 +20,7 @@
  */
 package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.microsoft.applicationinsights.agent.internal.config.builder.AgentBuiltInConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.config.builder.BuiltInInstrumentationBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class AgentConfiguration {
 
     private Map<String, ClassInstrumentationData> classesToInstrument;
-    private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
+    private BuiltInInstrumentation builtInInstrumentation = new BuiltInInstrumentationBuilder().create();
 
     public void setClassesToInstrument(HashMap<String, ClassInstrumentationData> classesToInstrument) {
         this.classesToInstrument = classesToInstrument;
@@ -38,11 +38,11 @@ public class AgentConfiguration {
         return classesToInstrument;
     }
 
-    public AgentBuiltInConfiguration getBuiltInConfiguration() {
-        return builtInConfiguration;
+    public BuiltInInstrumentation getBuiltInInstrumentation() {
+        return builtInInstrumentation;
     }
 
-    public void setBuiltInData(AgentBuiltInConfiguration builtInData) {
-        this.builtInConfiguration = builtInData;
+    public void setBuiltInData(BuiltInInstrumentation builtInInstrumentation) {
+        this.builtInInstrumentation = builtInInstrumentation;
     }
 }
