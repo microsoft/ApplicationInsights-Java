@@ -46,17 +46,26 @@ apply plugin: 'checkstyle'
 apply plugin: 'org.owasp.dependencycheck'
 
 tasks.withType(JavaCompile) {
+    // Enforce Java 7 compatibility by default
+    // sourceCompatibility = ${project.findProperty('sourceCompatibility') ?: '1.7'}
+    // targetCompatibility = ${project.findProperty('targetCompatibility') ?: '1.7'}
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
+}
+
+//
+// In order to enable tests debugging:
+// > gradle -DDEBUG=true run
+//
+tasks.withType(JavaExec) {
+    if (System.getProperty('DEBUG', 'false') == 'true') {
+        jvmArgs '-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+    }
 }
 
 checkstyle {
     toolVersion = '8.20'
     configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
-    configProperties = [
-        'configDir': rootProject.file('config/checkstyle'),
-        'baseDir': rootDir
-    ]
 }
 
 jacoco {
