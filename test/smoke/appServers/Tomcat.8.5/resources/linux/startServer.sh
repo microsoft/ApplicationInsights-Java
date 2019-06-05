@@ -6,11 +6,16 @@ if [ -z "$CATALINA_HOME" ]; then
 fi
 
 if [ ! -z "$AI_AGENT_CONFIG" ]; then
+
     echo "AI_AGENT_CONFIG=$AI_AGENT_CONFIG"
-    echo "APPLICATION_INSIGHTS_CONFIG=$APPLICATION_INSIGHTS_CONFIG"
-    cp -f ./setenv.sh $CATALINA_HOME/bin/setenv.sh
     cp -f ./${AI_AGENT_CONFIG}_AI-Agent.xml ./aiagent/AI-Agent.xml
-    cp -f ./${APPLICATION_INSIGHTS_CONFIG}_ApplicationInsights.xml ./aiagent/ApplicationInsights.xml
+
+    if [ ! -z "$APPLICATION_INSIGHTS_CONFIG" ]; then
+        echo "APPLICATION_INSIGHTS_CONFIG=$APPLICATION_INSIGHTS_CONFIG"
+        cp -f ./${APPLICATION_INSIGHTS_CONFIG}_ApplicationInsights.xml ./aiagent/ApplicationInsights.xml
+    fi
+
+    cp -f ./setenv.sh $CATALINA_HOME/bin/setenv.sh
 fi
 
 $CATALINA_HOME/bin/catalina.sh run

@@ -256,7 +256,9 @@ public abstract class AiSmokeTest {
 			UseAgent ua = description.getAnnotation(UseAgent.class);
 			if (ua != null) {
 				aiAgentConfig = ua.aiAgentConfig();
-                applicationInsightsConfig = ua.applicationInsightsConfig();
+				if (!ua.runInSecondaryMode()) {
+					applicationInsightsConfig = ua.applicationInsightsConfig();
+				}
                 System.out.println("AI AGENT CONFIG: "+aiAgentConfig);
                 System.out.println("APPLICATION INSIGHTS CONFIG: "+applicationInsightsConfig);
 			}
@@ -275,10 +277,12 @@ public abstract class AiSmokeTest {
 		@Override
 		protected void finished(Description description) {
 			String message = "";
-            if (aiAgentConfig != null) {
-                message += "Resetting aiAgentConfig. ";
-                message += "Resetting applicationInsightsConfig. ";
-            }
+			if (aiAgentConfig != null) {
+				message += "Resetting aiAgentConfig. ";
+			}
+			if (applicationInsightsConfig != null) {
+				message += "Resetting applicationInsightsConfig. ";
+			}
 			if (!dependencyImages.isEmpty()) {
 				message += "Clearing dependency images. ";
 			}
@@ -549,8 +553,10 @@ public abstract class AiSmokeTest {
 		Map<String, String> map = new HashMap<>();
         if (aiAgentConfig != null) {
             map.put("AI_AGENT_CONFIG", aiAgentConfig);
-            map.put("APPLICATION_INSIGHTS_CONFIG", applicationInsightsConfig);
         }
+        if (applicationInsightsConfig != null) {
+			map.put("APPLICATION_INSIGHTS_CONFIG", applicationInsightsConfig);
+		}
 		for (ContainerInfo info : allContainers) {
 			if (!info.isDependency()) {
 				continue;

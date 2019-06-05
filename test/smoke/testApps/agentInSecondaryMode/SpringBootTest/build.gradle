@@ -1,0 +1,40 @@
+apply plugin: 'war'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE'
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+
+compileJava.sourceCompatibility = 1.7
+compileJava.targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+dependencies {
+    compile springBootStarterJar
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.9.RELEASE'
+    providedRuntime group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.9.RELEASE'
+    compile group: 'org.apache.httpcomponents', name:'httpclient', version: '4.5.7'
+    compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.12.1'
+    compile group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
+    compile group: 'org.hsqldb', name: 'hsqldb', version: '2.3.6' // 2.4.0+ requires Java 8+
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.43' // the old agent did not support 8.x
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5.jre7'
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '6.4.0.jre7' // 6.5.0+ requires Java 8+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+configurations {
+    smokeTestCompile.exclude group:'org.springframework.boot'
+    smokeTestRuntime.exclude group:'org.springframework.boot'
+}
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName
