@@ -18,11 +18,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal.config;
 
 /**
- * The class holds the type of actions that should be done on an instrumented method
- * The class is the 'decision' for the method after taking into consideration init/configuration data
+ * The class holds the type of actions that should be done on an instrumented method.
+ * The class is the 'decision' for the method after taking into consideration init/configuration data.
  */
 public class MethodInfo {
 

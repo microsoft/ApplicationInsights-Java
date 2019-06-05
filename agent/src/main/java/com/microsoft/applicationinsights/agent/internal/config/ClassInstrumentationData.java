@@ -18,15 +18,16 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.google.common.base.Strings;
+package com.microsoft.applicationinsights.agent.internal.config;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.base.Strings;
+
 /**
- * An 'instrumented' class data
+ * An 'instrumented' class data.
  */
 public class ClassInstrumentationData {
 

@@ -18,11 +18,19 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal;
 
+import java.io.File;
+import java.lang.instrument.Instrumentation;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
+import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -32,13 +40,6 @@ import org.glowroot.xyzzy.engine.impl.SimpleConfigServiceFactory;
 import org.glowroot.xyzzy.engine.init.EngineModule;
 import org.glowroot.xyzzy.engine.init.MainEntryPointUtil;
 import org.slf4j.Logger;
-
-import java.io.File;
-import java.lang.instrument.Instrumentation;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 

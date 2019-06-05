@@ -18,19 +18,28 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
+import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
 import com.microsoft.applicationinsights.agent.internal.config.MethodInfo;
 import com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.glowroot.xyzzy.engine.config.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import org.glowroot.xyzzy.engine.config.AdviceConfig;
+import org.glowroot.xyzzy.engine.config.ImmutableAdviceConfig;
+import org.glowroot.xyzzy.engine.config.ImmutableInstrumentationDescriptor;
+import org.glowroot.xyzzy.engine.config.InstrumentationDescriptor;
+import org.glowroot.xyzzy.engine.config.InstrumentationDescriptors;
 
 class AIAgentXmlLoader {
 
@@ -157,8 +166,8 @@ class AIAgentXmlLoader {
                                     // xyzzy doesn't support threshold, so threshold is embedded into message and
                                     // then parsed out by the agent to decide whether to report telemetry
                                     .spanMessageTemplate(
-                                            "{{className}}.{{methodName}}#" + classInstrumentationData.getClassType() +
-                                                    ":" + methodInfo.getThresholdInMS())
+                                            "{{className}}.{{methodName}}#" + classInstrumentationData.getClassType()
+                                                    + ":" + methodInfo.getThresholdInMS())
                                     .build());
                         }
                     }

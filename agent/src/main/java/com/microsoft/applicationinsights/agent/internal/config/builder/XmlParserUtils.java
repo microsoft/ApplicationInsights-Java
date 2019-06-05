@@ -18,6 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal.config.builder;
 
 import com.google.common.base.Strings;
@@ -29,7 +30,7 @@ import org.w3c.dom.NodeList;
 
 class XmlParserUtils {
 
-    private final static String ENABLED_ATTRIBUTE = "enabled";
+    private static final String ENABLED_ATTRIBUTE = "enabled";
 
     public static Element getFirst(NodeList nodes) {
         if (nodes == null || nodes.getLength() == 0) {
@@ -60,7 +61,7 @@ class XmlParserUtils {
     }
 
     /**
-     * Method to get the attribute value for W3C
+     * Method to get the attribute value for W3C.
      */
     static boolean w3cEnabled(Element element, String attributeName, boolean defaultValue) {
         try {

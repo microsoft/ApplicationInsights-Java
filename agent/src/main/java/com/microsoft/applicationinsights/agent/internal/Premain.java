@@ -18,6 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
@@ -29,7 +30,7 @@ import java.security.CodeSource;
 import java.util.jar.JarFile;
 
 /**
- * Premain-Class in Manifest
+ * Premain-Class in Manifest.
  */
 public class Premain {
 

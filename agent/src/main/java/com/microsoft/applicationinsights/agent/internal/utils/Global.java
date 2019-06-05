@@ -18,7 +18,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal.utils;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -26,10 +31,6 @@ import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
-
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 // global state used instead of passing these to various classes (e.g. ThreadContextImpl, SpanImpl) in order
 // to reduce memory footprint

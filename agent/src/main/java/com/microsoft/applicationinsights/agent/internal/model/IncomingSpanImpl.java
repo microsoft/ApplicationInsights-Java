@@ -18,7 +18,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal.model;
+
+import java.net.MalformedURLException;
+import java.util.Date;
+import java.util.Map;
 
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.extensibility.context.CloudContext;
@@ -36,13 +41,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.*;
+import org.glowroot.xyzzy.instrumentation.api.Getter;
+import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
+import org.glowroot.xyzzy.instrumentation.api.Setter;
+import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.ThreadContext.ServletRequestInfo;
+import org.glowroot.xyzzy.instrumentation.api.Timer;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
-
-import java.net.MalformedURLException;
-import java.util.Date;
-import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -173,7 +178,8 @@ public class IncomingSpanImpl implements Span {
         long endTimeMillis = System.currentTimeMillis();
 
         if (exception != null) {
-            Global.getTelemetryClient().trackException(toExceptionTelemetry(endTimeMillis, requestTelemetry.getContext()));
+            Global.getTelemetryClient()
+                    .trackException(toExceptionTelemetry(endTimeMillis, requestTelemetry.getContext()));
         }
         finishBuildingTelemetry(endTimeMillis);
         Global.getTelemetryClient().track(requestTelemetry);

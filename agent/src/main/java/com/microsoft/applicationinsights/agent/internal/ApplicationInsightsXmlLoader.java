@@ -18,7 +18,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal;
+
+import java.io.File;
+import java.util.Iterator;
+import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
@@ -28,10 +33,6 @@ import com.microsoft.applicationinsights.internal.config.ConfigurationFileLocato
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
-
-import java.io.File;
-import java.util.Iterator;
-import java.util.Map;
 
 class ApplicationInsightsXmlLoader {
 

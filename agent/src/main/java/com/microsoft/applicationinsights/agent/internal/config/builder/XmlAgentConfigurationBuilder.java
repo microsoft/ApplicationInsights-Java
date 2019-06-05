@@ -18,7 +18,16 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal.config.builder;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
@@ -30,53 +39,45 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 public class XmlAgentConfigurationBuilder {
 
-    private final static String AGENT_XML_CONFIGURATION_NAME = "AI-Agent.xml";
+    private static final String AGENT_XML_CONFIGURATION_NAME = "AI-Agent.xml";
 
-    private final static String MAIN_TAG = "ApplicationInsightsAgent";
-    private final static String INSTRUMENTATION_TAG = "Instrumentation";
-    private final static String CLASS_TAG = "Class";
-    private final static String METHOD_TAG = "Method";
+    private static final String MAIN_TAG = "ApplicationInsightsAgent";
+    private static final String INSTRUMENTATION_TAG = "Instrumentation";
+    private static final String CLASS_TAG = "Class";
+    private static final String METHOD_TAG = "Method";
 
-    private final static String BUILT_IN_TAG = "BuiltIn";
-    private final static String JEDIS_TAG = "Jedis";
-    private final static String HTTP_TAG = "HTTP";
-    private final static String JDBC_TAG = "JDBC";
-    private final static String LOGGING_TAG = "Logging";
-    private final static String JMX_TAG = "AgentJmx";
-    private final static String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
+    private static final String BUILT_IN_TAG = "BuiltIn";
+    private static final String JEDIS_TAG = "Jedis";
+    private static final String HTTP_TAG = "HTTP";
+    private static final String JDBC_TAG = "JDBC";
+    private static final String LOGGING_TAG = "Logging";
+    private static final String JMX_TAG = "AgentJmx";
+    private static final String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
 
     // visible for testing
-    private final static String AGENT_LOGGER_TAG = "AgentLogger";
-    private final static String SDK_LOGGER_TYPE_TAG = "type";
-    private final static String SDK_LOG_LEVEL_TAG = "Level";
-    private final static String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
-    private final static String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
-    private final static String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
-    private final static String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
+    private static final String AGENT_LOGGER_TAG = "AgentLogger";
+    private static final String SDK_LOGGER_TYPE_TAG = "type";
+    private static final String SDK_LOG_LEVEL_TAG = "Level";
+    private static final String SDK_LOGGER_UNIQUE_PREFIX_TAG = "UniquePrefix";
+    private static final String SDK_LOGGER_BASE_FOLDER_PATH_TAG = "BaseFolderPath";
+    private static final String SDK_LOGGER_MAX_NUMBER_OF_LOG_FILES = "NumberOfFiles";
+    private static final String SDK_LOGGER_NUMBER_OF_TOTAL_SIZE_IN_MB = "NumberOfTotalSizeInMB";
 
-    private final static String W3C_ENABLED = "W3C";
-    private final static String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
+    private static final String W3C_ENABLED = "W3C";
+    private static final String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
 
-    private final static String EXCLUDED_PREFIXES_TAG = "ExcludedPrefixes";
+    private static final String EXCLUDED_PREFIXES_TAG = "ExcludedPrefixes";
 
-    private final static String RUNTIME_EXCEPTION_TAG = "RuntimeException";
+    private static final String RUNTIME_EXCEPTION_TAG = "RuntimeException";
 
-    private final static String THRESHOLD_ATTRIBUTE = "thresholdInMS";
-    private final static String ENABLED_ATTRIBUTE = "enabled";
-    private final static String NAME_ATTRIBUTE = "name";
-    private final static String REPORT_CAUGHT_EXCEPTIONS_ATTRIBUTE = "reportCaughtExceptions";
-    private final static String REPORT_EXECUTION_TIME_ATTRIBUTE = "reportExecutionTime";
-    private final static String SIGNATURE_ATTRIBUTE = "signature";
+    private static final String THRESHOLD_ATTRIBUTE = "thresholdInMS";
+    private static final String ENABLED_ATTRIBUTE = "enabled";
+    private static final String NAME_ATTRIBUTE = "name";
+    private static final String REPORT_CAUGHT_EXCEPTIONS_ATTRIBUTE = "reportCaughtExceptions";
+    private static final String REPORT_EXECUTION_TIME_ATTRIBUTE = "reportExecutionTime";
+    private static final String SIGNATURE_ATTRIBUTE = "signature";
 
     public AgentConfiguration parseConfigurationFile(String baseFolder) {
         AgentConfiguration agentConfiguration = new AgentConfiguration();
@@ -220,9 +221,9 @@ public class XmlAgentConfigurationBuilder {
             return null;
         }
 
-        Element eClassNode = (Element) item;
+        Element classNode = (Element) item;
 
-        String strValue = eClassNode.getAttribute(ENABLED_ATTRIBUTE);
+        String strValue = classNode.getAttribute(ENABLED_ATTRIBUTE);
         if (!Strings.isNullOrEmpty(strValue)) {
             boolean isEnabled = Boolean.valueOf(strValue);
             if (!isEnabled) {
@@ -230,7 +231,7 @@ public class XmlAgentConfigurationBuilder {
             }
         }
 
-        return eClassNode;
+        return classNode;
     }
 
     private ClassInstrumentationData getClassInstrumentationData(Element classElement, HashMap<String,
@@ -283,7 +284,7 @@ public class XmlAgentConfigurationBuilder {
 
     /**
      * This method is responsible for parsing the Agent Logging Configuration and mimics the configuration
-     * style for Core SDK
+     * style for Core SDK.
      */
     private synchronized void initializeAgentLogger(Element topElementTag) {
         NodeList customTags = topElementTag.getElementsByTagName(AGENT_LOGGER_TAG);
@@ -340,8 +341,8 @@ public class XmlAgentConfigurationBuilder {
         return tag.getElementsByTagName(CLASS_TAG);
     }
 
-    private void addMethods(ClassInstrumentationData classData, Element eClassNode) {
-        NodeList methodNodes = eClassNode.getElementsByTagName(METHOD_TAG);
+    private void addMethods(ClassInstrumentationData classData, Element classNode) {
+        NodeList methodNodes = classNode.getElementsByTagName(METHOD_TAG);
         if (methodNodes == null || methodNodes.getLength() == 0) {
             if (classData.isReportCaughtExceptions() || classData.isReportExecutionTime()) {
                 classData.addAllMethods(classData.isReportCaughtExceptions(), classData.isReportExecutionTime());
@@ -392,8 +393,9 @@ public class XmlAgentConfigurationBuilder {
                 try {
                     thresholdInMS = Long.valueOf(valueStr);
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will " +
-                            "be used.'", THRESHOLD_ATTRIBUTE, methodElement.getTagName());
+                    InternalLogger.INSTANCE
+                            .error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'",
+                                    THRESHOLD_ATTRIBUTE, methodElement.getTagName());
                 }
             }
 
@@ -403,8 +405,8 @@ public class XmlAgentConfigurationBuilder {
     }
 
     private Element getTopTag(File configurationFile) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilder dBuilder = createDocumentBuilder();
-        Document doc = dBuilder.parse(configurationFile);
+        DocumentBuilder builder = createDocumentBuilder();
+        Document doc = builder.parse(configurationFile);
         doc.getDocumentElement().normalize();
 
         NodeList topTags = doc.getElementsByTagName(MAIN_TAG);

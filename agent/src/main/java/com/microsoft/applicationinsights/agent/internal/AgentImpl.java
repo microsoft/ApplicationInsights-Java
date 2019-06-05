@@ -18,7 +18,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
 
 import com.microsoft.applicationinsights.agent.internal.model.IncomingSpanImpl;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadContext;
@@ -37,10 +42,6 @@ import org.glowroot.xyzzy.instrumentation.api.Getter;
 import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.TimerName;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
 
 class AgentImpl implements AgentSPI {
 

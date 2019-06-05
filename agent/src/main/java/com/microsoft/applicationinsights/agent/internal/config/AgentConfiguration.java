@@ -18,12 +18,13 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.microsoft.applicationinsights.agent.internal.config.builder.BuiltInInstrumentationBuilder;
+package com.microsoft.applicationinsights.agent.internal.config;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.microsoft.applicationinsights.agent.internal.config.builder.BuiltInInstrumentationBuilder;
 
 public class AgentConfiguration {
 
