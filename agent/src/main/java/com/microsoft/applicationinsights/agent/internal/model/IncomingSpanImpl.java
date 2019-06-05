@@ -22,12 +22,17 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
 import java.net.MalformedURLException;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Splitter;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.extensibility.context.CloudContext;
+import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -53,6 +58,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 // currently only for "Web" transactions
 public class IncomingSpanImpl implements Span {
+
+    private static final Splitter cookieSplitter = Splitter.on('|');
 
     private final MessageSupplier messageSupplier;
     private final ThreadContextThreadLocal.Holder threadContextHolder;
@@ -205,6 +212,8 @@ public class IncomingSpanImpl implements Span {
             // TODO base this on exception presence?
             requestTelemetry.setSuccess(responseCode < 400);
         }
+
+        processCookies(detail);
     }
 
     private ExceptionTelemetry toExceptionTelemetry(long endTimeMillis, TelemetryContext telemetryContext) {
@@ -213,6 +222,46 @@ public class IncomingSpanImpl implements Span {
         TelemetryContext context = exceptionTelemetry.getContext();
         context.initialize(telemetryContext);
         return exceptionTelemetry;
+    }
+
+    private void processCookies(Map<String, ?> detail) {
+        Map<String, String> cookies = (Map<String, String>) detail.get("Request cookies");
+        if (cookies == null) {
+            return;
+        }
+        // cookie names are case sensitive
+        String aiUser = cookies.get("ai_user");
+        if (aiUser != null) {
+            processAiUserCookie(aiUser);
+        }
+        String aiSession = cookies.get("ai_session");
+        if (aiSession != null) {
+            processAiSessionCookie(aiSession);
+        }
+    }
+
+    private void processAiUserCookie(String aiUser) {
+        List<String> split = cookieSplitter.splitToList(aiUser);
+        if (split.size() < 2) {
+            InternalLogger.INSTANCE.warn("ai_user cookie is not in the correct format: %s", aiUser);
+        }
+        String userId = split.get(0);
+        Date acquisitionDate;
+        try {
+            acquisitionDate = DateTimeUtils.parseRoundTripDateString(split.get(1));
+        } catch (ParseException e) {
+            InternalLogger.INSTANCE.warn("could not parse ai_user cookie: %s", aiUser);
+            return;
+        }
+        UserContext userContext = requestTelemetry.getContext().getUser();
+        userContext.setId(userId);
+        userContext.setAcquisitionDate(acquisitionDate);
+    }
+
+    private void processAiSessionCookie(String aiSession) {
+        List<String> split = cookieSplitter.splitToList(aiSession);
+        String sessionId = split.get(0);
+        requestTelemetry.getContext().getSession().setId(sessionId);
     }
 
     private static String getUrl(Map<String, ?> detail) {

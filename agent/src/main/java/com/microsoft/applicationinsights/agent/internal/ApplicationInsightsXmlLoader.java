@@ -40,7 +40,7 @@ class ApplicationInsightsXmlLoader {
 
     private static final String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
 
-    static TelemetryConfiguration load(File agentJarFile) {
+    static Result load(File agentJarFile) {
         String configDirPropName = ConfigurationFileLocator.CONFIG_DIR_PROPERTY;
         String propValue = System.getProperty(configDirPropName);
         ApplicationInsightsXmlConfiguration xmlConfiguration;
@@ -57,44 +57,69 @@ class ApplicationInsightsXmlLoader {
                 System.setProperty(configDirPropName, propValue);
             }
         }
-        if (xmlConfiguration != null) {
-            removeBuiltInModules(xmlConfiguration);
+        ExtraConfiguration extraConfiguration;
+        if (xmlConfiguration == null) {
+            extraConfiguration = new ExtraConfiguration(false, false);
+        } else {
+            extraConfiguration = removeBuiltInModules(xmlConfiguration);
             TelemetryConfigurationFactory.INSTANCE.twoPhaseInitializePart2(configuration, xmlConfiguration);
         }
         configuration.getContextInitializers().add(new Global.CloudRoleContextInitializer());
-        return configuration;
+        return new Result(configuration, extraConfiguration);
     }
 
-    private static void removeBuiltInModules(ApplicationInsightsXmlConfiguration xmlConfiguration) {
+    private static ExtraConfiguration removeBuiltInModules(ApplicationInsightsXmlConfiguration xmlConfiguration) {
+        boolean userTracking = false;
+        boolean sessionTracking = false;
         TelemetryModulesXmlElement modules = xmlConfiguration.getModules();
         if (modules == null) {
-            return;
+            return new ExtraConfiguration(false, false);
         }
-        for (Iterator<AddTypeXmlElement> i = modules.getAdds().iterator(); i.hasNext(); ) {
+        for (Iterator<AddTypeXmlElement> i = xmlConfiguration.getModules().getAdds().iterator(); i.hasNext(); ) {
             AddTypeXmlElement module = i.next();
+            Map<String, String> data = module.getData();
             if (module.getType().equals(
                     "com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule")) {
-                configureInboundW3C(module.getData());
-                i.remove();
-            } else if (module.getType().equals(
-                    "com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule")) {
-                // TODO
+                if (data.containsKey(W3C_CONFIGURATION_PARAMETER)) {
+                    Global.isInboundW3CEnabled = Boolean.valueOf(data.get(W3C_CONFIGURATION_PARAMETER));
+                }
+                if (data.containsKey(W3C_BACKCOMPAT_PARAMETER)) {
+                    TraceContextCorrelationCore
+                            .setIsInboundW3CBackCompatEnabled(Boolean.valueOf(data.get(W3C_BACKCOMPAT_PARAMETER)));
+                }
                 i.remove();
             } else if (module.getType().equals(
                     "com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule")) {
-                // TODO
+                userTracking = true;
+                i.remove();
+            } else if (module.getType().equals(
+                    "com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule")) {
+                sessionTracking = true;
                 i.remove();
             }
         }
+        return new ExtraConfiguration(userTracking, sessionTracking);
     }
 
-    private static void configureInboundW3C(Map<String, String> configurationData) {
-        if (configurationData.containsKey(W3C_CONFIGURATION_PARAMETER)) {
-            Global.isInboundW3CEnabled = Boolean.valueOf(configurationData.get(W3C_CONFIGURATION_PARAMETER));
+    static class Result {
+
+        final TelemetryConfiguration telemetryConfiguration;
+        final ExtraConfiguration extraConfiguration;
+
+        private Result(TelemetryConfiguration telemetryConfiguration, ExtraConfiguration extraConfiguration) {
+            this.telemetryConfiguration = telemetryConfiguration;
+            this.extraConfiguration = extraConfiguration;
         }
-        if (configurationData.containsKey(W3C_BACKCOMPAT_PARAMETER)) {
-            TraceContextCorrelationCore.setIsInboundW3CBackCompatEnabled(
-                    Boolean.valueOf(configurationData.get(W3C_BACKCOMPAT_PARAMETER)));
+    }
+
+    static class ExtraConfiguration {
+
+        final boolean userTracking;
+        final boolean sessionTracking;
+
+        private ExtraConfiguration(boolean userTracking, boolean sessionTracking) {
+            this.userTracking = userTracking;
+            this.sessionTracking = sessionTracking;
         }
     }
 }

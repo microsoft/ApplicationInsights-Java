@@ -96,7 +96,8 @@ class AIAgentXmlLoader {
         return instrumentationDescriptors;
     }
 
-    static Map<String, Map<String, Object>> getInstrumentationConfig(BuiltInInstrumentation builtInConfiguration) {
+    static Map<String, Map<String, Object>> getInstrumentationConfig(BuiltInInstrumentation builtInConfiguration,
+                                                                     ApplicationInsightsXmlLoader.ExtraConfiguration extraConfiguration) {
 
         Map<String, Map<String, Object>> instrumentationConfiguration = new HashMap<>();
 
@@ -104,6 +105,15 @@ class AIAgentXmlLoader {
         servletConfiguration.put("captureRequestServerHostname", true);
         servletConfiguration.put("captureRequestServerPort", true);
         servletConfiguration.put("captureRequestScheme", true);
+        List<String> cookieNames = new ArrayList<>();
+        if (extraConfiguration.userTracking) {
+            cookieNames.add("ai_user");
+        } else if (extraConfiguration.sessionTracking) {
+            cookieNames.add("ai_session");
+        }
+        if (!cookieNames.isEmpty()) {
+            servletConfiguration.put("captureRequestCookies", cookieNames);
+        }
 
         Map<String, Object> jdbcConfiguration = new HashMap<>();
         jdbcConfiguration.put("captureBindParametersIncludes", Collections.emptyList());

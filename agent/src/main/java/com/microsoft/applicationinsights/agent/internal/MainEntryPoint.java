@@ -97,7 +97,9 @@ public class MainEntryPoint {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        Global.setTelemetryClient(new TelemetryClient(ApplicationInsightsXmlLoader.load(agentJarFile)));
+        // important to load ApplicationInsights.xml first, since it sets a couple of Global
+        ApplicationInsightsXmlLoader.Result result = ApplicationInsightsXmlLoader.load(agentJarFile);
+        Global.setTelemetryClient(new TelemetryClient(result.telemetryConfiguration));
 
         AgentConfiguration agentConfiguration = AIAgentXmlLoader.load(agentJarParentFile);
 
@@ -115,7 +117,7 @@ public class MainEntryPoint {
                 AIAgentXmlLoader.getInstrumentationDescriptors(agentConfiguration);
 
         ConfigServiceFactory configServiceFactory = new SimpleConfigServiceFactory(instrumentationDescriptors,
-                AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation));
+                AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation, result.extraConfiguration));
 
         final EngineModule engineModule = EngineModule
                 .createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),
