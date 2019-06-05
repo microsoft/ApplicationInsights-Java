@@ -34,6 +34,16 @@ def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
 def generatedDir = 'generated'
 def generatedPath = "src/main/$generatedDir"
 
+//
+// In order to enable tests debugging:
+// > gradle -DDEBUG=true run
+//
+tasks.withType(JavaExec) {
+    if (System.getProperty('DEBUG', 'false') == 'true') {
+        jvmArgs '-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+    }
+}
+
 idea {
     module {
         generatedSourceDirs = [ file(generatedPath) ]
