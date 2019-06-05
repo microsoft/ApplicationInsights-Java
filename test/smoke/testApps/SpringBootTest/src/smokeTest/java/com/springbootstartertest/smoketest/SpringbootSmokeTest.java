@@ -121,4 +121,16 @@ public class SpringbootSmokeTest extends AiSmokeTest{
         String rddId = rdd.getId();
         assertTrue(rddId.contains(requestOperationId));
     }
+
+    @Test
+    @TargetUri("/asyncDependencyCallWithHttpURLConnection")
+    public void testAsyncDependencyCallWithHttpURLConnection() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RemoteDependencyData rdd = getTelemetryDataForType(0,"RemoteDependencyData");
+        String requestOperationId = d.getId();
+        String rddId = rdd.getId();
+        assertTrue(rddId.contains(requestOperationId));
+    }
 }

@@ -1,10 +1,15 @@
 package com.springbootstartertest.controller;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import com.google.common.io.ByteStreams;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.cookie.CookieSpecBase;
-import org.apache.commons.httpclient.cookie.MalformedCookieException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -13,8 +18,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 
 @Service
 public class TestBean {
@@ -64,9 +67,26 @@ public class TestBean {
         return new AsyncResult<>(response.code());
     }
 
+    @Async
+    public AsyncResult<Integer> asyncDependencyCallWithHttpURLConnection() throws IOException {
+        URL obj = new URL("https://www.bing.com");
+        HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+        if (connection.getResponseCode() != 200) {
+            throw new IllegalStateException(
+                    "Unexpected response status code: " + connection.getResponseCode());
+        }
+        // this it to test header propagation by instrumentation
+        if (!"Yes".equals(connection.getHeaderField("Xyzzy-Test-Harness"))) {
+            throw new IllegalStateException("Xyzzy-Test-Harness header not recieved");
+        }
+        InputStream content = connection.getInputStream();
+        ByteStreams.exhaust(content);
+        content.close();
+        return new AsyncResult<>(connection.getResponseCode());
+    }
+
     public static class PermitAllCookiesSpec extends CookieSpecBase {
-        public void validate(String host, int port, String path, boolean secure, final Cookie cookie)
-                throws MalformedCookieException {
+        public void validate(String host, int port, String path, boolean secure, final Cookie cookie) {
         }
     }
 }

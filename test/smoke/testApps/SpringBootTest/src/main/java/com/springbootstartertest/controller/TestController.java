@@ -73,8 +73,13 @@ public class TestController {
 		return testBean.asyncDependencyCallWithOkHttp3();
     }
 
-    @GetMapping("/asyncDependencyCallWithOkHttp2")
-    public AsyncResult<Integer> asyncDependencyCallWithOkHttp2() throws IOException {
+	@GetMapping("/asyncDependencyCallWithOkHttp2")
+	public AsyncResult<Integer> asyncDependencyCallWithOkHttp2() throws IOException {
 		return testBean.asyncDependencyCallWithOkHttp2();
-    }
+	}
+
+	@GetMapping("/asyncDependencyCallWithHttpURLConnection")
+	public AsyncResult<Integer> asyncDependencyCallWithHttpURLConnection() throws IOException {
+		return testBean.asyncDependencyCallWithHttpURLConnection();
+	}
 }
