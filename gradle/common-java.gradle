@@ -46,9 +46,6 @@ apply plugin: 'checkstyle'
 apply plugin: 'org.owasp.dependencycheck'
 
 tasks.withType(JavaCompile) {
-    // Enforce Java 7 compatibility by default
-    // sourceCompatibility = ${project.findProperty('sourceCompatibility') ?: '1.7'}
-    // targetCompatibility = ${project.findProperty('targetCompatibility') ?: '1.7'}
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
 }
@@ -112,7 +109,7 @@ if (hasProperty("JDKToUse")) {
 }
 updateTestDirectories()
 
-// setting this variable is highly recommended
+// setting this variable is no longer recommended!!!
 def java7JreDir = System.env.'JAVA_JRE_7'
 
 // autodetect current JRE home
