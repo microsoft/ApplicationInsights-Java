@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,22 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule{
 
     // region Public
-
-    /**
-     * The {@link RequestTelemetryContext} instance propogated from
-     * {@link com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler}
-     */
-    private RequestTelemetryContext requestTelemetryContext;
-
-    public void setRequestTelemetryContext(
-        RequestTelemetryContext requestTelemetryContext) {
-        this.requestTelemetryContext = requestTelemetryContext;
-    }
-
-    /** Used for test */
-    RequestTelemetryContext getRequestTelemetryContext() {
-        return this.requestTelemetryContext;
-    }
 
     /**
      * Initializes the telemetry module.
@@ -67,7 +52,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
      */
     @Override
     public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
-        RequestTelemetryContext context = this.requestTelemetryContext;
+        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
         SessionCookie sessionCookie =
             com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
                 SessionCookie.class, req, SessionCookie.COOKIE_NAME);
