@@ -430,6 +430,7 @@ public abstract class AiSmokeTest {
 
 	private static void createDockerNetwork() throws Exception {
 		try {
+			docker.pruneNetworks();
 			System.out.printf("Creating network '%s'...%n", networkName);
 			networkId = docker.createNetwork(networkName);
 		} catch (Exception e) {
