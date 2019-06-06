@@ -35,7 +35,12 @@ public class AiDockerClient {
 	private String shellExecutor;
 
 	private String dockerExePath;
-
+    private String processOutput;
+    
+    public String getProcessOutput() {
+    	return processOutput;
+    }
+    
 	public AiDockerClient(String user, String shellExecutor) {
 		Preconditions.checkNotNull(user, "user");
 		Preconditions.checkNotNull(shellExecutor, "shellExecutor");
@@ -113,7 +118,7 @@ public class AiDockerClient {
 		final TimeUnit unit = TimeUnit.SECONDS;
 		waitAndCheckCodeForProcess(p, timeout, unit, "starting container "+image);
 
-		return getFirstLineOfProcessOutput(p);
+		return getProcessOutput();
 	}
 
 	private static void flushStdout(Process p) throws IOException {
@@ -159,6 +164,10 @@ public class AiDockerClient {
 		waitForProcessToReturn(p, timeout, unit, actionName);
 		if (p.exitValue() != 0) {
 			flushStdout(p);
+			if (processOutput.contains("already exists")) {
+				// Not an error
+				return;
+			}
 			throw new SmokeTestException(String.format("Nonzero exit code (%d)%s", p.exitValue(),
 						Strings.isNullOrEmpty(actionName) ? "" : " trying to "+actionName));
 		}
@@ -166,14 +175,19 @@ public class AiDockerClient {
 
 	private void waitForProcessToReturn(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
 		if (!p.waitFor(timeout, unit)) {
-		    String containerId = getFirstLineOfProcessOutput(p);
-		    printContainerLogs(containerId);
-		    p.destroyForcibly();
+			String containerId = getFirstLineOfProcessOutput(p);
+			printContainerLogs(containerId);
+			p.destroyForcibly();
 			flushStdout(p);
-			throw new TimeoutException(
-					Strings.isNullOrEmpty(actionName) ? "process" : actionName,
-					timeout, unit);
+			throw new TimeoutException(Strings.isNullOrEmpty(actionName) ? "process" : actionName, timeout, unit);
+		} else {
+			try {
+				processOutput = getFirstLineOfProcessOutput(p);
+			} catch (java.io.IOException ex) {
+				processOutput = "";
+			}
 		}
+		
 	}
 
 	public void printContainerLogs(String containerId) throws IOException {
@@ -206,18 +220,24 @@ public class AiDockerClient {
 	public String createNetwork(String name) throws IOException, InterruptedException {
 	    Process p = buildProcess(dockerExePath, "network", "create", "--driver", "bridge", name).start();
 	    waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "creating network");
-	    return getFirstLineOfProcessOutput(p);
+	    return getProcessOutput();
     }
 
 	private static String getFirstLineOfProcessOutput(Process p) throws IOException {
-		List<String> lines = CharStreams.readLines(new InputStreamReader(p.getInputStream()));
-		return StringUtils.strip(StringUtils.trim(lines.get(0)));
+		List<String> lines = CharStreams.readLines(new InputStreamReader(p.getInputStream()));		
+		return (lines.size() > 0 ? StringUtils.strip(StringUtils.trim(lines.get(0))) : "");
 	}
 
+	public String pruneNetworks() throws IOException, InterruptedException {
+	    Process p = buildProcess(dockerExePath, "network", "prune", "--force").start();
+	    waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "prune all networks");
+	    return getProcessOutput();
+	}
+	
 	public String deleteNetwork(String nameOrId) throws IOException, InterruptedException {
 	    Process p = buildProcess(dockerExePath, "network", "rm", nameOrId).start();
 	    waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "deleting network");
-	    return getFirstLineOfProcessOutput(p);
+	    return getProcessOutput();
     }
 
 	/**
@@ -229,7 +249,7 @@ public class AiDockerClient {
 		if (p.exitValue() == 1) {
 			return null;
 		}
-		String containerName = getFirstLineOfProcessOutput(p);
+		String containerName = getProcessOutput();
 		int start = findFirstLetterPosition(containerName);
 		int end = findLastLetterPosition(containerName);
 		// TODO handle -1
