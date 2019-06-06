@@ -46,6 +46,8 @@ if (System.env.APPINSIGHTS_VS_PATH) {
     println "Using custom Visual Studio Tools path: $vsToolsDir"
 }
 
+def NETFXKitsDir="$programFilesX86\\Windows Kits\\NETFXSDK\\4.6.1"
+
 // region Native binary definition and configuration
 model {
     toolChains {
@@ -95,6 +97,7 @@ model {
 
                 }
                 if (toolChain in VisualCpp) {
+                    linker.args "/LIBPATH:$NETFXKitsDir\\Lib\\um\\${targetPlatform.name}"
                     // Visual Studio Compiler Options: https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx
                     // Visual Studio Linker Options:   https://msdn.microsoft.com/en-us/library/y0zzbyt4.aspx
 
