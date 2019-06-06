@@ -19,34 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.model;
+package com.microsoft.applicationinsights.agent.internal.config;
 
-class TwoPartCompletion {
+import java.util.HashMap;
+import java.util.Map;
 
-    private volatile boolean part1;
-    private volatile boolean part2;
+import com.microsoft.applicationinsights.agent.internal.config.builder.BuiltInInstrumentationBuilder;
 
-    public boolean setPart1() {
-        synchronized (this) {
-            if (!part1 && part2) {
-                part1 = true;
-                return true;
-            } else {
-                part1 = true;
-                return false;
-            }
-        }
+public class AgentConfiguration {
+
+    private Map<String, ClassInstrumentationData> classesToInstrument;
+    private BuiltInInstrumentation builtInInstrumentation = new BuiltInInstrumentationBuilder().create();
+
+    public void setClassesToInstrument(HashMap<String, ClassInstrumentationData> classesToInstrument) {
+        this.classesToInstrument = classesToInstrument;
     }
 
-    public boolean setPart2() {
-        synchronized (this) {
-            if (part1 && !part2) {
-                part2 = true;
-                return true;
-            } else {
-                part2 = true;
-                return false;
-            }
-        }
+    public Map<String, ClassInstrumentationData> getClassesToInstrument() {
+        return classesToInstrument;
+    }
+
+    public BuiltInInstrumentation getBuiltInInstrumentation() {
+        return builtInInstrumentation;
+    }
+
+    public void setBuiltInData(BuiltInInstrumentation builtInInstrumentation) {
+        this.builtInInstrumentation = builtInInstrumentation;
     }
 }

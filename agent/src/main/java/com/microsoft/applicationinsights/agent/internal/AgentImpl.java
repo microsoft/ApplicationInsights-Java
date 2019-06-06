@@ -1,13 +1,35 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+
 import com.microsoft.applicationinsights.agent.internal.model.IncomingSpanImpl;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadContext;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadSpan;
 import com.microsoft.applicationinsights.agent.internal.model.ThreadContextImpl;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
-import com.microsoft.applicationinsights.internal.config.ConfigurationFileLocator;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
@@ -21,35 +43,7 @@ import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
 import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.TimerName;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-
-public class AgentImpl implements AgentSPI {
-
-    private final TelemetryClient client;
-
-    AgentImpl(File agentJarFile) {
-        String configDirPropName = ConfigurationFileLocator.CONFIG_DIR_PROPERTY;
-        String propValue = System.getProperty(configDirPropName);
-        TelemetryConfiguration configuration;
-        try {
-            System.setProperty(configDirPropName, agentJarFile.getParent());
-            configuration = TelemetryConfiguration.getActive();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        } finally {
-            if (propValue == null) {
-                System.clearProperty(configDirPropName);
-            } else {
-                System.setProperty(configDirPropName, propValue);
-            }
-        }
-        client = new TelemetryClient(configuration);
-        client.trackEvent("Agent Init");
-    }
+class AgentImpl implements AgentSPI {
 
     @Override
     public <C> Span startIncomingSpan(String transactionType, String transactionName, Getter<C> getter, C carrier,
@@ -76,24 +70,27 @@ public class AgentImpl implements AgentSPI {
         requestTelemetry.setName(transactionName);
         requestTelemetry.setTimestamp(new Date(startTimeMillis));
 
-        String userAgent = (String) getter.get(carrier, "User-Agent");
+        String userAgent = getter.get(carrier, "User-Agent");
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
 
-        if (Global.isW3CEnabled) {
-            // TODO eliminate wrapper object instantiation
-            TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, new RequestHeaderGetterImpl<C>(getter),
-                    requestTelemetry);
+        // TODO eliminate wrapper object instantiation
+        RequestHeaderGetterImpl<C> requestHeaderGetter = new RequestHeaderGetterImpl<>(getter);
+        String instrumentationKey = Global.getTelemetryClient().getContext().getInstrumentationKey();
+        if (Global.isOutboundW3CEnabled) {
+            TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
+            TraceContextCorrelationCore
+                    .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
         } else {
-            // TODO eliminate wrapper object instantiation
-            TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(carrier, new RequestHeaderGetterImpl<C>(getter),
-                    requestTelemetry);
+            TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
+            TelemetryCorrelationUtilsCore
+                    .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
         }
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(messageSupplier, threadContextHolder, startTimeMillis,
-                requestTelemetry, client);
+                requestTelemetry);
 
-        ThreadContextImpl mainThreadContext = new ThreadContextImpl(threadContextHolder, incomingSpan, telemetryContext,
-                rootNestingGroupId, rootSuppressionKeyId, false, client);
+        ThreadContextImpl mainThreadContext = new ThreadContextImpl(incomingSpan, telemetryContext,
+                rootNestingGroupId, rootSuppressionKeyId, false);
         threadContextHolder.set(mainThreadContext);
 
         return incomingSpan;
@@ -118,7 +115,7 @@ public class AgentImpl implements AgentSPI {
             if (value == null) {
                 return Collections.emptyEnumeration();
             } else {
-                return Collections.enumeration(Arrays.asList(value));
+                return Collections.enumeration(Collections.singletonList(value));
             }
         }
     }

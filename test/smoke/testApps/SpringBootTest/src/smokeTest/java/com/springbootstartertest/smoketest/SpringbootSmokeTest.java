@@ -7,13 +7,31 @@ import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
-import com.microsoft.applicationinsights.smoketest.TargetUri;
-import com.microsoft.applicationinsights.smoketest.UseAgent;
+import com.microsoft.applicationinsights.smoketest.*;
+
 import java.util.List;
+
 import org.junit.Test;
 
 @UseAgent
+// NOTE this test doesn't need dependency containers, but currently all test classes need to specify the dependency
+// containers since they are set up statically in AiSmokeTest
+@WithDependencyContainers({
+        @DependencyContainer(
+                value = "mysql:5",
+                environmentVariables = {"MYSQL_ROOT_PASSWORD=password"},
+                portMapping = "3306",
+                hostnameEnvironmentVariable = "MYSQL"),
+        @DependencyContainer(
+                value = "postgres:11",
+                portMapping = "5432",
+                hostnameEnvironmentVariable = "POSTGRES"),
+        @DependencyContainer(
+                value = "mcr.microsoft.com/mssql/server:2017-latest",
+                environmentVariables = {"ACCEPT_EULA=Y", "SA_PASSWORD=Password1"},
+                portMapping = "1433",
+                hostnameEnvironmentVariable = "SQLSERVER")
+})
 public class SpringbootSmokeTest extends AiSmokeTest{
 
 	@Test
@@ -95,6 +113,18 @@ public class SpringbootSmokeTest extends AiSmokeTest{
     @Test
     @TargetUri("/asyncDependencyCallWithOkHttp2")
     public void testAsyncDependencyCallWithOkHttp2() {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RemoteDependencyData rdd = getTelemetryDataForType(0,"RemoteDependencyData");
+        String requestOperationId = d.getId();
+        String rddId = rdd.getId();
+        assertTrue(rddId.contains(requestOperationId));
+    }
+
+    @Test
+    @TargetUri("/asyncDependencyCallWithHttpURLConnection")
+    public void testAsyncDependencyCallWithHttpURLConnection() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
         RequestData d = getTelemetryDataForType(0, "RequestData");

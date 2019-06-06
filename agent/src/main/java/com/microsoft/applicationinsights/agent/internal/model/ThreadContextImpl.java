@@ -1,6 +1,28 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import java.util.concurrent.TimeUnit;
+
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.agent.internal.utils.LoggerSpans;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
@@ -8,15 +30,22 @@ import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorre
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextPlus;
-import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.*;
+import org.glowroot.xyzzy.instrumentation.api.AsyncQuerySpan;
+import org.glowroot.xyzzy.instrumentation.api.AsyncSpan;
+import org.glowroot.xyzzy.instrumentation.api.AuxThreadContext;
+import org.glowroot.xyzzy.instrumentation.api.Getter;
+import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
+import org.glowroot.xyzzy.instrumentation.api.QueryMessageSupplier;
+import org.glowroot.xyzzy.instrumentation.api.QuerySpan;
+import org.glowroot.xyzzy.instrumentation.api.Setter;
+import org.glowroot.xyzzy.instrumentation.api.Span;
+import org.glowroot.xyzzy.instrumentation.api.Timer;
+import org.glowroot.xyzzy.instrumentation.api.TimerName;
 
-import java.util.concurrent.TimeUnit;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ThreadContextImpl implements ThreadContextPlus {
-
-    private final ThreadContextThreadLocal.Holder threadContextHolder;
 
     private final IncomingSpanImpl incomingSpan;
 
@@ -27,22 +56,13 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     private final @Nullable TwoPartCompletion auxThreadAsyncCompletion;
 
-    private final TelemetryClient client;
-
-    public ThreadContextImpl(ThreadContextThreadLocal.Holder threadContextHolder, IncomingSpanImpl incomingSpan,
-                             @Nullable RequestTelemetryContext telemetryContext, int rootNestingGroupId,
-                             int rootSuppressionKeyId, boolean auxThread, TelemetryClient client) {
-        this.threadContextHolder = threadContextHolder;
+    public ThreadContextImpl(IncomingSpanImpl incomingSpan, @Nullable RequestTelemetryContext telemetryContext,
+                             int rootNestingGroupId, int rootSuppressionKeyId, boolean auxThread) {
         this.incomingSpan = incomingSpan;
         this.telemetryContext = telemetryContext;
         currentNestingGroupId = rootNestingGroupId;
         currentSuppressionKeyId = rootSuppressionKeyId;
         auxThreadAsyncCompletion = auxThread ? new TwoPartCompletion() : null;
-        this.client = client;
-    }
-
-    ThreadContextThreadLocal.Holder getThreadContextHolder() {
-        return threadContextHolder;
     }
 
     @Override
@@ -64,22 +84,21 @@ public class ThreadContextImpl implements ThreadContextPlus {
     }
 
     @Override
-    public QuerySpan startQuerySpan(String queryType, String queryText, QueryMessageSupplier queryMessageSupplier,
+    public QuerySpan startQuerySpan(String type, String dest, String text, QueryMessageSupplier queryMessageSupplier,
                                     TimerName timerName) {
-        return new QuerySpanImpl(queryType, System.currentTimeMillis(), queryText, queryMessageSupplier, client);
+        return new QuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis());
     }
 
     @Override
-    public QuerySpan startQuerySpan(String queryType, String queryText, long queryExecutionCount,
+    public QuerySpan startQuerySpan(String type, String dest, String text, long queryExecutionCount,
                                     QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        // TODO pass along queryExecutionCount
-        return new QuerySpanImpl(queryType, System.currentTimeMillis(), queryText, queryMessageSupplier, client);
+        return new QuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis());
     }
 
     @Override
-    public AsyncQuerySpan startAsyncQuerySpan(String queryType, String queryText,
+    public AsyncQuerySpan startAsyncQuerySpan(String type, String dest, String text,
                                               QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        return new AsyncQuerySpanImpl(queryType, System.currentTimeMillis(), queryText, queryMessageSupplier, client);
+        return new AsyncQuerySpanImpl(type, dest, text, queryMessageSupplier, System.currentTimeMillis());
     }
 
     @Override
@@ -87,7 +106,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
                                       MessageSupplier messageSupplier, TimerName timerName) {
         // TODO revisit the point of text
         String outgoingSpanId = propagate(setter, carrier);
-        return new OutgoingSpanImpl(type, text, System.currentTimeMillis(), outgoingSpanId, messageSupplier, client);
+        return new OutgoingSpanImpl(type, text, System.currentTimeMillis(), outgoingSpanId, messageSupplier);
     }
 
     @Override
@@ -95,13 +114,12 @@ public class ThreadContextImpl implements ThreadContextPlus {
                                                 MessageSupplier messageSupplier, TimerName timerName) {
         // TODO revisit the point of text
         String outgoingSpanId = propagate(setter, carrier);
-        return new AsyncOutgoingSpanImpl(type, text, System.currentTimeMillis(), outgoingSpanId, messageSupplier,
-                client);
+        return new AsyncOutgoingSpanImpl(type, text, System.currentTimeMillis(), outgoingSpanId, messageSupplier);
     }
 
     @Override
     public void captureLoggerSpan(MessageSupplier messageSupplier, @Nullable Throwable throwable) {
-        LoggerSpans.track(messageSupplier, throwable, System.currentTimeMillis(), client);
+        LoggerSpans.track(messageSupplier, throwable, System.currentTimeMillis());
     }
 
     @Override
@@ -112,7 +130,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     @Override
     public AuxThreadContext createAuxThreadContext() {
-        return new AuxThreadContextImpl(incomingSpan, telemetryContext, client);
+        return new AuxThreadContextImpl(incomingSpan, telemetryContext);
     }
 
     @Override
@@ -143,10 +161,6 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     @Override
     public void setTransactionUser(@Nullable String user, int priority) {
-        // currently ignoring priority, which is ok since just using core xyzzy instrumentation
-        if (user != null) {
-            incomingSpan.setUser(user);
-        }
     }
 
     @Override
@@ -191,7 +205,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
     }
 
     @Override
-    public void setServletRequestInfo(@Nullable ServletRequestInfo servletRequestInfo) {
+    public void setServletRequestInfo(ServletRequestInfo servletRequestInfo) {
         incomingSpan.setServletRequestInfo(servletRequestInfo);
     }
 
@@ -216,18 +230,23 @@ public class ThreadContextImpl implements ThreadContextPlus {
     }
 
     public void endAuxThreadContext() {
+        checkNotNull(auxThreadAsyncCompletion);
         if (auxThreadAsyncCompletion.setPart2()) {
             incomingSpan.setAsyncComplete();
         }
     }
 
     private static <C> String propagate(Setter<C> setter, C carrier) {
-        if (Global.isW3CEnabled) {
+        if (Global.isOutboundW3CEnabled) {
             String traceparent = TraceContextCorrelationCore.generateChildDependencyTraceparent();
+            if (traceparent == null) {
+                // this means an error occurred (and was logged) in above method, so just return a valid outgoingSpanId
+                return TelemetryCorrelationUtilsCore.generateChildDependencyId();
+            }
             String outgoingSpanId = TraceContextCorrelationCore.createChildIdFromTraceparentString(traceparent);
             String tracestate = TraceContextCorrelationCore.retriveTracestate();
             setter.put(carrier, "traceparent", traceparent);
-            if (Global.isW3CBackportEnabled) {
+            if (Global.isOutboundW3CBackportEnabled) {
                 setter.put(carrier, "Request-Id", outgoingSpanId);
             }
             if (tracestate != null) {

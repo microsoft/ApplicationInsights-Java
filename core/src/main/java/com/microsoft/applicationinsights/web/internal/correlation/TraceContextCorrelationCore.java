@@ -35,7 +35,7 @@ public class TraceContextCorrelationCore {
      * Switch to enable W3C Backward compatibility with Legacy AI Correlation.
      * By default this is turned ON.
      */
-    private static boolean isW3CBackCompatEnabled = true;
+    private static boolean isInboundW3CBackCompatEnabled = true;
 
     /**
      * Private constructor as we don't expect to create an object of this class.
@@ -159,7 +159,7 @@ public class TraceContextCorrelationCore {
         if (incomingTraceparent == null) {
 
             // If BackCompt mode is enabled, read the Request-Id Header
-            if (isW3CBackCompatEnabled) {
+            if (isInboundW3CBackCompatEnabled) {
                 processedTraceparent = processLegacyCorrelation(request, requestHeaderGetter);
             }
 
@@ -347,7 +347,7 @@ public class TraceContextCorrelationCore {
             String tracestate = requestHeaderGetter.getFirst(request, TRACESTATE_HEADER_NAME);
             if (tracestate == null || tracestate.isEmpty()) {
 
-                if (isW3CBackCompatEnabled &&
+                if (isInboundW3CBackCompatEnabled &&
                         requestHeaderGetter.getFirst(request, TelemetryCorrelationUtilsCore.REQUEST_CONTEXT_HEADER_NAME) != null) {
                     InternalLogger.INSTANCE.trace("Tracestate absent, In backward compatibility mode, will try to resolve "
                         + "request-context");
@@ -513,9 +513,9 @@ public class TraceContextCorrelationCore {
         return "|" + traceparentArr[1] + "." + traceparentArr[2] + ".";
     }
 
-    public static void setIsW3CBackCompatEnabled(boolean isW3CBackCompatEnabled) {
-        TraceContextCorrelationCore.isW3CBackCompatEnabled = isW3CBackCompatEnabled;
+    public static void setIsInboundW3CBackCompatEnabled(boolean isInboundW3CBackCompatEnabled) {
+        TraceContextCorrelationCore.isInboundW3CBackCompatEnabled = isInboundW3CBackCompatEnabled;
         InternalLogger.INSTANCE.trace(String.format("W3C Backport mode enabled on Incoming side %s",
-            isW3CBackCompatEnabled));
+                isInboundW3CBackCompatEnabled));
     }
 }

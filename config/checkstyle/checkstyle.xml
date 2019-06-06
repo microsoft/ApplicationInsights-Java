@@ -52,7 +52,7 @@
             <property name="allowStaticMemberImports" value="true" />
         </module>
         <module name="AvoidStaticImport">
-            <property name="excludes" value="org.junit.Assert.*,org.mockito.Mockito.*" />
+            <property name="excludes" value="java.util.concurrent.TimeUnit.*,com.google.common.base.Preconditions.*,org.objectweb.asm.Opcodes.*,org.junit.Assert.*,org.mockito.Mockito.*" />
         </module>
         <module name="RedundantImport"/>
         <module name="OneTopLevelClass"/>

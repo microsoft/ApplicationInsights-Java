@@ -116,48 +116,60 @@ public enum TelemetryConfigurationFactory {
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
-            InputStream configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
-            if (configurationFile == null) {
-                setMinimumConfiguration(null, configuration);
-                return;
+            ApplicationInsightsXmlConfiguration applicationInsightsConfig = twoPhaseInitializePart1(configuration);
+            if (applicationInsightsConfig != null) {
+                twoPhaseInitializePart2(configuration, applicationInsightsConfig);
             }
-
-            ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
-            if (applicationInsightsConfig == null) {
-                InternalLogger.INSTANCE.error("Failed to read configuration file. Application Insights XML file is null...setting default configuration");
-                setMinimumConfiguration(applicationInsightsConfig, configuration);
-                return;
-            }
-
-            setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
-
-            setInstrumentationKey(applicationInsightsConfig, configuration);
-
-            TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
-            boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
-            if (!channelIsConfigured) {
-                InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
-            }
-            configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
-
-            setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
-            setTelemetryInitializers(applicationInsightsConfig.getTelemetryInitializers(), configuration);
-            setTelemetryModules(applicationInsightsConfig, configuration);
-            setTelemetryProcessors(applicationInsightsConfig, configuration);
-
-            TelemetryChannel channel = configuration.getChannel();
-            if (channel instanceof LocalForwarderTelemetryChannel) {
-                if (isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
-                    InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
-                    applicationInsightsConfig.getQuickPulse().setEnabled(false);
-                }
-            }
-            setQuickPulse(applicationInsightsConfig);
-
-            initializeComponents(configuration);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to initialize configuration, exception: %s", ExceptionUtils.getStackTrace(e));
         }
+    }
+
+    public ApplicationInsightsXmlConfiguration twoPhaseInitializePart1(TelemetryConfiguration configuration) {
+        InputStream configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
+        if (configurationFile == null) {
+            setMinimumConfiguration(null, configuration);
+            return null;
+        }
+
+        ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
+        if (applicationInsightsConfig == null) {
+            InternalLogger.INSTANCE.error("Failed to read configuration file. Application Insights XML file is null...setting default configuration");
+            setMinimumConfiguration(applicationInsightsConfig, configuration);
+            return null;
+        }
+
+        return applicationInsightsConfig;
+    }
+
+    public void twoPhaseInitializePart2(TelemetryConfiguration configuration,
+                      ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+        setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
+
+        setInstrumentationKey(applicationInsightsConfig, configuration);
+
+        TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
+        boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
+        if (!channelIsConfigured) {
+            InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
+        }
+        configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
+
+        setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
+        setTelemetryInitializers(applicationInsightsConfig.getTelemetryInitializers(), configuration);
+        setTelemetryModules(applicationInsightsConfig, configuration);
+        setTelemetryProcessors(applicationInsightsConfig, configuration);
+
+        TelemetryChannel channel = configuration.getChannel();
+        if (channel instanceof LocalForwarderTelemetryChannel) {
+            if (isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
+                InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
+                applicationInsightsConfig.getQuickPulse().setEnabled(false);
+            }
+        }
+        setQuickPulse(applicationInsightsConfig);
+
+        initializeComponents(configuration);
     }
 
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {

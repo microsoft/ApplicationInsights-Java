@@ -1,6 +1,31 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.Map;
+
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
@@ -9,16 +34,15 @@ import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.*;
+import org.glowroot.xyzzy.instrumentation.api.Getter;
+import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
+import org.glowroot.xyzzy.instrumentation.api.Setter;
+import org.glowroot.xyzzy.instrumentation.api.Span;
+import org.glowroot.xyzzy.instrumentation.api.Timer;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class OutgoingSpanImpl implements Span {
 
@@ -28,20 +52,17 @@ public class OutgoingSpanImpl implements Span {
     private final String outgoingSpanId;
     private final MessageSupplier messageSupplier;
 
-    private final TelemetryClient client;
+    private volatile @MonotonicNonNull String requestContext; // only used for HTTP
 
-    private volatile @Nullable String requestContext; // only used for HTTP
-
-    private volatile @Nullable Throwable exception;
+    private volatile @MonotonicNonNull Throwable exception;
 
     public OutgoingSpanImpl(String type, String text, long startTimeMillis, String outgoingSpanId,
-                            MessageSupplier messageSupplier, TelemetryClient client) {
+                            MessageSupplier messageSupplier) {
         this.type = type;
         this.text = text;
         this.startTimeMillis = startTimeMillis;
         this.outgoingSpanId = outgoingSpanId;
         this.messageSupplier = messageSupplier;
-        this.client = client;
     }
 
     @Override
@@ -50,7 +71,7 @@ public class OutgoingSpanImpl implements Span {
     }
 
     @Override
-    public void endWithLocationStackTrace(long threshold, TimeUnit unit) {
+    public void endWithLocationStackTrace(long thresholdNanos) {
         endInternal();
     }
 
@@ -93,10 +114,10 @@ public class OutgoingSpanImpl implements Span {
             telemetry.setType(type);
         }
         if (telemetry != null) {
-            client.track(telemetry);
+            Global.getTelemetryClient().track(telemetry);
             if (exception != null) {
                 ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
-                client.track(exceptionTelemetry);
+                Global.getTelemetryClient().track(exceptionTelemetry);
             }
         }
     }
@@ -118,42 +139,40 @@ public class OutgoingSpanImpl implements Span {
 
         // FIXME change xyzzy to not add prefixes, then can use message.getText() directly
 
-        String host = (String) detail.get("Host");
         String method = (String) detail.get("Method");
         Integer result = (Integer) detail.get("Result");
 
         // from HttpClientMethodVisitor and CoreAgentNotificationsHandler:
-
-        try {
-            URI uriObject = new URI(uri);
-            String target;
-            if (requestContext == null) {
-                target = uriObject.getHost();
-            } else if (Global.isW3CEnabled) {
-                target = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
-            } else {
-                target = TelemetryCorrelationUtilsCore.generateChildDependencyTarget(requestContext);
-            }
-            telemetry.setName(method + " " + uriObject.getPath());
-            if (target != null && !target.isEmpty()) {
-                // AI correlation expects target to be of this format.
-                target = createTarget(uriObject, target);
-                if (telemetry.getTarget() == null) {
-                    telemetry.setTarget(target);
-                } else {
-                    telemetry.setTarget(telemetry.getTarget() + " | " + target);
-                }
-            }
-        } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.error("%s", e.toString());
-            InternalLogger.INSTANCE.trace("Stack trace is%n%s", ExceptionUtils.getStackTrace(e));
-        }
 
         if (method != null) {
             // for backward compatibility (same comment from CoreAgentNotificationsHandler)
             telemetry.getProperties().put("Method", method);
         }
         if (uri != null) {
+            try {
+                URI uriObject = new URI(uri);
+                String target;
+                if (requestContext == null) {
+                    target = uriObject.getHost();
+                } else if (Global.isOutboundW3CEnabled) {
+                    target = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
+                } else {
+                    target = TelemetryCorrelationUtilsCore.generateChildDependencyTarget(requestContext);
+                }
+                telemetry.setName(method + " " + uriObject.getPath());
+                if (target != null && !target.isEmpty()) {
+                    // AI correlation expects target to be of this format.
+                    target = createTarget(uriObject, target);
+                    if (telemetry.getTarget() == null) {
+                        telemetry.setTarget(target);
+                    } else {
+                        telemetry.setTarget(telemetry.getTarget() + " | " + target);
+                    }
+                }
+            } catch (URISyntaxException e) {
+                InternalLogger.INSTANCE.error("%s", e.toString());
+                InternalLogger.INSTANCE.trace("Stack trace is%n%s", ExceptionUtils.getStackTrace(e));
+            }
             telemetry.setCommandName(uri);
             // for backward compatibility (same comment from CoreAgentNotificationsHandler)
             telemetry.getProperties().put("URI", uri);

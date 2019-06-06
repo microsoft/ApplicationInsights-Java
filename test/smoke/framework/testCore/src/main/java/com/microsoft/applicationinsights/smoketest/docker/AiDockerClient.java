@@ -5,12 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
@@ -79,16 +75,27 @@ public class AiDockerClient {
 		return new ProcessBuilder(cmdLine).redirectErrorStream(true);
 	}
 
-	public String startContainer(String image, String portMapping, String network) throws IOException, InterruptedException {
-		return startContainer(image, portMapping, network, null, null);
+	public String startDependencyContainer(String image, String[] envVars, String portMapping, String network, String containerName) throws IOException, InterruptedException {
+	    Map<String, String> envVarMap = new HashMap<>();
+	    for (String envVar : envVars) {
+	        int index = envVar.indexOf('=');
+	        envVarMap.put(envVar.substring(0, index), envVar.substring(index + 1));
+	    }
+	    return startContainer(image, portMapping, network, containerName, envVarMap, true);
 	}
 
-	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars) throws IOException, InterruptedException {
+	public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars,
+	                             boolean dependencyContainer) throws IOException, InterruptedException {
 		Preconditions.checkNotNull(image, "image");
 		Preconditions.checkNotNull(portMapping, "portMapping");
 
 		String localIp = InetAddress.getLocalHost().getHostAddress();
-		List<String> cmd = new ArrayList<>(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
+		List<String> cmd = new ArrayList<>();
+		cmd.addAll(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
+		if (!dependencyContainer) {
+		    // port 5005 is exposed for hooking up IDE debugger
+		    cmd.addAll(Arrays.asList("-p", "5005:5005"));
+		}
 		if (!Strings.isNullOrEmpty(network)) {
 		    // TODO assert the network exists
 		    cmd.add("--network");
@@ -247,7 +254,7 @@ public class AiDockerClient {
 	}
 	private static  int findLastLetterPosition(String input) {
 		for (int i = input.length()-1; i >= 0; i--) {
-			if (Character.isAlphabetic(input.codePointAt(i))) {
+			if (Character.isAlphabetic(input.codePointAt(i)) || Character.isDigit(input.codePointAt(i))) {
 				return i;
 			}
 		}

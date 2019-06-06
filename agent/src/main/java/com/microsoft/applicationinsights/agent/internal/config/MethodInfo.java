@@ -19,34 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.model;
+package com.microsoft.applicationinsights.agent.internal.config;
 
-class TwoPartCompletion {
+/**
+ * The class holds the type of actions that should be done on an instrumented method.
+ * The class is the 'decision' for the method after taking into consideration init/configuration data.
+ */
+public class MethodInfo {
 
-    private volatile boolean part1;
-    private volatile boolean part2;
+    private final boolean reportCaughtExceptions;
+    private final boolean reportExecutionTime;
+    private final long thresholdInMS;
 
-    public boolean setPart1() {
-        synchronized (this) {
-            if (!part1 && part2) {
-                part1 = true;
-                return true;
-            } else {
-                part1 = true;
-                return false;
-            }
-        }
+    public MethodInfo(boolean reportCaughtExceptions, boolean reportExecutionTime, long thresholdInMS) {
+        this.reportCaughtExceptions = reportCaughtExceptions;
+        this.reportExecutionTime = reportExecutionTime;
+        this.thresholdInMS = thresholdInMS;
     }
 
-    public boolean setPart2() {
-        synchronized (this) {
-            if (part1 && !part2) {
-                part2 = true;
-                return true;
-            } else {
-                part2 = true;
-                return false;
-            }
-        }
+    public boolean isReportCaughtExceptions() {
+        return reportCaughtExceptions;
+    }
+
+    public boolean isReportExecutionTime() {
+        return reportExecutionTime;
+    }
+
+    public long getThresholdInMS() {
+        return thresholdInMS;
     }
 }

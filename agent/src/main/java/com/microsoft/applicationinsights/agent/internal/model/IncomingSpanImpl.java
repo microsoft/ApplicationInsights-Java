@@ -1,7 +1,32 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import java.net.MalformedURLException;
+import java.util.Date;
+import java.util.Map;
+
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
+import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -12,17 +37,17 @@ import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorre
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.ResponseHeaderSetter;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.*;
+import org.glowroot.xyzzy.instrumentation.api.Getter;
+import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
+import org.glowroot.xyzzy.instrumentation.api.Setter;
+import org.glowroot.xyzzy.instrumentation.api.Span;
 import org.glowroot.xyzzy.instrumentation.api.ThreadContext.ServletRequestInfo;
+import org.glowroot.xyzzy.instrumentation.api.Timer;
 import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
-
-import javax.annotation.Nullable;
-import java.net.MalformedURLException;
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -33,25 +58,20 @@ public class IncomingSpanImpl implements Span {
     private final ThreadContextThreadLocal.Holder threadContextHolder;
     private final long startTimeMillis;
 
-    private volatile @Nullable ServletRequestInfo servletRequestInfo;
+    private volatile @MonotonicNonNull ServletRequestInfo servletRequestInfo;
 
-    private volatile @Nullable String user;
+    private volatile @MonotonicNonNull Throwable exception;
 
-    private volatile @Nullable Throwable exception;
+    private volatile @MonotonicNonNull TwoPartCompletion asyncCompletion;
 
-    private volatile @Nullable TwoPartCompletion asyncCompletion;
-
-    private final @Nullable RequestTelemetry requestTelemetry;
-
-    private final TelemetryClient client;
+    private final RequestTelemetry requestTelemetry;
 
     public IncomingSpanImpl(MessageSupplier messageSupplier, ThreadContextThreadLocal.Holder threadContextHolder,
-                            long startTimeMillis, @Nullable RequestTelemetry requestTelemetry, TelemetryClient client) {
+                            long startTimeMillis, RequestTelemetry requestTelemetry) {
         this.messageSupplier = messageSupplier;
         this.threadContextHolder = threadContextHolder;
         this.startTimeMillis = startTimeMillis;
         this.requestTelemetry = requestTelemetry;
-        this.client = client;
     }
 
     @Nullable
@@ -59,13 +79,16 @@ public class IncomingSpanImpl implements Span {
         return servletRequestInfo;
     }
 
-    void setServletRequestInfo(@Nullable ServletRequestInfo servletRequestInfo) {
+    void setServletRequestInfo(ServletRequestInfo servletRequestInfo) {
         this.servletRequestInfo = servletRequestInfo;
-        String contextPath = servletRequestInfo.getContextPath();
-        if (!contextPath.isEmpty()) {
-            contextPath = contextPath.substring(1);
+        CloudContext cloud = Global.getTelemetryClient().getContext().getCloud();
+        if (cloud.getRole() == null) {
+            // hasn't been set yet
+            String contextPath = servletRequestInfo.getContextPath();
+            if (!contextPath.isEmpty()) {
+                cloud.setRole(contextPath.substring(1));
+            }
         }
-        requestTelemetry.getContext().getCloud().setRole(contextPath);
         // TODO this won't be needed once xyzzy servlet instrumentation passes in METHOD as part of transactionName
         requestTelemetry.setName(servletRequestInfo.getMethod() + " " + servletRequestInfo.getUri());
     }
@@ -89,10 +112,6 @@ public class IncomingSpanImpl implements Span {
         requestTelemetry.setName(tn);
     }
 
-    void setUser(String user) {
-        this.user = user;
-    }
-
     void setException(Throwable t) {
         if (exception != null) {
             exception = t;
@@ -105,7 +124,7 @@ public class IncomingSpanImpl implements Span {
     }
 
     @Override
-    public void endWithLocationStackTrace(long threshold, TimeUnit unit) {
+    public void endWithLocationStackTrace(long thresholdNanos) {
         endInternal();
     }
 
@@ -129,14 +148,14 @@ public class IncomingSpanImpl implements Span {
     @Override
     @Deprecated
     public <R> void propagateToResponse(R response, Setter<R> setter) {
-        if (Global.isW3CEnabled) {
+        if (Global.isOutboundW3CEnabled) {
             // TODO eliminate wrapper object instantiation
             TraceContextCorrelationCore.resolveCorrelationForResponse(response,
-                    new ResponseHeaderSetterImpl<R>(setter));
+                    new ResponseHeaderSetterImpl<>(setter));
         } else {
             // TODO eliminate wrapper object instantiation
             TelemetryCorrelationUtilsCore.resolveCorrelationForResponse(response,
-                    new ResponseHeaderSetterImpl<R>(setter));
+                    new ResponseHeaderSetterImpl<>(setter));
         }
     }
 
@@ -159,10 +178,11 @@ public class IncomingSpanImpl implements Span {
         long endTimeMillis = System.currentTimeMillis();
 
         if (exception != null) {
-            client.trackException(toExceptionTelemetry(endTimeMillis, requestTelemetry.getContext()));
+            Global.getTelemetryClient()
+                    .trackException(toExceptionTelemetry(endTimeMillis, requestTelemetry.getContext()));
         }
         finishBuildingTelemetry(endTimeMillis);
-        client.track(requestTelemetry);
+        Global.getTelemetryClient().track(requestTelemetry);
     }
 
     private void finishBuildingTelemetry(long endTimeMillis) {

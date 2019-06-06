@@ -20,6 +20,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 @RestController
 public class TestController {
@@ -59,22 +60,27 @@ public class TestController {
 	}
 
 	@GetMapping("/asyncDependencyCallWithApacheHttpClient4")
-	public AsyncResult<Integer> asyncDependencyCallWithApacheHttpClient4() throws IOException {
+	public Future<Integer> asyncDependencyCallWithApacheHttpClient4() throws IOException {
 		return testBean.asyncDependencyCallWithApacheHttpClient4();
 	}
 
     @GetMapping("/asyncDependencyCallWithApacheHttpClient3")
-    public AsyncResult<Integer> asyncDependencyCallWithApacheHttpClient3() throws IOException {
+    public Future<Integer> asyncDependencyCallWithApacheHttpClient3() throws IOException {
 		return testBean.asyncDependencyCallWithApacheHttpClient3();
     }
 
     @GetMapping("/asyncDependencyCallWithOkHttp3")
-    public AsyncResult<Integer> asyncDependencyCallWithOkHttp3() throws IOException {
+    public Future<Integer> asyncDependencyCallWithOkHttp3() throws IOException {
 		return testBean.asyncDependencyCallWithOkHttp3();
     }
 
-    @GetMapping("/asyncDependencyCallWithOkHttp2")
-    public AsyncResult<Integer> asyncDependencyCallWithOkHttp2() throws IOException {
+	@GetMapping("/asyncDependencyCallWithOkHttp2")
+	public Future<Integer> asyncDependencyCallWithOkHttp2() throws IOException {
 		return testBean.asyncDependencyCallWithOkHttp2();
-    }
+	}
+
+	@GetMapping("/asyncDependencyCallWithHttpURLConnection")
+	public Future<Integer> asyncDependencyCallWithHttpURLConnection() throws IOException {
+		return testBean.asyncDependencyCallWithHttpURLConnection();
+	}
 }
