@@ -66,7 +66,7 @@ public final class ReflectionUtils {
         addClass(com.microsoft.applicationinsights.internal.processor.TraceTelemetryFilter.class);
     }
 
-    static void addClass(Class<?> clazz) {
+    public static void addClass(Class<?> clazz) {
         builtInMap.put(clazz.getCanonicalName(), clazz);
     }
 

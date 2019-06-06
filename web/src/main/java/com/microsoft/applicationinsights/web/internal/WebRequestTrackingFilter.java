@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
+import com.microsoft.applicationinsights.web.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
