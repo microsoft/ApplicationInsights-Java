@@ -1,8 +1,9 @@
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * This is the class for binding the xml array list of {@code <ExcludedTypes>}
@@ -13,11 +14,10 @@ public class ParamExcludedTypeXmlElement {
         return excludedType;
     }
 
-    @XmlElement(name = "ExcludedType")
     public void setExcludedType(List<String> excludedType) {
         this.excludedType = excludedType;
     }
 
+    @XStreamImplicit(itemFieldName = "ExcludedType")
     private List<String> excludedType;
-
 }

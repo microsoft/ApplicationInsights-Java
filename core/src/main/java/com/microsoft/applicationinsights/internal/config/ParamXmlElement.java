@@ -21,14 +21,17 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by yonisha on 3/16/2015.
  */
 public class ParamXmlElement {
+
+    @XStreamAsAttribute
     private String name;
+
+    @XStreamAsAttribute
     private String value;
 
     public String getName() {
@@ -39,12 +42,10 @@ public class ParamXmlElement {
         return value;
     }
 
-    @XmlAttribute(name="name")
     public void setName(String name) {
         this.name = name;
     }
 
-    @XmlAttribute(name="value")
     public void setValue(String value) {
         this.value = value;
     }

@@ -21,27 +21,38 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by gupele on 3/15/2015.
  */
 public class PerformanceCountersXmlElement {
+
+    @XStreamAlias("UseBuiltIn")
     private boolean useBuiltIn = true;
+
+    @XStreamAsAttribute
     private long collectionFrequencyInSec = 60;
+
+    @XStreamAlias("Jvm")
     private PerformanceCounterJvmSectionXmlElement jvmSection;
+
+    @XStreamAlias("Plugin")
     private String plugin;
 
+    @XStreamAlias("Jmx")
     private ArrayList<JmxXmlElement> jmxXmlElements;
+
+    @XStreamAlias("Windows")
     private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
 
     public ArrayList<JmxXmlElement> getJmxXmlElements() {
         return jmxXmlElements;
     }
 
-    @XmlElementWrapper(name="Jmx")
-    @XmlElement(name="Add")
     public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
         this.jmxXmlElements = jmxXmlElements;
     }
@@ -50,7 +61,6 @@ public class PerformanceCountersXmlElement {
         return useBuiltIn;
     }
 
-    @XmlElement(name="UseBuiltIn")
     public void setUseBuiltIn(boolean useBuiltIn) {
         this.useBuiltIn = useBuiltIn;
     }
@@ -59,8 +69,6 @@ public class PerformanceCountersXmlElement {
         return windowsPCs;
     }
 
-    @XmlElementWrapper(name="Windows")
-    @XmlElement(name="Add")
     public void setWindowsPCs(ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs) {
         this.windowsPCs = windowsPCs;
     }
@@ -69,7 +77,6 @@ public class PerformanceCountersXmlElement {
         return collectionFrequencyInSec;
     }
 
-    @XmlAttribute
     public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
         this.collectionFrequencyInSec = collectionFrequencyInSec;
     }
@@ -78,7 +85,6 @@ public class PerformanceCountersXmlElement {
         return jvmSection;
     }
 
-    @XmlElement(name="Jvm")
     public void setJvmSection(PerformanceCounterJvmSectionXmlElement jvmSection) {
         this.jvmSection = jvmSection;
     }
@@ -87,7 +93,6 @@ public class PerformanceCountersXmlElement {
         return plugin;
     }
 
-    @XmlElement(name="Plugin")
     public void setPlugin(String plugin) {
         this.plugin = plugin;
     }

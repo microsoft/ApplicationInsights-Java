@@ -22,20 +22,22 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import java.util.ArrayList;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 3/15/2015.
  */
 public class JmxListXmlElement {
+
+    @XStreamImplicit(itemFieldName = "Add")
     private ArrayList<JmxXmlElement> jmx;
 
     public ArrayList<JmxXmlElement> getJmx() {
         return jmx;
     }
 
-    @XmlElement(name="Add")
     public void setJmx(ArrayList<JmxXmlElement> jmx) {
         this.jmx = jmx;
     }

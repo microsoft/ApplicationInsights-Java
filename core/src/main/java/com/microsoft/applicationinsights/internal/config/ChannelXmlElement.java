@@ -21,32 +21,46 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.google.common.base.Strings;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.common.base.Strings;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by gupele on 3/15/2015.
  */
 public class ChannelXmlElement {
 
+    @XStreamAlias("EndpointAddress")
     private String endpointAddress;
+
+    @XStreamAlias("MaxTelemetryBufferCapacity")
     private String maxTelemetryBufferCapacity;
+
+    @XStreamAlias("FlushIntervalInSeconds")
     private String flushIntervalInSeconds;
+
+    @XStreamAlias("DeveloperMode")
     private boolean developerMode;
+
+    @XStreamAlias("Throttling")
     private boolean throttling = true;
+
+    @XStreamAlias("MaxTransmissionStorageFilesCapacityInMB")
     private String maxTransmissionStorageFilesCapacityInMB;
+
+    @XStreamAlias("MaxInstantRetry")
     private String maxInstantRetry;
+
+    @XStreamAsAttribute
     private String type = "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
 
     public String getType() {
         return type;
     }
 
-    @XmlAttribute(name="type")
     public void setType(String type) {
         this.type = type;
     }
@@ -55,7 +69,6 @@ public class ChannelXmlElement {
         return endpointAddress;
     }
 
-    @XmlElement(name="Throttling")
     public void setThrottling(boolean throttling) {
         this.throttling = throttling;
     }
@@ -64,7 +77,6 @@ public class ChannelXmlElement {
         return throttling;
     }
 
-    @XmlElement(name="EndpointAddress")
     public void setEndpointAddress(String endpointAddress) {
         this.endpointAddress = endpointAddress;
     }
@@ -73,7 +85,6 @@ public class ChannelXmlElement {
         return developerMode;
     }
 
-    @XmlElement(name="DeveloperMode")
     public void setDeveloperMode(boolean developerMode) {
         this.developerMode = developerMode;
     }
@@ -82,7 +93,6 @@ public class ChannelXmlElement {
         return maxTelemetryBufferCapacity;
     }
 
-    @XmlElement(name="MaxTelemetryBufferCapacity")
     public void setMaxTelemetryBufferCapacity(String maxTelemetryBufferCapacity) {
         this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
     }
@@ -91,7 +101,6 @@ public class ChannelXmlElement {
         return flushIntervalInSeconds;
     }
 
-    @XmlElement(name="FlushIntervalInSeconds")
     public void setFlushIntervalInSeconds(String flushIntervalInSeconds) {
         this.flushIntervalInSeconds = flushIntervalInSeconds;
     }
@@ -100,7 +109,6 @@ public class ChannelXmlElement {
         return maxTransmissionStorageFilesCapacityInMB;
     }
 
-    @XmlElement(name="MaxTransmissionStorageFilesCapacityInMB")
     public void setMaxTransmissionStorageFilesCapacityInMB(String maxTransmissionStorageFilesCapacityInMB) {
         this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
     }
@@ -110,7 +118,6 @@ public class ChannelXmlElement {
         return maxInstantRetry;
     }
 
-    @XmlElement(name="MaxInstantRetry")
     public void setMaxInstantRetry(String maxInstantRetry) {
         this.maxInstantRetry = maxInstantRetry;
     }

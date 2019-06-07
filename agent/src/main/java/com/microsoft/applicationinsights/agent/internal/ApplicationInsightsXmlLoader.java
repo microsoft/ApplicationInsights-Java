@@ -40,14 +40,13 @@ class ApplicationInsightsXmlLoader {
 
     private static final String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
 
-    static Result load(File agentJarFile) {
+    static ApplicationInsightsXmlConfiguration load(File agentJarFile) {
         String configDirPropName = ConfigurationFileLocator.CONFIG_DIR_PROPERTY;
         String propValue = System.getProperty(configDirPropName);
         ApplicationInsightsXmlConfiguration xmlConfiguration;
-        TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         try {
             System.setProperty(configDirPropName, agentJarFile.getParent());
-            xmlConfiguration = TelemetryConfigurationFactory.INSTANCE.twoPhaseInitializePart1(configuration);
+            return TelemetryConfigurationFactory.INSTANCE.twoPhaseInitializePart1();
         } catch (Throwable t) {
             throw new RuntimeException(t);
         } finally {
@@ -57,18 +56,16 @@ class ApplicationInsightsXmlLoader {
                 System.setProperty(configDirPropName, propValue);
             }
         }
-        ExtraConfiguration extraConfiguration;
-        if (xmlConfiguration == null) {
-            extraConfiguration = new ExtraConfiguration(false, false);
-        } else {
-            extraConfiguration = removeBuiltInModules(xmlConfiguration);
-            TelemetryConfigurationFactory.INSTANCE.twoPhaseInitializePart2(configuration, xmlConfiguration);
-        }
-        configuration.getContextInitializers().add(new Global.CloudRoleContextInitializer());
-        return new Result(configuration, extraConfiguration);
     }
 
-    private static ExtraConfiguration removeBuiltInModules(ApplicationInsightsXmlConfiguration xmlConfiguration) {
+    static TelemetryConfiguration load(ApplicationInsightsXmlConfiguration xmlConfiguration) {
+        TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
+        TelemetryConfigurationFactory.INSTANCE.twoPhaseInitializePart2(configuration, xmlConfiguration);
+        configuration.getContextInitializers().add(new Global.CloudRoleContextInitializer());
+        return configuration;
+    }
+
+    static ExtraConfiguration removeBuiltInModules(ApplicationInsightsXmlConfiguration xmlConfiguration) {
         boolean userTracking = false;
         boolean sessionTracking = false;
         TelemetryModulesXmlElement modules = xmlConfiguration.getModules();
@@ -99,17 +96,6 @@ class ApplicationInsightsXmlLoader {
             }
         }
         return new ExtraConfiguration(userTracking, sessionTracking);
-    }
-
-    static class Result {
-
-        final TelemetryConfiguration telemetryConfiguration;
-        final ExtraConfiguration extraConfiguration;
-
-        private Result(TelemetryConfiguration telemetryConfiguration, ExtraConfiguration extraConfiguration) {
-            this.telemetryConfiguration = telemetryConfiguration;
-            this.extraConfiguration = extraConfiguration;
-        }
     }
 
     static class ExtraConfiguration {

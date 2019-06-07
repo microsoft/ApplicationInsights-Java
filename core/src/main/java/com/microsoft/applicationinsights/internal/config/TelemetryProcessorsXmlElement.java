@@ -21,22 +21,25 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * Created by gupele on 7/26/2016.
  */
 public class TelemetryProcessorsXmlElement {
-    private ArrayList<TelemetryProcessorXmlElement> custom = new ArrayList<TelemetryProcessorXmlElement>();
-    private ArrayList<TelemetryProcessorXmlElement> builtIn = new ArrayList<TelemetryProcessorXmlElement>();
+
+    @XStreamAlias("CustomProcessors")
+    private ArrayList<TelemetryProcessorXmlElement> custom = new ArrayList<>();
+
+    @XStreamAlias("BuiltInProcessors")
+    private ArrayList<TelemetryProcessorXmlElement> builtIn = new ArrayList<>();
 
     public ArrayList<TelemetryProcessorXmlElement> getBuiltInTelemetryProcessors() {
         return builtIn;
     }
 
-    @XmlElementWrapper(name="BuiltInProcessors")
-    @XmlElement(name="Processor")
     public void setBuiltInTelemetryProcessors(ArrayList<TelemetryProcessorXmlElement> builtIn) {
         this.builtIn = builtIn;
     }
@@ -45,8 +48,6 @@ public class TelemetryProcessorsXmlElement {
         return custom;
     }
 
-    @XmlElementWrapper(name="CustomProcessors")
-    @XmlElement(name="Processor")
     public void setCustomTelemetryProcessors(ArrayList<TelemetryProcessorXmlElement> custom) {
         this.custom = custom;
     }

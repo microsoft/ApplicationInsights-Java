@@ -21,24 +21,29 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 8/8/2016.
  */
 public class PerformanceCounterJvmSectionXmlElement {
-    private ArrayList<JvmXmlElement> jvmXmlElements;
-    private boolean enabled = true;
 
-    private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
+    @XStreamImplicit(itemFieldName = "JvmPC")
+    private ArrayList<JvmXmlElement> jvmXmlElements;
+
+    @XStreamAsAttribute
+    private boolean enabled = true;
 
     public ArrayList<JvmXmlElement> getJvmXmlElements() {
         return jvmXmlElements;
     }
 
-    @XmlElement(name="JvmPC")
     public void setJvmXmlElements(ArrayList<JvmXmlElement> jvmXmlElements) {
         this.jvmXmlElements = jvmXmlElements;
     }
@@ -47,7 +52,6 @@ public class PerformanceCounterJvmSectionXmlElement {
         return enabled;
     }
 
-    @XmlAttribute
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

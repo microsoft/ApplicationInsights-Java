@@ -21,16 +21,15 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import java.io.IOException;
+import java.io.InputStream;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -51,17 +50,23 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
             // when the agent is running and this class is in the bootstrap class loader, we need to load JAXB also
             // from the bootstrap class loader, otherwise when thread context class loader is the restrictive JBoss
             // Modules Class Loader, it will throw ClassNotFoundException: com.sun.xml.internal.bind.v2.ContextFactory
-            currentThread.setContextClassLoader(JaxbAppInsightsConfigurationBuilder.class.getClassLoader());
-            JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            XMLStreamReader resourceFileReader = getXmlStreamReader(resourceFile);
-            
-            if (resourceFileReader == null) {
-                return null;
+            ClassLoader loader = JaxbAppInsightsConfigurationBuilder.class.getClassLoader();
+            if (loader == null) {
+                loader = ClassLoader.getSystemClassLoader();
             }
+            currentThread.setContextClassLoader(loader);
+            XStream xstream = new XStream(new PureJavaReflectionProvider(), new StaxDriver());
+
+            xstream.ignoreUnknownElements(); // backwards compatible with jaxb behavior
+
+            XStream.setupDefaultSecurity(xstream);
+            xstream.allowTypesByWildcard(new String[] {
+                    "com.microsoft.applicationinsights.internal.config.*"
+            });
+            xstream.processAnnotations(ApplicationInsightsXmlConfiguration.class);
 
             ApplicationInsightsXmlConfiguration applicationInsights =
-                    (ApplicationInsightsXmlConfiguration) unmarshaller.unmarshal(resourceFileReader);
+                    (ApplicationInsightsXmlConfiguration) xstream.fromXML(resourceFile);
 
             return applicationInsights;
         } catch (Exception e) {

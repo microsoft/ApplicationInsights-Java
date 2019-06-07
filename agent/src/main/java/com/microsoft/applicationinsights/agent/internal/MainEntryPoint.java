@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguratio
 import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
+import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.glowroot.xyzzy.engine.config.InstrumentationDescriptor;
 import org.glowroot.xyzzy.engine.impl.InstrumentationServiceImpl.ConfigServiceFactory;
@@ -98,14 +99,19 @@ public class MainEntryPoint {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        ApplicationInsightsXmlLoader.ExtraConfiguration extraConfiguration;
+        ApplicationInsightsXmlConfiguration xmlConfiguration;
         File applicationInsightsXmlFile = new File(agentJarParentFile, "ApplicationInsights.xml");
         if (applicationInsightsXmlFile.exists()) {
-            ApplicationInsightsXmlLoader.Result result = ApplicationInsightsXmlLoader.load(agentJarFile);
-            Global.setTelemetryClient(new TelemetryClient(result.telemetryConfiguration));
-            extraConfiguration = result.extraConfiguration;
+            xmlConfiguration = ApplicationInsightsXmlLoader.load(agentJarFile);
         } else {
+            xmlConfiguration = null;
+        }
+
+        ApplicationInsightsXmlLoader.ExtraConfiguration extraConfiguration;
+        if (xmlConfiguration == null) {
             extraConfiguration = new ApplicationInsightsXmlLoader.ExtraConfiguration(false, false);
+        } else {
+            extraConfiguration = ApplicationInsightsXmlLoader.removeBuiltInModules(xmlConfiguration);
         }
 
         AgentConfiguration agentConfiguration = AIAgentXmlLoader.load(agentJarParentFile);
@@ -140,5 +146,9 @@ public class MainEntryPoint {
                 }, 5, 5, SECONDS);
 
         instrumentation.addTransformer(new SpringApplicationClassFileTransformer());
+
+        if (xmlConfiguration != null) {
+            Global.setTelemetryClient(new TelemetryClient(ApplicationInsightsXmlLoader.load(xmlConfiguration)));
+        }
     }
 }

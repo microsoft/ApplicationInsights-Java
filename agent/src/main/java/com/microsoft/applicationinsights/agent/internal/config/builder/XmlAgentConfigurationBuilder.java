@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.config.builder;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -406,7 +407,7 @@ public class XmlAgentConfigurationBuilder {
 
     private Element getTopTag(File configurationFile) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilder builder = createDocumentBuilder();
-        Document doc = builder.parse(configurationFile);
+        Document doc = builder.parse(new FileInputStream(configurationFile));
         doc.getDocumentElement().normalize();
 
         NodeList topTags = doc.getElementsByTagName(MAIN_TAG);

@@ -116,26 +116,23 @@ public enum TelemetryConfigurationFactory {
      */
     public final void initialize(TelemetryConfiguration configuration) {
         try {
-            ApplicationInsightsXmlConfiguration applicationInsightsConfig = twoPhaseInitializePart1(configuration);
-            if (applicationInsightsConfig != null) {
-                twoPhaseInitializePart2(configuration, applicationInsightsConfig);
-            }
+            ApplicationInsightsXmlConfiguration applicationInsightsConfig = twoPhaseInitializePart1();
+            twoPhaseInitializePart2(configuration, applicationInsightsConfig);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to initialize configuration, exception: %s", ExceptionUtils.getStackTrace(e));
         }
     }
 
-    public ApplicationInsightsXmlConfiguration twoPhaseInitializePart1(TelemetryConfiguration configuration) {
+    public ApplicationInsightsXmlConfiguration twoPhaseInitializePart1() {
+
         InputStream configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
         if (configurationFile == null) {
-            setMinimumConfiguration(null, configuration);
             return null;
         }
 
         ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
         if (applicationInsightsConfig == null) {
             InternalLogger.INSTANCE.error("Failed to read configuration file. Application Insights XML file is null...setting default configuration");
-            setMinimumConfiguration(applicationInsightsConfig, configuration);
             return null;
         }
 
@@ -144,6 +141,12 @@ public enum TelemetryConfigurationFactory {
 
     public void twoPhaseInitializePart2(TelemetryConfiguration configuration,
                       ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+
+        if (applicationInsightsConfig == null) {
+            setMinimumConfiguration(null, configuration);
+            return;
+        }
+
         setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
 
         setInstrumentationKey(applicationInsightsConfig, configuration);

@@ -21,23 +21,31 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by gupele on 3/30/2015.
  */
+@XStreamAlias("Add")
 public class WindowsPerformanceCounterXmlElement {
+
+    @XStreamAsAttribute
     private String displayName;
+
+    @XStreamAsAttribute
     private String categoryName;
+
+    @XStreamAsAttribute
     private String counterName;
+
+    @XStreamAsAttribute
     private String instanceName;
 
     public String getDisplayName() {
         return displayName;
     }
 
-    @XmlAttribute
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
@@ -46,7 +54,6 @@ public class WindowsPerformanceCounterXmlElement {
         return categoryName;
     }
 
-    @XmlAttribute
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
     }
@@ -55,7 +62,6 @@ public class WindowsPerformanceCounterXmlElement {
         return counterName;
     }
 
-    @XmlAttribute
     public void setCounterName(String counterName) {
         this.counterName = counterName;
     }
@@ -64,7 +70,6 @@ public class WindowsPerformanceCounterXmlElement {
         return instanceName;
     }
 
-    @XmlAttribute
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }
