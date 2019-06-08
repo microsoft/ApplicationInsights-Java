@@ -11,6 +11,7 @@ import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -125,6 +126,7 @@ public class SpringbootSmokeTest extends AiSmokeTest{
         assertTrue(rddId.contains(requestOperationId));
     }
 
+    @Ignore // not supported yet
     @Test
     @TargetUri("/asyncDependencyCallWithHttpURLConnection")
     public void testAsyncDependencyCallWithHttpURLConnection() {
