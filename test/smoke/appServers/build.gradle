@@ -57,6 +57,7 @@ subprojects {
 		doLast {
 			def jresFile = file("$resourcesOutputDir/${appServerShortName}.jre.txt")
 			jresFile.getParentFile().mkdirs()
+			jresFile.delete()
 			jresFile.createNewFile()
 			def tokenMap = [:] << additionalReplaceTokenMap
 			jresToUse.each { jreVersion -> 
