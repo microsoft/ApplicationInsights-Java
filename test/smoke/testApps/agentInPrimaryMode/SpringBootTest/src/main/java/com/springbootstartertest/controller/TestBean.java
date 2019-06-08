@@ -72,14 +72,6 @@ public class TestBean {
     public Future<Integer> asyncDependencyCallWithHttpURLConnection() throws IOException {
         URL obj = new URL("https://www.bing.com");
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-        if (connection.getResponseCode() != 200) {
-            throw new IllegalStateException(
-                    "Unexpected response status code: " + connection.getResponseCode());
-        }
-        // this it to test header propagation by instrumentation
-        if (!"Yes".equals(connection.getHeaderField("Xyzzy-Test-Harness"))) {
-            throw new IllegalStateException("Xyzzy-Test-Harness header not recieved");
-        }
         InputStream content = connection.getInputStream();
         ByteStreams.exhaust(content);
         content.close();
