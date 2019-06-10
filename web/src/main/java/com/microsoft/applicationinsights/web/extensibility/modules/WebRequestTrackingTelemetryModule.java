@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
 import java.util.Map;
@@ -56,22 +57,6 @@ public class WebRequestTrackingTelemetryModule
      * By default backward compatibility mode is turned ON.
      */
     private final String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
-
-    /**
-     * The {@link RequestTelemetryContext} instance propogated from
-     * {@link com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler}
-     */
-    private RequestTelemetryContext requestTelemetryContext;
-
-    public void setRequestTelemetryContext(
-        RequestTelemetryContext requestTelemetryContext) {
-        this.requestTelemetryContext = requestTelemetryContext;
-    }
-
-    /** Used for test */
-    RequestTelemetryContext getRequestTelemetryContext() {
-        return this.requestTelemetryContext;
-    }
 
     // endregion Members
 
@@ -123,8 +108,8 @@ public class WebRequestTrackingTelemetryModule
         }
 
         try {
-            //RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-            RequestTelemetry telemetry = this.requestTelemetryContext.getHttpRequestTelemetry();
+            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+            RequestTelemetry telemetry = context.getHttpRequestTelemetry();
 
             // Look for cross-component correlation headers and resolve correlation ID's
             if (isW3CEnabled) {
@@ -154,8 +139,7 @@ public class WebRequestTrackingTelemetryModule
         }
 
         try {
-            //RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-            RequestTelemetry telemetry = this.requestTelemetryContext.getHttpRequestTelemetry();
+            RequestTelemetry telemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
 
             String instrumentationKey = this.telemetryClient.getContext().getInstrumentationKey();
             if (isW3CEnabled) {
