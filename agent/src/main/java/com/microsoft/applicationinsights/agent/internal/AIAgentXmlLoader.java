@@ -34,11 +34,11 @@ import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrument
 import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
 import com.microsoft.applicationinsights.agent.internal.config.MethodInfo;
 import com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder;
-import org.glowroot.xyzzy.engine.config.AdviceConfig;
-import org.glowroot.xyzzy.engine.config.ImmutableAdviceConfig;
-import org.glowroot.xyzzy.engine.config.ImmutableInstrumentationDescriptor;
-import org.glowroot.xyzzy.engine.config.InstrumentationDescriptor;
-import org.glowroot.xyzzy.engine.config.InstrumentationDescriptors;
+import org.glowroot.instrumentation.engine.config.AdviceConfig;
+import org.glowroot.instrumentation.engine.config.ImmutableAdviceConfig;
+import org.glowroot.instrumentation.engine.config.ImmutableInstrumentationDescriptor;
+import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
+import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,8 +176,8 @@ class AIAgentXmlLoader {
                             }
 
                             adviceConfigs.add(builder
-                                    // xyzzy doesn't support threshold, so threshold is embedded into message and
-                                    // then parsed out by the agent to decide whether to report telemetry
+                                    // advice config doesn't support threshold, so threshold is embedded into message
+                                    // and then parsed out by the agent to decide whether to report telemetry
                                     .spanMessageTemplate(
                                             "{{className}}.{{methodName}}#" + classInstrumentationData.getClassType()
                                                     + ":" + methodInfo.getThresholdInMS())

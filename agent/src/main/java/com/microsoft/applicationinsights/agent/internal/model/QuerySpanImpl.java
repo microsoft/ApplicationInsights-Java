@@ -30,12 +30,12 @@ import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.Getter;
-import org.glowroot.xyzzy.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.QuerySpan;
-import org.glowroot.xyzzy.instrumentation.api.Setter;
-import org.glowroot.xyzzy.instrumentation.api.Timer;
+import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import org.glowroot.instrumentation.api.Getter;
+import org.glowroot.instrumentation.api.QueryMessageSupplier;
+import org.glowroot.instrumentation.api.QuerySpan;
+import org.glowroot.instrumentation.api.Setter;
+import org.glowroot.instrumentation.api.Timer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -107,7 +107,7 @@ public class QuerySpanImpl implements QuerySpan {
 
     @Override
     public Timer extend() {
-        // xyzzy timers are not used by ApplicationInsights
+        // timers are not used by ApplicationInsights
         return NopTransactionService.TIMER;
     }
 

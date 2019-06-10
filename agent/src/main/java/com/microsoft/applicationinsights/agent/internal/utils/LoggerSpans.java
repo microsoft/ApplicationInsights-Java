@@ -32,8 +32,8 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
+import org.glowroot.instrumentation.api.MessageSupplier;
+import org.glowroot.instrumentation.api.internal.ReadableMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

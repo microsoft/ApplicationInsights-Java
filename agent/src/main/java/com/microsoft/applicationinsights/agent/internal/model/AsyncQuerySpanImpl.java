@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.AsyncQuerySpan;
-import org.glowroot.xyzzy.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.Timer;
+import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import org.glowroot.instrumentation.api.AsyncQuerySpan;
+import org.glowroot.instrumentation.api.QueryMessageSupplier;
+import org.glowroot.instrumentation.api.Timer;
 
 class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
 
@@ -35,12 +35,12 @@ class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
 
     @Override
     public void stopSyncTimer() {
-        // xyzzy timers are not used by ApplicationInsights
+        // timers are not used by ApplicationInsights
     }
 
     @Override
     public Timer extendSyncTimer() {
-        // xyzzy timers are not used by ApplicationInsights
+        // timers are not used by ApplicationInsights
         return NopTransactionService.TIMER;
     }
 }

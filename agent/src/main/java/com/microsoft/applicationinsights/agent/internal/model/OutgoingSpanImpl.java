@@ -35,13 +35,13 @@ import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorre
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.Getter;
-import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.Setter;
-import org.glowroot.xyzzy.instrumentation.api.Span;
-import org.glowroot.xyzzy.instrumentation.api.Timer;
-import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
+import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import org.glowroot.instrumentation.api.Getter;
+import org.glowroot.instrumentation.api.MessageSupplier;
+import org.glowroot.instrumentation.api.Setter;
+import org.glowroot.instrumentation.api.Span;
+import org.glowroot.instrumentation.api.Timer;
+import org.glowroot.instrumentation.api.internal.ReadableMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +88,7 @@ public class OutgoingSpanImpl implements Span {
 
     @Override
     public Timer extend() {
-        // xyzzy timers are not used by ApplicationInsights
+        // timers are not used by ApplicationInsights
         return NopTransactionService.TIMER;
     }
 
@@ -144,7 +144,7 @@ public class OutgoingSpanImpl implements Span {
         telemetry.setId(outgoingSpanId);
         telemetry.setType("Http (tracked component)");
 
-        // FIXME change xyzzy to not add prefixes, then can use message.getText() directly
+        // FIXME change instrumentation to not add prefixes, then can use message.getText() directly
 
         String method = (String) detail.get("Method");
         Integer result = (Integer) detail.get("Result");

@@ -37,11 +37,11 @@ import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glowroot.xyzzy.engine.config.InstrumentationDescriptor;
-import org.glowroot.xyzzy.engine.impl.InstrumentationServiceImpl.ConfigServiceFactory;
-import org.glowroot.xyzzy.engine.impl.SimpleConfigServiceFactory;
-import org.glowroot.xyzzy.engine.init.EngineModule;
-import org.glowroot.xyzzy.engine.init.MainEntryPointUtil;
+import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
+import org.glowroot.instrumentation.engine.impl.InstrumentationServiceImpl.ConfigServiceFactory;
+import org.glowroot.instrumentation.engine.impl.SimpleConfigServiceFactory;
+import org.glowroot.instrumentation.engine.init.EngineModule;
+import org.glowroot.instrumentation.engine.init.MainEntryPointUtil;
 import org.slf4j.Logger;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -147,7 +147,7 @@ public class MainEntryPoint {
         Executors.newSingleThreadScheduledExecutor(threadFactory)
                 .scheduleWithFixedDelay(new Runnable() {
                     @Override public void run() {
-                        engineModule.getPreloadSomeSuperTypesCache().writeToFileAsync();
+                        engineModule.getPreloadSomeSuperTypesCache().writeToFileAsync("AI-Writing-Preload-Cache");
                     }
                 }, 5, 5, SECONDS);
 

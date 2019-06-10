@@ -43,15 +43,15 @@ import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorre
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
-import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.Getter;
-import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.Setter;
-import org.glowroot.xyzzy.instrumentation.api.Span;
-import org.glowroot.xyzzy.instrumentation.api.ThreadContext.ServletRequestInfo;
-import org.glowroot.xyzzy.instrumentation.api.Timer;
-import org.glowroot.xyzzy.instrumentation.api.internal.ReadableMessage;
+import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
+import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import org.glowroot.instrumentation.api.Getter;
+import org.glowroot.instrumentation.api.MessageSupplier;
+import org.glowroot.instrumentation.api.Setter;
+import org.glowroot.instrumentation.api.Span;
+import org.glowroot.instrumentation.api.ThreadContext.ServletRequestInfo;
+import org.glowroot.instrumentation.api.Timer;
+import org.glowroot.instrumentation.api.internal.ReadableMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +103,7 @@ public class IncomingSpanImpl implements Span {
                 cloud.setRole(contextPath.substring(1));
             }
         }
-        // TODO this won't be needed once xyzzy servlet instrumentation passes in METHOD as part of transactionName
+        // TODO this won't be needed once servlet instrumentation passes in METHOD as part of transactionName
         requestTelemetry.setName(servletRequestInfo.getMethod() + " " + servletRequestInfo.getUri());
     }
 

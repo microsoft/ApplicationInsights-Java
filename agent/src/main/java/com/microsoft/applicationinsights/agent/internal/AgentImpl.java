@@ -37,12 +37,12 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.RequestHeaderGetter;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
-import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
-import org.glowroot.xyzzy.engine.spi.AgentSPI;
-import org.glowroot.xyzzy.instrumentation.api.Getter;
-import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.Span;
-import org.glowroot.xyzzy.instrumentation.api.TimerName;
+import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
+import org.glowroot.instrumentation.engine.spi.AgentSPI;
+import org.glowroot.instrumentation.api.Getter;
+import org.glowroot.instrumentation.api.MessageSupplier;
+import org.glowroot.instrumentation.api.Span;
+import org.glowroot.instrumentation.api.TimerName;
 
 class AgentImpl implements AgentSPI {
 

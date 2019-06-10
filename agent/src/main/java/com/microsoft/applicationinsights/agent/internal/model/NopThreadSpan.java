@@ -22,12 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
-import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.Getter;
-import org.glowroot.xyzzy.instrumentation.api.Setter;
-import org.glowroot.xyzzy.instrumentation.api.Span;
-import org.glowroot.xyzzy.instrumentation.api.Timer;
+import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
+import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import org.glowroot.instrumentation.api.Getter;
+import org.glowroot.instrumentation.api.Setter;
+import org.glowroot.instrumentation.api.Span;
+import org.glowroot.instrumentation.api.Timer;
 
 public class NopThreadSpan implements Span {
 

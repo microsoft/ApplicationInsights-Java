@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextThreadLocal;
+import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 
 // global state used instead of passing these to various classes (e.g. ThreadContextImpl, SpanImpl) in order
 // to reduce memory footprint

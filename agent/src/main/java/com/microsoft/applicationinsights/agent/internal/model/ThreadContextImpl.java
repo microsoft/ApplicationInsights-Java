@@ -29,19 +29,19 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glowroot.xyzzy.engine.bytecode.api.ThreadContextPlus;
-import org.glowroot.xyzzy.engine.impl.NopTransactionService;
-import org.glowroot.xyzzy.instrumentation.api.AsyncQuerySpan;
-import org.glowroot.xyzzy.instrumentation.api.AsyncSpan;
-import org.glowroot.xyzzy.instrumentation.api.AuxThreadContext;
-import org.glowroot.xyzzy.instrumentation.api.Getter;
-import org.glowroot.xyzzy.instrumentation.api.MessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.xyzzy.instrumentation.api.QuerySpan;
-import org.glowroot.xyzzy.instrumentation.api.Setter;
-import org.glowroot.xyzzy.instrumentation.api.Span;
-import org.glowroot.xyzzy.instrumentation.api.Timer;
-import org.glowroot.xyzzy.instrumentation.api.TimerName;
+import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextPlus;
+import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import org.glowroot.instrumentation.api.AsyncQuerySpan;
+import org.glowroot.instrumentation.api.AsyncSpan;
+import org.glowroot.instrumentation.api.AuxThreadContext;
+import org.glowroot.instrumentation.api.Getter;
+import org.glowroot.instrumentation.api.MessageSupplier;
+import org.glowroot.instrumentation.api.QueryMessageSupplier;
+import org.glowroot.instrumentation.api.QuerySpan;
+import org.glowroot.instrumentation.api.Setter;
+import org.glowroot.instrumentation.api.Span;
+import org.glowroot.instrumentation.api.Timer;
+import org.glowroot.instrumentation.api.TimerName;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -124,7 +124,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     @Override
     public Timer startTimer(TimerName timerName) {
-        // xyzzy timers are not used by ApplicationInsights
+        // timers are not used by ApplicationInsights
         return NopTransactionService.TIMER;
     }
 
@@ -147,13 +147,13 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     @Override
     public void setTransactionType(@Nullable String transactionType, int priority) {
-        // the core xyzzy instrumentation only use this method to set transaction type to
-        // "Synthetic" (when the "Xyzzy-Transaction-Type" header is set to "Synthetic")
+        // the core instrumentation only use this method to set transaction type to "Synthetic"
+        // (when the "X-Glowroot-Transaction-Type" header is set to "Synthetic")
     }
 
     @Override
     public void setTransactionName(@Nullable String transactionName, int priority) {
-        // currently ignoring priority, which is ok since just using core xyzzy instrumentation
+        // currently ignoring priority, which is ok since just using core instrumentation
         if (transactionName != null) {
             incomingSpan.setTransactionName(transactionName);
         }
@@ -165,13 +165,12 @@ public class ThreadContextImpl implements ThreadContextPlus {
 
     @Override
     public void addTransactionAttribute(String name, @Nullable String value) {
-        // the core xyzzy instrumentation doesn't call this
+        // the core instrumentation doesn't call this
     }
 
     @Override
     public void setTransactionSlowThreshold(long threshold, TimeUnit unit, int priority) {
-        // the core xyzzy instrumentation only calls this to set slow threshold to zero for Startup
-        // spans
+        // the core instrumentation only calls this to set slow threshold to zero for Startup spans
     }
 
     @Override

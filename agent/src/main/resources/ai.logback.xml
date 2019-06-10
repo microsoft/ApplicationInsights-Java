@@ -6,7 +6,7 @@
       <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
-  <logger name="org.glowroot.xyzzy" level="info" />
+  <logger name="org.glowroot.instrumentation" level="info" />
   <logger name="com.microsoft.applicationinsights.agent.shadow" level="warn" />
   <logger name="com.microsoft.applicationinsights.core.dependencies" level="warn" />
   <root level="info">
