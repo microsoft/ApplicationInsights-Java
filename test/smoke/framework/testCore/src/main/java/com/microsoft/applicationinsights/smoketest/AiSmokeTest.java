@@ -255,12 +255,13 @@ public abstract class AiSmokeTest {
 			System.out.println("Configuring test class...");
 			UseAgent ua = description.getAnnotation(UseAgent.class);
 			if (ua != null) {
-				aiAgentConfig = ua.aiAgentConfig();
-				if (!ua.runInSecondaryMode()) {
+				if (ua.runInSecondaryMode()) {
+					aiAgentConfig = ua.aiAgentConfig();
+					System.out.println("AI AGENT CONFIG: " + aiAgentConfig);
+				} else {
 					applicationInsightsConfig = ua.applicationInsightsConfig();
+					System.out.println("APPLICATION INSIGHTS CONFIG: " + applicationInsightsConfig);
 				}
-                System.out.println("AI AGENT CONFIG: "+aiAgentConfig);
-                System.out.println("APPLICATION INSIGHTS CONFIG: "+applicationInsightsConfig);
 			}
 			WithDependencyContainers wdc = description.getAnnotation(WithDependencyContainers.class);
 			if (wdc != null) {
@@ -553,8 +554,7 @@ public abstract class AiSmokeTest {
 		Map<String, String> map = new HashMap<>();
         if (aiAgentConfig != null) {
             map.put("AI_AGENT_CONFIG", aiAgentConfig);
-        }
-        if (applicationInsightsConfig != null) {
+        } else if (applicationInsightsConfig != null) {
 			map.put("APPLICATION_INSIGHTS_CONFIG", applicationInsightsConfig);
 		}
 		for (ContainerInfo info : allContainers) {

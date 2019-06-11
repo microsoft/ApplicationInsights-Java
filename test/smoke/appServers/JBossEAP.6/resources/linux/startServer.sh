@@ -5,15 +5,17 @@ if [ -z "$JBOSS_HOME" ]; then
 	exit 1
 fi
 
-if [ ! -z "$AI_AGENT_CONFIG" ]; then
+if [ ! -z "$APPLICATION_INSIGHTS_CONFIG" ]; then
+
+    echo "APPLICATION_INSIGHTS_CONFIG=$APPLICATION_INSIGHTS_CONFIG"
+    cp -f ./${APPLICATION_INSIGHTS_CONFIG}_ApplicationInsights.xml ./aiagent/ApplicationInsights.xml
+
+    echo "JAVA_OPTS=\"\$JAVA_OPTS -javaagent:/root/docker-stage/aiagent/$AGENT_JAR_NAME\"" >> $JBOSS_HOME/bin/standalone.conf
+
+elif [ ! -z "$AI_AGENT_CONFIG" ]; then
 
     echo "AI_AGENT_CONFIG=$AI_AGENT_CONFIG"
     cp -f ./${AI_AGENT_CONFIG}_AI-Agent.xml ./aiagent/AI-Agent.xml
-
-    if [ ! -z "$APPLICATION_INSIGHTS_CONFIG" ]; then
-        echo "APPLICATION_INSIGHTS_CONFIG=$APPLICATION_INSIGHTS_CONFIG"
-        cp -f ./${APPLICATION_INSIGHTS_CONFIG}_ApplicationInsights.xml ./aiagent/ApplicationInsights.xml
-    fi
 
     echo "JAVA_OPTS=\"\$JAVA_OPTS -javaagent:/root/docker-stage/aiagent/$AGENT_JAR_NAME\"" >> $JBOSS_HOME/bin/standalone.conf
 fi

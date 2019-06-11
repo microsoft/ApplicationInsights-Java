@@ -63,6 +63,9 @@ public class ApplicationInsightsXmlConfiguration {
     @XStreamAlias("QuickPulse")
     private QuickPulseXmlElement quickPulse;
 
+    @XStreamAlias("Agent")
+    private AgentXmlElement agent = new AgentXmlElement();
+
     @XStreamAsAttribute
     private String schemaVersion;
 
@@ -163,5 +166,9 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setPerformance(PerformanceCountersXmlElement performance) {
         this.performance = performance;
+    }
+
+    public AgentXmlElement getAgent() {
+        return agent;
     }
 }

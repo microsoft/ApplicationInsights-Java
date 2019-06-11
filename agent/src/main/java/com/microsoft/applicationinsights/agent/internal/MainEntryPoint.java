@@ -25,16 +25,20 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.jar.JarFile;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
+import com.microsoft.applicationinsights.internal.config.AgentXmlElement;
+import com.microsoft.applicationinsights.internal.config.AgentXmlElement.DistributedTracingXmlElement;
+import com.microsoft.applicationinsights.internal.config.AgentXmlElement.InstrumentationXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.impl.InstrumentationServiceImpl.ConfigServiceFactory;
@@ -105,35 +109,49 @@ public class MainEntryPoint {
         }
 
         ApplicationInsightsXmlConfiguration xmlConfiguration;
+        AgentXmlElement agentXmlElement;
+
         File applicationInsightsXmlFile = new File(agentJarParentFile, "ApplicationInsights.xml");
         if (applicationInsightsXmlFile.exists()) {
-            xmlConfiguration = ApplicationInsightsXmlLoader.load(agentJarFile);
+            xmlConfiguration = ApplicationInsightsXmlLoader.load(applicationInsightsXmlFile);
+            agentXmlElement = xmlConfiguration.getAgent();
         } else {
             xmlConfiguration = null;
+            File aiAgentXmlFile = new File(agentJarParentFile, "AI-Agent.xml");
+            if (aiAgentXmlFile.exists()) {
+                agentXmlElement = AIAgentXmlLoader.load(agentJarParentFile);
+                if (agentXmlElement == null) {
+                    // TODO this has consequences if app is using AI SDK
+                    return;
+                }
+            } else {
+                // TODO this has consequences if app is using AI SDK
+                return;
+            }
         }
 
-        ApplicationInsightsXmlLoader.ExtraConfiguration extraConfiguration;
-        if (xmlConfiguration == null) {
-            extraConfiguration = new ApplicationInsightsXmlLoader.ExtraConfiguration(false, false);
-        } else {
-            extraConfiguration = ApplicationInsightsXmlLoader.removeBuiltInModules(xmlConfiguration);
-        }
+        AgentXmlElement.W3CXmlElement w3cConfiguration = agentXmlElement.getDistributedTracing().getW3c();
+        boolean w3cEnabled = w3cConfiguration.isEnabled();
+        Global.setOutboundW3CEnabled(w3cEnabled);
+        Global.setInboundW3CEnabled(w3cEnabled);
 
-        BuiltInInstrumentation builtInInstrumentation = AIAgentXmlLoader.load(agentJarParentFile);
+        boolean w3cBackCompatEnabled = w3cConfiguration.isBackCompatEnabled();
+        Global.setOutboundW3CBackCompatEnabled(w3cBackCompatEnabled);
+        TraceContextCorrelationCore.setIsInboundW3CBackCompatEnabled(w3cBackCompatEnabled);
 
-        if (!builtInInstrumentation.isEnabled()) {
-            // TODO this has consequences if app is using AI SDK
-            return;
-        }
+        Global.setSecondaryMode(xmlConfiguration == null);
 
-        Global.setOutboundW3CEnabled(builtInInstrumentation.isW3cEnabled());
-        Global.setOutboundW3CBackCompatEnabled(builtInInstrumentation.isW3cBackCompatEnabled());
+        Map<String, InstrumentationXmlElement> instrumentationXmlElements =
+                Configuration.getInstrumentationXmlElements(agentXmlElement);
+
+        InstrumentationXmlElement servletXmlElement = instrumentationXmlElements.get("servlet");
+        Global.setServletInstrumentationEnabled(servletXmlElement == null || servletXmlElement.isEnabled());
 
         List<InstrumentationDescriptor> instrumentationDescriptors =
-                AIAgentXmlLoader.getInstrumentationDescriptors(builtInInstrumentation);
+                Configuration.getInstrumentationDescriptors(instrumentationXmlElements);
 
         ConfigServiceFactory configServiceFactory = new SimpleConfigServiceFactory(instrumentationDescriptors,
-                AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation, extraConfiguration));
+                Configuration.getInstrumentationConfig(agentXmlElement, instrumentationXmlElements));
 
         final EngineModule engineModule = EngineModule
                 .createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),

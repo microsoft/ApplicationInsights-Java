@@ -22,98 +22,63 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.config.XmlAgentConfigurationBuilder;
-import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
-import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
+import com.microsoft.applicationinsights.internal.config.AgentXmlElement;
+import com.microsoft.applicationinsights.internal.config.AgentXmlElement.InstrumentationXmlElement;
+import com.microsoft.applicationinsights.internal.config.AgentXmlElement.W3CXmlElement;
+import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 class AIAgentXmlLoader {
 
-    static BuiltInInstrumentation load(File agentJarParentFile) {
-        return new XmlAgentConfigurationBuilder().parseConfigurationFile(agentJarParentFile.getAbsolutePath());
+    static @Nullable AgentXmlElement load(File agentJarParentFile) {
+        BuiltInInstrumentation builtInInstrumentation =
+                new XmlAgentConfigurationBuilder().parseConfigurationFile(agentJarParentFile.getAbsolutePath());
+        if (!builtInInstrumentation.isEnabled()) {
+            return null;
+        }
+        AgentXmlElement agentXmlElement = new AgentXmlElement();
+        List<InstrumentationXmlElement> instrumentationXmlElement = agentXmlElement.getInstrumentation();
+        if (builtInInstrumentation.isHttpEnabled()) {
+            W3CXmlElement w3cConfiguration = new W3CXmlElement();
+            w3cConfiguration.setEnabled(builtInInstrumentation.isW3cEnabled());
+            w3cConfiguration.setBackCompatEnabled(builtInInstrumentation.isW3cBackCompatEnabled());
+        } else {
+            instrumentationXmlElement.add(newInstrumentationXmlElement("apache-http-client", false));
+            instrumentationXmlElement.add(newInstrumentationXmlElement("okhttp", false));
+        }
+        if (builtInInstrumentation.isJdbcEnabled()) {
+            InstrumentationXmlElement jdbcConfiguration = newInstrumentationXmlElement("jdbc", true);
+            jdbcConfiguration.getParams().add(newParam("explainPlanThresholdInMS",
+                    Long.toString(builtInInstrumentation.getQueryPlanThresholdInMS())));
+            instrumentationXmlElement.add(jdbcConfiguration);
+        } else {
+            instrumentationXmlElement.add(newInstrumentationXmlElement("jdbc", false));
+        }
+        if (!builtInInstrumentation.isLoggingEnabled()) {
+            instrumentationXmlElement.add(newInstrumentationXmlElement("log4j", false));
+            instrumentationXmlElement.add(newInstrumentationXmlElement("logback", false));
+        }
+        if (!builtInInstrumentation.isJedisEnabled()) {
+            instrumentationXmlElement.add(newInstrumentationXmlElement("redis", false));
+        }
+        return agentXmlElement;
     }
 
-    static List<InstrumentationDescriptor> getInstrumentationDescriptors(
-            BuiltInInstrumentation builtInInstrumentation) throws IOException {
-
-        boolean httpEnabled = builtInInstrumentation.isHttpEnabled();
-        boolean jdbcEnabled = builtInInstrumentation.isJdbcEnabled();
-        boolean loggingEnabled = builtInInstrumentation.isLoggingEnabled();
-        boolean redisEnabled = builtInInstrumentation.isJedisEnabled();
-
-        List<InstrumentationDescriptor> instrumentationDescriptors = new ArrayList<>();
-        for (InstrumentationDescriptor instrumentationDescriptor : InstrumentationDescriptors.read()) {
-            switch (instrumentationDescriptor.name()) {
-                case "apache-http-client":
-                case "http-url-connection":
-                case "okhttp":
-                    if (httpEnabled) {
-                        instrumentationDescriptors.add(instrumentationDescriptor);
-                    }
-                    break;
-                case "jdbc":
-                    if (jdbcEnabled) {
-                        instrumentationDescriptors.add(instrumentationDescriptor);
-                    }
-                    break;
-                case "log4j":
-                case "logback":
-                    if (loggingEnabled) {
-                        instrumentationDescriptors.add(instrumentationDescriptor);
-                    }
-                    break;
-                case "redis":
-                    if (redisEnabled) {
-                        instrumentationDescriptors.add(instrumentationDescriptor);
-                    }
-                    break;
-                default:
-                    instrumentationDescriptors.add(instrumentationDescriptor);
-                    break;
-            }
-        }
-        return instrumentationDescriptors;
+    private static InstrumentationXmlElement newInstrumentationXmlElement(String name, boolean enabled) {
+        InstrumentationXmlElement instrumentationXmlElement = new InstrumentationXmlElement();
+        instrumentationXmlElement.setName(name);
+        instrumentationXmlElement.setEnabled(enabled);
+        return instrumentationXmlElement;
     }
 
-    static Map<String, Map<String, Object>> getInstrumentationConfig(BuiltInInstrumentation builtInConfiguration,
-                                                                     ApplicationInsightsXmlLoader.ExtraConfiguration extraConfiguration) {
-
-        Map<String, Map<String, Object>> instrumentationConfiguration = new HashMap<>();
-
-        Map<String, Object> servletConfiguration = new HashMap<>();
-        servletConfiguration.put("captureRequestServerHostname", true);
-        servletConfiguration.put("captureRequestServerPort", true);
-        servletConfiguration.put("captureRequestScheme", true);
-        List<String> cookieNames = new ArrayList<>();
-        if (extraConfiguration.userTracking) {
-            cookieNames.add("ai_user");
-        } else if (extraConfiguration.sessionTracking) {
-            cookieNames.add("ai_session");
-        }
-        if (!cookieNames.isEmpty()) {
-            servletConfiguration.put("captureRequestCookies", cookieNames);
-        }
-
-        Map<String, Object> jdbcConfiguration = new HashMap<>();
-        jdbcConfiguration.put("captureBindParametersIncludes", Collections.emptyList());
-        jdbcConfiguration.put("captureResultSetNavigate", false);
-        jdbcConfiguration.put("captureGetConnection", false);
-        jdbcConfiguration.put("explainPlanThresholdMillis", builtInConfiguration.getQueryPlanThresholdInMS());
-
-        Map<String, Object> springConfiguration = new HashMap<>();
-        springConfiguration.put("useAltTransactionNaming", true);
-
-        instrumentationConfiguration.put("servlet", servletConfiguration);
-        instrumentationConfiguration.put("jdbc", jdbcConfiguration);
-        instrumentationConfiguration.put("spring", springConfiguration);
-
-        return instrumentationConfiguration;
+    private static ParamXmlElement newParam(String name, String value) {
+        ParamXmlElement param = new ParamXmlElement();
+        param.setName(name);
+        param.setValue(value);
+        return param;
     }
 }

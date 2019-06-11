@@ -290,4 +290,17 @@
 		<!-- The total size of all logfiles to retain. This is distributed evenly amongst the number of files. Once this size is exceeded, the oldest file is deleted. -->
 		<NumberOfTotalSizeInMB>5</NumberOfTotalSizeInMB>
 	</SDKLogger>
+
+	<Agent>
+		<Instrumentation name="log4j" enabled="false" />
+		<Instrumentation name="logback" enabled="false" />
+		<Instrumentation name="jdbc">
+			<Param name="explainPlanThresholdInMS" value="10000" />
+		</Instrumentation>
+		<DistributedTracing>
+			<W3C enabled="true" backCompatEnabled="true" />
+		</DistributedTracing>
+		<UserTracking enabled="true" /> <!-- default enabled="false" -->
+		<SessionTracking enabled="true" /> <!-- default enabled="false" -->
+	</Agent>
 </ApplicationInsights>

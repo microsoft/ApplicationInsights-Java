@@ -46,20 +46,24 @@ class XmlParserUtils {
     }
 
     public static boolean getEnabled(Element element, String attributeName) {
+        return getEnabled(element, attributeName, true);
+    }
+
+    public static boolean getEnabled(Element element, String attributeName, boolean defaultValue) {
         if (element == null) {
-            return true;
+            return defaultValue;
         }
         try {
             String strValue = element.getAttribute(ENABLED_ATTRIBUTE);
             if (!Strings.isNullOrEmpty(strValue)) {
                 return Boolean.valueOf(strValue);
             }
-            return true;
+            return defaultValue;
         } catch (Exception e) {
             logger.error("Failed to parse attribute '{}' of '{}', default value ({}) will be used.", ENABLED_ATTRIBUTE,
-                    attributeName, true);
+                    attributeName, defaultValue);
         }
-        return true;
+        return defaultValue;
     }
 
     /**

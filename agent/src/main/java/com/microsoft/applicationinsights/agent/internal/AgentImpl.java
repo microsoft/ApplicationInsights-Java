@@ -76,17 +76,22 @@ class AgentImpl implements AgentSPI {
         String userAgent = getter.get(carrier, "User-Agent");
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
 
-        // TODO eliminate wrapper object instantiation
-        RequestHeaderGetterImpl<C> requestHeaderGetter = new RequestHeaderGetterImpl<>(getter);
-        String instrumentationKey = telemetryClient.getContext().getInstrumentationKey();
-        if (Global.isOutboundW3CEnabled()) {
-            TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
-            TraceContextCorrelationCore
-                    .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
-        } else {
-            TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
-            TelemetryCorrelationUtilsCore
-                    .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
+        // in secondary mode, this is deferred to WebRequestTrackingTelemetryModule
+        if (!Global.isSecondaryMode()) {
+            // TODO eliminate wrapper object instantiation
+            RequestHeaderGetterImpl<C> requestHeaderGetter = new RequestHeaderGetterImpl<>(getter);
+            String instrumentationKey = telemetryClient.getContext().getInstrumentationKey();
+            if (Global.isOutboundW3CEnabled()) {
+                TraceContextCorrelationCore
+                        .resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
+                TraceContextCorrelationCore
+                        .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
+            } else {
+                TelemetryCorrelationUtilsCore
+                        .resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
+                TelemetryCorrelationUtilsCore
+                        .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);
+            }
         }
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(messageSupplier, threadContextHolder, startTimeMillis,

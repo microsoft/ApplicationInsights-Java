@@ -24,9 +24,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface UseAgent {
-    /**
-     * Sets the agent mode, i.e. chooses the config file to use.
-     */
+
     String aiAgentConfig() default "default";
 
     String applicationInsightsConfig() default "default";

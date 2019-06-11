@@ -39,7 +39,13 @@ public class Global {
     private static boolean outboundW3CEnabled;
     private static boolean outboundW3CBackCompatEnabled;
 
+    // note: inboundW3CBackCompatEnabled is stored in TraceContextCorrelationCore
     private static boolean inboundW3CEnabled;
+
+    private static boolean secondaryMode;
+
+    // this is used by WebRequestTrackingFilter to know if it should defer to servlet instrumentation or not
+    private static boolean servletInstrumentationEnabled;
 
     private static volatile @Nullable TelemetryClient telemetryClient;
 
@@ -82,6 +88,24 @@ public class Global {
 
     public static void setInboundW3CEnabled(boolean inboundW3CEnabled) {
         Global.inboundW3CEnabled = inboundW3CEnabled;
+    }
+
+    public static boolean isSecondaryMode() {
+        return secondaryMode;
+    }
+
+    public static void setSecondaryMode(boolean secondaryMode) {
+        Global.secondaryMode = secondaryMode;
+    }
+
+    // this method is called via reflection from WebRequestTrackingFilter to know if it should defer to servlet
+    // instrumentation or not
+    public static boolean isServletInstrumentationEnabled() {
+        return servletInstrumentationEnabled;
+    }
+
+    public static void setServletInstrumentationEnabled(boolean servletInstrumentationEnabled) {
+        Global.servletInstrumentationEnabled = servletInstrumentationEnabled;
     }
 
     public static @Nullable TelemetryClient getTelemetryClient() {

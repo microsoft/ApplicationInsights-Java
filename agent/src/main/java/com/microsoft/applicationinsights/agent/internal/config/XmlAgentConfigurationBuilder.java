@@ -130,9 +130,11 @@ public class XmlAgentConfigurationBuilder {
         nodes = builtInElement.getElementsByTagName(JDBC_TAG);
         builtInConfigurationBuilder.setJdbcEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JDBC_TAG));
 
+        // by default logging instrumentation is not enabled in secondary mode, so that it will not conflict with
+        // logging appenders
         nodes = builtInElement.getElementsByTagName(LOGGING_TAG);
         builtInConfigurationBuilder
-                .setLoggingEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), LOGGING_TAG));
+                .setLoggingEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), LOGGING_TAG, false));
 
         nodes = builtInElement.getElementsByTagName(JEDIS_TAG);
         Element element = XmlParserUtils.getFirst(nodes);

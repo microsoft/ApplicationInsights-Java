@@ -39,6 +39,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.LinkedList;
@@ -84,9 +85,9 @@ public final class WebRequestTrackingFilter implements Filter {
 
 
     /**
-     * Used to indicate if agent is running.
+     * Used to indicate if agent is capture servlet requests.
      */
-    private boolean agentRunning;
+    private boolean agentCapturingServletRequests;
 
     // endregion Members
 
@@ -121,7 +122,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
         httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
 
-        if (agentRunning) {
+        if (agentCapturingServletRequests) {
             handler.handleStartUnderAgent(httpRequest, httpResponse);
             chain.doFilter(httpRequest, httpResponse);
         } else {
@@ -156,7 +157,7 @@ public final class WebRequestTrackingFilter implements Filter {
         try {
             long start = System.currentTimeMillis();
             appName = extractAppName(config.getServletContext());
-            agentRunning = isAgentRunning();
+            agentCapturingServletRequests = isAgentCapturingServletRequests();
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
@@ -204,11 +205,18 @@ public final class WebRequestTrackingFilter implements Filter {
 
     // region Private
 
-    private boolean isAgentRunning() {
+    private boolean isAgentCapturingServletRequests() {
+        Class<?> clazz;
         try {
-            Class.forName("com.microsoft.applicationinsights.agent.internal.utils.Global");
-            return true;
+            clazz = Class.forName("com.microsoft.applicationinsights.agent.internal.utils.Global");
         } catch (ClassNotFoundException e) {
+            return false;
+        }
+        try {
+            Method method = clazz.getMethod("isServletInstrumentationEnabled");
+            return (Boolean) method.invoke(null);
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.info(ExceptionUtils.getStackTrace(e));
             return false;
         }
     }

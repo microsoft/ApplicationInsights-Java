@@ -162,14 +162,17 @@ public class IncomingSpanImpl implements Span {
     @Override
     @Deprecated
     public <R> void propagateToResponse(R response, Setter<R> setter) {
-        if (Global.isInboundW3CEnabled()) {
-            // TODO eliminate wrapper object instantiation
-            TraceContextCorrelationCore.resolveCorrelationForResponse(response,
-                    new ResponseHeaderSetterImpl<>(setter));
-        } else {
-            // TODO eliminate wrapper object instantiation
-            TelemetryCorrelationUtilsCore.resolveCorrelationForResponse(response,
-                    new ResponseHeaderSetterImpl<>(setter));
+        // in secondary mode, this is deferred to WebRequestTrackingTelemetryModule
+        if (!Global.isSecondaryMode()) {
+            if (Global.isInboundW3CEnabled()) {
+                // TODO eliminate wrapper object instantiation
+                TraceContextCorrelationCore.resolveCorrelationForResponse(response,
+                        new ResponseHeaderSetterImpl<>(setter));
+            } else {
+                // TODO eliminate wrapper object instantiation
+                TelemetryCorrelationUtilsCore.resolveCorrelationForResponse(response,
+                        new ResponseHeaderSetterImpl<>(setter));
+            }
         }
     }
 
