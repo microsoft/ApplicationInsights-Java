@@ -30,7 +30,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.jar.JarFile;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.utils.Global;
 import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
@@ -120,9 +119,7 @@ public class MainEntryPoint {
             extraConfiguration = ApplicationInsightsXmlLoader.removeBuiltInModules(xmlConfiguration);
         }
 
-        AgentConfiguration agentConfiguration = AIAgentXmlLoader.load(agentJarParentFile);
-
-        BuiltInInstrumentation builtInInstrumentation = agentConfiguration.getBuiltInInstrumentation();
+        BuiltInInstrumentation builtInInstrumentation = AIAgentXmlLoader.load(agentJarParentFile);
 
         if (!builtInInstrumentation.isEnabled()) {
             // TODO this has consequences if app is using AI SDK
@@ -133,7 +130,7 @@ public class MainEntryPoint {
         Global.isOutboundW3CBackportEnabled = builtInInstrumentation.isW3CBackportEnabled();
 
         List<InstrumentationDescriptor> instrumentationDescriptors =
-                AIAgentXmlLoader.getInstrumentationDescriptors(agentConfiguration);
+                AIAgentXmlLoader.getInstrumentationDescriptors(builtInInstrumentation);
 
         ConfigServiceFactory configServiceFactory = new SimpleConfigServiceFactory(instrumentationDescriptors,
                 AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation, extraConfiguration));

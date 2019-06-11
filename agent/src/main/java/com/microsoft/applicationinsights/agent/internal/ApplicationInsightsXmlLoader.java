@@ -43,7 +43,6 @@ class ApplicationInsightsXmlLoader {
     static ApplicationInsightsXmlConfiguration load(File agentJarFile) {
         String configDirPropName = ConfigurationFileLocator.CONFIG_DIR_PROPERTY;
         String propValue = System.getProperty(configDirPropName);
-        ApplicationInsightsXmlConfiguration xmlConfiguration;
         try {
             System.setProperty(configDirPropName, agentJarFile.getParent());
             return TelemetryConfigurationFactory.INSTANCE.twoPhaseInitializePart1();

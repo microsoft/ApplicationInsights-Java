@@ -19,13 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.config.builder;
+package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BuiltInInstrumentationBuilder {
+class BuiltInInstrumentationBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(BuiltInInstrumentationBuilder.class);
 

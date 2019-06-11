@@ -29,35 +29,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
-import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
-import com.microsoft.applicationinsights.agent.internal.config.MethodInfo;
-import com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder;
-import org.glowroot.instrumentation.engine.config.AdviceConfig;
-import org.glowroot.instrumentation.engine.config.ImmutableAdviceConfig;
-import org.glowroot.instrumentation.engine.config.ImmutableInstrumentationDescriptor;
+import com.microsoft.applicationinsights.agent.internal.config.XmlAgentConfigurationBuilder;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class AIAgentXmlLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(AIAgentXmlLoader.class);
-
-    static AgentConfiguration load(File agentJarParentFile) {
+    static BuiltInInstrumentation load(File agentJarParentFile) {
         return new XmlAgentConfigurationBuilder().parseConfigurationFile(agentJarParentFile.getAbsolutePath());
     }
 
-    static List<InstrumentationDescriptor> getInstrumentationDescriptors(AgentConfiguration agentConfiguration)
-            throws IOException {
+    static List<InstrumentationDescriptor> getInstrumentationDescriptors(
+            BuiltInInstrumentation builtInInstrumentation) throws IOException {
 
-        BuiltInInstrumentation builtInConfiguration = agentConfiguration.getBuiltInInstrumentation();
-        boolean httpEnabled = builtInConfiguration.isHttpEnabled();
-        boolean jdbcEnabled = builtInConfiguration.isJdbcEnabled();
-        boolean loggingEnabled = builtInConfiguration.isLoggingEnabled();
-        boolean redisEnabled = builtInConfiguration.isRedisEnabled();
+        boolean httpEnabled = builtInInstrumentation.isHttpEnabled();
+        boolean jdbcEnabled = builtInInstrumentation.isJdbcEnabled();
+        boolean loggingEnabled = builtInInstrumentation.isLoggingEnabled();
+        boolean redisEnabled = builtInInstrumentation.isRedisEnabled();
 
         List<InstrumentationDescriptor> instrumentationDescriptors = new ArrayList<>();
         for (InstrumentationDescriptor instrumentationDescriptor : InstrumentationDescriptors.read()) {
@@ -89,12 +78,6 @@ class AIAgentXmlLoader {
                     instrumentationDescriptors.add(instrumentationDescriptor);
                     break;
             }
-        }
-
-        InstrumentationDescriptor instrumentationDescriptor = buildCustomInstrumentation(agentConfiguration);
-        if (instrumentationDescriptor != null) {
-            // need to test before enabling this
-            // instrumentationDescriptors.add(instrumentationDescriptor);
         }
         return instrumentationDescriptors;
     }
@@ -132,73 +115,5 @@ class AIAgentXmlLoader {
         instrumentationConfiguration.put("spring", springConfiguration);
 
         return instrumentationConfiguration;
-    }
-
-
-    private static InstrumentationDescriptor buildCustomInstrumentation(AgentConfiguration agentConfiguration) {
-
-        List<AdviceConfig> adviceConfigs = new ArrayList<>();
-
-        for (Map.Entry<String, ClassInstrumentationData> entry : agentConfiguration.getClassesToInstrument()
-                .entrySet()) {
-
-            String className = entry.getKey().replace('/', '.');
-            ClassInstrumentationData classInstrumentationData = entry.getValue();
-
-            MethodInfo allClassMethods = classInstrumentationData.getAllClassMethods();
-
-            if (allClassMethods == null) {
-
-                for (Map.Entry<String, Map<String, MethodInfo>> entry2 :
-                        classInstrumentationData.getMethodInfos().entrySet()) {
-
-                    String methodName = entry2.getKey();
-                    Map<String, MethodInfo> value = entry2.getValue();
-
-                    for (Map.Entry<String, MethodInfo> entry3 : value.entrySet()) {
-
-                        MethodInfo methodInfo = entry3.getValue();
-
-                        if (methodInfo.isReportCaughtExceptions()) {
-                            logger.warn("reportCaughtExceptions attribute is no longer supported");
-                        }
-                        if (methodInfo.isReportExecutionTime()) {
-
-                            ImmutableAdviceConfig.Builder builder = ImmutableAdviceConfig.builder()
-                                    .className(className)
-                                    .methodName(methodName);
-
-                            String signature = entry3.getKey();
-
-                            if (!signature.equals(ClassInstrumentationData.ANY_SIGNATURE_MARKER)) {
-                                // TODO parse signature and call addAllMethodParameterTypes() and methodReturnType()
-                                logger.warn("signature attribute is not currently supported");
-                            }
-
-                            adviceConfigs.add(builder
-                                    // advice config doesn't support threshold, so threshold is embedded into message
-                                    // and then parsed out by the agent to decide whether to report telemetry
-                                    .spanMessageTemplate(
-                                            "{{className}}.{{methodName}}#" + classInstrumentationData.getClassType()
-                                                    + ":" + methodInfo.getThresholdInMS())
-                                    .build());
-                        }
-                    }
-                }
-            } else {
-                adviceConfigs.add(ImmutableAdviceConfig.builder()
-                        .className(className)
-                        .methodName("*")
-                        .build());
-            }
-        }
-
-        if (adviceConfigs.isEmpty()) {
-            return null;
-        } else {
-            return ImmutableInstrumentationDescriptor.builder()
-                    .addAllAdviceConfigs(adviceConfigs)
-                    .build();
-        }
     }
 }

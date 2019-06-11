@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.config.builder;
+package com.microsoft.applicationinsights.agent.internal.config;
 
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
@@ -77,23 +77,6 @@ class XmlParserUtils {
             return defaultValue;
         } catch (Exception e) {
             logger.error("cannot parse the correlation format, will default to AI proprietary correlation", e);
-        }
-        return defaultValue;
-    }
-
-    public static long getLongAttribute(Element element, String elementName, String attributeName, long defaultValue) {
-        if (element == null) {
-            return defaultValue;
-        }
-        try {
-            String strValue = element.getAttribute(attributeName);
-            if (!Strings.isNullOrEmpty(strValue)) {
-                return Long.valueOf(strValue);
-            }
-            return defaultValue;
-        } catch (Exception e) {
-            logger.error("Failed to parse attribute '{}' of '{}', default value ({}) will be used.", attributeName,
-                    elementName, defaultValue);
         }
         return defaultValue;
     }
