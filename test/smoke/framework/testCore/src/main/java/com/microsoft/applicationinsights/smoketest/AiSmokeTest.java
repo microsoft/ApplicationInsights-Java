@@ -166,6 +166,7 @@ public abstract class AiSmokeTest {
 	 */
 	@Rule
 	public TestWatcher theWatchman = new TestWatcher() {
+
 		@Override
 		protected void starting(Description description) {
 			System.out.println("Configuring test...");
@@ -500,10 +501,6 @@ public abstract class AiSmokeTest {
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
-		final int appServerDelayAfterStart_seconds = 5;
-		System.out.printf("Waiting %d seconds for app server to startup...%n", appServerDelayAfterStart_seconds);
-		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
-
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
@@ -563,7 +560,7 @@ public abstract class AiSmokeTest {
 	//endregion
 
 	@After
-	public void resetMockedIngestion() throws Exception {
+	public void resetMockedIngestion() {
 		mockedIngestion.resetData();
 		System.out.println("Mocked ingestion reset.");
 	}
@@ -643,7 +640,7 @@ public abstract class AiSmokeTest {
 			}
 
 			try {
-				TimeUnit.SECONDS.sleep(1);
+				TimeUnit.MILLISECONDS.sleep(250);
 				rval = HttpHelper.get(url);
 			}
 			catch (InterruptedException ie) {
