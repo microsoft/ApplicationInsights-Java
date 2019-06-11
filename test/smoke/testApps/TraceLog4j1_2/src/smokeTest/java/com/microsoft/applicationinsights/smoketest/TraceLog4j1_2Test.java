@@ -12,6 +12,7 @@ import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import org.junit.Assume;
 import org.junit.Test;
 
+@RequestCapturing(enabled = false)
 public class TraceLog4j1_2Test extends AiSmokeTest {
 
     @Test
