@@ -245,7 +245,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
             String outgoingSpanId = TraceContextCorrelationCore.createChildIdFromTraceparentString(traceparent);
             String tracestate = TraceContextCorrelationCore.retriveTracestate();
             setter.put(carrier, "traceparent", traceparent);
-            if (Global.isOutboundW3CBackportEnabled) {
+            if (Global.isOutboundW3CBackCompatEnabled) {
                 setter.put(carrier, "Request-Id", outgoingSpanId);
             }
             if (tracestate != null) {

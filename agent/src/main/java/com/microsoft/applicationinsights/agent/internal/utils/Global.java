@@ -37,7 +37,7 @@ import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal
 public class Global {
 
     public static boolean isOutboundW3CEnabled;
-    public static boolean isOutboundW3CBackportEnabled;
+    public static boolean isOutboundW3CBackCompatEnabled;
 
     public static boolean isInboundW3CEnabled;
 
