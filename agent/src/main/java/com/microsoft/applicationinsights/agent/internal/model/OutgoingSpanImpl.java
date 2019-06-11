@@ -161,7 +161,7 @@ public class OutgoingSpanImpl implements Span {
                 String target;
                 if (requestContext == null) {
                     target = uriObject.getHost();
-                } else if (Global.isOutboundW3CEnabled) {
+                } else if (Global.isOutboundW3CEnabled()) {
                     target = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
                 } else {
                     target = TelemetryCorrelationUtilsCore.generateChildDependencyTarget(requestContext);

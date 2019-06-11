@@ -36,10 +36,10 @@ import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal
 // to reduce memory footprint
 public class Global {
 
-    public static boolean isOutboundW3CEnabled;
-    public static boolean isOutboundW3CBackCompatEnabled;
+    private static boolean outboundW3CEnabled;
+    private static boolean outboundW3CBackCompatEnabled;
 
-    public static boolean isInboundW3CEnabled;
+    private static boolean inboundW3CEnabled;
 
     private static volatile @Nullable TelemetryClient telemetryClient;
 
@@ -58,6 +58,30 @@ public class Global {
             Collections.newSetFromMap(new WeakHashMap<TelemetryContext, Boolean>());
 
     private Global() {
+    }
+
+    public static boolean isOutboundW3CEnabled() {
+        return outboundW3CEnabled;
+    }
+
+    public static void setOutboundW3CEnabled(boolean outboundW3CEnabled) {
+        Global.outboundW3CEnabled = outboundW3CEnabled;
+    }
+
+    public static boolean isOutboundW3CBackCompatEnabled() {
+        return outboundW3CBackCompatEnabled;
+    }
+
+    public static void setOutboundW3CBackCompatEnabled(boolean outboundW3CBackCompatEnabled) {
+        Global.outboundW3CBackCompatEnabled = outboundW3CBackCompatEnabled;
+    }
+
+    public static boolean isInboundW3CEnabled() {
+        return inboundW3CEnabled;
+    }
+
+    public static void setInboundW3CEnabled(boolean inboundW3CEnabled) {
+        Global.inboundW3CEnabled = inboundW3CEnabled;
     }
 
     public static @Nullable TelemetryClient getTelemetryClient() {

@@ -77,7 +77,7 @@ class ApplicationInsightsXmlLoader {
             if (module.getType().equals(
                     "com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule")) {
                 if (data.containsKey(W3C_CONFIGURATION_PARAMETER)) {
-                    Global.isInboundW3CEnabled = Boolean.valueOf(data.get(W3C_CONFIGURATION_PARAMETER));
+                    Global.setInboundW3CEnabled(Boolean.valueOf(data.get(W3C_CONFIGURATION_PARAMETER)));
                 }
                 if (data.containsKey(W3C_BACKCOMPAT_PARAMETER)) {
                     TraceContextCorrelationCore

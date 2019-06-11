@@ -29,37 +29,43 @@ class BuiltInInstrumentationBuilder {
     private static final Logger logger = LoggerFactory.getLogger(BuiltInInstrumentationBuilder.class);
 
     private boolean enabled;
+
     private boolean httpEnabled;
-    private boolean jdbcEnabled;
-    private boolean loggingEnabled;
-    private boolean jedisEnabled;
     private boolean w3cEnabled;
-    private boolean isW3CBackportEnabled = true;
-    private Long queryPlanThresholdInMS = 10000L;
+    private boolean w3cBackCompatEnabled = true;
+
+    private boolean jdbcEnabled;
+
+    private boolean loggingEnabled;
+
+    private boolean jedisEnabled;
+
+    private long queryPlanThresholdInMS = 10000;
 
     public BuiltInInstrumentation create() {
 
         logger.trace("Outbound W3C tracing is enabled: {}", w3cEnabled);
-        logger.trace("Outbound W3C backport mode is enabled: {}", isW3CBackportEnabled);
+        logger.trace("Outbound W3C backport mode is enabled: {}", w3cBackCompatEnabled);
 
         return new BuiltInInstrumentation(enabled,
                 httpEnabled && enabled,
                 w3cEnabled && enabled,
-                isW3CBackportEnabled && enabled,
+                w3cBackCompatEnabled && enabled,
                 jdbcEnabled && enabled,
                 loggingEnabled && enabled,
                 jedisEnabled && enabled,
-                queryPlanThresholdInMS);
+                queryPlanThresholdInMS
+        );
     }
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public void setHttpEnabled(boolean httpEnabled, boolean w3cEnabled, boolean isW3CBackportEnabled) {
+    public void setHttpEnabled(boolean httpEnabled, boolean w3cEnabled, boolean w3cBackCompatEnabled) {
         this.httpEnabled = httpEnabled;
         this.w3cEnabled = w3cEnabled;
-        this.isW3CBackportEnabled = isW3CBackportEnabled;
+        this.w3cBackCompatEnabled = w3cBackCompatEnabled;
     }
 
     public void setJdbcEnabled(boolean jdbcEnabled) {
@@ -70,15 +76,15 @@ class BuiltInInstrumentationBuilder {
         this.loggingEnabled = loggingEnabled;
     }
 
+    public void setJedisEnabled(boolean jedisEnabled) {
+        this.jedisEnabled = jedisEnabled;
+    }
+
     public void setQueryPlanThresholdInMS(Long queryPlanThresholdInMS) {
         if (queryPlanThresholdInMS == null) {
-            this.queryPlanThresholdInMS = 10000L;
+            this.queryPlanThresholdInMS = 10000;
         } else {
             this.queryPlanThresholdInMS = queryPlanThresholdInMS;
         }
-    }
-
-    public void setJedisEnabled(boolean jedisEnabled) {
-        this.jedisEnabled = jedisEnabled;
     }
 }

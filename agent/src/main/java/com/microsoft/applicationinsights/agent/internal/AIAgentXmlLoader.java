@@ -46,7 +46,7 @@ class AIAgentXmlLoader {
         boolean httpEnabled = builtInInstrumentation.isHttpEnabled();
         boolean jdbcEnabled = builtInInstrumentation.isJdbcEnabled();
         boolean loggingEnabled = builtInInstrumentation.isLoggingEnabled();
-        boolean redisEnabled = builtInInstrumentation.isRedisEnabled();
+        boolean redisEnabled = builtInInstrumentation.isJedisEnabled();
 
         List<InstrumentationDescriptor> instrumentationDescriptors = new ArrayList<>();
         for (InstrumentationDescriptor instrumentationDescriptor : InstrumentationDescriptors.read()) {

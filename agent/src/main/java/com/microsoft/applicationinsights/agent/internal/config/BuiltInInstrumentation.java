@@ -24,31 +24,33 @@ package com.microsoft.applicationinsights.agent.internal.config;
 public class BuiltInInstrumentation {
 
     private final boolean enabled;
+
     private final boolean httpEnabled;
     private final boolean w3cEnabled;
-    private final boolean isW3CBackportEnabled;
+    private final boolean w3cBackCompatEnabled;
+
     private final boolean jdbcEnabled;
+
     private final boolean loggingEnabled;
+
     private final boolean jedisEnabled;
+
     private final long queryPlanThresholdInMS;
 
     public BuiltInInstrumentation(boolean enabled,
                                   boolean httpEnabled,
                                   boolean w3cEnabled,
-                                  boolean isW3CBackportEnabled,
+                                  boolean w3cBackCompatEnabled,
                                   boolean jdbcEnabled,
                                   boolean loggingEnabled,
                                   boolean jedisEnabled,
-                                  Long queryPlanThresholdInMS) {
+                                  long queryPlanThresholdInMS) {
         this.enabled = enabled;
         this.httpEnabled = httpEnabled;
         this.w3cEnabled = w3cEnabled;
-        this.isW3CBackportEnabled = isW3CBackportEnabled;
+        this.w3cBackCompatEnabled = w3cBackCompatEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.loggingEnabled = loggingEnabled;
-        if (queryPlanThresholdInMS == null) {
-            throw new IllegalArgumentException("queryPlanThresholdInMS cannot be null");
-        }
         this.jedisEnabled = jedisEnabled;
         this.queryPlanThresholdInMS = queryPlanThresholdInMS;
     }
@@ -61,27 +63,27 @@ public class BuiltInInstrumentation {
         return httpEnabled;
     }
 
-    public boolean isJdbcEnabled() {
-        return jdbcEnabled;
+    public boolean isW3cEnabled() {
+        return w3cEnabled;
     }
 
-    public long getQueryPlanThresholdInMS() {
-        return queryPlanThresholdInMS;
+    public boolean isW3cBackCompatEnabled() {
+        return w3cBackCompatEnabled;
+    }
+
+    public boolean isJdbcEnabled() {
+        return jdbcEnabled;
     }
 
     public boolean isLoggingEnabled() {
         return loggingEnabled;
     }
 
-    public boolean isRedisEnabled() {
+    public boolean isJedisEnabled() {
         return jedisEnabled;
     }
 
-    public boolean isW3cEnabled() {
-        return w3cEnabled;
-    }
-
-    public boolean isW3CBackportEnabled() {
-        return isW3CBackportEnabled;
+    public long getQueryPlanThresholdInMS() {
+        return queryPlanThresholdInMS;
     }
 }

@@ -79,7 +79,7 @@ class AgentImpl implements AgentSPI {
         // TODO eliminate wrapper object instantiation
         RequestHeaderGetterImpl<C> requestHeaderGetter = new RequestHeaderGetterImpl<>(getter);
         String instrumentationKey = telemetryClient.getContext().getInstrumentationKey();
-        if (Global.isOutboundW3CEnabled) {
+        if (Global.isOutboundW3CEnabled()) {
             TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, requestHeaderGetter, requestTelemetry);
             TraceContextCorrelationCore
                     .resolveRequestSource(carrier, requestHeaderGetter, requestTelemetry, instrumentationKey);

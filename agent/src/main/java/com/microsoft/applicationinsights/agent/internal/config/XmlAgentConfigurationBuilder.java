@@ -43,22 +43,22 @@ public class XmlAgentConfigurationBuilder {
     private static final String AGENT_XML_CONFIGURATION_NAME = "AI-Agent.xml";
 
     private static final String MAIN_TAG = "ApplicationInsightsAgent";
+
     private static final String INSTRUMENTATION_TAG = "Instrumentation";
 
     private static final String BUILT_IN_TAG = "BuiltIn";
-    private static final String JEDIS_TAG = "Jedis";
+
     private static final String HTTP_TAG = "HTTP";
-    private static final String JDBC_TAG = "JDBC";
-    private static final String LOGGING_TAG = "Logging";
-    private static final String JMX_TAG = "AgentJmx";
-    private static final String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
-
     private static final String W3C_ENABLED = "W3C";
-    private static final String W3C_BACKCOMPAT_PARAMETER = "enableW3CBackCompat";
+    private static final String W3C_BACK_COMPAT_ENABLED = "enableW3CBackCompat";
 
-    private static final String EXCLUDED_PREFIXES_TAG = "ExcludedPrefixes";
+    private static final String JDBC_TAG = "JDBC";
 
-    private static final String RUNTIME_EXCEPTION_TAG = "RuntimeException";
+    private static final String LOGGING_TAG = "Logging";
+
+    private static final String JEDIS_TAG = "Jedis";
+
+    private static final String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
 
     public BuiltInInstrumentation parseConfigurationFile(String baseFolder) {
 
@@ -81,9 +81,8 @@ public class XmlAgentConfigurationBuilder {
                 return new BuiltInInstrumentationBuilder().create();
             }
 
-            getForbiddenPaths(topElementTag);
-
-            Element instrumentationTag = getInstrumentationTag(topElementTag);
+            NodeList customTags = topElementTag.getElementsByTagName(INSTRUMENTATION_TAG);
+            Element instrumentationTag = XmlParserUtils.getFirst(customTags);
             if (instrumentationTag == null) {
                 return new BuiltInInstrumentationBuilder().create();
             }
@@ -100,14 +99,6 @@ public class XmlAgentConfigurationBuilder {
                 // chomp
             }
             return null;
-        }
-    }
-
-    private void getForbiddenPaths(Element parent) {
-        NodeList nodes = parent.getElementsByTagName(EXCLUDED_PREFIXES_TAG);
-        Element forbiddenElement = XmlParserUtils.getFirst(nodes);
-        if (forbiddenElement != null) {
-            logger.warn("{} tag in AI-Agent.xml is no longer used", EXCLUDED_PREFIXES_TAG);
         }
     }
 
@@ -129,22 +120,12 @@ public class XmlAgentConfigurationBuilder {
             return builtInConfigurationBuilder.create();
         }
 
-        nodes = builtInElement.getElementsByTagName(JEDIS_TAG);
-        Element element = XmlParserUtils.getFirst(nodes);
-        builtInConfigurationBuilder.setJedisEnabled(XmlParserUtils.getEnabled(element, JEDIS_TAG));
-
-        nodes = builtInElement.getElementsByTagName(RUNTIME_EXCEPTION_TAG);
-        Element rtExceptionElement = XmlParserUtils.getFirst(nodes);
-        if (rtExceptionElement != null) {
-            logger.warn("{} tag in AI-Agent.xml is no longer used", RUNTIME_EXCEPTION_TAG);
-        }
-
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
         Element httpElement = XmlParserUtils.getFirst(nodes);
-        boolean isW3CEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_ENABLED, false);
-        boolean isW3CBackportEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_BACKCOMPAT_PARAMETER, true);
-        builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(element, HTTP_TAG), isW3CEnabled,
-                isW3CBackportEnabled);
+        boolean w3cEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_ENABLED, false);
+        boolean w3cBackCompatEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_BACK_COMPAT_ENABLED, true);
+        builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(httpElement, HTTP_TAG), w3cEnabled,
+                w3cBackCompatEnabled);
 
         nodes = builtInElement.getElementsByTagName(JDBC_TAG);
         builtInConfigurationBuilder.setJdbcEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JDBC_TAG));
@@ -153,22 +134,15 @@ public class XmlAgentConfigurationBuilder {
         builtInConfigurationBuilder
                 .setLoggingEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), LOGGING_TAG));
 
-        nodes = builtInElement.getElementsByTagName(JMX_TAG);
-        Element jmxElement = XmlParserUtils.getFirst(nodes);
-        if (jmxElement != null) {
-            logger.warn("{} tag in AI-Agent.xml is no longer used", JMX_TAG);
-        }
+        nodes = builtInElement.getElementsByTagName(JEDIS_TAG);
+        Element element = XmlParserUtils.getFirst(nodes);
+        builtInConfigurationBuilder.setJedisEnabled(XmlParserUtils.getEnabled(element, JEDIS_TAG));
 
         nodes = builtInElement.getElementsByTagName(MAX_STATEMENT_QUERY_LIMIT_TAG);
         builtInConfigurationBuilder.setQueryPlanThresholdInMS(XmlParserUtils.getLong(XmlParserUtils.getFirst(nodes),
                 MAX_STATEMENT_QUERY_LIMIT_TAG));
 
         return builtInConfigurationBuilder.create();
-    }
-
-    private Element getInstrumentationTag(Element topElementTag) {
-        NodeList customTags = topElementTag.getElementsByTagName(INSTRUMENTATION_TAG);
-        return XmlParserUtils.getFirst(customTags);
     }
 
     private Element getTopTag(File configurationFile) throws ParserConfigurationException, IOException, SAXException {

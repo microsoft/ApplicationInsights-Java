@@ -126,8 +126,8 @@ public class MainEntryPoint {
             return;
         }
 
-        Global.isOutboundW3CEnabled = builtInInstrumentation.isW3cEnabled();
-        Global.isOutboundW3CBackCompatEnabled = builtInInstrumentation.isW3CBackportEnabled();
+        Global.setOutboundW3CEnabled(builtInInstrumentation.isW3cEnabled());
+        Global.setOutboundW3CBackCompatEnabled(builtInInstrumentation.isW3cBackCompatEnabled());
 
         List<InstrumentationDescriptor> instrumentationDescriptors =
                 AIAgentXmlLoader.getInstrumentationDescriptors(builtInInstrumentation);
