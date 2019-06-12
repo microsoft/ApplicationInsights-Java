@@ -53,16 +53,15 @@ import java.util.Map;
  * but will not fail the process under any scenario.
  */
 public final class FileLoggerOutput implements LoggerOutput {
-    private final static int MIN_SIZE_PER_LOG_FILE_IN_MB = 5;
-    private final static int MAX_SIZE_PER_LOG_FILE_IN_MB = 500;
-    private final static int MIN_NUMBER_OF_LOG_FILES = 2;
-    private static String SDK_LOGS_DEFAULT_FOLDER = "javasdklogs";
-    private static String SDK_LOGS_BASE_FOLDER_PATH = LocalFileSystemUtils.getTempDir().getAbsolutePath();
-    private final static String LOG_FILE_SUFFIX_FOR_LISTING = "jsl";
-    public final static String NUMBER_OF_FILES_ATTRIBUTE = "NumberOfFiles";
-    public final static String TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE = "NumberOfTotalSizeInMB";
-    public final static String LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE = "BaseFolderPath";
-    public final static String UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE = "UniquePrefix";
+    private static final int MIN_SIZE_PER_LOG_FILE_IN_MB = 5;
+    private static final int MAX_SIZE_PER_LOG_FILE_IN_MB = 500;
+    private static final int MIN_NUMBER_OF_LOG_FILES = 2;
+    private static final String SDK_LOGS_DEFAULT_FOLDER = "javasdklogs";
+    private static final String LOG_FILE_SUFFIX_FOR_LISTING = "jsl";
+    public static final String NUMBER_OF_FILES_ATTRIBUTE = "NumberOfFiles";
+    public static final String TOTAL_SIZE_OF_LOG_FILES_IN_MB_ATTRIBUTE = "NumberOfTotalSizeInMB";
+    public static final String LOG_FILES_BASE_FOLDER_PATH_ATTRIBUTE = "BaseFolderPath";
+    public static final String UNIQUE_LOG_FILE_PREFIX_ATTRIBUTE = "UniquePrefix";
     private static final String DATE_FORMAT_NOW = "yyyy-MM-dd-HH-mm-ss";
 
     private static class FileAndDate {
@@ -122,14 +121,12 @@ public final class FileLoggerOutput implements LoggerOutput {
         Path logFilePath;
 
         if (StringUtils.isEmpty(baseFolderPath)) {
-            baseFolderPath = SDK_LOGS_BASE_FOLDER_PATH;
+            // if tmp dir cannot be created. this throws a runtime exception. caught InternalLogger.java:341
+            baseFolderPath = LocalFileSystemUtils.getTempDir().getAbsolutePath();
 
-            // If no path is specified by user create log file directory in temp with default folder
-            // name.
+            // If no path is specified by user create log file directory in temp with default folder name.
             logFilePath = Paths.get(baseFolderPath, SDK_LOGS_DEFAULT_FOLDER);
-        }
-
-        else {
+        } else {
             // Use the user-specified absolute file path for logging.
             logFilePath = Paths.get(baseFolderPath);
         }
