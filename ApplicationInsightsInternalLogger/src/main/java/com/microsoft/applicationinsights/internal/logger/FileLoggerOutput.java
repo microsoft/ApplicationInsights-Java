@@ -108,7 +108,7 @@ public final class FileLoggerOutput implements LoggerOutput {
         String requestValueAsString = loggerData.get(requestName);
         if (StringUtils.isNotEmpty(requestValueAsString)) {
             try {
-                requestValue = Integer.valueOf(loggerData.get(requestName));
+                requestValue = Integer.parseInt(loggerData.get(requestName));
             } catch (Exception e) {
                 fallbackLoggerOutput.log(String.format("Error: invalid value '%s' for '%s', using default: %d", requestValueAsString, requestName, defaultValue));
             }
@@ -270,7 +270,7 @@ public final class FileLoggerOutput implements LoggerOutput {
                     files[filesIndex] = logFileProxy;
                     ++filesIndex;
                 } else {
-                    oldLog.file.delete();
+                    Files.delete(oldLog.file.toPath());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
