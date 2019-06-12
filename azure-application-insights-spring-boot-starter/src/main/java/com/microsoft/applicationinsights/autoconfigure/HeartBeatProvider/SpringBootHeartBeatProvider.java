@@ -32,13 +32,13 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
   /**
    * Name of this provider.
    */
-  private final String name = "SpringBootProvider";
+  private static final String name = "SpringBootProvider";
 
-  private final String SPRING_BOOT_VERSION = "ai.spring-boot.version";
+  private static final String SPRING_BOOT_VERSION = "ai.spring-boot.version";
 
-  private final String SPRING_VERSION = "ai.spring.version";
+  private static final String SPRING_VERSION = "ai.spring.version";
 
-  private final String SPRING_BOOT_STARTER_VERSION = "ai.spring.boot.starter.version";
+  private static final String SPRING_BOOT_STARTER_VERSION = "ai.spring.boot.starter.version";
 
 
 
