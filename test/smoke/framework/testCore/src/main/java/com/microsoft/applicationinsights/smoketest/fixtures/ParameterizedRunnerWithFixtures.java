@@ -24,18 +24,9 @@ public class ParameterizedRunnerWithFixtures extends BlockJUnit4ClassRunnerWithP
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                final List<Throwable> errs = new ArrayList<>();
                 for (FrameworkMethod fm : methods) {
-                    try {
-                        fm.invokeExplosively(null, ParameterizedRunnerWithFixtures.this.parameters);
-                    } catch (Throwable t) {
-                        // is there a better way to report these errors?
-                        System.err.printf("Exception in @AfterWithParams method, %s:", fm.getName());
-                        t.printStackTrace();
-                        errs.add(t);
-                    }
+                    fm.invokeExplosively(null, ParameterizedRunnerWithFixtures.this.parameters);
                 }
-                MultipleFailureException.assertEmpty(errs);
                 s.evaluate();
             }
         };
@@ -56,9 +47,6 @@ public class ParameterizedRunnerWithFixtures extends BlockJUnit4ClassRunnerWithP
                         try {
                             fm.invokeExplosively(null, ParameterizedRunnerWithFixtures.this.parameters);
                         } catch (Throwable t) {
-                            // is there a better way to report these errors?
-                            System.err.printf("Exception in @AfterWithParams method, %s:", fm.getName());
-                            t.printStackTrace();
                             errs.add(t);
                         }
                     }
