@@ -264,7 +264,7 @@ public abstract class AiSmokeTest {
 			}
 
 			RequestCapturing cr = description.getAnnotation(RequestCapturing.class);
-			if (ua != null) {
+			if (cr != null) {
 				requestCaptureEnabled = cr.enabled();
 				System.out.println("Request capturing is "+(requestCaptureEnabled ? "enabled." : "disabled."));
 			}
@@ -387,7 +387,7 @@ public abstract class AiSmokeTest {
 			mockedIngestion.awaitAnyItems(this.targetUriTimeoutMs, TimeUnit.MILLISECONDS);
 			System.out.printf("Telemetry received after %.3f seconds.%n", sw.elapsed(TimeUnit.MILLISECONDS)/1000.0);
 		}
-		System.out.println("Finished waiting for telemetry.\nStarting validation...");
+		System.out.println("Starting validation...");
 		assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
 	}
 
