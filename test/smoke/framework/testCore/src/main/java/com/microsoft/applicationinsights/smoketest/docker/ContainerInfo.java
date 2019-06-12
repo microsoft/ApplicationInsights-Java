@@ -2,6 +2,8 @@ package com.microsoft.applicationinsights.smoketest.docker;
 
 import com.google.common.base.MoreObjects;
 import com.microsoft.applicationinsights.smoketest.DependencyContainer;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 
 public class ContainerInfo {
@@ -45,6 +47,32 @@ public class ContainerInfo {
 
     public boolean isDependency() {
         return this.dependencyContainerInfo != null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ContainerInfo that = (ContainerInfo) o;
+
+        return new EqualsBuilder()
+                .append(getContainerId(), that.getContainerId())
+                .append(getImageName(), that.getImageName())
+                .append(getContainerName(), that.getContainerName())
+                .append(getDependencyContainerInfo(), that.getDependencyContainerInfo())
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(getContainerId())
+                .append(getImageName())
+                .append(getContainerName())
+                .append(getDependencyContainerInfo())
+                .toHashCode();
     }
 
     @Override

@@ -13,6 +13,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+@RequestCapturing(enabled = false)
 public class TraceLogBackTest extends AiSmokeTest {
 
     @Before

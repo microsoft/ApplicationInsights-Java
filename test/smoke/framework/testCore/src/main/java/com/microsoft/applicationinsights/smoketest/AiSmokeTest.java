@@ -137,6 +137,7 @@ public abstract class AiSmokeTest {
 	protected static String agentMode;
 	protected static String networkId;
 	protected static String networkName = "aismoke-net";
+	protected static boolean requestCaptureEnabled = true; // we will assume request capturing is on
 	//endregion
 
 	//region: application fields
@@ -144,14 +145,13 @@ public abstract class AiSmokeTest {
 	protected String httpMethod;
 	protected long targetUriDelayMs;
 	protected long targetUriTimeoutMs;
-	protected boolean expectSomeTelemetry = true;
 	//endregion
 
 	//region: options
 	public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
 	public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 10;
 	public static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
-	public static final int HEALTH_CHECK_RETRIES = 1;
+	public static final int HEALTH_CHECK_RETRIES = 2;
 	public static final int APPSERVER_HEALTH_CHECK_TIMEOUT = 75;
 	//endregion
 
@@ -166,6 +166,7 @@ public abstract class AiSmokeTest {
 	 */
 	@Rule
 	public TestWatcher theWatchman = new TestWatcher() {
+
 		@Override
 		protected void starting(Description description) {
 			System.out.println("Configuring test...");
@@ -175,7 +176,7 @@ public abstract class AiSmokeTest {
 				thiz.targetUri = null;
 				thiz.httpMethod = null;
 				thiz.targetUriDelayMs = 0L;
-				thiz.targetUriTimeoutMs = 0L;
+				thiz.targetUriTimeoutMs = TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000;
 			} else {
 				thiz.targetUri = targetUri.value();
 				if (!thiz.targetUri.startsWith("/")) {
@@ -183,11 +184,9 @@ public abstract class AiSmokeTest {
 				}
 				thiz.httpMethod = targetUri.method().toUpperCase();
 				thiz.targetUriDelayMs = targetUri.delay();
-				thiz.targetUriTimeoutMs = targetUri.timeout();
+				thiz.targetUriTimeoutMs = targetUri.timeout() > 0 ? targetUri.timeout() : TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000;
 			}
 
-			ExpectSomeTelemetry expectSomeTelemetry = description.getAnnotation(ExpectSomeTelemetry.class);
-			thiz.expectSomeTelemetry = expectSomeTelemetry == null || expectSomeTelemetry.value();
 		}
 
 		@Override
@@ -195,8 +194,6 @@ public abstract class AiSmokeTest {
 			// NOTE this happens after @After :)
 			String containerId = currentContainerInfo.getContainerId();
 			System.out.println("Test failure detected.");
-			// FIXME tailLastLog consistantly timeouts after 10s. container logs generally contain enough information. remove tailLastLog.sh in the future if this continues
-//			runTailLastLog(containerId);
 			printContainerLogs(containerId);
 		}
 
@@ -264,6 +261,12 @@ public abstract class AiSmokeTest {
 					}
 					dependencyImages.add(container);
 				}
+			}
+
+			RequestCapturing cr = description.getAnnotation(RequestCapturing.class);
+			if (cr != null) {
+				requestCaptureEnabled = cr.enabled();
+				System.out.println("Request capturing is "+(requestCaptureEnabled ? "enabled." : "disabled."));
 			}
 		}
 
@@ -339,9 +342,17 @@ public abstract class AiSmokeTest {
 		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
 		waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext(), HEALTH_CHECK_RETRIES);
 		System.out.println("Test app health check complete.");
-		System.out.printf("Waiting %ds for any request telemetry...", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
-		TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
-		System.out.println("Clearing any RequestData from health check.");
+		if (requestCaptureEnabled) {
+			Stopwatch sw = Stopwatch.createStarted();
+			mockedIngestion.waitForItem(new Predicate<Envelope>() {
+				@Override
+				public boolean apply(Envelope input) {
+					return "RequestData".equals(input.getData().getBaseType());
+				}
+			}, TELEMETRY_RECEIVE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+			System.out.printf("Received request telemetry after %.3f seconds...%n", sw.elapsed(TimeUnit.MILLISECONDS)/1000.0);
+			System.out.println("Clearing any RequestData from health check.");
+		}
 		mockedIngestion.resetData();
 	}
 
@@ -372,16 +383,12 @@ public abstract class AiSmokeTest {
 		assertTrue(String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage), content.length() > 0);
 
 		if (this.targetUriTimeoutMs > 0) {
+			Stopwatch sw = Stopwatch.createStarted();
 			mockedIngestion.awaitAnyItems(this.targetUriTimeoutMs, TimeUnit.MILLISECONDS);
-		} else {
-			System.out.printf("Waiting %ds for telemetry...%n", TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
-			TimeUnit.SECONDS.sleep(TELEMETRY_RECEIVE_TIMEOUT_SECONDS);
+			System.out.printf("Telemetry received after %.3f seconds.%n", sw.elapsed(TimeUnit.MILLISECONDS)/1000.0);
 		}
-		System.out.println("Finished waiting for telemetry.\nStarting validation...");
-
-		if (expectSomeTelemetry) {
-			assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
-		}
+		System.out.println("Starting validation...");
+		assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
 	}
 
 	protected static void checkParams(final String appServer, final String os, final String jreVersion) {
@@ -500,15 +507,11 @@ public abstract class AiSmokeTest {
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
-		final int appServerDelayAfterStart_seconds = 5;
-		System.out.printf("Waiting %d seconds for app server to startup...%n", appServerDelayAfterStart_seconds);
-		TimeUnit.SECONDS.sleep(appServerDelayAfterStart_seconds);
-
 		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Verifying appserver has started (%s)...%n", url);
-
+			allContainers.push(currentContainerInfo);
 			waitForUrlWithRetries(url, APPSERVER_HEALTH_CHECK_TIMEOUT, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
 			System.out.println("App server is ready.");
 		}
@@ -516,11 +519,14 @@ public abstract class AiSmokeTest {
 			System.err.println("Error starting app server");
 			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
 				System.out.println("Container is not running.");
+				allContainers.remove(currentContainerInfo);
 			} else {
 				System.out.println("Yet, the container is running.");
 			}
 			System.out.println("Printing container logs: ");
+			System.out.println("# LOGS START =========================");
 			docker.printContainerLogs(currentContainerInfo.getContainerId());
+			System.out.println("# LOGS END ===========================");
 			throw e;
 		}
 
@@ -534,7 +540,6 @@ public abstract class AiSmokeTest {
 			System.err.println("Error deploying test application.");
 			throw e;
 		}
-		allContainers.push(currentContainerInfo);
 	}
 
 	private static Map<String, String> generateAppContainerEnvVarMap() {
@@ -563,7 +568,7 @@ public abstract class AiSmokeTest {
 	//endregion
 
 	@After
-	public void resetMockedIngestion() throws Exception {
+	public void resetMockedIngestion() {
 		mockedIngestion.resetData();
 		System.out.println("Mocked ingestion reset.");
 	}
@@ -643,7 +648,7 @@ public abstract class AiSmokeTest {
 			}
 
 			try {
-				TimeUnit.SECONDS.sleep(1);
+				TimeUnit.MILLISECONDS.sleep(250);
 				rval = HttpHelper.get(url);
 			}
 			catch (InterruptedException ie) {
