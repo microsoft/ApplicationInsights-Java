@@ -176,7 +176,7 @@ public abstract class AiSmokeTest {
 				thiz.targetUri = null;
 				thiz.httpMethod = null;
 				thiz.targetUriDelayMs = 0L;
-				thiz.targetUriTimeoutMs = TELEMETRY_RECEIVE_TIMEOUT_SECONDS;
+				thiz.targetUriTimeoutMs = TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000;
 			} else {
 				thiz.targetUri = targetUri.value();
 				if (!thiz.targetUri.startsWith("/")) {
@@ -184,7 +184,7 @@ public abstract class AiSmokeTest {
 				}
 				thiz.httpMethod = targetUri.method().toUpperCase();
 				thiz.targetUriDelayMs = targetUri.delay();
-				thiz.targetUriTimeoutMs = targetUri.timeout();
+				thiz.targetUriTimeoutMs = targetUri.timeout() > 0 ? targetUri.timeout() : TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000;
 			}
 
 		}
