@@ -511,7 +511,7 @@ public abstract class AiSmokeTest {
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Verifying appserver has started (%s)...%n", url);
-
+			allContainers.push(currentContainerInfo);
 			waitForUrlWithRetries(url, APPSERVER_HEALTH_CHECK_TIMEOUT, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
 			System.out.println("App server is ready.");
 		}
@@ -519,6 +519,7 @@ public abstract class AiSmokeTest {
 			System.err.println("Error starting app server");
 			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
 				System.out.println("Container is not running.");
+				allContainers.remove(currentContainerInfo);
 			} else {
 				System.out.println("Yet, the container is running.");
 			}
@@ -539,7 +540,6 @@ public abstract class AiSmokeTest {
 			System.err.println("Error deploying test application.");
 			throw e;
 		}
-		allContainers.push(currentContainerInfo);
 	}
 
 	private static Map<String, String> generateAppContainerEnvVarMap() {
