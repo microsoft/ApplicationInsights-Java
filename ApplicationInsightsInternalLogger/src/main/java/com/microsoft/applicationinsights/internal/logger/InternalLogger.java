@@ -45,7 +45,7 @@ public enum InternalLogger {
     private final static String LOGGER_LEVEL = "Level";
     private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSSZ");
 
-    public class PropertyKeys {
+    public static class PropertyKeys {
         private static final String SDKLOGGER_PREFIX = "applicationinsights.logger.";
 
         public static final String CONSOLE_LEVEL =                  SDKLOGGER_PREFIX + "console.level";
