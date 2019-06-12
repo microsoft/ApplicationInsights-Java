@@ -655,7 +655,7 @@ public class ApplicationInsightsProperties {
   /**
    * This Internal class is used to represent the Jmx Object Structure
    */
-   private class CompositeJmxData {
+   private static class CompositeJmxData {
     String displayName;
     String objectName;
     String attributeName;
