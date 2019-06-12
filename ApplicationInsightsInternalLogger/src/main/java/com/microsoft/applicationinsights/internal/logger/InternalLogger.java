@@ -278,14 +278,18 @@ public enum InternalLogger {
      * @param requestLevel - The level of the message
      * @param message - The message to print
      * @param args - The arguments that are part of the message
+     *
+     * @deprecated This should be avoided at all costs.
      */
     @Deprecated
     public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
-        String logMessage = createMessage(requestLevel.toString(), message, args);
-        if (!initialized || loggerOutput == null) {
-            new ConsoleLoggerOutput().log(logMessage);
-        } else {
-            loggerOutput.log(logMessage);
+        synchronized (INSTANCE) {
+            String logMessage = createMessage(requestLevel.toString(), message, args);
+            if (!initialized || loggerOutput == null) {
+                new ConsoleLoggerOutput().log(logMessage);
+            } else {
+                loggerOutput.log(logMessage);
+            }
         }
     }
     /**
