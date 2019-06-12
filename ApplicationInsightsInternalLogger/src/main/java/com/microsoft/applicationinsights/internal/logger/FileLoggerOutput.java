@@ -273,7 +273,7 @@ public final class FileLoggerOutput implements LoggerOutput {
                     Files.delete(oldLog.file.toPath());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                fallbackLoggerOutput.log(String.format("Failed to delete old log file: %s", e.toString()));
             }
         }
     }
