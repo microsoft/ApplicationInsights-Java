@@ -17,6 +17,8 @@ public class JdbcTestController {
             setupSqlServer();
             // setupOracle();
         } catch (Exception e) {
+            // print stack trace to stdout to make sure it shows up in docker log
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
