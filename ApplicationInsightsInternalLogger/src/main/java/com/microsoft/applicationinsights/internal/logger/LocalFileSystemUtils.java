@@ -25,17 +25,17 @@ public class LocalFileSystemUtils {
      *
      * @return a {@link File} representing a folder in which temporary files will be stored
      * for the current user.
+     * @throws RuntimeException when temp directory could not be created.
      */
     public static File getTempDir() {
         final String tempDirectory = System.getProperty("java.io.tmpdir");
         final String currentUserName = determineCurrentUserName();
 
         final File result = getTempDir(tempDirectory, currentUserName);
-        if (!result.isDirectory()) {
-            // Noinspection ResultOfMethodCallIgnored
-            result.mkdirs();
+        if (result.isDirectory() || result.mkdirs()) {
+            return result;
         }
-        return result;
+        throw new RuntimeException("Could not create "+result.getAbsolutePath());
     }
 
     static File getTempDir(final String initialValue, final String userName) {
@@ -48,8 +48,7 @@ public class LocalFileSystemUtils {
             tempDirectory = candidate.getAbsolutePath();
         }
 
-        final File result = new File(tempDirectory);
-        return result;
+        return new File(tempDirectory);
     }
 
     /**
