@@ -22,6 +22,8 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import org.junit.*;
+
+import java.io.IOException;
 import java.io.InputStream;
 
 public final class JaxbAppInsightsConfigurationBuilderTest {
@@ -38,11 +40,15 @@ public final class JaxbAppInsightsConfigurationBuilderTest {
     }
 
     @Test
-    public void testBuilderProducesCorrectConfig() {
+    public void testBuilderProducesCorrectConfig() throws IOException {
         System.setProperty(ConfigurationFileLocator.CONFIG_DIR_PROPERTY, "src/test/resources");
-        InputStream resourceFile = new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile();
-        JaxbAppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
-        ApplicationInsightsXmlConfiguration config = builder.build(resourceFile);
+        final ApplicationInsightsXmlConfiguration config;
+        try (InputStream resourceFile = new ConfigurationFileLocator(EXISTING_CONF_TEST_FILE).getConfigurationFile()) {
+            JaxbAppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
+            config = builder.build(resourceFile);
+        } catch (IOException e) {
+            throw e;
+        }
 
         // asserting a few config items only since the point of the test is to validate deserialization occurs
         // with no errors.

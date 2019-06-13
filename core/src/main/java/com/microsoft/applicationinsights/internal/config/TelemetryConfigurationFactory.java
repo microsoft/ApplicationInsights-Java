@@ -66,9 +66,9 @@ public enum TelemetryConfigurationFactory {
     INSTANCE;
 
     // Default file name
-    private final static String CONFIG_FILE_NAME = "ApplicationInsights.xml";
-    private final static String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
-    private final static String BUILT_IN_NAME = "BuiltIn";
+    private static final String CONFIG_FILE_NAME = "ApplicationInsights.xml";
+    private static final String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
+    private static final String BUILT_IN_NAME = "BuiltIn";
 
     /**
      * This enables scanning for classes annotated with {@link BuiltInProcessor}.
@@ -84,8 +84,8 @@ public enum TelemetryConfigurationFactory {
 
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
-    final static String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
-    final static String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+    static final String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
+    static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
     private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
@@ -96,7 +96,7 @@ public enum TelemetryConfigurationFactory {
         addDefaultPerfModuleClassName(JvmPerformanceCountersModule.class.getCanonicalName());
     }
 
-    public synchronized static void addDefaultPerfModuleClassName(String name) {
+    public static synchronized void addDefaultPerfModuleClassName(String name) {
         defaultPerformaceModuleClassNames.add(name);
     }
 
@@ -115,8 +115,8 @@ public enum TelemetryConfigurationFactory {
      * @param configuration The configuration that will be populated
      */
     public final void initialize(TelemetryConfiguration configuration) {
-        try {
-            InputStream configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile();
+        try (InputStream configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile()) {
+
             if (configurationFile == null) {
                 setMinimumConfiguration(null, configuration);
                 return;
@@ -125,7 +125,7 @@ public enum TelemetryConfigurationFactory {
             ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
             if (applicationInsightsConfig == null) {
                 InternalLogger.INSTANCE.error("Failed to read configuration file. Application Insights XML file is null...setting default configuration");
-                setMinimumConfiguration(applicationInsightsConfig, configuration);
+                setMinimumConfiguration(null, configuration);
                 return;
             }
 
@@ -146,11 +146,10 @@ public enum TelemetryConfigurationFactory {
             setTelemetryProcessors(applicationInsightsConfig, configuration);
 
             TelemetryChannel channel = configuration.getChannel();
-            if (channel instanceof LocalForwarderTelemetryChannel) {
-                if (isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
+            if (channel instanceof LocalForwarderTelemetryChannel
+                && isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
                     InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
                     applicationInsightsConfig.getQuickPulse().setEnabled(false);
-                }
             }
             setQuickPulse(applicationInsightsConfig);
 
