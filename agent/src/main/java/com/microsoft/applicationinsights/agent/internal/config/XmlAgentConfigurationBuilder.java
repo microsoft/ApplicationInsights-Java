@@ -131,7 +131,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             setBuiltInInstrumentation(agentConfiguration, instrumentationTag);
 
             NodeList addClasses = getAllClassesToInstrument(instrumentationTag);
-            if (addClasses == null) {
+            if (addClasses.getLength() == 0) { // can't be null; if empty, return
                 return agentConfiguration;
             }
 
@@ -181,11 +181,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
 
         HashSet<String> excludedPrefixes = new HashSet<String>();
 
-        NodeList addClasses = forbiddenElement.getElementsByTagName(FORBIDDEN_PREFIX_TAG);
-        if (addClasses == null) {
-            return;
-        }
-
+        NodeList addClasses = forbiddenElement.getElementsByTagName(FORBIDDEN_PREFIX_TAG); // can't be null
         for (int index = 0; index < addClasses.getLength(); ++index) {
             Element classElement = getClassDataElement(addClasses.item(index));
             if (classElement == null) {
@@ -242,7 +238,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
         nodes = builtInElement.getElementsByTagName(MAX_STATEMENT_QUERY_LIMIT_TAG);
         builtInConfigurationBuilder.setSqlMaxQueryLimitInMS(XmlParserUtils.getLong(XmlParserUtils.getFirst(nodes), MAX_STATEMENT_QUERY_LIMIT_TAG));
 
-        new BuiltInInstrumentedClassesBuilder().setSimpleBuiltInClasses(builtInConfigurationBuilder, builtInElement);
+        BuiltInInstrumentedClassesBuilder.setSimpleBuiltInClasses(builtInConfigurationBuilder, builtInElement);
 
         agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
     }
@@ -372,16 +368,12 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
     }
 
     private NodeList getAllClassesToInstrument(Element tag) {
-        NodeList addClasses = tag.getElementsByTagName(CLASS_TAG);
-        if (addClasses == null) {
-            return null;
-        }
-        return addClasses;
+        return tag.getElementsByTagName(CLASS_TAG); // can't be null
     }
 
     private void addMethods(ClassInstrumentationData classData, Element eClassNode) {
         NodeList methodNodes = eClassNode.getElementsByTagName(METHOD_TAG);
-        if (methodNodes == null || methodNodes.getLength() == 0) {
+        if (methodNodes.getLength() == 0) {
             if (classData.isReportCaughtExceptions() || classData.isReportExecutionTime()) {
                 classData.addAllMethods(classData.isReportCaughtExceptions(), classData.isReportExecutionTime());
             }
@@ -429,7 +421,7 @@ final class XmlAgentConfigurationBuilder implements AgentConfigurationBuilder {
             valueStr = methodElement.getAttribute(THRESHOLD_ATTRIBUTE);
             if (!StringUtils.isNullOrEmpty(valueStr)) {
                 try {
-                    thresholdInMS = Long.valueOf(valueStr);
+                    thresholdInMS = Long.parseLong(valueStr);
                 } catch (Exception e) {
                     InternalLogger.INSTANCE.error("Failed to parse attribute '%s' of '%s, default value (true) will be used.'", THRESHOLD_ATTRIBUTE, methodElement.getTagName());
                 }

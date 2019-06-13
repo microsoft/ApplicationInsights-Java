@@ -109,8 +109,11 @@ final class XmlParserUtils {
         try {
             String strValue = element.getAttribute(attributeName);
             if (!StringUtils.isNullOrEmpty(strValue)) {
-                long value = Long.valueOf(strValue);
-                return value;
+                try {
+                    return Long.parseLong(strValue);
+                } catch (NumberFormatException nfe) {
+                    InternalLogger.INSTANCE.warn("Invalid attribute value. Expected number but was '%s'", strValue);
+                }
             }
             return defaultValue;
         } catch (Exception e) {

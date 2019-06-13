@@ -120,11 +120,14 @@ public final class AgentImplementation {
 
         String agentJarName = null;
         File agentFolder = new File(agentJarLocation);
-        for (File file : agentFolder.listFiles()) {
-            if (file.getName().indexOf(AGENT_JAR_PREFIX) != -1) {
-                agentJarName = file.getName();
-                InternalLogger.INSTANCE.info("Agent jar name is %s", agentJarName);
-                break;
+        final File[] files = agentFolder.listFiles();
+        if (files != null) { // this should be a directory
+            for (File file : files) {
+                if (file.getName().indexOf(AGENT_JAR_PREFIX) != -1) {
+                    agentJarName = file.getName();
+                    InternalLogger.INSTANCE.info("Agent jar name is %s", agentJarName);
+                    break;
+                }
             }
         }
 
@@ -196,7 +199,7 @@ public final class AgentImplementation {
 
         InternalLogger.INSTANCE.trace("Found %s", path);
         String coreJarName = null;
-        for (File file : sdkFolder.listFiles()) {
+        for (File file : sdkFolder.listFiles()) { // won't return null; check for directory above
             if (file.getName().indexOf(CORE_JAR_PREFIX) != -1 || file.getName().indexOf(DISTRIBUTION_JAR_PREFIX) != -1) {
                 coreJarName = file.getAbsolutePath();
                 InternalLogger.INSTANCE.trace("Found core jar: %s", coreJarName);
