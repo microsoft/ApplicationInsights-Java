@@ -24,6 +24,8 @@ package com.microsoft.applicationinsights.internal.logger;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * The class is responsible for doing the work with the log files.
@@ -51,8 +53,15 @@ public final class DefaultLogFileProxy implements LogFileProxy {
         out.close();
     }
 
+    /**
+     * @throws RuntimeException if {@link Files#delete(Path)} throws an {@link IOException}
+     */
     public void delete() {
-        file.delete();
+        try {
+            Files.delete(file.toPath());
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe); // wrapping in RuntimeException to avoid changing interface
+        }
     }
 
     public void writeLine(String line) throws IOException {

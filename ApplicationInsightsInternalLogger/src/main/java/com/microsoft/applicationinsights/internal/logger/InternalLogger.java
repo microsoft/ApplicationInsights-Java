@@ -45,7 +45,7 @@ public enum InternalLogger {
     private final static String LOGGER_LEVEL = "Level";
     private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSSZ");
 
-    public class PropertyKeys {
+    public static class PropertyKeys {
         private static final String SDKLOGGER_PREFIX = "applicationinsights.logger.";
 
         public static final String CONSOLE_LEVEL =                  SDKLOGGER_PREFIX + "console.level";
@@ -91,9 +91,6 @@ public enum InternalLogger {
 
     private LoggerOutput loggerOutput = null;
 
-    private InternalLogger() {
-    }
-
     /**
      * The method will first try to find the logger level and then the logger type.
      * Note that if there are problems initializing the data the internal logger will
@@ -101,65 +98,69 @@ public enum InternalLogger {
      * @param loggerOutputType The requested logger type
      * @param loggerData The data for the internal logger
      */
-    public synchronized void initialize(String loggerOutputType, Map<String, String> loggerData) {
-        if (initialized) {
-            return;
-        }
-
-        try {
-            String loggerLevel = loggerData.get(LOGGER_LEVEL);
-                if (StringUtils.isEmpty(loggerLevel)) {
-                // The user didn't specify the logging level, therefore by default we set that to 'TRACE'
-                loggingLevel = LoggingLevel.TRACE;
-                setLoggerOutput(loggerOutputType, loggerData);
-            } else {
-                try {
-                    // Try to match the user request logging level into our enum.
-                    loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
-                    setLoggerOutput(loggerOutputType, loggerData);
-                } catch (Exception e) {
-                    onInitializationError(String.format("Error: Illegal value '%s' for the SDK internal logger. Logging level is therefore set to 'OFF'", loggerLevel));
-                }
+    public void initialize(String loggerOutputType, Map<String, String> loggerData) {
+        synchronized (INSTANCE) {
+            if (initialized) {
+                return;
             }
 
-            final String utcId = "UTC";
             try {
-                dateFormatter.setTimeZone(TimeZone.getTimeZone(utcId));
-            } catch (Exception e) {
-                new ConsoleLoggerOutput().log(String.format("Failed to find timezone with id='%s'. Using default '%s'", utcId, dateFormatter.getTimeZone().getDisplayName()));
+                String loggerLevel = loggerData.get(LOGGER_LEVEL);
+                if (StringUtils.isEmpty(loggerLevel)) {
+                    // The user didn't specify the logging level, therefore by default we set that to 'TRACE'
+                    loggingLevel = LoggingLevel.TRACE;
+                    setLoggerOutput(loggerOutputType, loggerData);
+                } else {
+                    try {
+                        // Try to match the user request logging level into our enum.
+                        loggingLevel = LoggingLevel.valueOf(loggerLevel.toUpperCase());
+                        setLoggerOutput(loggerOutputType, loggerData);
+                    } catch (Exception e) {
+                        onInitializationError(String.format("Error: Illegal value '%s' for the SDK internal logger. Logging level is therefore set to 'OFF'", loggerLevel));
+                    }
+                }
+
+                final String utcId = "UTC";
+                try {
+                    dateFormatter.setTimeZone(TimeZone.getTimeZone(utcId));
+                } catch (Exception e) {
+                    new ConsoleLoggerOutput().log(String.format("Failed to find timezone with id='%s'. Using default '%s'", utcId, dateFormatter.getTimeZone().getDisplayName()));
+                }
+            } finally {
+                initialized = true;
             }
-        } finally {
-            initialized = true;
         }
     }
 
-    public synchronized boolean systemPropertyInitialize() {
-        // if the logger is already initialized, don't init again
-        // if the system properties have already been examined, don't check again
-        if (propsNotFound || initialized) {
+    public boolean systemPropertyInitialize() {
+        synchronized (INSTANCE) {
+            // if the logger is already initialized, don't init again
+            // if the system properties have already been examined, don't check again
+            if (propsNotFound || initialized) {
+                return initialized;
+            }
+
+            // check for logger properties
+            String console = System.getProperty(PropertyKeys.CONSOLE_LEVEL);
+            String file = System.getProperty(PropertyKeys.FILE_LEVEL);
+            String level = StringUtils.defaultString(console, file);
+            if (level == null) {
+                propsNotFound = true;
+                return initialized;
+            }
+
+            String type = console == null ? LoggerOutputType.FILE.toString() : LoggerOutputType.CONSOLE.toString();
+            Map<String, String> props = new HashMap<>();
+            props.put(LOGGER_LEVEL, level);
+
+            // if file logging is configured, read additonal properties
+            if (file != null) {
+                populateMapForFileLogging(props);
+            }
+
+            initialize(type, props);
             return initialized;
         }
-
-        // check for logger properties
-        String console = System.getProperty(PropertyKeys.CONSOLE_LEVEL);
-        String file = System.getProperty(PropertyKeys.FILE_LEVEL);
-        String level = StringUtils.defaultString(console, file);
-        if (level == null) {
-            propsNotFound = true;
-            return initialized;
-        }
-
-        String type = console == null ? LoggerOutputType.FILE.toString() : LoggerOutputType.CONSOLE.toString();
-        Map<String, String> props = new HashMap<>();
-        props.put(LOGGER_LEVEL, level);
-
-        // if file logging is configured, read additonal properties
-        if (file != null) {
-            populateMapForFileLogging(props);
-        }
-
-        initialize(type, props);
-        return initialized;
     }
 
     private void populateMapForFileLogging(final Map<String, String> props) {
@@ -186,20 +187,22 @@ public enum InternalLogger {
      * This method should only be called when the internal logger is not needed
      * which is currently prior to the process exits, i.e. prior to shutdown of the process
      */
-    public synchronized void stop() {
-        if (loggingLevel.equals(LoggingLevel.OFF)) {
-            return;
-        }
-
-        try {
-            if (loggerOutput != null) {
-                loggerOutput.close();
+    public void stop() {
+        synchronized (INSTANCE) {
+            if (loggingLevel.equals(LoggingLevel.OFF)) {
+                return;
             }
-        } catch (Exception e) {
-        }
 
-        // Prevent further logging of messages
-        loggingLevel = LoggingLevel.OFF;
+            try {
+                if (loggerOutput != null) {
+                    loggerOutput.close();
+                }
+            } catch (Exception e) {
+            }
+
+            // Prevent further logging of messages
+            loggingLevel = LoggingLevel.OFF;
+        }
     }
 
     public boolean isTraceEnabled() {
@@ -278,6 +281,8 @@ public enum InternalLogger {
      * @param requestLevel - The level of the message
      * @param message - The message to print
      * @param args - The arguments that are part of the message
+     *
+     * @deprecated This should be avoided at all costs.
      */
     @Deprecated
     public void logAlways(LoggingLevel requestLevel, String message, Object... args) {
