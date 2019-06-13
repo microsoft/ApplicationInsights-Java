@@ -39,6 +39,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/15/2015.
  */
 class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBuilder {
+    /**
+     * @param resourceFile input stream for resourceFile. Does not close stream.
+     * @return null if resourceFile is null or if there was an error parsing the file
+     */
     @Override
     public ApplicationInsightsXmlConfiguration build(InputStream resourceFile) {
         if (resourceFile == null) {
@@ -54,25 +58,10 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
                 return null;
             }
 
-            ApplicationInsightsXmlConfiguration applicationInsights = (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFileReader);
-
-            return applicationInsights;
+            return (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFileReader);
         } catch (JAXBException e) {
-            if (e.getCause() != null) {
-                InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
-                        ExceptionUtils.getStackTrace(e));
-            } else {
-                InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
-                        ExceptionUtils.getStackTrace(e));
-            }
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                resourceFile.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'", ExceptionUtils.getStackTrace(e));
+
         }
 
         return null;
