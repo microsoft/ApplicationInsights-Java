@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import static org.objectweb.asm.Opcodes.ASM7;
 
-// this is needed because gradle shadow doesn't shade META-INF/services/org.apache.commons.logging.LogFactory
+// this is needed because gradle shadow doesn't shade the constant
+// "META-INF/services/org.apache.commons.logging.LogFactory" that is in commons-logging code
 class CommonsLogFactoryClassFileTransformer implements ClassFileTransformer {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonsLogFactoryClassFileTransformer.class);
