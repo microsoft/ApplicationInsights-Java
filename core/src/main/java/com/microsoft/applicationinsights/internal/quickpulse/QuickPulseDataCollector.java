@@ -95,18 +95,18 @@ public enum QuickPulseDataCollector {
     }
 
     private static class Counters {
-        private final static long MAX_COUNT = 524287L;
-        private final static long MAX_DURATION = 17592186044415L;
+        private static final long MAX_COUNT = 524287L;
+        private static final long MAX_DURATION = 17592186044415L;
 
-        public AtomicInteger exceptions = new AtomicInteger(0);
+        public static final AtomicInteger exceptions = new AtomicInteger(0);
 
-        public AtomicLong requestsAndDurations = new AtomicLong(0);
-        public AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
+        static final AtomicLong requestsAndDurations = new AtomicLong(0);
+        static final AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
 
-        public AtomicLong rddsAndDuations = new AtomicLong(0);
-        public AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
+        static final AtomicLong rddsAndDuations = new AtomicLong(0);
+        static final AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
 
-        public static long encodeCountAndDuration(long  count, long duration) {
+        static long encodeCountAndDuration(long  count, long duration) {
             if (count > MAX_COUNT || duration > MAX_DURATION) {
                 return 0;
             }
@@ -114,7 +114,7 @@ public enum QuickPulseDataCollector {
             return (count << 44) + duration;
         }
 
-        public static CountAndDuration decodeCountAndDuration(long countAndDuration) {
+        static CountAndDuration decodeCountAndDuration(long countAndDuration) {
             return new CountAndDuration(countAndDuration >> 44, countAndDuration & MAX_DURATION);
         }
     }
