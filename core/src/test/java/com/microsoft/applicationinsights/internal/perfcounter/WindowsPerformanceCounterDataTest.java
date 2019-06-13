@@ -39,10 +39,10 @@ public final class WindowsPerformanceCounterDataTest {
                 setInstanceName(MOCK_INSTANCE).
                 setDisplayName(MOCK_DISPLAY);
 
-        assertEquals(MOCK_CATEGORY, data.categoryName);
-        assertEquals(MOCK_COUNTER, data.counterName);
-        assertEquals(MOCK_INSTANCE, data.instanceName);
-        assertEquals(MOCK_DISPLAY, data.displayName);
+        assertEquals(MOCK_CATEGORY, data.getCategoryName());
+        assertEquals(MOCK_COUNTER, data.getCounterName());
+        assertEquals(MOCK_INSTANCE, data.getInstanceName());
+        assertEquals(MOCK_DISPLAY, data.getDisplayName());
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -28,33 +28,28 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/16/2015.
  */
 final class UnixProcessIOtParser {
-    private final static String READ_BYTES_PART = "read_bytes:";
-    private final static String WRITE_BYTES_PART = "write_bytes:";
+    private static final String READ_BYTES_PART = "read_bytes:";
+    private static final String WRITE_BYTES_PART = "write_bytes:";
 
-    UnixParsingState state = new UnixParsingState(2);
-    boolean readBytesDone = false;
-    boolean writeBytesDone = false;
+    private UnixParsingState state = new UnixParsingState(2);
+    private boolean readBytesDone = false;
+    private boolean writeBytesDone = false;
 
     boolean done() {
-        return state.doneCounter == 0;
+        return state.getDoneCounter() == 0;
     }
 
     double getValue() {
-        return state.returnValue;
+        return state.getReturnValue();
     }
 
     void process(String line) {
-        if (!readBytesDone) {
-            if (parseValue(line, READ_BYTES_PART)) {
-                readBytesDone = true;
-                return;
-            }
+        if (!readBytesDone && parseValue(line, READ_BYTES_PART)) {
+            readBytesDone = true;
+            return;
         }
-        if (!writeBytesDone) {
-            if (parseValue(line, WRITE_BYTES_PART)) {
-                writeBytesDone = true;
-                return;
-            }
+        if (!writeBytesDone && parseValue(line, WRITE_BYTES_PART)) {
+            writeBytesDone = true;
         }
     }
 
@@ -63,8 +58,8 @@ final class UnixProcessIOtParser {
         if (index != -1) {
             String doubleValueAsString = line.substring(index + part.length());
             try {
-                state.returnValue += Double.valueOf(doubleValueAsString.trim());
-                --(state.doneCounter);
+                state.addToReturnValue(Double.parseDouble(doubleValueAsString.trim()));
+                state.decrementDoneCounter();
                 return true;
             } catch (Exception e) {
                 InternalLogger.INSTANCE.error("Error in parsing value of UnixProcess counter");

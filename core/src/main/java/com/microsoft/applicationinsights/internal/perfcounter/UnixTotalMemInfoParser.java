@@ -25,17 +25,17 @@ package com.microsoft.applicationinsights.internal.perfcounter;
  * Created by gupele on 3/16/2015.
  */
 final class UnixTotalMemInfoParser {
-    private final static String MEM_FREE_PREFIX = "MemFree:";
-    private final static String BUFFERS_PREFIX = "Buffers";
-    private final static String CACHED_PREFIX = "Cached";
+    private static final String MEM_FREE_PREFIX = "MemFree:";
+    private static final String BUFFERS_PREFIX = "Buffers";
+    private static final String CACHED_PREFIX = "Cached";
 
-    boolean memFreeDone = false;
-    boolean buffersDone = false;
-    boolean cachedDone = false;
-    UnixParsingState state = new UnixParsingState(3);
+    private boolean memFreeDone = false;
+    private boolean buffersDone = false;
+    private boolean cachedDone = false;
+    private UnixParsingState state = new UnixParsingState(3);
 
     boolean done() {
-        return state.doneCounter == 0;
+        return state.getDoneCounter() == 0;
     }
 
     void process(String line) {
@@ -43,28 +43,23 @@ final class UnixTotalMemInfoParser {
             return;
         }
 
-        if (!memFreeDone) {
-            if (parseValue(state, line, MEM_FREE_PREFIX)) {
-                memFreeDone = true;
-                return;
-            }
+        if (!memFreeDone && parseValue(state, line, MEM_FREE_PREFIX)) {
+            memFreeDone = true;
+            return;
         }
-        if (!buffersDone) {
-            if (parseValue(state, line, BUFFERS_PREFIX)) {
-                buffersDone = true;
-                return;
-            }
+
+        if (!buffersDone && parseValue(state, line, BUFFERS_PREFIX)) {
+            buffersDone = true;
+            return;
         }
-        if (!cachedDone) {
-            if (parseValue(state, line, CACHED_PREFIX)) {
-                cachedDone = true;
-                return;
-            }
+
+        if (!cachedDone && parseValue(state, line, CACHED_PREFIX)) {
+            cachedDone = true;
         }
     }
 
     public double getValue() {
-        return state.returnValue;
+        return state.getReturnValue();
     }
 
     private boolean parseValue(UnixParsingState parsingData, String line, String part) {
@@ -72,8 +67,8 @@ final class UnixTotalMemInfoParser {
         if (index != -1) {
             line = line.trim();
             String[] strings = line.split(" ");
-            parsingData.returnValue += Double.valueOf(strings[strings.length - 2]);
-            --(parsingData.doneCounter);
+            parsingData.addToReturnValue(Double.parseDouble(strings[strings.length - 2]));
+            parsingData.decrementDoneCounter();
             return true;
         }
 
