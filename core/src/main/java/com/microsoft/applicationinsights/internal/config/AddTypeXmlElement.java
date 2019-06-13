@@ -39,14 +39,14 @@ public class AddTypeXmlElement {
     private String type;
 
     @XStreamImplicit(itemFieldName = "Param")
-    private ArrayList<ParamXmlElement> paramElements;
+    private ArrayList<ParamXmlElement> paramElements = new ArrayList<>();
 
     public String getType() {
         return type;
     }
 
     public ArrayList<ParamXmlElement> getParameters() {
-        return paramElements == null ? new ArrayList<ParamXmlElement>() : paramElements;
+        return paramElements;
     }
 
     public void setType(String type) {

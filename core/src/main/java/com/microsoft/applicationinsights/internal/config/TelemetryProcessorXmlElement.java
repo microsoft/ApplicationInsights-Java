@@ -37,7 +37,7 @@ public class TelemetryProcessorXmlElement {
     private String type;
 
     @XStreamImplicit(itemFieldName = "Add")
-    private ArrayList<ParamXmlElement> adds;
+    private ArrayList<ParamXmlElement> adds = new ArrayList<>();
 
     @XStreamAlias("ExcludedTypes")
     private ParamExcludedTypeXmlElement excludedTypes;
@@ -62,7 +62,7 @@ public class TelemetryProcessorXmlElement {
     }
 
     public ArrayList<ParamXmlElement> getAdds() {
-        return adds == null ? new ArrayList<ParamXmlElement>() : adds;
+        return adds;
     }
 
     public void setAdds(ArrayList<ParamXmlElement> adds) {
