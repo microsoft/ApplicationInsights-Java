@@ -70,19 +70,19 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
             try {
                 double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
                 if (value < 0) {
-                    reportError(value, entry.getValue().displayName);
+                    reportError(value, entry.getValue().getDisplayName());
                 } else {
                     send(telemetryClient, value, entry.getValue());
                     WindowsPerformanceCounterData pcData = entry.getValue();
                     InternalLogger.INSTANCE.trace("Sent performance counter for '%s'(%s, %s, %s): '%s'",
-                            pcData.displayName, pcData.categoryName, pcData.counterName, pcData.instanceName, value);
+                            pcData.getDisplayName(), pcData.getCategoryName(), pcData.getCounterName(), pcData.getInstanceName(), value);
                 }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable e) {
                 try {
                     if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                        InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': %s", entry.getValue().displayName, ExceptionUtils.getStackTrace(e));
+                        InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': %s", entry.getValue().getDisplayName(), ExceptionUtils.getStackTrace(e));
                     }
                 } catch (ThreadDeath td) {
                     throw td;

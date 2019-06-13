@@ -29,11 +29,48 @@ import com.google.common.base.Strings;
 /**
  * Created by gupele on 3/30/2015.
  */
+@SuppressWarnings("deprecation")
 public final class WindowsPerformanceCounterData {
+    // TODO v3 make fields private
+    /**
+     * @deprecated use {@link #getDisplayName()}
+     */
+    @Deprecated
     public String displayName;
+
+    /**
+     * @deprecated use {@link #getCategoryName()}
+     */
+    @Deprecated
     public String categoryName;
+
+    /**
+     * @deprecated use {@link #getCounterName()}
+     */
+    @Deprecated
     public String counterName;
+
+    /**
+     * @deprecated use {@link #getInstanceName()}
+     */
+    @Deprecated
     public String instanceName;
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public String getCounterName() {
+        return counterName;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
 
     public WindowsPerformanceCounterData setDisplayName(String displayName) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(displayName), "displayName must be non-null and non empty value.");

@@ -109,15 +109,15 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
     private void register(Iterable<WindowsPerformanceCounterData> pcsData) {
         for (WindowsPerformanceCounterData data : pcsData) {
             try {
-                String key = JniPCConnector.addPerformanceCounter(data.categoryName, data.counterName, data.instanceName);
+                String key = JniPCConnector.addPerformanceCounter(data.getCategoryName(), data.getCounterName(), data.getInstanceName());
                 if (!StringUtils.isEmpty(key)) {
-                    keyToDisplayName.put(key, data.displayName);
+                    keyToDisplayName.put(key, data.getDisplayName());
                 }
             } catch (ThreadDeath td) {
             	throw td;
             } catch (Throwable t) {
                 try {
-                    InternalLogger.INSTANCE.trace("error registering %s, Stack trace generated is %s", data.displayName, ExceptionUtils.getStackTrace(t));
+                    InternalLogger.INSTANCE.trace("error registering %s, Stack trace generated is %s", data.getDisplayName(), ExceptionUtils.getStackTrace(t));
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
