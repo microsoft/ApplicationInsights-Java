@@ -91,9 +91,6 @@ public enum InternalLogger {
 
     private LoggerOutput loggerOutput = null;
 
-    InternalLogger() {
-    }
-
     /**
      * The method will first try to find the logger level and then the logger type.
      * Note that if there are problems initializing the data the internal logger will
