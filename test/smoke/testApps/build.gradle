@@ -37,6 +37,9 @@ subprojects {
 	}
 
 	task smokeTest(type: Test) {
+		group 'Smoke Test'
+		description 'Runs all smoke tests'
+
 		// TODO this adds the whole tree rooted at :appServers. Could this depend on :appServers which depends on :appServers:*:build?
 		dependsOn project(':test:smoke:appServers').getTasksByName('buildDockerImage', true)
 		
@@ -50,6 +53,8 @@ subprojects {
 	smokeTest.mustRunAfter assemble
 
 	processSmokeTestResources {
+		group 'Smoke Test'
+		description = "Copies test app WARs and shared resources into smoke test resources folder"
 		outputs.upToDateWhen { false }
 		dependsOn assemble
 		doLast {
