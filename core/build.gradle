@@ -114,6 +114,10 @@ dependencies {
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
     compile ([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'])
+    compile ([group: 'com.thoughtworks.xstream', name: 'xstream', version: '1.4.11.1']) {
+        exclude group: 'xmlpull', module: 'xmlpull'
+        exclude group: 'xpp3', module: 'xpp3_min'
+    }
     compile ([group: 'com.google.code.gson', name: 'gson', version: '2.8.2'])
     compile ([group: 'com.google.protobuf', name:'protobuf-java', version:'3.6.1'])
     compile ([group: 'io.grpc', name: 'grpc-stub', version: '1.16.1'])
@@ -141,6 +145,8 @@ shadowJar {
     relocate 'io.opencensus', "${dependenciesPrefix}.io.opencensus"
     relocate 'org.codehaus', "${dependenciesPrefix}.codehaus"
     relocate 'org.checkerframework', "${dependenciesPrefix}.checkerframework"
+
+    relocate 'com.thoughtworks.xstream', "${dependenciesPrefix}.xstream"
 
     exclude '**/*.proto'
 }

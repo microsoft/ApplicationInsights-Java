@@ -21,21 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by gupele on 8/8/2016.
  */
 public class JvmXmlElement {
+
+    @XStreamAsAttribute
     private String name;
+
+    @XStreamAsAttribute
     private boolean enabled = true;
 
     public String getName() {
         return name;
     }
 
-    @XmlAttribute
     public void setName(String name) {
         this.name = name;
     }
@@ -44,7 +46,6 @@ public class JvmXmlElement {
         return enabled;
     }
 
-    @XmlAttribute
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

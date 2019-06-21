@@ -22,22 +22,26 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import java.util.ArrayList;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 3/15/2015.
  */
 public class TelemetryInitializersXmlElement {
 
+    @XStreamImplicit(itemFieldName = "Add")
     private ArrayList<AddTypeXmlElement> adds;
+
+    @XStreamImplicit(itemFieldName = "Remove")
     private ArrayList<AddTypeXmlElement> removes;
 
     public ArrayList<AddTypeXmlElement> getAdds() {
         return adds;
     }
 
-    @XmlElement(name="Add")
     public void setAdds(ArrayList<AddTypeXmlElement> adds) {
         this.adds = adds;
     }
@@ -46,7 +50,6 @@ public class TelemetryInitializersXmlElement {
         return removes;
     }
 
-    @XmlElement(name="Remove")
     public void setRemoves(ArrayList<AddTypeXmlElement> removes) {
         this.removes = removes;
     }

@@ -21,16 +21,15 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import java.io.IOException;
+import java.io.InputStream;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -50,18 +49,20 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
         }
 
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(ApplicationInsightsXmlConfiguration.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            XMLStreamReader resourceFileReader = getXmlStreamReader(resourceFile);
-            
-            if (resourceFileReader == null) {
-                return null;
-            }
+            XStream xstream = new XStream(new PureJavaReflectionProvider(), new StaxDriver());
 
-            return (ApplicationInsightsXmlConfiguration)unmarshaller.unmarshal(resourceFileReader);
-        } catch (JAXBException e) {
-            InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'", ExceptionUtils.getStackTrace(e));
+            xstream.ignoreUnknownElements(); // backwards compatible with jaxb behavior
 
+            XStream.setupDefaultSecurity(xstream);
+            xstream.allowTypesByWildcard(new String[] {
+                    "com.microsoft.applicationinsights.internal.config.*"
+            });
+            xstream.processAnnotations(ApplicationInsightsXmlConfiguration.class);
+
+            return (ApplicationInsightsXmlConfiguration) xstream.fromXML(resourceFile);
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Failed to parse configuration file: '%s'",
+                    ExceptionUtils.getStackTrace(e));
         }
 
         return null;

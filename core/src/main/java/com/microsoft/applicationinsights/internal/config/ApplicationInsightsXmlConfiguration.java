@@ -21,36 +21,55 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlAttribute;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by gupele on 3/13/2015.
  */
-@XmlRootElement(name="ApplicationInsights")
+@XStreamAlias("ApplicationInsights")
 public class ApplicationInsightsXmlConfiguration {
+
+    @XStreamAlias("InstrumentationKey")
     private String instrumentationKey;
 
-    private boolean disableTelemetry = false;
+    @XStreamAlias("DisableTelemetry")
+    public boolean disableTelemetry;
 
+    @XStreamAlias("TelemetryInitializers")
     private TelemetryInitializersXmlElement telemetryInitializers;
+
+    @XStreamAlias("TelemetryProcessors")
     private TelemetryProcessorsXmlElement telemetryProcessors;
+
+    @XStreamAlias("ContextInitializers")
     private ContextInitializersXmlElement contextInitializers;
+
+    @XStreamAlias("Channel")
     private ChannelXmlElement channel = new ChannelXmlElement();
+
+    @XStreamAlias("TelemetryModules")
     private TelemetryModulesXmlElement modules;
+
+    @XStreamAlias("PerformanceCounters")
     private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
+
+    @XStreamAlias("SDKLogger")
     private SDKLoggerXmlElement sdkLogger;
+
+    @XStreamAlias("Sampling")
     private SamplerXmlElement sampler;
+
+    @XStreamAlias("QuickPulse")
     private QuickPulseXmlElement quickPulse;
 
+    @XStreamAsAttribute
     private String schemaVersion;
 
     public String getInstrumentationKey() {
         return instrumentationKey;
     }
 
-    @XmlElement(name="InstrumentationKey")
     public void setInstrumentationKey(String instrumentationKey) {
         this.instrumentationKey = instrumentationKey;
     }
@@ -59,7 +78,6 @@ public class ApplicationInsightsXmlConfiguration {
         return schemaVersion;
     }
 
-    @XmlAttribute
     public void setSchemaVersion(String schemaVersion) {
         this.schemaVersion = schemaVersion;
     }
@@ -68,7 +86,6 @@ public class ApplicationInsightsXmlConfiguration {
         return telemetryInitializers;
     }
 
-    @XmlElement(name="TelemetryInitializers")
     public void setTelemetryInitializers(TelemetryInitializersXmlElement telemetryInitializers) {
         this.telemetryInitializers = telemetryInitializers;
     }
@@ -77,7 +94,6 @@ public class ApplicationInsightsXmlConfiguration {
         return contextInitializers;
     }
 
-    @XmlElement(name="TelemetryProcessors")
     public void setTelemetryProcessors(TelemetryProcessorsXmlElement telemetryProcessors) {
         this.telemetryProcessors = telemetryProcessors;
     }
@@ -86,7 +102,6 @@ public class ApplicationInsightsXmlConfiguration {
         return telemetryProcessors;
     }
 
-    @XmlElement(name="ContextInitializers")
     public void setContextInitializers(ContextInitializersXmlElement contextInitializers) {
         this.contextInitializers = contextInitializers;
     }
@@ -95,7 +110,6 @@ public class ApplicationInsightsXmlConfiguration {
         return channel;
     }
 
-    @XmlElement(name="Channel")
     public void setChannel(ChannelXmlElement channel) {
         this.channel = channel;
     }
@@ -104,7 +118,6 @@ public class ApplicationInsightsXmlConfiguration {
         return sampler;
     }
 
-    @XmlElement(name="Sampling")
     public void setSampler(SamplerXmlElement sampler) {
         this.sampler = sampler;
     }
@@ -116,7 +129,6 @@ public class ApplicationInsightsXmlConfiguration {
         return quickPulse;
     }
 
-    @XmlElement(name="QuickPulse")
     public void setQuickPulse(QuickPulseXmlElement quickPulse) {
         this.quickPulse = quickPulse;
     }
@@ -125,7 +137,6 @@ public class ApplicationInsightsXmlConfiguration {
         return sdkLogger;
     }
 
-    @XmlElement(name="SDKLogger")
     public void setSdkLogger(SDKLoggerXmlElement sdkLogger) {
         this.sdkLogger = sdkLogger;
     }
@@ -134,7 +145,6 @@ public class ApplicationInsightsXmlConfiguration {
         return disableTelemetry;
     }
 
-    @XmlElement(name="DisableTelemetry")
     public void setDisableTelemetry(boolean disableTelemetry) {
         this.disableTelemetry = disableTelemetry;
     }
@@ -143,7 +153,6 @@ public class ApplicationInsightsXmlConfiguration {
         return modules;
     }
 
-    @XmlElement(name="TelemetryModules")
     public void setModules(TelemetryModulesXmlElement modules) {
         this.modules = modules;
     }
@@ -152,7 +161,6 @@ public class ApplicationInsightsXmlConfiguration {
         return performance;
     }
 
-    @XmlElement(name="PerformanceCounters")
     public void setPerformance(PerformanceCountersXmlElement performance) {
         this.performance = performance;
     }

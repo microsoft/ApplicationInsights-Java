@@ -21,22 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * Created by gupele on 11/2/2016.
  */
 public class SamplerXmlElement {
+
+    @XStreamAlias("Fixed")
     private FixedSamplerXmlElement fixedSamplerXmlElement;
+
+    @XStreamAlias("Adaptive")
     private AdaptiveSamplerXmlElement adaptiveSamplerXmlElement;
 
     public FixedSamplerXmlElement getFixedSamplerXmlElement() {
         return fixedSamplerXmlElement;
     }
 
-    @XmlElement(name="Fixed")
     public void setFixedSamplerXmlElement(FixedSamplerXmlElement fixedSamplerXmlElement) {
         this.fixedSamplerXmlElement = fixedSamplerXmlElement;
     }
@@ -45,7 +46,6 @@ public class SamplerXmlElement {
         return adaptiveSamplerXmlElement;
     }
 
-    @XmlElement(name="Adaptive")
     public void setAdaptiveSamplerXmlElement(AdaptiveSamplerXmlElement adaptiveSamplerXmlElement) {
         this.adaptiveSamplerXmlElement = adaptiveSamplerXmlElement;
     }

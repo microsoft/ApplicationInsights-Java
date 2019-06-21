@@ -24,25 +24,36 @@ package com.microsoft.applicationinsights.internal.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+
 /**
  * Created by gupele on 3/15/2015.
  */
 public class SDKLoggerXmlElement {
+
+    @XStreamAsAttribute
     private String type = "CONSOLE";
+
+    @XStreamAlias("Level")
     private String level;
+
+    @XStreamAlias("UniquePrefix")
     private String uniquePrefix;
+
+    @XStreamAlias("BaseFolderPath")
     private String baseFolderPath;
+
+    @XStreamAlias("NumberOfFiles")
     private String numberOfFiles;
+
+    @XStreamAlias("NumberOfTotalSizeInMB")
     private String numberOfTotalSizeInMB;
 
     public String getType() {
         return type;
     }
 
-    @XmlAttribute(name="type")
     public void setType(String type) {
         this.type = type;
     }
@@ -51,7 +62,6 @@ public class SDKLoggerXmlElement {
         return level;
     }
 
-    @XmlElement(name="Level")
     public void setLevel(String level) {
         this.level = level;
     }
@@ -60,7 +70,6 @@ public class SDKLoggerXmlElement {
         return uniquePrefix;
     }
 
-    @XmlElement(name="UniquePrefix")
     public void setUniquePrefix(String uniquePrefix) {
         this.uniquePrefix = uniquePrefix;
     }
@@ -69,7 +78,6 @@ public class SDKLoggerXmlElement {
         return numberOfFiles;
     }
 
-    @XmlElement(name="BaseFolderPath")
     public void setBaseFolderPath(String baseFolderPath) {
         this.baseFolderPath = baseFolderPath;
     }
@@ -78,7 +86,6 @@ public class SDKLoggerXmlElement {
         return baseFolderPath;
     }
 
-    @XmlElement(name="NumberOfFiles")
     public void setNumberOfFiles(String numberOfFiles) {
         this.numberOfFiles = numberOfFiles;
     }
@@ -87,7 +94,6 @@ public class SDKLoggerXmlElement {
         return numberOfTotalSizeInMB;
     }
 
-    @XmlElement(name="NumberOfTotalSizeInMB")
     public void setNumberOfTotalSizeInMB(String numberOfTotalSizeInMB) {
         this.numberOfTotalSizeInMB = numberOfTotalSizeInMB;
     }

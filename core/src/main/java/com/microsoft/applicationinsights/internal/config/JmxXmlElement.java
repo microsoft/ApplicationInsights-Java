@@ -21,13 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * Created by gupele on 3/15/2015.
  */
+@XStreamAlias("Add")
 public class JmxXmlElement {
+
     private String displayName;
     private String objectName;
     private String attribute;
@@ -37,7 +38,6 @@ public class JmxXmlElement {
         return displayName;
     }
 
-    @XmlAttribute
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
@@ -46,7 +46,6 @@ public class JmxXmlElement {
         return objectName;
     }
 
-    @XmlAttribute
     public void setObjectName(String objectName) {
         this.objectName = objectName;
     }
@@ -55,20 +54,15 @@ public class JmxXmlElement {
         return attribute;
     }
 
-    @XmlAttribute
     public void setAttribute(String attribute) {
         this.attribute = attribute;
     }
 
     public String getType() {
-        return type;
+        return type == null ? null : type.toUpperCase();
     }
 
-    @XmlAttribute
     public void setType(String type) {
         this.type = type;
-        if (this.type != null) {
-            this.type = this.type.toUpperCase();
-        }
     }
 }
