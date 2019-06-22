@@ -74,7 +74,7 @@ public final class WebRequestTrackingFilter implements Filter {
     final static String FILTER_NAME = "ApplicationInsightsWebFilter";
     private final static String WEB_INF_FOLDER = "WEB-INF/";
 
-    private WebModulesContainer<HttpServletRequest, HttpServletResponse> webModulesContainer;
+    private WebModulesContainer webModulesContainer;
     private TelemetryClient telemetryClient;
     private final List<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
@@ -90,7 +90,7 @@ public final class WebRequestTrackingFilter implements Filter {
     /**
      * Utility handler used to instrument request start and end
      */
-    HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
+    HttpServerHandler handler;
 
     /**
      * Used to indicate if agent is registered to webapp.
@@ -166,10 +166,10 @@ public final class WebRequestTrackingFilter implements Filter {
             }
             configureWebAppNameContextInitializer(appName, configuration);
             telemetryClient = new TelemetryClient(configuration);
-            webModulesContainer = new WebModulesContainer<>(configuration);
+            webModulesContainer = new WebModulesContainer(configuration);
             // Todo: Should we provide this via dependency injection? Can there be a scenario where user
             // can provide his own handler?
-            handler = new HttpServerHandler<>(new ApplicationInsightsServletExtractor(), webModulesContainer,
+            handler = new HttpServerHandler(new ApplicationInsightsServletExtractor(), webModulesContainer,
                                                 cleaners, telemetryClient);
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();

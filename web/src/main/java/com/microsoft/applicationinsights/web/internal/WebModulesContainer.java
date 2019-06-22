@@ -29,11 +29,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
 /**
  * Created by yonisha on 2/3/2015.
  */
-public class WebModulesContainer<P, Q> {
-    private List<WebTelemetryModule<P, Q>> modules = new ArrayList<>();
+public class WebModulesContainer {
+    private List<WebTelemetryModule> modules = new ArrayList<>();
     private int modulesCount = 0;
 
     /**
@@ -50,8 +53,8 @@ public class WebModulesContainer<P, Q> {
      * @param req The request to process
      * @param res The response to process
      */
-    public void invokeOnBeginRequest(P req, Q res) {
-        for (WebTelemetryModule<P, Q> module : modules) {
+    public void invokeOnBeginRequest(ServletRequest req, ServletResponse res) {
+        for (WebTelemetryModule module : modules) {
             try {
                 module.onBeginRequest(req, res);
             } catch (Exception e) {
@@ -66,8 +69,8 @@ public class WebModulesContainer<P, Q> {
      * @param req The request to process
      * @param res The response to process
      */
-    public void invokeOnEndRequest(P req, Q res) {
-        for (WebTelemetryModule<P, Q> module : modules) {
+    public void invokeOnEndRequest(ServletRequest req, ServletResponse res) {
+        for (WebTelemetryModule module : modules) {
             try {
                 module.onEndRequest(req, res);
             } catch (Exception e) {
@@ -95,7 +98,7 @@ public class WebModulesContainer<P, Q> {
 
         for (TelemetryModule module : configuration.getTelemetryModules()) {
             if (module instanceof WebTelemetryModule) {
-                modules.add((WebTelemetryModule<P, Q>)module);
+                modules.add((WebTelemetryModule)module);
             }
         }
     }

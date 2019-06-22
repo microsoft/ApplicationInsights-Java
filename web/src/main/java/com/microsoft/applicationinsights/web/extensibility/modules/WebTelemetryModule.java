@@ -21,23 +21,24 @@
 
 package com.microsoft.applicationinsights.web.extensibility.modules;
 
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 /**
  * Created by yonisha on 2/2/2015.
  */
-public interface WebTelemetryModule<P, Q> {
+public interface WebTelemetryModule {
     /**
      * Begin request processing.
      * @param req The request to process
      * @param res The response to modify
      */
-    void onBeginRequest(P req, Q res);
+    void onBeginRequest(ServletRequest req, ServletResponse res);
 
     /**
      * End request processing.
      * @param req The request to process
      * @param res The response to modify
      */
-    void onEndRequest(P req, Q res);
+    void onEndRequest(ServletRequest req, ServletResponse res);
 }

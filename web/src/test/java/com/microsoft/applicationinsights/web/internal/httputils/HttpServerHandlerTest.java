@@ -38,10 +38,9 @@ public class HttpServerHandlerTest {
     @Rule public final ExpectedException thrown = ExpectedException.none();
     @Mock public HttpExtractor<HttpServletRequest, HttpServletResponse> extractor;
     private TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.getActive();
-    @Spy public WebModulesContainer<HttpServletRequest,HttpServletResponse> webModulesContainer =
-        new WebModulesContainer<>(telemetryConfiguration);
+    @Spy public WebModulesContainer webModulesContainer = new WebModulesContainer(telemetryConfiguration);
     @Spy public TelemetryClient telemetryClient;
-    @InjectMocks HttpServerHandler<HttpServletRequest, HttpServletResponse> httpServerHandler;
+    @InjectMocks HttpServerHandler httpServerHandler;
     @Mock HttpServletRequest request;
     @Mock HttpServletResponse response;
     @Mock HttpServletRequest requestWithQueryString;
@@ -79,18 +78,18 @@ public class HttpServerHandlerTest {
     @Test
     public void httpServerHandlerDoesNotExceptNullExtractor() {
         thrown.expect(NullPointerException.class);
-        new HttpServerHandler<>(null, webModulesContainer, threadLocalCleaners, telemetryClient);
+        new HttpServerHandler(null, webModulesContainer, threadLocalCleaners, telemetryClient);
     }
 
     @Test
     public void httpServerHandlerDoesNotExceptNullWebModulesContainer() {
         thrown.expect(NullPointerException.class);
-        new HttpServerHandler<>(extractor, null, threadLocalCleaners, telemetryClient);
+        new HttpServerHandler(extractor, null, threadLocalCleaners, telemetryClient);
     }
 
     @Test
     public void httpServerHandlerAcceptsNullTelemetryClient() {
-        new HttpServerHandler<>(extractor, webModulesContainer, threadLocalCleaners,null);
+        new HttpServerHandler(extractor, webModulesContainer, threadLocalCleaners,null);
     }
 
     @Test

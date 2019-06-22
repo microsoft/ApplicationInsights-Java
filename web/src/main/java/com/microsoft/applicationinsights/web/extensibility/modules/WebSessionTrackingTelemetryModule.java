@@ -27,13 +27,15 @@ import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.SessionCookie;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by yonisha on 2/4/2015.
  */
-public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule{
+public class WebSessionTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule{
 
     // region Public
 
@@ -51,11 +53,19 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
      * @param res The response to modify
      */
     @Override
-    public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
+    public void onBeginRequest(ServletRequest req, ServletResponse res) {
+        pullSessionIdFromCookie(req);
+    }
+
+    private void pullSessionIdFromCookie(ServletRequest req) {
+        if (!(req instanceof HttpServletRequest)) {
+            return;
+        }
+        HttpServletRequest request = (HttpServletRequest) req;
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
         SessionCookie sessionCookie =
             com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
-                SessionCookie.class, req, SessionCookie.COOKIE_NAME);
+                SessionCookie.class, request, SessionCookie.COOKIE_NAME);
         if (sessionCookie == null) {
             return;
         }
@@ -63,6 +73,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
         String sessionId = sessionCookie.getSessionId();
         getTelemetrySessionContext(context).setId(sessionId);
     }
+
 
     /**
      * End request processing.
@@ -73,7 +84,7 @@ public class WebSessionTrackingTelemetryModule implements WebTelemetryModule<Htt
      * @param res The response to modify
      */
     @Override
-    public void onEndRequest(HttpServletRequest req, HttpServletResponse res) {
+    public void onEndRequest(ServletRequest req, ServletResponse res) {
     }
 
     // endregion Public

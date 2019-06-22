@@ -31,14 +31,15 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
 import java.util.Map;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by yonisha on 2/2/2015.
  */
-public class WebRequestTrackingTelemetryModule
-    implements WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
+public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
 
     // region Members
 
@@ -100,7 +101,7 @@ public class WebRequestTrackingTelemetryModule
      * @param res The response to modify
      */
     @Override
-    public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
+    public void onBeginRequest(ServletRequest req, ServletResponse res) {
         if (!isInitialized) {
             // Avoid logging to not spam the log. It is sufficient that the module initialization failure
             // has been logged.
@@ -108,20 +109,29 @@ public class WebRequestTrackingTelemetryModule
         }
 
         try {
-            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-            RequestTelemetry telemetry = context.getHttpRequestTelemetry();
-
-            // Look for cross-component correlation headers and resolve correlation ID's
-            if (isW3CEnabled) {
-                TraceContextCorrelation.resolveCorrelation(req, res, telemetry);
-            } else {
-                // Default correlation experience
-                TelemetryCorrelationUtils.resolveCorrelation(req, res, telemetry);
-            }
+            resolveCorrelation(req, res);
 
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.error("Telemetry module %s onBeginRequest failed with exception: %s", moduleClassName, e.toString());
+        }
+    }
+
+    private void resolveCorrelation(ServletRequest req, ServletResponse res) {
+        if (!(req instanceof HttpServletRequest && res instanceof HttpServletResponse)) {
+            return;
+        }
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+        RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
+        RequestTelemetry telemetry = context.getHttpRequestTelemetry();
+
+        // Look for cross-component correlation headers and resolve correlation ID's
+        if (isW3CEnabled) {
+            TraceContextCorrelation.resolveCorrelation(request, response, telemetry);
+        } else {
+            // Default correlation experience
+            TelemetryCorrelationUtils.resolveCorrelation(request, response, telemetry);
         }
     }
 
@@ -131,7 +141,7 @@ public class WebRequestTrackingTelemetryModule
      * @param res The response to modify
      */
     @Override
-    public void onEndRequest(HttpServletRequest req, HttpServletResponse res) {
+    public void onEndRequest(ServletRequest req, ServletResponse res) {
         if (!isInitialized) {
             // Avoid logging to not spam the log. It is sufficient that the module initialization failure
             // has been logged.
@@ -141,17 +151,22 @@ public class WebRequestTrackingTelemetryModule
         try {
             RequestTelemetry telemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
 
-            String instrumentationKey = this.telemetryClient.getContext().getInstrumentationKey();
-            if (isW3CEnabled) {
-                TraceContextCorrelation.resolveRequestSource(req, telemetry, instrumentationKey);
-            } else {
-                TelemetryCorrelationUtils.resolveRequestSource(req, telemetry, instrumentationKey);
-            }
+            resolveRequestSource(req, telemetry);
 
             telemetryClient.track(telemetry);
         } catch (Exception e) {
             String moduleClassName = this.getClass().getSimpleName();
             InternalLogger.INSTANCE.error("Telemetry module %s onEndRequest failed with exception: %s", moduleClassName, e.toString());
+        }
+    }
+
+    private void resolveRequestSource(ServletRequest req, RequestTelemetry telemetry) {
+        HttpServletRequest request = (HttpServletRequest) req;
+        String instrumentationKey = this.telemetryClient.getContext().getInstrumentationKey();
+        if (isW3CEnabled) {
+            TraceContextCorrelation.resolveRequestSource(request, telemetry, instrumentationKey);
+        } else {
+            TelemetryCorrelationUtils.resolveRequestSource(request, telemetry, instrumentationKey);
         }
     }
 

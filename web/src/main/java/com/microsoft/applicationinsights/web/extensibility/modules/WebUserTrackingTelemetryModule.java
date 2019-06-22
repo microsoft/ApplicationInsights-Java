@@ -28,14 +28,15 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.cookies.UserCookie;
 import java.util.Date;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by yonisha on 2/7/2015.
  */
-public class WebUserTrackingTelemetryModule implements
-    WebTelemetryModule<HttpServletRequest, HttpServletResponse>, TelemetryModule {
+public class WebUserTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
 
     /**
      * Initializes the telemetry module.
@@ -52,11 +53,19 @@ public class WebUserTrackingTelemetryModule implements
      * @param res The response to modify
      */
     @Override
-    public void onBeginRequest(HttpServletRequest req, HttpServletResponse res) {
+    public void onBeginRequest(ServletRequest req, ServletResponse res) {
+        updateUserContext(req);
+    }
+
+    private void updateUserContext(ServletRequest req) {
+        if (!(req instanceof HttpServletRequest)) {
+            return;
+        }
+        HttpServletRequest request = (HttpServletRequest) req;
         RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
         UserCookie userCookie =
             com.microsoft.applicationinsights.web.internal.cookies.Cookie.getCookie(
-                UserCookie.class, req, UserCookie.COOKIE_NAME);
+                UserCookie.class, request, UserCookie.COOKIE_NAME);
         if (userCookie == null) {
             return;
         }
@@ -75,7 +84,7 @@ public class WebUserTrackingTelemetryModule implements
      * @param res The response to modify
      */
     @Override
-    public void onEndRequest(HttpServletRequest req, HttpServletResponse res) {
+    public void onEndRequest(ServletRequest req, ServletResponse res) {
     }
 
     // endregion Public
