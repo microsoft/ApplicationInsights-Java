@@ -12,30 +12,26 @@ import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
 import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.annotation.Experimental;
 
 /**
  * This Helper Handler class provides the required methods to instrument requests.
- * @param <P> The HttpRequest entity
- * @param <Q> The HttpResponse entity
  */
-@Experimental
-public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
+public final class HttpServerHandler {
 
     /**
      * Extractor to extract data from request and response
      */
-    private final HttpExtractor<P, Q> extractor;
+    private final HttpExtractor extractor;
 
     /**
      * Container that holds collection of
      * {@link com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule}
      */
-    private final WebModulesContainer<P, Q> webModulesContainer;
+    private final WebModulesContainer webModulesContainer;
 
     /**
      * An instance of {@link TelemetryClient} responsible to track exceptions
@@ -55,8 +51,8 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
      *        {@link com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule}
      * @param telemetryClient The {@code TelemetryClient} used to send telemetry
      */
-    public HttpServerHandler(HttpExtractor<P, Q> extractor,
-        WebModulesContainer<P, Q> webModulesContainer,
+    public HttpServerHandler(HttpExtractor extractor,
+        WebModulesContainer webModulesContainer,
         List<ThreadLocalCleaner> cleaners,
         /* Nullable */ TelemetryClient telemetryClient) {
         Validate.notNull(extractor, "extractor");
@@ -70,13 +66,13 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
 
     /**
      * This method is used to instrument incoming request and initiate correlation with help of
-     * {@link com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule#onBeginRequest(HttpServletRequest, HttpServletResponse)}
+     * {@link com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule#onBeginRequest(ServletRequest, ServletResponse)}
      * @param request incoming Request
      * @param response Response object
      * @return {@link RequestTelemetryContext} that contains correlation information and metadata about request
      * @throws MalformedURLException
      */
-    public RequestTelemetryContext handleStart(P request, Q response) throws MalformedURLException {
+    public RequestTelemetryContext handleStart(ServletRequest request, ServletResponse response) throws MalformedURLException {
         RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(),null);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         ThreadContext.setRequestTelemetryContext(context);
@@ -107,7 +103,7 @@ public final class HttpServerHandler<P /* >>> extends @NonNull Object */, Q> {
      * @param response HttpResponse object
      * @param context RequestTelemetryContext object
      */
-    public void handleEnd(P request, Q response,
+    public void handleEnd(ServletRequest request, ServletResponse response,
                           RequestTelemetryContext context) {
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         long endTime = new Date().getTime();

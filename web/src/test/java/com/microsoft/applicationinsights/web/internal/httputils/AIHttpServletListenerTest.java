@@ -41,11 +41,10 @@ public class AIHttpServletListenerTest {
     @Mock public RequestTelemetryContext requestTelemetryContext;
     @Mock public HttpExtractor<HttpServletRequest, HttpServletResponse> extractor;
     private TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.getActive();
-    @Spy public WebModulesContainer<HttpServletRequest,HttpServletResponse> webModulesContainer =
-            new WebModulesContainer<>(telemetryConfiguration);
+    @Spy public WebModulesContainer webModulesContainer = new WebModulesContainer(telemetryConfiguration);
     @Spy public TelemetryClient telemetryClient;
     @Mock public List<ThreadLocalCleaner> threadLocalCleanerList;
-    @InjectMocks HttpServerHandler<HttpServletRequest, HttpServletResponse> httpServerHandler;
+    @InjectMocks HttpServerHandler httpServerHandler;
     private AIHttpServletListener listener;
     @Mock HttpServletRequest request;
     @Mock HttpServletResponse response;

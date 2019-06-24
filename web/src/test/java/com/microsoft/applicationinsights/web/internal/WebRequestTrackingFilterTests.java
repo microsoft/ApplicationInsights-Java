@@ -22,13 +22,10 @@
 package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
 import java.util.List;
-import org.apache.http.HttpRequest;
 import org.junit.Assert;
 import org.junit.Test;
 import javax.servlet.*;
@@ -58,10 +55,9 @@ public class WebRequestTrackingFilterTests {
     private static class FilterAndTelemetryClientMock {
         public final Filter filter;
         public final TelemetryClient mockTelemetryClient;
-        final HttpServerHandler<HttpServletRequest, HttpServletResponse> handler;
+        final HttpServerHandler handler;
 
-        private FilterAndTelemetryClientMock(Filter filter, TelemetryClient mockTelemetryClient,
-            HttpServerHandler<HttpServletRequest, HttpServletResponse> handler) {
+        private FilterAndTelemetryClientMock(Filter filter, TelemetryClient mockTelemetryClient, HttpServerHandler handler) {
             this.filter = filter;
             this.mockTelemetryClient = mockTelemetryClient;
             this.handler = handler;
@@ -236,9 +232,7 @@ public class WebRequestTrackingFilterTests {
             }
         }
         HttpExtractor<HttpServletRequest, HttpServletResponse> extractor = spy(new ApplicationInsightsServletExtractor());
-        HttpServerHandler<HttpServletRequest, HttpServletResponse> handler = new HttpServerHandler<>(
-            extractor, mock(WebModulesContainer.class), mock(List.class), mockTelemetryClient
-        );
+        HttpServerHandler handler = new HttpServerHandler(extractor, mock(WebModulesContainer.class), mock(List.class), mockTelemetryClient);
         field.set(filter, mockTelemetryClient);
         field1.set(filter,  handler);
 
