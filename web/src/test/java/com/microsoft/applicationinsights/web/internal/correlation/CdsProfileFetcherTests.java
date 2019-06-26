@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
 import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockHttpAsyncClientWrapper;
 import org.apache.http.ParseException;
 import org.junit.*;
