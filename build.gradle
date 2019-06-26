@@ -71,6 +71,20 @@ allprojects {
             logger.info("options.compilerArgs = $options.compilerArgs")
         }
     }
+
+    tasks.withType(ShadowJar) {
+        exclude 'META-INF/maven/**'
+        exclude 'META-INF/LICENSE*'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE*'
+        from "${rootProject.projectDir}/NOTICE"
+        from "${rootProject.projectDir}/LICENSE"
+    }
+
+    tasks.withType(Jar) {
+        from "${rootProject.projectDir}/NOTICE"
+        from "${rootProject.projectDir}/LICENSE"
+    }
 }
 
 // endregion Root project script
