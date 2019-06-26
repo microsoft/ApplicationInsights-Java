@@ -3,12 +3,10 @@ package com.microsoft.applicationinsights.internal.profile;
 /**
  * Responsible for CDS Retry Policy configuration.
  */
-public enum CdsRetryPolicy {
-    /**
-     * Cached instance to be reused across SDK for CDS Profile fetch calls.
-     */
-    INSTANCE;
+public class CdsRetryPolicy {
 
+    public static final int DEFAULT_MAX_INSTANT_RETRIES = 3;
+    public static final int DEFAULT_RESET_PERIOD_IN_MINUTES = 240;
     /**
      * Maximum number of instant retries to CDS to resolve ikey to AppId.
      */
@@ -41,22 +39,9 @@ public enum CdsRetryPolicy {
         this.resetPeriodInMinutes = resetPeriodInMinutes;
     }
 
-    /**
-     * Private Constructor that sets the default value of maxInstantRetries to 3
-     * and default resetPeriodInMinutes to 240.
-     */
-    CdsRetryPolicy() {
-        maxInstantRetries = 3;
-        resetPeriodInMinutes = 240;
-    }
-
-    /**
-     * Resets the CDS configuration policy to default.
-     */
-    /* Visible for Testing */
-    void resetConfiguration() {
-        INSTANCE.maxInstantRetries = 3;
-        INSTANCE.resetPeriodInMinutes = 240;
+    public CdsRetryPolicy() {
+        maxInstantRetries = DEFAULT_MAX_INSTANT_RETRIES;
+        resetPeriodInMinutes = DEFAULT_RESET_PERIOD_IN_MINUTES;
     }
 }
 

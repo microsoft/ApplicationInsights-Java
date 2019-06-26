@@ -40,8 +40,8 @@ public class CdsProfileFetcherTests {
 
     @Before
     public void prepare() {
-        CdsRetryPolicy.INSTANCE.setResetPeriodInMinutes(1);
         testFetcher = new CdsProfileFetcher();
+        testFetcher.getRetryPolicy().setResetPeriodInMinutes(1);
     }
 
     @After
@@ -211,8 +211,7 @@ public class CdsProfileFetcherTests {
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
 
-        CdsRetryPolicy configuration = CdsRetryPolicy.INSTANCE;
-        configuration.setResetPeriodInMinutes(1);
+        testFetcher.getRetryPolicy().setResetPeriodInMinutes(1);
         testFetcher.setHttpClient(clientWrapper.getClient());
 
         clientWrapper.setTaskAsPending();

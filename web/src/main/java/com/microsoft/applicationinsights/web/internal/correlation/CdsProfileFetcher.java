@@ -57,6 +57,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     /* Visible for Testing */ final ConcurrentMap<String, Integer> failureCounters;
 
     private final PeriodicTaskPool taskThreadPool;
+    private final CdsRetryPolicy retryPolicy = new CdsRetryPolicy();
 
     public CdsProfileFetcher() {
         taskThreadPool = new PeriodicTaskPool(1, CdsProfileFetcher.class.getSimpleName());
@@ -72,7 +73,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             .useSystemProperties()
             .build());
 
-        long resetInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
+        long resetInterval = retryPolicy.getResetPeriodInMinutes();
         PeriodicTaskPool.PeriodicRunnableTask cdsRetryClearTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new CachePurgingRunnable(),
                 resetInterval, resetInterval, TimeUnit.MINUTES, "cdsRetryClearTask");
 
@@ -86,6 +87,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         SDKShutdownActivity.INSTANCE.register(this);
     }
 
+    public CdsRetryPolicy getRetryPolicy() {
+        return retryPolicy;
+    }
+
 	@Override
 	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException {
 
@@ -96,11 +101,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         ProfileFetcherResult result = new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.PENDING);
 
         // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
-        if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >=
-                CdsRetryPolicy.INSTANCE.getMaxInstantRetries()) {
+        if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >= retryPolicy.getMaxInstantRetries()) {
             InternalLogger.INSTANCE.warn(String.format(
                     "The profile fetch task will not execute for next %d minutes. Max number of retries reached.",
-                    CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes()));
+                    retryPolicy.getResetPeriodInMinutes()));
             return result;
         }
 
