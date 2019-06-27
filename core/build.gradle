@@ -143,8 +143,6 @@ shadowJar {
     relocate 'org.checkerframework', "${dependenciesPrefix}.checkerframework"
 
     exclude '**/*.proto'
-    exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
-    exclude 'mozilla/**'
 }
 
 jar {
