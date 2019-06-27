@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 /*
  * ApplicationInsights-Java
  * Copyright (c) Microsoft Corporation
@@ -24,10 +26,12 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
         classpath 'org.owasp:dependency-check-gradle:4.0.2'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
     }
 }
 
@@ -66,6 +70,20 @@ allprojects {
             logger.info("options.bootstrapClasspath = $options.bootstrapClasspath")
             logger.info("options.compilerArgs = $options.compilerArgs")
         }
+    }
+
+    tasks.withType(ShadowJar) {
+        exclude 'META-INF/maven/**'
+        exclude 'META-INF/LICENSE*'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE*'
+        from "${rootProject.projectDir}/NOTICE"
+        from "${rootProject.projectDir}/LICENSE"
+    }
+
+    tasks.withType(Jar) {
+        from "${rootProject.projectDir}/NOTICE"
+        from "${rootProject.projectDir}/LICENSE"
     }
 }
 

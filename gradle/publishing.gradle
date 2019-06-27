@@ -135,7 +135,7 @@ def updatePomWithGeneralProjectInformation(pomObject) {
             def pomText = asString()
              def licenseComment = new StringBuilder()
             licenseComment.append("<!--\n")
-            licenseComment.append(rootProject.file("LICENSE.txt").text)
+            licenseComment.append(rootProject.file("LICENSE").text)
             licenseComment.append("\n-->\n")
             // insert in pom.xml after the first row (xml declaration)
             pomText.insert(pomText.indexOf(String.valueOf((char)'\n')) + 1, licenseComment)
