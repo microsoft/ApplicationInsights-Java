@@ -26,7 +26,7 @@
         <property name="eachLine" value="true"/>
     </module>
     <module name="Header">
-        <property name="headerFile" value="config/java.header" /> <!-- this file will contain the copyright notice -->
+        <property name="headerFile" value="${config_loc}/java.header" />
         <property name="fileExtensions" value="java" />
     </module>
     <module name="TreeWalker">

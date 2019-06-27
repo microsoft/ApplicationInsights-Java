@@ -37,8 +37,16 @@ tasks.withType(JavaCompile) {
 
 checkstyle {
     toolVersion = '8.15'
-    configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
-    configProperties["rootDir"] = rootDir
+    configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
+    configProperties["rootDir"] = rootProject.projectDir
+    showViolations = false
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled true
+        html.enabled !isBuildServer
+    }
 }
 
 jacoco {
