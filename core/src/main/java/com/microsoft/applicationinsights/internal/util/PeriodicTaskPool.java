@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * Here is a class that uses PeriodicTaskManager to execute {@link PeriodicRunnableTask}
  *
  * <pre> {@code
- * import com.microsoft.applicationinsights.internal.util.PeriodicTaskManager;
+ * import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
  * public class BeeperControl {
  *     public void beepForHour() {
  *        final Runnable beeper = new Runnable() {
@@ -30,10 +30,10 @@ import java.util.concurrent.TimeUnit;
  *         };
  *
  *         // create the PeriodicRunnableTask from runnable
- *         PeriodicTaskManager.PeriodicRunnableTask periodicTask = PeriodicTaskManager.PeriodicRunnableTask.getInstance(beeper,
+ *         PeriodicTaskPool.PeriodicRunnableTask periodicTask = PeriodicTaskPool.PeriodicRunnableTask.getInstance(beeper,
  *                 0, 1, TimeUnit.SECONDS, PeriodicTaskManager.class,
  *                 "Beeper");
- *         ScheduledFuture<?> future = PeriodicTaskManager.INSTANCE.executePeriodicRunnableTask(periodicTask);
+ *         ScheduledFuture<?> future = periodicTaskPool.executePeriodicRunnableTask(periodicTask);
  *
  *         // Cancel the PeriodicRunnableTask
  *         PeriodicTaskManager.INSTANCE.cancelPeriodicTask(periodicTask);

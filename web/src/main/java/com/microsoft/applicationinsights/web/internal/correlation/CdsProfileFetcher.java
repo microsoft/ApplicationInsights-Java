@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.profile.CdsRetryPolicy;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import org.apache.http.HttpResponse;
@@ -57,22 +56,28 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     /* Visible for Testing */ final ConcurrentMap<String, Integer> failureCounters;
 
     private final PeriodicTaskPool taskThreadPool;
+    private final CdsRetryPolicy retryPolicy;
 
     public CdsProfileFetcher() {
+        this(new CdsRetryPolicy());
+    }
+
+    public CdsProfileFetcher(CdsRetryPolicy retryPolicy) {
         taskThreadPool = new PeriodicTaskPool(1, CdsProfileFetcher.class.getSimpleName());
+        this.retryPolicy = retryPolicy;
 
         RequestConfig requestConfig = RequestConfig.custom()
-            .setSocketTimeout(5000)
-            .setConnectTimeout(5000)
-            .setConnectionRequestTimeout(5000)
-            .build();
+                .setSocketTimeout(5000)
+                .setConnectTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .build();
 
         setHttpClient(HttpAsyncClients.custom()
-            .setDefaultRequestConfig(requestConfig)
-            .useSystemProperties()
-            .build());
+                .setDefaultRequestConfig(requestConfig)
+                .useSystemProperties()
+                .build());
 
-        long resetInterval = CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes();
+        long resetInterval = retryPolicy.getResetPeriodInMinutes();
         PeriodicTaskPool.PeriodicRunnableTask cdsRetryClearTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new CachePurgingRunnable(),
                 resetInterval, resetInterval, TimeUnit.MINUTES, "cdsRetryClearTask");
 
@@ -80,7 +85,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         this.failureCounters = new ConcurrentHashMap<>();
         this.endpointAddress = DefaultProfileQueryEndpointAddress;
 
-        ScheduledFuture<?> future = taskThreadPool.executePeriodicRunnableTask(cdsRetryClearTask);
+        taskThreadPool.executePeriodicRunnableTask(cdsRetryClearTask);
         this.httpClient.start();
 
         SDKShutdownActivity.INSTANCE.register(this);
@@ -96,11 +101,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         ProfileFetcherResult result = new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.PENDING);
 
         // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
-        if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >=
-                CdsRetryPolicy.INSTANCE.getMaxInstantRetries()) {
+        if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >= retryPolicy.getMaxInstantRetries()) {
             InternalLogger.INSTANCE.warn(String.format(
                     "The profile fetch task will not execute for next %d minutes. Max number of retries reached.",
-                    CdsRetryPolicy.INSTANCE.getResetPeriodInMinutes()));
+                    retryPolicy.getResetPeriodInMinutes()));
             return result;
         }
 
@@ -184,8 +188,51 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         public void run() {
             tasks.clear();
             failureCounters.clear();
-            InternalLogger.INSTANCE.info("CDS Profile fetch retry counter has been Reset. Pending fetch tasks" +
-                    "have been abandoned.");
+        }
+    }
+
+    /**
+     * Responsible for CDS Retry Policy configuration.
+     */
+    public static class CdsRetryPolicy {
+
+        public static final int DEFAULT_MAX_INSTANT_RETRIES = 3;
+        public static final int DEFAULT_RESET_PERIOD_IN_MINUTES = 240;
+        /**
+         * Maximum number of instant retries to CDS to resolve ikey to AppId.
+         */
+        private int maxInstantRetries;
+
+        /**
+         * The interval in minutes for retry counters and pending tasks to be cleaned.
+         */
+        private long resetPeriodInMinutes;
+
+        public int getMaxInstantRetries() {
+            return maxInstantRetries;
+        }
+
+        public long getResetPeriodInMinutes() {
+            return resetPeriodInMinutes;
+        }
+
+        public void setMaxInstantRetries(int maxInstantRetries) {
+            if (maxInstantRetries < 1) {
+                throw new IllegalArgumentException("CDS maxInstantRetries should be at least 1");
+            }
+            this.maxInstantRetries = maxInstantRetries;
+        }
+
+        public void setResetPeriodInMinutes(long resetPeriodInMinutes) {
+            if (resetPeriodInMinutes < 1) {
+                throw new IllegalArgumentException("CDS retries reset interval should be at least 1 minute");
+            }
+            this.resetPeriodInMinutes = resetPeriodInMinutes;
+        }
+
+        public CdsRetryPolicy() {
+            maxInstantRetries = DEFAULT_MAX_INSTANT_RETRIES;
+            resetPeriodInMinutes = DEFAULT_RESET_PERIOD_IN_MINUTES;
         }
     }
 }
