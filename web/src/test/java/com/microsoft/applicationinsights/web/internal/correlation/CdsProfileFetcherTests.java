@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher.CdsRetryPolicy;
 import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockHttpAsyncClientWrapper;
 import org.apache.http.ParseException;
 import org.junit.*;
@@ -39,8 +40,9 @@ public class CdsProfileFetcherTests {
 
     @Before
     public void prepare() {
-        testFetcher = new CdsProfileFetcher();
-        testFetcher.getRetryPolicy().setResetPeriodInMinutes(1);
+        CdsRetryPolicy rp = new CdsRetryPolicy();
+        rp.setResetPeriodInMinutes(1);
+        testFetcher = new CdsProfileFetcher(rp);
     }
 
     @After
@@ -210,7 +212,6 @@ public class CdsProfileFetcherTests {
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
 
-        testFetcher.getRetryPolicy().setResetPeriodInMinutes(1);
         testFetcher.setHttpClient(clientWrapper.getClient());
 
         clientWrapper.setTaskAsPending();

@@ -56,21 +56,26 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     /* Visible for Testing */ final ConcurrentMap<String, Integer> failureCounters;
 
     private final PeriodicTaskPool taskThreadPool;
-    private final CdsRetryPolicy retryPolicy = new CdsRetryPolicy();
+    private final CdsRetryPolicy retryPolicy;
 
     public CdsProfileFetcher() {
+        this(new CdsRetryPolicy());
+    }
+
+    public CdsProfileFetcher(CdsRetryPolicy retryPolicy) {
         taskThreadPool = new PeriodicTaskPool(1, CdsProfileFetcher.class.getSimpleName());
+        this.retryPolicy = retryPolicy;
 
         RequestConfig requestConfig = RequestConfig.custom()
-            .setSocketTimeout(5000)
-            .setConnectTimeout(5000)
-            .setConnectionRequestTimeout(5000)
-            .build();
+                .setSocketTimeout(5000)
+                .setConnectTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .build();
 
         setHttpClient(HttpAsyncClients.custom()
-            .setDefaultRequestConfig(requestConfig)
-            .useSystemProperties()
-            .build());
+                .setDefaultRequestConfig(requestConfig)
+                .useSystemProperties()
+                .build());
 
         long resetInterval = retryPolicy.getResetPeriodInMinutes();
         PeriodicTaskPool.PeriodicRunnableTask cdsRetryClearTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new CachePurgingRunnable(),
@@ -80,14 +85,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         this.failureCounters = new ConcurrentHashMap<>();
         this.endpointAddress = DefaultProfileQueryEndpointAddress;
 
-        ScheduledFuture<?> future = taskThreadPool.executePeriodicRunnableTask(cdsRetryClearTask);
+        taskThreadPool.executePeriodicRunnableTask(cdsRetryClearTask);
         this.httpClient.start();
 
         SDKShutdownActivity.INSTANCE.register(this);
-    }
-
-    public CdsRetryPolicy getRetryPolicy() {
-        return retryPolicy;
     }
 
 	@Override
@@ -229,7 +230,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             this.resetPeriodInMinutes = resetPeriodInMinutes;
         }
 
-        private CdsRetryPolicy() {
+        public CdsRetryPolicy() {
             maxInstantRetries = DEFAULT_MAX_INSTANT_RETRIES;
             resetPeriodInMinutes = DEFAULT_RESET_PERIOD_IN_MINUTES;
         }
