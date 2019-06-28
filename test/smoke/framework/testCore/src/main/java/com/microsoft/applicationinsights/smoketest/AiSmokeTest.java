@@ -341,7 +341,7 @@ public abstract class AiSmokeTest {
 
 	protected static void waitForApplicationToStart() throws Exception {
 		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
-		waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext(), HEALTH_CHECK_RETRIES);
+		waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, String.format("%s on %s", getAppContext(), currentContainerInfo.getImageName()), HEALTH_CHECK_RETRIES);
 		System.out.println("Test app health check complete.");
 		if (requestCaptureEnabled) {
 			Stopwatch sw = Stopwatch.createStarted();
