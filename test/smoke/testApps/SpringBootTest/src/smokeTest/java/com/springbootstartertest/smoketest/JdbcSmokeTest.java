@@ -65,6 +65,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getSuccess());
     }
 
+    @Ignore("Not yet supported")
     @Test
     @TargetUri("/jdbc/hsqldbBatchStatement")
     public void hsqldbBatchStatement() {
@@ -137,6 +138,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getSuccess());
     }
 
+    @Ignore("Not yet supported")
     @Test
     @TargetUri("/jdbc/postgresStatement")
     public void postgresStatement() {
@@ -173,7 +175,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getSuccess());
     }
 
-    @Ignore
+    @Ignore("FIXME: need custom container with oracle db")
     @Test
     @TargetUri("/jdbc/oraclePreparedStatement")
     public void oraclePreparedStatement() {
@@ -186,7 +188,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getSuccess());
     }
 
-    @Ignore
+    @Ignore("FIXME: need custom container with oracle db")
     @Test
     @TargetUri("/jdbc/oracleStatement")
     public void oracleStatement() {
