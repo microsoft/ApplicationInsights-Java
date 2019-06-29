@@ -21,11 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge;
-import com.microsoft.applicationinsights.agent.internal.model.Global;
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadSpan;
 import com.microsoft.applicationinsights.agent.internal.model.ThreadContextImpl;
 import com.microsoft.applicationinsights.agent.internal.model.ThreadRootSpanImpl;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBinding;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.Span;
@@ -41,9 +40,7 @@ class AgentImpl implements AgentSPI {
                                       ThreadContextThreadLocal.Holder threadContextHolder, int rootNestingGroupId,
                                       int rootSuppressionKeyId) {
 
-        SdkBridge sdkBridge = Global.getSdkBridge();
-
-        if (sdkBridge == null || !transactionType.equals("Web")) {
+        if (!transactionType.equals("Web")) {
             // this is a little more complicated than desired, but part of the contract of startIncomingSpan is that it
             // sets a ThreadContext in the threadContextHolder before returning, and NopThreadSpan makes sure to clear
             // the threadContextHolder at the end of the thread
@@ -52,9 +49,11 @@ class AgentImpl implements AgentSPI {
             return nopThreadSpan;
         }
 
-        ThreadContextImpl mainThreadContext = new ThreadContextImpl(rootNestingGroupId, rootSuppressionKeyId);
+        SdkBinding sdkBinding = new SdkBinding();
+        ThreadContextImpl mainThreadContext =
+                new ThreadContextImpl(sdkBinding, rootNestingGroupId, rootSuppressionKeyId);
         threadContextHolder.set(mainThreadContext);
 
-        return new ThreadRootSpanImpl(threadContextHolder);
+        return new ThreadRootSpanImpl(sdkBinding, threadContextHolder);
     }
 }

@@ -26,27 +26,23 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge;
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge.ExceptionTelemetry;
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge.TraceTelemetry;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge.ExceptionTelemetry;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge.TraceTelemetry;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.internal.ReadableMessage;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 class LoggerSpans {
 
-    static void track(MessageSupplier messageSupplier, @Nullable Throwable throwable, long timeMillis) {
+    static void track(SdkBridge sdkBridge, MessageSupplier messageSupplier, @Nullable Throwable throwable,
+                      long timeMillis) {
 
         ReadableMessage message = (ReadableMessage) messageSupplier.get();
         String formattedMessage = message.getText();
         Map<String, ?> detail = message.getDetail();
         String level = (String) detail.get("Level");
         String loggerName = (String) detail.get("Logger name");
-
-        // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
-        SdkBridge sdkBridge = checkNotNull(Global.getSdkBridge());
 
         if (throwable == null) {
             TraceTelemetry telemetry = new TraceTelemetry(formattedMessage, level);

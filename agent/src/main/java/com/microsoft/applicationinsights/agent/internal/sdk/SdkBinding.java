@@ -19,29 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.model;
+package com.microsoft.applicationinsights.agent.internal.sdk;
 
-import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
-import org.glowroot.instrumentation.api.AsyncQuerySpan;
-import org.glowroot.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.instrumentation.api.Timer;
-import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
+public class SdkBinding<T> {
 
-    public AsyncQuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text,
-                              QueryMessageSupplier messageSupplier, long startTimeMillis) {
-        super(sdkBridge, type, dest, text, messageSupplier, startTimeMillis);
+    private @Nullable SdkBridge<T> sdkBridge;
+
+    private @Nullable T requestTelemetryContext;
+
+    public void setSdkBridge(SdkBridge<T> sdkBridge) {
+        this.sdkBridge = sdkBridge;
     }
 
-    @Override
-    public void stopSyncTimer() {
-        // timers are not used by ApplicationInsights
+    public void setRequestTelemetryContext(T requestTelemetryContext) {
+        this.requestTelemetryContext = requestTelemetryContext;
     }
 
-    @Override
-    public Timer extendSyncTimer() {
-        // timers are not used by ApplicationInsights
-        return NopTransactionService.TIMER;
+    @Nullable
+    public SdkBridge<T> getSdkBridge() {
+        return sdkBridge;
+    }
+
+    public void bindRequestTelemetryContext() {
+        if (sdkBridge != null && requestTelemetryContext != null) {
+            sdkBridge.bindRequestTelemetryContext(requestTelemetryContext);
+        }
+    }
+
+    public void unbindRequestTelemetryContext() {
+        if (sdkBridge != null) {
+            sdkBridge.unbindRequestTelemetryContext();
+        }
     }
 }

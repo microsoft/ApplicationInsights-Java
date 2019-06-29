@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.model;
 
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
 import org.glowroot.instrumentation.api.AsyncSpan;
 import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.Timer;
@@ -28,9 +29,9 @@ import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 
 class AsyncOutgoingSpanImpl extends OutgoingSpanImpl implements AsyncSpan {
 
-    public AsyncOutgoingSpanImpl(String type, String text, long startTimeMillis, String outgoingSpanId,
-                                 MessageSupplier messageSupplier) {
-        super(type, text, startTimeMillis, outgoingSpanId, messageSupplier);
+    public AsyncOutgoingSpanImpl(SdkBridge sdkBridge, String type, String text, long startTimeMillis,
+                                 String outgoingSpanId, MessageSupplier messageSupplier) {
+        super(sdkBridge, type, text, startTimeMillis, outgoingSpanId, messageSupplier);
     }
 
     @Override

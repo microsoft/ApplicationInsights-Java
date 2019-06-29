@@ -108,6 +108,7 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 archivesBaseName = 'applicationinsights-core'
 
 dependencies {
+    compileOnly (project(':agent')) { transitive = false }
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])

@@ -19,29 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.model;
+package com.microsoft.applicationinsights.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
-import org.glowroot.instrumentation.api.AsyncQuerySpan;
-import org.glowroot.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.instrumentation.api.Timer;
-import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+public interface AgentBridge<T> {
 
-class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
-
-    public AsyncQuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text,
-                              QueryMessageSupplier messageSupplier, long startTimeMillis) {
-        super(sdkBridge, type, dest, text, messageSupplier, startTimeMillis);
-    }
-
-    @Override
-    public void stopSyncTimer() {
-        // timers are not used by ApplicationInsights
-    }
-
-    @Override
-    public Timer extendSyncTimer() {
-        // timers are not used by ApplicationInsights
-        return NopTransactionService.TIMER;
-    }
+    void bindToThread(T requestTelemetryContext);
 }

@@ -25,9 +25,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge;
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge.ExceptionTelemetry;
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge.ExceptionTelemetry;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge.RemoteDependencyTelemetry;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.Getter;
@@ -40,11 +40,11 @@ import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class OutgoingSpanImpl implements Span {
 
     private static final Logger logger = LoggerFactory.getLogger(OutgoingSpanImpl.class);
+
+    private final SdkBridge sdkBridge;
 
     private final String type;
     private final String text;
@@ -56,8 +56,9 @@ public class OutgoingSpanImpl implements Span {
 
     private volatile @MonotonicNonNull Throwable exception;
 
-    public OutgoingSpanImpl(String type, String text, long startTimeMillis, String outgoingSpanId,
+    public OutgoingSpanImpl(SdkBridge sdkBridge, String type, String text, long startTimeMillis, String outgoingSpanId,
                             MessageSupplier messageSupplier) {
+        this.sdkBridge = sdkBridge;
         this.type = type;
         this.text = text;
         this.startTimeMillis = startTimeMillis;
@@ -113,9 +114,6 @@ public class OutgoingSpanImpl implements Span {
             telemetry.setName(text);
         }
         if (telemetry != null) {
-            // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
-            SdkBridge sdkBridge = checkNotNull(Global.getSdkBridge());
-
             sdkBridge.track(telemetry);
             if (exception != null) {
                 sdkBridge.track(new ExceptionTelemetry(exception));
@@ -157,8 +155,6 @@ public class OutgoingSpanImpl implements Span {
                 if (requestContext == null) {
                     target = uriObject.getHost();
                 } else {
-                    // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
-                    SdkBridge sdkBridge = checkNotNull(Global.getSdkBridge());
                     target = sdkBridge.generateChildDependencyTarget(requestContext, Global.isOutboundW3CEnabled());
                 }
                 telemetry.setName(method + " " + uriObject.getPath());

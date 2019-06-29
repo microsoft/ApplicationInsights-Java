@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBinding;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.Setter;
@@ -30,13 +30,13 @@ import org.glowroot.instrumentation.api.Timer;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class ThreadRootSpanImpl implements Span {
 
+    private final SdkBinding sdkBinding;
     private final ThreadContextThreadLocal.Holder threadContextHolder;
 
-    public ThreadRootSpanImpl(ThreadContextThreadLocal.Holder threadContextHolder) {
+    public ThreadRootSpanImpl(SdkBinding sdkBinding, ThreadContextThreadLocal.Holder threadContextHolder) {
+        this.sdkBinding = sdkBinding;
         this.threadContextHolder = threadContextHolder;
     }
 
@@ -78,8 +78,6 @@ public class ThreadRootSpanImpl implements Span {
 
     private void endInternal() {
         threadContextHolder.set(null);
-        // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
-        SdkBridge sdkBridge = checkNotNull(Global.getSdkBridge());
-        sdkBridge.setRequestTelemetryContext(null);
+        sdkBinding.unbindRequestTelemetryContext();
     }
 }

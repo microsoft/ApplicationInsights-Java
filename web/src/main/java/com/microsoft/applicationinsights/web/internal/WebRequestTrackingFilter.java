@@ -23,19 +23,20 @@ package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector;
+import com.microsoft.applicationinsights.internal.agent.AgentBridge;
+import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory;
+import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory.SdkBridgeFactory;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
-import com.microsoft.applicationinsights.web.internal.agent.SdkBridgeImpl;
 import com.microsoft.applicationinsights.web.internal.httputils.AIHttpServletListener;
 import com.microsoft.applicationinsights.web.internal.httputils.ApplicationInsightsServletExtractor;
 import com.microsoft.applicationinsights.web.internal.httputils.HttpServerHandler;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.LinkedList;
@@ -93,10 +94,8 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     HttpServerHandler handler;
 
-    /**
-     * Used to indicate if agent is registered to webapp.
-     */
-    private boolean agentIsRegistered;
+    // factories are used for indirection since agent classes may not be present at runtime
+    private AgentBridge<RequestTelemetryContext> agentBridge;
 
     // endregion Members
 
@@ -124,6 +123,9 @@ public final class WebRequestTrackingFilter implements Filter {
             }
 
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
+            if (agentBridge != null) {
+                agentBridge.bindToThread(requestTelemetryContext);
+            }
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
                 httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
@@ -138,6 +140,7 @@ public final class WebRequestTrackingFilter implements Filter {
                 } else {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
                 }
+                ThreadContext.remove();
             }
         } else {
             // we are only interested in Http Requests. Keep all other untouched.
@@ -158,7 +161,6 @@ public final class WebRequestTrackingFilter implements Filter {
         try {
             long start = System.currentTimeMillis();
             this.appName = extractAppName(config.getServletContext());
-            this.agentIsRegistered = initializeAgentIfAvailable();
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
@@ -172,6 +174,13 @@ public final class WebRequestTrackingFilter implements Filter {
             // can provide his own handler?
             handler = new HttpServerHandler(new ApplicationInsightsServletExtractor(), webModulesContainer,
                                                 cleaners, telemetryClient);
+            if (AgentBridgeFactory.isAgentAvailable()) {
+                agentBridge = AgentBridgeFactory.create(new SdkBridgeFactory() {
+                    public SdkBridge create() {
+                        return new SdkBridgeImpl(telemetryClient);
+                    }
+                });
+            }
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();
             }
@@ -198,9 +207,6 @@ public final class WebRequestTrackingFilter implements Filter {
      * Destroy the filter by releases resources.
      */
     public void destroy() {
-        if (agentIsRegistered) {
-            AgentConnector.INSTANCE.unregisterAgent();
-        }
     }
 
     public WebRequestTrackingFilter() {}
@@ -208,34 +214,6 @@ public final class WebRequestTrackingFilter implements Filter {
     // endregion Public
 
     // region Private
-
-    private boolean initializeAgentIfAvailable() {
-        Class<?> globalClass;
-        try {
-            globalClass = Class.forName("com.microsoft.applicationinsights.agent.internal.model.Global", false, null);
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-
-        try {
-            Class<?> bridgeClass = Class.forName("com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge", false, null);
-            Method method = globalClass.getMethod("setSdkBridge", bridgeClass);
-            method.invoke(null, new SdkBridgeImpl());
-            return true;
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("Failed to initialize agent, exception: '%s'",
-                        ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-            return false;
-        }
-    }
 
     private String extractAppName(ServletContext context) {
         if (appName != null) {

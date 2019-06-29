@@ -19,28 +19,28 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.bridge;
+package com.microsoft.applicationinsights.agent.internal.sdk;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public interface SdkBridge {
+public interface SdkBridge<T> {
+
+    void bindRequestTelemetryContext(T requestTelemetryContext);
+
+    void unbindRequestTelemetryContext();
+
+    String generateChildDependencyTarget(String requestContext, boolean w3c);
+
+    <C> String propagate(Setter<C> setter, C carrier, boolean w3c, boolean w3cBackCompat);
 
     void track(RemoteDependencyTelemetry telemetry);
 
     void track(TraceTelemetry telemetry);
 
     void track(ExceptionTelemetry telemetry);
-
-    Object getRequestTelemetryContext();
-
-    void setRequestTelemetryContext(@Nullable Object context);
-
-    String generateChildDependencyTarget(String requestContext, boolean w3c);
-
-    <C> String propagate(Setter<C> setter, C carrier, boolean w3c, boolean w3cBackCompat);
 
     // hides instrumentation api (e.g. so it can be shaded)
     class Setter<C> implements org.glowroot.instrumentation.api.Setter<C> {

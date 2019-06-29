@@ -19,29 +19,28 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.model;
+package com.microsoft.applicationinsights.internal.agent;
 
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
-import org.glowroot.instrumentation.api.AsyncQuerySpan;
-import org.glowroot.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.instrumentation.api.Timer;
-import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
-class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
+public class AgentBridgeFactory {
 
-    public AsyncQuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text,
-                              QueryMessageSupplier messageSupplier, long startTimeMillis) {
-        super(sdkBridge, type, dest, text, messageSupplier, startTimeMillis);
+    public static boolean isAgentAvailable() {
+        try {
+            Class.forName("com.microsoft.applicationinsights.agent.internal.sdk.AgentBridgeInternal", false, null);
+            return true;
+        } catch (ClassNotFoundException e) {
+            InternalLogger.INSTANCE.trace("agent not found");
+            return false;
+        }
     }
 
-    @Override
-    public void stopSyncTimer() {
-        // timers are not used by ApplicationInsights
+    public static <T> AgentBridge<T> create(SdkBridgeFactory<T> sdkBridgeFactory) {
+        return new AgentBridgeImpl<>(sdkBridgeFactory.create());
     }
 
-    @Override
-    public Timer extendSyncTimer() {
-        // timers are not used by ApplicationInsights
-        return NopTransactionService.TIMER;
+    public interface SdkBridgeFactory<T> {
+        SdkBridge<T> create();
     }
 }

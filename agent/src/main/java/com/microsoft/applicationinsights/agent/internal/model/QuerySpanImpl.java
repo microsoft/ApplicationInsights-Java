@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.model;
 
 import java.util.Map;
 
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge;
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge.ExceptionTelemetry;
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge.ExceptionTelemetry;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge.RemoteDependencyTelemetry;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.QueryMessageSupplier;
@@ -34,9 +34,9 @@ import org.glowroot.instrumentation.api.Setter;
 import org.glowroot.instrumentation.api.Timer;
 import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class QuerySpanImpl implements QuerySpan {
+
+    private final SdkBridge sdkBridge;
 
     private final String type;
     private final String dest;
@@ -48,7 +48,9 @@ public class QuerySpanImpl implements QuerySpan {
 
     private volatile long totalMillis = -1;
 
-    QuerySpanImpl(String type, String dest, String text, QueryMessageSupplier messageSupplier, long startTimeMillis) {
+    QuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text, QueryMessageSupplier messageSupplier,
+                  long startTimeMillis) {
+        this.sdkBridge=sdkBridge;
         this.type = type;
         this.dest = dest;
         this.text = text;
@@ -170,8 +172,6 @@ public class QuerySpanImpl implements QuerySpan {
             telemetry.getProperties().put("Query Plan", sb.toString());
         }
 
-        // guaranteed to have telemetry client at this point (see check in AgentImpl.startIncomingSpan())
-        SdkBridge sdkBridge = checkNotNull(Global.getSdkBridge());
         sdkBridge.track(telemetry);
         if (exception != null) {
             sdkBridge.track(new ExceptionTelemetry(exception));

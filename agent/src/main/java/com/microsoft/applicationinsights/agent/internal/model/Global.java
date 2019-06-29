@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.model;
 
-import com.microsoft.applicationinsights.agent.internal.bridge.SdkBridge;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 
 // global state used instead of passing these to various classes (e.g. ThreadContextImpl, SpanImpl) in order
@@ -31,8 +29,6 @@ public class Global {
 
     private static boolean outboundW3CEnabled;
     private static boolean outboundW3CBackCompatEnabled;
-
-    private static @Nullable SdkBridge sdkBridge;
 
     private static final ThreadContextThreadLocal TCTL = new ThreadContextThreadLocal();
 
@@ -53,14 +49,6 @@ public class Global {
 
     public static void setOutboundW3CBackCompatEnabled(boolean outboundW3CBackCompatEnabled) {
         Global.outboundW3CBackCompatEnabled = outboundW3CBackCompatEnabled;
-    }
-
-    public static @Nullable SdkBridge getSdkBridge() {
-        return sdkBridge;
-    }
-
-    public static void setSdkBridge(@Nullable SdkBridge sdkBridge) {
-        Global.sdkBridge = sdkBridge;
     }
 
     public static ThreadContextThreadLocal getThreadContextThreadLocal() {
