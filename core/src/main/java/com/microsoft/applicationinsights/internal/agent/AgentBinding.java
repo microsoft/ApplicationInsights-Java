@@ -21,37 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
-import com.microsoft.applicationinsights.agent.internal.sdk.AgentBridgeInternal;
-import com.microsoft.applicationinsights.agent.internal.sdk.BindingResult;
-import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
+public interface AgentBinding {
 
-class AgentBridgeImpl<T> implements AgentBridge<T> {
+    void unbindFromMainThread();
 
-    private final SdkBridge<T> sdkBridge;
-
-    AgentBridgeImpl(SdkBridge<T> sdkBridge) {
-        this.sdkBridge = sdkBridge;
-    }
-
-    @Override
-    public AgentBinding bindToThread(T requestTelemetryContext) {
-        return new AgentBindingImpl(AgentBridgeInternal.bindToThread(sdkBridge, requestTelemetryContext));
-    }
-
-    private static class AgentBindingImpl implements AgentBinding {
-
-        private final BindingResult bindingResult;
-
-        AgentBindingImpl(BindingResult bindingResult) {
-            this.bindingResult = bindingResult;
-        }
-
-        public void unbindFromMainThread() {
-            bindingResult.unbindFromMainThread();
-        }
-
-        public void unbindFromRunawayChildThreads() {
-            bindingResult.unbindFromRunawayChildThreads();
-        }
-    }
+    // this is important, e.g. in case some child threads are started as part of a thread pool during this request, so
+    // that the binding to those child threads does not last forever
+    void unbindFromRunawayChildThreads();
 }

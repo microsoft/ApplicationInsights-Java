@@ -79,9 +79,9 @@ public final class TraceTelemetryFilter implements TelemetryProcessor {
 
 
     /**
-     * @deprecated Not intended for public use. Visibility will be reduced in a future release.
+     * @deprecated Not intended for public use. Visibility will be reduced in a future unbindFromRunawayChildThreads.
      */
-    @Deprecated /* @VisibleForTesting : FIXME next major release, make package-private; do not remove; used in tests */
+    @Deprecated /* @VisibleForTesting : FIXME next major unbindFromRunawayChildThreads, make package-private; do not remove; used in tests */
     public void setFromSeverityLevel(String fromSeverityLevel) {
         try {
             String trimmed = fromSeverityLevel.trim();

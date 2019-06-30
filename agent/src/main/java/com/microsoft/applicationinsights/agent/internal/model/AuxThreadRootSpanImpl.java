@@ -79,5 +79,6 @@ class AuxThreadRootSpanImpl implements Span {
     private void endInternal() {
         threadContextHolder.set(null);
         sdkBinding.unbindRequestTelemetryContext();
+        sdkBinding.removeAuxThreadContextHolder(threadContextHolder);
     }
 }

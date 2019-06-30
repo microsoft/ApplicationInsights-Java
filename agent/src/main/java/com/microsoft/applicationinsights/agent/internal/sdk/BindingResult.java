@@ -19,39 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.agent;
+package com.microsoft.applicationinsights.agent.internal.sdk;
 
-import com.microsoft.applicationinsights.agent.internal.sdk.AgentBridgeInternal;
-import com.microsoft.applicationinsights.agent.internal.sdk.BindingResult;
-import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
+public interface BindingResult {
 
-class AgentBridgeImpl<T> implements AgentBridge<T> {
+    void unbindFromMainThread();
 
-    private final SdkBridge<T> sdkBridge;
-
-    AgentBridgeImpl(SdkBridge<T> sdkBridge) {
-        this.sdkBridge = sdkBridge;
-    }
-
-    @Override
-    public AgentBinding bindToThread(T requestTelemetryContext) {
-        return new AgentBindingImpl(AgentBridgeInternal.bindToThread(sdkBridge, requestTelemetryContext));
-    }
-
-    private static class AgentBindingImpl implements AgentBinding {
-
-        private final BindingResult bindingResult;
-
-        AgentBindingImpl(BindingResult bindingResult) {
-            this.bindingResult = bindingResult;
-        }
-
-        public void unbindFromMainThread() {
-            bindingResult.unbindFromMainThread();
-        }
-
-        public void unbindFromRunawayChildThreads() {
-            bindingResult.unbindFromRunawayChildThreads();
-        }
-    }
+    void unbindFromRunawayChildThreads();
 }

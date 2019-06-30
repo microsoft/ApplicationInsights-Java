@@ -197,7 +197,7 @@ public final class JsonTelemetryDataSerializer {
     @Deprecated
     public void write(String name, String value) throws IOException {
         //This method is practically not used anywhere .Will be removed with all other
-        //obsolete classes in next major release
+        //obsolete classes in next major unbindFromRunawayChildThreads
     }
 
     public void write(String name, String value, int len) throws IOException {

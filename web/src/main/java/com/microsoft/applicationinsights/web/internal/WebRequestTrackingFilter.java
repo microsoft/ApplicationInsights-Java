@@ -26,9 +26,9 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.internal.agent.AgentBinding;
 import com.microsoft.applicationinsights.internal.agent.AgentBridge;
 import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory;
-import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory.NopAgentBridge;
 import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory.SdkBridgeFactory;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -124,8 +124,7 @@ public final class WebRequestTrackingFilter implements Filter {
             }
 
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
-            boolean bound = agentBridge.bindToThread(requestTelemetryContext);
-            AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
+            AgentBinding agentBinding = agentBridge.bindToThread(requestTelemetryContext);
             try {
                 httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
                 chain.doFilter(httpRequest, httpResponse);
@@ -135,13 +134,14 @@ public final class WebRequestTrackingFilter implements Filter {
             } finally {
                 if (httpRequest.isAsyncStarted()) {
                     AsyncContext context = httpRequest.getAsyncContext();
+                    AIHttpServletListener aiHttpServletListener =
+                            new AIHttpServletListener(handler, requestTelemetryContext, agentBinding);
                     context.addListener(aiHttpServletListener, httpRequest, httpResponse);
                 } else {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+                    agentBinding.unbindFromRunawayChildThreads();
                 }
-                if (bound) {
-                    agentBridge.unbindFromThread();
-                }
+                agentBinding.unbindFromMainThread();
                 ThreadContext.remove();
             }
         } else {
@@ -183,7 +183,7 @@ public final class WebRequestTrackingFilter implements Filter {
                     }
                 });
             } else {
-                agentBridge = new NopAgentBridge<>();
+                agentBridge = AgentBridgeFactory.create();
             }
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();

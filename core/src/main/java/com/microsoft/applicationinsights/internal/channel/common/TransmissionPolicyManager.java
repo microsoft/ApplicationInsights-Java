@@ -45,7 +45,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  * The class might be told to suspend transmission for the next 'X' seconds
  * where the state is set to be one of the states defined in {@link com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicy}
  *
- * The class will keep that state for the requested amount of time and will release it, i.e. reset to 'unblock'
+ * The class will keep that state for the requested amount of time and will unbindFromRunawayChildThreads it, i.e. reset to 'unblock'
  * when the timeout expires.
  *
  * Created by gupele on 6/29/2015.

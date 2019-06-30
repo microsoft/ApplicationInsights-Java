@@ -61,6 +61,7 @@ class AuxThreadContextImpl<T> implements AuxThreadContext {
         if (completeAsyncTransaction) {
             threadContext.setTransactionAsyncComplete();
         }
+        sdkBinding.addAuxThreadContextHolder(threadContextHolder);
         sdkBinding.bindRequestTelemetryContext();
         return new AuxThreadRootSpanImpl(sdkBinding, threadContextHolder);
     }

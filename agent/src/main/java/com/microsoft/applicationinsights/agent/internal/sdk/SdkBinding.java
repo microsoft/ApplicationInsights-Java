@@ -21,13 +21,21 @@
 
 package com.microsoft.applicationinsights.agent.internal.sdk;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.Set;
 
-public class SdkBinding<T> {
+import com.google.common.collect.Sets;
+import com.microsoft.applicationinsights.agent.internal.model.Global;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
+
+public class SdkBinding<T> implements BindingResult {
 
     private final SdkBridge<T> sdkBridge;
 
     private final @Nullable T requestTelemetryContext;
+
+    // aux thread contexts started by this sdk binding (request)
+    private final Set<ThreadContextThreadLocal.Holder> auxThreadContextHolders = Sets.newHashSet();
 
     SdkBinding(SdkBridge<T> sdkBridge, @Nullable T requestTelemetryContext) {
         this.sdkBridge = sdkBridge;
@@ -46,5 +54,35 @@ public class SdkBinding<T> {
 
     public void unbindRequestTelemetryContext() {
         sdkBridge.unbindRequestTelemetryContext();
+    }
+
+    public void addAuxThreadContextHolder(ThreadContextThreadLocal.Holder auxThreadContextHolder) {
+        // since other accesses to auxThreadContextHolders are synchronized, may as well make this one synchronized and
+        // then don't need to use a concurrent hash set
+        synchronized (auxThreadContextHolders) {
+            auxThreadContextHolders.add(auxThreadContextHolder);
+        }
+    }
+
+    public void removeAuxThreadContextHolder(ThreadContextThreadLocal.Holder auxThreadContextHolder) {
+        // this synchronized is to make sure it doesn't detach the holder after it has been picked up by another request
+        synchronized (auxThreadContextHolders) {
+            auxThreadContextHolders.remove(auxThreadContextHolder);
+        }
+    }
+
+    @Override
+    public void unbindFromMainThread() {
+        Global.getThreadContextHolder().set(null);
+    }
+
+    @Override
+    public void unbindFromRunawayChildThreads() {
+        // this synchronized is to make sure it doesn't detach the holder after it has been picked up by another request
+        synchronized (auxThreadContextHolders) {
+            for (ThreadContextThreadLocal.Holder auxThreadContextHolder : auxThreadContextHolders) {
+                auxThreadContextHolder.set(null);
+            }
+        }
     }
 }

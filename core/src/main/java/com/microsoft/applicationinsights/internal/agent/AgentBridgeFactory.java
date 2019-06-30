@@ -36,6 +36,10 @@ public class AgentBridgeFactory {
         }
     }
 
+    public static <T> AgentBridge<T> create() {
+        return new NopAgentBridge<>();
+    }
+
     public static <T> AgentBridge<T> create(SdkBridgeFactory<T> sdkBridgeFactory) {
         return new AgentBridgeImpl<>(sdkBridgeFactory.create());
     }
@@ -44,15 +48,24 @@ public class AgentBridgeFactory {
         SdkBridge<T> create();
     }
 
-    public static class NopAgentBridge<T> implements AgentBridge<T> {
+    private static class NopAgentBridge<T> implements AgentBridge<T> {
 
         @Override
-        public boolean bindToThread(T requestTelemetryContext) {
-            return false;
+        public AgentBinding bindToThread(T requestTelemetryContext) {
+            return NopAgentBinding.INSTANCE;
+        }
+    }
+
+    private static class NopAgentBinding implements AgentBinding {
+
+        private static final AgentBinding INSTANCE = new NopAgentBinding();
+
+        @Override
+        public void unbindFromMainThread() {
         }
 
         @Override
-        public void unbindFromThread() {
+        public void unbindFromRunawayChildThreads() {
         }
     }
 }

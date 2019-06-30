@@ -28,23 +28,31 @@ import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal
 
 public class AgentBridgeInternal {
 
+    private static final BindingResult NOP_BINDING_RESULT = new NopBindingResult();
+
     private AgentBridgeInternal() {
     }
 
-    public static <T> boolean bindToThread(SdkBridge<T> sdkBridge, T requestTelemetryContext) {
+    public static <T> BindingResult bindToThread(SdkBridge<T> sdkBridge, T requestTelemetryContext) {
         ThreadContextThreadLocal.Holder threadContextHolder = Global.getThreadContextHolder();
         ThreadContextPlus threadContext = threadContextHolder.get();
         if (threadContext == null) {
             SdkBinding<T> sdkBinding = new SdkBinding<>(sdkBridge, requestTelemetryContext);
-            threadContext = new ThreadContextImpl<>(sdkBinding, 0, 0);
-            threadContextHolder.set(threadContext);
-            return true;
+            threadContextHolder.set(new ThreadContextImpl<>(sdkBinding, 0, 0));
+            return sdkBinding;
         } else {
-            return false;
+            return NOP_BINDING_RESULT;
         }
     }
 
-    public static void unbindFromThread() {
-        Global.getThreadContextHolder().set(null);
+    private static class NopBindingResult implements BindingResult {
+
+        @Override
+        public void unbindFromMainThread() {
+        }
+
+        @Override
+        public void unbindFromRunawayChildThreads() {
+        }
     }
 }
