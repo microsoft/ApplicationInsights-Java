@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.agent.AgentBridge;
 import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory;
+import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory.NopAgentBridge;
 import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory.SdkBridgeFactory;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -123,9 +124,7 @@ public final class WebRequestTrackingFilter implements Filter {
             }
 
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
-            if (agentBridge != null) {
-                agentBridge.bindToThread(requestTelemetryContext);
-            }
+            boolean bound = agentBridge.bindToThread(requestTelemetryContext);
             AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
             try {
                 httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
@@ -139,6 +138,9 @@ public final class WebRequestTrackingFilter implements Filter {
                     context.addListener(aiHttpServletListener, httpRequest, httpResponse);
                 } else {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+                }
+                if (bound) {
+                    agentBridge.unbindFromThread();
                 }
                 ThreadContext.remove();
             }
@@ -180,6 +182,8 @@ public final class WebRequestTrackingFilter implements Filter {
                         return new SdkBridgeImpl(telemetryClient);
                     }
                 });
+            } else {
+                agentBridge = new NopAgentBridge<>();
             }
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();

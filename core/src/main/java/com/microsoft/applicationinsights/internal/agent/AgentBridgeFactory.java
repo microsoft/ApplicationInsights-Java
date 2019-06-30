@@ -43,4 +43,16 @@ public class AgentBridgeFactory {
     public interface SdkBridgeFactory<T> {
         SdkBridge<T> create();
     }
+
+    public static class NopAgentBridge<T> implements AgentBridge<T> {
+
+        @Override
+        public boolean bindToThread(T requestTelemetryContext) {
+            return false;
+        }
+
+        @Override
+        public void unbindFromThread() {
+        }
+    }
 }

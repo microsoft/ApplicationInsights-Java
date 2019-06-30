@@ -24,18 +24,27 @@ package com.microsoft.applicationinsights.agent.internal.sdk;
 import com.microsoft.applicationinsights.agent.internal.model.Global;
 import com.microsoft.applicationinsights.agent.internal.model.ThreadContextImpl;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextPlus;
+import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 
 public class AgentBridgeInternal {
 
     private AgentBridgeInternal() {
     }
 
-    public static <T> void bindToThread(SdkBridge<T> sdkBridge, T requestTelemetryContext) {
-        ThreadContextPlus threadContext = Global.getThreadContextHolder().get();
-        if (threadContext instanceof ThreadContextImpl) {
-            SdkBinding sdkBinding = ((ThreadContextImpl) threadContext).getSdkBinding();
-            sdkBinding.setSdkBridge(sdkBridge);
-            sdkBinding.setRequestTelemetryContext(requestTelemetryContext);
+    public static <T> boolean bindToThread(SdkBridge<T> sdkBridge, T requestTelemetryContext) {
+        ThreadContextThreadLocal.Holder threadContextHolder = Global.getThreadContextHolder();
+        ThreadContextPlus threadContext = threadContextHolder.get();
+        if (threadContext == null) {
+            SdkBinding<T> sdkBinding = new SdkBinding<>(sdkBridge, requestTelemetryContext);
+            threadContext = new ThreadContextImpl<>(sdkBinding, 0, 0);
+            threadContextHolder.set(threadContext);
+            return true;
+        } else {
+            return false;
         }
+    }
+
+    public static void unbindFromThread() {
+        Global.getThreadContextHolder().set(null);
     }
 }

@@ -22,9 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadSpan;
-import com.microsoft.applicationinsights.agent.internal.model.ThreadContextImpl;
-import com.microsoft.applicationinsights.agent.internal.model.ThreadRootSpanImpl;
-import com.microsoft.applicationinsights.agent.internal.sdk.SdkBinding;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.Span;
@@ -40,20 +37,11 @@ class AgentImpl implements AgentSPI {
                                       ThreadContextThreadLocal.Holder threadContextHolder, int rootNestingGroupId,
                                       int rootSuppressionKeyId) {
 
-        if (!transactionType.equals("Web")) {
-            // this is a little more complicated than desired, but part of the contract of startIncomingSpan is that it
-            // sets a ThreadContext in the threadContextHolder before returning, and NopThreadSpan makes sure to clear
-            // the threadContextHolder at the end of the thread
-            NopThreadSpan nopThreadSpan = new NopThreadSpan(threadContextHolder);
-            threadContextHolder.set(new NopThreadContext(rootNestingGroupId, rootSuppressionKeyId));
-            return nopThreadSpan;
-        }
-
-        SdkBinding sdkBinding = new SdkBinding();
-        ThreadContextImpl mainThreadContext =
-                new ThreadContextImpl(sdkBinding, rootNestingGroupId, rootSuppressionKeyId);
-        threadContextHolder.set(mainThreadContext);
-
-        return new ThreadRootSpanImpl(sdkBinding, threadContextHolder);
+        // this is a little more complicated than desired, but part of the contract of startIncomingSpan is that it
+        // sets a ThreadContext in the threadContextHolder before returning, and NopThreadSpan makes sure to clear
+        // the threadContextHolder at the end of the thread
+        NopThreadSpan nopThreadSpan = new NopThreadSpan(threadContextHolder);
+        threadContextHolder.set(new NopThreadContext(rootNestingGroupId, rootSuppressionKeyId));
+        return nopThreadSpan;
     }
 }

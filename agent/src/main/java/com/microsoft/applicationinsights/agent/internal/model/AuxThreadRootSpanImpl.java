@@ -30,12 +30,12 @@ import org.glowroot.instrumentation.api.Timer;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 
-public class ThreadRootSpanImpl implements Span {
+class AuxThreadRootSpanImpl implements Span {
 
     private final SdkBinding sdkBinding;
     private final ThreadContextThreadLocal.Holder threadContextHolder;
 
-    public ThreadRootSpanImpl(SdkBinding sdkBinding, ThreadContextThreadLocal.Holder threadContextHolder) {
+    AuxThreadRootSpanImpl(SdkBinding sdkBinding, ThreadContextThreadLocal.Holder threadContextHolder) {
         this.sdkBinding = sdkBinding;
         this.threadContextHolder = threadContextHolder;
     }

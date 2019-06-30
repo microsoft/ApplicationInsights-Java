@@ -23,5 +23,7 @@ package com.microsoft.applicationinsights.internal.agent;
 
 public interface AgentBridge<T> {
 
-    void bindToThread(T requestTelemetryContext);
+    boolean bindToThread(T requestTelemetryContext);
+
+    void unbindFromThread();
 }

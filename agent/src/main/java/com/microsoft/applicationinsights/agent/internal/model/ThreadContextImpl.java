@@ -53,10 +53,6 @@ public class ThreadContextImpl<T> implements ThreadContextPlus {
         currentSuppressionKeyId = rootSuppressionKeyId;
     }
 
-    public SdkBinding<T> getSdkBinding() {
-        return sdkBinding;
-    }
-
     @Override
     public boolean isInTransaction() {
         return true;
@@ -78,71 +74,47 @@ public class ThreadContextImpl<T> implements ThreadContextPlus {
     @Override
     public QuerySpan startQuerySpan(String type, String dest, String text, QueryMessageSupplier queryMessageSupplier,
                                     TimerName timerName) {
-        SdkBridge sdkBridge = sdkBinding.getSdkBridge();
-        if (sdkBridge == null) {
-            return NopTransactionService.QUERY_SPAN;
-        } else {
-            return new QuerySpanImpl(sdkBridge, type, dest, text, queryMessageSupplier, System.currentTimeMillis());
-        }
+        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
+                System.currentTimeMillis());
     }
 
     @Override
     public QuerySpan startQuerySpan(String type, String dest, String text, long queryExecutionCount,
                                     QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        SdkBridge sdkBridge = sdkBinding.getSdkBridge();
-        if (sdkBridge == null) {
-            return NopTransactionService.QUERY_SPAN;
-        } else {
-            return new QuerySpanImpl(sdkBridge, type, dest, text, queryMessageSupplier, System.currentTimeMillis());
-        }
+        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
+                System.currentTimeMillis());
     }
 
     @Override
     public AsyncQuerySpan startAsyncQuerySpan(String type, String dest, String text,
                                               QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        SdkBridge sdkBridge = sdkBinding.getSdkBridge();
-        if (sdkBridge == null) {
-            return NopTransactionService.ASYNC_QUERY_SPAN;
-        } else {
-            return new AsyncQuerySpanImpl(sdkBridge, type, dest, text, queryMessageSupplier,
-                    System.currentTimeMillis());
-        }
+        return new AsyncQuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
+                System.currentTimeMillis());
     }
 
     @Override
     public <C> Span startOutgoingSpan(String type, String text, Setter<C> setter, C carrier,
                                       MessageSupplier messageSupplier, TimerName timerName) {
         SdkBridge sdkBridge = sdkBinding.getSdkBridge();
-        if (sdkBridge == null) {
-            return NopTransactionService.LOCAL_SPAN;
-        } else {
-            String outgoingSpanId = sdkBridge.propagate(new SdkBridge.Setter<>(setter), carrier,
-                    Global.isOutboundW3CEnabled(), Global.isOutboundW3CBackCompatEnabled());
-            return new OutgoingSpanImpl(sdkBridge, type, text, System.currentTimeMillis(), outgoingSpanId,
-                    messageSupplier);
-        }
+        String outgoingSpanId = sdkBridge.propagate(new SdkBridge.Setter<>(setter), carrier,
+                Global.isOutboundW3CEnabled(), Global.isOutboundW3CBackCompatEnabled());
+        return new OutgoingSpanImpl(sdkBridge, type, text, System.currentTimeMillis(), outgoingSpanId,
+                messageSupplier);
     }
 
     @Override
     public <C> AsyncSpan startAsyncOutgoingSpan(String type, String text, Setter<C> setter, C carrier,
                                                 MessageSupplier messageSupplier, TimerName timerName) {
         SdkBridge sdkBridge = sdkBinding.getSdkBridge();
-        if (sdkBridge == null) {
-            return NopTransactionService.ASYNC_SPAN;
-        } else {
-            String outgoingSpanId = sdkBridge.propagate(new SdkBridge.Setter<>(setter), carrier,
-                    Global.isOutboundW3CEnabled(), Global.isOutboundW3CBackCompatEnabled());
-            return new AsyncOutgoingSpanImpl(sdkBridge, type, text, System.currentTimeMillis(), outgoingSpanId,
-                    messageSupplier);
-        }
+        String outgoingSpanId = sdkBridge.propagate(new SdkBridge.Setter<>(setter), carrier,
+                Global.isOutboundW3CEnabled(), Global.isOutboundW3CBackCompatEnabled());
+        return new AsyncOutgoingSpanImpl(sdkBridge, type, text, System.currentTimeMillis(), outgoingSpanId,
+                messageSupplier);
     }
 
     @Override
     public void captureLoggerSpan(MessageSupplier messageSupplier, @Nullable Throwable throwable) {
-        SdkBridge sdkBridge = sdkBinding.getSdkBridge();
-        if (sdkBridge != null) {
-            LoggerSpans.track(sdkBridge, messageSupplier, throwable, System.currentTimeMillis());
-        }
+        LoggerSpans.track(sdkBinding.getSdkBridge(), messageSupplier, throwable, System.currentTimeMillis());
     }
 
     @Override
@@ -153,12 +125,7 @@ public class ThreadContextImpl<T> implements ThreadContextPlus {
 
     @Override
     public AuxThreadContext createAuxThreadContext() {
-        SdkBridge sdkBridge = sdkBinding.getSdkBridge();
-        if (sdkBridge == null) {
-            return NopTransactionService.AUX_THREAD_CONTEXT;
-        } else {
-            return new AuxThreadContextImpl(sdkBinding);
-        }
+        return new AuxThreadContextImpl<>(sdkBinding);
     }
 
     @Override

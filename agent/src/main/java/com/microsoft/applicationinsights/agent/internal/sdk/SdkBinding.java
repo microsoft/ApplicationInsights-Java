@@ -25,32 +25,26 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class SdkBinding<T> {
 
-    private @Nullable SdkBridge<T> sdkBridge;
+    private final SdkBridge<T> sdkBridge;
 
-    private @Nullable T requestTelemetryContext;
+    private final @Nullable T requestTelemetryContext;
 
-    public void setSdkBridge(SdkBridge<T> sdkBridge) {
+    SdkBinding(SdkBridge<T> sdkBridge, @Nullable T requestTelemetryContext) {
         this.sdkBridge = sdkBridge;
-    }
-
-    public void setRequestTelemetryContext(T requestTelemetryContext) {
         this.requestTelemetryContext = requestTelemetryContext;
     }
 
-    @Nullable
     public SdkBridge<T> getSdkBridge() {
         return sdkBridge;
     }
 
     public void bindRequestTelemetryContext() {
-        if (sdkBridge != null && requestTelemetryContext != null) {
+        if (requestTelemetryContext != null) {
             sdkBridge.bindRequestTelemetryContext(requestTelemetryContext);
         }
     }
 
     public void unbindRequestTelemetryContext() {
-        if (sdkBridge != null) {
-            sdkBridge.unbindRequestTelemetryContext();
-        }
+        sdkBridge.unbindRequestTelemetryContext();
     }
 }

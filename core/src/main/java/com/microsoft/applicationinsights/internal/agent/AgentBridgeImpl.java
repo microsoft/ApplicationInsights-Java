@@ -33,7 +33,12 @@ class AgentBridgeImpl<T> implements AgentBridge<T> {
     }
 
     @Override
-    public void bindToThread(T requestTelemetryContext) {
-        AgentBridgeInternal.bindToThread(sdkBridge, requestTelemetryContext);
+    public boolean bindToThread(T requestTelemetryContext) {
+        return AgentBridgeInternal.bindToThread(sdkBridge, requestTelemetryContext);
+    }
+
+    @Override
+    public void unbindFromThread() {
+        AgentBridgeInternal.unbindFromThread();
     }
 }
