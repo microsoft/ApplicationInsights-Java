@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.Future;
 
 import com.google.common.io.ByteStreams;
 import org.apache.commons.httpclient.Cookie;
@@ -17,8 +16,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.async.DeferredResult;
 
 @Service
 public class TestBean {
@@ -26,16 +25,16 @@ public class TestBean {
     private CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
 
     @Async
-    public Future<Integer> asyncDependencyCallWithApacheHttpClient4() throws IOException {
+    public void asyncDependencyCallWithApacheHttpClient4(DeferredResult<Integer> deferredResult) throws IOException {
         String url = "https://www.bing.com";
         HttpGet get = new HttpGet(url);
         try (CloseableHttpResponse response = httpClient.execute(get)) {
-            return new AsyncResult<>(response.getStatusLine().getStatusCode());
+            deferredResult.setResult(response.getStatusLine().getStatusCode());
         }
     }
 
     @Async
-    public Future<Integer> asyncDependencyCallWithApacheHttpClient3() throws IOException {
+    public void asyncDependencyCallWithApacheHttpClient3(DeferredResult<Integer> deferredResult) throws IOException {
         HttpClient httpClient3 = new org.apache.commons.httpclient.HttpClient();
         CookiePolicy.registerCookieSpec("PermitAllCookiesSpec", PermitAllCookiesSpec.class);
         httpClient3.getParams().setCookiePolicy("PermitAllCookiesSpec");
@@ -43,39 +42,39 @@ public class TestBean {
         GetMethod httpGet = new GetMethod(url);
         httpClient3.executeMethod(httpGet);
         httpGet.releaseConnection();
-        return new AsyncResult<>(httpGet.getStatusCode());
+        deferredResult.setResult(httpGet.getStatusCode());
     }
 
     @Async
-    public Future<Integer> asyncDependencyCallWithOkHttp3() throws IOException {
+    public void asyncDependencyCallWithOkHttp3(DeferredResult<Integer> deferredResult) throws IOException {
         okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
         okhttp3.Request request = new okhttp3.Request.Builder()
                 .url("https://www.bing.com")
                 .build();
         okhttp3.Response response = client.newCall(request).execute();
         response.body().close();
-        return new AsyncResult<>(response.code());
+        deferredResult.setResult(response.code());
     }
 
     @Async
-    public Future<Integer> asyncDependencyCallWithOkHttp2() throws IOException {
+    public void asyncDependencyCallWithOkHttp2(DeferredResult<Integer> deferredResult) throws IOException {
         com.squareup.okhttp.OkHttpClient client = new com.squareup.okhttp.OkHttpClient();
         com.squareup.okhttp.Request request = new com.squareup.okhttp.Request.Builder()
                 .url("https://www.bing.com")
                 .build();
         com.squareup.okhttp.Response response = client.newCall(request).execute();
         response.body().close();
-        return new AsyncResult<>(response.code());
+        deferredResult.setResult(response.code());
     }
 
     @Async
-    public Future<Integer> asyncDependencyCallWithHttpURLConnection() throws IOException {
+    public void asyncDependencyCallWithHttpURLConnection(DeferredResult<Integer> deferredResult) throws IOException {
         URL obj = new URL("https://www.bing.com");
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
         InputStream content = connection.getInputStream();
         ByteStreams.exhaust(content);
         content.close();
-        return new AsyncResult<>(connection.getResponseCode());
+        deferredResult.setResult(connection.getResponseCode());
     }
 
     public static class PermitAllCookiesSpec extends CookieSpecBase {
