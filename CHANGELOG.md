@@ -1,17 +1,27 @@
 # CHANGELOG
 
 # Version 2.4.0
-- Fix [#898](https://github.com/Microsoft/ApplicationInsights-Java/issues/898) Increase persistent http connection validation
-timeout period.
 - Upgrade gradle to 5.3.1
-- Fix [#907](https://github.com/microsoft/ApplicationInsights-Java/issues/907) - ensure string compare is case insensitive when running a SQL explain on a select statement. 
+- Fix [#907](https://github.com/microsoft/ApplicationInsights-Java/issues/907) - ensure string compare is case insensitive when running a SQL explain on a select statement.
+- Fixed ThreadLocal leak [#887](https://github.com/microsoft/ApplicationInsights-Java/pull/887)
+- Fixed QuickPulse schema version [#904](https://github.com/microsoft/ApplicationInsights-Java/pull/904)
+- Added retries to CDSProfileFetcher [#901](https://github.com/microsoft/ApplicationInsights-Java/pull/901)
+- Fix [#919](https://github.com/microsoft/ApplicationInsights-Java/issues/919) - Fixed issue when adding duplicate Windows performance counter.
+- Added caching of sdk version id, reducing number of file IO operations [#896](https://github.com/microsoft/ApplicationInsights-Java/pull/896)
+- Misc stability improvements
+[#932](https://github.com/microsoft/ApplicationInsights-Java/pull/932)
+[#941](https://github.com/microsoft/ApplicationInsights-Java/pull/941)
+[#945](https://github.com/microsoft/ApplicationInsights-Java/pull/945)
+[#946](https://github.com/microsoft/ApplicationInsights-Java/pull/946)
+[#947](https://github.com/microsoft/ApplicationInsights-Java/pull/947)
+[#948](https://github.com/microsoft/ApplicationInsights-Java/pull/948)
 
 # Version 2.4.0-BETA
 - Removed support for multiple apps instrumented with single JVM Agent. Instrumentation will only work for single apps
   in application server. 
-- Fixed [#749](https://github.com/Microsoft/ApplicationInsights-Java/issues/749) introduce support for PostGre sql jdbc4 prepared statements.
+- Fixed [#749](https://github.com/Microsoft/ApplicationInsights-Java/issues/749) introduce support for PostgreSQL jdbc4 prepared statements.
 - Introduced support for Manual Async and Explicit Multithreading correlation. 
-- Introduced `setRequestTelemetryContext` API in `WebTelemetryModule` Interface.
+- <strike>Introduced `setRequestTelemetryContext` API in `WebTelemetryModule` Interface.</strike>
 - Introduced experimental API's `AIHttpServletListner`, `HttpServerHandler`, `ApplicationInsightsServletExtractor`
   and `HttpExtractor`.
 - Deprecated `ApplicationInsightsHttpResponseWrapper`
