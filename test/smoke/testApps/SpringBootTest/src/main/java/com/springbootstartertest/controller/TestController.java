@@ -1,31 +1,23 @@
 package com.springbootstartertest.controller;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import javax.servlet.ServletException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
 @RestController
 public class TestController {
 
-	@Autowired
-	TelemetryClient client;
+	private static final TelemetryClient client = new TelemetryClient();
 
-	private CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
+	@Autowired
+	private TestBean testBean;
 
 	@GetMapping("/")
 	public String rootPage() {
@@ -56,12 +48,38 @@ public class TestController {
 		throw new ServletException("This is an exception");
 	}
 
-	@GetMapping("/asyncDependencyCall")
-	public AsyncResult<Integer> asyncDependencyCall() throws IOException {
-        String url = "https://www.bing.com";
-        HttpGet get = new HttpGet(url);
-        try (CloseableHttpResponse response = httpClient.execute(get)){
-        	return new AsyncResult<>(response.getStatusLine().getStatusCode());
-        }
-	}
+    @GetMapping("/asyncDependencyCallWithApacheHttpClient4")
+    public DeferredResult<Integer> asyncDependencyCallWithApacheHttpClient4() throws IOException {
+        DeferredResult<Integer> deferredResult = new DeferredResult<>();
+        testBean.asyncDependencyCallWithApacheHttpClient4(deferredResult);
+        return deferredResult;
+    }
+
+    @GetMapping("/asyncDependencyCallWithApacheHttpClient3")
+    public DeferredResult<Integer> asyncDependencyCallWithApacheHttpClient3() throws IOException {
+        DeferredResult<Integer> deferredResult = new DeferredResult<>();
+        testBean.asyncDependencyCallWithApacheHttpClient3(deferredResult);
+        return deferredResult;
+    }
+
+    @GetMapping("/asyncDependencyCallWithOkHttp3")
+    public DeferredResult<Integer> asyncDependencyCallWithOkHttp3() throws IOException {
+        DeferredResult<Integer> deferredResult = new DeferredResult<>();
+        testBean.asyncDependencyCallWithOkHttp3(deferredResult);
+        return deferredResult;
+    }
+
+    @GetMapping("/asyncDependencyCallWithOkHttp2")
+    public DeferredResult<Integer> asyncDependencyCallWithOkHttp2() throws IOException {
+        DeferredResult<Integer> deferredResult = new DeferredResult<>();
+        testBean.asyncDependencyCallWithOkHttp2(deferredResult);
+        return deferredResult;
+    }
+
+    @GetMapping("/asyncDependencyCallWithHttpURLConnection")
+    public DeferredResult<Integer> asyncDependencyCallWithHttpURLConnection() throws IOException {
+        DeferredResult<Integer> deferredResult = new DeferredResult<>();
+         testBean.asyncDependencyCallWithHttpURLConnection(deferredResult);
+        return deferredResult;
+    }
 }

@@ -20,13 +20,15 @@ public @interface DependencyContainer {
     String imageName() default "";
 
 
+    String[] environmentVariables() default {};
+
+    String portMapping();
+
     /**
      * The environment variable used to specify the hostname of this DependencyContainer.
      * If empty, the {@code value} is used as the variable name, in all-caps-snake-case.
      * For example, {@code "myVariable"} becomes {@code "MY_VARIABLE"}.
      * @return
      */
-    String environmentVariable() default "";
-
-    String portMapping();
+    String hostnameEnvironmentVariable() default "";
 }

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -340,7 +341,7 @@ public abstract class AiSmokeTest {
 
 	protected static void waitForApplicationToStart() throws Exception {
 		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
-		waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, getAppContext(), HEALTH_CHECK_RETRIES);
+		waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, String.format("%s on %s", getAppContext(), currentContainerInfo.getImageName()), HEALTH_CHECK_RETRIES);
 		System.out.println("Test app health check complete.");
 		if (requestCaptureEnabled) {
 			Stopwatch sw = Stopwatch.createStarted();
@@ -476,7 +477,8 @@ public abstract class AiSmokeTest {
 		for (DependencyContainer dc : dependencyImages) {
 			String imageName = Strings.isNullOrEmpty(dc.imageName()) ? dc.value() : dc.imageName();
 			System.out.printf("Starting container: %s%n", imageName);
-			final String containerId = docker.startContainer(imageName, dc.portMapping(), networkId);
+			final String containerId = docker.startDependencyContainer(imageName, dc.environmentVariables(), dc.portMapping(), networkId,
+			        "dependency" + Math.abs(new Random().nextLong()));
 			assertFalse("'containerId' was null/empty attempting to start container: "+imageName, Strings.isNullOrEmpty(containerId));
 			System.out.printf("Dependency container started: %s (%s)%n", imageName, containerId);
 
@@ -503,7 +505,7 @@ public abstract class AiSmokeTest {
 	private static void startTestApplicationContainer() throws Exception {
 		System.out.printf("Starting container: %s%n", currentImageName);
 		Map<String, String> envVars = generateAppContainerEnvVarMap();
-		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, null, envVars);
+		String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, null, envVars, false);
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
@@ -552,7 +554,7 @@ public abstract class AiSmokeTest {
 				continue;
 			}
 			DependencyContainer dc = info.getDependencyContainerInfo();
-			String varname = dc.environmentVariable();
+			String varname = dc.hostnameEnvironmentVariable();
 			if (Strings.isNullOrEmpty(varname)) {
 				varname = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, dc.value());
 			}

@@ -111,7 +111,17 @@ public final class HttpServerHandler {
         int resultCode = extractor.getStatusCode(response);
         requestTelemetry.setSuccess(resultCode < 400);
         requestTelemetry.setResponseCode(Integer.toString(resultCode));
-        webModulesContainer.invokeOnEndRequest(request, response);
+        if (ThreadContext.getRequestTelemetryContext() == null) {
+            // e.g. when called from AIHttpServletListener
+            ThreadContext.setRequestTelemetryContext(context);
+            try {
+                webModulesContainer.invokeOnEndRequest(request, response);
+            } finally {
+                ThreadContext.remove();
+            }
+        } else {
+            webModulesContainer.invokeOnEndRequest(request, response);
+        }
         cleanup();
     }
 

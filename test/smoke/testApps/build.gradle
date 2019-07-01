@@ -1,5 +1,9 @@
 apply plugin: 'base'
 
+ext {
+	dependencyContainers = []
+}
+
 subprojects {
 	apply plugin: 'java'
 
@@ -36,21 +40,38 @@ subprojects {
 		testCompile 'junit:junit:4.12'
 	}
 
+	// This task addresses the issue of dependency containers not existing when the app runs and the test fails due to timeout.
+	// FIXME a temporary measure until we can get the list of containers from the test classes themselves.
+	task pullDependencyContainers() {
+		group 'Smoke Test'
+		description 'Pulls dependency containers from docker hub'
+		doLast {
+			dependencyContainers.each { dc ->
+				logger.info "Pulling $dc..."
+				exec {
+					executable dockerExe
+					args 'pull', "$dc"
+				}
+			}
+		}
+		onlyIf { !dependencyContainers.empty }
+	}
+
 	task smokeTest(type: Test) {
 		group 'Smoke Test'
 		description 'Runs all smoke tests'
 
 		// TODO this adds the whole tree rooted at :appServers. Could this depend on :appServers which depends on :appServers:*:build?
 		dependsOn project(':test:smoke:appServers').getTasksByName('buildDockerImage', true)
+		dependsOn assemble
+		dependsOn pullDependencyContainers
+		mustRunAfter assemble
 		
 		testClassesDirs = sourceSets.smokeTest.output.classesDirs
 
 		classpath = sourceSets.smokeTest.runtimeClasspath
 		outputs.upToDateWhen { false }
 	}
-
-	smokeTest.dependsOn assemble
-	smokeTest.mustRunAfter assemble
 
 	processSmokeTestResources {
 		group 'Smoke Test'
