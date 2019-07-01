@@ -21,7 +21,49 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
+import javax.annotation.Nullable;
+
 public interface AgentBridge<T> {
 
-    AgentBinding bindToThread(T requestTelemetryContext);
+    boolean isAgentRunning();
+
+    AgentBinding bindToThread(T requestTelemetryContext, @Nullable ServletRequestInfo servletRequestInfo);
+
+    class ServletRequestInfo {
+
+        private final String method;
+        private final String contextPath;
+        private final String servletPath;
+        private final @Nullable String pathInfo;
+        private final String uri;
+
+        public ServletRequestInfo(String method, String contextPath, String servletPath, @Nullable String pathInfo, String uri) {
+            this.method = method;
+            this.contextPath = contextPath;
+            this.servletPath = servletPath;
+            this.pathInfo = pathInfo;
+            this.uri = uri;
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public String getContextPath() {
+            return contextPath;
+        }
+
+        public String getServletPath() {
+            return servletPath;
+        }
+
+        @Nullable
+        public String getPathInfo() {
+            return pathInfo;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+    }
 }

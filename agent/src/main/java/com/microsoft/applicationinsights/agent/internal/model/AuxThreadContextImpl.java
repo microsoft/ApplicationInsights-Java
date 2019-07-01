@@ -22,8 +22,10 @@
 package com.microsoft.applicationinsights.agent.internal.model;
 
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBinding;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.AuxThreadContext;
 import org.glowroot.instrumentation.api.Span;
+import org.glowroot.instrumentation.api.ThreadContext.ServletRequestInfo;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextPlus;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 import org.glowroot.instrumentation.engine.impl.NopTransactionService;
@@ -31,9 +33,11 @@ import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 class AuxThreadContextImpl<T> implements AuxThreadContext {
 
     private final SdkBinding<T> sdkBinding;
+    private final @Nullable ServletRequestInfo servletRequestInfo;
 
-    public AuxThreadContextImpl(SdkBinding<T> sdkBinding) {
+    public AuxThreadContextImpl(SdkBinding<T> sdkBinding, @Nullable ServletRequestInfo servletRequestInfo) {
         this.sdkBinding = sdkBinding;
+        this.servletRequestInfo = servletRequestInfo;
     }
 
     @Override
@@ -56,7 +60,7 @@ class AuxThreadContextImpl<T> implements AuxThreadContext {
             // already inside of a tracked thread
             return NopTransactionService.LOCAL_SPAN;
         }
-        threadContext = new ThreadContextImpl<>(sdkBinding, 0, 0);
+        threadContext = new ThreadContextImpl<>(sdkBinding, servletRequestInfo, 0, 0);
         threadContextHolder.set(threadContext);
         if (completeAsyncTransaction) {
             threadContext.setTransactionAsyncComplete();

@@ -56,6 +56,12 @@ public class SdkBinding<T> implements BindingResult {
         sdkBridge.unbindRequestTelemetryContext();
     }
 
+    public void setOperationName(String operationName) {
+        if (requestTelemetryContext != null) {
+            sdkBridge.setOperationName(requestTelemetryContext, operationName);
+        }
+    }
+
     public void addAuxThreadContextHolder(ThreadContextThreadLocal.Holder auxThreadContextHolder) {
         // since other accesses to auxThreadContextHolders are synchronized, may as well make this one synchronized and
         // then don't need to use a concurrent hash set

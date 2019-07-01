@@ -32,6 +32,8 @@ public interface SdkBridge<T> {
 
     void unbindRequestTelemetryContext();
 
+    void setOperationName(T requestTelemetryContext, String operationName);
+
     String generateChildDependencyTarget(String requestContext, boolean w3c);
 
     <C> String propagate(Setter<C> setter, C carrier, boolean w3c, boolean w3cBackCompat);

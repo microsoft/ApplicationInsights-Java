@@ -43,12 +43,15 @@ import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 public class ThreadContextImpl<T> implements ThreadContextPlus {
 
     private final SdkBinding<T> sdkBinding;
+    private final @Nullable ServletRequestInfo servletRequestInfo;
 
     private int currentNestingGroupId;
     private int currentSuppressionKeyId;
 
-    public ThreadContextImpl(SdkBinding<T> sdkBinding, int rootNestingGroupId, int rootSuppressionKeyId) {
+    public ThreadContextImpl(SdkBinding<T> sdkBinding, @Nullable ServletRequestInfo servletRequestInfo,
+                             int rootNestingGroupId, int rootSuppressionKeyId) {
         this.sdkBinding = sdkBinding;
+        this.servletRequestInfo = servletRequestInfo;
         currentNestingGroupId = rootNestingGroupId;
         currentSuppressionKeyId = rootSuppressionKeyId;
     }
@@ -125,7 +128,7 @@ public class ThreadContextImpl<T> implements ThreadContextPlus {
 
     @Override
     public AuxThreadContext createAuxThreadContext() {
-        return new AuxThreadContextImpl<>(sdkBinding);
+        return new AuxThreadContextImpl<>(sdkBinding, servletRequestInfo);
     }
 
     @Override
@@ -145,7 +148,10 @@ public class ThreadContextImpl<T> implements ThreadContextPlus {
 
     @Override
     public void setTransactionName(@Nullable String transactionName, int priority) {
-        // in SDK mode the incomingSpan level attributes are managed by the SDK
+        // currently ignoring priority, which is ok since just using core instrumentation
+        if (transactionName != null) {
+            sdkBinding.setOperationName(transactionName);
+        }
     }
 
     @Override
@@ -190,13 +196,12 @@ public class ThreadContextImpl<T> implements ThreadContextPlus {
 
     @Override
     public @Nullable ServletRequestInfo getServletRequestInfo() {
-        // in SDK mode the incomingSpan level attributes are managed by the SDK
-        return null;
+        return servletRequestInfo;
     }
 
     @Override
     public void setServletRequestInfo(ServletRequestInfo servletRequestInfo) {
-        // in SDK mode the incomingSpan level attributes are managed by the SDK
+        // not using servlet instrumentation, so this is never called
     }
 
     @Override

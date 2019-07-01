@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.sdk;
 
 import com.microsoft.applicationinsights.agent.internal.model.Global;
 import com.microsoft.applicationinsights.agent.internal.model.ThreadContextImpl;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.glowroot.instrumentation.api.ThreadContext.ServletRequestInfo;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextPlus;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 
@@ -33,12 +35,13 @@ public class AgentBridgeInternal {
     private AgentBridgeInternal() {
     }
 
-    public static <T> BindingResult bindToThread(SdkBridge<T> sdkBridge, T requestTelemetryContext) {
+    public static <T> BindingResult bindToThread(SdkBridge<T> sdkBridge, T requestTelemetryContext,
+                                                 @Nullable ServletRequestInfo servletRequestInfo) {
         ThreadContextThreadLocal.Holder threadContextHolder = Global.getThreadContextHolder();
         ThreadContextPlus threadContext = threadContextHolder.get();
         if (threadContext == null) {
             SdkBinding<T> sdkBinding = new SdkBinding<>(sdkBridge, requestTelemetryContext);
-            threadContextHolder.set(new ThreadContextImpl<>(sdkBinding, 0, 0));
+            threadContextHolder.set(new ThreadContextImpl<>(sdkBinding, servletRequestInfo, 0, 0));
             return sdkBinding;
         } else {
             return NOP_BINDING_RESULT;

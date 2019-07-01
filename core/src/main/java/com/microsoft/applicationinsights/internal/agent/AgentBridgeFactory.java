@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
+import javax.annotation.Nullable;
+
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
@@ -51,7 +53,12 @@ public class AgentBridgeFactory {
     private static class NopAgentBridge<T> implements AgentBridge<T> {
 
         @Override
-        public AgentBinding bindToThread(T requestTelemetryContext) {
+        public boolean isAgentRunning() {
+            return false;
+        }
+
+        @Override
+        public AgentBinding bindToThread(T requestTelemetryContext, @Nullable ServletRequestInfo servletRequestInfo) {
             return NopAgentBinding.INSTANCE;
         }
     }

@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.internal.agent.AgentBinding;
 import com.microsoft.applicationinsights.internal.agent.AgentBridge;
+import com.microsoft.applicationinsights.internal.agent.AgentBridge.ServletRequestInfo;
 import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory;
 import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory.SdkBridgeFactory;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
@@ -124,7 +125,14 @@ public final class WebRequestTrackingFilter implements Filter {
             }
 
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
-            AgentBinding agentBinding = agentBridge.bindToThread(requestTelemetryContext);
+            AgentBinding agentBinding;
+            if (agentBridge.isAgentRunning()) {
+                agentBinding = agentBridge.bindToThread(requestTelemetryContext,
+                        new ServletRequestInfo(httpRequest.getMethod(), httpRequest.getContextPath(),
+                                httpRequest.getServletPath(), httpRequest.getPathInfo(), httpRequest.getRequestURI()));
+            } else {
+                agentBinding = null;
+            }
             try {
                 httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
                 chain.doFilter(httpRequest, httpResponse);
@@ -139,9 +147,13 @@ public final class WebRequestTrackingFilter implements Filter {
                     context.addListener(aiHttpServletListener, httpRequest, httpResponse);
                 } else {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
-                    agentBinding.unbindFromRunawayChildThreads();
+                    if (agentBinding != null) {
+                        agentBinding.unbindFromRunawayChildThreads();
+                    }
                 }
-                agentBinding.unbindFromMainThread();
+                if (agentBinding != null) {
+                    agentBinding.unbindFromMainThread();
+                }
                 ThreadContext.remove();
             }
         } else {

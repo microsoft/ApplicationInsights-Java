@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.agent.AbstractSdkBridge;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
 
@@ -40,6 +41,14 @@ class SdkBridgeImpl extends AbstractSdkBridge<RequestTelemetryContext> {
     @Override
     public void unbindRequestTelemetryContext() {
         ThreadContext.remove();
+    }
+
+    @Override
+    public void setOperationName(RequestTelemetryContext requestTelemetryContext, String operationName) {
+        RequestTelemetry requestTelemetry = requestTelemetryContext.getHttpRequestTelemetry();
+        if (requestTelemetry.isAllowAgentToOverrideName()) {
+            requestTelemetry.setName(operationName);
+        }
     }
 
     @Override

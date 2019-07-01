@@ -21,9 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nullable;
+
 import com.microsoft.applicationinsights.agent.internal.sdk.AgentBridgeInternal;
 import com.microsoft.applicationinsights.agent.internal.sdk.BindingResult;
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
+import org.glowroot.instrumentation.api.ThreadContext;
 
 class AgentBridgeImpl<T> implements AgentBridge<T> {
 
@@ -34,8 +39,14 @@ class AgentBridgeImpl<T> implements AgentBridge<T> {
     }
 
     @Override
-    public AgentBinding bindToThread(T requestTelemetryContext) {
-        return new AgentBindingImpl(AgentBridgeInternal.bindToThread(sdkBridge, requestTelemetryContext));
+    public boolean isAgentRunning() {
+        return true;
+    }
+
+    @Override
+    public AgentBinding bindToThread(T requestTelemetryContext, @Nullable ServletRequestInfo servletRequestInfo) {
+        return new AgentBindingImpl(AgentBridgeInternal.bindToThread(sdkBridge, requestTelemetryContext,
+                new ServletRequestInfoImpl(servletRequestInfo)));
     }
 
     private static class AgentBindingImpl implements AgentBinding {
@@ -52,6 +63,51 @@ class AgentBridgeImpl<T> implements AgentBridge<T> {
 
         public void unbindFromRunawayChildThreads() {
             bindingResult.unbindFromRunawayChildThreads();
+        }
+    }
+
+    private static class ServletRequestInfoImpl implements ThreadContext.ServletRequestInfo {
+
+        private final ServletRequestInfo servletRequestInfo;
+        private final List<String> jaxRsParts = new ArrayList<>();
+
+        private ServletRequestInfoImpl(ServletRequestInfo servletRequestInfo) {
+            this.servletRequestInfo = servletRequestInfo;
+        }
+
+        @Override
+        public String getMethod() {
+            return servletRequestInfo.getMethod();
+        }
+
+        @Override
+        public String getContextPath() {
+            return servletRequestInfo.getContextPath();
+        }
+
+        @Override
+        public String getServletPath() {
+            return servletRequestInfo.getServletPath();
+        }
+
+        @Override
+        public @Nullable String getPathInfo() {
+            return servletRequestInfo.getPathInfo();
+        }
+
+        @Override
+        public String getUri() {
+            return servletRequestInfo.getUri();
+        }
+
+        @Override
+        public void addJaxRsPart(String part) {
+            jaxRsParts.add(part);
+        }
+
+        @Override
+        public List<String> getJaxRsParts() {
+            return jaxRsParts;
         }
     }
 }

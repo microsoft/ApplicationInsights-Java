@@ -122,6 +122,9 @@ dependencies {
     compile "com.google.guava:guava:27.1-android"
     compile "org.glowroot.instrumentation:instrumentation-api:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-executor:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-spring:$instrumentationVersion" // need for operation name
+    runtime "org.glowroot.instrumentation:instrumentation-jaxrs:$instrumentationVersion" // need for operation name
+    runtime "org.glowroot.instrumentation:instrumentation-struts:$instrumentationVersion" // need for operation name
     runtime "org.glowroot.instrumentation:instrumentation-jdbc:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-redis:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-apache-http-client:$instrumentationVersion"

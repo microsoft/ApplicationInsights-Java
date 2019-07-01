@@ -89,6 +89,7 @@ public final class HttpServerHandler {
         }
         requestTelemetry.setHttpMethod(method);
         requestTelemetry.setName(method + " " + uriWithoutSessionId);
+        requestTelemetry.setAllowAgentToOverrideName(true);
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
         requestTelemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
         webModulesContainer.invokeOnBeginRequest(request, response);
