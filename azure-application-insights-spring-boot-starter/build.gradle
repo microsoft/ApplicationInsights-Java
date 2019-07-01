@@ -28,7 +28,6 @@ apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
 archivesBaseName = 'applicationinsights-spring-boot-starter'
-version = project.properties['spring.boot.starter.version-number']
 
 def starterVersionFileDir = "$project.buildDir/src/generated/main/resources"
 task generateVersionProperties(type: PropsFileGen) {
