@@ -1,6 +1,7 @@
 # CHANGELOG
 
 # Version 2.4.0
+- Updated Spring Boot Starter version number to track with the SDK version.
 - Upgrade gradle to 5.3.1
 - Fix [#907](https://github.com/microsoft/ApplicationInsights-Java/issues/907) - ensure string compare is case insensitive when running a SQL explain on a select statement.
 - Fixed ThreadLocal leak [#887](https://github.com/microsoft/ApplicationInsights-Java/pull/887)
