@@ -22,21 +22,20 @@ Notices, if any, for the third party programs are included for your information 
 Microsoft Application Insights Java Software Development Kit consists of material from the project(s) listed below (collectively, "Distributed Code"). Microsoft Corporation ("Microsoft") is not the original author of some of the Distributed Code. The original copyright notices and licenses, under which Microsoft received such Distributed Code, are set out below.  This Distributed Code are licensed to you under their original license terms set forth below.  Microsoft reserves all other rights not expressly granted under these terms, whether by implication, estoppel or otherwise. 
 
 1.	Apache Commons-codec version 1.9 (http://commons.apache.org/proper/commons-codec/download_codec.cgi)
-2.	Apache Commons Lang3 version 3.1 (http://commons.apache.org/proper/commons-lang/)
+2.	Apache Commons Lang3 version 3.3.7 (http://commons.apache.org/proper/commons-lang/)
 3.	Apache Commons Logging  version 1.2 (http://commons.apache.org/proper/commons-logging/)
-4.	Apache Commons-io version 2.4 (http://commons.apache.org/proper/commons-io/)
+4.	Apache Commons-io version 2.6 (http://commons.apache.org/proper/commons-io/)
 5.	Apache HttpComponents Client version 4.5.3 (http://hc.apache.org/downloads.cgi)
 6.	Apache HttpComponents Core  version 4.4.6 (http://hc.apache.org/downloads.cgi)
-7.	Application Insights SDK for Java version 0.9.6 (https://github.com/Microsoft/AppInsights-Java)
-8.	ASM version 5.0.3 (http://asm.ow2.org/)
-9.	ASM Commons version 5.0.3 (http://asm.ow2.org/)
-10.	Guava version 20.0 (http://code.google.com/p/guava-libraries/)
-11.	INFOMAS PCM Application Suite version 3.0.4 (https://github.com/rmuller/infomas-asl)
-12.	JSR-305 version 2.0.1 (http://code.google.com/p/jsr-305/)
-13. Protobuf-java version 3.6.1 (https://github.com/protocolbuffers/protobuf)
-14. gRPC Stubs version 1.14.0 (https://github.com/grpc/grpc-java)
-15. gRPC Protobuf version 1.14.0 (https://github.com/grpc/grpc-java)
-16. gRPC Netty-shaded version 1.14.0 (https://github.com/grpc/grpc-java)
+7.	ASM version 5.2 (http://asm.ow2.org/)
+8.	ASM Commons version 5.2 (http://asm.ow2.org/)
+9.	Guava version 26.0-android (http://code.google.com/p/guava-libraries/)
+10.	INFOMAS PCM Application Suite version 3.0.4 (https://github.com/rmuller/infomas-asl)
+11.	JSR-305 version 2.0.1 (http://code.google.com/p/jsr-305/)
+12. Protobuf-java version 3.6.1 (https://github.com/protocolbuffers/protobuf)
+13. gRPC Stubs version 1.16.1 (https://github.com/grpc/grpc-java)
+14. gRPC Protobuf version 1.16.1 (https://github.com/grpc/grpc-java)
+15. gRPC Netty-shaded version 1.16.1 (https://github.com/grpc/grpc-java)
 
 %% Apache Commons-codec NOTICES, INFORMATION, AND LICENSE BEGIN HERE
 =========================================
