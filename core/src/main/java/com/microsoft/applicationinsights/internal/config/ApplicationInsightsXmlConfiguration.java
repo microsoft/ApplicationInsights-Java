@@ -33,6 +33,9 @@ public class ApplicationInsightsXmlConfiguration {
     @XStreamAlias("InstrumentationKey")
     private String instrumentationKey;
 
+    @XStreamAlias("RoleName")
+    private String roleName;
+
     @XStreamAlias("DisableTelemetry")
     public boolean disableTelemetry;
 
@@ -72,6 +75,14 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setInstrumentationKey(String instrumentationKey) {
         this.instrumentationKey = instrumentationKey;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     public String getSchemaVersion() {

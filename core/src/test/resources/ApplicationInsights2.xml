@@ -41,6 +41,8 @@
 	
 	<!-- The instrumentation key acquired from the Azure portal -->
 	<InstrumentationKey>myikey</InstrumentationKey>
+
+	<RoleName>myrole</RoleName>
 	
 	<!--
 	TelemetryModules are flexible components which can be used for a variety of purposes.

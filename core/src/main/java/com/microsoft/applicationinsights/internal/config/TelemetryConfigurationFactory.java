@@ -132,6 +132,7 @@ public enum TelemetryConfigurationFactory {
             setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
 
             setInstrumentationKey(applicationInsightsConfig, configuration);
+            setRoleName(applicationInsightsConfig, configuration);
 
             TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
             boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
@@ -161,6 +162,7 @@ public enum TelemetryConfigurationFactory {
 
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         setInstrumentationKey(userConfiguration, configuration);
+        setRoleName(userConfiguration, configuration);
         configuration.setChannel(new InProcessTelemetryChannel());
         addHeartBeatModule(configuration);
         setContextInitializers(null, configuration);
@@ -329,6 +331,30 @@ public enum TelemetryConfigurationFactory {
             }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.toString());
+        }
+    }
+
+    private void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
+                           TelemetryConfiguration configuration) {
+        try {
+            String roleName;
+
+            // try to find the role name in ApplicationInsights.xml
+            if (userConfiguration != null) {
+                roleName = userConfiguration.getRoleName();
+                if (roleName == null) {
+                    return;
+                }
+
+                roleName = roleName.trim();
+                if (roleName.length() == 0) {
+                    return;
+                }
+
+                configuration.setRoleName(roleName);
+            }
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Failed to set role name: '%s'", e.toString());
         }
     }
 
