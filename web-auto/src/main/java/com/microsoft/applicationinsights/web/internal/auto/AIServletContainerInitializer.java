@@ -26,6 +26,7 @@ import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 
+import com.microsoft.applicationinsights.web.internal.ApplicationInsightsServletContextListener;
 import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 
 public class AIServletContainerInitializer implements ServletContainerInitializer {
@@ -37,5 +38,6 @@ public class AIServletContainerInitializer implements ServletContainerInitialize
         if (filterRegistration != null) {
             filterRegistration.addMappingForUrlPatterns(null, false, "/*");
         }
+        ctx.addListener(new ApplicationInsightsServletContextListener());
     }
 }
