@@ -145,11 +145,6 @@ def updatePomWithGeneralProjectInformation(pomObject) {
     }
 }
 
-javadoc {
-    source = sourceSets.main.allJava
-    classpath = configurations.compile
-}
-
 task prepareSourcesArchive(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allJava
