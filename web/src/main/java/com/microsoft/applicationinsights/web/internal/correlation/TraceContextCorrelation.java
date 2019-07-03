@@ -265,22 +265,14 @@ public class TraceContextCorrelation {
             return;
         }
 
-        String appId = getAppIdWithKey();
+        String appId = getAppId();
         if (appId.isEmpty()) {
             return;
         }
 
         // W3C protocol doesn't define any behavior for response headers.
         // This is purely AI concept and hence we use RequestContextHeader here.
-        response.addHeader(REQUEST_CONTEXT_HEADER_NAME,appId);
-    }
-
-    /**
-     * Gets AppId prefixed with key to append to Request-Context header
-     * @return
-     */
-    private static String getAppIdWithKey() {
-        return REQUEST_CONTEXT_HEADER_APPID_KEY + "=" + getAppId();
+        response.addHeader(REQUEST_CONTEXT_HEADER_NAME,REQUEST_CONTEXT_HEADER_APPID_KEY + "=" + appId);
     }
 
     /**
