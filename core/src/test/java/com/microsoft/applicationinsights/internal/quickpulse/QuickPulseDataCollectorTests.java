@@ -17,6 +17,11 @@ public class QuickPulseDataCollectorTests {
 
     private static final String FAKE_INSTRUMENTATION_KEY = "fake-instrumentation-key";
 
+    @Before
+    public void setup() {
+        QuickPulseDataCollector.INSTANCE.disable();
+    }
+
     @After
     public void tearDown() {
         QuickPulseDataCollector.INSTANCE.disable();
