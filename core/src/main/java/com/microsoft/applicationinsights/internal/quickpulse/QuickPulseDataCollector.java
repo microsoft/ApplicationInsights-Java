@@ -84,7 +84,7 @@ public enum QuickPulseDataCollector {
         }
     }
 
-    private static class CountAndDuration {
+    static class CountAndDuration {
         public final long count;
         public final long duration;
 
@@ -161,6 +161,15 @@ public enum QuickPulseDataCollector {
         return null;
     }
 
+    /*@VisibleForTesting*/
+    synchronized FinalCounters peek() {
+        final Counters currentCounters = this.counters.get(); // this should be the only differece
+        if (currentCounters != null) {
+            return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
+        }
+        return null;
+    }
+
     public void add(Telemetry telemetry) {
         if (!telemetry.getContext().getInstrumentationKey().equals(ikey)) {
             return;
@@ -182,7 +191,7 @@ public enum QuickPulseDataCollector {
             return;
         }
         counters.rddsAndDuations.addAndGet(
-                Counters.encodeCountAndDuration(1, telemetry.getDuration().getMilliseconds()));
+                Counters.encodeCountAndDuration(1, telemetry.getDuration().getTotalMilliseconds()));
         if (!telemetry.getSuccess()) {
             counters.unsuccessfulRdds.incrementAndGet();
         }
@@ -203,7 +212,7 @@ public enum QuickPulseDataCollector {
             return;
         }
 
-        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getMilliseconds()));
+        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getTotalMilliseconds()));
         if (!requestTelemetry.isSuccess()) {
             counters.unsuccessfulRequests.incrementAndGet();
         }

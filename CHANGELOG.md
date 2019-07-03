@@ -9,6 +9,7 @@
 - Added retries to CDSProfileFetcher [#901](https://github.com/microsoft/ApplicationInsights-Java/pull/901)
 - Fix [#919](https://github.com/microsoft/ApplicationInsights-Java/issues/919) - Fixed issue when adding duplicate Windows performance counter.
 - Added caching of sdk version id, reducing number of file IO operations [#896](https://github.com/microsoft/ApplicationInsights-Java/pull/896)
+- Fixed bug with live metrics (QuickPulse) where request/dependency durations were being truncated to the millisecond.
 - Misc stability improvements
 [#932](https://github.com/microsoft/ApplicationInsights-Java/pull/932)
 [#941](https://github.com/microsoft/ApplicationInsights-Java/pull/941)
