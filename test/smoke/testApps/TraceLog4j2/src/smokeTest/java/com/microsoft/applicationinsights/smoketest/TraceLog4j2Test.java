@@ -1,10 +1,13 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Comparator;
 import java.util.List;
 
+import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
@@ -12,77 +15,81 @@ import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 
 import org.junit.Test;
 
-@RequestCapturing(enabled = false)
+@UseAgent
 public class TraceLog4j2Test extends AiSmokeTest {
 
     @Test
     @TargetUri("/traceLog4j2")
     public void testTraceLog4j2() throws Exception {
-        mockedIngestion.waitForItems("MessageData", 6);
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 3);
 
-        final List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope mdEnvelope1 = mdList.get(0);
+        Envelope mdEnvelope2 = mdList.get(1);
+        Envelope mdEnvelope3 = mdList.get(2);
+
+        List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
         logs.sort(new Comparator<MessageData>() {
             @Override
             public int compare(MessageData o1, MessageData o2) {
-                final int i = o1.getSeverityLevel().compareTo(o2.getSeverityLevel());
-                if (i == 0) {
-                    return o1.getProperties().get("LoggingLevel").compareTo(o2.getProperties().get("LoggingLevel"));
-                }
-                return i;
+                return o1.getSeverityLevel().compareTo(o2.getSeverityLevel());
             }
         });
 
-        MessageData md1 = logs.get(1);
-        assertEquals("This is log4j2 trace.", md1.getMessage());
-        assertEquals(SeverityLevel.Verbose, md1.getSeverityLevel());
-        assertEquals("Log4j", md1.getProperties().get("SourceType"));
-        assertEquals("TRACE", md1.getProperties().get("LoggingLevel"));
-
-        MessageData md2 = logs.get(0);
-        assertEquals("This is log4j2 debug.", md2.getMessage());
-        assertEquals(SeverityLevel.Verbose, md2.getSeverityLevel());
-        assertEquals("Log4j", md2.getProperties().get("SourceType"));
-        assertEquals("DEBUG", md2.getProperties().get("LoggingLevel"));
-
+        MessageData md1 = logs.get(0);
+        MessageData md2 = logs.get(1);
         MessageData md3 = logs.get(2);
-        assertEquals("This is log4j2 info.", md3.getMessage());
-        assertEquals(SeverityLevel.Information, md3.getSeverityLevel());
-        assertEquals("Log4j", md3.getProperties().get("SourceType"));
-        assertEquals("INFO", md3.getProperties().get("LoggingLevel"));
 
-        MessageData md4 = logs.get(3);
-        assertEquals("This is log4j2 warn.", md4.getMessage());
-        assertEquals(SeverityLevel.Warning, md4.getSeverityLevel());
-        assertEquals("Log4j", md4.getProperties().get("SourceType"));
-        assertEquals("WARN", md4.getProperties().get("LoggingLevel"));
+        assertEquals("This is log4j2 warn.", md1.getMessage());
+        assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
+        assertEquals("Logger", md1.getProperties().get("SourceType"));
+        assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
+        assertSameOperationId(mdEnvelope1, rdEnvelope);
 
+        assertEquals("This is log4j2 error.", md2.getMessage());
+        assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
+        assertEquals("Logger", md2.getProperties().get("SourceType"));
+        assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
+        assertSameOperationId(mdEnvelope2, rdEnvelope);
 
-        MessageData md5 = logs.get(4);
-        assertEquals("This is log4j2 error.", md5.getMessage());
-        assertEquals(SeverityLevel.Error, md5.getSeverityLevel());
-        assertEquals("Log4j", md5.getProperties().get("SourceType"));
-        assertEquals("ERROR", md5.getProperties().get("LoggingLevel"));
-
-        MessageData md6 = logs.get(5);
-        assertEquals("This is log4j2 fatal.", md6.getMessage());
-        assertEquals(SeverityLevel.Critical, md6.getSeverityLevel());
-        assertEquals("Log4j", md6.getProperties().get("SourceType"));
-        assertEquals("FATAL", md6.getProperties().get("LoggingLevel"));
+        assertEquals("This is log4j2 fatal.", md3.getMessage());
+        assertEquals(SeverityLevel.Critical, md3.getSeverityLevel());
+        assertEquals("Logger", md3.getProperties().get("SourceType"));
+        assertEquals("FATAL", md3.getProperties().get("LoggingLevel"));
+        assertSameOperationId(mdEnvelope3, rdEnvelope);
     }
 
     @Test
     @TargetUri("/traceLog4j2WithException")
     public void testTraceLog4j2WithException() throws Exception {
-        mockedIngestion.waitForItems("ExceptionData", 1);
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 1);
 
-        ExceptionData ed1 = getTelemetryDataForType(0, "ExceptionData");
-        List<ExceptionDetails> details = ed1.getExceptions();
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope edEnvelope = edList.get(0);
+
+        ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
+
+        List<ExceptionDetails> details = ed.getExceptions();
         ExceptionDetails ex = details.get(0);
 
         assertEquals("Fake Exception", ex.getMessage());
-        assertEquals(SeverityLevel.Error, ed1.getSeverityLevel());
-        assertEquals("This is an exception!", ed1.getProperties().get("Logger Message"));
-        assertEquals("Log4j", ed1.getProperties().get("SourceType"));
-        assertEquals("ERROR", ed1.getProperties().get("LoggingLevel"));
+        assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
+        assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
+        assertEquals("Logger", ed.getProperties().get("SourceType"));
+        assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
+        assertSameOperationId(edEnvelope, rdEnvelope);
+    }
+
+    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+
+        assertNotNull(operationId);
+        assertNotNull(operationParentId);
+
+        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
+        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
     }
 }

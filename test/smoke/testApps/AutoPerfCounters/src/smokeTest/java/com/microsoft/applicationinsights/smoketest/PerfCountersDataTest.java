@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
+@UseAgent
 @SuppressWarnings("deprecation")
 public class PerfCountersDataTest extends AiSmokeTest {
     @Test

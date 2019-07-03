@@ -8,8 +8,8 @@ ext {
     jreMasterList = file('jre.master.txt')
     dockerCliExe = findDockerCliExe()
     globalResourcesDir = "$projectDir/global-resources"
-    agentLibsDir = file("${project(':agent').buildDir}/libs") // is there a better way to get this?
-    agentJarName = project(':agent').jar.archiveFileName.get()
+    agentLibsDir = file("${project(':agent-codeless').buildDir}/libs") // is there a better way to get this?
+    agentJarName = project(':agent-codeless').jar.archiveFileName.get()
 }
 
 subprojects {
@@ -80,7 +80,7 @@ subprojects {
         group 'Smoke Test'
         description 'Builds Docker images'
 
-        dependsOn ':agent:assemble'
+        dependsOn ':agent-codeless:assemble'
         dependsOn generateDockerfiles
         inputs.files(fileTree(dir: dockerfileOutputDir, include: '*.dockerfile'))
 

@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import org.junit.Test;
 
+@UseAgent
 public class WebAutoTest extends AiSmokeTest {
 
     @Test

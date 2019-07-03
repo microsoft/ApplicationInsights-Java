@@ -8,6 +8,7 @@ import org.junit.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+@UseAgent("FixedRateSampling")
 public class FixedRateSamplingTest extends AiSmokeTest {
     @Test
     @TargetUri("/fixedRateSampling")
@@ -28,6 +29,7 @@ public class FixedRateSamplingTest extends AiSmokeTest {
         assertEquals(50.0, ed.getSampleRate(), Math.ulp(50.0));
     }
 
+    @Ignore
     @Test
     @TargetUri("/fixedRateSampling")
     public void testFixedRateSamplingNotInExcludedTypes() throws Exception {

@@ -129,35 +129,41 @@ public enum TelemetryConfigurationFactory {
                 return;
             }
 
-            setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
-
-            setInstrumentationKey(applicationInsightsConfig, configuration);
-            setRoleName(applicationInsightsConfig, configuration);
-
-            TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
-            boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
-            if (!channelIsConfigured) {
-                InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
-            }
-            configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
-
-            setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
-            setTelemetryInitializers(applicationInsightsConfig.getTelemetryInitializers(), configuration);
-            setTelemetryModules(applicationInsightsConfig, configuration);
-            setTelemetryProcessors(applicationInsightsConfig, configuration);
-
-            TelemetryChannel channel = configuration.getChannel();
-            if (channel instanceof LocalForwarderTelemetryChannel
-                && isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
-                    InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
-                    applicationInsightsConfig.getQuickPulse().setEnabled(false);
-            }
-            setQuickPulse(applicationInsightsConfig);
-
-            initializeComponents(configuration);
+            initialize(configuration, applicationInsightsConfig);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to initialize configuration, exception: %s", ExceptionUtils.getStackTrace(e));
         }
+    }
+
+    public void initialize(TelemetryConfiguration configuration,
+                           ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+
+        setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
+
+        setInstrumentationKey(applicationInsightsConfig, configuration);
+        setRoleName(applicationInsightsConfig, configuration);
+
+        TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
+        boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
+        if (!channelIsConfigured) {
+            InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
+        }
+        configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
+
+        setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
+        setTelemetryInitializers(applicationInsightsConfig.getTelemetryInitializers(), configuration);
+        setTelemetryModules(applicationInsightsConfig, configuration);
+        setTelemetryProcessors(applicationInsightsConfig, configuration);
+
+        TelemetryChannel channel = configuration.getChannel();
+        if (channel instanceof LocalForwarderTelemetryChannel
+            && isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
+                InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
+                applicationInsightsConfig.getQuickPulse().setEnabled(false);
+        }
+        setQuickPulse(applicationInsightsConfig);
+
+        initializeComponents(configuration);
     }
 
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {

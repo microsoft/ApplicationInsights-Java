@@ -24,7 +24,7 @@ cd $JETTY_BASE
 export JETTY_ARGS="STOP.PORT=$JETTY_STOP_PORT STOP.KEY=$JETTY_STOP_KEY $JETTY_ARGS"
 if [ ! -z "$AI_AGENT_MODE" ]; then
     echo "AI_AGENT_MODE=$AI_AGENT_MODE"
-    cp -f /root/docker-stage/${AI_AGENT_MODE}_AI-Agent.xml /root/docker-stage/aiagent/AI-Agent.xml
+    cp -f /root/docker-stage/${AI_AGENT_MODE}_ApplicationInsights.json /root/docker-stage/aiagent/ApplicationInsights.json
     export JAVA_OPTIONS="-javaagent:/root/docker-stage/aiagent/$AGENT_JAR_NAME $JAVA_OPTIONS"
 fi
 $JETTY_HOME/bin/jetty.sh run

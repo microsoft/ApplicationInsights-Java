@@ -21,6 +21,7 @@ import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatcher
 import com.microsoft.applicationinsights.smoketest.matchers.PageViewDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
@@ -42,6 +43,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
+@UseAgent
 public class CoreAndFilterTests extends AiSmokeTest {
 
     @Test
@@ -97,6 +99,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertSameOperationId(rdEnvelope, edEnvelope2);
     }
 
+    @Ignore
     @Test
     @TargetUri("/trackException")
     public void testTrackException() throws Exception {
@@ -128,6 +131,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertSameOperationId(rdEnvelope, edEnvelope3);
     }
 
+    @Ignore
     @Test
     @TargetUri("/trackHttpRequest")
     public void testHttpRequest() throws Exception {
@@ -199,6 +203,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertSameOperationId(rdEnvelope, mdEnvelope);
     }
 
+    @Ignore
     @Test
     @TargetUri("/trackTrace")
     public void testTrackTrace() throws Exception {

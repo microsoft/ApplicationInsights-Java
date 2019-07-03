@@ -17,7 +17,7 @@ subprojects {
             For example,
                 aiCoreJar = files('c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar')
         */
-        aiAgentJar = project(':agent')
+        aiAgentJar = project(':agent-codeless')
         aiCoreJar = project(':core')
         aiWebJar =  project(':web')
         aiWebAutoJar = project(':web-auto')

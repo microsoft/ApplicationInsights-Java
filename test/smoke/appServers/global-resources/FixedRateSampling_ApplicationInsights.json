@@ -1,0 +1,10 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
+  "fixedRateSampling": {
+    "samplingPercentage": 100,
+    "samplingPercentages": {
+      "Event": 50
+    }
+  },
+  "debug": true
+}

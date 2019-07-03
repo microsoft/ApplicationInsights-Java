@@ -1,6 +1,8 @@
 apply plugin: 'war'
 
 dependencies {
+    compileOnly aiAgentJar // this is just to force building the agent first
+
     compile aiCoreJar
     compile aiWebJar
     compile 'com.google.guava:guava:20.0'

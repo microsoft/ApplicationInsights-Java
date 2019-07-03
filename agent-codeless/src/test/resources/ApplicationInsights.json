@@ -1,0 +1,55 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "roleName": "Something Good",
+  "roleInstance": "xyz123",
+  "distributedTracing": {
+    "w3cEnabled": true,
+    "w3cBackCompatEnabled": false
+  },
+  "liveMetrics": {
+    "enabled": false
+  },
+  "telemetryContext": {
+    "k8s.pod.name": "amazing-product",
+    "k8s.pod.namespace": "product-ns"
+  },
+  "jmxMetrics": [
+    {
+      "objectName": "java.lang:type=Threading",
+      "attribute": "ThreadCount",
+      "display": "Thread Count"
+    },
+    {
+      "objectName": "java.lang:type=Memory",
+      "attribute": "HeapMemoryUsage.init",
+      "display": "Initial Heap Memory"
+    },
+    {
+      "objectName": "java.lang:type=ClassLoading",
+      "attribute": "LoadedClassCount",
+      "display": "Current Class Loaded Count"
+    }
+  ],
+  "instrumentation": {
+    "jdbc": {
+      "__comment": [
+        "this sets the explain plan threshold ...",
+        "this is a multi-line comment"
+      ],
+      "explainPlanThresholdInMS": 20000
+    },
+    "logging": {
+      "enabled": false
+    }
+  },
+  "customInstrumentation": [
+    {
+      "className": "com.example.MyObject",
+      "methodName": "doSomething"
+    },
+    {
+      "className": "com.example.MyObject",
+      "methodName": "doMoreSomething"
+    }
+  ]
+}
