@@ -35,7 +35,7 @@ final class AgentConfigurationDefaultImpl implements AgentConfiguration {
     private boolean selfRegistrationMode = false;
     private boolean debugMode = false;
     private String sdkPath;
-    private Map<String, ClassInstrumentationData> classesToInstrument;
+    private Map<String, ClassInstrumentationData> classesToInstrument = new HashMap<>();
     private Map<String, String> agentLoggerConfiguration;
     private AgentBuiltInConfiguration builtInConfiguration = new AgentBuiltInConfigurationBuilder().create();
     private Set<String> excludedPrefixes = new HashSet<String>();
