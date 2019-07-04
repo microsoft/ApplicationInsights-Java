@@ -1,5 +1,6 @@
 package com.springbootstartertest.controller;
 
+import com.google.common.base.Strings;
 import org.hsqldb.jdbc.JDBCDriver;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,9 +13,9 @@ public class JdbcTestController {
     static {
         try {
             setupHsqldb();
-            setupMysql();
-            setupPostgres();
-            setupSqlServer();
+            if (!Strings.isNullOrEmpty(System.getenv("MYSQL"))) setupMysql();
+            if (!Strings.isNullOrEmpty(System.getenv("POSTGRES"))) setupPostgres();
+            if (!Strings.isNullOrEmpty(System.getenv("SQLSERVER"))) setupSqlServer();
             // setupOracle();
         } catch (Exception e) {
             // print stack trace to stdout to make sure it shows up in docker log
