@@ -11,7 +11,7 @@ import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 
 import org.junit.Test;
 
-@UseAgent("LoggingEnabled")
+@UseAgent
 public class TraceLog4j2Test extends AiSmokeTest {
 
     @Test

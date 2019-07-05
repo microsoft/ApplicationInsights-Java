@@ -130,10 +130,9 @@ public class XmlAgentConfigurationBuilder {
         nodes = builtInElement.getElementsByTagName(JDBC_TAG);
         builtInConfigurationBuilder.setJdbcEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JDBC_TAG));
 
-        // default is false, for people who are upgrading and already using AI logging adapter(s)
         nodes = builtInElement.getElementsByTagName(LOGGING_TAG);
         builtInConfigurationBuilder
-                .setLoggingEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), LOGGING_TAG, false));
+                .setLoggingEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), LOGGING_TAG));
 
         nodes = builtInElement.getElementsByTagName(JEDIS_TAG);
         Element element = XmlParserUtils.getFirst(nodes);

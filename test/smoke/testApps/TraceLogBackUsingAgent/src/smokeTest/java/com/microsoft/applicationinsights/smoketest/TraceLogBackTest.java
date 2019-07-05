@@ -12,7 +12,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
-@UseAgent("LoggingEnabled")
+@UseAgent
 public class TraceLogBackTest extends AiSmokeTest {
 
     @Before
