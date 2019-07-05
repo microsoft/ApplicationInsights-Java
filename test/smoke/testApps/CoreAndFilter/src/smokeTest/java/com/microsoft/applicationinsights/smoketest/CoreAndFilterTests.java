@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
@@ -14,6 +15,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers;
+import com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
 
@@ -23,6 +25,7 @@ import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionData
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasException;
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasMeasurement;
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasSeverityLevel;
+import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -95,32 +98,15 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         final List<ExceptionData> exceptions = mockedIngestion.getTelemetryDataByType("ExceptionData");
         assertThat(exceptions, hasItem(hasException(withMessage(expectedName))));
-
-//        ExceptionData d = getTelemetryDataForType(0, "ExceptionData");
-//        ExceptionDetails eDetails = getExceptionDetails(d);
-//        assertEquals(expectedName, eDetails.getMessage());
-
         assertThat(exceptions, hasItem(allOf(
                 hasException(withMessage(expectedName)),
                 ExceptionDataMatchers.hasProperty("key", expectedProperties),
                 hasMeasurement("key", expectedMetrice))));
-//        ExceptionData d2 = getTelemetryDataForType(1, "ExceptionData");
-//        ExceptionDetails eDetails2 = getExceptionDetails(d2);
-//        assertEquals(expectedName, eDetails2.getMessage());
-//        assertEquals(expectedProperties, d2.getProperties().get("key"));
-//        assertEquals(expectedMetrice, d2.getMeasurements().get("key"));
-
         assertThat(exceptions, hasItem(allOf(
                 hasException(withMessage(expectedName)),
                 hasSeverityLevel(SeverityLevel.Error)
         )));
-//        ExceptionData d3 = getTelemetryDataForType(2, "ExceptionData");
-//        ExceptionDetails eDetails3 = getExceptionDetails(d3);
-//        assertEquals(expectedName, eDetails3.getMessage());
-//        assertEquals(SeverityLevel.Error, d3.getSeverityLevel());
     }
-
-
 
 	@Test
     @TargetUri("/trackHttpRequest")
@@ -133,43 +119,67 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 expectedItems, totalItems);
 
         // TODO get HttpRequest data envelope and verify value
+        final List<Domain> requests = mockedIngestion.getTelemetryDataByType("RequestData");
         //true
-        RequestData d = getTelemetryDataForType(0, "RequestData");
-
+//        RequestData d = getTelemetryDataForType(0, "RequestData");
         final String expectedName = "HttpRequestDataTest";
         final String expectedResponseCode = "200";
 
-        assertEquals(expectedName, d.getName());
-        assertEquals(expectedResponseCode, d.getResponseCode());
-        assertEquals(new Duration(4711), d.getDuration());
-        assertEquals(true, d.getSuccess());
+//        assertEquals(expectedName, d.getName());
+//        assertEquals(expectedResponseCode, d.getResponseCode());
+//        assertEquals(new Duration(4711), d.getDuration());
+//        assertEquals(true, d.getSuccess());
+        assertThat(requests, hasItem(allOf(
+                hasName(expectedName),
+                hasResponseCode(expectedResponseCode),
+                hasDuration(new Duration(4711)),
+                hasSuccess(true))));
 
-        RequestData d1 = getTelemetryDataForType(1, "RequestData");
+//        RequestData d1 = getTelemetryDataForType(1, "RequestData");
 
         final String expectedName1 = "PingTest";
         final String expectedResponseCode1 = "200";
         final String expectedURL = "http://tempuri.org/ping";
 
-        assertEquals(expectedName1, d1.getName());
-        assertEquals(expectedResponseCode1, d1.getResponseCode());
-        assertEquals(new Duration(1), d1.getDuration());
-        assertEquals(true, d1.getSuccess());
-        assertEquals(expectedURL, d1.getUrl());
+//        assertEquals(expectedName1, d1.getName());
+//        assertEquals(expectedResponseCode1, d1.getResponseCode());
+//        assertEquals(new Duration(1), d1.getDuration());
+//        assertEquals(true, d1.getSuccess());
+//        assertEquals(expectedURL, d1.getUrl());
+        assertThat(requests, hasItem(allOf(
+                hasName(expectedName1),
+                hasResponseCode(expectedResponseCode1),
+                hasDuration(new Duration(1)),
+                hasSuccess(true),
+                hasUrl(expectedURL)
+        )));
 
         //false
-        RequestData rd1 = getTelemetryDataForType(2, "RequestData");
-        assertEquals("FailedHttpRequest", rd1.getName());
-        assertEquals("404", rd1.getResponseCode());
-        assertEquals(new Duration(6666), rd1.getDuration());
-        assertEquals(false, rd1.getSuccess());
+//        RequestData rd1 = getTelemetryDataForType(2, "RequestData");
+//        assertEquals("FailedHttpRequest", rd1.getName());
+//        assertEquals("404", rd1.getResponseCode());
+//        assertEquals(new Duration(6666), rd1.getDuration());
+//        assertEquals(false, rd1.getSuccess());
+        assertThat(requests, hasItem(allOf(
+                hasName("FailedHttpRequest"),
+                hasResponseCode("404"),
+                hasDuration(new Duration(6666)),
+                hasSuccess(false)
+        )));
 
-        RequestData rd2 = getTelemetryDataForType(3, "RequestData");
-        assertEquals("FailedHttpRequest2", rd2.getName());
-        assertEquals("505", rd2.getResponseCode());
-        assertEquals(new Duration(8888), rd2.getDuration());
-        assertEquals(false, rd2.getSuccess());
-        assertEquals("https://www.bingasdasdasdasda.com/", rd2.getUrl());
-
+//        RequestData rd2 = getTelemetryDataForType(3, "RequestData");
+//        assertEquals("FailedHttpRequest2", rd2.getName());
+//        assertEquals("505", rd2.getResponseCode());
+//        assertEquals(new Duration(8888), rd2.getDuration());
+//        assertEquals(false, rd2.getSuccess());
+//        assertEquals("https://www.bingasdasdasdasda.com/", rd2.getUrl());
+        assertThat(requests, hasItem(allOf(
+                hasName("FailedHttpRequest2"),
+                hasResponseCode("505"),
+                hasDuration(new Duration(8888)),
+                hasSuccess(false),
+                hasUrl("https://www.bingasdasdasdasda.com/")
+        )));
 	}
 
 	@Test
