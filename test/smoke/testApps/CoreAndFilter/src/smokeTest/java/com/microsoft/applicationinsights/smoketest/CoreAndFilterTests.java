@@ -15,10 +15,12 @@ import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers;
+import com.microsoft.applicationinsights.smoketest.matchers.PageViewDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
 
+import com.microsoft.localforwarder.library.inputs.contracts.PageView;
 import org.junit.*;
 
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
@@ -121,58 +123,26 @@ public class CoreAndFilterTests extends AiSmokeTest {
         // TODO get HttpRequest data envelope and verify value
         final List<Domain> requests = mockedIngestion.getTelemetryDataByType("RequestData");
         //true
-//        RequestData d = getTelemetryDataForType(0, "RequestData");
-        final String expectedName = "HttpRequestDataTest";
-        final String expectedResponseCode = "200";
-
-//        assertEquals(expectedName, d.getName());
-//        assertEquals(expectedResponseCode, d.getResponseCode());
-//        assertEquals(new Duration(4711), d.getDuration());
-//        assertEquals(true, d.getSuccess());
         assertThat(requests, hasItem(allOf(
-                hasName(expectedName),
-                hasResponseCode(expectedResponseCode),
+                hasName("HttpRequestDataTest"),
+                hasResponseCode("200"),
                 hasDuration(new Duration(4711)),
                 hasSuccess(true))));
-
-//        RequestData d1 = getTelemetryDataForType(1, "RequestData");
-
-        final String expectedName1 = "PingTest";
-        final String expectedResponseCode1 = "200";
-        final String expectedURL = "http://tempuri.org/ping";
-
-//        assertEquals(expectedName1, d1.getName());
-//        assertEquals(expectedResponseCode1, d1.getResponseCode());
-//        assertEquals(new Duration(1), d1.getDuration());
-//        assertEquals(true, d1.getSuccess());
-//        assertEquals(expectedURL, d1.getUrl());
         assertThat(requests, hasItem(allOf(
-                hasName(expectedName1),
-                hasResponseCode(expectedResponseCode1),
+                hasName("PingTest"),
+                hasResponseCode("200"),
                 hasDuration(new Duration(1)),
                 hasSuccess(true),
-                hasUrl(expectedURL)
+                hasUrl("http://tempuri.org/ping")
         )));
 
         //false
-//        RequestData rd1 = getTelemetryDataForType(2, "RequestData");
-//        assertEquals("FailedHttpRequest", rd1.getName());
-//        assertEquals("404", rd1.getResponseCode());
-//        assertEquals(new Duration(6666), rd1.getDuration());
-//        assertEquals(false, rd1.getSuccess());
         assertThat(requests, hasItem(allOf(
                 hasName("FailedHttpRequest"),
                 hasResponseCode("404"),
                 hasDuration(new Duration(6666)),
                 hasSuccess(false)
         )));
-
-//        RequestData rd2 = getTelemetryDataForType(3, "RequestData");
-//        assertEquals("FailedHttpRequest2", rd2.getName());
-//        assertEquals("505", rd2.getResponseCode());
-//        assertEquals(new Duration(8888), rd2.getDuration());
-//        assertEquals(false, rd2.getSuccess());
-//        assertEquals("https://www.bingasdasdasdasda.com/", rd2.getUrl());
         assertThat(requests, hasItem(allOf(
                 hasName("FailedHttpRequest2"),
                 hasResponseCode("505"),
@@ -244,14 +214,17 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(2, mockedIngestion.getCountForType("PageViewData"));
 
-        PageViewData pv1 = getTelemetryDataForType(0, "PageViewData");
-        assertEquals("test-page", pv1.getName());
-        assertEquals(new Duration(0), pv1.getDuration());
+        final List<Domain> pageViews = mockedIngestion.getTelemetryDataByType("PageViewData");
+        assertThat(pageViews, hasItem(allOf(
+                PageViewDataMatchers.hasName("test-page"),
+                PageViewDataMatchers.hasDuration(new Duration(0))
+        )));
 
-        PageViewData pv2 = getTelemetryDataForType(1, "PageViewData");
-        assertEquals("test-page-2", pv2.getName());
-        assertEquals(new Duration(123456), pv2.getDuration());
-        assertEquals("value", pv2.getProperties().get("key"));
+        assertThat(pageViews, hasItem(allOf(
+                PageViewDataMatchers.hasName("test-page-2"),
+                PageViewDataMatchers.hasDuration(new Duration(123456)),
+                PageViewDataMatchers.hasProperty("key", "value")
+        )));
     }
 
     @Test
