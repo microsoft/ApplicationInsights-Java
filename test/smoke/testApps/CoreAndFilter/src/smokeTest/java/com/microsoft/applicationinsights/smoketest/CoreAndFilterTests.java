@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.smoketest;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
@@ -14,13 +13,11 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
-import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.PageViewDataMatchers;
-import com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers;
+import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
 
-import com.microsoft.localforwarder.library.inputs.contracts.PageView;
 import org.junit.*;
 
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
@@ -190,22 +187,22 @@ public class CoreAndFilterTests extends AiSmokeTest {
 		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
 				expectedItems, totalItems);
 
-		// TODO get trace data envelope and verify value
-		MessageData d = getTelemetryDataForType(0, "MessageData");
-		final String expectedMessage = "This is first trace message.";
-		assertEquals(expectedMessage, d.getMessage());
+        final List<MessageData> messages = mockedIngestion.getTelemetryDataByType("MessageData");
+        // TODO get trace data envelope and verify value
+		assertThat(messages, hasItem(
+		        TraceDataMatchers.hasMessage("This is first trace message.")
+        ));
 
-		MessageData d2 = getTelemetryDataForType(1, "MessageData");
-		final String expectedMessage2 = "This is second trace message.";
-		assertEquals(expectedMessage2, d2.getMessage());
-		assertEquals(SeverityLevel.Error, d2.getSeverityLevel());
+        assertThat(messages, hasItem(allOf(
+		        TraceDataMatchers.hasMessage("This is second trace message."),
+                TraceDataMatchers.hasSeverityLevel(SeverityLevel.Error)
+        )));
 
-		MessageData d3 = getTelemetryDataForType(2, "MessageData");
-		final String expectedMessage3 = "This is third trace message.";
-		final String expectedValue = "value";
-		assertEquals(expectedMessage3, d3.getMessage());
-		assertEquals(SeverityLevel.Information, d3.getSeverityLevel());
-		assertEquals(expectedValue, d3.getProperties().get("key"));
+        assertThat(messages, hasItem(allOf(
+		        TraceDataMatchers.hasMessage("This is third trace message."),
+                TraceDataMatchers.hasSeverityLevel(SeverityLevel.Information),
+                TraceDataMatchers.hasProperty("key", "value")
+        )));
     }
 
     @Test
