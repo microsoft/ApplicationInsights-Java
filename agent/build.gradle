@@ -133,10 +133,14 @@ dependencies {
     runtime "org.glowroot.instrumentation:instrumentation-log4j:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-logback:$instrumentationVersion"
 }
+
+// region Publishing properties
+
 projectPomName = project.msftAppInsights + " Java Agent"
-projectPomDescription = "This module provides automatic instrumentation for $project.msftAppInsightsJavaSdk"
+projectPomDescription = "This is the Java agent of " + project.msftAppInsightsJavaSdk
 
 whenPomConfigured = { p ->
     p.dependencies = []
 }
 
+// endregion Publishing properties
