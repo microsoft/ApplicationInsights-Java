@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
@@ -11,11 +12,17 @@ import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
+import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
 
 import org.junit.*;
 
+import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
+import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasException;
+import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasMeasurement;
+import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasSeverityLevel;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -86,20 +93,31 @@ public class CoreAndFilterTests extends AiSmokeTest {
         final String expectedProperties = "value";
         final Double expectedMetrice = 1d;
 
-        ExceptionData d = getTelemetryDataForType(0, "ExceptionData");
-        ExceptionDetails eDetails = getExceptionDetails(d);
-        assertEquals(expectedName, eDetails.getMessage());
+        final List<ExceptionData> exceptions = mockedIngestion.getTelemetryDataByType("ExceptionData");
+        assertThat(exceptions, hasItem(hasException(withMessage(expectedName))));
 
-        ExceptionData d2 = getTelemetryDataForType(1, "ExceptionData");
-        ExceptionDetails eDetails2 = getExceptionDetails(d2);
-        assertEquals(expectedName, eDetails2.getMessage());
-        assertEquals(expectedProperties, d2.getProperties().get("key"));
-        assertEquals(expectedMetrice, d2.getMeasurements().get("key"));
+//        ExceptionData d = getTelemetryDataForType(0, "ExceptionData");
+//        ExceptionDetails eDetails = getExceptionDetails(d);
+//        assertEquals(expectedName, eDetails.getMessage());
 
-        ExceptionData d3 = getTelemetryDataForType(2, "ExceptionData");
-        ExceptionDetails eDetails3 = getExceptionDetails(d3);
-        assertEquals(expectedName, eDetails3.getMessage());
-        assertEquals(SeverityLevel.Error, d3.getSeverityLevel());
+        assertThat(exceptions, hasItem(allOf(
+                hasException(withMessage(expectedName)),
+                ExceptionDataMatchers.hasProperty("key", expectedProperties),
+                hasMeasurement("key", expectedMetrice))));
+//        ExceptionData d2 = getTelemetryDataForType(1, "ExceptionData");
+//        ExceptionDetails eDetails2 = getExceptionDetails(d2);
+//        assertEquals(expectedName, eDetails2.getMessage());
+//        assertEquals(expectedProperties, d2.getProperties().get("key"));
+//        assertEquals(expectedMetrice, d2.getMeasurements().get("key"));
+
+        assertThat(exceptions, hasItem(allOf(
+                hasException(withMessage(expectedName)),
+                hasSeverityLevel(SeverityLevel.Error)
+        )));
+//        ExceptionData d3 = getTelemetryDataForType(2, "ExceptionData");
+//        ExceptionDetails eDetails3 = getExceptionDetails(d3);
+//        assertEquals(expectedName, eDetails3.getMessage());
+//        assertEquals(SeverityLevel.Error, d3.getSeverityLevel());
     }
 
 
