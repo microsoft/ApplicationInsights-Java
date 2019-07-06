@@ -340,19 +340,27 @@ public abstract class AiSmokeTest {
 	}
 
 	protected static void waitForApplicationToStart() throws Exception {
-		System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
-		waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS, String.format("%s on %s", getAppContext(), currentContainerInfo.getImageName()), HEALTH_CHECK_RETRIES);
-		System.out.println("Test app health check complete.");
-		if (requestCaptureEnabled) {
-			Stopwatch sw = Stopwatch.createStarted();
-			mockedIngestion.waitForItem(new Predicate<Envelope>() {
-				@Override
-				public boolean apply(Envelope input) {
-					return "RequestData".equals(input.getData().getBaseType());
-				}
-			}, TELEMETRY_RECEIVE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-			System.out.printf("Received request telemetry after %.3f seconds...%n", sw.elapsed(TimeUnit.MILLISECONDS)/1000.0);
-			System.out.println("Clearing any RequestData from health check.");
+		try {
+			System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
+			waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS,
+					String.format("%s on %s", getAppContext(), currentContainerInfo.getImageName()),
+					HEALTH_CHECK_RETRIES);
+			System.out.println("Test app health check complete.");
+			if (requestCaptureEnabled) {
+				Stopwatch sw = Stopwatch.createStarted();
+				mockedIngestion.waitForItem(new Predicate<Envelope>() {
+					@Override
+					public boolean apply(Envelope input) {
+						return "RequestData".equals(input.getData().getBaseType());
+					}
+				}, TELEMETRY_RECEIVE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				System.out.printf("Received request telemetry after %.3f seconds...%n",
+						sw.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
+				System.out.println("Clearing any RequestData from health check.");
+			}
+		} catch (Exception e) {
+			docker.printContainerLogs(currentContainerInfo.getContainerId());
+			throw e;
 		}
 		mockedIngestion.resetData();
 	}
@@ -666,7 +674,8 @@ public abstract class AiSmokeTest {
 		assertFalse(String.format("Empty response from '%s'. Health check urls should return something non-empty", url), rval.isEmpty());
 	}
 
-	protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) {
+	protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries)
+			throws IOException {
 		Preconditions.checkArgument(numberOfRetries >= 0, "numberOfRetries must be non-negative");
 		int triedCount = 0;
 		boolean success = false;
