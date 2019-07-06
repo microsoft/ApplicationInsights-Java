@@ -33,7 +33,7 @@ public final class XmlAgentConfigurationTest {
     public void testCtor() {
         AgentConfigurationDefaultImpl tested = new AgentConfigurationDefaultImpl();
         assertFalse(tested.getBuiltInConfiguration().isEnabled());
-        assertNull(tested.getRequestedClassesToInstrument());
+        assertTrue(tested.getRequestedClassesToInstrument().isEmpty());
     }
 
     @Test
