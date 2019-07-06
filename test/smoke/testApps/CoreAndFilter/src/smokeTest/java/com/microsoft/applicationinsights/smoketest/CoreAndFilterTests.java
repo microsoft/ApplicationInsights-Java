@@ -28,6 +28,7 @@ import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMa
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class CoreAndFilterTests extends AiSmokeTest {
@@ -65,11 +66,18 @@ public class CoreAndFilterTests extends AiSmokeTest {
 				expectedItems, totalItems);
 
 		// TODO get event data envelope and verify value
-		EventData d = getTelemetryDataForType(0, "EventData");
+        final List<EventData> events = mockedIngestion.getTelemetryDataByType("EventData");
+        events.sort(new Comparator<EventData>() {
+            @Override
+            public int compare(EventData o1, EventData o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        EventData d = events.get(1);
 		final String name = "EventDataTest";
 		assertEquals(name, d.getName());
 
-		EventData d2 = getTelemetryDataForType(1, "EventData");
+		EventData d2 = events.get(0);
 
 		final String expectedname = "EventDataPropertyTest";
 		final String expectedProperties = "value";

@@ -72,19 +72,19 @@ public enum QuickPulseDataCollector {
             }
             exceptions = currentCounters.exceptions.get();
 
-            CountAndDuration countAndDuration = currentCounters.decodeCountAndDuration(currentCounters.requestsAndDurations.get());
+            CountAndDuration countAndDuration = Counters.decodeCountAndDuration(currentCounters.requestsAndDurations.get());
             requests = countAndDuration.count;
             this.requestsDuration = countAndDuration.duration;
             this.unsuccessfulRequests = currentCounters.unsuccessfulRequests.get();
 
-            countAndDuration = currentCounters.decodeCountAndDuration(currentCounters.rddsAndDuations.get());
+            countAndDuration = Counters.decodeCountAndDuration(currentCounters.rddsAndDuations.get());
             this.rdds = countAndDuration.count;
             this.rddsDuration = countAndDuration.duration;
             this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
         }
     }
 
-    private static class CountAndDuration {
+    static class CountAndDuration {
         public final long count;
         public final long duration;
 
@@ -94,17 +94,17 @@ public enum QuickPulseDataCollector {
         }
     }
 
-    private static class Counters {
+    static class Counters {
         private static final long MAX_COUNT = 524287L;
         private static final long MAX_DURATION = 17592186044415L;
 
-        public static final AtomicInteger exceptions = new AtomicInteger(0);
+        public final AtomicInteger exceptions = new AtomicInteger(0);
 
-        static final AtomicLong requestsAndDurations = new AtomicLong(0);
-        static final AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
+        final AtomicLong requestsAndDurations = new AtomicLong(0);
+        final AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
 
-        static final AtomicLong rddsAndDuations = new AtomicLong(0);
-        static final AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
+        final AtomicLong rddsAndDuations = new AtomicLong(0);
+        final AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
 
         static long encodeCountAndDuration(long  count, long duration) {
             if (count > MAX_COUNT || duration > MAX_DURATION) {
@@ -161,6 +161,15 @@ public enum QuickPulseDataCollector {
         return null;
     }
 
+    /*@VisibleForTesting*/
+    synchronized FinalCounters peek() {
+        final Counters currentCounters = this.counters.get(); // this should be the only differece
+        if (currentCounters != null) {
+            return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
+        }
+        return null;
+    }
+
     public void add(Telemetry telemetry) {
         if (!telemetry.getContext().getInstrumentationKey().equals(ikey)) {
             return;
@@ -182,7 +191,7 @@ public enum QuickPulseDataCollector {
             return;
         }
         counters.rddsAndDuations.addAndGet(
-                Counters.encodeCountAndDuration(1, telemetry.getDuration().getMilliseconds()));
+                Counters.encodeCountAndDuration(1, telemetry.getDuration().getTotalMilliseconds()));
         if (!telemetry.getSuccess()) {
             counters.unsuccessfulRdds.incrementAndGet();
         }
@@ -203,7 +212,7 @@ public enum QuickPulseDataCollector {
             return;
         }
 
-        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getMilliseconds()));
+        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getTotalMilliseconds()));
         if (!requestTelemetry.isSuccess()) {
             counters.unsuccessfulRequests.incrementAndGet();
         }
