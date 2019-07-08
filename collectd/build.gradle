@@ -26,7 +26,10 @@ plugins {
 apply from: "$buildScriptsDir/common-java.gradle"
 
 // Since we're building the shadow jar, we have no use in the jar contains only CollectD code.
-jar.enabled = false
+jar {
+    dependsOn shadowJar
+    enabled = false
+}
 
 shadowJar {
     classifier = ''
@@ -48,7 +51,4 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile files(collectDLibPath)
 }
-
-// Building the shadow (fat) jar after compiling sources.
-shadowJar.dependsOn assemble
 

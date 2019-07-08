@@ -28,7 +28,10 @@ apply from: "$buildScriptsDir/common-java.gradle"
 archivesBaseName = 'applicationinsights-all'
 
 // Since we're building the shadow jar, we have no use in the jar contains only CollectD code.
-jar.enabled = false
+jar {
+    dependsOn shadowJar
+    enabled = false
+}
 
 shadowJar {
     classifier = ''
@@ -46,6 +49,3 @@ dependencies {
     compile project(':logging:log4j2')
     compile project(':logging:logback')
 }
-
-// Building the shadow (fat) jar after compiling sources.
-shadowJar.dependsOn assemble
