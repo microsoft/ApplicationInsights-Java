@@ -75,7 +75,18 @@ projectPomName = project.msftAppInsights + " Java SDK Web Module"
 projectPomDescription = "This is the web module of " + project.msftAppInsightsJavaSdk
 
 whenPomConfigured = { p ->
-    p.dependencies = []
+    p.dependencies = project.configurations.compileOnly.allDependencies
+            .findAll { it.group != 'com.microsoft.azure' }
+            .collect {
+                def d = p.dependencies[0].class.newInstance() // related to https://issues.gradle.org/browse/GRADLE-1497
+                d.artifactId = it.name
+                d.groupId = it.group
+                d.version = it.version
+                d.scope = 'provided'
+                d.type = null
+                if (it.name == 'xwork' || it.name == 'spring-webmvc') d.optional = 'true'
+                d
+            }
 }
 
 // endregion Publishing properties
