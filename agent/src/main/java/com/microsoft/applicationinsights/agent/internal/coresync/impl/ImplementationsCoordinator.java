@@ -349,7 +349,6 @@ public enum ImplementationsCoordinator implements AgentNotificationsHandler {
     /**
      * Set the mainHandler for handling the dependency tracking operations.
      * @param handler instance of {@link AgentNotificationsHandler}
-     * @return
      */
     public void setMainHandler(AgentNotificationsHandler handler) {
         this.mainHandler = handler;

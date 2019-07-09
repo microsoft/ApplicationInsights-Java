@@ -24,6 +24,7 @@ plugins {
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
+apply from: "$buildScriptsDir/publishing.gradle"
 
 // Since we're building the shadow jar, we have no use in the jar contains only CollectD code.
 jar {
@@ -52,3 +53,9 @@ dependencies {
     testCompile files(collectDLibPath)
 }
 
+projectPomName = project.msftAppInsights + " Java CollectD Plugin"
+projectPomDescription = "This module is the collectd plugin for $project.msftAppInsightsJavaSdk"
+
+whenPomConfigured = { p ->
+    p.dependencies = []
+}
