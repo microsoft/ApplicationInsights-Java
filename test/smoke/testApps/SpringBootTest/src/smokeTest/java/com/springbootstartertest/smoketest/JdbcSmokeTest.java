@@ -65,7 +65,6 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getSuccess());
     }
 
-    @Ignore("Not yet supported")
     @Test
     @TargetUri("/jdbc/hsqldbBatchStatement")
     public void hsqldbBatchStatement() {
@@ -138,7 +137,6 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getSuccess());
     }
 
-    @Ignore("Not yet supported")
     @Test
     @TargetUri("/jdbc/postgresStatement")
     public void postgresStatement() {

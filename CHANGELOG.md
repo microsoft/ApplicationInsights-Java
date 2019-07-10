@@ -1,5 +1,35 @@
 # CHANGELOG
 
+# Version 2.5.0-BETA
+- Added support for Java 9-12
+- Added new `applicationinsights-web-auto.jar` artifact that automatically registers the web filter
+  by just being present in your dependencies (works for both servlet containers and spring boot standalone)
+  - No need to modify `web.xml`, or add `@WebFilter`
+- Agent now captures application logging via `Log4j 1.2`, `Log4j2` and `Logback`
+  - No need to add `applicationinsights-logging-*.jar` dependency and modify the application's logging configuration
+   (e.g. `log4j.properties`, `log4j2.xml`, `logback.xml`)
+  - To opt out of this (e.g. if you prefer to capture logging via the Application Insights appenders),
+    add `<Logging enabled="false" />` to the `AI-Agent.xml` file inside of the `Builtin` tag
+- Agent now automatically captures dependencies for async requests by tracking the request across multiple threads
+- Agent now captures JDBC queries for all JDBC drivers
+- Added additional HTTP client support
+  - `java.net.HttpURLConnection`
+  - Apache HttpClient 3.x (4.x was already previously supported)
+  - OkHttp3
+  - OkHttp2 (previously did not propagate distributed trace context)
+- Agent now sets `Operation Name` (used for aggregating similar requests) automatically
+  based on Spring `@RequestMapping` and JAX-RS `@Path`
+  - No need for registering `RequestNameHandlerInterceptorAdapter` or writing own interceptor
+  - (also supports Struts, based on action class / method name)
+- Agent now supports multiple applications deployed in the same application server
+  - (support was removed temporarily in the 2.4.0 release)
+- Simplified JBoss and Wildfly deployment when using the agent
+  - No need for setting `jboss.modules.system.pkgs`, `java.util.logging.manager` and `-Xbootclasspath`
+- Added `<RoleName>` tag in `ApplicationInsights.xml` to simplify role name configuration
+  - No need to write a custom `ContextInitializer`
+- Removed support for `<Class>` custom instrumentation in `AI-Agent.xml`
+- Removed support for `<RuntimeException>` custom instrumentation in `AI-Agent.xml`
+
 # Version 2.4.0
 - Updated Spring Boot Starter version number to track with the SDK version.
 - Upgrade gradle to 5.3.1

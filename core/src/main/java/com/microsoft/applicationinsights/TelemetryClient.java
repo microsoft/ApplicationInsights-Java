@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
+import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
@@ -39,6 +40,7 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 // Created by gupele
@@ -513,6 +515,10 @@ public class TelemetryClient {
     private TelemetryContext createInitializedContext() {
         TelemetryContext ctx = new TelemetryContext();
         ctx.setInstrumentationKey(configuration.getInstrumentationKey());
+        String roleName = configuration.getRoleName();
+        if (StringUtils.isNotEmpty(roleName)) {
+            ctx.getCloud().setRole(roleName);
+        }
         for (ContextInitializer init : configuration.getContextInitializers()) {
             try {
                 init.initialize(ctx);

@@ -21,19 +21,25 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 3/15/2015.
  */
 public class AddTypeXmlElement {
+
+    @XStreamAsAttribute
     private String type;
-    private ArrayList<ParamXmlElement> paramElements = new ArrayList<ParamXmlElement>();
+
+    @XStreamImplicit(itemFieldName = "Param")
+    private ArrayList<ParamXmlElement> paramElements = new ArrayList<>();
 
     public String getType() {
         return type;
@@ -43,12 +49,10 @@ public class AddTypeXmlElement {
         return paramElements;
     }
 
-    @XmlAttribute
     public void setType(String type) {
         this.type = type;
     }
 
-    @XmlElement(name="Param")
     public void setParameters(ArrayList<ParamXmlElement> paramElements) {
         this.paramElements = paramElements;
     }

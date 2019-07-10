@@ -26,42 +26,121 @@ plugins {
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
-shadowJar {
-    classifier = ''
-    relocate 'org.objectweb.asm', 'com.microsoft.applicationinsights.agent.dependencies.asm'
-    relocate 'org.apache.commons', 'com.microsoft.applicationinsights.agent.dependencies.apachecommons'
-    relocate 'com.microsoft.applicationinsights.internal.logger', 'com.microsoft.applicationinsights.agent.dependencies.internallogger'
-    relocate 'com.google', 'com.microsoft.applicationinsights.agent.dependencies.com.google'
-}
-archivesBaseName = 'applicationinsights-agent'
+def instrumentationVersion = '0.14.2'
 
-jar {
+def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
+
+shadowJar() {
+
+    archiveClassifier = 'intermediate'
+    mergeServiceFiles()
+
+    dependencies {
+        exclude(dependency {
+            it.moduleGroup == 'org.glowroot.instrumentation' &&
+                    it.moduleName != 'instrumentation-api' &&
+                    it.moduleName != 'instrumentation-engine'
+        })
+    }
+
+    relocate('org.objectweb.asm', "${shadowPrefix}.org.objectweb.asm")
+    relocate('org.slf4j', "${shadowPrefix}.org.slf4j")
+    relocate('ch.qos.logback', "${shadowPrefix}.ch.qos.logback")
+    relocate('com.google', "${shadowPrefix}.com.google")
+    relocate 'org.checkerframework', "${shadowPrefix}.org.checkerframework"
+
+    // this shades internal use of java util logging which is needed to prevent java util logging from being initialized
+    // early (e.g. in the case of jboss which wants to do some setup before jul is initialized)
+    relocate('java.util.logging', 'org.glowroot.instrumentation.engine.jul')
+
+    relocate('logback.configurationFile', 'ai.logback.configurationFile')
+    relocate('logback.xml', 'ai.logback.xml')
+    relocate('logback.groovy', 'ai.logback.groovy') // to prevent accidentally picking up from user's class path
+    relocate('logback-test.xml', 'ai.logback-test.xml') // to prevent accidentally picking up from user's class path
+
+    relocate('glowroot.debug', 'ai.debug') // system property names
+
+    exclude 'META-INF/maven/**'
+    exclude 'META-INF/LICENSE*'
+    exclude 'META-INF/DEPENDENCIES'
+    exclude 'META-INF/NOTICE*'
+    exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
+
+    // errorprone annotations are a problem in the bootstrap class loader for Java 9 because they depend on
+    // javax.lang.model.element.Modifier which is no longer in the bootstrap class loader in Java 9, and this causes
+    // spring class path scanning to fail when trying to read com.google.errorprone.annotations.ForOverride
+    // (java.lang.NoClassDefFoundError: [Ljavax/lang/model/element/Modifier;)
+    exclude shadowPrefix.replace('.', '/') + '/com/google/errorprone/**'
+}
+
+task shadowJar2(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+
     dependsOn shadowJar
-    enabled = false
+
+    from {
+        zipTree(shadowJar.archiveFile)
+    }
+
+    configurations = [project.configurations.runtime]
+
+    archiveClassifier = ''
+    mergeServiceFiles()
+
+    dependencies {
+        include(dependency {
+            it.moduleGroup == 'org.glowroot.instrumentation' &&
+                    it.moduleName != 'instrumentation-api' &&
+                    it.moduleName != 'instrumentation-engine'
+        })
+    }
+
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
+        resource = 'META-INF/instrumentation.list'
+    }
+
     manifest {
-        attributes("Agent-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                   "Premain-Class": "com.microsoft.applicationinsights.agent.internal.agent.AgentImplementation",
-                    "Can-Redefine-Classes": "true",
-                    "Can-Retransform-Classes": "true",
-                    "agent-sdk-version":project.version
+        attributes("Premain-Class": "com.microsoft.applicationinsights.agent.internal.Premain",
+                "Can-Redefine-Classes": "true",
+                "Can-Retransform-Classes": "true",
+                "agent-sdk-version": project.version
         )
     }
 }
 
-dependencies {
-    compile(project(':ApplicationInsightsInternalLogger'))
-    compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.2'
-    compile group: 'org.ow2.asm', name: 'asm-all', version: '5.2'
-    compile group: 'org.apache.commons', name:'commons-lang3', version:'3.7'
-    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.10.19'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+archivesBaseName = 'applicationinsights-agent'
+
+jar {
+    dependsOn shadowJar2
+    enabled = false
 }
 
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.26'
+    compile 'ch.qos.logback:logback-classic:1.2.3'
+
+    compile "org.glowroot.instrumentation:instrumentation-engine:$instrumentationVersion"
+    compile "com.google.guava:guava:27.1-android"
+    compile "org.glowroot.instrumentation:instrumentation-api:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-executor:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-spring:$instrumentationVersion" // need for operation name
+    runtime "org.glowroot.instrumentation:instrumentation-jaxrs:$instrumentationVersion" // need for operation name
+    runtime "org.glowroot.instrumentation:instrumentation-struts:$instrumentationVersion" // need for operation name
+    runtime "org.glowroot.instrumentation:instrumentation-jdbc:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-redis:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-apache-http-client:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-okhttp:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-http-url-connection:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-log4j:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-logback:$instrumentationVersion"
+}
+
+// region Publishing properties
+
 projectPomName = project.msftAppInsights + " Java Agent"
-projectPomDescription = "This module provides automatic instrumentation for $project.msftAppInsightsJavaSdk"
+projectPomDescription = "This is the Java agent of " + project.msftAppInsightsJavaSdk
 
 whenPomConfigured = { p ->
     p.dependencies = []
 }
 
+// endregion Publishing properties

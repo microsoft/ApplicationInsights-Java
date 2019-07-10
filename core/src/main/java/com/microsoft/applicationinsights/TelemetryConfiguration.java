@@ -46,6 +46,7 @@ public final class TelemetryConfiguration {
     private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
+    private String roleName;
 
     private final ArrayList<ContextInitializer> contextInitializers = new   ArrayList<ContextInitializer>();
     private final ArrayList<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
@@ -209,6 +210,14 @@ public final class TelemetryConfiguration {
         }
 
         instrumentationKey = key;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     /**

@@ -20,6 +20,7 @@ subprojects {
 		aiAgentJar = project(':agent')
 		aiCoreJar = project(':core')
 		aiWebJar =  project(':web')
+		aiWebAutoJar = project(':web-auto')
 		aiLog4j1_2Jar = project(':logging:log4j1_2')
 		aiLog4j2Jar = project(':logging:log4j2')
 		aiLogbackJar = project(':logging:logback')

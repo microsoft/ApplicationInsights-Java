@@ -1,0 +1,17 @@
+apply plugin: 'war'
+
+compileJava.sourceCompatibility = 1.7
+compileJava.targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactFilename = war.archiveName
+
+dependencies {
+    compile aiWebAutoJar
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.21.RELEASE'
+    providedRuntime group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.21.RELEASE'
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+}

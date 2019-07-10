@@ -21,35 +21,42 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 7/26/2016.
  */
+@XStreamAlias("Processor")
 public class TelemetryProcessorXmlElement {
+
+    @XStreamAsAttribute
     private String type;
-    private ArrayList<ParamXmlElement> adds = new ArrayList<ParamXmlElement>();
+
+    @XStreamImplicit(itemFieldName = "Add")
+    private ArrayList<ParamXmlElement> adds = new ArrayList<>();
+
+    @XStreamAlias("ExcludedTypes")
     private ParamExcludedTypeXmlElement excludedTypes;
+
+    @XStreamAlias("IncludedTypes")
     private ParamIncludedTypeXmlElement includedTypes;
 
     public ParamExcludedTypeXmlElement getExcludedTypes() {
         return excludedTypes;
     }
 
-    @XmlElement(name = "ExcludedTypes")
     public void setExcludedTypes(ParamExcludedTypeXmlElement excludedTypes) {
         this.excludedTypes = excludedTypes;
     }
-
 
     public ParamIncludedTypeXmlElement getIncludedTypes() {
         return includedTypes;
     }
 
-    @XmlElement(name = "IncludedTypes")
     public void setIncludedTypes(ParamIncludedTypeXmlElement includedTypes) {
         this.includedTypes = includedTypes;
     }
@@ -58,12 +65,10 @@ public class TelemetryProcessorXmlElement {
         return adds;
     }
 
-    @XmlElement(name="Add")
     public void setAdds(ArrayList<ParamXmlElement> adds) {
         this.adds = adds;
     }
 
-    @XmlAttribute
     public String getType() {
         return type;
     }
@@ -71,6 +76,4 @@ public class TelemetryProcessorXmlElement {
     public void setType(String type){
         this.type = type;
     }
-
-
 }

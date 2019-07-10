@@ -105,7 +105,9 @@ subprojects {
 				into stagingDir
 			}
 			copy {
-				from agentLibsDir
+				from (agentLibsDir) {
+					exclude '**/*-intermediate.jar' // intermediate shadow jar
+				}
 				into "$stagingDir/aiagent"
 			}
 

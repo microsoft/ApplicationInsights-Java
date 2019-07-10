@@ -21,25 +21,43 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlElement;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * Created by gupele on 11/14/2016.
  */
 public class AdaptiveSamplerXmlElement {
+
+    @XStreamAlias("IncludeTypes")
     private String includeTypes;
+
+    @XStreamAlias("ExcludeTypes")
     private String excludeTypes;
 
+    @XStreamAlias("MaxTelemetryItemsPerSecond")
     private String maxTelemetryItemsPerSecond;
+
+    @XStreamAlias("EvaluationIntervalInSec")
     private String evaluationInterval;
+
+    @XStreamAlias("SamplingPercentageDecreaseTimeoutInSec")
     private String samplingPercentageDecreaseTimeout;
+
+    @XStreamAlias("SamplingPercentageIncreaseTimeoutInSec")
     private String samplingPercentageIncreaseTimeout;
+
+    @XStreamAlias("MinSamplingPercentage")
     private String minSamplingPercentage;
+
+    @XStreamAlias("MaxSamplingPercentage")
     private String maxSamplingPercentage;
+
+    @XStreamAlias("InitialSamplingPercentage")
     private String initialSamplingPercentage;
+
+    @XStreamAlias("MovingAverageRatio")
     private String movingAverageRatio;
 
-    @XmlElement(name="MaxTelemetryItemsPerSecond")
     public void setMaxTelemetryItemsPerSecond(String maxTelemetryItemsPerSecond) {
         this.maxTelemetryItemsPerSecond = maxTelemetryItemsPerSecond;
     }
@@ -48,7 +66,6 @@ public class AdaptiveSamplerXmlElement {
         return maxTelemetryItemsPerSecond;
     }
 
-    @XmlElement(name="EvaluationIntervalInSec")
     public void setEvaluationInterval(String evaluationInterval) {
         this.evaluationInterval = evaluationInterval;
     }
@@ -57,7 +74,6 @@ public class AdaptiveSamplerXmlElement {
         return evaluationInterval;
     }
 
-    @XmlElement(name="SamplingPercentageDecreaseTimeoutInSec")
     public void setSamplingPercentageDecreaseTimeout(String samplingPercentageDecreaseTimeout) {
         this.samplingPercentageDecreaseTimeout = samplingPercentageDecreaseTimeout;
     }
@@ -66,7 +82,6 @@ public class AdaptiveSamplerXmlElement {
         return samplingPercentageDecreaseTimeout;
     }
 
-    @XmlElement(name="SamplingPercentageIncreaseTimeoutInSec")
     public void setSamplingPercentageIncreaseTimeout(String samplingPercentageIncreaseTimeout) {
         this.samplingPercentageIncreaseTimeout = samplingPercentageIncreaseTimeout;
     }
@@ -75,7 +90,6 @@ public class AdaptiveSamplerXmlElement {
         return samplingPercentageIncreaseTimeout;
     }
 
-    @XmlElement(name="MinSamplingPercentage")
     public void setMinSamplingPercentage(String minSamplingPercentage) {
         this.minSamplingPercentage = minSamplingPercentage;
     }
@@ -84,7 +98,6 @@ public class AdaptiveSamplerXmlElement {
         return minSamplingPercentage;
     }
 
-    @XmlElement(name="InitialSamplingPercentage")
     public void setInitialSamplingPercentage(String initialSamplingPercentage) {
         this.initialSamplingPercentage = initialSamplingPercentage;
     }
@@ -93,7 +106,6 @@ public class AdaptiveSamplerXmlElement {
         return initialSamplingPercentage;
     }
 
-    @XmlElement(name="MaxSamplingPercentage")
     public void setMaxSamplingPercentage(String maxSamplingPercentage) {
         this.maxSamplingPercentage = maxSamplingPercentage;
     }
@@ -102,7 +114,6 @@ public class AdaptiveSamplerXmlElement {
         return maxSamplingPercentage;
     }
 
-    @XmlElement(name="MovingAverageRatio")
     public void setMovingAverageRatio(String movingAverageRatio) {
         this.movingAverageRatio = movingAverageRatio;
     }
@@ -115,7 +126,6 @@ public class AdaptiveSamplerXmlElement {
         return includeTypes;
     }
 
-    @XmlElement(name="IncludeTypes")
     public void setIncludeTypes(String includeTypes) {
         this.includeTypes = includeTypes;
     }
@@ -124,7 +134,6 @@ public class AdaptiveSamplerXmlElement {
         return excludeTypes;
     }
 
-    @XmlElement(name="ExcludeTypes")
     public void setExcludeTypes(String excludeTypes) {
         this.excludeTypes = excludeTypes;
     }

@@ -21,16 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by gupele on 12/13/2016.
  */
 public class QuickPulseXmlElement {
+
+    @XStreamAsAttribute
     private boolean enabled = true;
 
-    @XmlAttribute(name="enabled")
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

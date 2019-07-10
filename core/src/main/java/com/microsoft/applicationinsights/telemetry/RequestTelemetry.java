@@ -42,6 +42,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     private Double samplingPercentage;
     private final RequestData data;
     private String httpMethod;
+    private boolean allowAgentToOverrideName;
 
     /**
      * Envelope Name for this telemetry.
@@ -148,6 +149,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
             throw new IllegalArgumentException("The event name cannot be null or empty");
         }
         data.setName(name);
+        allowAgentToOverrideName = false;
     }
 
     /**
@@ -319,4 +321,11 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
         return BASE_TYPE;
     }
 
+    public boolean isAllowAgentToOverrideName() {
+        return allowAgentToOverrideName;
+    }
+
+    public void setAllowAgentToOverrideName(boolean allowAgentToOverrideName) {
+        this.allowAgentToOverrideName = allowAgentToOverrideName;
+    }
 }

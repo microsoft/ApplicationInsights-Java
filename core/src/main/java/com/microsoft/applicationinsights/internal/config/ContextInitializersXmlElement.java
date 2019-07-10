@@ -21,22 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 3/15/2015.
  */
 public class ContextInitializersXmlElement {
 
+    @XStreamImplicit(itemFieldName = "Add")
     private ArrayList<AddTypeXmlElement> adds;
 
     public ArrayList<AddTypeXmlElement> getAdds() {
         return adds;
     }
 
-    @XmlElement(name="Add")
     public void setAdds(ArrayList<AddTypeXmlElement> adds) {
         this.adds = adds;
     }

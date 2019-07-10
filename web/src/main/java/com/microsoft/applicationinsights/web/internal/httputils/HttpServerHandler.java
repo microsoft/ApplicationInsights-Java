@@ -89,6 +89,7 @@ public final class HttpServerHandler {
         }
         requestTelemetry.setHttpMethod(method);
         requestTelemetry.setName(method + " " + uriWithoutSessionId);
+        requestTelemetry.setAllowAgentToOverrideName(true);
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
         requestTelemetry.setTimestamp(new Date(context.getRequestStartTimeTicks()));
         webModulesContainer.invokeOnBeginRequest(request, response);
@@ -149,8 +150,6 @@ public final class HttpServerHandler {
             for (ThreadLocalCleaner cleaner : cleaners) {
                 cleaner.clean();
             }
-            // clean context after cleaners are run, in-case cleaners need the context object
-            ThreadContext.remove();
         } catch (Exception t) {
             InternalLogger.INSTANCE.warn(String.format("unable to perform TLS Cleaning: %s",
                 ExceptionUtils.getStackTrace(t)));

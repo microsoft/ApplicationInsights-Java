@@ -21,21 +21,26 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import javax.xml.bind.annotation.*;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * Created by gupele on 11/14/2016.
  */
 public class FixedSamplerXmlElement {
+
+    @XStreamAlias("IncludeTypes")
     private String includeTypes;
+
+    @XStreamAlias("ExcludeTypes")
     private String excludeTypes;
+
+    @XStreamAlias("SamplingPercentage")
     private String samplingPercentage;
 
     public String getSamplingPercentage() {
         return samplingPercentage;
     }
 
-    @XmlElement(name="SamplingPercentage")
     public void setSamplingPercentage(String samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
     }
@@ -44,7 +49,6 @@ public class FixedSamplerXmlElement {
         return includeTypes;
     }
 
-    @XmlElement(name="IncludeTypes")
     public void setIncludeTypes(String includeTypes) {
         this.includeTypes = includeTypes;
     }
@@ -53,7 +57,6 @@ public class FixedSamplerXmlElement {
         return excludeTypes;
     }
 
-    @XmlElement(name="ExcludeTypes")
     public void setExcludeTypes(String excludeTypes) {
         this.excludeTypes = excludeTypes;
     }

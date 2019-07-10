@@ -53,6 +53,7 @@ public final class JaxbAppInsightsConfigurationBuilderTest {
         // asserting a few config items only since the point of the test is to validate deserialization occurs
         // with no errors.
         Assert.assertEquals("myikey", config.getInstrumentationKey());
+        Assert.assertEquals("myrole", config.getRoleName());
         Assert.assertFalse(config.getChannel().getDeveloperMode());
         Assert.assertEquals("mypackage.MyCustomContextInitializer", config.getContextInitializers().getAdds().get(0).getType());
     }

@@ -23,10 +23,14 @@ package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector;
-import com.microsoft.applicationinsights.internal.agent.AgentConnector.RegistrationResult;
+import com.microsoft.applicationinsights.internal.agent.AgentBinding;
+import com.microsoft.applicationinsights.internal.agent.AgentBridge;
+import com.microsoft.applicationinsights.internal.agent.AgentBridge.ServletRequestInfo;
+import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory;
+import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory.SdkBridgeFactory;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
@@ -92,10 +96,8 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     HttpServerHandler handler;
 
-    /**
-     * Used to indicate if agent is registered to webapp.
-     */
-    private boolean agentIsRegistered;
+    // factories are used for indirection since agent classes may not be present at runtime
+    private AgentBridge<RequestTelemetryContext> agentBridge;
 
     // endregion Members
 
@@ -123,7 +125,14 @@ public final class WebRequestTrackingFilter implements Filter {
             }
 
             RequestTelemetryContext requestTelemetryContext = handler.handleStart(httpRequest, httpResponse);
-            AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext);
+            AgentBinding agentBinding;
+            if (agentBridge.isAgentRunning()) {
+                agentBinding = agentBridge.bindToThread(requestTelemetryContext,
+                        new ServletRequestInfo(httpRequest.getMethod(), httpRequest.getContextPath(),
+                                httpRequest.getServletPath(), httpRequest.getPathInfo(), httpRequest.getRequestURI()));
+            } else {
+                agentBinding = null;
+            }
             try {
                 httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
                 chain.doFilter(httpRequest, httpResponse);
@@ -133,10 +142,19 @@ public final class WebRequestTrackingFilter implements Filter {
             } finally {
                 if (httpRequest.isAsyncStarted()) {
                     AsyncContext context = httpRequest.getAsyncContext();
+                    AIHttpServletListener aiHttpServletListener =
+                            new AIHttpServletListener(handler, requestTelemetryContext, agentBinding);
                     context.addListener(aiHttpServletListener, httpRequest, httpResponse);
                 } else {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);
+                    if (agentBinding != null) {
+                        agentBinding.unbindFromRunawayChildThreads();
+                    }
                 }
+                if (agentBinding != null) {
+                    agentBinding.unbindFromMainThread();
+                }
+                ThreadContext.remove();
             }
         } else {
             // we are only interested in Http Requests. Keep all other untouched.
@@ -157,7 +175,6 @@ public final class WebRequestTrackingFilter implements Filter {
         try {
             long start = System.currentTimeMillis();
             this.appName = extractAppName(config.getServletContext());
-            this.agentIsRegistered = initializeAgentIfAvailable();
             TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
             if (configuration == null) {
                 InternalLogger.INSTANCE.error(
@@ -171,6 +188,15 @@ public final class WebRequestTrackingFilter implements Filter {
             // can provide his own handler?
             handler = new HttpServerHandler(new ApplicationInsightsServletExtractor(), webModulesContainer,
                                                 cleaners, telemetryClient);
+            if (AgentBridgeFactory.isAgentAvailable()) {
+                agentBridge = AgentBridgeFactory.create(new SdkBridgeFactory() {
+                    public SdkBridge create() {
+                        return new SdkBridgeImpl(telemetryClient);
+                    }
+                });
+            } else {
+                agentBridge = AgentBridgeFactory.create();
+            }
             if (StringUtils.isNotEmpty(config.getFilterName())) {
                 this.filterName = config.getFilterName();
             }
@@ -197,9 +223,6 @@ public final class WebRequestTrackingFilter implements Filter {
      * Destroy the filter by releases resources.
      */
     public void destroy() {
-        if (agentIsRegistered) {
-            AgentConnector.INSTANCE.unregisterAgent();
-        }
     }
 
     public WebRequestTrackingFilter() {}
@@ -207,34 +230,6 @@ public final class WebRequestTrackingFilter implements Filter {
     // endregion Public
 
     // region Private
-
-    private boolean initializeAgentIfAvailable() {
-        //If Agent Jar is not present in the class path skip the process
-        if (!CommonUtils.isClassPresentOnClassPath(AGENT_LOCATOR_INTERFACE_NAME,
-            this.getClass().getClassLoader())) {
-            InternalLogger.INSTANCE.trace("Agent was not found. Skipping the agent registration");
-            return false;
-        }
-
-        try {
-            RegistrationResult registrationResult = AgentConnector.INSTANCE.universalAgentRegisterer();
-            cleaners.add(registrationResult.getCleaner());
-            InternalLogger.INSTANCE.info("Successfully registered the filter with appName=%s", this.appName);
-            return true;
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                InternalLogger.INSTANCE.error("Failed to register '%s', exception: '%s'",
-                    this.filterName, ExceptionUtils.getStackTrace(t));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-            return false;
-        }
-    }
 
     private String extractAppName(ServletContext context) {
         if (appName != null) {

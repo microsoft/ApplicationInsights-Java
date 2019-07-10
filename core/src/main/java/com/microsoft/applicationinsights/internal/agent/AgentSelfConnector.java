@@ -21,14 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.agent;
 
-/**
- * A utility class to load the core SDK into the Agent
- * This is an internal class that should only used by the Agent
- *
- * Created by gupele on 9/11/2016.
- */
+@Deprecated
 public class AgentSelfConnector {
-    public AgentSelfConnector() {
-        AgentConnector.INSTANCE.universalAgentRegisterer();
-    }
 }
