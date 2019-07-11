@@ -103,7 +103,7 @@ shadowJar {
         exclude(dependency([group: 'com.google.j2objc', name:'j2objc-annotations', version: '1.1']))
 
     }
-    classifier=''
+    archiveClassifier=''
     relocate 'org.apache.commons', "${dependenciesPrefix}.apachecommons"
     relocate 'com.google', "${dependenciesPrefix}.google"
 }

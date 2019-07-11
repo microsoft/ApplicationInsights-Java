@@ -146,7 +146,7 @@ def updatePomWithGeneralProjectInformation(pomObject) {
 }
 
 task prepareSourcesArchive(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allJava
     doFirst {
         archiveName = "$archivesBaseName-$version-sources.jar"
@@ -154,7 +154,7 @@ task prepareSourcesArchive(type: Jar) {
 }
 
 task prepareJavadocArchive(type: Jar){
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from "$docsDir/javadoc"
     doFirst {
         archiveName = "$archivesBaseName-$version-javadoc.jar"
