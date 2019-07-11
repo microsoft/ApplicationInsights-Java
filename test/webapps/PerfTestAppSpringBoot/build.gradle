@@ -17,8 +17,10 @@ compileJava.targetCompatibility = 1.7
 compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
+def aiSdkVersion = version
+
 dependencies {
-    compile springBootStarterJar
+    compile "com.microsoft.azure:applicationinsights-spring-boot-starter:$aiSdkVersion"
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat'
     compile 'com.google.guava:guava:20.0'
