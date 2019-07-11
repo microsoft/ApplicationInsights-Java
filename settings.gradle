@@ -35,14 +35,16 @@ if (System.env.'COLLECTD_HOME') {
 
 //include 'distributions'
 
-//  TODO rewrite samples; current ones are not representative of "real-world" usage
+
 if (System.properties.AI_SAMPLES) {
+    include 'springbootsample'
+    include ':test:webapps:PerfTestApp'
+    include ':test:webapps:PerfTestAppSpringBoot'
+    include ':test:webapps:bookstore-spring'
+
+    //  TODO rewrite samples; these are not representative of "real-world" usage
     include 'samples'
-    include 'test:webapps:bookstore-spring'
 }
-include 'springbootsample'
-include ':test:webapps:PerfTestApp'
-include ':test:webapps:PerfTestAppSpringBoot'
 
 // Projects for smokeTests
 include ':test:smoke'
