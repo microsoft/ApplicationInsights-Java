@@ -163,7 +163,7 @@ task prepareJavadocArchive(type: Jar){
 }
 
 task copyLibsToGlobalArtifactsFolder(type: Copy) {
-    from libsDir
+    from "$buildDir/$libsDirName"
     into "$artifactsDirectoryRoot"
     exclude '**/windows/**'
     dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, generatePom
