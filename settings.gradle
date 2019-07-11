@@ -19,6 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+include 'ApplicationInsightsInternalLogger'
 
 include 'agent'
 include 'core'
@@ -28,8 +29,12 @@ include 'logging:logback'
 include 'web'
 include 'web-auto'
 include 'azure-application-insights-spring-boot-starter'
-include 'ApplicationInsightsInternalLogger'
-include 'distributions'
+if (System.env.'COLLECTD_HOME') {
+    include 'collectd'
+}
+
+//include 'distributions'
+
 //  TODO rewrite samples; current ones are not representative of "real-world" usage
 if (System.properties.AI_SAMPLES) {
     include 'samples'
@@ -71,7 +76,4 @@ include ':test:smoke:testApps:WebAuto'
 include ':test:smoke:testApps:SpringBoot1_3Auto'
 include ':test:smoke:testApps:SpringBootAuto'
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
-}
 
