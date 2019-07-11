@@ -52,6 +52,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
 /**
@@ -130,7 +131,7 @@ public abstract class AiSmokeTest {
 	protected static short currentPortNumber = BASE_PORT_NUMBER;
 
 	private static List<DependencyContainer> dependencyImages = new ArrayList<>();
-	protected static ContainerInfo currentContainerInfo = null;
+	protected static AtomicReference<ContainerInfo> currentContainerInfo = new AtomicReference<>();
 	protected static Deque<ContainerInfo> allContainers = new ArrayDeque<>();
 	protected static String currentImageName;
 	protected static short appServerPort;
@@ -193,7 +194,7 @@ public abstract class AiSmokeTest {
 		@Override
 		protected void failed(Throwable t, Description description) {
 			// NOTE this happens after @After :)
-			String containerId = currentContainerInfo.getContainerId();
+			String containerId = currentContainerInfo.get().getContainerId();
 			System.out.println("Test failure detected.");
 			printContainerLogs(containerId);
 		}
@@ -230,13 +231,14 @@ public abstract class AiSmokeTest {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
 			public void run() {
-				if (currentContainerInfo == null) {
+				final ContainerInfo containerInfo = currentContainerInfo.get();
+				if (containerInfo == null) {
 					return;
 				}
 				try {
-					stopContainer(currentContainerInfo);
+					stopContainer(containerInfo);
 				} catch (Exception e) {
-					System.err.println("Error while stopping container id="+currentContainerInfo.getContainerId()+". This must be stopped manually.");
+					System.err.println("Error while stopping container id="+containerInfo.getContainerId()+". This must be stopped manually.");
 					e.printStackTrace();
 				}
 			}
@@ -290,19 +292,20 @@ public abstract class AiSmokeTest {
 	public static void configureEnvironment(final String appServer, final String os, final String jreVersion) throws Exception {
 		System.out.println("Preparing environment...");
 		try {
-			if (currentContainerInfo != null) {
+			final ContainerInfo containerInfo = currentContainerInfo.get();
+			if (containerInfo != null) {
 				// test cleanup didn't take...try to clean up
-				if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
-					System.err.println("From last test run, container is still running: " + currentContainerInfo);
+				if (docker.isContainerRunning(containerInfo.getContainerId())) {
+					System.err.println("From last test run, container is still running: " + containerInfo);
 					try {
-						docker.stopContainer(currentContainerInfo.getContainerId());
+						docker.stopContainer(containerInfo.getContainerId());
 					} catch (Exception e) {
 						System.err.println("Couldn't clean up environment. Must be done manually.");
 						throw e;
 					}
 				} else {
 					// container must have stopped after timeout reached.
-					currentContainerInfo = null;
+					currentContainerInfo.set(null);
 				}
 			}
 			checkParams(appServer, os, jreVersion);
@@ -340,10 +343,11 @@ public abstract class AiSmokeTest {
 	}
 
 	protected static void waitForApplicationToStart() throws Exception {
+		final ContainerInfo containerInfo = currentContainerInfo.get();
 		try {
 			System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
 			waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS,
-					String.format("%s on %s", getAppContext(), currentContainerInfo.getImageName()),
+					String.format("%s on %s", getAppContext(), containerInfo.getImageName()),
 					HEALTH_CHECK_RETRIES);
 			System.out.println("Test app health check complete.");
 			if (requestCaptureEnabled) {
@@ -359,7 +363,7 @@ public abstract class AiSmokeTest {
 				System.out.println("Clearing any RequestData from health check.");
 			}
 		} catch (Exception e) {
-			docker.printContainerLogs(currentContainerInfo.getContainerId());
+			docker.printContainerLogs(containerInfo.getContainerId());
 			throw e;
 		}
 		mockedIngestion.resetData();
@@ -425,7 +429,11 @@ public abstract class AiSmokeTest {
 				if (deviceId == null) {
 					return true;
 				}
-				final boolean belongsToCurrentContainer = currentContainerInfo.getContainerId().startsWith(deviceId);
+				final ContainerInfo containerInfo = currentContainerInfo.get();
+				if (containerInfo == null) { // ignore telemetry in after container is cleaned up.
+					return false;
+				}
+				final boolean belongsToCurrentContainer = containerInfo.getContainerId().startsWith(deviceId);
 				if (!belongsToCurrentContainer) {
 					System.out.println("Telemetry from previous container");
 				}
@@ -517,25 +525,26 @@ public abstract class AiSmokeTest {
 		assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
 		System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
-		currentContainerInfo = new ContainerInfo(containerId, currentImageName);
+		final ContainerInfo containerInfo = new ContainerInfo(containerId, currentImageName);
+		currentContainerInfo.set(containerInfo);
 		try {
 			String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
 			System.out.printf("Verifying appserver has started (%s)...%n", url);
-			allContainers.push(currentContainerInfo);
+			allContainers.push(containerInfo);
 			waitForUrlWithRetries(url, APPSERVER_HEALTH_CHECK_TIMEOUT, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
 			System.out.println("App server is ready.");
 		}
 		catch (Exception e) {
 			System.err.println("Error starting app server");
-			if (docker.isContainerRunning(currentContainerInfo.getContainerId())) {
+			if (docker.isContainerRunning(containerInfo.getContainerId())) {
 				System.out.println("Container is not running.");
-				allContainers.remove(currentContainerInfo);
+				allContainers.remove(containerInfo);
 			} else {
 				System.out.println("Yet, the container is running.");
 			}
 			System.out.println("Printing container logs: ");
 			System.out.println("# LOGS START =========================");
-			docker.printContainerLogs(currentContainerInfo.getContainerId());
+			docker.printContainerLogs(containerInfo.getContainerId());
 			System.out.println("# LOGS END ===========================");
 			throw e;
 		}
@@ -607,9 +616,9 @@ public abstract class AiSmokeTest {
 		List<ContainerInfo> failedToStop = new ArrayList<>();
 		while (!allContainers.isEmpty()) {
 			ContainerInfo c = allContainers.pop();
-			if (currentContainerInfo == c) {
+			if (currentContainerInfo.get() == c) {
 				System.out.println("Cleaning up app container");
-				currentContainerInfo = null;
+				currentContainerInfo.set(null);
 			}
 			stopContainer(c);
 			if (docker.isContainerRunning(c.getContainerId())) {
@@ -618,11 +627,12 @@ public abstract class AiSmokeTest {
 			}
 		}
 
-		if (currentContainerInfo != null) {
+		final ContainerInfo containerInfo = currentContainerInfo.get();
+		if (containerInfo != null) {
 			System.err.println("Could not find app container in stack. Stopping...");
-			stopContainer(currentContainerInfo);
-			if (!docker.isContainerRunning(currentContainerInfo.getContainerId())) {
-				currentContainerInfo = null;
+			stopContainer(containerInfo);
+			if (!docker.isContainerRunning(containerInfo.getContainerId())) {
+				currentContainerInfo.set(null);
 			}
 		}
 
