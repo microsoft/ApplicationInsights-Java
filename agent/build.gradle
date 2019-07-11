@@ -34,7 +34,7 @@ shadowJar() {
 
     archiveClassifier = 'intermediate'
     mergeServiceFiles()
-
+    destinationDirectory = file("${project.buildDir}/intermediate")
     dependencies {
         exclude(dependency {
             it.moduleGroup == 'org.glowroot.instrumentation' &&
@@ -65,6 +65,10 @@ shadowJar() {
     exclude 'META-INF/DEPENDENCIES'
     exclude 'META-INF/NOTICE*'
     exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
+
+    // prevent duplicate files
+    exclude 'LICENSE'
+    exclude 'NOTICE'
 
     // errorprone annotations are a problem in the bootstrap class loader for Java 9 because they depend on
     // javax.lang.model.element.Modifier which is no longer in the bootstrap class loader in Java 9, and this causes
