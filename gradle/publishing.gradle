@@ -94,7 +94,7 @@ install {
 task generatePom {
     doLast {
         def pomFileName = jar.archiveFileName.replaceFirst(/\.jar$/, '.pom')
-        def pomFileObj = new File(jar.destinationDir, pomFileName)
+        def pomFileObj = new File(jar.destinationDirectory, pomFileName)
         def pomObject = updatePomWithGeneralProjectInformation(pom())
         pomObject.writeTo(pomFileObj)
     }

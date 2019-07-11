@@ -44,5 +44,5 @@ configurations {
     smokeTestRuntime.exclude group:'org.springframework.boot'
 }
 
-ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = war.archiveFileName

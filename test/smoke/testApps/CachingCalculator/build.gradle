@@ -16,6 +16,6 @@ compileJava.targetCompatibility = 1.8
 compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
-ext.testAppArtifactDir = war.destinationDir
+ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = war.archiveFileName
 ext.dependencyContainers = ['redis']

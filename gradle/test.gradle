@@ -35,7 +35,7 @@ task setRequiredRemoteProperties {
 
 task jarBuild(type: Jar) {
     from rootDir
-    destinationDir = buildArchiveDir
+    destinationDirectory = buildArchiveDir
     archiveFileName = buildArchiveName
 
     // Exclude list
