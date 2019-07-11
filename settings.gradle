@@ -35,6 +35,9 @@ if (System.properties.AI_SAMPLES) {
     include 'samples'
     include 'test:webapps:bookstore-spring'
 }
+include 'springbootsample'
+include ':test:webapps:PerfTestApp'
+include ':test:webapps:PerfTestAppSpringBoot'
 
 // Projects for smokeTests
 include ':test:smoke'
@@ -52,8 +55,6 @@ include ':test:smoke:framework:testCases'
 include ':test:fakeIngestion:servlet'
 include ':test:fakeIngestion:standalone'
 
-include ':test:smoke:testApps:PerfTestApp'
-include ':test:smoke:testApps:PerfTestAppSpringBoot'
 include ':test:smoke:testApps:CachingCalculator'
 include ':test:smoke:testApps:CoreAndFilter'
 include ':test:smoke:testApps:AutoPerfCounters'
@@ -73,5 +74,4 @@ include ':test:smoke:testApps:SpringBootAuto'
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
-include 'springbootsample'
 
