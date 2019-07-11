@@ -9,7 +9,7 @@ ext {
 	dockerCliExe = findDockerCliExe()
 	globalResourcesDir = "$projectDir/global-resources"
 	agentLibsDir = file("${project(':agent').buildDir}/libs") // is there a better way to get this?
-	agentJarName = project(':agent').jar.archiveName
+	agentJarName = project(':agent').jar.archiveFileName
 }
 
 subprojects {

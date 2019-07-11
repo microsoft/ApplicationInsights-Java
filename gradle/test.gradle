@@ -36,7 +36,7 @@ task setRequiredRemoteProperties {
 task jarBuild(type: Jar) {
     from rootDir
     destinationDir = buildArchiveDir
-    archiveName = buildArchiveName
+    archiveFileName = buildArchiveName
 
     // Exclude list
     // The cache.properties.lock is locked thus cannot (and need not) be zipped

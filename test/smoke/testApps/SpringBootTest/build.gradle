@@ -37,5 +37,5 @@ configurations {
 }
 
 ext.testAppArtifactDir = war.destinationDir
-ext.testAppArtifactFilename = war.archiveName
+ext.testAppArtifactFilename = war.archiveFileName
 ext.dependencyContainers = ['mysql:5','postgres:11','mcr.microsoft.com/mssql/server:2017-latest']

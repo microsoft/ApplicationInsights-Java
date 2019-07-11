@@ -45,4 +45,4 @@ configurations {
 }
 
 ext.testAppArtifactDir = war.destinationDir
-ext.testAppArtifactFilename = war.archiveName
+ext.testAppArtifactFilename = war.archiveFileName

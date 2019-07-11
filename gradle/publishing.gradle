@@ -93,7 +93,7 @@ install {
 // generates a pom file "beside" the jar file
 task generatePom {
     doLast {
-        def pomFileName = jar.archiveName.replaceFirst(/\.jar$/, '.pom')
+        def pomFileName = jar.archiveFileName.replaceFirst(/\.jar$/, '.pom')
         def pomFileObj = new File(jar.destinationDir, pomFileName)
         def pomObject = updatePomWithGeneralProjectInformation(pom())
         pomObject.writeTo(pomFileObj)
@@ -149,7 +149,7 @@ task prepareSourcesArchive(type: Jar) {
     archiveClassifier = 'sources'
     from sourceSets.main.allJava
     doFirst {
-        archiveName = "$archivesBaseName-$version-sources.jar"
+        archiveFileName = "$archivesBaseName-$version-sources.jar"
     }
 }
 
@@ -157,7 +157,7 @@ task prepareJavadocArchive(type: Jar){
     archiveClassifier = 'javadoc'
     from "$docsDir/javadoc"
     doFirst {
-        archiveName = "$archivesBaseName-$version-javadoc.jar"
+        archiveFileName = "$archivesBaseName-$version-javadoc.jar"
     }
     dependsOn javadoc
 }

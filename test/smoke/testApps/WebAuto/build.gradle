@@ -12,4 +12,4 @@ compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
 ext.testAppArtifactDir = war.destinationDir
-ext.testAppArtifactFilename = war.archiveName
+ext.testAppArtifactFilename = war.archiveFileName
