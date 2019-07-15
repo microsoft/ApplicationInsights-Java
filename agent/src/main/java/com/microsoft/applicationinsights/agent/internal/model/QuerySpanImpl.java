@@ -41,21 +41,21 @@ public class QuerySpanImpl implements QuerySpan {
     private final String type;
     private final String dest;
     private final String text;
-    private final QueryMessageSupplier messageSupplier;
     private final long startTimeMillis;
+    private final QueryMessageSupplier messageSupplier;
 
     private volatile @MonotonicNonNull Throwable exception;
 
     private volatile long totalMillis = -1;
 
-    QuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text, QueryMessageSupplier messageSupplier,
-                  long startTimeMillis) {
-        this.sdkBridge=sdkBridge;
+    QuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text, long startTimeMillis,
+                  QueryMessageSupplier messageSupplier) {
+        this.sdkBridge = sdkBridge;
         this.type = type;
         this.dest = dest;
         this.text = text;
-        this.messageSupplier = messageSupplier;
         this.startTimeMillis = startTimeMillis;
+        this.messageSupplier = messageSupplier;
     }
 
     @Override

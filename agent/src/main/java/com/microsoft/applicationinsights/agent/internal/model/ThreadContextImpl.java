@@ -77,22 +77,22 @@ public class ThreadContextImpl<T> implements ThreadContextPlus {
     @Override
     public QuerySpan startQuerySpan(String type, String dest, String text, QueryMessageSupplier queryMessageSupplier,
                                     TimerName timerName) {
-        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
-                System.currentTimeMillis());
+        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, System.currentTimeMillis(),
+                queryMessageSupplier);
     }
 
     @Override
     public QuerySpan startQuerySpan(String type, String dest, String text, long queryExecutionCount,
                                     QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
-                System.currentTimeMillis());
+        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, System.currentTimeMillis(),
+                queryMessageSupplier);
     }
 
     @Override
     public AsyncQuerySpan startAsyncQuerySpan(String type, String dest, String text,
                                               QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        return new AsyncQuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
-                System.currentTimeMillis());
+        return new AsyncQuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, System.currentTimeMillis(),
+                queryMessageSupplier);
     }
 
     @Override

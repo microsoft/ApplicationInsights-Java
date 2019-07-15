@@ -30,8 +30,8 @@ import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
 
     public AsyncQuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text,
-                              QueryMessageSupplier messageSupplier, long startTimeMillis) {
-        super(sdkBridge, type, dest, text, messageSupplier, startTimeMillis);
+                              long startTimeMillis, QueryMessageSupplier messageSupplier) {
+        super(sdkBridge, type, dest, text, startTimeMillis, messageSupplier);
     }
 
     @Override
