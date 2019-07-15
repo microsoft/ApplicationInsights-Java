@@ -9,7 +9,7 @@ ext {
 	dockerCliExe = findDockerCliExe()
 	globalResourcesDir = "$projectDir/global-resources"
 	agentLibsDir = file("${project(':agent').buildDir}/libs") // is there a better way to get this?
-	agentJarName = project(':agent').jar.archiveFileName
+	agentJarName = project(':agent').jar.archiveFileName.get()
 }
 
 subprojects {
@@ -64,7 +64,7 @@ subprojects {
 				tokenMap << [AGENT_JAR_NAME: agentJarName]
 				logger.debug "tokenMap = ${tokenMap}"
 				copy {
-					from projectDir
+					from "$projectDir"
 					into dockerfileOutputDir
 					include "*$partialDockerfileExt"
 					filter(ReplaceTokens, tokens: tokenMap)
