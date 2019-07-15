@@ -26,6 +26,7 @@ import java.lang.instrument.Instrumentation;
 import java.util.Collections;
 import java.util.List;
 
+import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
 import com.microsoft.applicationinsights.agent.internal.model.Global;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -78,7 +79,9 @@ public class MainEntryPoint {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        BuiltInInstrumentation builtInInstrumentation = AIAgentXmlLoader.load(agentJarParentFile);
+        AgentConfiguration agentConfiguration = AIAgentXmlLoader.load(agentJarParentFile);
+
+        BuiltInInstrumentation builtInInstrumentation = agentConfiguration.getBuiltInInstrumentation();
 
         if (!builtInInstrumentation.isEnabled()) {
             return;
@@ -88,7 +91,7 @@ public class MainEntryPoint {
         Global.setOutboundW3CBackCompatEnabled(builtInInstrumentation.isW3cBackCompatEnabled());
 
         List<InstrumentationDescriptor> instrumentationDescriptors =
-                AIAgentXmlLoader.getInstrumentationDescriptors(builtInInstrumentation);
+                AIAgentXmlLoader.getInstrumentationDescriptors(agentConfiguration);
 
         ConfigServiceFactory configServiceFactory = new SimpleConfigServiceFactory(instrumentationDescriptors,
                 AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation));

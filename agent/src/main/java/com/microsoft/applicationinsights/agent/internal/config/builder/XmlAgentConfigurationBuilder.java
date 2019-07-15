@@ -19,15 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.config;
+package com.microsoft.applicationinsights.agent.internal.config.builder;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
+import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -45,6 +50,8 @@ public class XmlAgentConfigurationBuilder {
     private static final String MAIN_TAG = "ApplicationInsightsAgent";
 
     private static final String INSTRUMENTATION_TAG = "Instrumentation";
+    private static final String CLASS_TAG = "Class";
+    private static final String METHOD_TAG = "Method";
 
     private static final String BUILT_IN_TAG = "BuiltIn";
 
@@ -60,7 +67,13 @@ public class XmlAgentConfigurationBuilder {
 
     private static final String MAX_STATEMENT_QUERY_LIMIT_TAG = "MaxStatementQueryLimitInMS";
 
-    public BuiltInInstrumentation parseConfigurationFile(String baseFolder) {
+    private static final String THRESHOLD_ATTRIBUTE = "thresholdInMS";
+    private static final String ENABLED_ATTRIBUTE = "enabled";
+    private static final String NAME_ATTRIBUTE = "name";
+    private static final String SIGNATURE_ATTRIBUTE = "signature";
+
+    public AgentConfiguration parseConfigurationFile(String baseFolder) {
+        AgentConfiguration agentConfiguration = new AgentConfiguration();
 
         String configurationFileName = baseFolder;
         if (!baseFolder.endsWith(File.separator)) {
@@ -71,23 +84,52 @@ public class XmlAgentConfigurationBuilder {
         File configurationFile = new File(configurationFileName);
         if (!configurationFile.exists()) {
             logger.trace("Did not find Agent configuration file in '{}'", configurationFileName);
-            return new BuiltInInstrumentationBuilder().create();
+            return agentConfiguration;
         }
 
         logger.trace("Found Agent configuration file in '{}'", configurationFileName);
         try {
             Element topElementTag = getTopTag(configurationFile);
             if (topElementTag == null) {
-                return new BuiltInInstrumentationBuilder().create();
+                return agentConfiguration;
             }
 
-            NodeList customTags = topElementTag.getElementsByTagName(INSTRUMENTATION_TAG);
-            Element instrumentationTag = XmlParserUtils.getFirst(customTags);
+            NodeList instrumentationTags = topElementTag.getElementsByTagName(INSTRUMENTATION_TAG);
+            Element instrumentationTag = XmlParserUtils.getFirst(instrumentationTags);
             if (instrumentationTag == null) {
-                return new BuiltInInstrumentationBuilder().create();
+                return agentConfiguration;
             }
 
-            return getBuiltInInstrumentation(instrumentationTag);
+            setBuiltInInstrumentation(agentConfiguration, instrumentationTag);
+
+            NodeList classTags = instrumentationTag.getElementsByTagName(CLASS_TAG);
+            if (classTags == null) {
+                return agentConfiguration;
+            }
+
+            Map<String, ClassInstrumentationData> classesToInstrument = new HashMap<>();
+            for (int i = 0; i < classTags.getLength(); i++) {
+                Element classTag = getClassDataElement(classTags.item(i));
+                if (classTag == null) {
+                    continue;
+                }
+
+                String className = classTag.getAttribute(NAME_ATTRIBUTE);
+                if (Strings.isNullOrEmpty(className)) {
+                    continue;
+                }
+
+                ClassInstrumentationData data = classesToInstrument.get(className);
+                if (data == null) {
+                    data = createClassInstrumentationData(classTag);
+                    classesToInstrument.put(className, data);
+                }
+
+                addMethods(data, classTag);
+            }
+
+            agentConfiguration.setClassesToInstrument(classesToInstrument);
+            return agentConfiguration;
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable e) {
@@ -102,22 +144,24 @@ public class XmlAgentConfigurationBuilder {
         }
     }
 
-    private BuiltInInstrumentation getBuiltInInstrumentation(Element instrumentationTags) {
-
+    private void setBuiltInInstrumentation(AgentConfiguration agentConfiguration,
+                                           Element instrumentationTags) {
         BuiltInInstrumentationBuilder builtInConfigurationBuilder = new BuiltInInstrumentationBuilder();
 
         NodeList nodes = instrumentationTags.getElementsByTagName(BUILT_IN_TAG);
         Element builtInElement = XmlParserUtils.getFirst(nodes);
         if (builtInElement == null) {
             builtInConfigurationBuilder.setEnabled(false);
-            return builtInConfigurationBuilder.create();
+            agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
+            return;
         }
 
         boolean builtInIsEnabled = XmlParserUtils.getEnabled(builtInElement, BUILT_IN_TAG);
         builtInConfigurationBuilder.setEnabled(builtInIsEnabled);
         if (!builtInIsEnabled) {
             builtInConfigurationBuilder.setEnabled(false);
-            return builtInConfigurationBuilder.create();
+            agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
+            return;
         }
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
@@ -142,7 +186,54 @@ public class XmlAgentConfigurationBuilder {
         builtInConfigurationBuilder.setQueryPlanThresholdInMS(XmlParserUtils.getLong(XmlParserUtils.getFirst(nodes),
                 MAX_STATEMENT_QUERY_LIMIT_TAG));
 
-        return builtInConfigurationBuilder.create();
+        agentConfiguration.setBuiltInData(builtInConfigurationBuilder.create());
+    }
+
+    private Element getClassDataElement(Node item) {
+        if (item.getNodeType() != Node.ELEMENT_NODE) {
+            return null;
+        }
+
+        Element classNode = (Element) item;
+
+        String strValue = classNode.getAttribute(ENABLED_ATTRIBUTE);
+        if (!Strings.isNullOrEmpty(strValue)) {
+            boolean isEnabled = Boolean.valueOf(strValue);
+            if (!isEnabled) {
+                return null;
+            }
+        }
+
+        return classNode;
+    }
+
+    private ClassInstrumentationData createClassInstrumentationData(Element classTag) {
+        String type = classTag.getAttribute("type");
+        if (Strings.isNullOrEmpty(type)) {
+            type = ClassInstrumentationData.OTHER_TYPE;
+        }
+        long thresholdInMS = XmlParserUtils.getLongAttribute(classTag, THRESHOLD_ATTRIBUTE, 0);
+        return new ClassInstrumentationData(type, thresholdInMS);
+    }
+
+    private void addMethods(ClassInstrumentationData classData, Element classNode) {
+        NodeList methodTags = classNode.getElementsByTagName(METHOD_TAG);
+        for (int i = 0; i < methodTags.getLength(); i++) {
+
+            Element methodTag = (Element) methodTags.item(i);
+            if (!XmlParserUtils.getEnabled(methodTag, ENABLED_ATTRIBUTE)) {
+                continue;
+            }
+            String methodName = methodTag.getAttribute(NAME_ATTRIBUTE);
+            if (Strings.isNullOrEmpty(methodName)) {
+                continue;
+            }
+            long thresholdInMS =
+                    XmlParserUtils.getLongAttribute(methodTag, THRESHOLD_ATTRIBUTE, classData.getThresholdInMS());
+            String signature = methodTag.getAttribute(SIGNATURE_ATTRIBUTE);
+
+            classData.addMethod(methodName, signature, thresholdInMS);
+        }
     }
 
     private Element getTopTag(File configurationFile) throws ParserConfigurationException, IOException, SAXException {
