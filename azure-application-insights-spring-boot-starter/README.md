@@ -210,7 +210,7 @@ and avoiding any Application Insights beans creation by Spring.
 3. Please configure springboot Application.properties file with Application Insights Instrumentation key. 
 4. Compile the project and execute it from your IDE or command line using java -jar applicationjarname
 5. To specify AI properties using command line please refer to SpringBoot Documentation.
-6. To use [ApplicationInsigts Java agent](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-agent) please follow official documentation 
+6. To use [ApplicationInsights Java agent](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-agent) please follow official documentation 
 4. To get an initialized instance of TelemetryClient please use Spring autowired annotation. This will provide a fully initialized instance of TelemetryClient.
 
 ```Java
