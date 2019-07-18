@@ -25,10 +25,10 @@
 
 #include <string>
 
-#using <System.dll> as_friend
-#using <mscorlib.dll> as_friend
-#using <System.Data.dll> as_friend
-#using <System.Xml.dll> as_friend
+#using <System.dll>
+#using <mscorlib.dll>
+#using <System.Data.dll>
+#using <System.Xml.dll>
 
 using System::Text::Encoding;
 using namespace System::Reflection;
