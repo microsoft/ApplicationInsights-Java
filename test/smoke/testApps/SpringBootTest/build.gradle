@@ -36,6 +36,6 @@ configurations {
     smokeTestRuntime.exclude group:'org.springframework.boot'
 }
 
-ext.testAppArtifactDir = war.destinationDir
-ext.testAppArtifactFilename = war.archiveName
+ext.testAppArtifactDir = war.destinationDirectory
+ext.testAppArtifactFilename = war.archiveFileName.get()
 ext.dependencyContainers = ['mysql:5','postgres:11','mcr.microsoft.com/mssql/server:2017-latest']

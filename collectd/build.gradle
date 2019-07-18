@@ -33,7 +33,7 @@ jar {
 }
 
 shadowJar {
-    classifier = ''
+    archiveClassifier = ''
 }
 
 def collectdLibDir = System.env.'COLLECTD_HOME'

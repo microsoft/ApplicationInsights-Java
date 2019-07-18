@@ -136,7 +136,7 @@ dependencies {
 
 ext.dependenciesPrefix = 'com.microsoft.applicationinsights.core.dependencies'
 shadowJar {
-    classifier=''
+    archiveClassifier=''
     mergeServiceFiles()
     relocate 'org.apache.http', "${dependenciesPrefix}.http"
     relocate 'eu.infomas.annotation', "${dependenciesPrefix}.annotation"

@@ -21,7 +21,6 @@
 
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
-apply plugin: 'findbugs'
 
 def buildSrcDir = new File(project.buildDir, "src")
 def commonSrcDir = new File(project.parent.projectDir, "common/src")
@@ -55,8 +54,6 @@ sourceSets {
         }
     }
 }
-
-findbugs.sourceSets = [sourceSets.main]
 
 // region Publishing properties
 

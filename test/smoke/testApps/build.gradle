@@ -78,24 +78,25 @@ subprojects {
 		description = "Copies test app WARs and shared resources into smoke test resources folder"
 		outputs.upToDateWhen { false }
 		dependsOn assemble
-		doLast {
-			def testAppFile = new File(testAppArtifactDir, testAppArtifactFilename)
-			if (!testAppFile.exists()) {
+		doFirst {
+			def testAppFile = testAppArtifactDir.file(testAppArtifactFilename)
+			if (!testAppFile.get().asFile.exists()) {
 				throw new GradleException("Missing $testAppArtifactFilename from $testAppArtifactDir")
 			}
-			copy {
+		}
+		doLast {
+			project.copy {
 				from testAppArtifactDir
 				into processSmokeTestResources.destinationDir
-				include testAppArtifactFilename
+				include "$testAppArtifactFilename"
 			}
-			copy {
+			project.copy {
 				from sharedResourcesDir
 				into processSmokeTestResources.destinationDir
-				include '**/*'
 			}
 			def testInfoProps = new File(processSmokeTestResources.destinationDir, "testInfo.properties")
 			def props = new Properties()
-			props.setProperty("ai.smoketest.testAppWarFile", testAppArtifactFilename)
+			props.setProperty("ai.smoketest.testAppWarFile", "$testAppArtifactFilename")
 			testInfoProps.withWriter { props.store((Writer)it, "information needed for test") }
 		}
 	}

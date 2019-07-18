@@ -34,7 +34,7 @@ jar {
 }
 
 shadowJar {
-    classifier = ''
+    archiveClassifier = ''
     dependencies {
         exclude(dependency('org.ow2.asm:asm:5.2'))
         exclude(dependency('org.ow2.asm:asm-commons:5.2'))
