@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -43,6 +44,7 @@ public enum QuickPulseDataCollector {
     INSTANCE;
 
     private String ikey;
+    private TelemetryConfiguration config;
 
     static class FinalCounters {
         public final double exceptions;
@@ -147,8 +149,16 @@ public enum QuickPulseDataCollector {
         counters.set(null);
     }
 
+    @Deprecated
     public synchronized void enable(final String ikey) {
         this.ikey = ikey;
+        this.config = null;
+        counters.set(new Counters());
+    }
+
+    public synchronized void enable(TelemetryConfiguration config) {
+        this.config = config;
+        this.ikey = null;
         counters.set(new Counters());
     }
 
@@ -171,7 +181,7 @@ public enum QuickPulseDataCollector {
     }
 
     public void add(Telemetry telemetry) {
-        if (!telemetry.getContext().getInstrumentationKey().equals(ikey)) {
+        if (!telemetry.getContext().getInstrumentationKey().equals(getInstrumentationKey())) {
             return;
         }
 
@@ -182,6 +192,14 @@ public enum QuickPulseDataCollector {
             addDependency((RemoteDependencyTelemetry) telemetry);
         } else if (telemetry instanceof ExceptionTelemetry) {
             addException();
+        }
+    }
+
+    private String getInstrumentationKey() {
+        if (config != null) {
+            return config.getInstrumentationKey();
+        } else {
+            return ikey;
         }
     }
 

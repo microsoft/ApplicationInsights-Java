@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.methods.HttpPost;
@@ -36,15 +37,28 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  */
 final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/";
-    private final String quickPulsePostUri;
     private final ArrayBlockingQueue<HttpPost> sendQueue;
+    private final TelemetryConfiguration config;
+    private final String ikey;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private String postPrefix;
     private final String sdkVersion;
 
+    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config,
+                                        String instanceName, String quickPulseId) {
+        this(sendQueue, config, null, instanceName, quickPulseId);
+    }
+
+    @Deprecated
     public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpPost> sendQueue, final String ikey, final String instanceName, final String quickPulseId) {
-        quickPulsePostUri = QP_BASE_URI + "post?ikey=" + ikey;
+        this(sendQueue, null, ikey, instanceName, quickPulseId);
+    }
+
+    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config,
+                                        String ikey, String instanceName, String quickPulseId) {
         this.sendQueue = sendQueue;
+        this.config = config;
+        this.ikey = ikey;
         sdkVersion = getCurrentSdkVersion();
         final StringBuilder sb = new StringBuilder();
         sb.append("[{");
@@ -72,7 +86,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
             final Date currentDate = new Date();
-            final HttpPost request = networkHelper.buildRequest(currentDate, quickPulsePostUri);
+            final HttpPost request = networkHelper.buildRequest(currentDate, QP_BASE_URI + "post?ikey=" + getInstrumentationKey());
 
             final ByteArrayEntity postEntity = buildPostEntity(counters);
 
@@ -91,6 +105,14 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             } catch (Throwable t2) {
                 // chomp
             }
+        }
+    }
+
+    private String getInstrumentationKey() {
+        if (config != null) {
+            return config.getInstrumentationKey();
+        } else {
+            return ikey;
         }
     }
 

@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +11,7 @@ public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void testGetCurrentSdkVersion() {
-        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, null,
+        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration) null,
                 null, null);
         String sdkVersion = dataFetcher.getCurrentSdkVersion();
         Assert.assertNotNull(sdkVersion);

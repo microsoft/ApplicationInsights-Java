@@ -66,10 +66,10 @@ public enum QuickPulse implements Stoppable {
                         instanceName = "Unknown host";
                     }
 
-                    final String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
+                    final TelemetryConfiguration config = TelemetryConfiguration.getActive();
 
                     final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, instanceName, quickPulseId);
-                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, ikey, instanceName, quickPulseId);
+                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, config, instanceName, quickPulseId);
 
                     final QuickPulseCoordinatorInitData coordinatorInitData =
                             new QuickPulseCoordinatorInitDataBuilder()
@@ -90,7 +90,7 @@ public enum QuickPulse implements Stoppable {
 
                     SDKShutdownActivity.INSTANCE.register(this);
 
-                    QuickPulseDataCollector.INSTANCE.enable(ikey);
+                    QuickPulseDataCollector.INSTANCE.enable(config);
                 }
             }
         }
