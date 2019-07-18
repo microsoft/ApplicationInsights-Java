@@ -160,7 +160,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
         tmp.setBaseData(getData());
         tmp.setBaseType(this.getBaseTypeName());
         envelope.setData(tmp);
-        if (getTimestamp() != null) envelope.setTime(LocalStringsUtils.getDateFormatter().format(getTimestamp());
+        if (getTimestamp() != null) envelope.setTime(LocalStringsUtils.getDateFormatter().format(getTimestamp()));
         envelope.setTags(context.getTags());
 
         envelope.serialize(writer);
