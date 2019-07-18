@@ -40,9 +40,9 @@ using namespace System::Diagnostics;
 using System::Runtime::InteropServices::Marshal;
 using namespace Microsoft;
 
-static const double EXCEPTION_IN_GET_PERF_COuNTER_WRAPPER_FUNCTION_EXCEPTION = -1;
+static const double EXCEPTION_IN_GET_PERF_COUNTER_WRAPPER_FUNCTION_EXCEPTION = -1;
 static const double EXCEPTION_WHILE_FETCHING_PERF_COUNTER_VALUE = -7;
-static const double EXCEPTION_IN_GET_PERF_COuNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION = -4;
+static const double EXCEPTION_IN_GET_PERF_COUNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION = -4;
 static const double PERF_COUNTER_WAS_NOT_FOUND = -2;
 
 ref class PerfCountersUtils
@@ -164,7 +164,7 @@ double getPerfCounterValue(const char *name) {
 	}
 	catch (...)
 	{
-		return EXCEPTION_IN_GET_PERF_COuNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION;
+		return EXCEPTION_IN_GET_PERF_COUNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION;
 	}
 }
 
@@ -249,6 +249,6 @@ JNIEXPORT jdouble JNICALL Java_com_microsoft_applicationinsights_internal_perfco
 	}
 	catch (...)
 	{
-		return EXCEPTION_IN_GET_PERF_COuNTER_WRAPPER_FUNCTION_EXCEPTION;
+		return EXCEPTION_IN_GET_PERF_COUNTER_WRAPPER_FUNCTION_EXCEPTION;
 	}
 }
