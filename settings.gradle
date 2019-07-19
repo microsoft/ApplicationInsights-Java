@@ -19,6 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+include 'ApplicationInsightsInternalLogger'
 
 include 'agent'
 include 'core'
@@ -28,12 +29,21 @@ include 'logging:logback'
 include 'web'
 include 'web-auto'
 include 'azure-application-insights-spring-boot-starter'
-include 'ApplicationInsightsInternalLogger'
-include 'distributions'
-//  TODO rewrite samples; current ones are not representative of "real-world" usage
+if (System.env.'COLLECTD_HOME') {
+    include 'collectd'
+}
+
+//include 'distributions'
+
+
 if (System.properties.AI_SAMPLES) {
+    include 'springbootsample'
+    include ':test:webapps:PerfTestApp'
+    include ':test:webapps:PerfTestAppSpringBoot'
+    include ':test:webapps:bookstore-spring'
+
+    //  TODO rewrite samples; these are not representative of "real-world" usage
     include 'samples'
-    include 'test:webapps:bookstore-spring'
 }
 
 // Projects for smokeTests
@@ -52,8 +62,6 @@ include ':test:smoke:framework:testCases'
 include ':test:fakeIngestion:servlet'
 include ':test:fakeIngestion:standalone'
 
-include ':test:smoke:testApps:PerfTestApp'
-include ':test:smoke:testApps:PerfTestAppSpringBoot'
 include ':test:smoke:testApps:CachingCalculator'
 include ':test:smoke:testApps:CoreAndFilter'
 include ':test:smoke:testApps:AutoPerfCounters'
@@ -70,8 +78,4 @@ include ':test:smoke:testApps:WebAuto'
 include ':test:smoke:testApps:SpringBoot1_3Auto'
 include ':test:smoke:testApps:SpringBootAuto'
 
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
-}
-include 'springbootsample'
 
