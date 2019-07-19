@@ -22,25 +22,26 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContexts;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 
 /**
  * Created by gupele on 6/4/2015.
@@ -60,8 +61,19 @@ final class ApacheSender43 implements ApacheSender {
                         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
                         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
 
-                            sender.httpClientRef.compareAndSet(null, HttpClients.custom()
+                        SSLContext sslContext = null;
+                        try {
+                            sslContext = SSLContexts.custom().useProtocol("TLS").build();
+                        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                            if (InternalLogger.INSTANCE.isWarnEnabled()) {
+                                InternalLogger.INSTANCE.warn("Exception initializing SSLContext; using system default: %s", ExceptionUtils.getStackTrace(e));
+                            }
+                            sslContext = SSLContexts.createSystemDefault();
+                        }
+                        SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(sslContext, new String[]{"TLSv1.2"}, null, (HostnameVerifier) null);
+                        sender.httpClientRef.compareAndSet(null, HttpClients.custom()
                                 .setConnectionManager(cm)
+                                .setSSLSocketFactory(sf)
                                 .useSystemProperties()
                                 .build());
                         synchronized (sender.httpClientRef) {
