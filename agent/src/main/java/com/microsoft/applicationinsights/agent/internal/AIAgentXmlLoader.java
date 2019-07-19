@@ -50,7 +50,7 @@ class AIAgentXmlLoader {
 
         List<InstrumentationDescriptor> instrumentationDescriptors = new ArrayList<>();
         for (InstrumentationDescriptor instrumentationDescriptor : InstrumentationDescriptors.read()) {
-            switch (instrumentationDescriptor.name()) {
+            switch (instrumentationDescriptor.id()) {
                 case "apache-http-client":
                 case "http-url-connection":
                 case "okhttp":
