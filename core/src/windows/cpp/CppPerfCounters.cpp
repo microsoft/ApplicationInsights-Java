@@ -25,10 +25,10 @@
 
 #include <string>
 
-#using <System.dll> as_friend
-#using <mscorlib.dll> as_friend
-#using <System.Data.dll> as_friend
-#using <System.Xml.dll> as_friend
+#using <System.dll>
+#using <mscorlib.dll>
+#using <System.Data.dll>
+#using <System.Xml.dll>
 
 using System::Text::Encoding;
 using namespace System::Reflection;
@@ -40,9 +40,39 @@ using namespace System::Diagnostics;
 using System::Runtime::InteropServices::Marshal;
 using namespace Microsoft;
 
-static const double EXCEPTION_IN_GET_PERF_COuNTER_WRAPPER_FUNCTION_EXCEPTION = -1;
+//
+// General Information about an assembly is controlled through the following
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+//
+[assembly:AssemblyTitleAttribute(L"Microsoft.ApplicationInsights.JNI.PerformanceCounters")];
+[assembly:AssemblyDescriptionAttribute(L"Microsoft Application Insights Java SDK Windows Performance Counters Manager. This package provides JNI methods for collecting Windows performance counters via the Java SDK.")];
+[assembly:AssemblyConfigurationAttribute(L"Retail")];
+[assembly:AssemblyCompanyAttribute(L"Microsoft")];
+[assembly:AssemblyProductAttribute(L"Microsoft Application Insights Java SDK")];
+[assembly:AssemblyCopyrightAttribute(L"Copyright (c) 2019")];
+[assembly:AssemblyTrademarkAttribute(L"Microsoft Application Insights Java SDK")];
+[assembly:AssemblyCultureAttribute(L"")];
+
+//
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version
+//      Build Number
+//      Revision
+//
+// You can specify all the value or you can default the Revision and Build Numbers
+// by using the '*' as shown below:
+
+[assembly:AssemblyFileVersion("1.0.0.0")];
+[assembly:AssemblyVersionAttribute("1.0.0.0")];
+
+[assembly:CLSCompliantAttribute(true)];
+
+static const double EXCEPTION_IN_GET_PERF_COUNTER_WRAPPER_FUNCTION_EXCEPTION = -1;
 static const double EXCEPTION_WHILE_FETCHING_PERF_COUNTER_VALUE = -7;
-static const double EXCEPTION_IN_GET_PERF_COuNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION = -4;
+static const double EXCEPTION_IN_GET_PERF_COUNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION = -4;
 static const double PERF_COUNTER_WAS_NOT_FOUND = -2;
 
 ref class PerfCountersUtils
@@ -164,7 +194,7 @@ double getPerfCounterValue(const char *name) {
 	}
 	catch (...)
 	{
-		return EXCEPTION_IN_GET_PERF_COuNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION;
+		return EXCEPTION_IN_GET_PERF_COUNTER_INTERNAL_WRAPPER_FUNCTION_EXCEPTION;
 	}
 }
 
@@ -249,6 +279,6 @@ JNIEXPORT jdouble JNICALL Java_com_microsoft_applicationinsights_internal_perfco
 	}
 	catch (...)
 	{
-		return EXCEPTION_IN_GET_PERF_COuNTER_WRAPPER_FUNCTION_EXCEPTION;
+		return EXCEPTION_IN_GET_PERF_COUNTER_WRAPPER_FUNCTION_EXCEPTION;
 	}
 }
