@@ -29,13 +29,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public enum InstrumentationKeyResolver {
     INSTANCE;
 
-	private static final String CorrelationIdFormat = "cid-v1:%s";
+    private static final String CorrelationIdFormat = "cid-v1:%s";
     private AppProfileFetcher profileFetcher;
     private final ConcurrentMap<String, String> appIdCache;
     
     InstrumentationKeyResolver() {
-    	this.appIdCache = new ConcurrentHashMap<String, String>();
-    	this.profileFetcher = new CdsProfileFetcher();
+        this.appIdCache = new ConcurrentHashMap<String, String>();
+        this.profileFetcher = new CdsProfileFetcher();
     }
     
     public void clearCache() {
@@ -52,10 +52,10 @@ public enum InstrumentationKeyResolver {
      */
     public String resolveInstrumentationKey(String instrumentationKey) {
         
-    	 if (instrumentationKey == null || instrumentationKey.isEmpty()) {
+         if (instrumentationKey == null || instrumentationKey.isEmpty()) {
              throw new IllegalArgumentException("instrumentationKey must be not null or empty");
          }
-    	
+        
         try {
             String appId = this.appIdCache.get(instrumentationKey);
 
@@ -67,14 +67,14 @@ public enum InstrumentationKeyResolver {
             appId = processResult(result, instrumentationKey);
             
             if (appId != null) {
-            	this.appIdCache.putIfAbsent(instrumentationKey, appId);
+                this.appIdCache.putIfAbsent(instrumentationKey, appId);
             }
             
             return appId;
-		} catch (Exception e) {
+        } catch (Exception e) {
             InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s => Exception: %s", instrumentationKey, e);
             InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-		}
+        }
 
         return null;
     }

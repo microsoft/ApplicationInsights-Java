@@ -17,11 +17,11 @@ import org.apache.logging.log4j.Logger;
 @WebServlet(description = "calls log4j2", urlPatterns = "/traceLog4j2")
 public class SimpleTestTraceLog4j2Servlet extends HttpServlet {
 
-	private static final long serialVersionUID = 3048578125004678364L;
+    private static final long serialVersionUID = 3048578125004678364L;
 
-	private static final Logger logger = LogManager.getRootLogger();
+    private static final Logger logger = LogManager.getRootLogger();
 
-	/**
+    /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

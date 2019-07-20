@@ -226,7 +226,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
      *
      * If true, this also forces maxTelemetriesInBatch to be 1 (affects TelemetryBuffer).
      *
-	 * @param developerMode true or false
+     * @param developerMode true or false
      */
     @Override
     public void setDeveloperMode(boolean developerMode) {
@@ -251,7 +251,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
             telemetriesTransmitter.stop(timeout, timeUnit);
             stopped = true;
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
@@ -267,11 +267,11 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     /**
      * Sets the time tow wait before flushing the internal buffer
      *
-	 * @param transmitBufferTimeoutInSeconds
-	 *            should be between MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS and
-	 *            MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS inclusive if the number is
-	 *            lower than the minimum then the minimum will be used if the number
-	 *            is higher than the maximum then the maximum will be used
+     * @param transmitBufferTimeoutInSeconds
+     *            should be between MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS and
+     *            MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS inclusive if the number is
+     *            lower than the minimum then the minimum will be used if the number
+     *            is higher than the maximum then the maximum will be used
      */
     public void setTransmitBufferTimeoutInSeconds(int transmitBufferTimeoutInSeconds) {
         telemetryBuffer.setTransmitBufferTimeoutInSeconds(transmitBufferTimeoutInSeconds);
@@ -280,11 +280,11 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     /**
      * Sets the buffer size
      *
-	 * @param maxTelemetriesInBatch
-	 *            should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and
-	 *            MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive if the number is lower
-	 *            than the minimum then the minimum will be used if the number is
-	 *            higher than the maximum then the maximum will be used
+     * @param maxTelemetriesInBatch
+     *            should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and
+     *            MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive if the number is lower
+     *            than the minimum then the minimum will be used if the number is
+     *            higher than the maximum then the maximum will be used
      */
     public void setMaxTelemetriesInBatch(int maxTelemetriesInBatch) {
         telemetryBuffer.setMaxTelemetriesInBatch(maxTelemetriesInBatch);
@@ -299,11 +299,11 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     }
 
     /**
-	 * Sets an optional Sampler that can sample out telemetries Currently, we don't
-	 * allow to replace a valid telemtry sampler.
+     * Sets an optional Sampler that can sample out telemetries Currently, we don't
+     * allow to replace a valid telemtry sampler.
      *
-	 * @param telemetrySampler
-	 *            - The sampler
+     * @param telemetrySampler
+     *            - The sampler
      */
     @Override
     public void setSampler(TelemetrySampler telemetrySampler) {
@@ -356,27 +356,27 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     protected abstract TransmitterFactory<T> createTransmitterFactory();
 
     protected LimitsEnforcer createDefaultMaxTelemetryBufferCapacityEnforcer(Integer currentValue) {
-		LimitsEnforcer maxItemsInBatchEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
+        LimitsEnforcer maxItemsInBatchEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
                 MAX_TELEMETRY_BUFFER_CAPACITY_NAME, MIN_MAX_TELEMETRY_BUFFER_CAPACITY,
-				MAX_MAX_TELEMETRY_BUFFER_CAPACITY, DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY,
+                MAX_MAX_TELEMETRY_BUFFER_CAPACITY, DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY,
                         currentValue == null ? DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY : currentValue);
 
         return maxItemsInBatchEnforcer;
     }
 
     protected LimitsEnforcer createDefaultSendIntervalInSecondsEnforcer(Integer currentValue) {
-		LimitsEnforcer sendIntervalInSecondsEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
-				FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME, MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
-				MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS, DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
+        LimitsEnforcer sendIntervalInSecondsEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
+                FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME, MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
+                MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS, DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
                         currentValue == null ? DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS : currentValue);
 
         return sendIntervalInSecondsEnforcer;
     }
 
     /**
-	 * The method will throw IllegalArgumentException if the endpointAddress is not
-	 * a valid URI. Please note that a null or empty string is valid as far as the
-	 * class is concerned and thus considered valid
+     * The method will throw IllegalArgumentException if the endpointAddress is not
+     * a valid URI. Please note that a null or empty string is valid as far as the
+     * class is concerned and thus considered valid
      *
      * @param endpointAddress
      * @throws IllegalArgumentException if the endpointAddress is invalid

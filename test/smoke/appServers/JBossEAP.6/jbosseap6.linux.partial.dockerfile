@@ -5,9 +5,9 @@ WORKDIR /root/docker-compile
 
 # update packages and install dependencies: wget
 RUN apt-get update \
-	&& apt-get install -y wget \
-	&& apt-get install -y procps \
-	&& apt-get install -y unzip
+    && apt-get install -y wget \
+    && apt-get install -y procps \
+    && apt-get install -y unzip
 
 # add jboss zip
 ADD ./@ZIP_FILENAME@ ./

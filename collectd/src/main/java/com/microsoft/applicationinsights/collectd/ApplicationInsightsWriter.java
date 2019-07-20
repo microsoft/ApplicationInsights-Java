@@ -196,7 +196,7 @@ public class ApplicationInsightsWriter implements
                 this.telemetryClient.trackMetric(metricTelemetry);
             }
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 String errorMessage =

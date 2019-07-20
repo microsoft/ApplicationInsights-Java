@@ -19,7 +19,7 @@ public class SimpleTestTraceLog4j1_2Servlet extends HttpServlet {
 
     private static final long serialVersionUID = 4271118116251185099L;
 
-	/**
+    /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

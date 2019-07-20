@@ -7,6 +7,6 @@ option java_multiple_files = true;
 
 enum DataPointType
 {
-	Measurement = 0;
-	Aggregation = 1;
+    Measurement = 0;
+    Aggregation = 1;
 }

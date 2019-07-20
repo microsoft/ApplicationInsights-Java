@@ -8,10 +8,10 @@
 <title>Simple Telemetry</title>
 </head>
 <body>
-	<h1>trackPageView Test</h1>
-	<%
-		TelemetryClient tc = new TelemetryClient();
-		tc.trackPageView("doPageView");
-	%>
+    <h1>trackPageView Test</h1>
+    <%
+        TelemetryClient tc = new TelemetryClient();
+        tc.trackPageView("doPageView");
+    %>
 </body>
 </html>

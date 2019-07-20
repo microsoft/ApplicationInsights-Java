@@ -9,15 +9,15 @@ import "ExceptionDetails.proto";
 import "SeverityLevel.proto";
 
 message Exception {
-	int32 ver = 1;
+    int32 ver = 1;
     
-	repeated ExceptionDetails exceptions = 2;
+    repeated ExceptionDetails exceptions = 2;
     
-	SeverityLevel severityLevel = 3;
+    SeverityLevel severityLevel = 3;
     
-	string problemId = 4;
+    string problemId = 4;
     
-	map<string, string> properties = 5;
+    map<string, string> properties = 5;
     
-	map<string, double> measurements = 6;
+    map<string, double> measurements = 6;
 }

@@ -243,11 +243,11 @@ Livemetrics UX.
 
 ## Version 1.0.1
 - The [Java agent](app-insights-java-agent.md) collects dependency information about the following:
-	- HTTP calls made via HttpClient, OkHttp and RestTemplate (Spring).
-	- Calls to Redis made via the Jedis client. When a configurable threshold is passed, the SDK will also fetch the call arguments.
-	- JDBC calls made with Oracle DB and Apache Derby DB clients.
-	- Support the 'executeBatch' query type for prepared statements – The SDK will show the statement with the number of batches.
-	- Provide the query plan for JDBC clients that has support for that (MySql, PostgreSql) – The query plan is fetched only when a configurable threshold is crossed
+    - HTTP calls made via HttpClient, OkHttp and RestTemplate (Spring).
+    - Calls to Redis made via the Jedis client. When a configurable threshold is passed, the SDK will also fetch the call arguments.
+    - JDBC calls made with Oracle DB and Apache Derby DB clients.
+    - Support the 'executeBatch' query type for prepared statements – The SDK will show the statement with the number of batches.
+    - Provide the query plan for JDBC clients that has support for that (MySql, PostgreSql) – The query plan is fetched only when a configurable threshold is crossed
 
 ## Version 1.0.0
 - Adding support for the Application Insights writer plugin for CollectD.

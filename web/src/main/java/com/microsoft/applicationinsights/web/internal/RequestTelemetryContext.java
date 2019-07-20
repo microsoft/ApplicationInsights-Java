@@ -158,10 +158,10 @@ public class RequestTelemetryContext {
         return servletRequest;
     }
 
-	/**
-	 * @return the currentChildId
-	 */
-	public int incrementChildId() {
-		return this.currentChildId.addAndGet(1);
-	}
+    /**
+     * @return the currentChildId
+     */
+    public int incrementChildId() {
+        return this.currentChildId.addAndGet(1);
+    }
 }

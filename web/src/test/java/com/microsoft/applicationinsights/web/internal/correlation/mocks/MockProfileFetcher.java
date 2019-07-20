@@ -34,22 +34,22 @@ public class MockProfileFetcher implements AppProfileFetcher {
     private boolean throwException = false;
     private ProfileFetcherResultTaskStatus status = ProfileFetcherResultTaskStatus.COMPLETE;
 
-	@Override
-	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws ExecutionException {
+    @Override
+    public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws ExecutionException {
         ++callCounter;
         
         if (throwException) {
-        	throw new ExecutionException("No doughnuts for you.", null);
+            throw new ExecutionException("No doughnuts for you.", null);
         }
 
         return new ProfileFetcherResult(this.appId, this.status);
-	}
-	
-	public void setExceptionOn(boolean throwException) {
-		this.throwException = throwException;
-	}
+    }
+    
+    public void setExceptionOn(boolean throwException) {
+        this.throwException = throwException;
+    }
 
-	public void setAppIdToReturn(String appId) {
+    public void setAppIdToReturn(String appId) {
         this.appId = appId;
     }
     
@@ -61,8 +61,8 @@ public class MockProfileFetcher implements AppProfileFetcher {
         this.status = status;
     }
 
-	@Override
-	public void close() throws IOException {
-		// nop
-	}
+    @Override
+    public void close() throws IOException {
+        // nop
+    }
 }

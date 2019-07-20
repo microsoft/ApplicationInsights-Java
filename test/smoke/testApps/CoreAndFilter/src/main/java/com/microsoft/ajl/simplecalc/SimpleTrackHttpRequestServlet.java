@@ -28,8 +28,8 @@ public class SimpleTrackHttpRequestServlet extends HttpServlet {
         //true
         client.trackHttpRequest("HttpRequestDataTest", new Date(), 4711, "200", true);
 
-		RequestTelemetry rt = new RequestTelemetry("PingTest", new Date(), 1, "200", true);
-		rt.setUrl("http://tempuri.org/ping");
+        RequestTelemetry rt = new RequestTelemetry("PingTest", new Date(), 1, "200", true);
+        rt.setUrl("http://tempuri.org/ping");
         client.track(rt);
         
         //false

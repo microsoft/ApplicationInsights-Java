@@ -9,26 +9,26 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 
 message Dependency {
-	int32 ver = 1;
+    int32 ver = 1;
     
-	string name = 2;
+    string name = 2;
     
-	string id = 3;
+    string id = 3;
     
-	string resultCode = 4;
+    string resultCode = 4;
     
-	google.protobuf.Duration duration = 5;
+    google.protobuf.Duration duration = 5;
     
-	// the default is interpreted as true
-	google.protobuf.BoolValue success = 6;
+    // the default is interpreted as true
+    google.protobuf.BoolValue success = 6;
     
-	string data = 7;
+    string data = 7;
     
-	string type = 8;
+    string type = 8;
     
-	string target = 9;
+    string target = 9;
     
-	map<string, string> properties = 10;
+    map<string, string> properties = 10;
     
-	map<string, double> measurements = 11;
+    map<string, double> measurements = 11;
 }

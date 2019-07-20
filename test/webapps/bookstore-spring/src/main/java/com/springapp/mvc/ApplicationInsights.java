@@ -3,7 +3,7 @@ package com.springapp.mvc;
 import com.microsoft.applicationinsights.TelemetryClient;
 
 public enum ApplicationInsights {
-	INSTANCE;
+    INSTANCE;
     
     private volatile boolean initialized = false;
     private TelemetryClient telemetryClient;

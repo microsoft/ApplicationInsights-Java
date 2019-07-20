@@ -29,10 +29,10 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 public class LocalStringsUtilsTest {
 
-	@Test
-	public void test() {
-		assertNotNull(LocalStringsUtils.getDateFormatter());
-	}
+    @Test
+    public void test() {
+        assertNotNull(LocalStringsUtils.getDateFormatter());
+    }
 
     @Test
     public void testGenerateRandomIdWithNoDashes() {

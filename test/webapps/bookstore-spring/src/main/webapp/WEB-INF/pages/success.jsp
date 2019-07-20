@@ -21,23 +21,23 @@ automatically in just a few seconds.
 </script>
 </head>
 <body bgcolor="#ffe4c4">
-	<div>
+    <div>
 
-		<br> <br>
-		<h2 align="center" style="font-size: 48px; color: green">You have
-			successfully borrowed the book</h2>
-		<h2 align="center" style="font-size: 48px; color: green">
-			<i><b><u>'${title}'</u></b></i>
-		</h2>
+        <br> <br>
+        <h2 align="center" style="font-size: 48px; color: green">You have
+            successfully borrowed the book</h2>
+        <h2 align="center" style="font-size: 48px; color: green">
+            <i><b><u>'${title}'</u></b></i>
+        </h2>
 
-		<br>
-		<div style="font-size: 22px" align="center">
-			<br> <br> <br> <br> <a href="categories">Back
-				to 'Categories'</a> <br> <br> <br> <a
-				href="books?id=${subject}">Back to <i><b><u>'${subject}
-							Books'</u></b></i></a>
-		</div>
+        <br>
+        <div style="font-size: 22px" align="center">
+            <br> <br> <br> <br> <a href="categories">Back
+                to 'Categories'</a> <br> <br> <br> <a
+                href="books?id=${subject}">Back to <i><b><u>'${subject}
+                            Books'</u></b></i></a>
+        </div>
 
-	</div>
+    </div>
 </body>
 </html>

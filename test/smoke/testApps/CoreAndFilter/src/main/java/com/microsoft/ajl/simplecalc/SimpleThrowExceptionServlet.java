@@ -16,11 +16,11 @@ public class SimpleThrowExceptionServlet extends HttpServlet {
 
     private static final long serialVersionUID = 5079705745146112889L;
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
-		throw new ServletException("This is a auto thrown exception !");      
+        throw new ServletException("This is a auto thrown exception !");      
     }
 
 }

@@ -8,13 +8,13 @@ package com.microsoft.applicationinsights.internal.channel.common;
  */
 class BackendResponse {
 
-	int itemsReceived;
-	int itemsAccepted;
-	Error[] errors;
+    int itemsReceived;
+    int itemsAccepted;
+    Error[] errors;
 
-	class Error {
-		public int index;
-		public int statusCode;
-		public String message;
-	}
+    class Error {
+        public int index;
+        public int statusCode;
+        public String message;
+    }
 }

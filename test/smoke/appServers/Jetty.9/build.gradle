@@ -1,4 +1,4 @@
 
 ext {
-	appServerShortName = 'jetty9'
+    appServerShortName = 'jetty9'
 }

@@ -36,49 +36,49 @@ public class MockHttpEntity implements HttpEntity {
         this.content = content;
     }
 
-	@Override
-	public boolean isRepeatable() {
-		return false;
-	}
+    @Override
+    public boolean isRepeatable() {
+        return false;
+    }
 
-	@Override
-	public boolean isChunked() {
-		return false;
-	}
+    @Override
+    public boolean isChunked() {
+        return false;
+    }
 
-	@Override
-	public long getContentLength() {
-		return 0;
-	}
+    @Override
+    public long getContentLength() {
+        return 0;
+    }
 
-	@Override
-	public Header getContentType() {
-		return null;
-	}
+    @Override
+    public Header getContentType() {
+        return null;
+    }
 
-	@Override
-	public Header getContentEncoding() {
-		return null;
-	}
+    @Override
+    public Header getContentEncoding() {
+        return null;
+    }
 
-	@Override
-	public InputStream getContent() throws IOException, UnsupportedOperationException {
+    @Override
+    public InputStream getContent() throws IOException, UnsupportedOperationException {
         return new ByteArrayInputStream( this.content.getBytes() );
-	}
+    }
 
-	@Override
-	public void writeTo(OutputStream outstream) throws IOException {
-		
-	}
+    @Override
+    public void writeTo(OutputStream outstream) throws IOException {
+        
+    }
 
-	@Override
-	public boolean isStreaming() {
-		return false;
-	}
+    @Override
+    public boolean isStreaming() {
+        return false;
+    }
 
-	@Override
-	public void consumeContent() throws IOException {
-		
-	}
+    @Override
+    public void consumeContent() throws IOException {
+        
+    }
 
 }

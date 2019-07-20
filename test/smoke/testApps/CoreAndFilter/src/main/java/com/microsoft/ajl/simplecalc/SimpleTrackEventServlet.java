@@ -17,29 +17,29 @@ import com.microsoft.applicationinsights.TelemetryClient;
  */
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/trackEvent" })
 public class SimpleTrackEventServlet extends HttpServlet {
-	private static final long serialVersionUID = -633683109556605395L;
-	private TelemetryClient client = new TelemetryClient();
+    private static final long serialVersionUID = -633683109556605395L;
+    private TelemetryClient client = new TelemetryClient();
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		ServletFuncs.geRrenderHtml(request, response);
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        ServletFuncs.geRrenderHtml(request, response);
 
-		Map<String, String> properties = new HashMap<String, String>() {
-			{
-				put("key", "value");
-			}
-		};
-		Map<String, Double> metrics = new HashMap<String, Double>() {
-			{
-				put("key", 1d);
-			}
-		};
+        Map<String, String> properties = new HashMap<String, String>() {
+            {
+                put("key", "value");
+            }
+        };
+        Map<String, Double> metrics = new HashMap<String, Double>() {
+            {
+                put("key", 1d);
+            }
+        };
 
-		//Event
-		client.trackEvent("EventDataTest");
-		client.trackEvent("EventDataPropertyTest", properties, metrics);
-	}
+        //Event
+        client.trackEvent("EventDataTest");
+        client.trackEvent("EventDataPropertyTest", properties, metrics);
+    }
 }

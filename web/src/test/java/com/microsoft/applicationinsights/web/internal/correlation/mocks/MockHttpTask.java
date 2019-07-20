@@ -30,51 +30,51 @@ import org.apache.http.HttpResponse;
 public class MockHttpTask implements Future<HttpResponse> {
 
     private HttpResponse response;
-	private boolean failureOn;
-	private boolean isDone;
+    private boolean failureOn;
+    private boolean isDone;
 
     public MockHttpTask(HttpResponse response) {
         this.response = response;
-		this.failureOn = false;
-		this.isDone = false;
+        this.failureOn = false;
+        this.isDone = false;
     }
 
     public void setFailureOn(boolean fail) {
         this.failureOn = fail;
-	}
-	
-	public void setIsDone(boolean isDone) {
+    }
+    
+    public void setIsDone(boolean isDone) {
         this.isDone = isDone;
     }
 
-	@Override
-	public boolean cancel(boolean mayInterruptIfRunning) {
-		return false;
-	}
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return false;
+    }
 
-	@Override
-	public boolean isCancelled() {
-		return false;
-	}
+    @Override
+    public boolean isCancelled() {
+        return false;
+    }
 
-	@Override
-	public boolean isDone() {
-		return this.isDone;
-	}
+    @Override
+    public boolean isDone() {
+        return this.isDone;
+    }
 
-	@Override
-	public HttpResponse get() throws InterruptedException, ExecutionException {
-		return doGet();
-	}
+    @Override
+    public HttpResponse get() throws InterruptedException, ExecutionException {
+        return doGet();
+    }
 
-	@Override
-	public HttpResponse get(long timeout, TimeUnit unit)
-			throws InterruptedException, ExecutionException, TimeoutException {
-		return doGet();
+    @Override
+    public HttpResponse get(long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return doGet();
     }
     
     private HttpResponse doGet() throws ExecutionException {
-		if (this.failureOn) {
+        if (this.failureOn) {
             throw new ExecutionException("Failure", null);
         }
 

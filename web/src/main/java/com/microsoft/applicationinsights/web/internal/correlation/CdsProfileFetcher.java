@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CdsProfileFetcher implements AppProfileFetcher {
 
-	private CloseableHttpAsyncClient httpClient;
+    private CloseableHttpAsyncClient httpClient;
     private String endpointAddress;
     private static final String ProfileQueryEndpointAppIdFormat = "%s/api/profiles/%s/appId";
     private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
@@ -91,8 +91,8 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         SDKShutdownActivity.INSTANCE.register(this);
     }
 
-	@Override
-	public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException {
+    @Override
+    public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException {
 
         if (instrumentationKey == null || instrumentationKey.isEmpty()) {
             throw new IllegalArgumentException("instrumentationKey must be not null or empty");
@@ -163,7 +163,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     }
 
     private Future<HttpResponse> createFetchTask(String instrumentationKey) {
-		HttpGet request = new HttpGet(String.format(ProfileQueryEndpointAppIdFormat, this.endpointAddress, instrumentationKey));
+        HttpGet request = new HttpGet(String.format(ProfileQueryEndpointAppIdFormat, this.endpointAddress, instrumentationKey));
         return this.httpClient.execute(request, null);
     }
 
@@ -174,16 +174,16 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         this.failureCounters.put(instrumentationKey, this.failureCounters.get(instrumentationKey) + 1);
     }
 
-	@Override
-	public void close() throws IOException {
+    @Override
+    public void close() throws IOException {
         this.httpClient.close();
         this.taskThreadPool.stop(5, TimeUnit.SECONDS);
-	}
+    }
 
     /**
      * Runnable that is used to clear the retry counters and pending unresolved tasks.
      */
-	private class CachePurgingRunnable implements Runnable {
+    private class CachePurgingRunnable implements Runnable {
         @Override
         public void run() {
             tasks.clear();

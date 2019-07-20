@@ -177,7 +177,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
 
             return true;
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 semaphore.release();
@@ -226,7 +226,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
 
             return true;
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 semaphore.release();
