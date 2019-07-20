@@ -19,29 +19,21 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.model;
+package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
-import org.glowroot.instrumentation.api.AsyncQuerySpan;
-import org.glowroot.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.instrumentation.api.Timer;
-import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+/**
+ * The class holds the type of actions that should be done on an instrumented method.
+ * The class is the 'decision' for the method after taking into consideration init/configuration data.
+ */
+public class MethodInfo {
 
-class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
+    private final long thresholdInMS;
 
-    public AsyncQuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text,
-                              long startTimeMillis, QueryMessageSupplier messageSupplier) {
-        super(sdkBridge, type, dest, text, startTimeMillis, messageSupplier);
+    public MethodInfo(long thresholdInMS) {
+        this.thresholdInMS = thresholdInMS;
     }
 
-    @Override
-    public void stopSyncTimer() {
-        // timers are not used by ApplicationInsights
-    }
-
-    @Override
-    public Timer extendSyncTimer() {
-        // timers are not used by ApplicationInsights
-        return NopTransactionService.TIMER;
+    public long getThresholdInMS() {
+        return thresholdInMS;
     }
 }

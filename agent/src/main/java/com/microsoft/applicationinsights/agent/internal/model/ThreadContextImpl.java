@@ -37,6 +37,7 @@ import org.glowroot.instrumentation.api.Setter;
 import org.glowroot.instrumentation.api.Span;
 import org.glowroot.instrumentation.api.Timer;
 import org.glowroot.instrumentation.api.TimerName;
+import org.glowroot.instrumentation.api.internal.ReadableMessage;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextPlus;
 import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 
@@ -71,28 +72,33 @@ public class ThreadContextImpl<T> implements ThreadContextPlus {
 
     @Override
     public Span startLocalSpan(MessageSupplier messageSupplier, TimerName timerName) {
-        return NopTransactionService.LOCAL_SPAN;
+        String text = ((ReadableMessage) messageSupplier.get()).getText();
+        if (text.startsWith(LocalSpanImpl.PREFIX)) {
+            return new LocalSpanImpl(sdkBinding.getSdkBridge(), text, System.currentTimeMillis(), messageSupplier);
+        } else {
+            return NopTransactionService.LOCAL_SPAN;
+        }
     }
 
     @Override
     public QuerySpan startQuerySpan(String type, String dest, String text, QueryMessageSupplier queryMessageSupplier,
                                     TimerName timerName) {
-        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
-                System.currentTimeMillis());
+        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, System.currentTimeMillis(),
+                queryMessageSupplier);
     }
 
     @Override
     public QuerySpan startQuerySpan(String type, String dest, String text, long queryExecutionCount,
                                     QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
-                System.currentTimeMillis());
+        return new QuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, System.currentTimeMillis(),
+                queryMessageSupplier);
     }
 
     @Override
     public AsyncQuerySpan startAsyncQuerySpan(String type, String dest, String text,
                                               QueryMessageSupplier queryMessageSupplier, TimerName timerName) {
-        return new AsyncQuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, queryMessageSupplier,
-                System.currentTimeMillis());
+        return new AsyncQuerySpanImpl(sdkBinding.getSdkBridge(), type, dest, text, System.currentTimeMillis(),
+                queryMessageSupplier);
     }
 
     @Override

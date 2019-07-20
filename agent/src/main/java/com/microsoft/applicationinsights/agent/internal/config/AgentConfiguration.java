@@ -19,29 +19,30 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.model;
+package com.microsoft.applicationinsights.agent.internal.config;
 
-import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
-import org.glowroot.instrumentation.api.AsyncQuerySpan;
-import org.glowroot.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.instrumentation.api.Timer;
-import org.glowroot.instrumentation.engine.impl.NopTransactionService;
+import java.util.Map;
 
-class AsyncQuerySpanImpl extends QuerySpanImpl implements AsyncQuerySpan {
+import com.microsoft.applicationinsights.agent.internal.config.builder.BuiltInInstrumentationBuilder;
 
-    public AsyncQuerySpanImpl(SdkBridge sdkBridge, String type, String dest, String text,
-                              long startTimeMillis, QueryMessageSupplier messageSupplier) {
-        super(sdkBridge, type, dest, text, startTimeMillis, messageSupplier);
+public class AgentConfiguration {
+
+    private Map<String, ClassInstrumentationData> classesToInstrument;
+    private BuiltInInstrumentation builtInInstrumentation = new BuiltInInstrumentationBuilder().create();
+
+    public void setClassesToInstrument(Map<String, ClassInstrumentationData> classesToInstrument) {
+        this.classesToInstrument = classesToInstrument;
     }
 
-    @Override
-    public void stopSyncTimer() {
-        // timers are not used by ApplicationInsights
+    public Map<String, ClassInstrumentationData> getClassesToInstrument() {
+        return classesToInstrument;
     }
 
-    @Override
-    public Timer extendSyncTimer() {
-        // timers are not used by ApplicationInsights
-        return NopTransactionService.TIMER;
+    public BuiltInInstrumentation getBuiltInInstrumentation() {
+        return builtInInstrumentation;
+    }
+
+    public void setBuiltInData(BuiltInInstrumentation builtInInstrumentation) {
+        this.builtInInstrumentation = builtInInstrumentation;
     }
 }

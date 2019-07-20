@@ -29,24 +29,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
+import com.microsoft.applicationinsights.agent.internal.config.AgentConfiguration;
 import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrumentation;
-import com.microsoft.applicationinsights.agent.internal.config.XmlAgentConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
+import com.microsoft.applicationinsights.agent.internal.config.MethodInfo;
+import com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder;
+import org.glowroot.instrumentation.engine.config.AdviceConfig;
+import org.glowroot.instrumentation.engine.config.AdviceConfig.CaptureKind;
+import org.glowroot.instrumentation.engine.config.ImmutableAdviceConfig;
+import org.glowroot.instrumentation.engine.config.ImmutableInstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.Method;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class AIAgentXmlLoader {
 
-    static BuiltInInstrumentation load(File agentJarParentFile) {
+    private static final Logger logger = LoggerFactory.getLogger(AIAgentXmlLoader.class);
+
+    static AgentConfiguration load(File agentJarParentFile) {
         return new XmlAgentConfigurationBuilder().parseConfigurationFile(agentJarParentFile.getAbsolutePath());
     }
 
-    static List<InstrumentationDescriptor> getInstrumentationDescriptors(
-            BuiltInInstrumentation builtInInstrumentation) throws IOException {
+    static List<InstrumentationDescriptor> getInstrumentationDescriptors(AgentConfiguration agentConfiguration)
+            throws IOException {
 
-        boolean httpEnabled = builtInInstrumentation.isHttpEnabled();
-        boolean jdbcEnabled = builtInInstrumentation.isJdbcEnabled();
-        boolean loggingEnabled = builtInInstrumentation.isLoggingEnabled();
-        boolean redisEnabled = builtInInstrumentation.isJedisEnabled();
+        BuiltInInstrumentation builtInConfiguration = agentConfiguration.getBuiltInInstrumentation();
+        boolean httpEnabled = builtInConfiguration.isHttpEnabled();
+        boolean jdbcEnabled = builtInConfiguration.isJdbcEnabled();
+        boolean loggingEnabled = builtInConfiguration.isLoggingEnabled();
+        boolean redisEnabled = builtInConfiguration.isJedisEnabled();
 
         List<InstrumentationDescriptor> instrumentationDescriptors = new ArrayList<>();
         for (InstrumentationDescriptor instrumentationDescriptor : InstrumentationDescriptors.read()) {
@@ -79,6 +95,12 @@ class AIAgentXmlLoader {
                     break;
             }
         }
+
+        InstrumentationDescriptor instrumentationDescriptor = buildCustomInstrumentation(agentConfiguration);
+        if (instrumentationDescriptor != null) {
+            System.out.println(instrumentationDescriptor);
+            instrumentationDescriptors.add(instrumentationDescriptor);
+        }
         return instrumentationDescriptors;
     }
 
@@ -101,5 +123,107 @@ class AIAgentXmlLoader {
         instrumentationConfiguration.put("jdbc", jdbcConfiguration);
 
         return instrumentationConfiguration;
+    }
+
+
+    private static InstrumentationDescriptor buildCustomInstrumentation(AgentConfiguration agentConfiguration) {
+
+        List<AdviceConfig> adviceConfigs = new ArrayList<>();
+
+        for (Map.Entry<String, ClassInstrumentationData> classEntry : agentConfiguration.getClassesToInstrument()
+                .entrySet()) {
+
+            String className = classEntry.getKey();
+            if (!validJavaFqcn(className)) {
+                // this is needed to prevent glowroot wildcard from being used for now
+                // and also to prevent commas in the class name which would cause parsing issues in LocalSpanImpl
+                logger.warn("Invalid class name: {}", className);
+                continue;
+            }
+            ClassInstrumentationData classInstrumentationData = classEntry.getValue();
+
+            for (Map.Entry<String, Map<String, MethodInfo>> methodNameEntry :
+                    classInstrumentationData.getMethodInfos().entrySet()) {
+
+                String methodName = methodNameEntry.getKey();
+                if (!validJavaIdentifier(methodName)) {
+                    // this is needed to prevent glowroot wildcard from being used for now
+                    // and also to prevent commas in the method name which would cause parsing issues in LocalSpanImpl
+                    logger.warn("Invalid method name: {}", methodName);
+                    continue;
+                }
+
+                Map<String, MethodInfo> methodInfos = methodNameEntry.getValue();
+
+                for (Map.Entry<String, MethodInfo> entry : methodInfos.entrySet()) {
+
+                    MethodInfo methodInfo = entry.getValue();
+                    String signature = entry.getKey();
+
+                    ImmutableAdviceConfig.Builder adviceConfig = ImmutableAdviceConfig.builder()
+                            .className(className)
+                            .methodName(methodName);
+
+                    if (signature.equals(ClassInstrumentationData.ANY_SIGNATURE_MARKER)) {
+                        adviceConfig.addMethodParameterTypes("..");
+                    } else {
+                        Method method = new Method(methodName, signature);
+                        for (Type type : method.getArgumentTypes()) {
+                            adviceConfig.addMethodParameterTypes(type.getClassName());
+                        }
+                        adviceConfig.methodReturnType(method.getReturnType().getClassName());
+                    }
+
+                    adviceConfigs.add(adviceConfig.captureKind(CaptureKind.LOCAL_SPAN)
+                            // advice config doesn't support threshold, so threshold is embedded into message
+                            // and then parsed out by the agent to decide whether to report telemetry
+                            .spanMessageTemplate(
+                                    "__custom," + className + "," + methodName + "," + methodInfo.getThresholdInMS() +
+                                            "," + classInstrumentationData.getClassType())
+                            .timerName("custom")
+                            .build());
+                }
+            }
+        }
+
+        if (adviceConfigs.isEmpty()) {
+            return null;
+        } else {
+            return ImmutableInstrumentationDescriptor.builder()
+                    .id("__custom")
+                    .name("__custom")
+                    .addAllAdviceConfigs(adviceConfigs)
+                    .build();
+        }
+    }
+
+    @VisibleForTesting
+    static boolean validJavaFqcn(String fqcn) {
+        List<String> parts = Splitter.on('.').splitToList(fqcn);
+        if (parts.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < parts.size() - 1; i++) {
+            if (!validJavaIdentifier(parts.get(i))) {
+                return false;
+            }
+        }
+        return validJavaIdentifier(parts.get(parts.size() - 1));
+    }
+
+    @VisibleForTesting
+    static boolean validJavaIdentifier(String identifier) {
+        if (identifier.isEmpty()) {
+            return false;
+        }
+        if (!Character.isJavaIdentifierStart(identifier.charAt(0))) {
+            return false;
+        }
+        for (int i = 1; i < identifier.length(); i++) {
+            if (!Character.isJavaIdentifierPart(identifier.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
