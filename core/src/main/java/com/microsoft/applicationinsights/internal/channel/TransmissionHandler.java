@@ -8,9 +8,9 @@ package com.microsoft.applicationinsights.internal.channel;
  * @author jamdavi
  */
 public interface TransmissionHandler {
-	/**
-	 * Called when a transmission is sent by the {@link TransmissionOutput}. 
-	 * @param args The {@link TransmissionHandlerArgs} for this handler.
-	 */
-	void onTransmissionSent(TransmissionHandlerArgs args);
+    /**
+     * Called when a transmission is sent by the {@link TransmissionOutput}. 
+     * @param args The {@link TransmissionHandlerArgs} for this handler.
+     */
+    void onTransmissionSent(TransmissionHandlerArgs args);
 }

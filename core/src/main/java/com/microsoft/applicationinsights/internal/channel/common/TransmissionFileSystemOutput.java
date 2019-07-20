@@ -138,7 +138,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
 
         long currentSizeInBytes = size.get();
         if (currentSizeInBytes >= capacityInBytes) {
-        	InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Persistent storage max capacity has been reached; "
+            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Persistent storage max capacity has been reached; "
                 + "currently at %.3f KB. Telemetry will be lost, "
                 + "please consider increasing the value of MaxTransmissionStorageFilesCapacityInMB property in the configuration file.",
                 (currentSizeInBytes / 1024.0));

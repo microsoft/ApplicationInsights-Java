@@ -10,8 +10,8 @@ import com.microsoft.applicationinsights.extensibility.PerformanceCountersCollec
  * <pre>
  * {@code
  *
- * 		<PerformanceCounters>
- * 		    <Plugin>full.path.to.your.Plugin</Plugin>
+ *         <PerformanceCounters>
+ *             <Plugin>full.path.to.your.Plugin</Plugin>
  *      </PerformanceCounters>
  * }
  * </pre>

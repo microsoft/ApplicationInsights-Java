@@ -69,7 +69,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 } catch (Exception e) {
                     InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
                 } catch (ThreadDeath td) {
-                	throw td;
+                    throw td;
                 } catch (Throwable t) {
                     try {
                         InternalLogger.INSTANCE.error("Failed to serialize, unknown exception: %s", t.toString());                    } catch (ThreadDeath td) {

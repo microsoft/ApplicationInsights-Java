@@ -130,7 +130,7 @@ public enum QuickPulseDataCollector {
         try {
             temp = new CpuPerformanceCounterCalculator();
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 InternalLogger.INSTANCE.error("Could not initialize %s:%n%s", CpuPerformanceCounterCalculator.class.getSimpleName(), ExceptionUtils.getStackTrace(t));

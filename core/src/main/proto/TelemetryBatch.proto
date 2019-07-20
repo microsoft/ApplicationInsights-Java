@@ -16,5 +16,5 @@ message AiResponse {
 }
 
 message TelemetryBatch {
-	repeated Telemetry items = 1;
+    repeated Telemetry items = 1;
 }

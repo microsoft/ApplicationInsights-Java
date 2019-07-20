@@ -52,8 +52,8 @@ public final class BaseTelemetryTest {
         private static final String ENVELOPE_NAME = "Stub";
 
         private static final String BASE_TYPE = "StubData";
-    	
-    	public int numberOfCallsToAdditionalSanitize;
+        
+        public int numberOfCallsToAdditionalSanitize;
         
 
         public StubTelemetry() {
@@ -133,10 +133,10 @@ public final class BaseTelemetryTest {
     
     @Test
     public void testTelemetryNameWithIkey() throws IOException{
-    	StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
-    	telemetry.getContext().setInstrumentationKey("AIF-00000000-1111-2222-3333-000000000000");
-    	telemetry.setTimestamp(new Date());
-    	
+        StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
+        telemetry.getContext().setInstrumentationKey("AIF-00000000-1111-2222-3333-000000000000");
+        telemetry.setTimestamp(new Date());
+        
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
@@ -149,10 +149,10 @@ public final class BaseTelemetryTest {
     
     @Test
     public void testTelemetryNameWithIkey_SpecialChar() throws IOException{
-    	StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
-    	telemetry.getContext().setInstrumentationKey("--. .--");
-    	telemetry.setTimestamp(new Date());
-    	
+        StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
+        telemetry.getContext().setInstrumentationKey("--. .--");
+        telemetry.setTimestamp(new Date());
+        
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
@@ -165,9 +165,9 @@ public final class BaseTelemetryTest {
     
     @Test
     public void testTelemetryNameWithIkey_Empty() throws IOException{
-    	StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
-    	telemetry.setTimestamp(new Date());
-    	
+        StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
+        telemetry.setTimestamp(new Date());
+        
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);

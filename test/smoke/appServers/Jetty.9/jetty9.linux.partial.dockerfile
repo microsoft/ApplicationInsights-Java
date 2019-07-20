@@ -4,14 +4,14 @@ WORKDIR /usr/local/docker-compile
 
 # update packages and install dependencies: wget procps (we need 'ps' for debugging)
 RUN apt-get update \
-	&& apt-get install -y wget procps
+    && apt-get install -y wget procps
 
 ENV JETTY_FULL_VERSION 9.4.17.v20190418
 
 # install jetty
 RUN wget http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_FULL_VERSION/jetty-distribution-$JETTY_FULL_VERSION.tar.gz \
-	&& tar xzvf jetty-distribution-$JETTY_FULL_VERSION.tar.gz \
-	&& mv ./jetty-distribution-$JETTY_FULL_VERSION /opt/jetty-distribution-$JETTY_FULL_VERSION
+    && tar xzvf jetty-distribution-$JETTY_FULL_VERSION.tar.gz \
+    && mv ./jetty-distribution-$JETTY_FULL_VERSION /opt/jetty-distribution-$JETTY_FULL_VERSION
 
 ENV JETTY_HOME /opt/jetty-distribution-$JETTY_FULL_VERSION
 

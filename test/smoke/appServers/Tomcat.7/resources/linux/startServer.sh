@@ -1,8 +1,8 @@
 #!/bin/sh
 
 if [ -z "$CATALINA_HOME" ]; then
-	echo "\$CATALINA_HOME not set" >&2
-	exit 1
+    echo "\$CATALINA_HOME not set" >&2
+    exit 1
 fi
 
 if [ ! -z "$AI_AGENT_MODE" ]; then

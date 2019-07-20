@@ -9,23 +9,23 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 
 message Request {
-	int32 ver = 1;
+    int32 ver = 1;
     
-	string id = 2;
+    string id = 2;
     
-	google.protobuf.Duration duration = 3;
+    google.protobuf.Duration duration = 3;
     
-	string responseCode = 4;
+    string responseCode = 4;
     
-	google.protobuf.BoolValue success = 5;
+    google.protobuf.BoolValue success = 5;
     
-	string source = 6;
+    string source = 6;
     
-	string name = 7;
+    string name = 7;
     
-	string url = 8;
+    string url = 8;
     
-	map<string, string> properties = 9;
+    map<string, string> properties = 9;
     
-	map<string, double> measurements = 10;
+    map<string, double> measurements = 10;
 }

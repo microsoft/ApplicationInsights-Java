@@ -13,30 +13,30 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableAsync
 public class SpringBootApp extends SpringBootServletInitializer {
 
-	public SpringBootApp() {
-		super();
+    public SpringBootApp() {
+        super();
 
-		// This lets tomcat handle error and hence filter catches exception.
-		// Disables Springboot error handling which prevents response from propagating up.
-		// See: https://github.com/spring-projects/spring-boot/commit/6381a07c71310c56dc29cf99709adf5fe6e6406a
-		setRegisterErrorPageFilter(false);
-	}
-	@Override
-	protected  SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
-		return applicationBuilder.sources(SpringBootApp.class);
-	}
+        // This lets tomcat handle error and hence filter catches exception.
+        // Disables Springboot error handling which prevents response from propagating up.
+        // See: https://github.com/spring-projects/spring-boot/commit/6381a07c71310c56dc29cf99709adf5fe6e6406a
+        setRegisterErrorPageFilter(false);
+    }
+    @Override
+    protected  SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
+        return applicationBuilder.sources(SpringBootApp.class);
+    }
   public static void main(String[] args) {
-	  SpringApplication.run(SpringBootApp.class, args);
+      SpringApplication.run(SpringBootApp.class, args);
   }
 
-	@Bean
-	public Executor taskExecutor() {
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(2);
-		executor.setMaxPoolSize(2);
-		executor.setQueueCapacity(500);
-		executor.setThreadNamePrefix("AsyncTaskExecutor-");
-		executor.initialize();
-		return executor;
-	}
+    @Bean
+    public Executor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("AsyncTaskExecutor-");
+        executor.initialize();
+        return executor;
+    }
 }

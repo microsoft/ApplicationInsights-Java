@@ -80,13 +80,13 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
                 } catch (IOException e) {
                     onPostError(sendTime);
                 } finally {
-                	if (response != null) {
-                		apacheSender.dispose(response);
-                	}
+                    if (response != null) {
+                        apacheSender.dispose(response);
+                    }
                 }
             }
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 stopped = true;

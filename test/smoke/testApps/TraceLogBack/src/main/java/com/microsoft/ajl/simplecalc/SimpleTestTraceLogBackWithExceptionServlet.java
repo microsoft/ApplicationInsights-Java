@@ -20,9 +20,9 @@ import ch.qos.logback.classic.Logger;
 @WebServlet(description = "calls logback with exception", urlPatterns = "/traceLogBackWithException")
 public class SimpleTestTraceLogBackWithExceptionServlet extends HttpServlet {
 
-	private static final long serialVersionUID = -4480938547356817795L;
+    private static final long serialVersionUID = -4480938547356817795L;
 
-	/**
+    /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

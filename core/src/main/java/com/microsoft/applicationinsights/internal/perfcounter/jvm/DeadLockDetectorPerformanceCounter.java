@@ -121,7 +121,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
                 }
             }
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 InternalLogger.INSTANCE.error("Error while setting the Thread Info");

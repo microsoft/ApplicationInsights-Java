@@ -146,10 +146,10 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-    	
-    	String telemetryName = this.getTelemetryName(
-    			this.normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
-    	
+        
+        String telemetryName = this.getTelemetryName(
+                this.normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
+        
         Envelope envelope = new Envelope();
         envelope.setName(telemetryName);
 
@@ -216,21 +216,21 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     }
     
     public static String normalizeInstrumentationKey(String instrumentationKey){
-    	if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
-    		return "";
-    	}
-    	else{
-    		return instrumentationKey.replace("-", "").toLowerCase() + ".";
-    	}
+        if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
+            return "";
+        }
+        else{
+            return instrumentationKey.replace("-", "").toLowerCase() + ".";
+        }
     }
     
     public static String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
-    	return String.format(
-    			"%s%s%s",
-    			TELEMETRY_NAME_PREFIX,
-    			normalizedInstrumentationKey,
-    			envelopType
-    			);
+        return String.format(
+                "%s%s%s",
+                TELEMETRY_NAME_PREFIX,
+                normalizedInstrumentationKey,
+                envelopType
+                );
     }
     
 }

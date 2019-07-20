@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 if [ -z "$JETTY_BASE" ]; then
-	echo "\$JETTY_BASE not set" >&2
-	exit 1
+    echo "\$JETTY_BASE not set" >&2
+    exit 1
 fi
 
 if [ -z "$JETTY_HOME" ]; then
-	echo "\$JETTY_HOME not set" >&2
-	exit 2
+    echo "\$JETTY_HOME not set" >&2
+    exit 2
 fi
 
 if [ -z "$JETTY_STOP_PORT" ]; then

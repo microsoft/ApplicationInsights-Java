@@ -32,15 +32,15 @@ import java.util.Comparator;
 import java.util.List;
 
 public class CoreAndFilterTests extends AiSmokeTest {
-	
-	@Test
+    
+    @Test
     @TargetUri("/trackDependency")
     public void trackDependency() throws Exception {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
         int totalItems = mockedIngestion.getItemCount();
-		int expectedItems = 2;
-		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
+        int expectedItems = 2;
+        assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
                 expectedItems, totalItems);
 
         // TODO get dependency data envelope and verify value
@@ -53,19 +53,19 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(expectedName, d.getName());
         assertEquals(expectedData, d.getData());
         assertEquals(expectedDuration, d.getDuration());
-	}
+    }
 
-	@Test
-	@TargetUri("/trackEvent")
-	public void testTrackEvent() throws Exception {
-		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-		assertEquals(2, mockedIngestion.getCountForType("EventData"));
-		int totalItems = mockedIngestion.getItemCount();
-		int expectedItems = 3;
-		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
-				expectedItems, totalItems);
+    @Test
+    @TargetUri("/trackEvent")
+    public void testTrackEvent() throws Exception {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(2, mockedIngestion.getCountForType("EventData"));
+        int totalItems = mockedIngestion.getItemCount();
+        int expectedItems = 3;
+        assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
+                expectedItems, totalItems);
 
-		// TODO get event data envelope and verify value
+        // TODO get event data envelope and verify value
         final List<EventData> events = mockedIngestion.getTelemetryDataByType("EventData");
         events.sort(new Comparator<EventData>() {
             @Override
@@ -74,21 +74,21 @@ public class CoreAndFilterTests extends AiSmokeTest {
             }
         });
         EventData d = events.get(1);
-		final String name = "EventDataTest";
-		assertEquals(name, d.getName());
+        final String name = "EventDataTest";
+        assertEquals(name, d.getName());
 
-		EventData d2 = events.get(0);
+        EventData d2 = events.get(0);
 
-		final String expectedname = "EventDataPropertyTest";
-		final String expectedProperties = "value";
-		final Double expectedMetrice = 1d;
+        final String expectedname = "EventDataPropertyTest";
+        final String expectedProperties = "value";
+        final Double expectedMetrice = 1d;
 
-		assertEquals(expectedname, d2.getName());
-		assertEquals(expectedProperties, d2.getProperties().get("key"));
-		assertEquals(expectedMetrice, d2.getMeasurements().get("key"));
-	}
+        assertEquals(expectedname, d2.getName());
+        assertEquals(expectedProperties, d2.getProperties().get("key"));
+        assertEquals(expectedMetrice, d2.getMeasurements().get("key"));
+    }
 
-	@Test
+    @Test
     @TargetUri("/trackException")
     public void testTrackException() throws Exception {
 
@@ -115,14 +115,14 @@ public class CoreAndFilterTests extends AiSmokeTest {
         )));
     }
 
-	@Test
+    @Test
     @TargetUri("/trackHttpRequest")
     public void testHttpRequest() throws Exception {
         assertEquals(5, mockedIngestion.getCountForType("RequestData"));
 
         int totalItems = mockedIngestion.getItemCount();
-		int expectedItems = 5;
-		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
+        int expectedItems = 5;
+        assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
                 expectedItems, totalItems);
 
         // TODO get HttpRequest data envelope and verify value
@@ -155,59 +155,59 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 hasSuccess(false),
                 hasUrl("https://www.bingasdasdasdasda.com/")
         )));
-	}
+    }
 
-	@Test
+    @Test
     @TargetUri("/trackMetric")
     public void trackMetric() throws Exception {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("MetricData"));
         int totalItems = mockedIngestion.getItemCount();
-		int expectedItems = 2;
-		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
+        int expectedItems = 2;
+        assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
                 expectedItems, totalItems);
 
         // TODO get Metric data envelope and verify value
         MetricData d = getTelemetryDataForType(0, "MetricData");
         List<DataPoint> metrics = d.getMetrics();
-		assertEquals(1, metrics.size());
+        assertEquals(1, metrics.size());
         DataPoint dp = metrics.get(0);
 
-		final double expectedValue = 111222333.0;
-		final double epsilon = Math.ulp(expectedValue);
-		assertEquals(DataPointType.Measurement, dp.getKind());
-		assertEquals(expectedValue, dp.getValue(), epsilon);
-		assertEquals("TimeToRespond", dp.getName());
+        final double expectedValue = 111222333.0;
+        final double epsilon = Math.ulp(expectedValue);
+        assertEquals(DataPointType.Measurement, dp.getKind());
+        assertEquals(expectedValue, dp.getValue(), epsilon);
+        assertEquals("TimeToRespond", dp.getName());
 
-		assertNull("getCount was non-null", dp.getCount());
-		assertNull("getMin was non-null", dp.getMin());
-		assertNull("getMax was non-null", dp.getMax());
-		assertNull("getStdDev was non-null", dp.getStdDev());
-	}
+        assertNull("getCount was non-null", dp.getCount());
+        assertNull("getMin was non-null", dp.getMin());
+        assertNull("getMax was non-null", dp.getMax());
+        assertNull("getStdDev was non-null", dp.getStdDev());
+    }
 
-	@Test
-	@TargetUri("/trackTrace")
-	public void testTrackTrace() throws Exception {
-		assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-		assertEquals(3, mockedIngestion.getCountForType("MessageData"));
-		int totalItems = mockedIngestion.getItemCount();
-		int expectedItems = 4;
-		assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
-				expectedItems, totalItems);
+    @Test
+    @TargetUri("/trackTrace")
+    public void testTrackTrace() throws Exception {
+        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        assertEquals(3, mockedIngestion.getCountForType("MessageData"));
+        int totalItems = mockedIngestion.getItemCount();
+        int expectedItems = 4;
+        assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
+                expectedItems, totalItems);
 
         final List<MessageData> messages = mockedIngestion.getTelemetryDataByType("MessageData");
         // TODO get trace data envelope and verify value
-		assertThat(messages, hasItem(
-		        TraceDataMatchers.hasMessage("This is first trace message.")
+        assertThat(messages, hasItem(
+                TraceDataMatchers.hasMessage("This is first trace message.")
         ));
 
         assertThat(messages, hasItem(allOf(
-		        TraceDataMatchers.hasMessage("This is second trace message."),
+                TraceDataMatchers.hasMessage("This is second trace message."),
                 TraceDataMatchers.hasSeverityLevel(SeverityLevel.Error)
         )));
 
         assertThat(messages, hasItem(allOf(
-		        TraceDataMatchers.hasMessage("This is third trace message."),
+                TraceDataMatchers.hasMessage("This is third trace message."),
                 TraceDataMatchers.hasSeverityLevel(SeverityLevel.Information),
                 TraceDataMatchers.hasProperty("key", "value")
         )));

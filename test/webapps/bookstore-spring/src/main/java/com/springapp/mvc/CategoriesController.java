@@ -12,8 +12,8 @@ import java.util.ArrayList;
 public class CategoriesController {
     @RequestMapping(method = RequestMethod.GET, params = {})
     public ModelAndView listCategories() {
-    	ApplicationInsights.INSTANCE.getTelemetryClient().trackEvent("User entered");   	
-    	
+        ApplicationInsights.INSTANCE.getTelemetryClient().trackEvent("User entered");       
+        
         ModelAndView model = new ModelAndView("categories");
         ArrayList<String> categories = new ArrayList<String>();
         categories.add("Thriller");

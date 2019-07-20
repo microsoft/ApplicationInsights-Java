@@ -134,16 +134,16 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     }
     
     private void formatSingleMetric(StringBuilder sb, String metricName, double metricValue, int metricWeight, Boolean includeComma) {
-    	String comma = includeComma ? "," : "";
-    	sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
+        String comma = includeComma ? "," : "";
+        sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
     }
     private void formatSingleMetric(StringBuilder sb, String metricName, long metricValue, int metricWeight, Boolean includeComma) {
-    	String comma = includeComma ? "," : "";
-    	sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
+        String comma = includeComma ? "," : "";
+        sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
     }
     private void formatSingleMetric(StringBuilder sb, String metricName, int metricValue, int metricWeight, Boolean includeComma) {
-    	String comma = includeComma ? "," : "";
-    	sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
+        String comma = includeComma ? "," : "";
+        sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
     }
 
     private void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {

@@ -415,7 +415,7 @@ public class TelemetryClient {
         try {
             telemetry.getContext().initialize(ctx);
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.toString());            } catch (ThreadDeath td) {
@@ -438,14 +438,14 @@ public class TelemetryClient {
         try {
             QuickPulseDataCollector.INSTANCE.add(telemetry);
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
         }
 
         try {
             getChannel().send(telemetry);
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
             try {
                 InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.toString());            } catch (ThreadDeath td) {
@@ -480,7 +480,7 @@ public class TelemetryClient {
                     return false;
                 }
             } catch (ThreadDeath td) {
-            	throw td;
+                throw td;
             } catch (Throwable t) {
                 try {
                     InternalLogger.INSTANCE.error("Exception while processing telemetry: '%s'",t.toString());                } catch (ThreadDeath td) {
@@ -523,7 +523,7 @@ public class TelemetryClient {
             try {
                 init.initialize(ctx);
             } catch (ThreadDeath td) {
-            	throw td;
+                throw td;
             } catch (Throwable t) {
                 try {
                     if (InternalLogger.INSTANCE.isErrorEnabled()) {

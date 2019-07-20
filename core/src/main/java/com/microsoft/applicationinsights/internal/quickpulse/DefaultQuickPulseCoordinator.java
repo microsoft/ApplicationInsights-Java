@@ -64,7 +64,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 }
             }
         } catch (ThreadDeath td) {
-        	throw td;
+            throw td;
         } catch (Throwable t) {
         }
     }

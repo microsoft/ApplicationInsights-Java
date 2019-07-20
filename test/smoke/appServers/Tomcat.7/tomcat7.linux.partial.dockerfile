@@ -7,7 +7,7 @@ RUN mkdir /root/docker-stage
 
 # update packages and install dependencies: wget
 RUN apt-get update \
-	&& apt-get install -y wget
+    && apt-get install -y wget
 
 RUN apt-get install -y procps
 
@@ -17,10 +17,10 @@ ENV TOMCAT_FULL_VERSION 7.0.94
 
 # install tomcat
 RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
-	&& wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha512 \
-	&& sha512sum --check apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha512 \
-	&& tar xzvf apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
-	&& mv ./apache-tomcat-$TOMCAT_FULL_VERSION /opt/apache-tomcat-$TOMCAT_FULL_VERSION
+    && wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_FULL_VERSION/bin/apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha512 \
+    && sha512sum --check apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz.sha512 \
+    && tar xzvf apache-tomcat-$TOMCAT_FULL_VERSION.tar.gz \
+    && mv ./apache-tomcat-$TOMCAT_FULL_VERSION /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 
 ENV CATALINA_HOME /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 ENV CATALINA_BASE /opt/apache-tomcat-$TOMCAT_FULL_VERSION

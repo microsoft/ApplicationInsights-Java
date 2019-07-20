@@ -36,23 +36,23 @@ public class MockStatusLine implements StatusLine {
         this.reasonPhrase = phrase;
     }
 
-	@Override
-	public ProtocolVersion getProtocolVersion() {
-		return this.version;
-	}
+    @Override
+    public ProtocolVersion getProtocolVersion() {
+        return this.version;
+    }
 
-	@Override
-	public int getStatusCode() {
-		return this.statusCode;
+    @Override
+    public int getStatusCode() {
+        return this.statusCode;
     }
     
     public void setStatusCode(int code) {
         this.statusCode = code;
     }
 
-	@Override
-	public String getReasonPhrase() {
-		return this.reasonPhrase;
-	}
+    @Override
+    public String getReasonPhrase() {
+        return this.reasonPhrase;
+    }
 
 }

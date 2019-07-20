@@ -117,7 +117,7 @@ public enum SDKShutdownActivity {
             try {
                 InternalLogger.INSTANCE.stop();
             } catch (ThreadDeath td) {
-            	throw td;
+                throw td;
             } catch (Throwable t) {
                 // chomp
             }
@@ -134,7 +134,7 @@ public enum SDKShutdownActivity {
                         channelToStop.stop(getPerThreadTimeout(), getPerThreadTimeUnit());
                     }
                 } catch (ThreadDeath td) {
-                	throw td;
+                    throw td;
                 } catch (Throwable t) {
                     try {
                         InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());
@@ -156,7 +156,7 @@ public enum SDKShutdownActivity {
                 try {
                     stoppable.stop(getPerThreadTimeout(), getPerThreadTimeUnit());
                 } catch (ThreadDeath td) {
-                	throw td;
+                    throw td;
                 } catch (Throwable t) {
                     try {
                         InternalLogger.INSTANCE.error("Failed to stop stoppable class '%s': '%s'", stoppable.getClass().getName(), t.toString());

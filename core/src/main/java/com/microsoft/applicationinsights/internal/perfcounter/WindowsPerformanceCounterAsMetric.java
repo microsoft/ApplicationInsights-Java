@@ -114,7 +114,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
                     keyToDisplayName.put(key, data.getDisplayName());
                 }
             } catch (ThreadDeath td) {
-            	throw td;
+                throw td;
             } catch (Throwable t) {
                 try {
                     InternalLogger.INSTANCE.trace("error registering %s, Stack trace generated is %s", data.getDisplayName(), ExceptionUtils.getStackTrace(t));

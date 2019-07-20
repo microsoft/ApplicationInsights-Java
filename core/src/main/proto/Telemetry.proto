@@ -17,7 +17,7 @@ import "PageView.proto";
 import "Request.proto";
 
 message Telemetry {
-	int32 ver = 1;
+    int32 ver = 1;
     
     string dataTypeName = 2;
     
@@ -36,13 +36,13 @@ message Telemetry {
     map<string, string> tags = 7;
     
     oneof data {
-		Event event = 8;
-		Message message = 9;
-		Metric metric = 10;
-		Exception exception = 11;
-		Dependency dependency = 12;
-		Availability availability = 13;
-		PageView pageView = 14;
-		Request request = 15;
-	}
+        Event event = 8;
+        Message message = 9;
+        Metric metric = 10;
+        Exception exception = 11;
+        Dependency dependency = 12;
+        Availability availability = 13;
+        PageView pageView = 14;
+        Request request = 15;
+    }
 }

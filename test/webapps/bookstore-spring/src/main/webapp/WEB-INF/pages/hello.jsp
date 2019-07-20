@@ -27,12 +27,12 @@ automatically in just a few seconds.
 <h1 align="center">Hello <u>${name}</u></h1>
 
 <div style="font-size:22px" align="center">
-	<br>
-	<br>
-	<br>
-	<br>
-<!--	<a href="/JBS/categories">Enter The Library</a>-->
-	<a href="categories">Enter The Library</a>
+    <br>
+    <br>
+    <br>
+    <br>
+<!--    <a href="/JBS/categories">Enter The Library</a>-->
+    <a href="categories">Enter The Library</a>
 </div>
 
 </body>

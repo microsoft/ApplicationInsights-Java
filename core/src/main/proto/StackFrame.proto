@@ -6,13 +6,13 @@ option java_package = "com.microsoft.localforwarder.library.inputs.contracts";
 option java_multiple_files = true;
 
 message StackFrame {
-	int32 level = 1;
+    int32 level = 1;
     
-	string method = 2;
+    string method = 2;
     
-	string assembly = 3;
+    string assembly = 3;
     
-	string fileName = 4;
+    string fileName = 4;
     
-	int32 line = 5;
+    int32 line = 5;
 }

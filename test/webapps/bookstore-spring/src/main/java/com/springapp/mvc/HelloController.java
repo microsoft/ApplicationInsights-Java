@@ -12,23 +12,23 @@ import org.apache.logging.log4j.LogManager;
 @Controller
 @RequestMapping("/")
 public class HelloController {
-	private static final Logger logger = LogManager.getLogger(HelloController.class);
+    private static final Logger logger = LogManager.getLogger(HelloController.class);
 
-	@Value("${user.name}")
-	private String userName;
+    @Value("${user.name}")
+    private String userName;
 
-	@RequestMapping(method = RequestMethod.GET, params = {})
-	public ModelAndView printWelcome() {
-		logger.debug("Entering the server....");
+    @RequestMapping(method = RequestMethod.GET, params = {})
+    public ModelAndView printWelcome() {
+        logger.debug("Entering the server....");
 
-		ModelAndView model = new ModelAndView("hello");
-		model.addObject("name", userName);
+        ModelAndView model = new ModelAndView("hello");
+        model.addObject("name", userName);
 
-		return model;
-	}
+        return model;
+    }
 
-	@RequestMapping(method = RequestMethod.GET, params = {"runId", "requestId"})
-	public ModelAndView printWelcome(String runId, String requestId) {
-		return printWelcome();
-	}
+    @RequestMapping(method = RequestMethod.GET, params = {"runId", "requestId"})
+    public ModelAndView printWelcome(String runId, String requestId) {
+        return printWelcome();
+    }
 }

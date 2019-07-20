@@ -35,8 +35,8 @@ public class ParameterizedRunnerWithFixtures extends BlockJUnit4ClassRunnerWithP
     private Statement wrapWithParamAfters(final Statement s) {
         final List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(AfterWithParams.class);
         return new Statement() {
-			@Override
-			public void evaluate() throws Throwable {
+            @Override
+            public void evaluate() throws Throwable {
                 final List<Throwable> errs = new ArrayList<Throwable>();
                 try {
                     s.evaluate();
@@ -52,7 +52,7 @@ public class ParameterizedRunnerWithFixtures extends BlockJUnit4ClassRunnerWithP
                     }
                 }
                 MultipleFailureException.assertEmpty(errs);
-			}
+            }
         };
     }
 

@@ -14,39 +14,39 @@ import org.springframework.web.context.request.async.DeferredResult;
 @RestController
 public class TestController {
 
-	private static final TelemetryClient client = new TelemetryClient();
+    private static final TelemetryClient client = new TelemetryClient();
 
-	@Autowired
-	private TestBean testBean;
+    @Autowired
+    private TestBean testBean;
 
-	@GetMapping("/")
-	public String rootPage() {
-		return "OK";
-	}
+    @GetMapping("/")
+    public String rootPage() {
+        return "OK";
+    }
 
-	@GetMapping("/basic/trackEvent")
-	public String trackEventSpringBoot() {
-		Map<String, String> properties = new HashMap<String, String>() {
-			{
-				put("key", "value");
-			}
-		};
-		Map<String, Double> metrics = new HashMap<String, Double>() {
-			{
-				put("key", 1d);
-			}
-		};
+    @GetMapping("/basic/trackEvent")
+    public String trackEventSpringBoot() {
+        Map<String, String> properties = new HashMap<String, String>() {
+            {
+                put("key", "value");
+            }
+        };
+        Map<String, Double> metrics = new HashMap<String, Double>() {
+            {
+                put("key", 1d);
+            }
+        };
 
-		//Event
-		client.trackEvent("EventDataTest");
-		client.trackEvent("EventDataPropertyTest", properties, metrics);
-		return "hello";
-	}
+        //Event
+        client.trackEvent("EventDataTest");
+        client.trackEvent("EventDataPropertyTest", properties, metrics);
+        return "hello";
+    }
 
-	@GetMapping("/throwsException")
-	public void resultCodeTest() throws Exception {
-		throw new ServletException("This is an exception");
-	}
+    @GetMapping("/throwsException")
+    public void resultCodeTest() throws Exception {
+        throw new ServletException("This is an exception");
+    }
 
     @GetMapping("/asyncDependencyCallWithApacheHttpClient4")
     public DeferredResult<Integer> asyncDependencyCallWithApacheHttpClient4() throws IOException {

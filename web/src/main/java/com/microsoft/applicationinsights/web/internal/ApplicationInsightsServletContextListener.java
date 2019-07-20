@@ -9,14 +9,14 @@ import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 
 public class ApplicationInsightsServletContextListener implements ServletContextListener {
 
-	@Override
-	public void contextInitialized(ServletContextEvent sce) {
-	}
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+    }
 
-	@Override
-	public void contextDestroyed(ServletContextEvent sce) {
-		InternalLogger.INSTANCE.info("Shutting down thread pools");
-		SDKShutdownActivity.INSTANCE.stopAll();
-	}
-	
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        InternalLogger.INSTANCE.info("Shutting down thread pools");
+        SDKShutdownActivity.INSTANCE.stopAll();
+    }
+    
 }

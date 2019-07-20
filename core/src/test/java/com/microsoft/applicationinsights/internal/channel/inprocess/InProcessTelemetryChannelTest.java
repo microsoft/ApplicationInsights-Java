@@ -31,7 +31,7 @@ public class InProcessTelemetryChannelTest {
 
   private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
   private final static String INSTANT_RETRY_NAME = "MaxInstantRetry";
-	private final static int DEFAULT_MAX_INSTANT_RETRY = 3;
+    private final static int DEFAULT_MAX_INSTANT_RETRY = 3;
 
     @Test(expected = IllegalArgumentException.class)
     public void testNotValidEndpointAddressAsMapValue() {
