@@ -36,7 +36,7 @@ tasks.withType(JavaCompile) {
 }
 
 checkstyle {
-    toolVersion = '8.15'
+    toolVersion = '8.22'
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
