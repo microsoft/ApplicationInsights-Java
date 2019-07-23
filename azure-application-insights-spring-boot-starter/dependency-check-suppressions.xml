@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+   file name: jackson-databind-2.8.11.3.jar
+   Dependency of spring-boot-starter-web.
+   No XML parsing/databinding used in our starter implementation.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cve>CVE-2018-1000873</cve>
+        <cve>CVE-2018-14719</cve>
+        <cve>CVE-2018-14720</cve>
+        <cve>CVE-2018-14721</cve>
+        <cve>CVE-2018-19360</cve>
+        <cve>CVE-2018-19361</cve>
+        <cve>CVE-2018-19362</cve>
+        <cve>CVE-2019-12086</cve>
+        <cve>CVE-2019-12384</cve>
+        <cve>CVE-2019-12814</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: tomcat-embed-websocket-8.5.40.jar
+   Dependency of spring-boot-starter-web.
+   Not applicable to our starter implementation.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
+        <cve>CVE-2019-10072</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: tomcat-embed-core-8.5.40.jar
+   Dependency of spring-boot-starter-web.
+   Not applicable to our starter implementation.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
+        <cve>CVE-2019-10072</cve>
+    </suppress>
+</suppressions>
