@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 2.5.0-BETA.2
+- Added back support for `<Class>` custom instrumentation in `AI-Agent.xml`
+- Fixed opting out of agent capturing logging via `<Logging enabled="false" />`
+- Misc fixes [#969](https://github.com/microsoft/ApplicationInsights-Java/issues/969),
+             [#978](https://github.com/microsoft/ApplicationInsights-Java/issues/978)
+
 # Version 2.5.0-BETA
 - Added support for Java 9-12
 - Added new `applicationinsights-web-auto.jar` artifact that automatically registers the web filter
