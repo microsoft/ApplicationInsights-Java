@@ -29,8 +29,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
-        classpath 'org.owasp:dependency-check-gradle:4.0.2'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
+        classpath 'org.owasp:dependency-check-gradle:5.2.0'
         classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
     }
 }
@@ -85,6 +85,10 @@ allprojects {
         from "${rootProject.projectDir}/NOTICE"
         from "${rootProject.projectDir}/LICENSE"
     }
+}
+
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
 }
 
 // endregion Root project script

@@ -49,6 +49,18 @@ tasks.withType(Checkstyle) {
     }
 }
 
+dependencyCheck {
+    def supFile = "${project.projectDir}/dependency-check-suppressions.xml"
+    if (file(supFile).exists() && !Project.hasProperty('dependencyCheck.suppressions.skip')) {
+        suppressionFiles += supFile
+    }
+    outputDirectory = "${project.buildDir}/reports/dependency-check"
+    formats = ['HTML', 'JUNIT']
+    skipConfigurations = ['mavenDeployer']
+    cveValidForHours = 1
+    failBuildOnCVSS = 0
+}
+
 jacoco {
     toolVersion = "0.8.2"
 }
