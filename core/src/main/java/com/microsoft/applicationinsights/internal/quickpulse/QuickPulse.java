@@ -52,6 +52,8 @@ public enum QuickPulse implements Stoppable {
     private ApacheSender apacheSender;
     private QuickPulseDataSender quickPulseDataSender;
 
+    // initialization is performed in the background because initializing the random seed (via UUID.randomUUID()) below
+    // can cause slowness during startup in some environments
     public void initialize() {
         final CountDownLatch latch = new CountDownLatch(1);
         Executors.newSingleThreadExecutor().execute(new Runnable() {
