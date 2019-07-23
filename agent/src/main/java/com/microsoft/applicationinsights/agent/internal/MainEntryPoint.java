@@ -99,7 +99,8 @@ public class MainEntryPoint {
                 AIAgentXmlLoader.getInstrumentationConfig(builtInInstrumentation));
 
         EngineModule.createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),
-                instrumentationDescriptors, configServiceFactory, new AgentImpl(),
+                instrumentationDescriptors, configServiceFactory, new AgentImpl(), false,
+                Collections.singletonList("com.microsoft.applicationinsights.agent"),
                 Collections.singletonList("com.microsoft.applicationinsights.agent"), agentJarFile);
     }
 }
