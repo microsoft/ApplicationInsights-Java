@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-boot-autoconfigure-1.4.0.RELEASE.jar
+      Independent of our usage.
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring\-boot\-autoconfigure@.*$</packageUrl>
+        <cve>CVE-2017-8046</cve>
+        <cve>CVE-2018-1196</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-1.4.0.RELEASE.jar
+   Same as autoconfigure
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring\-boot@.*$</packageUrl>
+        <cve>CVE-2017-8046</cve>
+        <cve>CVE-2018-1196</cve>
+    </suppress>
+</suppressions>

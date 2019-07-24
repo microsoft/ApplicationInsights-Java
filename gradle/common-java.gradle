@@ -36,7 +36,7 @@ tasks.withType(JavaCompile) {
 }
 
 checkstyle {
-    toolVersion = '8.15'
+    toolVersion = '8.22'
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
@@ -47,6 +47,18 @@ tasks.withType(Checkstyle) {
         xml.enabled true
         html.enabled !isBuildServer
     }
+}
+
+dependencyCheck {
+    def supFile = "${project.projectDir}/dependency-check-suppressions.xml"
+    if (file(supFile).exists() && !Project.hasProperty('dependencyCheck.suppressions.skip')) {
+        suppressionFiles += supFile
+    }
+    outputDirectory = "${project.buildDir}/reports/dependency-check"
+    formats = ['HTML', 'JUNIT']
+    skipConfigurations = ['mavenDeployer']
+    cveValidForHours = 1
+    failBuildOnCVSS = 0
 }
 
 jacoco {

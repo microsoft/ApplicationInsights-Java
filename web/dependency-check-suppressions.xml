@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+      file name: xwork-2.0.4.jar
+      This is only used for API interfaces to provide com.microsoft.applicationinsights.web.struts.RequestNameInterceptor.
+      No OGNL parsing; independent of XSS vector.
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.opensymphony/xwork@.*$</packageUrl>
+        <cve>CVE-2007-4556</cve>
+        <cve>CVE-2008-6504</cve>
+        <cve>CVE-2011-1772</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: ognl-2.6.11.jar
+   This is only included because it's a dependency of xwork-*.jar.
+   No OGNL parsing used.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/opensymphony/ognl@.*$</packageUrl>
+        <cve>CVE-2016-3093</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-webmvc-3.1.0.RELEASE.jar
+   Required for interfaces to implement com.microsoft.applicationinsights.web.spring.RequestNameHandlerInterceptorAdapter.
+   XSS does not apply. Not related to directory traversal.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-webmvc@.*$</packageUrl>
+        <vulnerabilityName>CVE-2014-1904</vulnerabilityName>
+        <vulnerabilityName>CVE-2016-9878</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-web-3.1.0.RELEASE.jar
+   Dependency of spring-webmvc
+   Usage is independent of springs XML parsing.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
+        <vulnerabilityName>CVE-2013-4152</vulnerabilityName>
+        <vulnerabilityName>CVE-2014-0054</vulnerabilityName>
+        <vulnerabilityName>CVE-2014-0225</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-core-3.1.0.RELEASE.jar
+   Dependency of spring-webmvc.
+   Classes from this jar are not used.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-core@.*$</packageUrl>
+        <cve>CVE-2013-4152</cve>
+        <cve>CVE-2013-6429</cve>
+        <cve>CVE-2013-7315</cve>
+        <cve>CVE-2014-0054</cve>
+        <cve>CVE-2014-0225</cve>
+        <cve>CVE-2014-1904</cve>
+        <vulnerabilityName>CVE-2014-3578</vulnerabilityName>
+        <cve>CVE-2014-3625</cve>
+        <cve>CVE-2016-9878</cve>
+        <cve>CVE-2018-1270</cve>
+        <cve>CVE-2018-1271</cve>
+        <cve>CVE-2018-1272</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: cdi-api-1.1.jar
+   This CVE is JBoss specific. Not explicitly used by our code.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/javax\.enterprise/cdi\-api@.*$</packageUrl>
+        <cve>CVE-2014-8122</cve>
+    </suppress>
+</suppressions>

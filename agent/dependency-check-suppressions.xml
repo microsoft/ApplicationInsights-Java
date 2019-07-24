@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+      file name: instrumentation-logback-0.14.2.jar
+      This is logback instrumentation, not the logback library itself.
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.glowroot\.instrumentation/instrumentation\-logback@.*$</packageUrl>
+        <cve>CVE-2017-5929</cve>
+    </suppress>
+</suppressions>
