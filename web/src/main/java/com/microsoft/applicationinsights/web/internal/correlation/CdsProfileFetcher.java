@@ -24,22 +24,30 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
+import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class CdsProfileFetcher implements AppProfileFetcher {
@@ -72,8 +80,22 @@ public class CdsProfileFetcher implements AppProfileFetcher {
                 .setConnectionRequestTimeout(5000)
                 .build();
 
-        setHttpClient(HttpAsyncClients.custom()
-                .setDefaultRequestConfig(requestConfig)
+        final HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig);
+        String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
+        if (allowedProtocols != null) {
+            SSLContext sslContext;
+            try {
+                sslContext = SSLContexts.custom().useProtocol("TLS").build();
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                if (InternalLogger.INSTANCE.isWarnEnabled()) {
+                    InternalLogger.INSTANCE.warn("Could not configure custom SSL context. Using system default: %s", ExceptionUtils.getStackTrace(e));
+                }
+                sslContext = SSLContexts.createSystemDefault();
+            }
+            SSLIOSessionStrategy sslStrat = new SSLIOSessionStrategy(sslContext, allowedProtocols, null, (HostnameVerifier) null);
+            httpAsyncClientBuilder.setSSLStrategy(sslStrat);
+        }
+        setHttpClient(httpAsyncClientBuilder
                 .useSystemProperties()
                 .build());
 

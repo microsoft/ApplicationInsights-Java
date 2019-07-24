@@ -28,19 +28,22 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
+import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 /**
@@ -54,26 +57,30 @@ final class ApacheSender43 implements ApacheSender {
         final ApacheSender43 sender = new ApacheSender43();
         Thread initThread = new Thread(
                 new Runnable() {
-
                     @Override
                     public void run() {
                         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+                        final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
+                        if (allowedProtocols != null) {
+                            SSLContext sslContext;
+                            try {
+                                sslContext = SSLContexts.custom().useProtocol("TLS").build();
+                            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                                if (InternalLogger.INSTANCE.isWarnEnabled()) {
+                                    InternalLogger.INSTANCE.warn("Could not configure custom SSL context. Using system default: %s", ExceptionUtils.getStackTrace(e));
+                                }
+                                sslContext = SSLContexts.createSystemDefault();
+                            }
+                            SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(sslContext, allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+                            cm = new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
+                                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                                    .register("https", sf)
+                                    .build());
+                        }
                         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
                         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-
-                        SSLContext sslContext = null;
-                        try {
-                            sslContext = SSLContexts.custom().useProtocol("TLS").build();
-                        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                            if (InternalLogger.INSTANCE.isWarnEnabled()) {
-                                InternalLogger.INSTANCE.warn("Exception initializing SSLContext; using system default: %s", ExceptionUtils.getStackTrace(e));
-                            }
-                            sslContext = SSLContexts.createSystemDefault();
-                        }
-                        SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(sslContext, new String[]{"TLSv1.2"}, null, (HostnameVerifier) null);
                         sender.httpClientRef.compareAndSet(null, HttpClients.custom()
                                 .setConnectionManager(cm)
-                                .setSSLSocketFactory(sf)
                                 .useSystemProperties()
                                 .build());
                         synchronized (sender.httpClientRef) {
