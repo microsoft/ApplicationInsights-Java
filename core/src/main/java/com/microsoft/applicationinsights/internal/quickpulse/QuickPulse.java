@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -50,9 +52,30 @@ public enum QuickPulse implements Stoppable {
     private ApacheSender apacheSender;
     private QuickPulseDataSender quickPulseDataSender;
 
+    // initialization is performed in the background because initializing the random seed (via UUID.randomUUID()) below
+    // can cause slowness during startup in some environments
     public void initialize() {
-        if (!initialized) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                initializeSync(latch);
+            }
+        });
+        // don't return until initialization thread has INSTANCE lock
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+    private void initializeSync(CountDownLatch latch) {
+        if (initialized) {
+            latch.countDown();
+        } else {
             synchronized (INSTANCE) {
+                latch.countDown();
                 if (!initialized) {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
