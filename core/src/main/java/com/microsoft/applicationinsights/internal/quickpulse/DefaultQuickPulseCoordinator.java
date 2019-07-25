@@ -58,14 +58,14 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 } else {
                     sleepInMS = sendData();
                 }
-                try {
-                    Thread.sleep(sleepInMS);
-                } catch (InterruptedException e) {
-                }
+                Thread.sleep(sleepInMS);
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
+            // chomp
         }
     }
 

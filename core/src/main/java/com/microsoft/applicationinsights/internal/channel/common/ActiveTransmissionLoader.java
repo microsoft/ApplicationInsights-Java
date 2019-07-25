@@ -95,6 +95,8 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                         barrier.await();
                     } catch (InterruptedException e) {
                         InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.toString());
+                        Thread.currentThread().interrupt();
+                        return;
                     } catch (BrokenBarrierException e) {
                         InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.toString());
                     }
@@ -123,12 +125,14 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                                     Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
                                     break;
                             }
-                        } catch (Exception e) {
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t) {
+                            // chomp
                         }
-                        // TODO: check whether we need to pause after exception
                     }
                 }
             }, String.format(threadNameFmt, i));
@@ -152,6 +156,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
             return true;
         } catch (InterruptedException e) {
             InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.toString());
+            Thread.currentThread().interrupt();
         } catch (BrokenBarrierException e) {
             InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.toString());
         }
@@ -162,13 +167,25 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
         done.set(true);
+        interruptAllThreads();
+        joinAllThreads();
+    }
+
+    private void joinAllThreads() {
         for (Thread thread : threads) {
             try {
-                thread.interrupt();
                 thread.join();
             } catch (InterruptedException e) {
                 InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.toString());
+                Thread.currentThread().interrupt();
+                break;
             }
+        }
+    }
+
+    private void interruptAllThreads() {
+        for (Thread thread : threads) {
+            thread.interrupt();
         }
     }
 

@@ -114,7 +114,8 @@ final class SenderThreadLocalBackOffData {
                 backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
                 return instanceIsActive;
            } catch (InterruptedException e) {
-               return false;
+                Thread.currentThread().interrupt();
+                return false;
            }
        } finally {
            lock.unlock();
