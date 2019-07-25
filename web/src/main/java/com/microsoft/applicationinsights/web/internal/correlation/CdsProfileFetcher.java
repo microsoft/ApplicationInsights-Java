@@ -83,16 +83,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         final HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig);
         String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
         if (allowedProtocols != null) {
-            SSLContext sslContext;
-            try {
-                sslContext = SSLContexts.custom().useProtocol("TLS").build();
-            } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                if (InternalLogger.INSTANCE.isWarnEnabled()) {
-                    InternalLogger.INSTANCE.warn("Could not configure custom SSL context. Using system default: %s", ExceptionUtils.getStackTrace(e));
-                }
-                sslContext = SSLContexts.createSystemDefault();
-            }
-            SSLIOSessionStrategy sslStrat = new SSLIOSessionStrategy(sslContext, allowedProtocols, null, (HostnameVerifier) null);
+            SSLIOSessionStrategy sslStrat = new SSLIOSessionStrategy(SSLContexts.createDefault(), allowedProtocols, null, (HostnameVerifier) null);
             httpAsyncClientBuilder.setSSLStrategy(sslStrat);
         }
         setHttpClient(httpAsyncClientBuilder

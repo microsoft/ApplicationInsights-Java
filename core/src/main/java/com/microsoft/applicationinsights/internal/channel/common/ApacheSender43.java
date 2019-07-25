@@ -62,16 +62,7 @@ final class ApacheSender43 implements ApacheSender {
                         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
                         final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
                         if (allowedProtocols != null) {
-                            SSLContext sslContext;
-                            try {
-                                sslContext = SSLContexts.custom().useProtocol("TLS").build();
-                            } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                                if (InternalLogger.INSTANCE.isWarnEnabled()) {
-                                    InternalLogger.INSTANCE.warn("Could not configure custom SSL context. Using system default: %s", ExceptionUtils.getStackTrace(e));
-                                }
-                                sslContext = SSLContexts.createSystemDefault();
-                            }
-                            SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(sslContext, allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+                            SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(SSLContexts.createDefault(), allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier());
                             cm = new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
                                     .register("http", PlainConnectionSocketFactory.getSocketFactory())
                                     .register("https", sf)
