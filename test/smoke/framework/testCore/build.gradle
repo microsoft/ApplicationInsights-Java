@@ -13,4 +13,4 @@ dependencies {
     compile project(':test:fakeIngestion:standalone')
 }
 
-compileJava.sourceCompatibility = 1.8
+sourceCompatibility = 1.7

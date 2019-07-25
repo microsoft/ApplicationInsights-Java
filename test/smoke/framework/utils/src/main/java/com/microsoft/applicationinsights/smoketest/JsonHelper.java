@@ -67,14 +67,15 @@ public class JsonHelper {
             JsonObject jo = json.getAsJsonObject();
             String baseType = jo.get(discriminatorField).getAsString();
             try {
-                Data<?> rval = Data.class.newInstance();
+                Data<Domain> rval = Data.class.newInstance();
                 JsonObject baseData = jo.get("baseData").getAsJsonObject();
                 Class<? extends Domain> domainClass = classMap.get(baseType);
                 if (domainClass == null) {
                     throw new JsonParseException("Unknown Domain type: "+baseType);
                 }
                 rval.setBaseType(baseType);
-                rval.setBaseData(context.deserialize(baseData, TypeToken.get(domainClass).getType()));
+                final Domain deserialize = context.deserialize(baseData, TypeToken.get(domainClass).getType());
+                rval.setBaseData(deserialize);
                 return rval;
             } catch (InstantiationException | IllegalAccessException e) {
                 System.err.println("Error deserializing data");

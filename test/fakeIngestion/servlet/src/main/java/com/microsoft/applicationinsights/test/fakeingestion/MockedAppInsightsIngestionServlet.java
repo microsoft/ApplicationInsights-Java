@@ -137,7 +137,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
 
     public void awaitAnyItems(long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
-        waitForItems(Predicates.alwaysTrue(), 1, timeout, timeUnit);
+        waitForItems(Predicates.<Envelope>alwaysTrue(), 1, timeout, timeUnit);
     }
 
     public List<Envelope> waitForItems(final Predicate<Envelope> condition, final int numItems, long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
