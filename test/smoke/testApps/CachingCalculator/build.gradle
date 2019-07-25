@@ -11,8 +11,8 @@ dependencies {
     smokeTestCompile 'com.google.guava:guava:23.0'
 }
 
-compileJava.sourceCompatibility = 1.8
-compileJava.targetCompatibility = 1.8
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 

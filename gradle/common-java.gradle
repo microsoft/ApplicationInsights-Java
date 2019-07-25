@@ -30,10 +30,8 @@ apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
 apply plugin: 'org.owasp.dependencycheck'
 
-tasks.withType(JavaCompile) {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-}
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 checkstyle {
     toolVersion = '8.22'

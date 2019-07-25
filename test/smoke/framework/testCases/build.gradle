@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -9,4 +9,5 @@ dependencies {
     compile aiCoreJar
 }
 
-compileJava.sourceCompatibility = 1.8
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
