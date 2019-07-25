@@ -12,7 +12,6 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,17 +29,17 @@ public class FixedAiTestCases {
 
     private Map<String, String> getPropertyMapForMethod(String method) {
         Preconditions.checkNotNull(method);
-        return new HashMap<String, String>() {{
-            put(String.format("Test%sProp1", method), String.format("Test%sP1_Value", method));
-            put(String.format("Test%sProp2", method), String.format("Test%sP2_Value", method));
-        }};
+        final HashMap<String, String> map = new HashMap<>();
+        map.put(String.format("Test%sProp1", method), String.format("Test%sP1_Value", method));
+        map.put(String.format("Test%sProp2", method), String.format("Test%sP2_Value", method));
+        return map;
     }
 
     private Map<String, Double> getMetricMapForMethod(String method) {
-        return new HashMap<String, Double>() {{
-            put(String.format("Test%sMetric1", method), 555.555);
-            put(String.format("Test%sMetric2", method), 666.666);
-        }};
+        final HashMap<String, Double> map = new HashMap<>();
+        map.put(String.format("Test%sMetric1", method), 555.555);
+        map.put(String.format("Test%sMetric2", method), 666.666);
+        return map;
     }
 
     public Runnable getTrackEvent() {
@@ -113,7 +112,7 @@ public class FixedAiTestCases {
     public Runnable getTrackHttpRequest_Success() {
         Random r = new Random(System.currentTimeMillis());
         int code = 200 + r.nextInt(100);
-        return customCases.getTrackHttpRequest("AiTestHttpRequest1", Date.from(Instant.now()), 123L, String.valueOf(code), true);
+        return customCases.getTrackHttpRequest("AiTestHttpRequest1", new Date(), 123L, String.valueOf(code), true);
     }
 
     /**
@@ -123,7 +122,7 @@ public class FixedAiTestCases {
     public Runnable getTrackHttpRequest_Failed() {
         Random r = new Random(System.currentTimeMillis());
         int code = 400 + r.nextInt(200);
-        return customCases.getTrackHttpRequest("AiTestHttpRequest2", Date.from(Instant.now()), 456L, String.valueOf(code), false);
+        return customCases.getTrackHttpRequest("AiTestHttpRequest2", new Date(), 456L, String.valueOf(code), false);
     }
 
     /**
@@ -132,7 +131,7 @@ public class FixedAiTestCases {
      */
     public Runnable getTrackRequest_Full() {
         // name, timestamp, duration, resultCode, success
-        RequestTelemetry rt = new RequestTelemetry("AiTestRequest", Date.from(Instant.now()), 147L, "100", true);
+        RequestTelemetry rt = new RequestTelemetry("AiTestRequest", new Date(), 147L, "100", true);
         // add props
         for (Entry<String, String> entry : getPropertyMapForMethod("Request").entrySet()) {
             rt.getProperties().put(entry.getKey(), entry.getValue());
