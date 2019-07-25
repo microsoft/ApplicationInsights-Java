@@ -27,7 +27,7 @@ public class CustomAiTestCases {
         };
     }
 
-    public Runnable getTrackTrace(final String message, final SeverityLevel severityLevel, Map<String, String> properties) {
+    public Runnable getTrackTrace(final String message, final SeverityLevel severityLevel, final Map<String, String> properties) {
         return new Runnable() {
             @Override
             public void run() {
@@ -36,7 +36,7 @@ public class CustomAiTestCases {
         };
     }
 
-    public Runnable getTrackMetric(final String name, final double value, final int sampleCount, final double min, final double max, Map<String, String> properties) {
+    public Runnable getTrackMetric(final String name, final double value, final int sampleCount, final double min, final double max, final Map<String, String> properties) {
         return new Runnable(){
             @Override
             public void run() {
@@ -63,7 +63,7 @@ public class CustomAiTestCases {
         };
     }
 
-    public Runnable getTrackException(final Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
+    public Runnable getTrackException(final Exception exception, final Map<String, String> properties, final Map<String, Double> metrics) {
         return new Runnable(){
             @Override
             public void run() {
