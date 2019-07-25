@@ -54,6 +54,7 @@ public class LocalForwarderTelemetryChannel extends TelemetryChannelBase<Telemet
         BaseTelemetry base = (BaseTelemetry) telemetry;
         if (base == null) {
             InternalLogger.INSTANCE.warn("Received null telemetry item. Skipping...");
+            return false;
         }
 
         try {
