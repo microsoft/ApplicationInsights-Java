@@ -44,8 +44,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 
-import javax.net.ssl.SSLContext;
-
 /**
  * Created by gupele on 6/4/2015.
  */
@@ -59,13 +57,14 @@ final class ApacheSender43 implements ApacheSender {
                 new Runnable() {
                     @Override
                     public void run() {
-                        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
                         final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
-                        if (allowedProtocols != null) {
-                            SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(SSLContexts.createDefault(), allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+                        final PoolingHttpClientConnectionManager cm;
+                        if (allowedProtocols.length == 0) {
+                            cm = new PoolingHttpClientConnectionManager();
+                        } else {
                             cm = new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
+                                    .register("https", new SSLConnectionSocketFactory(SSLContexts.createDefault(), allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
                                     .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                                    .register("https", sf)
                                     .build());
                         }
                         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);

@@ -25,7 +25,6 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
@@ -37,13 +36,9 @@ import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -81,10 +76,9 @@ public class CdsProfileFetcher implements AppProfileFetcher {
                 .build();
 
         final HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig);
-        String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
-        if (allowedProtocols != null) {
-            SSLIOSessionStrategy sslStrat = new SSLIOSessionStrategy(SSLContexts.createDefault(), allowedProtocols, null, (HostnameVerifier) null);
-            httpAsyncClientBuilder.setSSLStrategy(sslStrat);
+        final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
+        if (allowedProtocols.length > 0) {
+                httpAsyncClientBuilder.setSSLStrategy(new SSLIOSessionStrategy(SSLContexts.createDefault(), allowedProtocols, null, SSLIOSessionStrategy.getDefaultHostnameVerifier()));
         }
         setHttpClient(httpAsyncClientBuilder
                 .useSystemProperties()
