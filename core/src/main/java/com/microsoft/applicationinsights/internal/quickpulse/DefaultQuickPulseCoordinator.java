@@ -114,6 +114,6 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
     }
 
     public void stop() {
-            stopped = true;
+        stopped = true;
     }
 }
