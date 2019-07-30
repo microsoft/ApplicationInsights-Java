@@ -29,7 +29,7 @@ import javax.xml.stream.XMLStreamReader;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
+import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -49,7 +49,7 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
         }
 
         try {
-            XStream xstream = new XStream(new PureJavaReflectionProvider(), new StaxDriver());
+            XStream xstream = new XStream(new PureJavaReflectionProvider(), new Xpp3Driver());
 
             xstream.ignoreUnknownElements(); // backwards compatible with jaxb behavior
 
