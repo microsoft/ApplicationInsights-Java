@@ -22,14 +22,11 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -53,11 +50,11 @@ final class ApacheSender43 implements ApacheSender {
 
     static ApacheSender43 create() {
         final ApacheSender43 sender = new ApacheSender43();
+        final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
         Thread initThread = new Thread(
                 new Runnable() {
                     @Override
                     public void run() {
-                        final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
                         final PoolingHttpClientConnectionManager cm;
                         if (allowedProtocols.length == 0) {
                             cm = new PoolingHttpClientConnectionManager();
