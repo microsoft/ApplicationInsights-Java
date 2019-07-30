@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -16,13 +17,14 @@ public class SSLOptionsUtil {
 
     public static final String APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY = "applicationinsights.ssl.protocols";
 
-    private static final String[] DEFAULT_PROTOCOLS;
+    private static final String[] DEFAULT_SUPPORTED_PROTOCOLS;
+    private static final String[] DEFAULT_PROTOCOLS = new String[] {"TLSv1.3", "TLSv1.2"};
+
     static {
-        String[] proposed = new String[] {"TLSv1.3", "TLSv1.2"};
-        DEFAULT_PROTOCOLS = filterSupportedProtocols(Arrays.asList(proposed), false);
-        if (DEFAULT_PROTOCOLS.length == 0 && InternalLogger.INSTANCE.isErrorEnabled()) {
+        DEFAULT_SUPPORTED_PROTOCOLS = filterSupportedProtocols(Arrays.asList(DEFAULT_PROTOCOLS), false);
+        if (DEFAULT_SUPPORTED_PROTOCOLS.length == 0 && InternalLogger.INSTANCE.isErrorEnabled()) {
             InternalLogger.INSTANCE.error("Default protocols are not supported in this JVM: %s. System property '%s' can be used to configure supported SSL protocols.",
-                    Arrays.toString(proposed), APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
+                    Arrays.toString(DEFAULT_PROTOCOLS), APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
         }
     }
 
@@ -48,24 +50,40 @@ public class SSLOptionsUtil {
      * <p>If no supported protocols are specified, the defaults are used (see static constructor). If no default protocols are available on this JVM, an error is logged.</p>
      *
      * @return An array of supported protocols. If there are none found, an empty array.
+     * @throws NoSupportedProtocolsException If the defaults are to be used and none of the defaults are supported by this JVM
      */
     public static String[] getAllowedProtocols() {
         final String rawProp = System.getProperty(APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
-        if (rawProp == null) { // empty means defer to JVM defaults
-            return DEFAULT_PROTOCOLS;
+        if (rawProp == null) {
+            return defaultSupportedProtocols();
         }
+
+        if (Strings.isNullOrEmpty(rawProp)) {
+            if (InternalLogger.INSTANCE.isWarnEnabled()) {
+                InternalLogger.INSTANCE.warn("%s specifies no protocols; using defaults: %s", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));
+            }
+            return defaultSupportedProtocols();
+        }
+
         String[] customProtocols = filterSupportedProtocols(Splitter.on(',').trimResults().omitEmptyStrings().split(rawProp), true);
         if (customProtocols.length == 0) {
             if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                InternalLogger.INSTANCE.error("%s contained no supported protocols; using default: %s", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(DEFAULT_PROTOCOLS));
+                InternalLogger.INSTANCE.error("%s contained no supported protocols: '%s'; using default: %s", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, rawProp, Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));
             }
-            return DEFAULT_PROTOCOLS;
+            return defaultSupportedProtocols();
         }
 
         if (InternalLogger.INSTANCE.isInfoEnabled()) {
             InternalLogger.INSTANCE.info("Found %s='%s'; HTTP client will allow only these protocols", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(customProtocols));
         }
         return customProtocols;
+    }
+
+    private static String[] defaultSupportedProtocols() {
+        if (DEFAULT_SUPPORTED_PROTOCOLS.length == 0) {
+            throw new NoSupportedProtocolsException(String.format("None of the default TLS protocols are supported by this JVM: %s. Use the system property '%s' to override.", Arrays.toString(DEFAULT_PROTOCOLS), APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY));
+        }
+        return DEFAULT_SUPPORTED_PROTOCOLS;
     }
 
 }
