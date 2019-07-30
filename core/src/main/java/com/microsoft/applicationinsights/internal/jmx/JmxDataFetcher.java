@@ -29,8 +29,12 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeDataSupport;
 import java.lang.management.ManagementFactory;
 
@@ -80,10 +84,9 @@ public class JmxDataFetcher {
         return result;
     }
 
-    private static Collection<Object> fetch(MBeanServer server, Set<ObjectName> objects, String attributeName, String attributeType) throws Exception {
+    private static Collection<Object> fetch(MBeanServer server, Set<ObjectName> objects, String attributeName, String attributeType) throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
         ArrayList<Object> result = new ArrayList<Object>();
 
-        String attr = attributeName;
         String[] inners = null;
 
         AttributeType innerAttributeType = AttributeType.REGULAR;
@@ -101,7 +104,7 @@ public class JmxDataFetcher {
 
             Object obj;
 
-            if (innerAttributeType != AttributeType.REGULAR) {
+            if (inners != null) { // implies innerAttributeType != AttributeType.REGULAR
                 obj = server.getAttribute(object, inners[0]);
 
                 javax.management.openmbean.CompositeDataSupport compositeData = null;
@@ -114,7 +117,7 @@ public class JmxDataFetcher {
                     obj = compositeData.get(inners[1]);
                 }
             } else {
-                obj = server.getAttribute(object, attr);
+                obj = server.getAttribute(object, attributeName);
             }
             if (obj != null) {
                 result.add(obj);

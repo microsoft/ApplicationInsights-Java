@@ -66,7 +66,7 @@ public enum QuickPulse implements Stoppable {
         try {
             latch.await();
         } catch (InterruptedException e) {
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -124,40 +124,29 @@ public enum QuickPulse implements Stoppable {
      * @param timeout The timeout to wait for the stop to happen.
      * @param timeUnit The time unit to use when waiting for the stop to happen.
      */
+    @Override
     public synchronized void stop(long timeout, TimeUnit timeUnit) {
         if (!initialized) {
             return;
         }
 
-        try {
-            coordinator.stop();
-            quickPulseDataSender.stop();
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable e) {
-            try {
-                InternalLogger.INSTANCE.error("Error while executing stop QuickPulse");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
+        coordinator.stop();
+        quickPulseDataSender.stop();
 
         thread.interrupt();
+        senderThread.interrupt();
+        initialized = false;
+
         try {
             thread.join();
         } catch (InterruptedException e) {
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            Thread.currentThread().interrupt();
         }
-        senderThread.interrupt();
+
         try {
             senderThread.join();
         } catch (InterruptedException e) {
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            Thread.currentThread().interrupt();
         }
-
-        initialized = false;
     }
 }

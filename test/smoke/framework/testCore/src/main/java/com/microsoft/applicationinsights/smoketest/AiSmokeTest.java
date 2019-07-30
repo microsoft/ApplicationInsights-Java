@@ -425,6 +425,9 @@ public abstract class AiSmokeTest {
         mockedIngestion.addIngestionFilter(new Predicate<Envelope>() {
             @Override
             public boolean apply(@Nullable Envelope input) {
+                if (input == null) {
+                    return false;
+                }
                 String deviceId = input.getTags().get("ai.device.id");
                 if (deviceId == null) {
                     return true;

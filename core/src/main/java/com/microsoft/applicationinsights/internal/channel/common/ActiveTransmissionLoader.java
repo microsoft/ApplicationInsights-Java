@@ -21,8 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,12 +38,12 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * Created by gupele on 12/22/2014.
  */
 public final class ActiveTransmissionLoader implements TransmissionsLoader {
-    public final static int MAX_THREADS_ALLOWED = 10;
+    public static final int MAX_THREADS_ALLOWED = 10;
 
-    private final static int DEFAULT_NUMBER_OF_THREADS = 1;
+    private static final int DEFAULT_NUMBER_OF_THREADS = 1;
 
-    private final static long DEFAULT_SLEEP_INTERVAL_WHEN_NO_TRANSMISSIONS_FOUND_IN_MILLS = 2000;
-    private final static long DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS = 100;
+    private static final long DEFAULT_SLEEP_INTERVAL_WHEN_NO_TRANSMISSIONS_FOUND_IN_MILLS = 2000;
+    private static final long DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS = 100;
 
     // The helper class that encapsulates the file system access
     private final TransmissionFileSystemOutput fileSystem;
@@ -55,7 +54,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
     // The dispatcher is needed to process the fetched Transmissions
     private final TransmissionDispatcher dispatcher;
 
-    private CyclicBarrier barrier;
+    private final CountDownLatch latch;
 
     private final TransmissionPolicyStateFetcher transmissionPolicyFetcher;
 
@@ -86,18 +85,13 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
         this.fileSystem = fileSystem;
         this.dispatcher = dispatcher;
         threads = new Thread[numberOfThreads];
+        latch = new CountDownLatch(numberOfThreads);
         final String threadNameFmt = String.format("%s-worker-%%d", ActiveTransmissionLoader.class.getSimpleName());
         for (int i = 0; i < numberOfThreads; ++i) {
             threads[i] = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        barrier.await();
-                    } catch (InterruptedException e) {
-                        InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.toString());
-                    } catch (BrokenBarrierException e) {
-                        InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.toString());
-                    }
+                    latch.countDown();
 
                     // Avoid un-expected exit of threads
                     while (!done.get()) {
@@ -123,12 +117,14 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                                     Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
                                     break;
                             }
-                        } catch (Exception e) {
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t) {
+                            // chomp
                         }
-                        // TODO: check whether we need to pause after exception
                     }
                 }
             }, String.format(threadNameFmt, i));
@@ -137,23 +133,20 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
 
     @Override
     public synchronized boolean load(boolean waitForThreadsToStart) {
-        if (barrier == null) {
-            int numberOfThreads = threads.length;
-            if (waitForThreadsToStart) {
-                ++numberOfThreads;
-            }
-            barrier = new CyclicBarrier(numberOfThreads);
-        }
         for (Thread thread : threads) {
             thread.start();
         }
+
+        if (!waitForThreadsToStart) {
+            return true;
+        }
+
         try {
-            barrier.await();
+            latch.await();
             return true;
         } catch (InterruptedException e) {
-            InternalLogger.INSTANCE.error("Interrupted during barrier wait, exception: %s", e.toString());
-        } catch (BrokenBarrierException e) {
-            InternalLogger.INSTANCE.error("Failed during barrier wait, exception: %s", e.toString());
+            InternalLogger.INSTANCE.error("Interrupted waiting for threads to start: %s", e.toString());
+            Thread.currentThread().interrupt();
         }
 
         return false;
@@ -162,13 +155,25 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
         done.set(true);
+        interruptAllThreads();
+        joinAllThreads();
+    }
+
+    private void joinAllThreads() {
         for (Thread thread : threads) {
             try {
-                thread.interrupt();
                 thread.join();
             } catch (InterruptedException e) {
                 InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.toString());
+                Thread.currentThread().interrupt();
+                break;
             }
+        }
+    }
+
+    private void interruptAllThreads() {
+        for (Thread thread : threads) {
+            thread.interrupt();
         }
     }
 
@@ -181,7 +186,6 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                 dispatcher.dispatch(transmission);
             }
 
-            // TODO: check if we need this as configuration value
             Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
         }
     }

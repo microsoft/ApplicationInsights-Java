@@ -57,11 +57,9 @@ public class DockerContextPoller extends Thread {
             if (!fileExists) {
                 try {
                     Thread.sleep(THREAD_POLLING_INTERVAL_MS);
-
-                    continue;
                 } catch (InterruptedException e) {
-                    InternalLogger.INSTANCE.error("Error while executing docker context poller");
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    Thread.currentThread().interrupt();
+                    break;
                 }
             }
         }
