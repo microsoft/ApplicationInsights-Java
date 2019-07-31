@@ -389,11 +389,7 @@ public class TelemetryCorrelationUtils {
 	}
 
 	private static String generateRootId() {
-		UUID guid = UUID.randomUUID();
-		long least = guid.getLeastSignificantBits();
-    	long most = guid.getMostSignificantBits();
-
-		return Long.toHexString(most) + Long.toHexString(least);
+		return UUID.randomUUID().toString().replace("-", "");
 	}
 
 	private static String generateId(String parentId) {
