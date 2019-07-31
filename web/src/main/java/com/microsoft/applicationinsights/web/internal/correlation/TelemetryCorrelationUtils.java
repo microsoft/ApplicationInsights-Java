@@ -395,11 +395,12 @@ public class TelemetryCorrelationUtils {
     static String uuidToStringNoDashes(UUID guid) {
         long most = guid.getMostSignificantBits();
         long least = guid.getLeastSignificantBits();
-        long msb = 1L << 32;
-        return Long.toHexString(msb | ((most >> 32) & (msb - 1))).substring(1)
-                + Long.toHexString(msb | (most & (msb - 1))).substring(1)
-                + Long.toHexString(msb | ((least >> 32) & (msb - 1))).substring(1)
-                + Long.toHexString(msb | (least & (msb - 1))).substring(1);
+        final long msb = 1L << 32;
+		final long mask = msb - 1;
+		return Long.toHexString(msb | ((most >> 32) & mask)).substring(1)
+                + Long.toHexString(msb | (most & mask)).substring(1)
+                + Long.toHexString(msb | ((least >> 32) & mask)).substring(1)
+                + Long.toHexString(msb | (least & mask)).substring(1);
     }
 
 	private static String generateId(String parentId) {
