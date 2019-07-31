@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 2.4.1
+- Fix [#910](https://github.com/microsoft/ApplicationInsights-Java/issues/910) Fixed correlation id serialization.
+
 # Version 2.4.0
 - Updated Spring Boot Starter version number to track with the SDK version.
 - Upgrade gradle to 5.3.1
