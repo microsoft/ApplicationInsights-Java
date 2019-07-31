@@ -32,8 +32,11 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.util.Hashtable;
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import static org.junit.Assert.*;
 
 
 public class TelemetryCorrelationUtilsTests {
@@ -108,14 +111,14 @@ public class TelemetryCorrelationUtilsTests {
 
         //validate we have generated proper ID's
         Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
+        assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
         Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(rootId, operation.getId());
-        Assert.assertEquals(incomingId, operation.getParentId());
+        assertEquals(rootId, operation.getId());
+        assertEquals(incomingId, operation.getParentId());
     }
 
     @Test
@@ -136,7 +139,7 @@ public class TelemetryCorrelationUtilsTests {
         OperationContext operation = requestTelemetry.getContext().getOperation();
         
         Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertEquals(requestTelemetry.getId(), '|' + operation.getId() + '.');
+        assertEquals(requestTelemetry.getId(), '|' + operation.getId() + '.');
         Assert.assertNull(operation.getParentId());
     }
 
@@ -160,7 +163,7 @@ public class TelemetryCorrelationUtilsTests {
         OperationContext operation = requestTelemetry.getContext().getOperation();
         
         Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertEquals(requestTelemetry.getId(), '|' + operation.getId() + '.');
+        assertEquals(requestTelemetry.getId(), '|' + operation.getId() + '.');
         Assert.assertNull(operation.getParentId());
     }
 
@@ -182,13 +185,13 @@ public class TelemetryCorrelationUtilsTests {
         //validate we have generated proper ID's 
         Assert.assertNotNull(requestTelemetry.getId());
         Assert.assertTrue(requestTelemetry.getId().startsWith("|guid."));
-        Assert.assertEquals("|guid.".length() + 9, requestTelemetry.getId().length());
+        assertEquals("|guid.".length() + 9, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
         
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals("guid", operation.getId());
-        Assert.assertEquals("guid", operation.getParentId());
+        assertEquals("guid", operation.getId());
+        assertEquals("guid", operation.getParentId());
     }
 
     @Test
@@ -209,13 +212,13 @@ public class TelemetryCorrelationUtilsTests {
         //validate we have generated proper ID's 
         Assert.assertNotNull(requestTelemetry.getId());
         Assert.assertTrue(requestTelemetry.getId().startsWith("|guid.guid2.guid3"));
-        Assert.assertEquals("|guid.guid2.guid3.".length() + 9, requestTelemetry.getId().length());
+        assertEquals("|guid.guid2.guid3.".length() + 9, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
         
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals("guid", operation.getId());
-        Assert.assertEquals("guid.guid2.guid3", operation.getParentId());
+        assertEquals("guid", operation.getId());
+        assertEquals("guid.guid2.guid3", operation.getParentId());
     }
 
     @Test
@@ -236,13 +239,13 @@ public class TelemetryCorrelationUtilsTests {
         //validate we have generated proper ID's 
         Assert.assertNotNull(requestTelemetry.getId());
         Assert.assertTrue(requestTelemetry.getId().startsWith("|guid.guid2_"));
-        Assert.assertEquals("|guid.guid2_".length() + 9, requestTelemetry.getId().length());
+        assertEquals("|guid.guid2_".length() + 9, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
         
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals("guid", operation.getId());
-        Assert.assertEquals("guid.guid2_", operation.getParentId());
+        assertEquals("guid", operation.getId());
+        assertEquals("guid.guid2_", operation.getParentId());
     }
 
     @Test
@@ -263,13 +266,13 @@ public class TelemetryCorrelationUtilsTests {
         //validate we have generated proper ID's 
         Assert.assertNotNull(requestTelemetry.getId());
         Assert.assertTrue(requestTelemetry.getId().startsWith("|guid."));
-        Assert.assertEquals("|guid.".length() + 9, requestTelemetry.getId().length());
+        assertEquals("|guid.".length() + 9, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
         
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals("guid", operation.getId());
-        Assert.assertEquals("guid.", operation.getParentId());
+        assertEquals("guid", operation.getId());
+        assertEquals("guid.", operation.getParentId());
     }
 
     @Test
@@ -292,18 +295,18 @@ public class TelemetryCorrelationUtilsTests {
         
         //validate 
         Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
+        assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(rootId, operation.getId());
-        Assert.assertEquals(incomingId, operation.getParentId());
+        assertEquals(rootId, operation.getId());
+        assertEquals(incomingId, operation.getParentId());
 
         //validate correlation context has been added as properties
-        Assert.assertEquals(2, requestTelemetry.getProperties().size());
-        Assert.assertEquals("value1", requestTelemetry.getProperties().get("key1"));
-        Assert.assertEquals("value2", requestTelemetry.getProperties().get("key2"));
+        assertEquals(2, requestTelemetry.getProperties().size());
+        assertEquals("value1", requestTelemetry.getProperties().get("key1"));
+        assertEquals("value2", requestTelemetry.getProperties().get("key2"));
     }
 
     @Test
@@ -325,19 +328,19 @@ public class TelemetryCorrelationUtilsTests {
         
         //validate 
         Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
+        assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(rootId, operation.getId());
-        Assert.assertEquals(incomingId, operation.getParentId());
+        assertEquals(rootId, operation.getId());
+        assertEquals(incomingId, operation.getParentId());
 
         //validate correlation context has been added as properties
-        Assert.assertEquals(3, requestTelemetry.getProperties().size());
-        Assert.assertEquals("value1", requestTelemetry.getProperties().get("key1"));
-        Assert.assertEquals("value2", requestTelemetry.getProperties().get("key2"));
-        Assert.assertEquals("value3", requestTelemetry.getProperties().get("key3"));
+        assertEquals(3, requestTelemetry.getProperties().size());
+        assertEquals("value1", requestTelemetry.getProperties().get("key1"));
+        assertEquals("value2", requestTelemetry.getProperties().get("key2"));
+        assertEquals("value3", requestTelemetry.getProperties().get("key3"));
     }
 
     @Test
@@ -357,7 +360,7 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate no extra properties have been populated
-        Assert.assertEquals(0, requestTelemetry.getProperties().size());
+        assertEquals(0, requestTelemetry.getProperties().size());
     }
 
     @Test
@@ -391,14 +394,14 @@ public class TelemetryCorrelationUtilsTests {
         Assert.assertTrue(TelemetryCorrelationUtils.isHierarchicalId(requestTelemetry.getId()));
         
         //derivedId should be like: "|<rootId>.bcec871c_.#"
-        Assert.assertEquals(1024, requestTelemetry.getId().length());
+        assertEquals(1024, requestTelemetry.getId().length());
         Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId.substring(0, 1015)));
         Assert.assertTrue(requestTelemetry.getId().endsWith("#"));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(rootId, operation.getId());
-        Assert.assertEquals(incomingId, operation.getParentId());
+        assertEquals(rootId, operation.getId());
+        assertEquals(incomingId, operation.getParentId());
     }
 
     @Test
@@ -439,8 +442,8 @@ public class TelemetryCorrelationUtilsTests {
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(incomingId, operation.getId());
-        Assert.assertEquals(incomingId, operation.getParentId());
+        assertEquals(incomingId, operation.getId());
+        assertEquals(incomingId, operation.getParentId());
     }
 
     @Test
@@ -464,7 +467,7 @@ public class TelemetryCorrelationUtilsTests {
 
         //validate we have generated proper ID's
         Assert.assertNotNull(childId);
-        Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
+        assertEquals(requestTelemetry.getId() + "1.", childId);
     }
 
     @Test
@@ -488,12 +491,12 @@ public class TelemetryCorrelationUtilsTests {
 
         //validate we have generated proper ID's
         Assert.assertNotNull(childId);
-        Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
+        assertEquals(requestTelemetry.getId() + "1.", childId);
 
         // generate second child
         childId = TelemetryCorrelationUtils.generateChildDependencyId();
         Assert.assertNotNull(childId);
-        Assert.assertEquals(requestTelemetry.getId() + "2.", childId);
+        assertEquals(requestTelemetry.getId() + "2.", childId);
     }
 
     @Test
@@ -517,7 +520,7 @@ public class TelemetryCorrelationUtilsTests {
 
         //Incoming ID is non-hierarchical, so we must not modidy outgoing (child) id
         Assert.assertNotNull(childId);
-        Assert.assertEquals(incomingId, childId);
+        assertEquals(incomingId, childId);
     }
 
     @Test
@@ -538,7 +541,7 @@ public class TelemetryCorrelationUtilsTests {
 
         //validate we have generated proper ID's
         Assert.assertNotNull(childId);
-        Assert.assertEquals(requestTelemetry.getId() + "1.", childId);
+        assertEquals(requestTelemetry.getId() + "1.", childId);
     }
 
     @Test
@@ -559,7 +562,7 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
 
         //validate we have populated the source as expected
-        Assert.assertEquals(getRequestSourceValue("id1", null), requestTelemetry.getSource());
+        assertEquals(getRequestSourceValue("id1", null), requestTelemetry.getSource());
     }
 
     @Test
@@ -684,7 +687,7 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
 
         //validate we have populated the source as expected
-        Assert.assertEquals(getRequestSourceValue(null, "Worker Role"), requestTelemetry.getSource());
+        assertEquals(getRequestSourceValue(null, "Worker Role"), requestTelemetry.getSource());
     }
 
     @Test
@@ -705,7 +708,7 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
 
         //validate we have populated the source as expected
-        Assert.assertEquals(getRequestSourceValue("id1", "Worker Role"), requestTelemetry.getSource());
+        assertEquals(getRequestSourceValue("id1", "Worker Role"), requestTelemetry.getSource());
     }
 
 
@@ -769,6 +772,13 @@ public class TelemetryCorrelationUtilsTests {
 
         //validate
         Assert.assertNull(requestTelemetry.getSource());
+    }
+
+    @Test
+    public void testLeadingZerosGuid() {
+        assertEquals("bb1141acf7984a6c000076774462e31f", TelemetryCorrelationUtils.uuidToStringNoDashes(UUID.fromString("bb1141ac-f798-4a6c-0000-76774462e31f")));
+        assertEquals("000076774462e31fbb1141acf7984a6c", TelemetryCorrelationUtils.uuidToStringNoDashes(UUID.fromString("00007677-4462-e31f-bb11-41acf7984a6c")));
+        assertEquals("00000000000000000000000000000000", TelemetryCorrelationUtils.uuidToStringNoDashes(UUID.fromString("00000000-0000-0000-0000-000000000000")));
     }
 
     public static String getRequestContextHeaderValue(String appId, String roleName) {
