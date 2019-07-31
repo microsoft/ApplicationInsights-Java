@@ -55,15 +55,10 @@ final class ApacheSender43 implements ApacheSender {
                 new Runnable() {
                     @Override
                     public void run() {
-                        final PoolingHttpClientConnectionManager cm;
-                        if (allowedProtocols.length == 0) {
-                            cm = new PoolingHttpClientConnectionManager();
-                        } else {
-                            cm = new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
-                                    .register("https", new SSLConnectionSocketFactory(SSLContexts.createDefault(), allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
-                                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                                    .build());
-                        }
+                        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
+                                .register("https", new SSLConnectionSocketFactory(SSLContexts.createDefault(), allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
+                                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                                .build());
                         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
                         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
                         sender.httpClientRef.compareAndSet(null, HttpClients.custom()

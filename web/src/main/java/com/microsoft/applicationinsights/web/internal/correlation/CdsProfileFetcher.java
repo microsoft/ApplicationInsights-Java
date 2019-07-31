@@ -30,7 +30,6 @@ import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.ssl.SSLContexts;
@@ -75,12 +74,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
                 .setConnectionRequestTimeout(5000)
                 .build();
 
-        final HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig);
         final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
-        if (allowedProtocols.length > 0) {
-                httpAsyncClientBuilder.setSSLStrategy(new SSLIOSessionStrategy(SSLContexts.createDefault(), allowedProtocols, null, SSLIOSessionStrategy.getDefaultHostnameVerifier()));
-        }
-        setHttpClient(httpAsyncClientBuilder
+        setHttpClient(HttpAsyncClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .setSSLStrategy(new SSLIOSessionStrategy(SSLContexts.createDefault(), allowedProtocols, null, SSLIOSessionStrategy.getDefaultHostnameVerifier()))
                 .useSystemProperties()
                 .build());
 
