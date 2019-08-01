@@ -24,12 +24,15 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
+import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -39,7 +42,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class CdsProfileFetcher implements AppProfileFetcher {
@@ -72,8 +74,10 @@ public class CdsProfileFetcher implements AppProfileFetcher {
                 .setConnectionRequestTimeout(5000)
                 .build();
 
+        final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
         setHttpClient(HttpAsyncClients.custom()
                 .setDefaultRequestConfig(requestConfig)
+                .setSSLStrategy(new SSLIOSessionStrategy(SSLContexts.createDefault(), allowedProtocols, null, SSLIOSessionStrategy.getDefaultHostnameVerifier()))
                 .useSystemProperties()
                 .build());
 

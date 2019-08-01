@@ -22,25 +22,24 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContexts;
 
 /**
  * Created by gupele on 6/4/2015.
@@ -51,16 +50,18 @@ final class ApacheSender43 implements ApacheSender {
 
     static ApacheSender43 create() {
         final ApacheSender43 sender = new ApacheSender43();
+        final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
         Thread initThread = new Thread(
                 new Runnable() {
-
                     @Override
                     public void run() {
-                        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+                        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
+                                .register("https", new SSLConnectionSocketFactory(SSLContexts.createDefault(), allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
+                                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                                .build());
                         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
                         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-
-                            sender.httpClientRef.compareAndSet(null, HttpClients.custom()
+                        sender.httpClientRef.compareAndSet(null, HttpClients.custom()
                                 .setConnectionManager(cm)
                                 .useSystemProperties()
                                 .build());
