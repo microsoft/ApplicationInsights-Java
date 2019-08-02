@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.config.connection;
 
-import com.microsoft.applicationinsights.internal.config.ConnectionConfiguration;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.EndpointPrefixes;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -9,7 +8,7 @@ import org.junit.rules.ExpectedException;
 
 import java.util.UUID;
 
-import static com.microsoft.applicationinsights.internal.config.connection.ConnectionString.parse;
+import static com.microsoft.applicationinsights.internal.config.connection.ConnectionString.parseInto;
 import static org.junit.Assert.*;
 
 public class ConnectionStringTests {
@@ -17,12 +16,24 @@ public class ConnectionStringTests {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private ConnectionConfiguration config = null;
+
+    @Before
+    public void setup() {
+        config = new ConnectionConfiguration();
+    }
+
+    @After
+    public void teardown() {
+        config = null;
+    }
+
     @Test
     public void minimalString() throws ConnectionStringParseException {
         final String ikey = "fake-ikey";
         final String cs = "InstrumentationKey="+ikey;
 
-        ConnectionConfiguration config = parse(cs);
+        parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
         assertEquals(ConnectionString.Defaults.INGESTION_ENDPOINT, config.getIngestionEndpoint());
         assertEquals(ConnectionString.Defaults.LIVE_ENDPOINT, config.getLiveEndpoint());
@@ -33,7 +44,7 @@ public class ConnectionStringTests {
         final String ikey = "fake-ikey";
         final String cs = "Authorization=ikey;InstrumentationKey="+ikey;
 
-        ConnectionConfiguration config = parse(cs);
+        parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
         assertEquals(ConnectionString.Defaults.INGESTION_ENDPOINT, config.getIngestionEndpoint());
         assertEquals(ConnectionString.Defaults.LIVE_ENDPOINT, config.getLiveEndpoint());
@@ -47,7 +58,7 @@ public class ConnectionStringTests {
         final String expectedIngestionEndpoint = "https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix;
         final String expectedLiveEndpoint = "https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix;
 
-        ConnectionConfiguration config = parse(cs);
+        parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
         assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
         assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
@@ -60,7 +71,7 @@ public class ConnectionStringTests {
         final String expectedLiveEndpoint = "https://live.example.com";
         final String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";LiveEndpoint="+expectedLiveEndpoint;
 
-        ConnectionConfiguration config = parse(cs);
+        parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
         assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
         assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
@@ -74,23 +85,7 @@ public class ConnectionStringTests {
         final String expectedLiveEndpoint = "https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix;
         final String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";EndpointSuffix="+suffix;
 
-        ConnectionConfiguration config = parse(cs);
-        assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
-        assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
-    }
-
-    @Ignore // TODO is this a valid test? should Location be ignored if EndpointSuffix is missing?
-    @Test
-    public void locationWithoutSuffixPrefixesDefaultValues() throws ConnectionStringParseException {
-        final String ikey = "fake-ikey";
-        final String location = "westus2";
-        final String cs = "InstrumentationKey="+ikey+";Location="+location;
-
-        final String expectedIngestionEndpoint = ConnectionString.constructSecureEndpoint(location, EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, Defaults.ENDPOINT_SUFFIX);
-        final String expectedLiveEndpoint = ConnectionString.constructSecureEndpoint(location, EndpointPrefixes.DEFAULT_LIVE_ENDPOINT_PREFIX, Defaults.ENDPOINT_SUFFIX);
-
-        ConnectionConfiguration config = parse(cs);
+        parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
         assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
         assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
@@ -103,9 +98,8 @@ public class ConnectionStringTests {
         final String cs = "InstrumentationKey="+ikey+";;EndpointSuffix="+suffix+";";
         final String expectedIngestionEndpoint = "https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix;
         final String expectedLiveEndpoint = "https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix;
-        ConnectionConfiguration config;
         try {
-            config = parse(cs);
+            parseInto(cs, config);
         } catch (Exception e) {
             fail("Exception thrown from parse: " + ExceptionUtils.getStackTrace(e));
             return;
@@ -121,9 +115,8 @@ public class ConnectionStringTests {
         final String cs = "InstrumentationKey="+ikey+";=1234";
         final String expectedIngestionEndpoint = Defaults.INGESTION_ENDPOINT;
         final String expectedLiveEndpoint = Defaults.LIVE_ENDPOINT;
-        ConnectionConfiguration config;
         try {
-            config = parse(cs);
+            parseInto(cs, config);
         } catch (Exception e) {
             fail("Exception thrown from parse: " + ExceptionUtils.getStackTrace(e));
             return;
@@ -138,17 +131,58 @@ public class ConnectionStringTests {
         final String ikey = "fake-ikey";
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix=";
 
-        ConnectionConfiguration config = parse(cs);
+        parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
         assertEquals(Defaults.INGESTION_ENDPOINT, config.getIngestionEndpoint());
         assertEquals(Defaults.LIVE_ENDPOINT, config.getLiveEndpoint());
     }
 
     @Test
+    public void caseInsensitiveParsing() throws ConnectionStringParseException {
+        final String ikey = "fake-ikey";
+        final String live = "https://live.something.com";
+        final String profiler = "https://prof.something.com";
+        final String cs1 = "InstrumentationKey="+ ikey +";LiveEndpoint="+ live +";ProfilerEndpoint="+ profiler;
+        final String cs2 = "instRUMentationkEY="+ ikey +";LivEEndPOINT="+ live +";ProFILErEndPOinT="+ profiler;
+
+        ConnectionConfiguration config2 = new ConnectionConfiguration();
+
+        parseInto(cs1, config);
+        parseInto(cs2, config2);
+
+        assertEquals(config.getInstrumentationKey(), config2.getInstrumentationKey());
+        assertEquals(config.getIngestionEndpoint(), config2.getIngestionEndpoint());
+        assertEquals(config.getLiveEndpoint(), config2.getLiveEndpoint());
+        assertEquals(config.getProfilerEndpoint(), config2.getProfilerEndpoint());
+        assertEquals(config.getSnapshotEndpoint(), config2.getSnapshotEndpoint());
+    }
+
+    @Test
+    public void orderDoesNotMatter() throws ConnectionStringParseException {
+        final String ikey = "fake-ikey";
+        final String live = "https://live.something.com";
+        final String profiler = "https://prof.something.com";
+        final String snapshot = "https://whatever.snappy.com";
+        final String cs1 = "InstrumentationKey="+ ikey +";LiveEndpoint="+ live +";ProfilerEndpoint="+ profiler+";SnapshotEndpoint="+ snapshot;
+        final String cs2 = "SnapshotEndpoint="+ snapshot+";ProfilerEndpoint="+ profiler+";InstrumentationKey="+ ikey +";LiveEndpoint="+ live;
+
+        ConnectionConfiguration config2 = new ConnectionConfiguration();
+
+        parseInto(cs1, config);
+        parseInto(cs2, config2);
+
+        assertEquals(config.getInstrumentationKey(), config2.getInstrumentationKey());
+        assertEquals(config.getIngestionEndpoint(), config2.getIngestionEndpoint());
+        assertEquals(config.getLiveEndpoint(), config2.getLiveEndpoint());
+        assertEquals(config.getProfilerEndpoint(), config2.getProfilerEndpoint());
+        assertEquals(config.getSnapshotEndpoint(), config2.getSnapshotEndpoint());
+    }
+
+    @Test
     public void emptyIkeyValueIsInvalid() throws ConnectionStringParseException {
         exception.expect(InvalidConnectionStringException.class);
         final String cs = "InstrumentationKey=;IngestionEndpoint=https://ingestion.example.com;EndpointSuffix=ai.example.com";
-        ConnectionConfiguration config = parse(cs);
+        parseInto(cs, config);
     }
 
     @Test
@@ -156,31 +190,31 @@ public class ConnectionStringTests {
         exception.expect(InvalidConnectionStringException.class);
         final String ikey = "fake-ikey";
         final String cs = "Authorization=ikey;InstrumentationKey=="+ikey;
-        ConnectionConfiguration config = parse(cs);
+        parseInto(cs, config);
     }
 
     @Test
     public void emptyStringIsInvalid() throws ConnectionStringParseException {
         exception.expect(InvalidConnectionStringException.class);
-        ConnectionConfiguration config = parse("");
+        parseInto("", config);
     }
 
     @Test
     public void nonKeyValueStringIsInvalid() throws ConnectionStringParseException {
         exception.expect(InvalidConnectionStringException.class);
-        ConnectionConfiguration config = parse(UUID.randomUUID().toString());
+        parseInto(UUID.randomUUID().toString(), config);
     }
 
     @Test
     public void missingAuthorizationIsInvalid() throws ConnectionStringParseException {
         exception.expect(InvalidConnectionStringException.class);
-        ConnectionConfiguration config = parse("LiveEndpoint=https://live.example.com");
+        parseInto("LiveEndpoint=https://live.example.com", config);
     }
 
     @Test
     public void nonIkeyAuthIsInvalid() throws ConnectionStringParseException {
         exception.expect(UnsupportedAuthorizationTypeException.class);
-        ConnectionConfiguration config = parse("Authorization=magic;MagicWord=abacadabra");
+        parseInto("Authorization=magic;MagicWord=abacadabra", config);
     }
 
 }
