@@ -28,20 +28,20 @@ public class ConnectionString {
         // TODO validate values?
 
         // check for authorization
-        String authorizationType = kvps.get(ConnectionStringKeys.AUTHORIZATION);
+        String authorizationType = kvps.get(Keywords.AUTHORIZATION);
         if (!(Strings.isNullOrEmpty(authorizationType) || "ikey".equalsIgnoreCase(authorizationType))) {
             throw new UnsupportedAuthorizationTypeException(authorizationType + " is not a supported Authorization value. Supported values: [\"ikey\"].");
         }
 
         // get ikey
-        String instrumentationKey = kvps.get(ConnectionStringKeys.INSTRUMENTATION_KEY);
+        String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
         if (Strings.isNullOrEmpty(instrumentationKey)) {
             throw new InvalidConnectionStringException("Missing 'InstrumentationKey'");
         }
         result.setInstrumentationKey(instrumentationKey);
 
         // resolve suffix
-        String suffix = kvps.get(ConnectionStringKeys.ENDPOINT_SUFFIX);
+        String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
         if (!Strings.isNullOrEmpty(suffix)) {
             result.setIngestionEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
             result.setLiveEndpoint(constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
@@ -50,22 +50,22 @@ public class ConnectionString {
         }
 
         // set explicit endpoints
-        String liveEndpoint = kvps.get(ConnectionStringKeys.LIVE_ENDPOINT);
+        String liveEndpoint = kvps.get(Keywords.LIVE_ENDPOINT);
         if (!Strings.isNullOrEmpty(liveEndpoint)) {
             result.setLiveEndpoint(liveEndpoint);
         }
 
-        String ingestionEndpoint = kvps.get(ConnectionStringKeys.INGESTION_ENDPOINT);
+        String ingestionEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
         if (!Strings.isNullOrEmpty(ingestionEndpoint)) {
             result.setIngestionEndpoint(ingestionEndpoint);
         }
 
-        String profilerEndpoint = kvps.get(ConnectionStringKeys.PROFILER_ENDPOINT);
+        String profilerEndpoint = kvps.get(Keywords.PROFILER_ENDPOINT);
         if (!Strings.isNullOrEmpty(profilerEndpoint)) {
             result.setProfilerEndpoint(profilerEndpoint);
         }
 
-        String snapshotEndpoint = kvps.get(ConnectionStringKeys.SNAPSHOT_ENDPOINT);
+        String snapshotEndpoint = kvps.get(Keywords.SNAPSHOT_ENDPOINT);
         if (!Strings.isNullOrEmpty(snapshotEndpoint)) {
             result.setSnapshotEndpoint(snapshotEndpoint);
         }
@@ -81,8 +81,8 @@ public class ConnectionString {
      * All tokens are lowercase. Parsing should be case insensitive.
      */
     @VisibleForTesting
-    static class ConnectionStringKeys {
-        private ConnectionStringKeys(){}
+    static class Keywords {
+        private Keywords(){}
 
         static final String AUTHORIZATION = "Authorization";
         static final String INSTRUMENTATION_KEY = "InstrumentationKey";
