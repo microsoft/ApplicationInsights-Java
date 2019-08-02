@@ -80,6 +80,7 @@ public class ConnectionStringTests {
         assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
     }
 
+    @Ignore // TODO is this a valid test? should Location be ignored if EndpointSuffix is missing?
     @Test
     public void locationWithoutSuffixPrefixesDefaultValues() throws ConnectionStringParseException {
         final String ikey = "fake-ikey";
@@ -96,7 +97,7 @@ public class ConnectionStringTests {
     }
 
     @Test
-    public void emptyPairIsIgnored() throws ConnectionStringParseException {
+    public void emptyPairIsIgnored() {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
         final String cs = "InstrumentationKey="+ikey+";;EndpointSuffix="+suffix+";";
@@ -115,7 +116,7 @@ public class ConnectionStringTests {
     }
 
     @Test
-    public void emptyKeyIsIgnored() throws ConnectionStringParseException {
+    public void emptyKeyIsIgnored() {
         final String ikey = "fake-ikey";
         final String cs = "InstrumentationKey="+ikey+";=1234";
         final String expectedIngestionEndpoint = Defaults.INGESTION_ENDPOINT;

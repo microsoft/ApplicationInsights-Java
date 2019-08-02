@@ -104,8 +104,13 @@ public class ConnectionString {
             throw new InvalidConnectionStringException(e);
         }
 
-        ConnectionConfiguration result = new ConnectionConfiguration();
+        return mapToConnectionConfiguration(kvps);
 
+    }
+
+    @VisibleForTesting
+    static ConnectionConfiguration mapToConnectionConfiguration(Map<String, String> kvps) throws ConnectionStringParseException {
+        final ConnectionConfiguration result = new ConnectionConfiguration();
 
         // TODO validate values?
 
@@ -124,13 +129,11 @@ public class ConnectionString {
 
         // resolve suffix
         String suffix = kvps.get(ConnectionStringKeys.ENDPOINT_SUFFIX);
-        String location = kvps.get(ConnectionStringKeys.LOCATION);
         if (!Strings.isNullOrEmpty(suffix)) {
+            // resolve location
+            String location = kvps.get(ConnectionStringKeys.LOCATION);
             result.setIngestionEndpoint(constructSecureEndpoint(location, EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
             result.setLiveEndpoint(constructSecureEndpoint(location, EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
-        } else if (!Strings.isNullOrEmpty(location)) {
-            result.setIngestionEndpoint(constructSecureEndpoint(location, EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, Defaults.ENDPOINT_SUFFIX));
-            result.setLiveEndpoint(constructSecureEndpoint(location, EndpointPrefixes.DEFAULT_LIVE_ENDPOINT_PREFIX, Defaults.ENDPOINT_SUFFIX));
         }
 
         // set explicit endpoints
@@ -149,15 +152,14 @@ public class ConnectionString {
 
     @VisibleForTesting
     static String constructSecureEndpoint(String location, String prefix, String suffix) {
-        if (Strings.isNullOrEmpty(location)) {
-            return constructSecureEndpoint(prefix, suffix);
-        }
-        return "https://"+location+"."+prefix+"."+suffix;
+        return Strings.isNullOrEmpty(location)
+                ? constructSecureEndpoint(prefix, suffix)
+                : "https://" + location + "." + prefix + "." + suffix;
     }
 
     @VisibleForTesting
     static String constructSecureEndpoint(String prefix, String suffix) {
-        return "https://"+prefix+"."+suffix;
+        return "https://" + prefix + "." + suffix;
     }
 
     /**
