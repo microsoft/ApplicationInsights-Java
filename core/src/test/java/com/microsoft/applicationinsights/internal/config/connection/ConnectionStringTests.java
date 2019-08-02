@@ -12,7 +12,7 @@ import java.util.UUID;
 import static com.microsoft.applicationinsights.internal.config.connection.ConnectionString.parse;
 import static org.junit.Assert.*;
 
-public class ConnectionStringParserTests {
+public class ConnectionStringTests {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
