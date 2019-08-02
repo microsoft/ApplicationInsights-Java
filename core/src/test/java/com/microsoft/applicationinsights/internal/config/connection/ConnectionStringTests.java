@@ -6,6 +6,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
+import java.net.URI;
 import java.util.UUID;
 
 import static com.microsoft.applicationinsights.internal.config.connection.ConnectionString.parseInto;
@@ -35,8 +36,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(ConnectionString.Defaults.INGESTION_ENDPOINT, config.getIngestionEndpoint());
-        assertEquals(ConnectionString.Defaults.LIVE_ENDPOINT, config.getLiveEndpoint());
+        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getIngestionEndpoint());
+        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getLiveEndpoint());
     }
 
     @Test
@@ -46,8 +47,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(ConnectionString.Defaults.INGESTION_ENDPOINT, config.getIngestionEndpoint());
-        assertEquals(ConnectionString.Defaults.LIVE_ENDPOINT, config.getLiveEndpoint());
+        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getIngestionEndpoint());
+        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getLiveEndpoint());
     }
 
     @Test
@@ -55,8 +56,8 @@ public class ConnectionStringTests {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix="+suffix;
-        final String expectedIngestionEndpoint = "https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix;
-        final String expectedLiveEndpoint = "https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix;
+        final URI expectedIngestionEndpoint = URI.create("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
+        final URI expectedLiveEndpoint = URI.create("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix);
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
@@ -67,8 +68,8 @@ public class ConnectionStringTests {
     @Test
     public void ikeyWithExplicitEndpoints() throws ConnectionStringParseException {
         final String ikey = "fake-ikey";
-        final String expectedIngestionEndpoint = "https://ingestion.example.com";
-        final String expectedLiveEndpoint = "https://live.example.com";
+        final URI expectedIngestionEndpoint = URI.create("https://ingestion.example.com");
+        final URI expectedLiveEndpoint = URI.create("https://live.example.com");
         final String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";LiveEndpoint="+expectedLiveEndpoint;
 
         parseInto(cs, config);
@@ -81,8 +82,8 @@ public class ConnectionStringTests {
     public void explicitEndpointOverridesSuffix() throws ConnectionStringParseException {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
-        final String expectedIngestionEndpoint = "https://ingestion.example.com";
-        final String expectedLiveEndpoint = "https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix;
+        final URI expectedIngestionEndpoint = URI.create("https://ingestion.example.com");
+        final URI expectedLiveEndpoint = URI.create("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix);
         final String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";EndpointSuffix="+suffix;
 
         parseInto(cs, config);
@@ -96,8 +97,8 @@ public class ConnectionStringTests {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
         final String cs = "InstrumentationKey="+ikey+";;EndpointSuffix="+suffix+";";
-        final String expectedIngestionEndpoint = "https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix;
-        final String expectedLiveEndpoint = "https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix;
+        final URI expectedIngestionEndpoint = URI.create("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
+        final URI expectedLiveEndpoint = URI.create("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix);
         try {
             parseInto(cs, config);
         } catch (Exception e) {
@@ -113,8 +114,8 @@ public class ConnectionStringTests {
     public void emptyKeyIsIgnored() {
         final String ikey = "fake-ikey";
         final String cs = "InstrumentationKey="+ikey+";=1234";
-        final String expectedIngestionEndpoint = Defaults.INGESTION_ENDPOINT;
-        final String expectedLiveEndpoint = Defaults.LIVE_ENDPOINT;
+        final URI expectedIngestionEndpoint = URI.create(Defaults.INGESTION_ENDPOINT);
+        final URI expectedLiveEndpoint = URI.create(Defaults.LIVE_ENDPOINT);
         try {
             parseInto(cs, config);
         } catch (Exception e) {
@@ -133,8 +134,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(Defaults.INGESTION_ENDPOINT, config.getIngestionEndpoint());
-        assertEquals(Defaults.LIVE_ENDPOINT, config.getLiveEndpoint());
+        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getIngestionEndpoint());
+        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getLiveEndpoint());
     }
 
     @Test

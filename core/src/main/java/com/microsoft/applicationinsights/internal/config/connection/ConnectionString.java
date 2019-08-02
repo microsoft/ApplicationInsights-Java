@@ -3,7 +3,11 @@ package com.microsoft.applicationinsights.internal.config.connection;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -25,12 +29,10 @@ public class ConnectionString {
 
     @VisibleForTesting
     static void mapToConnectionConfiguration(Map<String, String> kvps, ConnectionConfiguration result) throws ConnectionStringParseException {
-        // TODO validate values?
-
         // check for authorization
         String authorizationType = kvps.get(Keywords.AUTHORIZATION);
         if (!(Strings.isNullOrEmpty(authorizationType) || "ikey".equalsIgnoreCase(authorizationType))) {
-            throw new UnsupportedAuthorizationTypeException(authorizationType + " is not a supported Authorization value. Supported values: [\"ikey\"].");
+            throw new UnsupportedAuthorizationTypeException("\"" + authorizationType + "\" is not a supported Authorization value. Supported values: [\"ikey\"].");
         }
 
         // get ikey
@@ -43,38 +45,54 @@ public class ConnectionString {
         // resolve suffix
         String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
         if (!Strings.isNullOrEmpty(suffix)) {
-            result.setIngestionEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
-            result.setLiveEndpoint(constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
-            result.setProfilerEndpoint(constructSecureEndpoint(EndpointPrefixes.PROFILER_ENDPOINT_PREFIX, suffix));
-            result.setSnapshotEndpoint(constructSecureEndpoint(EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX, suffix));
+            try {
+                result.setIngestionEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
+                result.setLiveEndpoint(constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
+                result.setProfilerEndpoint(constructSecureEndpoint(EndpointPrefixes.PROFILER_ENDPOINT_PREFIX, suffix));
+                result.setSnapshotEndpoint(constructSecureEndpoint(EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX, suffix));
+            } catch (URISyntaxException e) {
+                throw new InvalidConnectionStringException(Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
+            }
         }
 
         // set explicit endpoints
         String liveEndpoint = kvps.get(Keywords.LIVE_ENDPOINT);
         if (!Strings.isNullOrEmpty(liveEndpoint)) {
-            result.setLiveEndpoint(liveEndpoint);
+            result.setLiveEndpoint(toUriOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
         }
 
         String ingestionEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
         if (!Strings.isNullOrEmpty(ingestionEndpoint)) {
-            result.setIngestionEndpoint(ingestionEndpoint);
+            result.setIngestionEndpoint(toUriOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
         }
 
         String profilerEndpoint = kvps.get(Keywords.PROFILER_ENDPOINT);
         if (!Strings.isNullOrEmpty(profilerEndpoint)) {
-            result.setProfilerEndpoint(profilerEndpoint);
+            result.setProfilerEndpoint(toUriOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
         }
 
         String snapshotEndpoint = kvps.get(Keywords.SNAPSHOT_ENDPOINT);
         if (!Strings.isNullOrEmpty(snapshotEndpoint)) {
-            result.setSnapshotEndpoint(snapshotEndpoint);
+            result.setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
         }
 
     }
 
+    private static URI toUriOrThrow(String uri, String field) throws InvalidConnectionStringException {
+        try {
+            final URIBuilder builder = new URIBuilder(uri);
+            if (Strings.isNullOrEmpty(builder.getScheme())) {
+                builder.setScheme("https");
+            }
+            return builder.build();
+        } catch (URISyntaxException e) {
+            throw new InvalidConnectionStringException(field + " is invalid: " + uri, e);
+        }
+    }
+
     @VisibleForTesting
-    static String constructSecureEndpoint(String prefix, String suffix) {
-        return "https://" + prefix + "." + suffix;
+    static URI constructSecureEndpoint(String prefix, String suffix) throws URISyntaxException {
+        return new URI("https://" + StringUtils.strip(prefix, ".") + "." + StringUtils.strip(suffix, "."));
     }
 
     /**
@@ -106,9 +124,9 @@ public class ConnectionString {
     public static class Defaults {
         private Defaults(){}
 
-        public static final String INGESTION_ENDPOINT = "https://dc.services.visualstudio.com ";
-        public static final String LIVE_ENDPOINT = "https://rt.services.visualstudio.com/";
-        public static final String PROFILER_ENDPOINT = "https://agent.azureserviceprofiler.net ";
-        public static final String SNAPSHOT_ENDPOINT = "https://agent.azureserviceprofiler.net "; // TODO verify if this is needed.
+        public static final String INGESTION_ENDPOINT = "https://dc.services.visualstudio.com";
+        public static final String LIVE_ENDPOINT =      "https://rt.services.visualstudio.com";
+        public static final String PROFILER_ENDPOINT =  "https://agent.azureserviceprofiler.net";
+        public static final String SNAPSHOT_ENDPOINT =  "https://agent.azureserviceprofiler.net"; // TODO verify if this is needed.
     }
 }
