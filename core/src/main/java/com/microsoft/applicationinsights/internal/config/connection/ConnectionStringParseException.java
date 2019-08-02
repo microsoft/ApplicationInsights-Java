@@ -6,8 +6,7 @@ public abstract class ConnectionStringParseException extends Exception {
         super(message);
     }
 
-    ConnectionStringParseException(Throwable cause) {
-        super(cause);
+    public ConnectionStringParseException(String message, Throwable cause) {
+        super(message, cause);
     }
-
 }

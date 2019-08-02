@@ -6,8 +6,7 @@ public class InvalidConnectionStringException extends ConnectionStringParseExcep
         super(message);
     }
 
-    InvalidConnectionStringException(Throwable cause) {
-        super(cause);
+    public InvalidConnectionStringException(String message, Throwable cause) {
+        super(message, cause);
     }
-
 }

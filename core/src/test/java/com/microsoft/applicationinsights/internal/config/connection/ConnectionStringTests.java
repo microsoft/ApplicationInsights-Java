@@ -190,7 +190,12 @@ public class ConnectionStringTests {
         exception.expect(InvalidConnectionStringException.class);
         final String ikey = "fake-ikey";
         final String cs = "Authorization=ikey;InstrumentationKey=="+ikey;
-        parseInto(cs, config);
+        try {
+            parseInto(cs, config);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Test
