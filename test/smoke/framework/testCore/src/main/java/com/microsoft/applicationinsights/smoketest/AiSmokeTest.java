@@ -14,6 +14,7 @@ import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
 import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
@@ -346,7 +347,8 @@ public abstract class AiSmokeTest {
         final ContainerInfo containerInfo = currentContainerInfo.get();
         try {
             System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
-            waitForUrlWithRetries(getBaseUrl(), APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS,
+            final String contextRootUrl = getBaseUrl() + "/";
+            waitForUrlWithRetries(contextRootUrl, APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS,
                     String.format("%s on %s", getAppContext(), containerInfo.getImageName()),
                     HEALTH_CHECK_RETRIES);
             System.out.println("Test app health check complete.");
@@ -355,7 +357,11 @@ public abstract class AiSmokeTest {
                 mockedIngestion.waitForItem(new Predicate<Envelope>() {
                     @Override
                     public boolean apply(Envelope input) {
-                        return "RequestData".equals(input.getData().getBaseType());
+                        if (!"RequestData".equals(input.getData().getBaseType())) {
+                            return false;
+                        }
+                        RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
+                        return contextRootUrl.equals(data.getUrl()) && "200".equals(data.getResponseCode());
                     }
                 }, TELEMETRY_RECEIVE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
                 System.out.printf("Received request telemetry after %.3f seconds...%n",
