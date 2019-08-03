@@ -3,6 +3,7 @@ package com.springbootstartertest.smoketest;
 import java.util.List;
 import java.util.Map;
 
+import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -71,83 +72,86 @@ public class SpringbootSmokeTest extends AiSmokeTest {
     @Test
     @TargetUri("/throwsException")
     public void testResultCodeWhenRestControllerThrows() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        List<Envelope> exceptionEnvelopeList = mockedIngestion.getItemsEnvelopeDataType("ExceptionData");
-        assertEquals(1, exceptionEnvelopeList.size());
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        List<Envelope> edList = mockedIngestion.getItemsEnvelopeDataType("ExceptionData");
 
-        Envelope exceptionEnvelope = exceptionEnvelopeList.get(0);
-        RequestData d = getTelemetryDataForType(0, "RequestData");
-        String requestOperationId = d.getId();
-        final String opId = exceptionEnvelope.getTags().get("ai.operation.id");
-        assertNotNull(opId);
-        assertThat(requestOperationId, containsString(opId));
-        System.out.println("Response code after exception: "+d.getResponseCode());
+        assertThat(rdList, hasSize(1));
+        assertThat(edList, hasSize(1));
+
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope edEnvelope = edList.get(0);
+
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
+        System.out.println("Response code after exception: " + rd.getResponseCode());
         int code = -123;
         try {
-            code = Integer.parseInt(d.getResponseCode());
+            code = Integer.parseInt(rd.getResponseCode());
         } catch (NumberFormatException e) {
             fail("Response code is not a number");
         }
         assertThat(code, greaterThanOrEqualTo(500));
+
+        assertSameOperationId(rdEnvelope, edEnvelope);
     }
 
     @Test
     @TargetUri("/asyncDependencyCallWithApacheHttpClient4")
     public void testAsyncDependencyCallWithApacheHttpClient4() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        commonValidation();
     }
 
     @Test
     @TargetUri("/asyncDependencyCallWithApacheHttpClient3")
     public void testAsyncDependencyCallWithApacheHttpClient3() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        commonValidation();
     }
 
     @Test
     @TargetUri("/asyncDependencyCallWithOkHttp3")
     public void testAsyncDependencyCallWithOkHttp3() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        commonValidation();
     }
 
     @Test
     @TargetUri("/asyncDependencyCallWithOkHttp2")
     public void testAsyncDependencyCallWithOkHttp2() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        commonValidation();
     }
 
     @Test
     @TargetUri("/asyncDependencyCallWithHttpURLConnection")
     public void testAsyncDependencyCallWithHttpURLConnection() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        commonValidation();
+    }
+
+    private static void commonValidation() {
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+
+        assertThat(rdList, hasSize(1));
+        assertThat(rddList, hasSize(1));
+
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData d = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+
         assertTrue(rdd.getId().contains(d.getId()));
+        assertSameOperationId(rdEnvelope, rddEnvelope);
+    }
+
+    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+
+        assertNotNull(operationId);
+        assertNotNull(operationParentId);
+
+        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
+        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
     }
 }
