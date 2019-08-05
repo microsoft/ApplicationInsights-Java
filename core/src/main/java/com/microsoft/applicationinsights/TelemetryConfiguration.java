@@ -29,6 +29,9 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionStringParseException;
+import com.microsoft.applicationinsights.internal.config.connection.EndpointConfiguration;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -46,6 +49,7 @@ public final class TelemetryConfiguration {
     private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
+    private String connectionString;
     private String roleName;
 
     private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
@@ -218,6 +222,23 @@ public final class TelemetryConfiguration {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getConnectionString() {
+        return connectionString;
+    }
+
+    public void setConnectionString(String connectionString) {
+        try {
+            ConnectionString.parseInto(connectionString, this);
+        } catch (ConnectionStringParseException e) {
+            throw new IllegalArgumentException("Invalid connection string: "+connectionString, e);
+        }
+        this.connectionString = connectionString;
+    }
+
+    public EndpointConfiguration getEndpointConfiguration() {
+        return endpointConfiguration;
     }
 
     /**

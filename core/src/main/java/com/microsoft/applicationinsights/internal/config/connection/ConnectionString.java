@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.internal.config.connection;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -14,7 +15,7 @@ import java.util.TreeMap;
 public class ConnectionString {
     private ConnectionString(){}
 
-    public static void parseInto(String connectionString, ConnectionConfiguration targetConfig) throws ConnectionStringParseException {
+    public static void parseInto(String connectionString, TelemetryConfiguration targetConfig) throws ConnectionStringParseException {
         // parse key value pairs
         final Map<String, String> kvps;
         try {
@@ -27,7 +28,7 @@ public class ConnectionString {
         mapToConnectionConfiguration(kvps, targetConfig);
     }
 
-    private static void mapToConnectionConfiguration(Map<String, String> kvps, ConnectionConfiguration result) throws ConnectionStringParseException {
+    private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryConfiguration config) throws ConnectionStringParseException {
         // check for authorization
         String authorizationType = kvps.get(Keywords.AUTHORIZATION);
         if (!(Strings.isNullOrEmpty(authorizationType) || "ikey".equalsIgnoreCase(authorizationType))) {
@@ -39,16 +40,16 @@ public class ConnectionString {
         if (Strings.isNullOrEmpty(instrumentationKey)) {
             throw new InvalidConnectionStringException("Missing 'InstrumentationKey'");
         }
-        result.setInstrumentationKey(instrumentationKey);
+        config.setInstrumentationKey(instrumentationKey);
 
         // resolve suffix
         String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
         if (!Strings.isNullOrEmpty(suffix)) {
             try {
-                result.setIngestionEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
-                result.setLiveEndpoint(constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
-                result.setProfilerEndpoint(constructSecureEndpoint(EndpointPrefixes.PROFILER_ENDPOINT_PREFIX, suffix));
-                result.setSnapshotEndpoint(constructSecureEndpoint(EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX, suffix));
+                config.getEndpointConfiguration().setIngestionEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
+                config.getEndpointConfiguration().setLiveEndpoint(constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
+                config.getEndpointConfiguration().setProfilerEndpoint(constructSecureEndpoint(EndpointPrefixes.PROFILER_ENDPOINT_PREFIX, suffix));
+                config.getEndpointConfiguration().setSnapshotEndpoint(constructSecureEndpoint(EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX, suffix));
             } catch (URISyntaxException e) {
                 throw new InvalidConnectionStringException(Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
             }
@@ -57,22 +58,22 @@ public class ConnectionString {
         // set explicit endpoints
         String liveEndpoint = kvps.get(Keywords.LIVE_ENDPOINT);
         if (!Strings.isNullOrEmpty(liveEndpoint)) {
-            result.setLiveEndpoint(toUriOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
+            config.getEndpointConfiguration().setLiveEndpoint(toUriOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
         }
 
         String ingestionEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
         if (!Strings.isNullOrEmpty(ingestionEndpoint)) {
-            result.setIngestionEndpoint(toUriOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
+            config.getEndpointConfiguration().setIngestionEndpoint(toUriOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
         }
 
         String profilerEndpoint = kvps.get(Keywords.PROFILER_ENDPOINT);
         if (!Strings.isNullOrEmpty(profilerEndpoint)) {
-            result.setProfilerEndpoint(toUriOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
+            config.getEndpointConfiguration().setProfilerEndpoint(toUriOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
         }
 
         String snapshotEndpoint = kvps.get(Keywords.SNAPSHOT_ENDPOINT);
         if (!Strings.isNullOrEmpty(snapshotEndpoint)) {
-            result.setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
+            config.getEndpointConfiguration().setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
         }
 
     }

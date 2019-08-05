@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.config.connection;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.EndpointPrefixes;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -12,16 +13,16 @@ import java.util.UUID;
 import static com.microsoft.applicationinsights.internal.config.connection.ConnectionString.parseInto;
 import static org.junit.Assert.*;
 
-public class ConnectionStringTests {
+public class ConnectionStringParsingTests {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private ConnectionConfiguration config = null;
+    private TelemetryConfiguration config = null;
 
     @Before
     public void setup() {
-        config = new ConnectionConfiguration();
+        config = new TelemetryConfiguration();
     }
 
     @After
@@ -36,8 +37,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getIngestionEndpoint());
-        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getLiveEndpoint());
+        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getEndpointConfiguration().getLiveEndpoint());
     }
 
     @Test
@@ -47,8 +48,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getIngestionEndpoint());
-        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getLiveEndpoint());
+        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getEndpointConfiguration().getLiveEndpoint());
     }
 
     @Test
@@ -61,8 +62,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
-        assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
+        assertEquals(expectedIngestionEndpoint, config.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(expectedLiveEndpoint, config.getEndpointConfiguration().getLiveEndpoint());
     }
 
     @Test
@@ -74,8 +75,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
-        assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
+        assertEquals(expectedIngestionEndpoint, config.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(expectedLiveEndpoint, config.getEndpointConfiguration().getLiveEndpoint());
     }
 
     @Test
@@ -88,8 +89,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
-        assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
+        assertEquals(expectedIngestionEndpoint, config.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(expectedLiveEndpoint, config.getEndpointConfiguration().getLiveEndpoint());
     }
 
     @Test
@@ -106,8 +107,8 @@ public class ConnectionStringTests {
             return;
         }
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
-        assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
+        assertEquals(expectedIngestionEndpoint, config.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(expectedLiveEndpoint, config.getEndpointConfiguration().getLiveEndpoint());
     }
 
     @Test
@@ -123,8 +124,8 @@ public class ConnectionStringTests {
             return;
         }
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, config.getIngestionEndpoint());
-        assertEquals(expectedLiveEndpoint, config.getLiveEndpoint());
+        assertEquals(expectedIngestionEndpoint, config.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(expectedLiveEndpoint, config.getEndpointConfiguration().getLiveEndpoint());
     }
 
     @Test
@@ -134,8 +135,8 @@ public class ConnectionStringTests {
 
         parseInto(cs, config);
         assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getIngestionEndpoint());
-        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getLiveEndpoint());
+        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(URI.create(Defaults.LIVE_ENDPOINT), config.getEndpointConfiguration().getLiveEndpoint());
     }
 
     @Test
@@ -146,16 +147,16 @@ public class ConnectionStringTests {
         final String cs1 = "InstrumentationKey="+ ikey +";LiveEndpoint="+ live +";ProfilerEndpoint="+ profiler;
         final String cs2 = "instRUMentationkEY="+ ikey +";LivEEndPOINT="+ live +";ProFILErEndPOinT="+ profiler;
 
-        ConnectionConfiguration config2 = new ConnectionConfiguration();
+        TelemetryConfiguration config2 = new TelemetryConfiguration();
 
         parseInto(cs1, config);
         parseInto(cs2, config2);
 
         assertEquals(config.getInstrumentationKey(), config2.getInstrumentationKey());
-        assertEquals(config.getIngestionEndpoint(), config2.getIngestionEndpoint());
-        assertEquals(config.getLiveEndpoint(), config2.getLiveEndpoint());
-        assertEquals(config.getProfilerEndpoint(), config2.getProfilerEndpoint());
-        assertEquals(config.getSnapshotEndpoint(), config2.getSnapshotEndpoint());
+        assertEquals(config.getEndpointConfiguration().getIngestionEndpoint(), config2.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(config.getEndpointConfiguration().getLiveEndpoint(), config2.getEndpointConfiguration().getLiveEndpoint());
+        assertEquals(config.getEndpointConfiguration().getProfilerEndpoint(), config2.getEndpointConfiguration().getProfilerEndpoint());
+        assertEquals(config.getEndpointConfiguration().getSnapshotEndpoint(), config2.getEndpointConfiguration().getSnapshotEndpoint());
     }
 
     @Test
@@ -167,16 +168,16 @@ public class ConnectionStringTests {
         final String cs1 = "InstrumentationKey="+ ikey +";LiveEndpoint="+ live +";ProfilerEndpoint="+ profiler+";SnapshotEndpoint="+ snapshot;
         final String cs2 = "SnapshotEndpoint="+ snapshot+";ProfilerEndpoint="+ profiler+";InstrumentationKey="+ ikey +";LiveEndpoint="+ live;
 
-        ConnectionConfiguration config2 = new ConnectionConfiguration();
+        TelemetryConfiguration config2 = new TelemetryConfiguration();
 
         parseInto(cs1, config);
         parseInto(cs2, config2);
 
         assertEquals(config.getInstrumentationKey(), config2.getInstrumentationKey());
-        assertEquals(config.getIngestionEndpoint(), config2.getIngestionEndpoint());
-        assertEquals(config.getLiveEndpoint(), config2.getLiveEndpoint());
-        assertEquals(config.getProfilerEndpoint(), config2.getProfilerEndpoint());
-        assertEquals(config.getSnapshotEndpoint(), config2.getSnapshotEndpoint());
+        assertEquals(config.getEndpointConfiguration().getIngestionEndpoint(), config2.getEndpointConfiguration().getIngestionEndpoint());
+        assertEquals(config.getEndpointConfiguration().getLiveEndpoint(), config2.getEndpointConfiguration().getLiveEndpoint());
+        assertEquals(config.getEndpointConfiguration().getProfilerEndpoint(), config2.getEndpointConfiguration().getProfilerEndpoint());
+        assertEquals(config.getEndpointConfiguration().getSnapshotEndpoint(), config2.getEndpointConfiguration().getSnapshotEndpoint());
     }
 
     @Test

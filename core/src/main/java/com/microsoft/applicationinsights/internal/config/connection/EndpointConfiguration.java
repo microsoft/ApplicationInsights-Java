@@ -5,14 +5,13 @@ import com.microsoft.applicationinsights.internal.config.connection.ConnectionSt
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class ConnectionConfiguration {
-    private String instrumentationKey; // could be a different authorization object in the future
+public class EndpointConfiguration {
     private URI ingestionEndpoint;
     private URI liveEndpoint;
     private URI profilerEndpoint;
     private URI snapshotEndpoint; // TODO is this one needed?
 
-    public ConnectionConfiguration() {
+    public EndpointConfiguration() {
         try {
             ingestionEndpoint = new URI(Defaults.INGESTION_ENDPOINT);
             liveEndpoint = new URI(Defaults.LIVE_ENDPOINT);
@@ -21,14 +20,6 @@ public class ConnectionConfiguration {
         } catch (URISyntaxException e) {
             throw new RuntimeException("The ConnectionString.Defaults are invalid", e);
         }
-    }
-
-    public String getInstrumentationKey() {
-        return instrumentationKey;
-    }
-
-    void setInstrumentationKey(String instrumentationKey) {
-        this.instrumentationKey = instrumentationKey;
     }
 
     public URI getIngestionEndpoint() {
