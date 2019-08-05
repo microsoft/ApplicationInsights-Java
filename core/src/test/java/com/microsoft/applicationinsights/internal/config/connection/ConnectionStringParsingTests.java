@@ -4,13 +4,16 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.EndpointPrefixes;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hamcrest.Matchers;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 
 import static com.microsoft.applicationinsights.internal.config.connection.ConnectionString.parseInto;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 
 public class ConnectionStringParsingTests {
@@ -181,6 +184,18 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
+    public void endpointWithNoSchemeIsHttps() throws ConnectionStringParseException {
+        parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com", config);
+        assertEquals("https", config.getEndpointConfiguration().getIngestionEndpoint().getScheme());
+    }
+
+    @Test
+    public void httpEndpointKeepsScheme() throws ConnectionStringParseException {
+        parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=http://my-ai.example.com", config);
+        assertEquals("http", config.getEndpointConfiguration().getIngestionEndpoint().getScheme());
+    }
+
+    @Test
     public void emptyIkeyValueIsInvalid() throws ConnectionStringParseException {
         exception.expect(InvalidConnectionStringException.class);
         final String cs = "InstrumentationKey=;IngestionEndpoint=https://ingestion.example.com;EndpointSuffix=ai.example.com";
@@ -192,12 +207,7 @@ public class ConnectionStringParsingTests {
         exception.expect(InvalidConnectionStringException.class);
         final String ikey = "fake-ikey";
         final String cs = "Authorization=ikey;InstrumentationKey=="+ikey;
-        try {
-            parseInto(cs, config);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        parseInto_printExceptionAndRethrow(cs);
     }
 
     @Test
@@ -222,6 +232,23 @@ public class ConnectionStringParsingTests {
     public void nonIkeyAuthIsInvalid() throws ConnectionStringParseException {
         exception.expect(UnsupportedAuthorizationTypeException.class);
         parseInto("Authorization=magic;MagicWord=abacadabra", config);
+    }
+
+    @Test
+    public void invalidUriIsInvalidConnectionString() throws ConnectionStringParseException {
+        exception.expect(InvalidConnectionStringException.class);
+        exception.expectCause(Matchers.<Throwable>instanceOf(URISyntaxException.class));
+        exception.expectMessage(containsString("LiveEndpoint"));
+        parseInto_printExceptionAndRethrow("InstrumentationKey=fake-ikey;LiveEndpoint=https:////~!@#$%&^*()_{}{}><?<?>:L\":\"_+_+_");
+    }
+
+    private void parseInto_printExceptionAndRethrow(String connectionString) throws ConnectionStringParseException {
+        try {
+            parseInto(connectionString, config);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
 }
