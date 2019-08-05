@@ -27,8 +27,7 @@ public class ConnectionString {
         mapToConnectionConfiguration(kvps, targetConfig);
     }
 
-    @VisibleForTesting
-    static void mapToConnectionConfiguration(Map<String, String> kvps, ConnectionConfiguration result) throws ConnectionStringParseException {
+    private static void mapToConnectionConfiguration(Map<String, String> kvps, ConnectionConfiguration result) throws ConnectionStringParseException {
         // check for authorization
         String authorizationType = kvps.get(Keywords.AUTHORIZATION);
         if (!(Strings.isNullOrEmpty(authorizationType) || "ikey".equalsIgnoreCase(authorizationType))) {
