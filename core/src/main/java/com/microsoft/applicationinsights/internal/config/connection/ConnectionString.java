@@ -86,7 +86,7 @@ public class ConnectionString {
             }
             return builder.build();
         } catch (URISyntaxException e) {
-            throw new InvalidConnectionStringException(field + " is invalid: " + uri, e);
+            throw new InvalidConnectionStringException(field + " is invalid: \"" + uri + "\"", e);
         }
     }
 
