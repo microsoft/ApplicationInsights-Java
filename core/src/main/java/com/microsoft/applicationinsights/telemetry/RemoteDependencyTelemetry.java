@@ -96,7 +96,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     public String getId() {
         return this.data.getId();
     }
-    
+
     /**
      * Sets the dependency Id.
      * @param value The value for the Id.

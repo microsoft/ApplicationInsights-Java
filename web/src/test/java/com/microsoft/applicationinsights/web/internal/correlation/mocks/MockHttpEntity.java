@@ -68,7 +68,7 @@ public class MockHttpEntity implements HttpEntity {
 
     @Override
     public void writeTo(OutputStream outstream) throws IOException {
-        
+
     }
 
     @Override
@@ -78,7 +78,7 @@ public class MockHttpEntity implements HttpEntity {
 
     @Override
     public void consumeContent() throws IOException {
-        
+
     }
 
 }

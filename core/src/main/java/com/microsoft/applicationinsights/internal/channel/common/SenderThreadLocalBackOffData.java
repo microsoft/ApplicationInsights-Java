@@ -68,7 +68,7 @@ final class SenderThreadLocalBackOffData {
     public boolean isTryingToSend() {
         return currentBackOffIndex != -1;
     }
-    
+
     /**
      * This method should be called by the Sender thread when the
      * Transmission is considered as 'done sending', which means the
@@ -121,11 +121,11 @@ final class SenderThreadLocalBackOffData {
            lock.unlock();
        }
    }
-    
+
     /**
      * Increment the current back off amount or resets the counter if needed.
      * <p>
-     * This method does not block but instead provides the amount of time to sleep which can be used 
+     * This method does not block but instead provides the amount of time to sleep which can be used
      * in another method.
      * @return The number of milliseconds to sleep for.
      */
@@ -144,13 +144,13 @@ final class SenderThreadLocalBackOffData {
                return 0;
            }
 
-           
+
                 long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
                 if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
                     millisecondsToWait += addMilliseconds;
                 }
                 return millisecondsToWait;
-           
+
        } finally {
            lock.unlock();
        }

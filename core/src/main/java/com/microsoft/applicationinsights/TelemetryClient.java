@@ -105,7 +105,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Checks whether tracking is enabled. 
+     * Checks whether tracking is enabled.
      * @return 'true' if tracking is disabled, 'false' otherwise.
      */
     public boolean isDisabled() {
@@ -186,7 +186,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a TraceTelemetry record to Application Insights. Appears in "traces" in Analytics and Search. 
+     * Sends a TraceTelemetry record to Application Insights. Appears in "traces" in Analytics and Search.
      * @param message A log message. Max length 10000.
      */
     public void trackTrace(String message) {
@@ -194,7 +194,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a TraceTelemetry record. Appears in "traces" in Analytics and Search. 
+     * Sends a TraceTelemetry record. Appears in "traces" in Analytics and Search.
      * @param message A log message. Max length 10000.
      * @param severityLevel The severity level.
      */
@@ -306,7 +306,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a request record to Application Insights. Appears in "requests" in Search and Analytics, 
+     * Sends a request record to Application Insights. Appears in "requests" in Search and Analytics,
      * and contributes to metric charts such as Server Requests, Server Response Time, Failed Requests.
      * @param name A user-friendly name for the request or operation.
      * @param timestamp The time of the request.
@@ -358,7 +358,7 @@ public class TelemetryClient {
     }
 
     /**
-     * Sends a page view record to Application Insights. Appears in "page views" in Search and Analytics, 
+     * Sends a page view record to Application Insights. Appears in "page views" in Search and Analytics,
      * and contributes to metric charts such as Page View Load Time.
      @param name The name of the page.
      */

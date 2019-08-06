@@ -37,27 +37,27 @@ public class PageViewPerfData extends PageViewData
      * Backing field for property PerfTotal.
      */
     private Duration perfTotal = new Duration(0);
-    
+
     /**
      * Backing field for property NetworkConnect.
      */
     private Duration networkConnect = new Duration(0);
-    
+
     /**
      * Backing field for property SentRequest.
      */
     private Duration sentRequest = new Duration(0);
-    
+
     /**
      * Backing field for property ReceivedResponse.
      */
     private Duration receivedResponse = new Duration(0);
-    
+
     /**
      * Backing field for property DomProcessing.
      */
     private Duration domProcessing = new Duration(0);
-    
+
     /**
      * Initializes a new instance of the PageViewPerfData class.
      */
@@ -65,77 +65,77 @@ public class PageViewPerfData extends PageViewData
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the PerfTotal property.
      */
     public Duration getPerfTotal() {
         return this.perfTotal;
     }
-    
+
     /**
      * Sets the PerfTotal property.
      */
     public void setPerfTotal(Duration value) {
         this.perfTotal = value;
     }
-    
+
     /**
      * Gets the NetworkConnect property.
      */
     public Duration getNetworkConnect() {
         return this.networkConnect;
     }
-    
+
     /**
      * Sets the NetworkConnect property.
      */
     public void setNetworkConnect(Duration value) {
         this.networkConnect = value;
     }
-    
+
     /**
      * Gets the SentRequest property.
      */
     public Duration getSentRequest() {
         return this.sentRequest;
     }
-    
+
     /**
      * Sets the SentRequest property.
      */
     public void setSentRequest(Duration value) {
         this.sentRequest = value;
     }
-    
+
     /**
      * Gets the ReceivedResponse property.
      */
     public Duration getReceivedResponse() {
         return this.receivedResponse;
     }
-    
+
     /**
      * Sets the ReceivedResponse property.
      */
     public void setReceivedResponse(Duration value) {
         this.receivedResponse = value;
     }
-    
+
     /**
      * Gets the DomProcessing property.
      */
     public Duration getDomProcessing() {
         return this.domProcessing;
     }
-    
+
     /**
      * Sets the DomProcessing property.
      */
     public void setDomProcessing(Duration value) {
         this.domProcessing = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -150,11 +150,11 @@ public class PageViewPerfData extends PageViewData
         writer.write("receivedResponse", receivedResponse);
         writer.write("domProcessing", domProcessing);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

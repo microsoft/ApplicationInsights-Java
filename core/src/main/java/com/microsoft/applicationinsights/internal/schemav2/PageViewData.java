@@ -37,12 +37,12 @@ public class PageViewData extends EventData
      * Backing field for property Url.
      */
     private String url;
-    
+
     /**
      * Backing field for property Duration.
      */
     private Duration duration = new Duration(0);
-    
+
     /**
      * Initializes a new instance of the PageViewData class.
      */
@@ -50,35 +50,35 @@ public class PageViewData extends EventData
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the Url property.
      */
     public String getUrl() {
         return this.url;
     }
-    
+
     /**
      * Sets the Url property.
      */
     public void setUrl(String value) {
         this.url = value;
     }
-    
+
     /**
      * Gets the Duration property.
      */
     public Duration getDuration() {
         return this.duration;
     }
-    
+
     /**
      * Sets the Duration property.
      */
     public void setDuration(Duration value) {
         this.duration = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -90,11 +90,11 @@ public class PageViewData extends EventData
         writer.write("url", url, 2048);
         writer.write("duration", duration);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

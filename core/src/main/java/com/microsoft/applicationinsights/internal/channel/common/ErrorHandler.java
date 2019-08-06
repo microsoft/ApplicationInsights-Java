@@ -9,7 +9,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * 408, 500, and 503 result.
  * <p>
  * It does not handle any error codes such as 400, 401, 403, 404, etc.
- * 
+ *
  * @author jamdavi
  *
  */
@@ -19,9 +19,9 @@ public class ErrorHandler implements TransmissionHandler {
 
     /**
      * Ctor
-     * 
+     *
      * Constructs the ErrorHandler object.
-     * 
+     *
      * @param policy
      *            The {@link TransmissionPolicyManager} object that is needed to
      *            control the back off policy
@@ -58,7 +58,7 @@ public class ErrorHandler implements TransmissionHandler {
     }
 
     private void backoffAndSendTransmission(TransmissionHandlerArgs args) {
-        // It is possible for us to have a temporary blip in transmission 
+        // It is possible for us to have a temporary blip in transmission
         // this setting will allow us to control how many instant retries we perform
         // before backing off the send
         if (args.getTransmission() != null && (args.getTransmission().getNumberOfSends() > transmissionPolicyManager.getMaxInstantRetries()))

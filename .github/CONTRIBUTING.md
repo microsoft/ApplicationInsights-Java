@@ -30,7 +30,7 @@ If you're interested in contributing, take a look at the general [contributer's 
 To build Application Insights CollectD writer plugin, please do the following:
 
 1.  Aquire 'collectd-api.jar' using one of the following methods:
-    * Install CollectD 
+    * Install CollectD
         * Set an environment variable **COLLECTD_HOME** to the installation directory.
     * Download CollectD Java API sources and compile them using JDK 1.7.
     The output jar should be named: 'collectd-api.jar'.

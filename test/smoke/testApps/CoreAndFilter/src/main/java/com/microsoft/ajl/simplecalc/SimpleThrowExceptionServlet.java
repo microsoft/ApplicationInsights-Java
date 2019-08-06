@@ -20,7 +20,7 @@ public class SimpleThrowExceptionServlet extends HttpServlet {
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
-        throw new ServletException("This is a auto thrown exception !");      
+        throw new ServletException("This is a auto thrown exception !");
     }
 
 }

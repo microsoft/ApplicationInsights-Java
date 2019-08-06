@@ -32,7 +32,7 @@ public class CorrelationContext {
     /**
      * Stores the correlation context as mappings.
      */
-    private final Map<String, String> mappings; 
+    private final Map<String, String> mappings;
 
     /**
      * Stores the context as a string.
@@ -50,7 +50,7 @@ public class CorrelationContext {
     public Map<String, String> getMappings() {
         return this.mappings;
     }
-    
+
     /**
      * Appends content to the correlation context.
      */

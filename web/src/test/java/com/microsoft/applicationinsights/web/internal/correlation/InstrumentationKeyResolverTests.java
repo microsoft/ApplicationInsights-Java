@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class InstrumentationKeyResolverTests {
-    
+
     @Before
     public void testInitialize() {
        InstrumentationKeyResolver.INSTANCE.clearCache();
@@ -43,7 +43,7 @@ public class InstrumentationKeyResolverTests {
 
         //run
         String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");
-        
+
         //validate
         Assert.assertEquals("cid-v1:id1", appId);
         Assert.assertEquals(1, mockFetcher.callCount());
@@ -96,7 +96,7 @@ public class InstrumentationKeyResolverTests {
         //fetcher will be called again since the previous attempt failed
         Assert.assertEquals(2, mockFetcher.callCount());
     }
-    
+
     @Test
     public void testResolveInstrumentationKeyWhenExceptionThrown() {
 
@@ -121,7 +121,7 @@ public class InstrumentationKeyResolverTests {
         Assert.assertNull(appId);
         //fetcher will be called again since the previous attempt failed
         Assert.assertEquals(2, mockFetcher.callCount());
-        
+
         //mimic final call which returns the completed task
         mockFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
         appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey("ikey");

@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Telemetry type used to track custom events in Azure Application Insights. 
+ * Telemetry type used to track custom events in Azure Application Insights.
  */
 public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     private Double samplingPercentage;

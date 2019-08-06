@@ -77,12 +77,12 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
             XMLInputFactory factory = XMLInputFactory.newInstance();
             factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
             factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-            
+
             return factory.createXMLStreamReader(input);
         } catch (Throwable t ) {
             InternalLogger.INSTANCE.error("Failed to create stream reader for configuration file: '%s'", ExceptionUtils.getStackTrace(t));
             return null;
         }
-    } 
+    }
 }
 

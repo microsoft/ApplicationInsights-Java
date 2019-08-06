@@ -52,7 +52,7 @@ public class Tracestate {
         if (input == null) {
             throw new IllegalArgumentException("input is null");
         }
-        
+
         String[] values = DELIMITER_FORMAT_RE.split(input);
         for (String item : values) {
             Matcher m = MEMBER_FORMAT_RE.matcher(item);

@@ -39,57 +39,57 @@ public class RemoteDependencyData extends Domain
      * Backing field for property Ver.
      */
     private int ver = 2;
-    
+
     /**
      * Backing field for property Name.
      */
     private String name;
-    
+
     /**
      * Backing field for property Id.
      */
     private String id;
-    
+
     /**
      * Backing field for property ResultCode.
      */
     private String resultCode;
-    
+
     /**
      * Backing field for property Duration.
      */
     private Duration duration = new Duration(0);
-    
+
     /**
      * Backing field for property Success.
      */
     private Boolean success = true;
-    
+
     /**
      * Backing field for property Data.
      */
     private String data;
-    
+
     /**
      * Backing field for property Type.
      */
     private String type;
-    
+
     /**
      * Backing field for property Target.
      */
     private String target;
-    
+
     /**
      * Backing field for property Properties.
      */
     private ConcurrentMap<String, String> properties;
-    
+
     /**
      * Backing field for property Measurements.
      */
     private ConcurrentMap<String, Double> measurements;
-    
+
     /**
      * Initializes a new instance of the RemoteDependencyData class.
      */
@@ -97,133 +97,133 @@ public class RemoteDependencyData extends Domain
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the Ver property.
      */
     public int getVer() {
         return this.ver;
     }
-    
+
     /**
      * Sets the Ver property.
      */
     public void setVer(int value) {
         this.ver = value;
     }
-    
+
     /**
      * Gets the Name property.
      */
     public String getName() {
         return this.name;
     }
-    
+
     /**
      * Sets the Name property.
      */
     public void setName(String value) {
         this.name = value;
     }
-    
+
     /**
      * Gets the Id property.
      */
     public String getId() {
         return this.id;
     }
-    
+
     /**
      * Sets the Id property.
      */
     public void setId(String value) {
         this.id = value;
     }
-    
+
     /**
      * Gets the ResultCode property.
      */
     public String getResultCode() {
         return this.resultCode;
     }
-    
+
     /**
      * Sets the ResultCode property.
      */
     public void setResultCode(String value) {
         this.resultCode = value;
     }
-    
+
     /**
      * Gets the Duration property.
      */
     public Duration getDuration() {
         return this.duration;
     }
-    
+
     /**
      * Sets the Duration property.
      */
     public void setDuration(Duration value) {
         this.duration = value;
     }
-    
+
     /**
      * Gets the Success property.
      */
     public Boolean getSuccess() {
         return this.success;
     }
-    
+
     /**
      * Sets the Success property.
      */
     public void setSuccess(Boolean value) {
         this.success = value;
     }
-    
+
     /**
      * Gets the Data property.
      */
     public String getData() {
         return this.data;
     }
-    
+
     /**
      * Sets the Data property.
      */
     public void setData(String value) {
         this.data = value;
     }
-    
+
     /**
      * Gets the Type property.
      */
     public String getType() {
         return this.type;
     }
-    
+
     /**
      * Sets the Type property.
      */
     public void setType(String value) {
         this.type = value;
     }
-    
+
     /**
      * Gets the Target property.
      */
     public String getTarget() {
         return this.target;
     }
-    
+
     /**
      * Sets the Target property.
      */
     public void setTarget(String value) {
         this.target = value;
     }
-    
+
     /**
      * Gets the Properties property.
      */
@@ -233,14 +233,14 @@ public class RemoteDependencyData extends Domain
         }
         return this.properties;
     }
-    
+
     /**
      * Sets the Properties property.
      */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
-    
+
     /**
      * Gets the Measurements property.
      */
@@ -250,14 +250,14 @@ public class RemoteDependencyData extends Domain
         }
         return this.measurements;
     }
-    
+
     /**
      * Sets the Measurements property.
      */
     public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -278,11 +278,11 @@ public class RemoteDependencyData extends Domain
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

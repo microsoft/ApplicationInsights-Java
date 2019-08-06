@@ -48,13 +48,13 @@ public final class BaseTelemetryTest {
     }
 
     private static class StubTelemetry extends BaseTelemetry<StubDomainData> {
-        
+
         private static final String ENVELOPE_NAME = "Stub";
 
         private static final String BASE_TYPE = "StubData";
-        
+
         public int numberOfCallsToAdditionalSanitize;
-        
+
 
         public StubTelemetry() {
         }
@@ -77,7 +77,7 @@ public final class BaseTelemetryTest {
         protected StubDomainData getData() {
             return null;
         }
-        
+
         @Override
         public String getEnvelopName() {
             return ENVELOPE_NAME;
@@ -129,14 +129,14 @@ public final class BaseTelemetryTest {
 
         assertEquals(telemetry.getTimestamp(), date);
     }
-    
-    
+
+
     @Test
     public void testTelemetryNameWithIkey() throws IOException{
         StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
         telemetry.getContext().setInstrumentationKey("AIF-00000000-1111-2222-3333-000000000000");
         telemetry.setTimestamp(new Date());
-        
+
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
@@ -146,13 +146,13 @@ public final class BaseTelemetryTest {
         int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.aif00000000111122223333000000000000.Stub\"");
         assertTrue(index != -1);
     }
-    
+
     @Test
     public void testTelemetryNameWithIkey_SpecialChar() throws IOException{
         StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
         telemetry.getContext().setInstrumentationKey("--. .--");
         telemetry.setTimestamp(new Date());
-        
+
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
@@ -162,12 +162,12 @@ public final class BaseTelemetryTest {
         int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.Stub\"");
         assertTrue(index != -1);
     }
-    
+
     @Test
     public void testTelemetryNameWithIkey_Empty() throws IOException{
         StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
         telemetry.setTimestamp(new Date());
-        
+
         StringWriter writer = new StringWriter();
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
@@ -177,6 +177,6 @@ public final class BaseTelemetryTest {
         int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.Stub\"");
         assertTrue(index != -1);
     }
-    
+
 
 }

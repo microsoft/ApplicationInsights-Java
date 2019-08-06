@@ -18,7 +18,7 @@ If applicable, provide a sample application which reproduces the issue.
 
 ### System information
 Please provide the following information:
- - SDK Version: 
+ - SDK Version:
  - OS type and version:
  - Application Server type and version (if applicable):
  - Using spring-boot?

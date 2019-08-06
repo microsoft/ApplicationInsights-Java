@@ -72,37 +72,37 @@ public class MockHttpResponse implements HttpResponse {
 
     @Override
     public void addHeader(Header header) {
-        
+
     }
 
     @Override
     public void addHeader(String name, String value) {
-        
+
     }
 
     @Override
     public void setHeader(Header header) {
-        
+
     }
 
     @Override
     public void setHeader(String name, String value) {
-        
+
     }
 
     @Override
     public void setHeaders(Header[] headers) {
-        
+
     }
 
     @Override
     public void removeHeader(Header header) {
-        
+
     }
 
     @Override
     public void removeHeaders(String name) {
-        
+
     }
 
     @Override
@@ -122,7 +122,7 @@ public class MockHttpResponse implements HttpResponse {
 
     @Override
     public void setParams(HttpParams params) {
-        
+
     }
 
     @Override
@@ -132,17 +132,17 @@ public class MockHttpResponse implements HttpResponse {
 
     @Override
     public void setStatusLine(StatusLine statusline) {
-        
+
     }
 
     @Override
     public void setStatusLine(ProtocolVersion ver, int code) {
-        
+
     }
 
     @Override
     public void setStatusLine(ProtocolVersion ver, int code, String reason) {
-        
+
     }
 
     @Override
@@ -152,7 +152,7 @@ public class MockHttpResponse implements HttpResponse {
 
     @Override
     public void setReasonPhrase(String reason) throws IllegalStateException {
-        
+
     }
 
     @Override
@@ -172,7 +172,7 @@ public class MockHttpResponse implements HttpResponse {
 
     @Override
     public void setLocale(Locale loc) {
-        
+
     }
 
 }

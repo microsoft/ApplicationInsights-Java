@@ -39,7 +39,7 @@ public class Base
      * Backing field for property BaseType.
      */
     private String baseType;
-    
+
     /**
      * Initializes a new instance of the Base class.
      */
@@ -47,21 +47,21 @@ public class Base
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the BaseType property.
      */
     public String getBaseType() {
         return this.baseType;
     }
-    
+
     /**
      * Sets the BaseType property.
      */
     public void setBaseType(String value) {
         this.baseType = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -82,11 +82,11 @@ public class Base
     {
         writer.writeRequired("baseType", baseType, 1000);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

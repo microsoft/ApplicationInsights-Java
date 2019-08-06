@@ -33,15 +33,15 @@ public enum SeverityLevel
     Error(3),
     Critical(4),
 ;
-    
+
     private final int id;
-    
+
     public int getValue() {
         return id;
     }
-    
+
     SeverityLevel (int id) {
         this.id = id;
     }
-    
+
 }

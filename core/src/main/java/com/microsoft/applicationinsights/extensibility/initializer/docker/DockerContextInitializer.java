@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentMap;
 
 // Created by yonisha on 7/29/2015.
 /**
- * 
+ *
  *
  * This initializer is required for Docker awareness.
  * The initializer has two goals:

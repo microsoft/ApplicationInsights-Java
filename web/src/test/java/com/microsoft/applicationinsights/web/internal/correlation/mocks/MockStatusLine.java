@@ -45,7 +45,7 @@ public class MockStatusLine implements StatusLine {
     public int getStatusCode() {
         return this.statusCode;
     }
-    
+
     public void setStatusCode(int code) {
         this.statusCode = code;
     }

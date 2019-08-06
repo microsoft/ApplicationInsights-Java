@@ -41,37 +41,37 @@ public class ExceptionDetails
      * Backing field for property Id.
      */
     private int id;
-    
+
     /**
      * Backing field for property OuterId.
      */
     private int outerId;
-    
+
     /**
      * Backing field for property TypeName.
      */
     private String typeName;
-    
+
     /**
      * Backing field for property Message.
      */
     private String message;
-    
+
     /**
      * Backing field for property HasFullStack.
      */
     private boolean hasFullStack = true;
-    
+
     /**
      * Backing field for property Stack.
      */
     private String stack;
-    
+
     /**
      * Backing field for property ParsedStack.
      */
     private List<StackFrame> parsedStack;
-    
+
     /**
      * Initializes a new instance of the ExceptionDetails class.
      */
@@ -79,91 +79,91 @@ public class ExceptionDetails
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the Id property.
      */
     public int getId() {
         return this.id;
     }
-    
+
     /**
      * Sets the Id property.
      */
     public void setId(int value) {
         this.id = value;
     }
-    
+
     /**
      * Gets the OuterId property.
      */
     public int getOuterId() {
         return this.outerId;
     }
-    
+
     /**
      * Sets the OuterId property.
      */
     public void setOuterId(int value) {
         this.outerId = value;
     }
-    
+
     /**
      * Gets the TypeName property.
      */
     public String getTypeName() {
         return this.typeName;
     }
-    
+
     /**
      * Sets the TypeName property.
      */
     public void setTypeName(String value) {
         this.typeName = value;
     }
-    
+
     /**
      * Gets the Message property.
      */
     public String getMessage() {
         return this.message;
     }
-    
+
     /**
      * Sets the Message property.
      */
     public void setMessage(String value) {
         this.message = value;
     }
-    
+
     /**
      * Gets the HasFullStack property.
      */
     public boolean getHasFullStack() {
         return this.hasFullStack;
     }
-    
+
     /**
      * Sets the HasFullStack property.
      */
     public void setHasFullStack(boolean value) {
         this.hasFullStack = value;
     }
-    
+
     /**
      * Gets the Stack property.
      */
     public String getStack() {
         return this.stack;
     }
-    
+
     /**
      * Sets the Stack property.
      */
     public void setStack(String value) {
         this.stack = value;
     }
-    
+
     /**
      * Gets the ParsedStack property.
      */
@@ -173,14 +173,14 @@ public class ExceptionDetails
         }
         return this.parsedStack;
     }
-    
+
     /**
      * Sets the ParsedStack property.
      */
     public void setParsedStack(List<StackFrame> value) {
         this.parsedStack = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -207,11 +207,11 @@ public class ExceptionDetails
         writer.write("stack", stack, 32768);
         writer.write("parsedStack", parsedStack);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

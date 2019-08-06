@@ -14,7 +14,7 @@ public class SampleTestWithDependencyContainer extends AiSmokeTest {
     public void doCalcSendsRequestDataAndMetricData() throws Exception {
         assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
         assertTrue("mocked ingestion has 0 items", mockedIngestion.getItemCount() > 0);
-        
+
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
     }

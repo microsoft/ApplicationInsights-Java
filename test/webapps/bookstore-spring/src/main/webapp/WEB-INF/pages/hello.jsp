@@ -15,7 +15,7 @@ automatically in just a few seconds.
     }({
         instrumentationKey:"ef5c9284-7c19-4c97-805f-3cf38e652a1a"
     });
-    
+
     window.appInsights=appInsights;
     appInsights.trackPageView();
 </script>

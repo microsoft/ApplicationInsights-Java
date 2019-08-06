@@ -3,7 +3,7 @@ package com.microsoft.ajl.simplecalc.model;
 public enum BinaryOperator {
     ADDITION("plus", "+"),
     SUBTRACTION("minus", "\u2212");
-    
+
     private final String verb;
     private final String symbol;
 
@@ -19,7 +19,7 @@ public enum BinaryOperator {
     public String getSymbol() {
         return symbol;
     }
-    
+
     public double compute(double leftOperand, double rightOperand) {
         switch (this) {
             case ADDITION:
@@ -30,7 +30,7 @@ public enum BinaryOperator {
                 throw new UnsupportedOperationException(this.toString() + " compute is not yet implemented");
         }
     }
-    
+
     public static BinaryOperator fromVerb(String verb) {
         if (verb == null || verb.length() == 0) {
             throw new IllegalArgumentException("verb must be non-null, non-empty");

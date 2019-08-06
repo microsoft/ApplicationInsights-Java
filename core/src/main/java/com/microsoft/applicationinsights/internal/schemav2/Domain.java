@@ -42,7 +42,7 @@ public class Domain
     {
         this.InitializeFields();
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -62,11 +62,11 @@ public class Domain
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

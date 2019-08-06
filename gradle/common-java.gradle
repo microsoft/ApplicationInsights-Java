@@ -119,7 +119,7 @@ if (java7JreDir) {
     if (!jre7libDir.any()) {
         throw new GradleException("Invalid JAVA_JRE_7 directory. ${jre7libDir.dir} was empty")
     }
-    
+
     tasks.withType(JavaCompile) {
         options.bootstrapClasspath = jre7libDir
     }
@@ -212,7 +212,7 @@ task vscode(dependsOn: vscodeJavaconfigFile) {
 
 tasks.withType(Test) {
     testLogging {
-        afterSuite { desc, result -> 
+        afterSuite { desc, result ->
             if (!desc.parent) { // only print when the top-level test suite completes
                 logger.lifecycle("${desc.name} complete. Ran ${result.testCount} tests. ${result.failedTestCount} failed, ${result.skippedTestCount} skipped.")
             }
@@ -234,7 +234,7 @@ tasks.withType(Test) {
             events = info.events
             events << TestLogEvent.STARTED
             events << TestLogEvent.STANDARD_OUT
-            
+
             exceptionFormat = info.exceptionFormat
             showExceptions = info.showExceptions
             showCauses = info.showCauses

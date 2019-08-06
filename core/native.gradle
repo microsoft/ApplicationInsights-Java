@@ -77,7 +77,7 @@ model {
                     }
                 }
             }
-            
+
             binaries.all {
                 if (delegate instanceof StaticLibraryBinarySpec) {
                     buildable = false

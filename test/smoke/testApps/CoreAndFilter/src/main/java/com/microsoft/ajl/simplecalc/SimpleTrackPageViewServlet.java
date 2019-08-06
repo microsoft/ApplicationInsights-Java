@@ -26,7 +26,7 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         client.trackPageView("test-page");
-        
+
         PageViewTelemetry pvt = new PageViewTelemetry("test-page-2");
         pvt.getProperties().put("key", "value");
         pvt.setDuration(123456);

@@ -42,7 +42,7 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
     @Override
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
         InternalLogger.INSTANCE.trace("Metric JMX: %s, %s", displayName, value);
-    
+
     MetricTelemetry telemetry = new MetricTelemetry();
     telemetry.markAsCustomPerfCounter();
         telemetry.setName(displayName);

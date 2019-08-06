@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.internal.channel.common.*;
  * Created by gupele on 2/4/2015.
  */
 final class ThroughputTestTransmitterFactory implements TransmitterFactory {
-    
+
     @Override
     public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstanceRetries) {
         // An active object with the network sender
@@ -42,10 +42,10 @@ final class ThroughputTestTransmitterFactory implements TransmitterFactory {
         transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
         transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
         transmissionPolicyManager.setMaxInstantRetries(maxInstanceRetries);
-        
+
         TransmissionPolicyStateFetcher stateFetcher = transmissionPolicyManager.getTransmissionPolicyState();
         TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
-        
+
 
         // An active object with the file system sender
         TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput();

@@ -32,12 +32,12 @@ public enum InstrumentationKeyResolver {
     private static final String CorrelationIdFormat = "cid-v1:%s";
     private AppProfileFetcher profileFetcher;
     private final ConcurrentMap<String, String> appIdCache;
-    
+
     InstrumentationKeyResolver() {
         this.appIdCache = new ConcurrentHashMap<String, String>();
         this.profileFetcher = new CdsProfileFetcher();
     }
-    
+
     public void clearCache() {
         this.appIdCache.clear();
     }
@@ -51,11 +51,11 @@ public enum InstrumentationKeyResolver {
      * @return The applicationId associated with the instrumentation key or null if it cannot be retrieved.
      */
     public String resolveInstrumentationKey(String instrumentationKey) {
-        
+
          if (instrumentationKey == null || instrumentationKey.isEmpty()) {
              throw new IllegalArgumentException("instrumentationKey must be not null or empty");
          }
-        
+
         try {
             String appId = this.appIdCache.get(instrumentationKey);
 
@@ -65,11 +65,11 @@ public enum InstrumentationKeyResolver {
 
             ProfileFetcherResult result = this.profileFetcher.fetchAppProfile(instrumentationKey);
             appId = processResult(result, instrumentationKey);
-            
+
             if (appId != null) {
                 this.appIdCache.putIfAbsent(instrumentationKey, appId);
             }
-            
+
             return appId;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s => Exception: %s", instrumentationKey, e);
@@ -80,9 +80,9 @@ public enum InstrumentationKeyResolver {
     }
 
     private String processResult(ProfileFetcherResult result, String instrumentationKey) {
-        
+
         String appId = null;
-        
+
         switch (result.getStatus()) {
             case PENDING:
                 InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - pending resolution of instrumentation key: %s", instrumentationKey);

@@ -22,7 +22,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * This class implements the retry logic for partially accepted transmissions.
  * HTTP status code 206.
  * <p>
- * 
+ *
  * @see <a href=
  *      "https://github.com/Microsoft/ApplicationInsights-dotnet/blob/master/docs/ServerTelemetryChannel%20error%20handling.md#partialsuccesstransmissionpolicy">PartialSuccessTransmissionPolicy</a>
  * @author jamdavi
@@ -32,9 +32,9 @@ public class PartialSuccessHandler implements TransmissionHandler {
 
     /**
      * Ctor
-     * 
+     *
      * Constructs the PartialSuccessHandler object.
-     * 
+     *
      * @param policy
      *            The {@link TransmissionPolicyManager} object that is needed to
      *            control the back off policy.
@@ -49,7 +49,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
 
     /**
      * Provides the core logic for the retransmission
-     * 
+     *
      * @param args
      *            The {@link TransmissionHandlerArgs} for this transmission.
      * @return Returns a pass/fail for handling this transmission.
@@ -75,8 +75,8 @@ public class PartialSuccessHandler implements TransmissionHandler {
                         case TransmissionSendResult.REQUEST_TIMEOUT:
                         case TransmissionSendResult.INTERNAL_SERVER_ERROR:
                         case TransmissionSendResult.SERVICE_UNAVAILABLE:
-                        case TransmissionSendResult.THROTTLED: 
-                        case TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME: 
+                        case TransmissionSendResult.THROTTLED:
+                        case TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME:
                             // Unknown condition where backend response returns an index greater than the
                             // items we're returning
                             if (e.index < originalItems.size()) {
@@ -103,7 +103,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
     /**
      * Used to parse the original telemetry request in order to resend the failed
      * ones.
-     * 
+     *
      * @param args
      *            The {@link TransmissionHandlerArgs} that contains the
      *            {@link Transmission} object.
@@ -132,14 +132,14 @@ public class PartialSuccessHandler implements TransmissionHandler {
             } finally {
                 if (gis != null) {
                     try {
-                        gis.close();    
+                        gis.close();
                     } catch (IOException ex){
                         InternalLogger.INSTANCE.warn("Error while closing the GZIP stream.%nStack Trace:%n%s",    ExceptionUtils.getStackTrace(ex));
                     }
                 }
                 if (bufferedReader != null) {
                     try {
-                        bufferedReader.close();    
+                        bufferedReader.close();
                     } catch (IOException ex){
                         InternalLogger.INSTANCE.warn("Error while closing the buffered reader.%nStack Trace:%n%s",    ExceptionUtils.getStackTrace(ex));
                     }
@@ -156,7 +156,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
     /**
      * Sends a new transmission generated from the failed attempts from the original
      * request.
-     * 
+     *
      * @param args
      *            The {@link TransmissionHandlerArgs} object that contains the
      *            {@link TransmissionDispatcher}
@@ -176,7 +176,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
 
     /**
      * Helper method to parse the 206 response. Uses {@link Gson}
-     * 
+     *
      * @param response
      *            The body of the response.
      * @return A {@link BackendResponse} object that contains the status of the

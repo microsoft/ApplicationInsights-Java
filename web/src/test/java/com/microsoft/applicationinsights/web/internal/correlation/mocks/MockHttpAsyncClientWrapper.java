@@ -37,14 +37,14 @@ public class MockHttpAsyncClientWrapper {
     private final MockHttpTask task;
 
     public MockHttpAsyncClientWrapper() {
-        
+
         this.entity = new MockHttpEntity();
         this.response = new MockHttpResponse(this.entity, 200);
-        
+
         this.task = new MockHttpTask(this.response);
 
         this.mockClient = mock(CloseableHttpAsyncClient.class);
-        
+
         when(mockClient.execute(any(HttpUriRequest.class), any(FutureCallback.class))).thenReturn(this.task);
     }
 

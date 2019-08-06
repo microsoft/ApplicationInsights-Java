@@ -185,7 +185,7 @@ public class FixedAiTestCases {
         PageViewTelemetry pvt = new PageViewTelemetry("AiTestPageView2");
         pvt.setDuration(1011L);
         pvt.setUrl(URI.create("some-host.somewhere/fake/path/elements/AiTestPageView2.html"));
-        
+
         for (Entry<String, String> entry : getPropertyMapForMethod("PageView").entrySet()) {
             pvt.getProperties().put(entry.getKey(), entry.getValue());
         }

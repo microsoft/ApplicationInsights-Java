@@ -50,7 +50,7 @@ public class CdsProfileFetcherTests {
         testFetcher.close();
         testFetcher = null;
     }
-    
+
     @Test
     public void testFetchApplicationId() throws InterruptedException, ExecutionException, ParseException, IOException {
 
@@ -84,7 +84,7 @@ public class CdsProfileFetcherTests {
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
         clientWrapper.setTaskAsComplete();
-        
+
         testFetcher.setHttpClient(clientWrapper.getClient());
 
         // task is completed right away
@@ -100,7 +100,7 @@ public class CdsProfileFetcherTests {
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
-        
+
         testFetcher.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we should get a "pending" task status
@@ -132,7 +132,7 @@ public class CdsProfileFetcherTests {
         //setup - mimic timeout from the async http call
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
-        
+
         testFetcher.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we should get a "pending" task status
@@ -155,7 +155,7 @@ public class CdsProfileFetcherTests {
         MockHttpAsyncClientWrapper clientWrapper = new MockHttpAsyncClientWrapper();
         clientWrapper.setAppId("AppId");
         clientWrapper.setFailureOn(false);
-        
+
         testFetcher.setHttpClient(clientWrapper.getClient());
 
         // the first time we try to fetch the profile, we might get a "pending" task status
