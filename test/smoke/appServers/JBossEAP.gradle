@@ -29,7 +29,7 @@ if (jbossZipFile) {
         include jbossZipFile.name
     }
     buildDockerImage.dependsOn stageJBossInstaller
-} else {    
+} else {
     task missingJBossEAPZip {
         doFirst {
             if (isBuildServer) {

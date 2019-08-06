@@ -53,7 +53,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
     // cache of tasks per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Future<HttpResponse>> tasks;
-    
+
     // failure counters per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Integer> failureCounters;
 
@@ -119,7 +119,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
             currentTask = createFetchTask(instrumentationKey);
             this.tasks.putIfAbsent(instrumentationKey, currentTask);
         }
-        
+
         // check if task is still pending
         if (!currentTask.isDone()) {
             return result;

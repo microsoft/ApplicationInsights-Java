@@ -32,7 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class CoreAndFilterTests extends AiSmokeTest {
-    
+
     @Test
     @TargetUri("/trackDependency")
     public void trackDependency() throws Exception {

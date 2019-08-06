@@ -37,7 +37,7 @@ public class SimpleTestTraceLogBackWithExceptionServlet extends HttpServlet {
             //TODO: handle exception
             TelemetryClient client = new TelemetryClient();
             client.trackException(e);
-        } 
+        }
 
     }
 }

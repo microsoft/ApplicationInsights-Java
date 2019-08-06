@@ -36,7 +36,7 @@ public class Data<TDomain extends Domain> extends Base
      * Backing field for property BaseData.
      */
     private TDomain baseData;
-    
+
     /**
      * Initializes a new instance of the Data{TDomain} class.
      */
@@ -44,21 +44,21 @@ public class Data<TDomain extends Domain> extends Base
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the BaseData property.
      */
     public TDomain getBaseData() {
         return this.baseData;
     }
-    
+
     /**
      * Sets the BaseData property.
      */
     public void setBaseData(TDomain value) {
         this.baseData = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -68,13 +68,13 @@ public class Data<TDomain extends Domain> extends Base
     {
         super.serializeContent(writer);
         writer.write("baseData", baseData);
-        
+
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

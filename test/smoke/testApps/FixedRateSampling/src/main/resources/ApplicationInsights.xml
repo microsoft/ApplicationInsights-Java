@@ -40,7 +40,7 @@
 
     <PerformanceCounters>
         <UseBuiltIn>False</UseBuiltIn>
-    </PerformanceCounters> 
+    </PerformanceCounters>
 
     <TelemetryProcessors>
         <BuiltInProcessors>

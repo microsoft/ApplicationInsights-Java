@@ -43,7 +43,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
     private String sequence;
-    
+
     public static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
     protected BaseTelemetry() {
@@ -146,10 +146,10 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-        
+
         String telemetryName = this.getTelemetryName(
                 this.normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
-        
+
         Envelope envelope = new Envelope();
         envelope.setName(telemetryName);
 
@@ -214,7 +214,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     public String getBaseTypeName() {
         throw new UnsupportedOperationException();
     }
-    
+
     public static String normalizeInstrumentationKey(String instrumentationKey){
         if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
             return "";
@@ -223,7 +223,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
             return instrumentationKey.replace("-", "").toLowerCase() + ".";
         }
     }
-    
+
     public static String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
         return String.format(
                 "%s%s%s",
@@ -232,5 +232,5 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
                 envelopType
                 );
     }
-    
+
 }

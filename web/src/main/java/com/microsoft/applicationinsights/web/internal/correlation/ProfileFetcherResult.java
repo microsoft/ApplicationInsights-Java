@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 
 public class ProfileFetcherResult {
     private final String appId;
-    private final ProfileFetcherResultTaskStatus taskStatus; 
+    private final ProfileFetcherResultTaskStatus taskStatus;
 
     public ProfileFetcherResult(String appId, ProfileFetcherResultTaskStatus taskStatus) {
         this.appId = appId;

@@ -36,7 +36,7 @@ final class InProcessTelemetryTransmitterFactory implements TransmitterFactory {
     private final int DEFAULT_RETRY = 3;
     @Override
     public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
-        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);         
+        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
         transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
         transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
         transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
@@ -55,7 +55,7 @@ final class InProcessTelemetryTransmitterFactory implements TransmitterFactory {
         // The dispatcher works with the two active senders
         TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[] {networkSender, activeFileSystemOutput});
         actualNetworkSender.setTransmissionDispatcher(dispatcher);
-        
+
 
         // The loader works with the file system loader as the active one does
         TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, stateFetcher, dispatcher);

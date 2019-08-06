@@ -115,7 +115,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
 
     private static final int MAX_PENDING_SCHEDULE_REQUESTS = 16384;
 
-    private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1); 
+    private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
 
     private final TransmissionDispatcher transmissionDispatcher;
 

@@ -41,42 +41,42 @@ public class Envelope
      * Backing field for property Ver.
      */
     private int ver = 1;
-    
+
     /**
      * Backing field for property Name.
      */
     private String name;
-    
+
     /**
      * Backing field for property Time.
      */
     private String time;
-    
+
     /**
      * Backing field for property SampleRate.
      */
     private double sampleRate = 100.0;
-    
+
     /**
      * Backing field for property Seq.
      */
     private String seq;
-    
+
     /**
      * Backing field for property IKey.
      */
     private String iKey;
-    
+
     /**
      * Backing field for property Tags.
      */
     private ConcurrentMap<String, String> tags;
-    
+
     /**
      * Backing field for property Data.
      */
     private Base data;
-    
+
     /**
      * Initializes a new instance of the Envelope class.
      */
@@ -84,91 +84,91 @@ public class Envelope
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the Ver property.
      */
     public int getVer() {
         return this.ver;
     }
-    
+
     /**
      * Sets the Ver property.
      */
     public void setVer(int value) {
         this.ver = value;
     }
-    
+
     /**
      * Gets the Name property.
      */
     public String getName() {
         return this.name;
     }
-    
+
     /**
      * Sets the Name property.
      */
     public void setName(String value) {
         this.name = value;
     }
-    
+
     /**
      * Gets the Time property.
      */
     public String getTime() {
         return this.time;
     }
-    
+
     /**
      * Sets the Time property.
      */
     public void setTime(String value) {
         this.time = value;
     }
-    
+
     /**
      * Gets the SampleRate property.
      */
     public double getSampleRate() {
         return this.sampleRate;
     }
-    
+
     /**
      * Sets the SampleRate property.
      */
     public void setSampleRate(double value) {
         this.sampleRate = value;
     }
-    
+
     /**
      * Gets the Seq property.
      */
     public String getSeq() {
         return this.seq;
     }
-    
+
     /**
      * Sets the Seq property.
      */
     public void setSeq(String value) {
         this.seq = value;
     }
-    
+
     /**
      * Gets the IKey property.
      */
     public String getIKey() {
         return this.iKey;
     }
-    
+
     /**
      * Sets the IKey property.
      */
     public void setIKey(String value) {
         this.iKey = value;
     }
-    
+
     /**
      * Gets the Tags property.
      */
@@ -178,28 +178,28 @@ public class Envelope
         }
         return this.tags;
     }
-    
+
     /**
      * Sets the Tags property.
      */
     public void setTags(ConcurrentMap<String, String> value) {
         this.tags = value;
     }
-    
+
     /**
      * Gets the Data property.
      */
     public Base getData() {
         return this.data;
     }
-    
+
     /**
      * Sets the Data property.
      */
     public void setData(Base value) {
         this.data = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -229,11 +229,11 @@ public class Envelope
         writer.write("tags", tags);
         writer.write("data", data);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

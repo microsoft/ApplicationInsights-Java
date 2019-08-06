@@ -42,7 +42,7 @@ public class MockHttpTask implements Future<HttpResponse> {
     public void setFailureOn(boolean fail) {
         this.failureOn = fail;
     }
-    
+
     public void setIsDone(boolean isDone) {
         this.isDone = isDone;
     }
@@ -72,7 +72,7 @@ public class MockHttpTask implements Future<HttpResponse> {
             throws InterruptedException, ExecutionException, TimeoutException {
         return doGet();
     }
-    
+
     private HttpResponse doGet() throws ExecutionException {
         if (this.failureOn) {
             throw new ExecutionException("Failure", null);
@@ -80,5 +80,5 @@ public class MockHttpTask implements Future<HttpResponse> {
 
         return this.response;
     }
-    
+
 }

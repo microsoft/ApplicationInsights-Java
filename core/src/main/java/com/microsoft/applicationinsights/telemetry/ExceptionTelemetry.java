@@ -118,7 +118,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     /**
-     * Gets a map of application-defined exception metrics. 
+     * Gets a map of application-defined exception metrics.
      * The metrics appear along with the exception in Analytics, but under Custom Metrics in Metrics Explorer.
      * @return The map of metrics
      */

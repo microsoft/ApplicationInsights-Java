@@ -18,5 +18,5 @@ public class ApplicationInsightsServletContextListener implements ServletContext
         InternalLogger.INSTANCE.info("Shutting down thread pools");
         SDKShutdownActivity.INSTANCE.stopAll();
     }
-    
+
 }

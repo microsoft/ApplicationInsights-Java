@@ -15,10 +15,10 @@ public class MyContextInitializer implements ContextInitializer {
         try {
             Properties prop = new Properties();
             input = MyContextInitializer.class.getClassLoader().getResourceAsStream("config.properties");
-            
+
             if (input != null) {
                 prop.load(input);
-                
+
                 userName = prop.getProperty("user.name");
             }
         } catch (IOException ex) {
@@ -33,7 +33,7 @@ public class MyContextInitializer implements ContextInitializer {
             }
         }
     }
-    
+
     public void initialize(TelemetryContext context) {
         if (userName != null) {
             context.getProperties().put("UserName", userName);

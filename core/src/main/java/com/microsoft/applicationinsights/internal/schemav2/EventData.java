@@ -38,22 +38,22 @@ public class EventData extends Domain
      * Backing field for property Ver.
      */
     private int ver = 2;
-    
+
     /**
      * Backing field for property Name.
      */
     private String name;
-    
+
     /**
      * Backing field for property Properties.
      */
     private ConcurrentMap<String, String> properties;
-    
+
     /**
      * Backing field for property Measurements.
      */
     private ConcurrentMap<String, Double> measurements;
-    
+
     /**
      * Initializes a new instance of the EventData class.
      */
@@ -61,35 +61,35 @@ public class EventData extends Domain
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the Ver property.
      */
     public int getVer() {
         return this.ver;
     }
-    
+
     /**
      * Sets the Ver property.
      */
     public void setVer(int value) {
         this.ver = value;
     }
-    
+
     /**
      * Gets the Name property.
      */
     public String getName() {
         return this.name;
     }
-    
+
     /**
      * Sets the Name property.
      */
     public void setName(String value) {
         this.name = value;
     }
-    
+
     /**
      * Gets the Properties property.
      */
@@ -99,14 +99,14 @@ public class EventData extends Domain
         }
         return this.properties;
     }
-    
+
     /**
      * Sets the Properties property.
      */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
-    
+
     /**
      * Gets the Measurements property.
      */
@@ -116,14 +116,14 @@ public class EventData extends Domain
         }
         return this.measurements;
     }
-    
+
     /**
      * Sets the Measurements property.
      */
     public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -137,11 +137,11 @@ public class EventData extends Domain
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

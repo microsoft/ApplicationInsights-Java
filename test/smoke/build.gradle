@@ -11,7 +11,7 @@ allprojects {
 
 subprojects {
     ext {
-        /*     
+        /*
             By default, the Applciation Insights jars are built and used by the smokeTests.
             To use different jars for smokeTests, reassign these variables to point the path to the jar using this 'files' function.
             For example,

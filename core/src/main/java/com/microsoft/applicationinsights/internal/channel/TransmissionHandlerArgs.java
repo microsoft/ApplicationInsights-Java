@@ -23,20 +23,20 @@ public class TransmissionHandlerArgs {
      * @return The HTTP Response from the sender
      */
     public String getResponseBody() { return this.responseBody;}
-    
-    
+
+
     private TransmissionDispatcher transmissionDispatcher;
     /**
      * Set the {@link TransmissionDispatcher} used by the sender
-     * @param dispatcher The {@link TransmissionDispatcher} used by the sender 
+     * @param dispatcher The {@link TransmissionDispatcher} used by the sender
      */
     public void setTransmissionDispatcher(TransmissionDispatcher dispatcher) { this.transmissionDispatcher = dispatcher;}
     /**
      * Get the {@link TransmissionDispatcher} used by the sender
-     * @return The {@link TransmissionDispatcher} used by the sender 
+     * @return The {@link TransmissionDispatcher} used by the sender
      */
     public TransmissionDispatcher getTransmissionDispatcher() { return this.transmissionDispatcher;}
-    
+
     private Transmission transmission;
     /**
      * Set the transmission that needs to be passed to the handler.
@@ -48,19 +48,19 @@ public class TransmissionHandlerArgs {
      * @return The transmission used by the handler.
      */
     public Transmission getTransmission() { return this.transmission;}
-    
+
     private int responseCode;
     /**
-     * Set the response code to be passed to the handler. 
+     * Set the response code to be passed to the handler.
      * @param code The HTTP response code.
      */
     public void setResponseCode(int code) { this.responseCode = code;}
     /**
-     * Get the response code for the handler to use. 
+     * Get the response code for the handler to use.
      * @return The HTTP response code.
      */
     public int getResponseCode() { return this.responseCode;}
-    
+
     private Throwable exception;
     /**
      * Set the exception thrown by the sender to be passed the handler.
@@ -72,11 +72,11 @@ public class TransmissionHandlerArgs {
      * @return The exception
      */
     public Throwable getException() { return this.exception;}
-    
+
     private Header retryHeader;
     /**
      * Set the Retry-After header to be passed to the handler.
-     * @param head The Retry-After header 
+     * @param head The Retry-After header
      */
     public void setRetryHeader(Header head) { this.retryHeader = head;}
     /**

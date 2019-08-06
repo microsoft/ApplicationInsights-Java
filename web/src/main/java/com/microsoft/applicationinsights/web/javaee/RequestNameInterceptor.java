@@ -51,7 +51,7 @@ public class RequestNameInterceptor {
                 String actionName = String.format("%s.%s", ic.getMethod().getDeclaringClass().getName(), ic.getMethod().getName());
                 String httpMethod = context.getHttpRequestTelemetry().getHttpMethod();
                 String requestName = String.format("%s %s", httpMethod, actionName);
-                
+
                 context.getHttpRequestTelemetry().setName(requestName);
             }
         } catch (Exception e) {

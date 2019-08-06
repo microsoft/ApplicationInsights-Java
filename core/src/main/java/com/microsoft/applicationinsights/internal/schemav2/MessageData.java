@@ -38,22 +38,22 @@ public class MessageData extends Domain
      * Backing field for property Ver.
      */
     private int ver = 2;
-    
+
     /**
      * Backing field for property Message.
      */
     private String message;
-    
+
     /**
      * Backing field for property SeverityLevel.
      */
     private SeverityLevel severityLevel;
-    
+
     /**
      * Backing field for property Properties.
      */
     private ConcurrentMap<String, String> properties;
-    
+
     /**
      * Initializes a new instance of the MessageData class.
      */
@@ -61,49 +61,49 @@ public class MessageData extends Domain
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the Ver property.
      */
     public int getVer() {
         return this.ver;
     }
-    
+
     /**
      * Sets the Ver property.
      */
     public void setVer(int value) {
         this.ver = value;
     }
-    
+
     /**
      * Gets the Message property.
      */
     public String getMessage() {
         return this.message;
     }
-    
+
     /**
      * Sets the Message property.
      */
     public void setMessage(String value) {
         this.message = value;
     }
-    
+
     /**
      * Gets the SeverityLevel property.
      */
     public SeverityLevel getSeverityLevel() {
         return this.severityLevel;
     }
-    
+
     /**
      * Sets the SeverityLevel property.
      */
     public void setSeverityLevel(SeverityLevel value) {
         this.severityLevel = value;
     }
-    
+
     /**
      * Gets the Properties property.
      */
@@ -113,14 +113,14 @@ public class MessageData extends Domain
         }
         return this.properties;
     }
-    
+
     /**
      * Sets the Properties property.
      */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -134,11 +134,11 @@ public class MessageData extends Domain
         writer.write("severityLevel", severityLevel);
         writer.write("properties", properties);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

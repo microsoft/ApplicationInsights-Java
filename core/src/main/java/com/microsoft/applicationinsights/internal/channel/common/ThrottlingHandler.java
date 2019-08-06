@@ -17,7 +17,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 /**
  * This class implements the retry logic for throttled requests. HTTP status
  * code 429 and 439.
- * 
+ *
  * @author jamdavi
  *
  */
@@ -28,9 +28,9 @@ public class ThrottlingHandler implements TransmissionHandler {
 
     /**
      * Ctor
-     * 
+     *
      * Constructs the ThrottlingHandler object.
-     * 
+     *
      * @param policy
      *            The {@link TransmissionPolicyManager} object that is needed to
      *            control the back off policy.
@@ -46,7 +46,7 @@ public class ThrottlingHandler implements TransmissionHandler {
 
     /**
      * Provides the core logic for the retransmission
-     * 
+     *
      * @param args
      *            The {@link TransmissionHandlerArgs} for this transmission.
      * @return Returns a pass/fail for handling this transmission.
@@ -56,8 +56,8 @@ public class ThrottlingHandler implements TransmissionHandler {
                 && args.getTransmissionDispatcher() != null) {
             args.getTransmission().incrementNumberOfSends();
             switch (args.getResponseCode()) {
-            case TransmissionSendResult.THROTTLED: 
-            case TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME: 
+            case TransmissionSendResult.THROTTLED:
+            case TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME:
                 suspendTransmissions(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, args.getRetryHeader());
                 args.getTransmissionDispatcher().dispatch(args.getTransmission());
                 return true;
@@ -75,7 +75,7 @@ public class ThrottlingHandler implements TransmissionHandler {
     /**
      * Used to put the sender thread to sleep for the specified duration in the
      * Retry-After header.
-     * 
+     *
      * @param suspensionPolicy
      *            The policy used to suspend the threads. For now we use
      *            {@link TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED} for reuse
@@ -111,7 +111,7 @@ public class ThrottlingHandler implements TransmissionHandler {
     /**
      * Converts parsed date value to GMT for the {@link suspendTransmissions}
      * method.
-     * 
+     *
      * @param date
      *            The date to convert to GMT
      * @return The corrected date.

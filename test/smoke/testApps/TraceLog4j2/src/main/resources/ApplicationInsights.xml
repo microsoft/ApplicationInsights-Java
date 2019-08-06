@@ -33,5 +33,5 @@
     </Channel>
     <PerformanceCounters>
         <UseBuiltIn>False</UseBuiltIn>
-    </PerformanceCounters> 
+    </PerformanceCounters>
 </ApplicationInsights>

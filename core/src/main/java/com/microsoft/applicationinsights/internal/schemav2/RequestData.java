@@ -39,52 +39,52 @@ public class RequestData extends Domain
      * Backing field for property Ver.
      */
     private int ver = 2;
-    
+
     /**
      * Backing field for property Id.
      */
     private String id;
-    
+
     /**
      * Backing field for property Duration.
      */
     private Duration duration = new Duration(0);
-    
+
     /**
      * Backing field for property ResponseCode.
      */
     private String responseCode;
-    
+
     /**
      * Backing field for property Success.
      */
     private boolean success;
-    
+
     /**
      * Backing field for property Source.
      */
     private String source;
-    
+
     /**
      * Backing field for property Name.
      */
     private String name;
-    
+
     /**
      * Backing field for property Url.
      */
     private String url;
-    
+
     /**
      * Backing field for property Properties.
      */
     private ConcurrentMap<String, String> properties;
-    
+
     /**
      * Backing field for property Measurements.
      */
     private ConcurrentMap<String, Double> measurements;
-    
+
     /**
      * Initializes a new instance of the RequestData class.
      */
@@ -92,119 +92,119 @@ public class RequestData extends Domain
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the Ver property.
      */
     public int getVer() {
         return this.ver;
     }
-    
+
     /**
      * Sets the Ver property.
      */
     public void setVer(int value) {
         this.ver = value;
     }
-    
+
     /**
      * Gets the Id property.
      */
     public String getId() {
         return this.id;
     }
-    
+
     /**
      * Sets the Id property.
      */
     public void setId(String value) {
         this.id = value;
     }
-    
+
     /**
      * Gets the Duration property.
      */
     public Duration getDuration() {
         return this.duration;
     }
-    
+
     /**
      * Sets the Duration property.
      */
     public void setDuration(Duration value) {
         this.duration = value;
     }
-    
+
     /**
      * Gets the ResponseCode property.
      */
     public String getResponseCode() {
         return this.responseCode;
     }
-    
+
     /**
      * Sets the ResponseCode property.
      */
     public void setResponseCode(String value) {
         this.responseCode = value;
     }
-    
+
     /**
      * Gets the Success property.
      */
     public boolean getSuccess() {
         return this.success;
     }
-    
+
     /**
      * Sets the Success property.
      */
     public void setSuccess(boolean value) {
         this.success = value;
     }
-    
+
     /**
      * Gets the Source property.
      */
     public String getSource() {
         return this.source;
     }
-    
+
     /**
      * Sets the Source property.
      */
     public void setSource(String value) {
         this.source = value;
     }
-    
+
     /**
      * Gets the Name property.
      */
     public String getName() {
         return this.name;
     }
-    
+
     /**
      * Sets the Name property.
      */
     public void setName(String value) {
         this.name = value;
     }
-    
+
     /**
      * Gets the Url property.
      */
     public String getUrl() {
         return this.url;
     }
-    
+
     /**
      * Sets the Url property.
      */
     public void setUrl(String value) {
         this.url = value;
     }
-    
+
     /**
      * Gets the Properties property.
      */
@@ -214,14 +214,14 @@ public class RequestData extends Domain
         }
         return this.properties;
     }
-    
+
     /**
      * Sets the Properties property.
      */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
-    
+
     /**
      * Gets the Measurements property.
      */
@@ -231,14 +231,14 @@ public class RequestData extends Domain
         }
         return this.measurements;
     }
-    
+
     /**
      * Sets the Measurements property.
      */
     public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -258,11 +258,11 @@ public class RequestData extends Domain
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

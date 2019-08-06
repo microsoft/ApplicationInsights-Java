@@ -39,7 +39,7 @@
     <logger name="com.microsoft.applicationinsights.core.dependencies.http">
         <level value="off" />
     </logger>
-    
+
     <root>
         <level value ="TRACE" />
         <appender-ref ref="test" />

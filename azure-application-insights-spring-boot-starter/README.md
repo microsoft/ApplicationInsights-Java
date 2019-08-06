@@ -182,7 +182,7 @@ azure.application-insights.jmx.jmx-counters[0]=java.lang:type=ClassLoading/Loade
 azure.application-insights.jmx.jmx-counters[1]=java.lang:type=Memory/HeapMemoryUsage.init/Initial Heap Memory Usage/Composite
 azure.application-insights.jmx.jmx-counters[2]=java.lang:name=PS MarkSweep,type=GarbageCollector/CollectionTime/GC MarkSweep Time
 # where the elements separated by / have the following order:
-# 1. objectName 2. AttributeName 3. Display Name and 4. Type  
+# 1. objectName 2. AttributeName 3. Display Name and 4. Type
 
 #Enable/Disable heartbeat module. Default value : true
 azure.application-insights.heart-beat.enabled=true
@@ -207,10 +207,10 @@ and avoiding any Application Insights beans creation by Spring.
 1. Please remove ApplicationInsights.xml file from the project resources or class path.
 2. Add applicationinsights-spring-boot-starter-<version_number>.jar file to pom.xml or build.gradle (you do not need to specify applicationinsights-core and web jars independently).
    The starter takes are of it for you.
-3. Please configure springboot Application.properties file with Application Insights Instrumentation key. 
+3. Please configure springboot Application.properties file with Application Insights Instrumentation key.
 4. Compile the project and execute it from your IDE or command line using java -jar applicationjarname
 5. To specify AI properties using command line please refer to SpringBoot Documentation.
-6. To use [ApplicationInsights Java agent](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-agent) please follow official documentation 
+6. To use [ApplicationInsights Java agent](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-agent) please follow official documentation
 4. To get an initialized instance of TelemetryClient please use Spring autowired annotation. This will provide a fully initialized instance of TelemetryClient.
 
 ```Java

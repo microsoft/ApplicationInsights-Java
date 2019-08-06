@@ -18,11 +18,11 @@
     <logger name="com.microsoft.applicationinsights.core.dependencies.http">
         <level value="off" />
     </logger>
-    
+
     <logger name="com.microsoft.applicationinsights.web.dependencies.http">
         <level value="off" />
     </logger>
-    
+
     <root>
         <priority value ="trace" />
         <appender-ref ref="test" />

@@ -102,7 +102,7 @@ public abstract class AiSmokeTest {
             }
         });
     }
-    
+
     @Parameter(0) public String appServer;
     @Parameter(1) public String os;
     @Parameter(2) public String jreVersion;
@@ -328,7 +328,7 @@ public abstract class AiSmokeTest {
         }
     }
 
-    
+
     @Before
     public void setupTest() throws Exception {
         callTargetUriAndWaitForTelemetry();

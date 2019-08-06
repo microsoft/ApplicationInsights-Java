@@ -60,33 +60,33 @@
 
 # Version 2.4.0-BETA
 - Removed support for multiple apps instrumented with single JVM Agent. Instrumentation will only work for single apps
-  in application server. 
+  in application server.
 - Fixed [#749](https://github.com/Microsoft/ApplicationInsights-Java/issues/749) introduce support for PostgreSQL jdbc4 prepared statements.
-- Introduced support for Manual Async and Explicit Multithreading correlation. 
+- Introduced support for Manual Async and Explicit Multithreading correlation.
 - <strike>Introduced `setRequestTelemetryContext` API in `WebTelemetryModule` Interface.</strike>
 - Introduced experimental API's `AIHttpServletListner`, `HttpServerHandler`, `ApplicationInsightsServletExtractor`
   and `HttpExtractor`.
 - Deprecated `ApplicationInsightsHttpResponseWrapper`
 - Fixed [#826](https://github.com/Microsoft/ApplicationInsights-Java/issues/826) Remove duplicate provider.
 - Fix incorrect sdk version being sent in Quick Pulse payload.
-- Fix [#882](https://github.com/Microsoft/ApplicationInsights-Java/issues/882) Dependency metrics does not show up on 
+- Fix [#882](https://github.com/Microsoft/ApplicationInsights-Java/issues/882) Dependency metrics does not show up on
 Livemetrics UX.
-  
+
 # Version 2.3.1
 - Fixed [#799](https://github.com/Microsoft/ApplicationInsights-Java/issues/799) Removed dependency on Guava vulnerable to [CVE-2018-10237](https://nvd.nist.gov/vuln/detail/CVE-2018-10237).
 
 # Version 2.3.0
 - Introducing Application Insights SpringBoot Starter 1.1.1 (GA VERSION).
-- Fix [#784](https://github.com/Microsoft/ApplicationInsights-Java/issues/784) Shade guava dependency. 
+- Fix [#784](https://github.com/Microsoft/ApplicationInsights-Java/issues/784) Shade guava dependency.
 - [#716](https://github.com/Microsoft/ApplicationInsights-Java/issues/716) Introduced W3C Distributed tracing protocol.
 
 # Version 2.2.1
 - Fixed [#767](https://github.com/Microsoft/ApplicationInsights-Java/issues/767). Updated gRPC dependencies which inlcudes latest netty version.
 - Fixed [#751](https://github.com/Microsoft/ApplicationInsights-Java/issues/751). Added support for absolute paths for log file output.
-- Abstracted Internal Logger in Core into separate reusable module. 
+- Abstracted Internal Logger in Core into separate reusable module.
 - Deprecated InternalAgentLogger in favor of InternalLogger for better consistency.
-- Fixed [#752](https://github.com/Microsoft/ApplicationInsights-Java/issues/752). Agent now supports diagnostic writing logs to file. 
-- Added ability to configure FileLogger for SpringBootStarter. 
+- Fixed [#752](https://github.com/Microsoft/ApplicationInsights-Java/issues/752). Agent now supports diagnostic writing logs to file.
+- Added ability to configure FileLogger for SpringBootStarter.
 - Fixed the `WebRequestTrackingFilter` order in FilterChain for SpringBoot Starter.
 
 
@@ -98,11 +98,11 @@ Livemetrics UX.
 - SpringBoot Starter now supports reading iKey using all the variable names as core sdk.
 - Starter would no longer support relaxed binding of ikey property due to complex conditional need and backport problems with RelaxedBinder from Boot 2 to 1.5.x.
 - `InterceptorRegistry` class no longer has `@EnableWebMvc` annotation as it breaks springboot autoconfig.
-- Deprecated `getRoleName`/`setRoleName` and `getRoleInstance`/`setRoleInstance` in `DeviceContext`. Introduced `CloudContext` to hold replacements, `getRole`/`setRole` and `getRoleInstance`/`setRoleInstance`, respectively. 
+- Deprecated `getRoleName`/`setRoleName` and `getRoleInstance`/`setRoleInstance` in `DeviceContext`. Introduced `CloudContext` to hold replacements, `getRole`/`setRole` and `getRoleInstance`/`setRoleInstance`, respectively.
 - Introduced `CloudInfoContextInitializer` to set roleInstance in `CloudContext`. This new initializer is included by default and therefore will not affect the current tags.
 - Adds `WebAppNameContextInitializer` for use with the `WebRequestTrackingFilter`.
 - Adds `LocalForwarderChannel` for use with the [LocalForwarder](https://github.com/Microsoft/ApplicationInsights-LocalForwarder).
-- Removes Servlet 3.0 annotations from `WebRequestTrackingFilter` and `ApplicationInsightsServletContextListener` which were causing issues in certain cases. This will allow easier customization of the filter. To use the listener moving forward, it will need to be defined in web.xml. 
+- Removes Servlet 3.0 annotations from `WebRequestTrackingFilter` and `ApplicationInsightsServletContextListener` which were causing issues in certain cases. This will allow easier customization of the filter. To use the listener moving forward, it will need to be defined in web.xml.
 - Fix QuickPulse post interval bug from 5 seconds to 1 second.
 
 # Version 2.1.2
@@ -117,7 +117,7 @@ Livemetrics UX.
 - Introducing support for SpringBoot via Application-Insights-SpringBoot-Starter [#646](https://github.com/Microsoft/ApplicationInsights-Java/pull/646). This is currently in beta.
 - In order to add support for SpringBoot starter some fields in core SDK are made public.
 - Introduced public constructor in `InProcessTelemetryChannel.java` class.
-- Introduced a public method `getActiveWithoutInitializingConfig()` in `TelemetryConfiguration.java` class. 
+- Introduced a public method `getActiveWithoutInitializingConfig()` in `TelemetryConfiguration.java` class.
 
 # Version 2.1.0
 - Introduced Heartbeat feature which sends periodic heartbeats with basic information about application and runtime to Application Insights.
@@ -125,7 +125,7 @@ Livemetrics UX.
 - Performance improvements during initialization.
 - Fix [#647](https://github.com/Microsoft/ApplicationInsights-Java/issues/647). If a performance counter cannot be computed, it will not report a placeholder value (`-1`). Instead, it does not report any value.
 
-## Version 2.0.2 
+## Version 2.0.2
 - Fix incorrect success flag set when capturing HTTP Dependency.
 - Fix [#577](https://github.com/Microsoft/ApplicationInsights-Java/issues/577), removed HttpFactory class as it was not being used.
 - Fixed issue with sessionId not being set in request telemetry due to date parsing issues.
@@ -140,7 +140,7 @@ Livemetrics UX.
 - `httpMethodFinished(String identifier, String method, String correlationId, String uri, String target, int result, int delta)` is now marked as deprecated
 - Logger Messages now being pushed as custom dimension when reporting exceptions via Loggers. (#400)
 - Enhanced Log4j2 appender to support basic parameters including Filters, Layouts and includeException. (#348)
-- Fixed PageView telemetry data not being reported. 
+- Fixed PageView telemetry data not being reported.
 - Fixed Issue [#526](https://github.com/Microsoft/ApplicationInsights-Java/issues/526) (NPE in MapUtil.copy())
 - Fixed Issue [#513](https://github.com/Microsoft/ApplicationInsights-Java/issues/513) (Memory leak in SDKShutdownActivity). This fix upgrades our Servlet version from 2.5 to 3.0. The SDK must now be run on an application server supporting Servlet 3.0.
 - Fixed Issue [#504](https://github.com/Microsoft/ApplicationInsights-Java/issues/504) (SDK initialization happens twice) to improve startup performance.
@@ -171,15 +171,15 @@ Livemetrics UX.
 - Introducing Telemetry Processor 'com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor'
 - Introducing FixedRate Sampling v2 Using Telemetry Processors
 - Fixed issue #436 (TraceTelemetry with Severity is not shown in UI). This fixes a regression issue with `TelemetryClient.trackTrace` and `TelemetryClient.trackException`.
-- Introducing support for [cross-component correlation](https://docs.microsoft.com/en-us/azure/application-insights/application-insights-correlation). Addresses issue [#457](https://github.com/Microsoft/ApplicationInsights-Java/issues/457). 
+- Introducing support for [cross-component correlation](https://docs.microsoft.com/en-us/azure/application-insights/application-insights-correlation). Addresses issue [#457](https://github.com/Microsoft/ApplicationInsights-Java/issues/457).
 - Changed signature of com.microsoft.applicationinsights.internal.agent.CoreAgentNotificationHandler.httpMethodFinished. It now includes correlation information.
 - Compilation now targets Java 1.7. Java 1.6 is no longer supported.
 - Adding system property `applicationinsights.configurationDirectory` to allow to explicitly set directory containing the config file.
 
 ## Version 1.0.10
 - `track()` method of 'com.microsoft.applicationinsights.TelemetryClient' is now modified. No longer performing pre-sanitization
-- All Sanitization will now occur in `com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer` class. 
-- Method `sanitize` of interface `com.microsoft.applicationinsights.telemetry.Telemetry` is now obsolete.  
+- All Sanitization will now occur in `com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer` class.
+- Method `sanitize` of interface `com.microsoft.applicationinsights.telemetry.Telemetry` is now obsolete.
 - The auto generated schema classes now have writer method with limits according to endpoint.
 - Fixed issue #403 (Exceeding property length invalidates custom event)
 - Fixed issue #401 (Custom key and property sanitized)
@@ -190,11 +190,11 @@ Livemetrics UX.
 - Class `SendableData` in internal namespace deleted.
 - Class `com.microsoft.applicationinsights.telemetry.BaseSampleSourceTelemetry` takes generic class qualifier `Domain` instead of `SendableData`.
 - Class `com.microsoft.applicationinsights.telemetry.BaseTelemetry` takes generic class qualifier `Domain` instead of `SendableData`.
-- Methods `getExceptionHandledAt` and `setExceptionHandledAt` of `ExceptionTelemetry` marked obsolete and do not do anything. 
+- Methods `getExceptionHandledAt` and `setExceptionHandledAt` of `ExceptionTelemetry` marked obsolete and do not do anything.
 - Obsolete methods of `RemoteDependencyTelemetry`:  `getCount`, `setCount`, `getMin`, `setMin`, `getMax`, `setMax`, `getStdDev`, `setStdDev`, `getDependencyKind`, `setDependencyKind`, `getAsync`, `setAsync`, `getDependencySource`, `setDependencySource`.
 - Obsolete methods of `RequestTelemetry`: `getHttpMethod`, `setHttpMethod`.
 - Add option to configure instrumentation key via `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable for consistency with other SDKs.
-- Fix the issue where `track(...)` of `TelemetryClient` class was overwriting the provided telemetry timestamp. 
+- Fix the issue where `track(...)` of `TelemetryClient` class was overwriting the provided telemetry timestamp.
 - Changed the policy on failed sent requests to delay retrying for 5 minutes instead of immediately retrying.
 
 ## Version 1.0.9
@@ -239,7 +239,7 @@ Livemetrics UX.
 - [Propagate log context properties in custom properties](https://github.com/Microsoft/ApplicationInsights-Java/pull/288).
 - [Ability to filter out certain telemetry from being sent](https://github.com/Microsoft/ApplicationInsights-Java/pull/296).
 - Some other miscellaneous fixes and improvements.
- 
+
 ## Version 1.0.4
 - Interim version replaced by 1.0.5 on August 2016
 
@@ -269,8 +269,8 @@ Livemetrics UX.
 - Adding support for Java EE interceptors.
 - Removing redundant dependencies from the Logback appender.
 
-## Version 0.9.5  
-- Fix for an issue where custom events are not correlated with Users/Sessions due to cookie parsing errors.  
+## Version 0.9.5
+- Fix for an issue where custom events are not correlated with Users/Sessions due to cookie parsing errors.
 - Improved logic for resolving the location of the ApplicationInsights.xml configuration file.
 - Anonymous User and Session cookies will not be generated on the server side. To implement user and session tracking for web apps, instrumentation with the JavaScript SDK is now required – cookies from the JavaScript SDK are still respected. Note that this change may cause a significant restatement of user and session counts as only user-originated sessions are being counted now.
 

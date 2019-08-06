@@ -18,7 +18,7 @@ import com.google.common.io.CharStreams;
 import org.apache.commons.lang3.StringUtils;
 
 public class AiDockerClient {
-    
+
     public static String DEFAULT_WINDOWS_USER = "Administrator";
     public static String DEFAULT_WINDOWS_SHELL = "cmd";
 
@@ -125,8 +125,8 @@ public class AiDockerClient {
 
     private static void flushStdout(Process p) throws IOException {
         Preconditions.checkNotNull(p);
-        
-        try (Scanner r = new Scanner(p.getInputStream())) {    
+
+        try (Scanner r = new Scanner(p.getInputStream())) {
             while (r.hasNext()) {
                 System.out.println(r.nextLine());
             }
@@ -136,10 +136,10 @@ public class AiDockerClient {
     public void copyAndDeployToContainer(String id, File appArchive) throws IOException, InterruptedException {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(appArchive, "appArchive");
-        
+
         Process p = buildProcess(dockerExePath, "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
-        
+
         execOnContainer(id, getShellExecutor(), "./deploy.sh", appArchive.getName());
     }
 
@@ -198,7 +198,7 @@ public class AiDockerClient {
     public boolean isContainerRunning(String id) throws IOException, InterruptedException {
         Process p = new ProcessBuilder(dockerExePath, "inspect", "-f", "{{.State.Running}}", id).start();
         waitAndCheckCodeForProcess(p, 1, TimeUnit.SECONDS, String.format("checking if container is running: %s", id));
-        
+
         StringWriter sw = new StringWriter();
         try {
             CharStreams.copy(new InputStreamReader(p.getInputStream()), sw);

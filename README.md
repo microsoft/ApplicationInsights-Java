@@ -5,11 +5,11 @@
 
 ## Introduction
 
-This is the repository of the Java SDK for [Azure Application Insights](https://azure.microsoft.com/en-us/services/application-insights/). Application Insights is a service that monitors the availability, performance and usage of your application. The SDK sends telemetry about the performance and usage of your app to the Application Insights service where your data can be visualized in the [Azure Portal](https://portal.azure.com). The SDK automatically collects telemetry about HTTP requests, dependencies, and exceptions. You can also use the SDK to send your own events and trace logs. 
+This is the repository of the Java SDK for [Azure Application Insights](https://azure.microsoft.com/en-us/services/application-insights/). Application Insights is a service that monitors the availability, performance and usage of your application. The SDK sends telemetry about the performance and usage of your app to the Application Insights service where your data can be visualized in the [Azure Portal](https://portal.azure.com). The SDK automatically collects telemetry about HTTP requests, dependencies, and exceptions. You can also use the SDK to send your own events and trace logs.
 
 For more information please refer to:
 
-* [Getting started with Application Insights in a Java web project](https://azure.microsoft.com/documentation/articles/app-insights-java-get-started/) 
+* [Getting started with Application Insights in a Java web project](https://azure.microsoft.com/documentation/articles/app-insights-java-get-started/)
 * [Application Insights overview](https://azure.microsoft.com/services/application-insights/)
 * [Application Insights with SpringBoot](https://docs.microsoft.com/en-us/java/azure/spring-framework/configure-spring-boot-java-applicationinsights)
 
@@ -22,7 +22,7 @@ The following packages are built in this repository:
 - Log4J 2 adaptor: [![applicationinsights-logging-log4j2](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-log4j2.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-log4j2&v=latest)
 - Log4J 1.2 adaptor: [![applicationinsights-logging-log4j1_2](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-log4j1_2.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-log4j1_2&v=latest)
 
-## To upgrade to the latest SDK 
+## To upgrade to the latest SDK
 
 After you upgrade, you'll need to merge back any customizations you made to `ApplicationInsights.xml`. Take a copy of it to compare with the new file.
 
@@ -34,7 +34,7 @@ After you upgrade, you'll need to merge back any customizations you made to `App
 *Otherwise*
 
 * Download the latest version of [Application Insights Java SDK](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-get-started), [scroll down to the getting started section](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-get-started) and follow the instructions to manually download the SDK and replace the old `.jar` files.
- 
+
 Compare the old and new `ApplicationInsights.xml`. Many of the changes you see are because we added and removed modules. Reinstate any customizations that you made.
 
 ## Application Insights for Java Roadmap

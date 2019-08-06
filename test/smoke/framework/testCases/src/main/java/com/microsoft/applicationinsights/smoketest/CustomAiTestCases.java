@@ -49,7 +49,7 @@ public class CustomAiTestCases {
         return new Runnable(){
             @Override
             public void run() {
-                tclient.trackMetric(name, value);                
+                tclient.trackMetric(name, value);
             }
         };
     }
@@ -125,5 +125,5 @@ public class CustomAiTestCases {
             }
         };
     }
-    
+
 }

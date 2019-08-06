@@ -50,7 +50,7 @@ public class SessionCookieTests {
     @BeforeClass
     public static void initialize() throws Exception {
         sessionId = LocalStringsUtils.generateRandomId(true);
-       
+
         String formattedCookie = SessionCookie.formatCookie(new String[] {
                 sessionId
         });
@@ -66,7 +66,7 @@ public class SessionCookieTests {
     }
 
     // region Tests
-    
+
     @Test
     public void testCookieParsedSuccessfully() throws Exception {
         SessionCookie sessionCookie = new SessionCookie(defaultCookie);
@@ -81,7 +81,7 @@ public class SessionCookieTests {
         });
 
         SessionCookie sessionCookie = createSessionCookie(formattedCookie);
-        
+
         Assert.assertEquals("Wrong session ID", sessionId, sessionCookie.getSessionId());
     }
 

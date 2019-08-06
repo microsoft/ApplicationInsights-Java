@@ -12,10 +12,10 @@ message PageView {
     Event event = 1;
 
     string url = 2;
-    
+
     google.protobuf.Duration duration = 3;
-    
+
     string id = 4;
-    
+
     string referrerUri = 5;
 }

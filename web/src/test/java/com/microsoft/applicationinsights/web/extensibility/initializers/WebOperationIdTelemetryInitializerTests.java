@@ -80,7 +80,7 @@ public class WebOperationIdTelemetryInitializerTests {
         assertEquals(1, items.size());
         RequestTelemetry requestTelemetry = items.get(0);
 
-        // the WebRequestTrackingModule automatically creates a hierarchical ID for request telemetry of the 
+        // the WebRequestTrackingModule automatically creates a hierarchical ID for request telemetry of the
         // following form: "|guid.", where guid is the OperationId
         Assert.assertEquals("Operation id not match", requestTelemetry.getId(), "|" + requestTelemetry.getContext().getOperation().getId() + ".");
     }

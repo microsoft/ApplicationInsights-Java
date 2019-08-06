@@ -50,7 +50,7 @@ public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerB
         RequestTelemetry requestTelemetry = telemetryContext.getHttpRequestTelemetry();
         String currentOperationId = requestTelemetry.getContext().getOperation().getId();
 
-        // if there's no current operation (e.g. telemetry being initialized outside of 
+        // if there's no current operation (e.g. telemetry being initialized outside of
         // request scope), just initialize operationId to the generic id currently in request
         if (currentOperationId == null || currentOperationId.isEmpty()) {
             telemetry.getContext().getOperation().setId(requestTelemetry.getId());

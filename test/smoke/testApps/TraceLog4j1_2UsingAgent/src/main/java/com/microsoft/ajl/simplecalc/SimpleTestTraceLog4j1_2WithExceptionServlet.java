@@ -27,7 +27,7 @@ public class SimpleTestTraceLog4j1_2WithExceptionServlet extends HttpServlet {
         ServletFuncs.geRrenderHtml(request, response);
 
         Logger logger = LogManager.getRootLogger();
-        logger.error("This is an exception!", new Exception("Fake Exception")); 
+        logger.error("This is an exception!", new Exception("Fake Exception"));
 
     }
 }

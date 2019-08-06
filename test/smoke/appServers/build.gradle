@@ -35,7 +35,7 @@ subprojects {
         def jreBlacklist = file('jre.excludes.txt')
 
         def jresToUse = getConfigSet(jreMasterList, jreWhitelist, jreBlacklist)
-        
+
         FileTree inputDockerfiles = fileTree(dir: projectDir, include: "*$partialDockerfileExt")
 
         inputs.files(inputDockerfiles)
@@ -59,7 +59,7 @@ subprojects {
             jresFile.delete()
             jresFile.createNewFile()
             def tokenMap = [:] << additionalReplaceTokenMap
-            jresToUse.each { jreVersion -> 
+            jresToUse.each { jreVersion ->
                 tokenMap << [JRE: jreVersion]
                 tokenMap << [AGENT_JAR_NAME: agentJarName]
                 logger.debug "tokenMap = ${tokenMap}"
@@ -129,7 +129,7 @@ subprojects {
 
 task buildDockerImage {
     dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
-    
+
     outputs.upToDateWhen { false }
     doFirst {
         // TODO should be configurable
@@ -199,11 +199,11 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
     def universalSet = universeFile.text.readLines().toSet()
     universalSet.removeAll { it.trim().isEmpty() }
     logger.info "universalSet has ${universalSet.size()} elements: $universalSet"
-    
+
     def includeSet = (hasIncludes ? includesFile.text.readLines().toSet() : universalSet)
     includeSet.removeAll { it.trim().isEmpty() }
     logger.info "includeSet has ${includeSet.size()} elements: $includeSet"
-    
+
     def excludeSet = (hasExcludes ? excludesFile.text.readLines() : []).toSet()
     excludeSet.removeAll { it.trim().isEmpty() }
     logger.info "excludeSet has ${excludeSet.size()} elements: $excludeSet"
@@ -213,7 +213,7 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
     if (uniqueExcludes.size() > 0) {
         logger.info("$excludesFile.name entries are not a subset of ${universeFile.name}: ${uniqueExcludes}. These entries are nops and can be removed.")
     }
-    
+
     // if the includes file contains entires which do not exist in the master list, warn the user; be aware that these will be included
     def uniqueIncludes = includeSet.minus(universalSet)
     if (uniqueIncludes.size() > 1) {

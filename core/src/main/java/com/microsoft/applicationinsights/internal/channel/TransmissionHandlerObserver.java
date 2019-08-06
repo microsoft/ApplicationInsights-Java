@@ -9,9 +9,9 @@ package com.microsoft.applicationinsights.internal.channel;
  *
  */
 public interface TransmissionHandlerObserver extends TransmissionHandler {
-    
+
     /**
-     * Used to add a {@link TransmissionHandler} to the collection stored by the 
+     * Used to add a {@link TransmissionHandler} to the collection stored by the
      * {@link com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyManager}.
      * @param handler    The handler to add to the collection.
      */

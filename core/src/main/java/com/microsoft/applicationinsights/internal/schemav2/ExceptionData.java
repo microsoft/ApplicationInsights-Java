@@ -40,32 +40,32 @@ public class ExceptionData extends Domain
      * Backing field for property Ver.
      */
     private int ver = 2;
-    
+
     /**
      * Backing field for property Exceptions.
      */
     private List<ExceptionDetails> exceptions;
-    
+
     /**
      * Backing field for property SeverityLevel.
      */
     private SeverityLevel severityLevel;
-    
+
     /**
      * Backing field for property ProblemId.
      */
     private String problemId;
-    
+
     /**
      * Backing field for property Properties.
      */
     private ConcurrentMap<String, String> properties;
-    
+
     /**
      * Backing field for property Measurements.
      */
     private ConcurrentMap<String, Double> measurements;
-    
+
     /**
      * Initializes a new instance of the ExceptionData class.
      */
@@ -73,21 +73,21 @@ public class ExceptionData extends Domain
     {
         this.InitializeFields();
     }
-    
+
     /**
      * Gets the Ver property.
      */
     public int getVer() {
         return this.ver;
     }
-    
+
     /**
      * Sets the Ver property.
      */
     public void setVer(int value) {
         this.ver = value;
     }
-    
+
     /**
      * Gets the Exceptions property.
      */
@@ -97,42 +97,42 @@ public class ExceptionData extends Domain
         }
         return this.exceptions;
     }
-    
+
     /**
      * Sets the Exceptions property.
      */
     public void setExceptions(List<ExceptionDetails> value) {
         this.exceptions = value;
     }
-    
+
     /**
      * Gets the SeverityLevel property.
      */
     public SeverityLevel getSeverityLevel() {
         return this.severityLevel;
     }
-    
+
     /**
      * Sets the SeverityLevel property.
      */
     public void setSeverityLevel(SeverityLevel value) {
         this.severityLevel = value;
     }
-    
+
     /**
      * Gets the ProblemId property.
      */
     public String getProblemId() {
         return this.problemId;
     }
-    
+
     /**
      * Sets the ProblemId property.
      */
     public void setProblemId(String value) {
         this.problemId = value;
     }
-    
+
     /**
      * Gets the Properties property.
      */
@@ -142,14 +142,14 @@ public class ExceptionData extends Domain
         }
         return this.properties;
     }
-    
+
     /**
      * Sets the Properties property.
      */
     public void setProperties(ConcurrentMap<String, String> value) {
         this.properties = value;
     }
-    
+
     /**
      * Gets the Measurements property.
      */
@@ -159,14 +159,14 @@ public class ExceptionData extends Domain
         }
         return this.measurements;
     }
-    
+
     /**
      * Sets the Measurements property.
      */
     public void setMeasurements(ConcurrentMap<String, Double> value) {
         this.measurements = value;
     }
-    
+
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -182,11 +182,11 @@ public class ExceptionData extends Domain
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }
-    
+
     /**
      * Optionally initializes fields for the current context.
      */
     protected void InitializeFields() {
-        
+
     }
 }

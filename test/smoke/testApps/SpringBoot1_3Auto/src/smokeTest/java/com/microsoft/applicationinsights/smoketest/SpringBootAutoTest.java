@@ -11,7 +11,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
     public void doMostBasicTest() {
         assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
         assertTrue("mocked ingestion has 0 items", mockedIngestion.getItemCount() > 0);
-        
+
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
     }
 }

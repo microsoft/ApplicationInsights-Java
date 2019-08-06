@@ -58,7 +58,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
     /**
      * Parses the given cookie.
      * @param cookie The cookie contains the session information.
-     * @return sessionId 
+     * @return sessionId
      */
     private static String parseCookie(Cookie cookie) {
         String value = cookie.getValue();
@@ -66,7 +66,7 @@ public class SessionCookie extends com.microsoft.applicationinsights.web.interna
         if (idx >= 0) {
             return value.substring(0, idx);
         } else {
-            return value;  
+            return value;
         }
     }
 }

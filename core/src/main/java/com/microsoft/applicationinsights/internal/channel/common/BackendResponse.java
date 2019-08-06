@@ -2,7 +2,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 /**
  * Utility class used by the {@link PartialSuccessHandler}
- * 
+ *
  * @author jamdavi
  *
  */
