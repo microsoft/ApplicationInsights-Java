@@ -175,6 +175,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
             HttpResponse response = null;
             HttpPost request = null;
             int code = 0;
+            String reason = null;
             String respString = null;
             Throwable ex = null;
             Header retryAfterHeader = null;
@@ -185,6 +186,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 response = httpClient.sendPostRequest(request);
                 HttpEntity respEntity = response.getEntity();
                 code = response.getStatusLine().getStatusCode();
+                reason = response.getStatusLine().getReasonPhrase();
                 respString = EntityUtils.toString(respEntity);
                 retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
 
@@ -235,7 +237,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 }
                 httpClient.dispose(response);
 
-                if (code != HttpStatus.SC_OK) {
+                if (code == HttpStatus.SC_BAD_REQUEST) {
+                    InternalLogger.INSTANCE.error("Error sending data: %s", reason);
+                } else if (code != HttpStatus.SC_OK) {
                     // Invoke the listeners for handling things like errors
                     // The listeners will handle the back off logic as well as the dispatch
                     // operation
