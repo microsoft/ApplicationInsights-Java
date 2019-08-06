@@ -44,7 +44,7 @@ public class TelemetryCorrelationUtils {
     public static final String REQUEST_CONTEXT_HEADER_NAME = "Request-Context";
     public static final String REQUEST_CONTEXT_HEADER_APPID_KEY = "appId";
     public static final String REQUEST_CONTEXT_HEADER_ROLENAME_KEY = "roleName";
-    public static final int REQUESTID_MAXLENGTH = 1024; 
+    public static final int REQUESTID_MAXLENGTH = 1024;
 
     private TelemetryCorrelationUtils() {}
 
@@ -65,7 +65,7 @@ public class TelemetryCorrelationUtils {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. response is null.");
                 return;
             }
-    
+
             if (requestTelemetry == null) {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. requestTelemetry is null.");
                 return;
@@ -104,12 +104,12 @@ public class TelemetryCorrelationUtils {
     }
 
     /**
-     * Generates a child Id for dependencies. Dependencies are children of requests and, therefore, their ID's 
+     * Generates a child Id for dependencies. Dependencies are children of requests and, therefore, their ID's
      * reflect this. The generated ID is based on the current request scope (stored in TLS).
      * @return The child Id.
      */
     public static String generateChildDependencyId() {
-        
+
         try {
 
             RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
@@ -162,8 +162,8 @@ public class TelemetryCorrelationUtils {
 
         String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
         String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
-        
-        //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
+
+        //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
         //return and let the next request resolve the ikey.
         if (appId == null) {
             InternalLogger.INSTANCE.trace("Application correlation Id could not be retrieved (e.g. task may be pending or failed)");
@@ -174,7 +174,7 @@ public class TelemetryCorrelationUtils {
     }
 
     /**
-     * Given a request context, it generates a new dependency target, possibly including the appId found in 
+     * Given a request context, it generates a new dependency target, possibly including the appId found in
      * the given Request-Context.
      * @param requestContext - the Request-Context header value
      * @return the dependency target
@@ -183,7 +183,7 @@ public class TelemetryCorrelationUtils {
 
         if (requestContext == null || requestContext.isEmpty()) {
             InternalLogger.INSTANCE.trace("generateChildDependencyTarget: won't continue as requestContext is null or empty.");
-            return "";    
+            return "";
         }
 
         String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
@@ -215,7 +215,7 @@ public class TelemetryCorrelationUtils {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. request is null.");
                 return;
             }
-    
+
             if (requestTelemetry == null) {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. requestTelemetry is null.");
                 return;
@@ -236,7 +236,7 @@ public class TelemetryCorrelationUtils {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. InstrumentationKey is null or empty.");
                 return;
             }
-            
+
             String source = generateSourceTargetCorrelation(instrumentationKey, requestContext);
             requestTelemetry.setSource(source);
         }
@@ -261,7 +261,7 @@ public class TelemetryCorrelationUtils {
      * @param requestTelemetry The request telemetry item.
      */
     private static void resolveCorrelationContext(HttpServletRequest request, RequestTelemetry requestTelemetry) {
-        
+
         // resolve baggages (Correlation-Context)
         @SuppressWarnings("unchecked")
         Enumeration<String> baggages = request.getHeaders(CORRELATION_CONTEXT_HEADER_NAME);
@@ -278,7 +278,7 @@ public class TelemetryCorrelationUtils {
             return;
         }
 
-        CorrelationContext currentCorrelationContext = 
+        CorrelationContext currentCorrelationContext =
             ThreadContext.getRequestTelemetryContext().getCorrelationContext();
 
         while (baggages.hasMoreElements()) {
@@ -295,7 +295,7 @@ public class TelemetryCorrelationUtils {
      * @param response The servlet's response.
      */
     private static void addTargetAppIdForResponseHeader(HttpServletResponse response) {
-        
+
         if (response.containsHeader(REQUEST_CONTEXT_HEADER_NAME)) {
             return;
         }
@@ -315,14 +315,14 @@ public class TelemetryCorrelationUtils {
     private static String generateSourceTargetCorrelation(String instrumentationKey, String requestContext) {
         String appId = getKeyValueHeaderValue(requestContext, REQUEST_CONTEXT_HEADER_APPID_KEY);
         String roleName = getKeyValueHeaderValue(requestContext, REQUEST_CONTEXT_HEADER_ROLENAME_KEY);
-        
+
         if (appId == null && roleName == null) {
             return null;
         }
-        
+
         String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
-        
-        //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
+
+        //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
         //return and let the next request resolve the ikey.
         if (myAppId == null) {
             InternalLogger.INSTANCE.trace("Could not generate source/target correlation as the appId could not be resolved (e.g. task may be pending or failed)");
@@ -346,8 +346,8 @@ public class TelemetryCorrelationUtils {
     }
 
     /**
-     * Extracts the value of a "Key-Value" type of header. For example, for a header with value: "foo=bar, name=joe", 
-     * we can extract "joe" with a call to this method passing the key "name". 
+     * Extracts the value of a "Key-Value" type of header. For example, for a header with value: "foo=bar, name=joe",
+     * we can extract "joe" with a call to this method passing the key "name".
      * @param headerFullValue The entire header value.
      * @param key They key for which to extract the value
      * @return The extracted value
@@ -357,7 +357,7 @@ public class TelemetryCorrelationUtils {
     }
 
     private static Map<String, String> getPropertyBag(String baggage) {
-        
+
         Map<String, String> result = new HashMap<String, String>();
 
         String[] pairs = baggage.split(",");
@@ -366,10 +366,10 @@ public class TelemetryCorrelationUtils {
             if (keyValuePair.length == 2) {
                 String key = keyValuePair[0].trim();
                 String value = keyValuePair[1].trim();
-                result.put(key, value); 
+                result.put(key, value);
             }
         }
-        
+
         return result;
     }
 
@@ -377,7 +377,7 @@ public class TelemetryCorrelationUtils {
      static String extractRootId(String parentId) {
         // ported from .NET's System.Diagnostics.Activity.cs implementation:
         // https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
-        
+
         int rootEnd = parentId.indexOf('.');
         if (rootEnd < 0) {
             rootEnd = parentId.length();
@@ -389,11 +389,18 @@ public class TelemetryCorrelationUtils {
     }
 
     private static String generateRootId() {
-        UUID guid = UUID.randomUUID();
-        long least = guid.getLeastSignificantBits();
-        long most = guid.getMostSignificantBits();
+        return uuidToStringNoDashes(UUID.randomUUID());
+    }
 
-        return Long.toHexString(most) + Long.toHexString(least);
+    static String uuidToStringNoDashes(UUID guid) {
+        long most = guid.getMostSignificantBits();
+        long least = guid.getLeastSignificantBits();
+        final long msb = 1L << 32;
+		final long mask = msb - 1;
+		return Long.toHexString(msb | ((most >> 32) & mask)).substring(1)
+                + Long.toHexString(msb | (most & mask)).substring(1)
+                + Long.toHexString(msb | ((least >> 32) & mask)).substring(1)
+                + Long.toHexString(msb | (least & mask)).substring(1);
     }
 
     private static String generateId(String parentId) {
@@ -409,7 +416,7 @@ public class TelemetryCorrelationUtils {
     }
 
     private static String shortenId(String parentId, String suffix) {
-        
+
         // ported from .NET's System.Diagnostics.Activity.cs implementation:
         // https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
         int trimPosition = REQUESTID_MAXLENGTH - 9; // make room for suffix + delimiter
@@ -419,17 +426,17 @@ public class TelemetryCorrelationUtils {
                 break;
             trimPosition--;
         }
-        
+
         // parentId is not a valid requestId, so generate one.
         if (trimPosition == 1) {
             return "|" + generateRootId() + ".";
         }
-        
+
         return parentId.substring(0, trimPosition) + suffix + '#';
     }
 
     private static String sanitizeParentId(String parentId) {
-        
+
         String result = parentId;
         if (!isHierarchicalId(parentId)) {
             result = "|" + result;
@@ -439,12 +446,12 @@ public class TelemetryCorrelationUtils {
         if (lastChar != '.' && lastChar != '_') {
             result = result + '.';
         }
-        
+
         return result;
     }
 
     private static String generateSuffix() {
-        // using ThreadLocalRandom instead of Random to avoid multi-threaded contention which would 
+        // using ThreadLocalRandom instead of Random to avoid multi-threaded contention which would
         // result in poor performance.
         int randomNumber = ThreadLocalRandom.current().nextInt();
         return String.format("%08x", randomNumber);
