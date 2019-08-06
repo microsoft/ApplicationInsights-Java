@@ -26,7 +26,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
@@ -44,20 +43,25 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
 import com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilter;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
-import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 
 import org.hamcrest.Matchers;
 import org.junit.*;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.mockito.Mockito;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 
 import static org.junit.Assert.*;
 
 public final class TelemetryConfigurationFactoryTest {
+
+    @Rule
+    public EnvironmentVariables envVars = new EnvironmentVariables();
+
+    @Rule
+    public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties(); // returns system props to state before the test was run
 
     private final static String MOCK_IKEY = "c9341531-05ac-4d8c-972e-36e97601d5ff";
     private final static String MOCK_ENDPOINT = "MockEndpoint";
@@ -396,6 +400,54 @@ public final class TelemetryConfigurationFactoryTest {
         Assert.assertEquals(0, emptyConfig.getTelemetryProcessors().size());
     }
 
+    @Test
+    public void connectionStringOverridesIkey() {
+        final AppInsightsConfigurationBuilder mockParser = createMockParser(false, false, false);
+        final ApplicationInsightsXmlConfiguration config = mockParser.build(null);
+        config.setInstrumentationKey("fake-ikey");
+        config.setConnectionString("InstrumentationKey=the-real-fake-ikey");
+
+        TelemetryConfiguration tc = new TelemetryConfiguration();
+        initializeWithFactory(mockParser, tc);
+        assertEquals("the-real-fake-ikey", tc.getInstrumentationKey());
+    }
+
+    @Test
+    public void connectionStringSystemPropertyOverridesXml() {
+        final AppInsightsConfigurationBuilder mockParser = createMockParser(false, false, false);
+        final ApplicationInsightsXmlConfiguration config = mockParser.build(null);
+        final String xmlConString = "InstrumentationKey=xml-ikey";
+        config.setConnectionString(xmlConString);
+
+        final String propConString = "InstrumentationKey=sys-prop-ikey";
+        System.setProperty(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME, propConString);
+
+        TelemetryConfiguration tc = new TelemetryConfiguration();
+        initializeWithFactory(mockParser, tc);
+        assertEquals(propConString, tc.getConnectionString());
+        assertEquals("sys-prop-ikey", tc.getInstrumentationKey());
+    }
+
+    @Test
+    public void connectionStringEnvVarOverridesPropertyAndXml() {
+        final AppInsightsConfigurationBuilder mockParser = createMockParser(false, false, false);
+        final ApplicationInsightsXmlConfiguration config = mockParser.build(null);
+        final String xmlConString = "InstrumentationKey=xml-ikey";
+        config.setConnectionString(xmlConString);
+
+        final String propConString = "InstrumentationKey=sys-prop-ikey";
+        System.setProperty(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME, propConString);
+
+        final String envConString = "InstrumentationKey=env-var-ikey";
+        envVars.set(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME, envConString);
+
+        TelemetryConfiguration tc = new TelemetryConfiguration();
+        initializeWithFactory(mockParser, tc);
+        assertEquals(envConString, tc.getConnectionString());
+        assertEquals("env-var-ikey", tc.getInstrumentationKey());
+    }
+
+
     private MockTelemetryModule generateTelemetryModules(boolean addParameter) {
         AppInsightsConfigurationBuilder mockParser = createMockParser(true, true, false);
         ApplicationInsightsXmlConfiguration appConf = mockParser.build(null);
@@ -453,10 +505,8 @@ public final class TelemetryConfigurationFactoryTest {
             ChannelXmlElement channelXmlElement = new ChannelXmlElement();
             channelXmlElement.setEndpointAddress(MOCK_ENDPOINT);
 
-            String channelType = null;
             if (setChannel) {
-                channelType = "com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel";
-                channelXmlElement.setType(channelType);
+                channelXmlElement.setType("com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel");
             }
 
             appConf.setChannel(channelXmlElement);
@@ -533,21 +583,21 @@ public final class TelemetryConfigurationFactoryTest {
 
 
     private void initializeWithFactory(AppInsightsConfigurationBuilder mockParser, TelemetryConfiguration mockConfiguration) {
-        Field field = null;
-        try {
-            field = ClassDataUtils.class.getDeclaredField("verifier");
-            field.setAccessible(true);
-
-            ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-            Mockito.doReturn(true).when(mockVerifier).verifyClassExists(anyString());
-            field.set(ClassDataUtils.INSTANCE, mockVerifier);
+//        Field field = null;
+//        try {
+//            field = ClassDataUtils.class.getDeclaredField("verifier");
+//            field.setAccessible(true);
+//
+//            ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
+//            Mockito.doReturn(true).when(mockVerifier).verifyClassExists(anyString());
+//            field.set(ClassDataUtils.INSTANCE, mockVerifier);
             TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
             TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException();
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException();
-        }
+//        } catch (NoSuchFieldException e) {
+//            throw new RuntimeException();
+//        } catch (IllegalAccessException e) {
+//            throw new RuntimeException();
+//        }
     }
 
     private void ikeyTest(String configurationIkey, String expectedIkey) {
@@ -562,8 +612,8 @@ public final class TelemetryConfigurationFactoryTest {
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
         initializeWithFactory(mockParser, mockConfiguration);
-        assertEquals(mockConfiguration.getInstrumentationKey(), expectedIkey);
-        assertTrue(mockConfiguration.getChannel() instanceof InProcessTelemetryChannel);
+        assertEquals(expectedIkey, mockConfiguration.getInstrumentationKey());
+        assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
     }
 
     @After
@@ -571,5 +621,6 @@ public final class TelemetryConfigurationFactoryTest {
         Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
         method.setAccessible(true);
         method.invoke(null);
+
     }
 }

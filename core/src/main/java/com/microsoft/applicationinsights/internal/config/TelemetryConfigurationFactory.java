@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
@@ -81,6 +82,7 @@ public enum TelemetryConfigurationFactory {
      * If set "true" (case insensitive) scanning will be enabled. Otherwise (by default), it will be disabled.
      */
     public static final String PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY = "applicationinsights.modules.performance.scanning.enabled";
+    public static final String CONNECTION_STRING_ENV_VAR_NAME = "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
@@ -132,6 +134,7 @@ public enum TelemetryConfigurationFactory {
             setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
 
             setInstrumentationKey(applicationInsightsConfig, configuration);
+            setConnectionString(applicationInsightsConfig, configuration);
             setRoleName(applicationInsightsConfig, configuration);
 
             TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
@@ -332,6 +335,32 @@ public enum TelemetryConfigurationFactory {
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.toString());
         }
+    }
+
+    private void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryConfiguration configuration) {
+        // connection string > ikey
+        // hardcoded > env var > system property > config.xml
+
+        // hardcoded should follow a different path
+        String connectionString = configXml.getConnectionString(); // config.xml
+
+        String nextValue = System.getProperty(CONNECTION_STRING_ENV_VAR_NAME);
+        if (!Strings.isNullOrEmpty(nextValue)) {
+            if (!Strings.isNullOrEmpty(connectionString)) {
+                InternalLogger.INSTANCE.warn("System property %s is overriding connection string value from %s", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
+            }
+            connectionString = nextValue;
+        }
+
+        nextValue = System.getenv(CONNECTION_STRING_ENV_VAR_NAME);
+        if (!Strings.isNullOrEmpty(nextValue)) {
+            if (!Strings.isNullOrEmpty(connectionString)) {
+                InternalLogger.INSTANCE.warn("Environment variable %s is overriding connection string value from %s or system property", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
+            }
+            connectionString = nextValue;
+        }
+
+        configuration.setConnectionString(connectionString);
     }
 
     private void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
@@ -578,10 +607,12 @@ public enum TelemetryConfigurationFactory {
         return false;
     }
 
+    @VisibleForTesting
     void setPerformanceCountersSection(String performanceCountersSection) {
         this.performanceCountersSection = performanceCountersSection;
     }
 
+    @VisibleForTesting
     void setBuilder(AppInsightsConfigurationBuilder builder) {
         this.builder = builder;
     }

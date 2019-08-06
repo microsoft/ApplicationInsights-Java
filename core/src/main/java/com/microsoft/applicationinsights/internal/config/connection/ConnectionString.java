@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -39,6 +40,9 @@ public class ConnectionString {
         String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
         if (Strings.isNullOrEmpty(instrumentationKey)) {
             throw new InvalidConnectionStringException("Missing 'InstrumentationKey'");
+        }
+        if (!Strings.isNullOrEmpty(config.getInstrumentationKey())) {
+            InternalLogger.INSTANCE.warn("Connection string is overriding previously configured instrumentation key.");
         }
         config.setInstrumentationKey(instrumentationKey);
 
