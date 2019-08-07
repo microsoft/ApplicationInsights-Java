@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge.ExceptionTelemetry;
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge.RemoteDependencyTelemetry;
@@ -157,7 +158,12 @@ public class OutgoingSpanImpl implements Span {
                 } else {
                     target = sdkBridge.generateChildDependencyTarget(requestContext, Global.isOutboundW3CEnabled());
                 }
-                telemetry.setName(method + " " + uriObject.getPath());
+                String path = uriObject.getPath();
+                if (Strings.isNullOrEmpty(path)) {
+                    telemetry.setName(method + " /");
+                } else {
+                    telemetry.setName(method + " " + path);
+                }
                 if (target != null && !target.isEmpty()) {
                     // AI correlation expects target to be of this format.
                     telemetry.setTarget(createTarget(uriObject, target));

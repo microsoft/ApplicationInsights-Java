@@ -89,9 +89,9 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
         RequestData d = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        String requestOperationId = d.getId();
-        String rddId = rdd.getId();
-        assertTrue(rddId.contains(requestOperationId));
+        assertEquals("GET /", rdd.getName());
+        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertTrue(rdd.getId().contains(d.getId()));
     }
 
     @Test
@@ -101,9 +101,9 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
         RequestData d = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        String requestOperationId = d.getId();
-        String rddId = rdd.getId();
-        assertTrue(rddId.contains(requestOperationId));
+        assertEquals("GET /", rdd.getName());
+        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertTrue(rdd.getId().contains(d.getId()));
     }
 
     @Test
@@ -113,9 +113,9 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
         RequestData d = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        String requestOperationId = d.getId();
-        String rddId = rdd.getId();
-        assertTrue(rddId.contains(requestOperationId));
+        assertEquals("GET /", rdd.getName());
+        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertTrue(rdd.getId().contains(d.getId()));
     }
 
     @Test
@@ -125,9 +125,9 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
         RequestData d = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        String requestOperationId = d.getId();
-        String rddId = rdd.getId();
-        assertTrue(rddId.contains(requestOperationId));
+        assertEquals("GET /", rdd.getName());
+        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertTrue(rdd.getId().contains(d.getId()));
     }
 
     @Test
@@ -137,8 +137,8 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
         RequestData d = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
-        String requestOperationId = d.getId();
-        String rddId = rdd.getId();
-        assertTrue(rddId.contains(requestOperationId));
+        assertEquals("GET /", rdd.getName());
+        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertTrue(rdd.getId().contains(d.getId()));
     }
 }
