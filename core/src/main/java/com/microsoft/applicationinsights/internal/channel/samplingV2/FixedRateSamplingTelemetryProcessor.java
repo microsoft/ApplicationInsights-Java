@@ -105,17 +105,12 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     }
 
 
-    private void setIncludedOrExcludedTypes(String value, Set<Class> typeSet) {
-
-        if (!StringUtils.isEmpty(value)) {
-            value = value.trim();
-            if (!StringUtils.isEmpty(value) && allowedTypes.containsKey(value)) {
-                typeSet.add(allowedTypes.get(value));
-            } else {
-                InternalLogger.INSTANCE.error("Item %s is either not allowed to sample or is empty", value);
-            }
+    private void setIncludedOrExcludedTypes(String value, Set<Class> typeSet, String verb) {
+        Class type = allowedTypes.get(StringUtils.trimToEmpty(value));
+        if (type != null) {
+            typeSet.add(type);
         } else {
-            InternalLogger.INSTANCE.error("Telemetry type %s is empty", value);
+            InternalLogger.INSTANCE.error("Error configuring %s: %s is not a valid telemetry type to %s.", FixedRateSamplingTelemetryProcessor.class.getSimpleName(), value, verb);
         }
     }
 
@@ -133,13 +128,14 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      */
     public void setSamplingPercentage(String samplingPercentage) {
         try {
-            this.samplingPercentage = Double.valueOf(samplingPercentage);
+            this.samplingPercentage = Double.parseDouble(samplingPercentage);
             InternalLogger.INSTANCE.info("Sampling rate set to %s", samplingPercentage);
         }
         catch (NumberFormatException ex) {
             this.samplingPercentage = 100.0;
-            InternalLogger.INSTANCE.error("Sampling rate specified in improper format, sampling rate is now set to 100.0 (default)");
-            InternalLogger.INSTANCE.trace("stack trace is %s", ExceptionUtils.getStackTrace(ex));
+            if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                InternalLogger.INSTANCE.error("Sampling rate specified in improper format. Using default sampling rate, 100.0: %s", ExceptionUtils.getStackTrace(ex));
+            }
         }
     }
 
@@ -152,7 +148,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
     @Override
     public boolean process(Telemetry telemetry) {
 
-        double samplingPercentage = this.samplingPercentage;
+        double sp = this.samplingPercentage;
 
         if (telemetry instanceof SupportSampling) {
 
@@ -162,24 +158,24 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
 
                 if (samplingSupportingTelemetry.getSamplingPercentage() == null) {
 
-                    samplingSupportingTelemetry.setSamplingPercentage(samplingPercentage);
+                    samplingSupportingTelemetry.setSamplingPercentage(sp);
 
 
                 } else {
                     InternalLogger.INSTANCE.info("Item has sampling percentage already set to :"
                             + samplingSupportingTelemetry.getSamplingPercentage());
 
-                    samplingPercentage = samplingSupportingTelemetry.getSamplingPercentage();
+                    sp = samplingSupportingTelemetry.getSamplingPercentage();
                 }
 
-                if (SamplingScoreGeneratorV2.getSamplingScore(telemetry) >= samplingPercentage) {
+                if (SamplingScoreGeneratorV2.getSamplingScore(telemetry) >= sp) {
 
-                    InternalLogger.INSTANCE.info("Item %s sampled out", telemetry.getClass());
+                    InternalLogger.INSTANCE.info("Item %s sampled out", telemetry.getClass().getSimpleName());
                     return false;
                 }
 
             } else {
-                InternalLogger.INSTANCE.trace("Skip sampling since %s type is not sampling applicable", telemetry.getClass());
+                InternalLogger.INSTANCE.trace("Skip sampling since %s type is not sampling applicable", telemetry.getClass().getSimpleName());
             }
         }
 
@@ -212,8 +208,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      */
     public void addToExcludedType(String value) {
 
-        setIncludedOrExcludedTypes(value, excludedTypes);
-        InternalLogger.INSTANCE.trace("%s added as excluded to sampling", value);
+        setIncludedOrExcludedTypes(value, excludedTypes, "exclude");
 
     }
 
@@ -224,8 +219,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
      */
     public void addToIncludedType(String value) {
 
-        setIncludedOrExcludedTypes(value, includedTypes);
-        InternalLogger.INSTANCE.trace("%s added as included to sampling", value);
+        setIncludedOrExcludedTypes(value, includedTypes, "include");
 
     }
 }
