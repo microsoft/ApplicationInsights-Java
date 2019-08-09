@@ -2,6 +2,9 @@ package com.springbootstartertest.smoketest;
 
 import java.util.List;
 
+import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -11,8 +14,10 @@ import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @UseAgent("CustomInstrumentation")
@@ -27,6 +32,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.one");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
+        validateSdkName(rdd, "ja-custom");
     }
 
     @Test
@@ -38,6 +44,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.two");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
+        validateSdkName(rdd, "ja-custom");
     }
 
     @Test
@@ -54,6 +61,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         List<ExceptionDetails> exceptions = exceptionData.getExceptions();
         assertEquals(exceptions.size(), 1);
         assertEquals(exceptions.get(0).getMessage(), "Three");
+        validateSdkName(rdd, "ja-custom");
     }
 
     @Test
@@ -65,6 +73,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject$NestedObject.four");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
+        validateSdkName(rdd, "ja-custom");
     }
 
     @Test
@@ -95,21 +104,25 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(fiveRdd.getName(), "com/springbootstartertest/controller/TargetObject.five");
         assertEquals(fiveRdd.getType(), "OTHER");
         assertEquals(fiveRdd.getSuccess(), true);
+        validateSdkName(fiveRdd, "ja-custom");
 
         assertNotNull(sixRdd);
         assertEquals(sixRdd.getName(), "com/springbootstartertest/controller/TargetObject.six");
         assertEquals(sixRdd.getType(), "OTHER");
         assertEquals(sixRdd.getSuccess(), true);
+        validateSdkName(sixRdd, "ja-custom");
 
         assertNotNull(oneRdd);
         assertEquals(oneRdd.getName(), "com/springbootstartertest/controller/TargetObject.one");
         assertEquals(oneRdd.getType(), "OTHER");
         assertEquals(oneRdd.getSuccess(), true);
+        validateSdkName(oneRdd, "ja-custom");
 
         assertNotNull(twoRdd);
         assertEquals(twoRdd.getName(), "com/springbootstartertest/controller/TargetObject.two");
         assertEquals(twoRdd.getType(), "OTHER");
         assertEquals(twoRdd.getSuccess(), true);
+        validateSdkName(twoRdd, "ja-custom");
     }
 
     @Test
@@ -121,6 +134,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.seven");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
+        validateSdkName(rdd, "ja-custom");
     }
 
     @Test
@@ -134,10 +148,12 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd1.getName(), "com/springbootstartertest/controller/TargetObject.eight");
         assertEquals(rdd1.getType(), "OTHER");
         assertEquals(rdd1.getSuccess(), true);
+        validateSdkName(rdd1, "ja-custom");
 
         assertEquals(rdd2.getName(), "com/springbootstartertest/controller/TargetObject.eight");
         assertEquals(rdd2.getType(), "OTHER");
         assertEquals(rdd2.getSuccess(), true);
+        validateSdkName(rdd2, "ja-custom");
     }
 
     @Test
@@ -163,10 +179,17 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(nineRdd.getName(), "com/springbootstartertest/controller/TargetObject.nine");
         assertEquals(nineRdd.getType(), "OTHER");
         assertEquals(nineRdd.getSuccess(), true);
+        validateSdkName(nineRdd, "ja-custom");
 
         assertNotNull(httpRdd);
         String requestOperationId = d.getId();
         String rddId = httpRdd.getId();
         assertTrue(rddId.contains(requestOperationId));
+    }
+
+    private void validateSdkName(Domain data, String sdkName) {
+        Envelope envelope = mockedIngestion.getEnvelopeForBaseData(data);
+        String sdkVersion = envelope.getTags().get("ai.internal.sdkVersion");
+        assertThat(sdkVersion, startsWith(sdkName + ":"));
     }
 }

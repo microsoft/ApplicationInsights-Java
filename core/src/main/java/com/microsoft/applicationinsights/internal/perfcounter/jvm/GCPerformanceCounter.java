@@ -27,6 +27,7 @@ import java.lang.management.ManagementFactory;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 /**
@@ -35,10 +36,13 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
  * Created by gupele on 8/8/2016.
  */
 public final class GCPerformanceCounter implements PerformanceCounter {
+
     public final static String NAME = "GC";
 
     private static final String GC_TOTAL_COUNT = "GC Total Count";
     private static final String GC_TOTAL_TIME = "GC Total Time";
+
+    private static final String SDK_VERSION = "java-metric-jvm:" + PropertyHelper.getSdkVersionNumber();
 
     private long currentTotalCount = 0;
     private long currentTotalTime = 0;
@@ -81,6 +85,8 @@ public final class GCPerformanceCounter implements PerformanceCounter {
 
             mtTotalCount.markAsCustomPerfCounter();
             mtTotalCount.markAsCustomPerfCounter();
+
+            mtTotalCount.getContext().getInternal().setSdkVersion(SDK_VERSION);
 
             telemetryClient.track(mtTotalCount);
             telemetryClient.track(mtTotalTime);

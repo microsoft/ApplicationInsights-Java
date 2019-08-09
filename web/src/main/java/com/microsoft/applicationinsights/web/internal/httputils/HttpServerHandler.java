@@ -43,18 +43,27 @@ public final class HttpServerHandler {
      */
     private final List<ThreadLocalCleaner> cleaners;
 
-    /**
-     * Creates a new instance of {@link HttpServerHandler}
-     *
-     * @param extractor The {@code HttpExtractor} used to extract information from request and repsonse
-     * @param webModulesContainer The {@code WebModulesContainer} used to hold
-     *        {@link com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule}
-     * @param telemetryClient The {@code TelemetryClient} used to send telemetry
-     */
+    private final String sdkVersion;
+
     public HttpServerHandler(HttpExtractor extractor,
-        WebModulesContainer webModulesContainer,
-        List<ThreadLocalCleaner> cleaners,
-        /* Nullable */ TelemetryClient telemetryClient) {
+                             WebModulesContainer webModulesContainer,
+                             List<ThreadLocalCleaner> cleaners,
+                             TelemetryClient telemetryClient) {
+        this(extractor, webModulesContainer, cleaners, telemetryClient, null);
+    }
+        /**
+         * Creates a new instance of {@link HttpServerHandler}
+         *
+         * @param extractor The {@code HttpExtractor} used to extract information from request and repsonse
+         * @param webModulesContainer The {@code WebModulesContainer} used to hold
+         *        {@link com.microsoft.applicationinsights.web.extensibility.modules.WebTelemetryModule}
+         * @param telemetryClient The {@code TelemetryClient} used to send telemetry
+         */
+    public HttpServerHandler(HttpExtractor extractor,
+                             WebModulesContainer webModulesContainer,
+                             List<ThreadLocalCleaner> cleaners,
+                             TelemetryClient telemetryClient,
+                             String sdkVersion) {
         Validate.notNull(extractor, "extractor");
         Validate.notNull(webModulesContainer, "WebModuleContainer");
         Validate.notNull(cleaners, "ThreadLocalCleaners");
@@ -62,6 +71,7 @@ public final class HttpServerHandler {
         this.webModulesContainer = webModulesContainer;
         this.cleaners = cleaners;
         this.telemetryClient = telemetryClient;
+        this.sdkVersion = sdkVersion;
     }
 
     /**
@@ -112,6 +122,9 @@ public final class HttpServerHandler {
         int resultCode = extractor.getStatusCode(response);
         requestTelemetry.setSuccess(resultCode < 400);
         requestTelemetry.setResponseCode(Integer.toString(resultCode));
+        if (sdkVersion != null) {
+            requestTelemetry.getContext().getInternal().setSdkVersion(sdkVersion);
+        }
         if (ThreadContext.getRequestTelemetryContext() == null) {
             // e.g. when called from AIHttpServletListener
             ThreadContext.setRequestTelemetryContext(context);

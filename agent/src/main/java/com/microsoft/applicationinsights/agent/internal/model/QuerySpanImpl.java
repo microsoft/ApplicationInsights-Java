@@ -140,7 +140,7 @@ public class QuerySpanImpl implements QuerySpan {
             return;
         }
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(startTimeMillis, totalMillis, type,
-                exception == null);
+                exception == null, "ja-jdbc");
         telemetry.setName(dest);
         telemetry.setCommandName(text);
 
@@ -174,7 +174,7 @@ public class QuerySpanImpl implements QuerySpan {
 
         sdkBridge.track(telemetry);
         if (exception != null) {
-            sdkBridge.track(new ExceptionTelemetry(exception));
+            sdkBridge.track(new ExceptionTelemetry(exception, telemetry.getSdkName()));
         }
     }
 }

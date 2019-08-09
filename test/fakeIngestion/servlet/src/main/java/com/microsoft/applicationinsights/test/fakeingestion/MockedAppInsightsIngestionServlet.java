@@ -136,6 +136,12 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
         }
     }
 
+    public Collection<Envelope> getItems() {
+        synchronized (multimapLock) {
+            return type2envelope.values();
+        }
+    }
+
     public void awaitAnyItems(long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
         waitForItems(Predicates.<Envelope>alwaysTrue(), 1, timeout, timeUnit);
     }

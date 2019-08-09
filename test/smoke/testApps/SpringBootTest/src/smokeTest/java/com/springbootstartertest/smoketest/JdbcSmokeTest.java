@@ -1,12 +1,19 @@
 package com.springbootstartertest.smoketest;
 
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.smoketest.*;
+import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
+import com.microsoft.applicationinsights.smoketest.DependencyContainer;
+import com.microsoft.applicationinsights.smoketest.TargetUri;
+import com.microsoft.applicationinsights.smoketest.UseAgent;
+import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @UseAgent
@@ -38,6 +45,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("jdbc:hsqldb:mem:test", rdd.getName());
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -50,6 +58,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("jdbc:hsqldb:mem:test", rdd.getName());
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -63,6 +72,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("insert into abc (xyz) values (?)", rdd.getData());
         assertEquals(" [Batch of 3]", rdd.getProperties().get("Args"));
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -77,6 +87,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
                 " insert into abc (xyz) values ('v')", rdd.getData());
         assertEquals(" [Batch]", rdd.getProperties().get("Args"));
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -100,6 +111,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getName().startsWith("jdbc:mysql://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -123,6 +135,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getName().startsWith("jdbc:mysql://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -135,6 +148,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getName().startsWith("jdbc:postgresql://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -147,6 +161,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getName().startsWith("jdbc:postgresql://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -159,6 +174,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getName().startsWith("jdbc:sqlserver://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Test
@@ -171,6 +187,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getName().startsWith("jdbc:sqlserver://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Ignore("FIXME: need custom container with oracle db")
@@ -184,6 +201,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getName().startsWith("jdbc:oracle:thin:@"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
     }
 
     @Ignore("FIXME: need custom container with oracle db")
@@ -197,5 +215,12 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getName().startsWith("jdbc:oracle:thin:@"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
+        validateSdkName(rdd, "ja-jdbc");
+    }
+
+    private void validateSdkName(Domain data, String sdkName) {
+        Envelope envelope = mockedIngestion.getEnvelopeForBaseData(data);
+        String sdkVersion = envelope.getTags().get("ai.internal.sdkVersion");
+        assertThat(sdkVersion, startsWith(sdkName + ":"));
     }
 }

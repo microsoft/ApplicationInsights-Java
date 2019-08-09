@@ -5,6 +5,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,8 @@ import java.util.concurrent.TimeUnit;
  * @author Dhaval Doshi
  */
 public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable {
+
+  private static final String SDK_VERSION = "java-heartbeat:" + PropertyHelper.getSdkVersionNumber();
 
   /**
    * The name of the heartbeat metric.
@@ -236,6 +239,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
 
     MetricTelemetry telemetry = gatherData();
     telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
+    telemetry.getContext().getInternal().setSdkVersion(SDK_VERSION);
     telemetryClient.trackMetric(telemetry);
     InternalLogger.INSTANCE.trace("No of heartbeats sent, %s", ++heartbeatsSent);
 

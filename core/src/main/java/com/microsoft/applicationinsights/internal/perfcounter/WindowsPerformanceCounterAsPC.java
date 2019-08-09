@@ -100,6 +100,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
 
     private void send(TelemetryClient telemetryClient, double value, WindowsPerformanceCounterData data) {
         PerformanceCounterTelemetry telemetry = new PerformanceCounterTelemetry(data.categoryName, data.counterName, data.instanceName, value);
+        telemetry.getContext().getInternal().setSdkVersion(SDK_VERSION);
         telemetryClient.track(telemetry);
     }
 

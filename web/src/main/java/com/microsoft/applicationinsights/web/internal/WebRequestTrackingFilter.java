@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory;
 import com.microsoft.applicationinsights.internal.agent.AgentBridgeFactory.SdkBridgeFactory;
 import com.microsoft.applicationinsights.internal.config.WebReflectionUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.internal.util.ThreadLocalCleaner;
 import com.microsoft.applicationinsights.web.extensibility.initializers.WebAppNameContextInitializer;
 import com.microsoft.applicationinsights.web.internal.httputils.AIHttpServletListener;
@@ -80,6 +81,7 @@ public final class WebRequestTrackingFilter implements Filter {
 
     private WebModulesContainer webModulesContainer;
     private TelemetryClient telemetryClient;
+    private final String sdkVersion;
     private final List<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
     private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights."
@@ -102,6 +104,27 @@ public final class WebRequestTrackingFilter implements Filter {
     // endregion Members
 
     // region Public
+
+    public static WebRequestTrackingFilter createForSpringBootStarter(String appName) {
+        return new WebRequestTrackingFilter(appName, "java-web-sbs");
+    }
+
+    public static WebRequestTrackingFilter createForWebAuto() {
+        return new WebRequestTrackingFilter(null, "java-web-auto");
+    }
+
+    public WebRequestTrackingFilter() {
+        this(null, "java-web-manual");
+    }
+
+    public WebRequestTrackingFilter(String appName) {
+        this(appName, "java-web-manual");
+    }
+
+    private WebRequestTrackingFilter(String appName, String sdkName) {
+        this.appName = appName;
+        this.sdkVersion = sdkName + ":" + PropertyHelper.getSdkVersionNumber();
+    }
 
     /**
      * Processing the given request and response.
@@ -162,10 +185,6 @@ public final class WebRequestTrackingFilter implements Filter {
         }
     }
 
-    public WebRequestTrackingFilter(String appName) {
-        this.appName = appName;
-    }
-
     /**
      * Initializes the filter from the given config.
      *
@@ -187,7 +206,7 @@ public final class WebRequestTrackingFilter implements Filter {
             // Todo: Should we provide this via dependency injection? Can there be a scenario where user
             // can provide his own handler?
             handler = new HttpServerHandler(new ApplicationInsightsServletExtractor(), webModulesContainer,
-                                                cleaners, telemetryClient);
+                                                cleaners, telemetryClient, sdkVersion);
             if (AgentBridgeFactory.isAgentAvailable()) {
                 agentBridge = AgentBridgeFactory.create(new SdkBridgeFactory() {
                     public SdkBridge create() {
@@ -224,8 +243,6 @@ public final class WebRequestTrackingFilter implements Filter {
      */
     public void destroy() {
     }
-
-    public WebRequestTrackingFilter() {}
 
     // endregion Public
 

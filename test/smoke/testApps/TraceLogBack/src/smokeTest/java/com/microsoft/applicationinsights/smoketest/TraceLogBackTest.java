@@ -1,10 +1,15 @@
 package com.microsoft.applicationinsights.smoketest;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Comparator;
 import java.util.List;
 
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
@@ -46,30 +51,35 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals(SeverityLevel.Verbose, md1.getSeverityLevel());
         assertEquals("LOGBack", md1.getProperties().get("SourceType"));
         assertEquals("TRACE", md1.getProperties().get("LoggingLevel"));
+        validateSdkName(md1, "java-logback");
 
         MessageData md2 = logs.get(0);
         assertEquals("This is logback debug.", md2.getMessage());
         assertEquals(SeverityLevel.Verbose, md2.getSeverityLevel());
         assertEquals("LOGBack", md2.getProperties().get("SourceType"));
         assertEquals("DEBUG", md2.getProperties().get("LoggingLevel"));
+        validateSdkName(md1, "java-logback");
 
         MessageData md3 = logs.get(2);
         assertEquals("This is logback info.", md3.getMessage());
         assertEquals(SeverityLevel.Information, md3.getSeverityLevel());
         assertEquals("LOGBack", md3.getProperties().get("SourceType"));
         assertEquals("INFO", md3.getProperties().get("LoggingLevel"));
+        validateSdkName(md1, "java-logback");
 
         MessageData md4 = logs.get(3);
         assertEquals("This is logback warn.", md4.getMessage());
         assertEquals(SeverityLevel.Warning, md4.getSeverityLevel());
         assertEquals("LOGBack", md4.getProperties().get("SourceType"));
         assertEquals("WARN", md4.getProperties().get("LoggingLevel"));
+        validateSdkName(md1, "java-logback");
 
         MessageData md5 = logs.get(4);
         assertEquals("This is logback error.", md5.getMessage());
         assertEquals(SeverityLevel.Error, md5.getSeverityLevel());
         assertEquals("LOGBack", md5.getProperties().get("SourceType"));
         assertEquals("ERROR", md5.getProperties().get("LoggingLevel"));
+        validateSdkName(md1, "java-logback");
     }
 
     @Test
@@ -86,5 +96,12 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals("This is an exception!", ed1.getProperties().get("Logger Message"));
         assertEquals("LOGBack", ed1.getProperties().get("SourceType"));
         assertEquals("ERROR", ed1.getProperties().get("LoggingLevel"));
+        validateSdkName(ed1, "java-logback");
+    }
+
+    private void validateSdkName(Domain data, String sdkName) {
+        Envelope envelope = mockedIngestion.getEnvelopeForBaseData(data);
+        String sdkVersion = envelope.getTags().get("ai.internal.sdkVersion");
+        assertThat(sdkVersion, startsWith(sdkName + ":"));
     }
 }

@@ -110,13 +110,13 @@ public class OutgoingSpanImpl implements Span {
             telemetry = toHttpTelemetry();
         } else if (type.equals("Redis")) {
             telemetry = new RemoteDependencyTelemetry(startTimeMillis, System.currentTimeMillis() - startTimeMillis,
-                    type, exception == null);
+                    type, exception == null, "ja-redis");
             telemetry.setName(text);
         }
         if (telemetry != null) {
             sdkBridge.track(telemetry);
             if (exception != null) {
-                sdkBridge.track(new ExceptionTelemetry(exception));
+                sdkBridge.track(new ExceptionTelemetry(exception, telemetry.getSdkName()));
             }
         }
     }
@@ -139,7 +139,7 @@ public class OutgoingSpanImpl implements Span {
 
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry(startTimeMillis,
                 System.currentTimeMillis() - startTimeMillis, "Http (tracked component)",
-                result == null || result < 400);
+                result == null || result < 400, "ja-http");
         telemetry.setId(outgoingSpanId);
 
         // from HttpClientMethodVisitor and CoreAgentNotificationsHandler:

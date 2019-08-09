@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
 /**
  * This class encapsulates all the common logic for sending AI telemetry.
@@ -40,28 +41,22 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
 
     private boolean isInitialized = false;
     private TelemetryClient telemetryClient;
+    private String sdkVersion;
 
     // endregion Members
 
     // region Constructor
 
-    /**
-     * Constructs new telemetry client proxy instance with the given client.
-     * @param telemetryClient The telemetry client.
-     * @param instrumentationKey The instrumentation key.
-     */
-    public LogTelemetryClientProxy(TelemetryClient telemetryClient, String instrumentationKey) {
-        try {
-            this.telemetryClient = telemetryClient;
-            if (!LocalStringsUtils.isNullOrEmpty(instrumentationKey)) {
-                this.telemetryClient.getContext().setInstrumentationKey(instrumentationKey);
-            }
+    public static LogTelemetryClientProxy createForLog4j1_2(String instrumentationKey) {
+        return new LogTelemetryClientProxy(new TelemetryClient(), instrumentationKey, "java-log4j1");
+    }
 
-            this.isInitialized = true;
-        } catch (Exception e) {
-            // Catching all exceptions so in case of a failure the calling appender won't throw exception.
-            // TODO: Assert.Debug/warning on exception?
-        }
+    public static LogTelemetryClientProxy createForLog4j2(String instrumentationKey) {
+        return new LogTelemetryClientProxy(new TelemetryClient(), instrumentationKey, "java-log4j2");
+    }
+
+    public static LogTelemetryClientProxy createForLogback(String instrumentationKey) {
+        return new LogTelemetryClientProxy(new TelemetryClient(), instrumentationKey, "java-logback");
     }
 
     /**
@@ -70,6 +65,30 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
      */
     public LogTelemetryClientProxy(String instrumentationKey) {
         this(new TelemetryClient(), instrumentationKey);
+    }
+
+    /**
+     * Constructs new telemetry client proxy instance with the given client.
+     * @param telemetryClient The telemetry client.
+     * @param instrumentationKey The instrumentation key.
+     */
+    public LogTelemetryClientProxy(TelemetryClient telemetryClient, String instrumentationKey) {
+        this(telemetryClient, instrumentationKey, null);
+    }
+
+    private LogTelemetryClientProxy(TelemetryClient telemetryClient, String instrumentationKey, String sdkName) {
+        try {
+            this.telemetryClient = telemetryClient;
+            if (!LocalStringsUtils.isNullOrEmpty(instrumentationKey)) {
+                this.telemetryClient.getContext().setInstrumentationKey(instrumentationKey);
+            }
+            this.sdkVersion = sdkName + ":" + PropertyHelper.getSdkVersionNumber();
+
+            this.isInitialized = true;
+        } catch (Exception e) {
+            // Catching all exceptions so in case of a failure the calling appender won't throw exception.
+            // TODO: Assert.Debug/warning on exception?
+        }
     }
 
     // endregion Constructor
@@ -103,6 +122,9 @@ public class LogTelemetryClientProxy implements TelemetryClientProxy {
         }
 
         telemetry.getContext().getProperties().putAll(customParameters);
+        if (sdkVersion != null) {
+            telemetry.getContext().getInternal().setSdkVersion(sdkVersion);
+        }
 
         telemetryClient.track(telemetry);
     }

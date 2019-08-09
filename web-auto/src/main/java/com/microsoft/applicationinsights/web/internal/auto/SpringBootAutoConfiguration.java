@@ -37,7 +37,7 @@ public class SpringBootAutoConfiguration {
     public FilterRegistrationBean filterRegistrationBean() {
         FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
         filterRegistrationBean.setName(WebFilterName.NAME);
-        filterRegistrationBean.setFilter(new WebRequestTrackingFilter());
+        filterRegistrationBean.setFilter(WebRequestTrackingFilter.createForWebAuto());
         filterRegistrationBean.addUrlPatterns("/*");
         filterRegistrationBean.setOrder(Integer.MIN_VALUE);
         return filterRegistrationBean;

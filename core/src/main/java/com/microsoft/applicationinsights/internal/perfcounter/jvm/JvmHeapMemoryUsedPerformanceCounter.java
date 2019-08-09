@@ -27,6 +27,7 @@ import java.lang.management.MemoryUsage;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 /**
@@ -36,11 +37,13 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
  */
 public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
 
-    public final static String NAME = "MemoryUsage";
+    public static final String NAME = "MemoryUsage";
 
-        private final static String HEAP_MEM_USED = "Heap Memory Used (MB)";
+    private static final String HEAP_MEM_USED = "Heap Memory Used (MB)";
 
-    private final long Megabyte = 1024 * 1024;
+    private static final long MEGABYTE = 1024 * 1024;
+
+    private static final String SDK_VERSION = "java-metric-memory:" + PropertyHelper.getSdkVersionNumber();
 
     private final MemoryMXBean memory;
 
@@ -65,9 +68,10 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
     private void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
         MemoryUsage mhu = memory.getHeapMemoryUsage();
         if (mhu != null) {
-            long currentHeapUsed = mhu.getUsed() / Megabyte;
+            long currentHeapUsed = mhu.getUsed() / MEGABYTE;
             MetricTelemetry memoryHeapUsage = new MetricTelemetry(HEAP_MEM_USED, currentHeapUsed);
             memoryHeapUsage.markAsCustomPerfCounter();
+            memoryHeapUsage.getContext().getInternal().setSdkVersion(SDK_VERSION);
             telemetryClient.track(memoryHeapUsage);
         }
     }

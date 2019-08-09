@@ -49,7 +49,7 @@ class LoggerSpans {
             setProperties(telemetry.getProperties(), timeMillis, level, loggerName, null, formattedMessage);
             sdkBridge.track(telemetry);
         } else {
-            ExceptionTelemetry telemetry = new ExceptionTelemetry(throwable, level);
+            ExceptionTelemetry telemetry = new ExceptionTelemetry(throwable, "ja-logging", level);
             setProperties(telemetry.getProperties(), timeMillis, level, loggerName, throwable, formattedMessage);
             sdkBridge.track(telemetry);
         }

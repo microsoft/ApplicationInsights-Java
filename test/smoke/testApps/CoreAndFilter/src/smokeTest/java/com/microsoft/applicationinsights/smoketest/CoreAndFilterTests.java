@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.smoketest;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
@@ -53,6 +54,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(expectedName, d.getName());
         assertEquals(expectedData, d.getData());
         assertEquals(expectedDuration, d.getDuration());
+        validateSdkName(d, "java");
     }
 
     @Test
@@ -86,6 +88,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(expectedname, d2.getName());
         assertEquals(expectedProperties, d2.getProperties().get("key"));
         assertEquals(expectedMetrice, d2.getMeasurements().get("key"));
+        validateSdkName(d, "java");
     }
 
     @Test
@@ -113,6 +116,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 hasException(withMessage(expectedName)),
                 hasSeverityLevel(SeverityLevel.Error)
         )));
+        for (ExceptionData exception : exceptions) {
+            validateSdkName(exception, "java");
+        }
     }
 
     @Test
@@ -183,6 +189,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertNull("getMin was non-null", dp.getMin());
         assertNull("getMax was non-null", dp.getMax());
         assertNull("getStdDev was non-null", dp.getStdDev());
+
+        validateSdkName(d, "java");
     }
 
     @Test
@@ -211,6 +219,10 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 TraceDataMatchers.hasSeverityLevel(SeverityLevel.Information),
                 TraceDataMatchers.hasProperty("key", "value")
         )));
+
+        for (MessageData message : messages) {
+            validateSdkName(message, "java");
+        }
     }
 
     @Test
@@ -230,6 +242,10 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 PageViewDataMatchers.hasDuration(new Duration(123456)),
                 PageViewDataMatchers.hasProperty("key", "value")
         )));
+
+        for (Domain pageView : pageViews) {
+            validateSdkName(pageView, "java");
+        }
     }
 
     @Test
@@ -241,6 +257,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         PageViewData pv1 = getTelemetryDataForType(0, "PageViewData");
         assertEquals("doPageView", pv1.getName());
         assertEquals(new Duration(0), pv1.getDuration());
+        validateSdkName(pv1, "java");
     }
 
     @Test
@@ -251,6 +268,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         RequestData rd1 = getTelemetryDataForType(0, "RequestData");
         assertEquals(false, rd1.getSuccess());
         assertEquals("404", rd1.getResponseCode());
+        validateSdkName(rd1, "java-web-manual");
     }
 
     @Test
@@ -280,12 +298,16 @@ public class CoreAndFilterTests extends AiSmokeTest {
         ExceptionDetails eDetails = getExceptionDetails(ed);
         final String expectedName = "This is a auto thrown exception !";
         assertEquals(expectedName, eDetails.getMessage());
+        validateSdkName(rd, "java-web-manual");
+        validateSdkName(ed, "java");
     }
 
     @Test
     @TargetUri("/index.jsp")
     public void testRequestJSP() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
+        validateSdkName(rd, "java-web-manual");
     }
 
     private static ExceptionDetails getExceptionDetails(ExceptionData exceptionData) {
@@ -309,4 +331,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
     }
 
+    private void validateSdkName(Domain data, String sdkName) {
+        Envelope envelope = mockedIngestion.getEnvelopeForBaseData(data);
+        String sdkVersion = envelope.getTags().get("ai.internal.sdkVersion");
+        assertThat(sdkVersion, startsWith(sdkName + ":"));
+    }
 }

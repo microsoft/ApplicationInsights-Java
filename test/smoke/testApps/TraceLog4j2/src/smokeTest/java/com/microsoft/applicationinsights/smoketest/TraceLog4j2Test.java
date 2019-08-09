@@ -1,10 +1,15 @@
 package com.microsoft.applicationinsights.smoketest;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Comparator;
 import java.util.List;
 
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
@@ -37,37 +42,42 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals(SeverityLevel.Verbose, md1.getSeverityLevel());
         assertEquals("Log4j", md1.getProperties().get("SourceType"));
         assertEquals("TRACE", md1.getProperties().get("LoggingLevel"));
+        validateSdkName(md1, "java-log4j2");
 
         MessageData md2 = logs.get(0);
         assertEquals("This is log4j2 debug.", md2.getMessage());
         assertEquals(SeverityLevel.Verbose, md2.getSeverityLevel());
         assertEquals("Log4j", md2.getProperties().get("SourceType"));
         assertEquals("DEBUG", md2.getProperties().get("LoggingLevel"));
+        validateSdkName(md2, "java-log4j2");
 
         MessageData md3 = logs.get(2);
         assertEquals("This is log4j2 info.", md3.getMessage());
         assertEquals(SeverityLevel.Information, md3.getSeverityLevel());
         assertEquals("Log4j", md3.getProperties().get("SourceType"));
         assertEquals("INFO", md3.getProperties().get("LoggingLevel"));
+        validateSdkName(md3, "java-log4j2");
 
         MessageData md4 = logs.get(3);
         assertEquals("This is log4j2 warn.", md4.getMessage());
         assertEquals(SeverityLevel.Warning, md4.getSeverityLevel());
         assertEquals("Log4j", md4.getProperties().get("SourceType"));
         assertEquals("WARN", md4.getProperties().get("LoggingLevel"));
-
+        validateSdkName(md4, "java-log4j2");
 
         MessageData md5 = logs.get(4);
         assertEquals("This is log4j2 error.", md5.getMessage());
         assertEquals(SeverityLevel.Error, md5.getSeverityLevel());
         assertEquals("Log4j", md5.getProperties().get("SourceType"));
         assertEquals("ERROR", md5.getProperties().get("LoggingLevel"));
+        validateSdkName(md5, "java-log4j2");
 
         MessageData md6 = logs.get(5);
         assertEquals("This is log4j2 fatal.", md6.getMessage());
         assertEquals(SeverityLevel.Critical, md6.getSeverityLevel());
         assertEquals("Log4j", md6.getProperties().get("SourceType"));
         assertEquals("FATAL", md6.getProperties().get("LoggingLevel"));
+        validateSdkName(md6, "java-log4j2");
     }
 
     @Test
@@ -84,5 +94,12 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals("This is an exception!", ed1.getProperties().get("Logger Message"));
         assertEquals("Log4j", ed1.getProperties().get("SourceType"));
         assertEquals("ERROR", ed1.getProperties().get("LoggingLevel"));
+        validateSdkName(ed1, "java-log4j2");
+    }
+
+    private void validateSdkName(Domain data, String sdkName) {
+        Envelope envelope = mockedIngestion.getEnvelopeForBaseData(data);
+        String sdkVersion = envelope.getTags().get("ai.internal.sdkVersion");
+        assertThat(sdkVersion, startsWith(sdkName + ":"));
     }
 }

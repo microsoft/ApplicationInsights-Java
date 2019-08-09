@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -53,6 +54,8 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
     private final static String SEPERATOR = " | ";
     private final static String METRIC_NAME = "Suspected Deadlocked Threads";
     private final static int MAX_STACK_TRACE = 3;
+
+    private static final String SDK_VERSION = "java-deadlock:" + PropertyHelper.getSdkVersionNumber();
 
     private final ThreadMXBean threadBean;
 
@@ -98,6 +101,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
                 TraceTelemetry trace = new TraceTelemetry(String.format("%s%s", "Suspected deadlocked threads: ", sb.toString()));
                 trace.getContext().getOperation().setId(uuid);
+                trace.getContext().getInternal().setSdkVersion(SDK_VERSION);
                 telemetryClient.track(trace);
             }
         }

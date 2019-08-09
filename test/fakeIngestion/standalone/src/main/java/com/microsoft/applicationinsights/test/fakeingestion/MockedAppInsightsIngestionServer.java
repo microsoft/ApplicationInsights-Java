@@ -15,6 +15,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.junit.Assert.assertTrue;
+
 public class MockedAppInsightsIngestionServer {
     public static final int DEFAULT_PORT = 60606;
 
@@ -89,6 +91,15 @@ public class MockedAppInsightsIngestionServer {
     public <T extends Domain> T getBaseDataForType(int index, String type) {
         Data<T> data = (Data<T>) getItemsEnvelopeDataType(type).get(index).getData();
         return data.getBaseData();
+    }
+
+    public Envelope getEnvelopeForBaseData(Domain data) {
+        for (Envelope envelope : servlet.getItems()) {
+            if (((Data<?>) envelope.getData()).getBaseData() == data) {
+                return envelope;
+            }
+        }
+        throw new IllegalStateException("Could not find envelope for data: " + data);
     }
 
     public void awaitAnyItems(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {

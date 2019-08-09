@@ -27,6 +27,7 @@ import java.io.FileReader;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -78,6 +79,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
                     Constants.PROCESS_IO_PC_COUNTER_NAME,
                     SystemInformation.INSTANCE.getProcessId(),
                     value);
+            telemetry.getContext().getInternal().setSdkVersion(SDK_VERSION);
 
             telemetryClient.track(telemetry);
         }

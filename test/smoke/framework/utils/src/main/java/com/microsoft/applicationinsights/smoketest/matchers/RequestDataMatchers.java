@@ -45,7 +45,7 @@ public class RequestDataMatchers {
     }
 
     public static Matcher<RequestData> hasUrl(String url) {
-        return new FeatureMatcher<RequestData, String>(equalTo(url), "ReqeustData with url", "url") {
+        return new FeatureMatcher<RequestData, String>(equalTo(url), "RequestData with url", "url") {
             @Override
             protected String featureValueOf(RequestData actual) {
                 return actual.getUrl();

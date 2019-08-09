@@ -26,6 +26,7 @@ import java.util.Collection;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 /**
@@ -35,6 +36,8 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
  */
 public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
 
+    private static final String SDK_VERSION = "java-metric-jmx:" + PropertyHelper.getSdkVersionNumber();
+
     public JmxMetricPerformanceCounter(String id, String objectName, Collection<JmxAttributeData> attributes) {
         super(id, objectName, attributes);
     }
@@ -43,11 +46,12 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
         InternalLogger.INSTANCE.trace("Metric JMX: %s, %s", displayName, value);
 
-    MetricTelemetry telemetry = new MetricTelemetry();
-    telemetry.markAsCustomPerfCounter();
+        MetricTelemetry telemetry = new MetricTelemetry();
+        telemetry.markAsCustomPerfCounter();
         telemetry.setName(displayName);
         telemetry.setValue(value);
         telemetry.getProperties().put("CustomPerfCounter", "true");
+        telemetry.getContext().getInternal().setSdkVersion(SDK_VERSION);
         telemetryClient.track(telemetry);
     }
 }

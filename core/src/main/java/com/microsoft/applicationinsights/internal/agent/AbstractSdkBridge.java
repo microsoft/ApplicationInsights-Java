@@ -26,6 +26,7 @@ import java.util.Date;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.sdk.SdkBridge;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
@@ -75,6 +76,9 @@ public abstract class AbstractSdkBridge<T> implements SdkBridge<T> {
 
         telemetry.getProperties().putAll(agentTelemetry.getProperties());
 
+        telemetry.getContext().getInternal()
+                .setSdkVersion(agentTelemetry.getSdkName() + ":" + PropertyHelper.getSdkVersionNumber());
+
         client.track(telemetry);
     }
 
@@ -93,6 +97,9 @@ public abstract class AbstractSdkBridge<T> implements SdkBridge<T> {
 
         telemetry.getProperties().putAll(agentTelemetry.getProperties());
 
+        telemetry.getContext().getInternal()
+                .setSdkVersion("ja-logging:" + PropertyHelper.getSdkVersionNumber());
+
         client.track(telemetry);
     }
 
@@ -110,6 +117,9 @@ public abstract class AbstractSdkBridge<T> implements SdkBridge<T> {
         }
 
         telemetry.getProperties().putAll(agentTelemetry.getProperties());
+
+        telemetry.getContext().getInternal()
+                .setSdkVersion(agentTelemetry.getSdkName() + ":" + PropertyHelper.getSdkVersionNumber());
 
         client.track(telemetry);
     }

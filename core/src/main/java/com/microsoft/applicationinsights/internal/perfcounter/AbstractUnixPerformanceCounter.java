@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
 /**
  * A base class for Unix performance counters who uses the '/proc/' filesystem for their work.
@@ -35,6 +36,9 @@ import com.google.common.base.Strings;
  * Created by gupele on 3/8/2015.
  */
 abstract class AbstractUnixPerformanceCounter extends AbstractPerformanceCounter {
+
+    protected static final String SDK_VERSION = "java-metric-unix:" + PropertyHelper.getSdkVersionNumber();
+
     private final File processFile;
     private final String path;
 

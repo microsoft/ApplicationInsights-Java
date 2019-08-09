@@ -3,6 +3,8 @@ package com.springbootstartertest.smoketest;
 import java.util.List;
 import java.util.Map;
 
+import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -17,6 +19,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.*;
 
 @UseAgent
@@ -80,6 +83,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         String requestOperationId = d.getId();
         assertTrue(requestOperationId.contains(exceptionEnvelope.getTags().
                 getOrDefault("ai.operation.id", null)));
+        validateSdkName(d, "java-web-sbs");
     }
 
     @Test
@@ -92,6 +96,8 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         String requestOperationId = d.getId();
         String rddId = rdd.getId();
         assertTrue(rddId.contains(requestOperationId));
+        validateSdkName(d, "java-web-sbs");
+        validateSdkName(rdd, "ja-http");
     }
 
     @Test
@@ -104,6 +110,8 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         String requestOperationId = d.getId();
         String rddId = rdd.getId();
         assertTrue(rddId.contains(requestOperationId));
+        validateSdkName(d, "java-web-sbs");
+        validateSdkName(rdd, "ja-http");
     }
 
     @Test
@@ -116,6 +124,8 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         String requestOperationId = d.getId();
         String rddId = rdd.getId();
         assertTrue(rddId.contains(requestOperationId));
+        validateSdkName(d, "java-web-sbs");
+        validateSdkName(rdd, "ja-http");
     }
 
     @Test
@@ -128,6 +138,8 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         String requestOperationId = d.getId();
         String rddId = rdd.getId();
         assertTrue(rddId.contains(requestOperationId));
+        validateSdkName(d, "java-web-sbs");
+        validateSdkName(rdd, "ja-http");
     }
 
     @Test
@@ -140,5 +152,13 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         String requestOperationId = d.getId();
         String rddId = rdd.getId();
         assertTrue(rddId.contains(requestOperationId));
+        validateSdkName(d, "java-web-sbs");
+        validateSdkName(rdd, "ja-http");
+    }
+
+    private void validateSdkName(Domain data, String sdkName) {
+        Envelope envelope = mockedIngestion.getEnvelopeForBaseData(data);
+        String sdkVersion = envelope.getTags().get("ai.internal.sdkVersion");
+        assertThat(sdkVersion, startsWith(sdkName + ":"));
     }
 }

@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -34,6 +35,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/3/2015.
  */
 final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
+
+    private static final String SDK_VERSION = "java-metric-jvm:" + PropertyHelper.getSdkVersionNumber();
 
     private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
 
@@ -77,6 +80,8 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
                 Constants.CPU_PC_COUNTER_NAME,
                 SystemInformation.INSTANCE.getProcessId(),
                 processCpuUsage);
+        telemetry.getContext().getInternal().setSdkVersion(SDK_VERSION);
+
         telemetryClient.track(telemetry);
     }
 }

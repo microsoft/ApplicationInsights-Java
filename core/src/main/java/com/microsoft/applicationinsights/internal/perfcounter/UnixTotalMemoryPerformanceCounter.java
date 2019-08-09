@@ -60,6 +60,7 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
                 Constants.TOTAL_MEMORY_PC_COUNTER_NAME,
                 "",
                 totalAvailableMemory);
+        telemetry.getContext().getInternal().setSdkVersion(SDK_VERSION);
 
         telemetryClient.track(telemetry);
     }

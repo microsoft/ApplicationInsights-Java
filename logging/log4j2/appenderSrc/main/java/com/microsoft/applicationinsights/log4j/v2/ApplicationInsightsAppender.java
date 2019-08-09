@@ -111,7 +111,7 @@ public class ApplicationInsightsAppender extends AbstractAppender {
         super(name, null, null);
 
         try {
-            telemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
+            telemetryClientProxy = LogTelemetryClientProxy.createForLog4j2(instrumentationKey);
             this.isInitialized = true;
         } catch (Exception e) {
             // Appender failure must not fail the running application.
@@ -134,7 +134,7 @@ public class ApplicationInsightsAppender extends AbstractAppender {
         super(name, filter, layout, ignoreExceptions);
 
         try {
-            telemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
+            telemetryClientProxy = LogTelemetryClientProxy.createForLog4j2(instrumentationKey);
             this.isInitialized = true;
         } catch (Exception e) {
             // Appender failure must not fail the running application.

@@ -59,6 +59,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
 
         // indicate that this is used for performance counters, not custom metrics.
         telemetry.markAsCustomPerfCounter();
+        telemetry.getContext().getInternal().setSdkVersion(SDK_VERSION);
 
         register(pcsData);
         if (keyToDisplayName.isEmpty()) {

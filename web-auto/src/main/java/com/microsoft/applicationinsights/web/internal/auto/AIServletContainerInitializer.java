@@ -34,7 +34,7 @@ public class AIServletContainerInitializer implements ServletContainerInitialize
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) {
         FilterRegistration.Dynamic filterRegistration =
-                ctx.addFilter(WebFilterName.NAME, new WebRequestTrackingFilter());
+                ctx.addFilter(WebFilterName.NAME, WebRequestTrackingFilter.createForWebAuto());
         if (filterRegistration != null) {
             filterRegistration.addMappingForUrlPatterns(null, false, "/*");
         }

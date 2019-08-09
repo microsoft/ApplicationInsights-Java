@@ -86,6 +86,7 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
                     Constants.CPU_PC_COUNTER_NAME,
                     Constants.INSTANCE_NAME_TOTAL,
                     totalCpuUsage);
+            telemetry.getContext().getInternal().setSdkVersion(SDK_VERSION);
 
             telemetryClient.track(telemetry);
         }

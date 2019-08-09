@@ -101,7 +101,7 @@ public class LocalSpanImpl implements Span {
         }
         sdkBridge.track(telemetry);
         if (exception != null) {
-            sdkBridge.track(new ExceptionTelemetry(exception));
+            sdkBridge.track(new ExceptionTelemetry(exception, telemetry.getSdkName()));
         }
     }
 
@@ -144,7 +144,8 @@ public class LocalSpanImpl implements Span {
             return null;
         }
         RemoteDependencyTelemetry telemetry =
-                new RemoteDependencyTelemetry(startTimeMillis, durationMillis, classType, exception == null);
+                new RemoteDependencyTelemetry(startTimeMillis, durationMillis, classType, exception == null,
+                        "ja-custom");
         telemetry.setName(className.replace('.', '/') + '.' + methodName);
         return telemetry;
     }

@@ -88,16 +88,19 @@ public interface SdkBridge<T> {
 
         private final Throwable throwable;
 
-        private final @Nullable String level;
+        private final String sdkName;
+
+        private final @Nullable String level; // only used when exception is from logging
 
         private final Map<String, String> properties = new HashMap<>();
 
-        public ExceptionTelemetry(Throwable throwable) {
-            this(throwable, null);
+        public ExceptionTelemetry(Throwable throwable, String sdkName) {
+            this(throwable, null, sdkName);
         }
 
-        public ExceptionTelemetry(Throwable throwable, @Nullable String level) {
+        public ExceptionTelemetry(Throwable throwable, String sdkName, @Nullable String level) {
             this.throwable = throwable;
+            this.sdkName = sdkName;
             this.level = level;
         }
 
@@ -105,7 +108,11 @@ public interface SdkBridge<T> {
             return throwable;
         }
 
-        public  @Nullable String getLevel() {
+        public String getSdkName() {
+            return sdkName;
+        }
+
+        public @Nullable String getLevel() {
             return level;
         }
 
@@ -122,6 +129,8 @@ public interface SdkBridge<T> {
         private final String type;
         private final boolean success;
 
+        private final String sdkName;
+
         private @Nullable String id;
         private @Nullable String name;
         private @Nullable String commandName;
@@ -130,11 +139,13 @@ public interface SdkBridge<T> {
 
         private final Map<String, String> properties = new HashMap<>();
 
-        public RemoteDependencyTelemetry(long timestamp, long durationMillis, String type, boolean success) {
+        public RemoteDependencyTelemetry(long timestamp, long durationMillis, String type, boolean success,
+                                         String sdkName) {
             this.timestamp = timestamp;
             this.durationMillis = durationMillis;
             this.type = type;
             this.success = success;
+            this.sdkName = sdkName;
         }
 
         public long getTimestamp() {
@@ -151,6 +162,10 @@ public interface SdkBridge<T> {
 
         public boolean isSuccess() {
             return success;
+        }
+
+        public String getSdkName() {
+            return sdkName;
         }
 
         public @Nullable String getId() {

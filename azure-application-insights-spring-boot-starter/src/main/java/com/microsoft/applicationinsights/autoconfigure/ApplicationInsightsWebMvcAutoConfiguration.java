@@ -96,7 +96,7 @@ public class ApplicationInsightsWebMvcAutoConfiguration {
     @ConditionalOnMissingBean
     @DependsOn("telemetryConfiguration")
     public WebRequestTrackingFilter webRequestTrackingFilter(@Value("${spring.application.name:application}") String applicationName) {
-        return new WebRequestTrackingFilter(applicationName);
+        return WebRequestTrackingFilter.createForSpringBootStarter(applicationName);
     }
 
     /**

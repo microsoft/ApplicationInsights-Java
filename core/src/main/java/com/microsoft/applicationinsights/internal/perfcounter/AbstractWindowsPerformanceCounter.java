@@ -1,11 +1,14 @@
 package com.microsoft.applicationinsights.internal.perfcounter;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
 /**
  * Created by gupele on 4/29/2015.
  */
 public abstract class AbstractWindowsPerformanceCounter implements PerformanceCounter {
+
+    protected static final String SDK_VERSION = "java-metric-windows:" + PropertyHelper.getSdkVersionNumber();
 
     protected void reportError(double value, String displayName) {
         if (!InternalLogger.INSTANCE.isErrorEnabled()) {

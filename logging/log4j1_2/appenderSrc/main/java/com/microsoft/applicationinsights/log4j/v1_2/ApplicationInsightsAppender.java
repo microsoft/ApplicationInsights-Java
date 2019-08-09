@@ -102,7 +102,7 @@ public class ApplicationInsightsAppender extends AppenderSkeleton {
         super.activateOptions();
 
         try {
-            this.telemetryClientProxy = new LogTelemetryClientProxy(this.instrumentationKey);
+            this.telemetryClientProxy = LogTelemetryClientProxy.createForLog4j1_2(this.instrumentationKey);
             this.isInitialized = true;
         } catch (Exception e) {
             // Appender failure must not fail the running application.

@@ -80,7 +80,7 @@ public class ApplicationInsightsAppender extends AppenderBase<ILoggingEvent> {
         super.start();
 
         try {
-            logTelemetryClientProxy = new LogTelemetryClientProxy(instrumentationKey);
+            logTelemetryClientProxy = LogTelemetryClientProxy.createForLogback(instrumentationKey);
             this.isInitialized = true;
         } catch (Exception e) {
             // Appender failure must not fail the running application.
