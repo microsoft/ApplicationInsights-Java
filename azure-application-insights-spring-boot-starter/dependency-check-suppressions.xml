@@ -17,6 +17,8 @@
         <cve>CVE-2019-12086</cve>
         <cve>CVE-2019-12384</cve>
         <cve>CVE-2019-12814</cve>
+        <cve>CVE-2019-14379</cve>
+        <cve>CVE-2019-14439</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
