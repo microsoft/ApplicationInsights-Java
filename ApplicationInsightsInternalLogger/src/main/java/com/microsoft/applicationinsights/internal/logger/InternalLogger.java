@@ -307,8 +307,7 @@ public enum InternalLogger {
         }
         String formattedMessage = String.format(message, args);
         final Thread thisThread = Thread.currentThread();
-        String theMessage = String.format("%s %s, %d(%s): %s", prefix, currentDateAsString, thisThread.getId(), thisThread.getName(), formattedMessage);
-        return theMessage;
+        return String.format("%s %s, %d(%s): %s", prefix, currentDateAsString, thisThread.getId(), thisThread.getName(), formattedMessage);
     }
 
     /**
