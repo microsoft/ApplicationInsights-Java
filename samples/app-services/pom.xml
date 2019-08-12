@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.microsoft.azure</groupId>
+  <artifactId>applicationinsights-app-services-sample</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <appinsights.version>2.5.0-BETA.2</appinsights.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss.spec</groupId>
+        <artifactId>jboss-javaee-8.0</artifactId>
+        <version>1.0.0.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jboss.spec.javax.servlet</groupId>
+      <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.9</version>
+    </dependency>
+    <dependency>
+      <groupId>com.microsoft.azure</groupId>
+      <artifactId>applicationinsights-web-auto</artifactId>
+      <version>${appinsights.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>helloworld</finalName>
+    <plugins>
+      <plugin>
+        <!-- download the applicationinsights-agent jar file -->
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.1</version>
+        <executions>
+          <execution>
+            <id>copy</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <artifactItems>
+            <artifactItem>
+              <groupId>com.microsoft.azure</groupId>
+              <artifactId>applicationinsights-agent</artifactId>
+              <version>${appinsights.version}</version>
+            </artifactItem>
+          </artifactItems>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- place the applicationinsights-agent jar file in the war file under META-INF -->
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.2.3</version>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>${project.build.directory}/dependency</directory>
+              <targetPath>META-INF</targetPath>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.microsoft.azure</groupId>
+        <artifactId>azure-webapp-maven-plugin</artifactId>
+        <version>1.7.0</version>
+        <configuration>
+          <schemaVersion>V2</schemaVersion>
+          <!-- Note: you cannot have both windows and linux app services in the same resource group -->
+          <resourceGroup>** Your resource group **</resourceGroup>
+          <appName>** Your app name **</appName>
+          <region>** Your region **</region>
+          <runtime>
+            <!-- options for os: linux, windows and docker -->
+            <os>linux</os>
+            <!--
+              options for javaVersion and webContainer:
+              see https://docs.microsoft.com/en-us/java/api/overview/azure/maven/azure-webapp-maven-plugin/readme?view=azure-java-stable#configuration-details
+            -->
+            <javaVersion>jre8</javaVersion>
+            <webContainer>tomcat 8.5</webContainer>
+          </runtime>
+          <appSettings>
+            <property>
+              <!-- point to the applicationinsights-agent jar inside of the exploded war file -->
+              <name>JAVA_OPTS</name>
+              <value>-javaagent:/home/site/wwwroot/webapps/ROOT/META-INF/applicationinsights-agent-${appinsights.version}.jar</value>
+            </property>
+          </appSettings>
+          <deployment>
+            <resources>
+              <resource>
+                <directory>${project.basedir}/target</directory>
+                <includes>
+                  <include>*.war</include>
+                </includes>
+              </resource>
+            </resources>
+          </deployment>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
