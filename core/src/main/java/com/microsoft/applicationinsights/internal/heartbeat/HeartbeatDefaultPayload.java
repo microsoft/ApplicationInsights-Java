@@ -68,7 +68,8 @@ public class HeartbeatDefaultPayload {
             continue;
           }
 
-          populatedFields = populatedFields || payloadProvider.setDefaultPayload(disabledFields, provider).call();
+          boolean fieldsAreSet = payloadProvider.setDefaultPayload(disabledFields, provider).call();
+          populatedFields = populatedFields || fieldsAreSet;
         }
         return populatedFields;
       }
