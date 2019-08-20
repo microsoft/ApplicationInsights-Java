@@ -47,7 +47,9 @@ public class MainEntryPoint {
     public static void premain(Instrumentation instrumentation, File agentJarFile) {
         try {
             startupLogger = initLogging(instrumentation, agentJarFile);
+            startupLogger.info("ApplicationInsights agent starting...");
             start(instrumentation, agentJarFile);
+            startupLogger.info("ApplicationInsights agent started");
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {

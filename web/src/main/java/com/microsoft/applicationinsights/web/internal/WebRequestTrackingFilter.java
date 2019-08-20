@@ -189,12 +189,14 @@ public final class WebRequestTrackingFilter implements Filter {
             handler = new HttpServerHandler(new ApplicationInsightsServletExtractor(), webModulesContainer,
                                                 cleaners, telemetryClient);
             if (AgentBridgeFactory.isAgentAvailable()) {
+                InternalLogger.INSTANCE.info("Agent is running");
                 agentBridge = AgentBridgeFactory.create(new SdkBridgeFactory() {
                     public SdkBridge create() {
                         return new SdkBridgeImpl(telemetryClient);
                     }
                 });
             } else {
+                InternalLogger.INSTANCE.info("Agent is not running");
                 agentBridge = AgentBridgeFactory.create();
             }
             if (StringUtils.isNotEmpty(config.getFilterName())) {
