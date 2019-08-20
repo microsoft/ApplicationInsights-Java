@@ -31,7 +31,7 @@ import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionStringParseException;
-import com.microsoft.applicationinsights.internal.config.connection.EndpointConfiguration;
+import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -45,12 +45,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public final class TelemetryConfiguration {
 
     // Synchronization for instance initialization
-    private final static Object s_lock = new Object();
+    private static final Object s_lock = new Object();
     private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
     private String connectionString;
     private String roleName;
+
+    private final EndpointProvider endpointConfiguration = new EndpointProvider();
 
     private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
     private final List<TelemetryInitializer> telemetryInitializers = new CopyOnWriteArrayList<TelemetryInitializer>();
@@ -237,7 +239,7 @@ public final class TelemetryConfiguration {
         this.connectionString = connectionString;
     }
 
-    public EndpointConfiguration getEndpointConfiguration() {
+    public EndpointProvider getEndpointProvider() {
         return endpointConfiguration;
     }
 
