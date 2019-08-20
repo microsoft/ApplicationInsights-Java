@@ -21,21 +21,34 @@
 
 package com.microsoft.applicationinsights.channel.concrete.inprocess;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
+import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionFileSystemOutput;
+import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionLoader;
+import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionNetworkOutput;
+import com.microsoft.applicationinsights.internal.channel.common.ErrorHandler;
+import com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySerializer;
+import com.microsoft.applicationinsights.internal.channel.common.NonBlockingDispatcher;
+import com.microsoft.applicationinsights.internal.channel.common.PartialSuccessHandler;
+import com.microsoft.applicationinsights.internal.channel.common.ThrottlingHandler;
+import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
+import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
+import com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyManager;
+import com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyStateFetcher;
+import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
 
-import com.microsoft.applicationinsights.internal.channel.common.*;
+import javax.annotation.Nullable;
 
 /**
  * Created by gupele on 1/15/2015.
  */
-final class InProcessTelemetryTransmitterFactory implements TransmitterFactory {
-    private final int DEFAULT_RETRY = 3;
+final class InProcessTelemetryTransmitterFactory implements ConfiguredTransmitterFactory {
     @Override
-    public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
+    public TelemetriesTransmitter create(@Nullable String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
         transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
         transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
@@ -44,6 +57,23 @@ final class InProcessTelemetryTransmitterFactory implements TransmitterFactory {
         // An active object with the network sender
         TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, transmissionPolicyManager);
 
+        return finishTransmitterConstruction(maxTransmissionStorageCapacity, transmissionPolicyManager, actualNetworkSender);
+    }
+
+    @Override
+    public TelemetriesTransmitter create(TelemetryConfiguration configuration, String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
+        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
+        transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
+        transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
+        transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
+        transmissionPolicyManager.setMaxInstantRetries(maxInstantRetries);
+        // An active object with the network sender
+        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, configuration, transmissionPolicyManager);
+
+        return finishTransmitterConstruction(maxTransmissionStorageCapacity, transmissionPolicyManager, actualNetworkSender);
+    }
+
+    private TelemetriesTransmitter finishTransmitterConstruction(String maxTransmissionStorageCapacity, TransmissionPolicyManager transmissionPolicyManager, TransmissionNetworkOutput actualNetworkSender) {
         TransmissionPolicyStateFetcher stateFetcher = transmissionPolicyManager.getTransmissionPolicyState();
 
         TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
@@ -53,7 +83,7 @@ final class InProcessTelemetryTransmitterFactory implements TransmitterFactory {
         TransmissionOutput activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender, stateFetcher);
 
         // The dispatcher works with the two active senders
-        TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[] {networkSender, activeFileSystemOutput});
+        TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[]{networkSender, activeFileSystemOutput});
         actualNetworkSender.setTransmissionDispatcher(dispatcher);
 
 
@@ -61,8 +91,7 @@ final class InProcessTelemetryTransmitterFactory implements TransmitterFactory {
         TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, stateFetcher, dispatcher);
 
         // The Transmitter manage all
-        TelemetriesTransmitter<String> telemetriesTransmitter = new TransmitterImpl(dispatcher, new GzipTelemetrySerializer(), transmissionsLoader);
 
-        return telemetriesTransmitter;
+        return new TransmitterImpl(dispatcher, new GzipTelemetrySerializer(), transmissionsLoader);
     }
 }

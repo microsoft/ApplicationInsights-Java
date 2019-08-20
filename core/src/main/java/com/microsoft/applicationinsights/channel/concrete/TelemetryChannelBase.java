@@ -21,8 +21,10 @@
 
 package com.microsoft.applicationinsights.channel.concrete;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
@@ -30,7 +32,6 @@ import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -75,21 +76,13 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
 
     private boolean developerMode = false;
 
+    private TelemetryConfiguration configuration;
+
     public TelemetryChannelBase() {
-        boolean developerMode = false;
-        try {
-            String developerModeAsString = System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME);
-            if (!LocalStringsUtils.isNullOrEmpty(developerModeAsString)) {
-                developerMode = Boolean.valueOf(developerModeAsString);
-            }
-        } catch (Exception e) {
-            developerMode = false;
-            InternalLogger.INSTANCE.trace("%s generated exception in parsing, stack trace is %s", DEVELOPER_MODE_SYSTEM_PROPRETY_NAME, ExceptionUtils.getStackTrace(e));
-        }
         initialize(
                 null,
                 null,
-                developerMode,
+                Boolean.getBoolean(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME),
                 createDefaultMaxTelemetryBufferCapacityEnforcer(null),
                 createDefaultSendIntervalInSecondsEnforcer(null),
                 true,
@@ -204,11 +197,22 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         isInitailized = true;
     }
 
+    protected synchronized void initialize(TelemetryConfiguration configuration, String endpointAddress, String maxTransmissionStorageCapacity,
+                                           boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
+                                           LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
+
+    }
+
     protected synchronized TransmitterFactory<T> getTransmitterFactory() {
         if (transmitterFactory == null) {
             transmitterFactory = createTransmitterFactory();
         }
         return transmitterFactory;
+    }
+
+    @VisibleForTesting
+    TelemetryConfiguration getConfiguration() {
+        return this.configuration;
     }
 
     /**

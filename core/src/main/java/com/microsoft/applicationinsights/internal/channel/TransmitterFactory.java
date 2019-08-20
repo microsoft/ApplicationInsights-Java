@@ -21,6 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.channel;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+
+import javax.annotation.Nullable;
+
 /**
  * Created by gupele on 12/21/2014.
  */
@@ -32,6 +36,8 @@ public interface TransmitterFactory<T> {
      * @param throttlingIsEnabled Allow the network telemetry sender to be throttled
      * @param maxInstantRetries Number of instant retries in case of a temporary network outage
      * @return The {@link TelemetriesTransmitter} object
+     * @deprecated Use {@link ConfiguredTransmitterFactory#create(TelemetryConfiguration, String, String, boolean, int)}
      */
-    TelemetriesTransmitter<T> create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries);
+    @Deprecated
+    TelemetriesTransmitter<T> create(@Nullable String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries);
 }
