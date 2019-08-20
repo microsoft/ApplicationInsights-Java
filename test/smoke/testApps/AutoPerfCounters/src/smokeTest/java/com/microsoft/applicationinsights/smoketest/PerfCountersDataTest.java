@@ -26,8 +26,10 @@ public class PerfCountersDataTest extends AiSmokeTest {
 
         // we should get these envelopes:
         //      MetricData, metrics.name="Suspected Deadlocked Threads"
-        //      PerformanceCounterData, categoryName=Memory, counterName=Available Bytes
         //      MetricData, metrics.name="Heap Memory Used (MB)"
+        //      MetricData, metrics.name="GC Total Count"
+        //      MetricData, metrics.name="GC Total Time"
+        //      PerformanceCounterData, categoryName=Memory, counterName=Available Bytes
         //      PerformanceCounterData, category=Process, counter="IO Data Bytes/sec"
         //      PerformanceCounterData, category=Processor, counter="% Processor Time", instance="_Total"
         //      PerformanceCounterData, category=Process, counter=Private Bytes
@@ -59,6 +61,10 @@ public class PerfCountersDataTest extends AiSmokeTest {
         System.out.println("Waiting for metric data...");
         Envelope deadlocks = mockedIngestion.waitForItem(getPerfMetricPredicate("Suspected Deadlocked Threads"), 150, TimeUnit.SECONDS);
         Envelope heapUsed = mockedIngestion.waitForItem(getPerfMetricPredicate("Heap Memory Used (MB)"), 150, TimeUnit.SECONDS);
+        Envelope gcTotalCount = mockedIngestion.waitForItem(getPerfMetricPredicate("GC Total Count"), 150,
+                TimeUnit.SECONDS);
+        Envelope gcTotalTime = mockedIngestion.waitForItem(getPerfMetricPredicate("GC Total Time"), 150,
+                TimeUnit.SECONDS);
         System.out.println("MetricData are good: " + (System.currentTimeMillis() - start));
 
         MetricData mdDeadlocks = getBaseData(deadlocks);
@@ -68,6 +74,12 @@ public class PerfCountersDataTest extends AiSmokeTest {
         MetricData mdHeapUsed = getBaseData(heapUsed);
         assertPerfMetric(mdHeapUsed);
         assertTrue(mdHeapUsed.getMetrics().get(0).getValue() > 0.0);
+
+        MetricData mdGcTotalCount = getBaseData(gcTotalCount);
+        assertPerfMetric(mdGcTotalCount);
+
+        MetricData mdGcTotalTime = getBaseData(gcTotalTime);
+        assertPerfMetric(mdGcTotalTime);
     }
 
     private void assertSameInstanceName(Envelope... envelopes) {

@@ -27,6 +27,7 @@ import java.util.HashSet;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -45,6 +46,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
         if (isEnabled) {
             addDeadLockDetector(pcs);
             addJvmMemoryPerformanceCounter(pcs);
+            addGCPerformanceCounter(pcs);
         } else {
             InternalLogger.INSTANCE.trace("JvmPerformanceCountersFactory is disabled");
         }
@@ -99,7 +101,28 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
             } catch (Throwable t2) {
                 // chomp
             }
+        }
+    }
 
+    private void addGCPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
+        try {
+            if (disabledJvmPCs.contains(GCPerformanceCounter.NAME)) {
+                return;
+            }
+
+            GCPerformanceCounter mpc = new GCPerformanceCounter();
+            pcs.add(mpc);
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            try {
+                InternalLogger.INSTANCE.error("Failed to create GCPerformanceCounter, exception: %s",
+                        ExceptionUtils.getStackTrace(t));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t2) {
+                // chomp
+            }
         }
     }
 
