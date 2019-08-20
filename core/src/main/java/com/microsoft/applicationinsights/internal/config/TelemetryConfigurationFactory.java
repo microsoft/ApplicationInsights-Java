@@ -360,7 +360,9 @@ public enum TelemetryConfigurationFactory {
             connectionString = nextValue;
         }
 
-        configuration.setConnectionString(connectionString);
+        if (connectionString != null) {
+            configuration.setConnectionString(connectionString);
+        }
     }
 
     private void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
