@@ -13,8 +13,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -25,14 +23,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.MalformedURLException;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(JUnit4.class)
 public class HttpServerHandlerTest {
 
     @Rule public final ExpectedException thrown = ExpectedException.none();
@@ -161,7 +157,11 @@ public class HttpServerHandlerTest {
         assertThat(rt.getUrl().toString(), equalTo(url));
         assertThat(rt.getContext().getUser().getUserAgent(), equalTo("User-Agent"));
         assertThat(rt.getTimestamp(), is(CoreMatchers.<Date>notNullValue()));
-
+        try {
+            TimeUnit.MILLISECONDS.sleep(100); // pause for a moment
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         httpServerHandler.handleEnd(request, response, rtc);
         // ensure same request telemetry is modified (picked from TLS)
         assertThat(rt.getDuration().getTotalMilliseconds(), is(not(0L)));
