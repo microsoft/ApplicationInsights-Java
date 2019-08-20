@@ -14,8 +14,7 @@ public class HeartbeatDefaultPayload {
   /**
    * List of default payloads which would be added
    */
-  private static final List<HeartBeatPayloadProviderInterface> defaultPayloadProviders =
-      new ArrayList<>();
+  private static final List<HeartBeatPayloadProviderInterface> defaultPayloadProviders = new ArrayList<>();
 
   static {
     defaultPayloadProviders.add(new DefaultHeartBeatPropertyProvider());
@@ -59,10 +58,9 @@ public class HeartbeatDefaultPayload {
   public static Callable<Boolean> populateDefaultPayload(final List<String> disabledFields, final List<String>
       disabledProviders, final HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
-
-      volatile boolean populatedFields = false;
       @Override
       public Boolean call() throws Exception {
+        boolean populatedFields = false;
         for (HeartBeatPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
           if (disabledProviders != null && disabledProviders.contains(payloadProvider.getName())) {
 

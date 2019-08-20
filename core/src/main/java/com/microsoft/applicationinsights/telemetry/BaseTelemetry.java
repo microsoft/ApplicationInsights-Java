@@ -147,8 +147,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
 
-        String telemetryName = this.getTelemetryName(
-                this.normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
+        String telemetryName = getTelemetryName(normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
 
         Envelope envelope = new Envelope();
         envelope.setName(telemetryName);

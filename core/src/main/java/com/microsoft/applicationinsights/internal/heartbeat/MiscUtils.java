@@ -11,6 +11,7 @@ import java.util.Set;
  * @author Dhaval Doshi
  */
 public class MiscUtils {
+    private MiscUtils(){}
 
   /**
    * Returns a set which contains result of List - Set
