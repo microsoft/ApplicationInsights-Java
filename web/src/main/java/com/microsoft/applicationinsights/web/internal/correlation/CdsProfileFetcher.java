@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -46,10 +46,10 @@ import java.util.concurrent.TimeUnit;
 
 public class CdsProfileFetcher implements AppProfileFetcher {
 
+    private final TelemetryConfiguration configuration;
     private CloseableHttpAsyncClient httpClient;
-    private String endpointAddress;
-    private static final String ProfileQueryEndpointAppIdFormat = "%s/api/profiles/%s/appId";
-    private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
+    private String endpointAddress = null;
+    private static final String PROFILE_QUERY_ENDPOINT_APP_ID_FORMAT = "%s/api/profiles/%s/appId";
 
     // cache of tasks per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Future<HttpResponse>> tasks;
@@ -61,10 +61,15 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     private final CdsRetryPolicy retryPolicy;
 
     public CdsProfileFetcher() {
-        this(new CdsRetryPolicy());
+        this(new CdsRetryPolicy(), TelemetryConfiguration.getActive());
     }
 
     public CdsProfileFetcher(CdsRetryPolicy retryPolicy) {
+        this(retryPolicy, TelemetryConfiguration.getActive());
+    }
+    
+    public CdsProfileFetcher(CdsRetryPolicy retryPolicy, TelemetryConfiguration configuration) {
+        this.configuration = configuration;
         taskThreadPool = new PeriodicTaskPool(1, CdsProfileFetcher.class.getSimpleName());
         this.retryPolicy = retryPolicy;
 
@@ -87,7 +92,6 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
         this.tasks = new ConcurrentHashMap<>();
         this.failureCounters = new ConcurrentHashMap<>();
-        this.endpointAddress = DefaultProfileQueryEndpointAddress;
 
         taskThreadPool.executePeriodicRunnableTask(cdsRetryClearTask);
         this.httpClient.start();
@@ -96,7 +100,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     }
 
     @Override
-    public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException {
+    public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, IOException {
 
         if (instrumentationKey == null || instrumentationKey.isEmpty()) {
             throw new IllegalArgumentException("instrumentationKey must be not null or empty");
@@ -106,9 +110,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
         // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
         if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >= retryPolicy.getMaxInstantRetries()) {
-            InternalLogger.INSTANCE.warn(String.format(
-                    "The profile fetch task will not execute for next %d minutes. Max number of retries reached.",
-                    retryPolicy.getResetPeriodInMinutes()));
+            InternalLogger.INSTANCE.info("The profile fetch task will not execute for next %d minutes. Max number of retries reached.", retryPolicy.getResetPeriodInMinutes());
             return result;
         }
 
@@ -158,6 +160,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         this.httpClient = client;
     }
 
+    @Deprecated
     public void setEndpointAddress(String endpoint) throws MalformedURLException {
         // set endpoint address to the base address (e.g. https://dc.services.visualstudio.com)
         // later we will append the profile/ikey segment
@@ -167,7 +170,13 @@ public class CdsProfileFetcher implements AppProfileFetcher {
     }
 
     private Future<HttpResponse> createFetchTask(String instrumentationKey) {
-        HttpGet request = new HttpGet(String.format(ProfileQueryEndpointAppIdFormat, this.endpointAddress, instrumentationKey));
+        final HttpGet request;
+        if (endpointAddress == null) {
+            request = new HttpGet(configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey));
+        } else {
+            request = new HttpGet(String.format(PROFILE_QUERY_ENDPOINT_APP_ID_FORMAT, this.endpointAddress, instrumentationKey));
+        }
+
         return this.httpClient.execute(request, null);
     }
 

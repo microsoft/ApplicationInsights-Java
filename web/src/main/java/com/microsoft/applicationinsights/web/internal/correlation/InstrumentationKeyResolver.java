@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -30,12 +32,12 @@ public enum InstrumentationKeyResolver {
     INSTANCE;
 
     private static final String CorrelationIdFormat = "cid-v1:%s";
-    private AppProfileFetcher profileFetcher;
+    private AtomicReference<AppProfileFetcher> profileFetcher;
     private final ConcurrentMap<String, String> appIdCache;
 
     InstrumentationKeyResolver() {
-        this.appIdCache = new ConcurrentHashMap<String, String>();
-        this.profileFetcher = new CdsProfileFetcher();
+        this.appIdCache = new ConcurrentHashMap<>();
+        this.profileFetcher = new AtomicReference<AppProfileFetcher>(new CdsProfileFetcher());
     }
 
     public void clearCache() {
@@ -43,7 +45,7 @@ public enum InstrumentationKeyResolver {
     }
 
     public void setProfileFetcher(AppProfileFetcher profileFetcher) {
-        this.profileFetcher = profileFetcher;
+        this.profileFetcher.set(profileFetcher);
     }
 
     /**
@@ -63,7 +65,7 @@ public enum InstrumentationKeyResolver {
                 return appId;
             }
 
-            ProfileFetcherResult result = this.profileFetcher.fetchAppProfile(instrumentationKey);
+            ProfileFetcherResult result = this.profileFetcher.get().fetchAppProfile(instrumentationKey);
             appId = processResult(result, instrumentationKey);
 
             if (appId != null) {
