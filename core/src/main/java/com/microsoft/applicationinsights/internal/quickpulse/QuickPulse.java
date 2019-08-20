@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -49,17 +50,22 @@ public enum QuickPulse implements Stoppable {
     private Thread thread;
     private Thread senderThread;
     private DefaultQuickPulseCoordinator coordinator;
-    private ApacheSender apacheSender;
     private QuickPulseDataSender quickPulseDataSender;
 
     // initialization is performed in the background because initializing the random seed (via UUID.randomUUID()) below
     // can cause slowness during startup in some environments
+    @Deprecated
     public void initialize() {
+        initialize(TelemetryConfiguration.getActive());
+    }
+
+    public void initialize(final TelemetryConfiguration configuration) {
+        Preconditions.checkNotNull(configuration);
         final CountDownLatch latch = new CountDownLatch(1);
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                initializeSync(latch);
+                initializeSync(latch, configuration);
             }
         });
         // don't return until initialization thread has INSTANCE lock
@@ -70,7 +76,7 @@ public enum QuickPulse implements Stoppable {
         }
     }
 
-    private void initializeSync(CountDownLatch latch) {
+    private void initializeSync(CountDownLatch latch, TelemetryConfiguration configuration) {
         if (initialized) {
             latch.countDown();
         } else {
@@ -79,7 +85,7 @@ public enum QuickPulse implements Stoppable {
                 if (!initialized) {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    apacheSender = ApacheSenderFactory.INSTANCE.create();
+                    ApacheSender apacheSender = ApacheSenderFactory.INSTANCE.create();
                     ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<HttpPost>(256, true);
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(apacheSender, sendQueue);
@@ -89,10 +95,8 @@ public enum QuickPulse implements Stoppable {
                         instanceName = "Unknown host";
                     }
 
-                    final TelemetryConfiguration config = TelemetryConfiguration.getActive();
-
-                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, instanceName, quickPulseId);
-                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, config, instanceName, quickPulseId);
+                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(configuration, apacheSender, instanceName, quickPulseId);
+                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, configuration, instanceName, quickPulseId);
 
                     final QuickPulseCoordinatorInitData coordinatorInitData =
                             new QuickPulseCoordinatorInitDataBuilder()
@@ -113,7 +117,7 @@ public enum QuickPulse implements Stoppable {
 
                     SDKShutdownActivity.INSTANCE.register(this);
 
-                    QuickPulseDataCollector.INSTANCE.enable(config);
+                    QuickPulseDataCollector.INSTANCE.enable(configuration);
                 }
             }
         }

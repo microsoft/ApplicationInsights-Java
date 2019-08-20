@@ -155,7 +155,7 @@ public enum TelemetryConfigurationFactory {
                     InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
                     applicationInsightsConfig.getQuickPulse().setEnabled(false);
             }
-            setQuickPulse(applicationInsightsConfig);
+            setQuickPulse(applicationInsightsConfig, configuration);
 
             initializeComponents(configuration);
         } catch (Exception e) {
@@ -203,10 +203,10 @@ public enum TelemetryConfigurationFactory {
         new ContextInitializersInitializer().initialize(contextInitializers, configuration);
     }
 
-    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration) {
+    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
         if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
             InternalLogger.INSTANCE.trace("Initializing QuickPulse...");
-            QuickPulse.INSTANCE.initialize();
+            QuickPulse.INSTANCE.initialize(configuration);
         }
     }
 

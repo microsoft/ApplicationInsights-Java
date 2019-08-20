@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -36,39 +35,38 @@ import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
  * Created by gupele on 12/12/2016.
  */
 final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
-    private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/";
+    private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/";
 
-    private final String quickPulsePingUri;
+    private final TelemetryConfiguration configuration;
     private final ApacheSender apacheSender;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private String pingPrefix;
     private long lastValidTransmission = 0;
 
-    public DefaultQuickPulsePingSender(final ApacheSender apacheSender, final String instanceName,
-            final String quickPulseId) {
-        this.apacheSender = apacheSender;
+    public DefaultQuickPulsePingSender(TelemetryConfiguration configuration, ApacheSender sender, String instanceName, String quickPulseId) {
+        this.configuration = configuration;
+        this.apacheSender = sender;
 
-        final String ikey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        quickPulsePingUri = QP_BASE_URI + "ping?ikey=" + ikey;
+        pingPrefix = "{" +
+                "\"Documents\": null," +
+                "\"Instance\":\"" + instanceName + "\"," +
+                "\"InstrumentationKey\": null," +
+                "\"InvariantVersion\": 2," +
+                "\"MachineName\":\"" + instanceName + "\"," +
+                "\"Metrics\": null," +
+                "\"StreamId\": \"" + quickPulseId + "\"," +
+                "\"Timestamp\": \"\\/Date(";
+    }
 
-        final StrBuilder sb = new StrBuilder();
-        sb.append("{");
-        sb.append("\"Documents\": null,");
-        sb.append("\"Instance\":\"" + instanceName + "\",");
-        sb.append("\"InstrumentationKey\": null,");
-        sb.append("\"InvariantVersion\": 2,");
-        sb.append("\"MachineName\":\"" + instanceName + "\",");
-        sb.append("\"Metrics\": null,");
-        sb.append("\"StreamId\": \"" + quickPulseId + "\",");
-        sb.append("\"Timestamp\": \"\\/Date(");
-
-        pingPrefix = sb.toString();
+    @Deprecated
+    public DefaultQuickPulsePingSender(final ApacheSender apacheSender, final String instanceName, final String quickPulseId) {
+        this(TelemetryConfiguration.getActive(), apacheSender, instanceName, quickPulseId);
     }
 
     @Override
     public QuickPulseStatus ping() {
         final Date currentDate = new Date();
-        final HttpPost request = networkHelper.buildRequest(currentDate, quickPulsePingUri);
+        final HttpPost request = networkHelper.buildRequest(currentDate, getQuickPulsePingUri());
 
         final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
         request.setEntity(pingEntity);
@@ -80,20 +78,17 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
             if (networkHelper.isSuccess(response)) {
                 final QuickPulseStatus quickPulseResultStatus = networkHelper.getQuickPulseStatus(response);
                 switch (quickPulseResultStatus) {
-                case QP_IS_OFF:
-                case QP_IS_ON:
-                    lastValidTransmission = sendTime;
-                    return quickPulseResultStatus;
+                    case QP_IS_OFF:
+                    case QP_IS_ON:
+                        lastValidTransmission = sendTime;
+                        return quickPulseResultStatus;
 
-                case ERROR:
-                    break;
-
-                default:
-                    break;
+                    default:
+                        break;
                 }
             }
         } catch (IOException e) {
-
+            // chomp
         } finally {
             if (response != null) {
                 apacheSender.dispose(response);
@@ -102,15 +97,16 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return onPingError(sendTime);
     }
 
-    private ByteArrayEntity buildPingEntity(long timeInMillis) {
+    private String getQuickPulsePingUri() {
+        return configuration.getEndpointProvider().getLiveEndpointURL().toString() + "ping?ikey=" + configuration.getInstrumentationKey();
+    }
 
-        StrBuilder sb = new StrBuilder(pingPrefix);
-        sb.append(timeInMillis);
-        sb.append(")\\/\",");
-        sb.append("\"Version\":\"2.2.0-738\"");
-        sb.append("}");
-        ByteArrayEntity bae = new ByteArrayEntity(sb.toString().getBytes());
-        return bae;
+    private ByteArrayEntity buildPingEntity(long timeInMillis) {
+        String sb = pingPrefix + timeInMillis +
+                ")\\/\"," +
+                "\"Version\":\"2.2.0-738\"" +
+                "}";
+        return new ByteArrayEntity(sb.getBytes());
     }
 
     private QuickPulseStatus onPingError(long sendTime) {
