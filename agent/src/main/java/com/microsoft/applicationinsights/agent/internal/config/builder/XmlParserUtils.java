@@ -45,7 +45,7 @@ class XmlParserUtils {
         return (Element) node;
     }
 
-    public static boolean getEnabled(Element element, String attributeName) {
+    public static boolean getEnabled(Element element, String elementName) {
         if (element == null) {
             return true;
         }
@@ -57,7 +57,7 @@ class XmlParserUtils {
             return true;
         } catch (Exception e) {
             logger.error("Failed to parse attribute '{}' of '{}', default value ({}) will be used.", ENABLED_ATTRIBUTE,
-                    attributeName, true);
+                    elementName, true);
         }
         return true;
     }
