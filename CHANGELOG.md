@@ -1,5 +1,16 @@
 # CHANGELOG
 
+# Version 2.5.0-BETA.3
+- Fixed `HttpURLConnection` instrumentation was not capturing outgoing url
+  ([#1025](https://github.com/microsoft/ApplicationInsights-Java/issues/1025))
+- Added agent logging capture threshold, configurable via `<Logging threshold="warn" />` 
+  in the `AI-Agent.xml`, with default threshold `warn`
+  ([#1026](https://github.com/microsoft/ApplicationInsights-Java/issues/1026))
+- Fixed request telemetry displaying `200` response code for some failed requests
+  ([#810](https://github.com/microsoft/ApplicationInsights-Java/issues/810))
+- Fixed GC performance counters not working 
+  ([#929](https://github.com/microsoft/ApplicationInsights-Java/issues/929))
+
 # Version 2.5.0-BETA.2
 - Added back support for `<Class>` custom instrumentation in `AI-Agent.xml`
 - Fixed opting out of agent capturing logging via `<Logging enabled="false" />`
