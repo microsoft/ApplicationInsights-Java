@@ -148,7 +148,7 @@ public class HttpServerHandlerTest {
     }
 
     @Test
-    public void timeStatusCodeAreSetWhenHandleEndIsInvoked() throws MalformedURLException {
+    public void timeStatusCodeAreSetWhenHandleEndIsInvoked() throws Exception {
         RequestTelemetryContext rtc = httpServerHandler.handleStart(request, response);
         RequestTelemetry rt = rtc.getHttpRequestTelemetry();
         assertThat(rt.getId(), is(CoreMatchers.<String>notNullValue()));
@@ -157,11 +157,7 @@ public class HttpServerHandlerTest {
         assertThat(rt.getUrl().toString(), equalTo(url));
         assertThat(rt.getContext().getUser().getUserAgent(), equalTo("User-Agent"));
         assertThat(rt.getTimestamp(), is(CoreMatchers.<Date>notNullValue()));
-        try {
-            TimeUnit.MILLISECONDS.sleep(100); // pause for a moment
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        TimeUnit.MILLISECONDS.sleep(100); // pause so duration is nonzero
         httpServerHandler.handleEnd(request, response, rtc);
         // ensure same request telemetry is modified (picked from TLS)
         assertThat(rt.getDuration().getTotalMilliseconds(), is(not(0L)));
