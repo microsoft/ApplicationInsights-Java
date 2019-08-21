@@ -175,8 +175,9 @@ public class XmlAgentConfigurationBuilder {
         builtInConfigurationBuilder.setJdbcEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), JDBC_TAG));
 
         nodes = builtInElement.getElementsByTagName(LOGGING_TAG);
-        builtInConfigurationBuilder
-                .setLoggingEnabled(XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), LOGGING_TAG));
+        builtInConfigurationBuilder.setLoggingEnabled(
+                XmlParserUtils.getEnabled(XmlParserUtils.getFirst(nodes), LOGGING_TAG),
+                XmlParserUtils.getStringAttribute(XmlParserUtils.getFirst(nodes), "threshold", "warn"));
 
         nodes = builtInElement.getElementsByTagName(JEDIS_TAG);
         Element element = XmlParserUtils.getFirst(nodes);

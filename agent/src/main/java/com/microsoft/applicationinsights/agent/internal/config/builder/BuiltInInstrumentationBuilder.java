@@ -38,6 +38,7 @@ public class BuiltInInstrumentationBuilder {
     private boolean jdbcEnabled;
 
     private boolean loggingEnabled;
+    private String loggingThreshold;
 
     private boolean jedisEnabled;
 
@@ -54,6 +55,7 @@ public class BuiltInInstrumentationBuilder {
                 w3cBackCompatEnabled && enabled,
                 jdbcEnabled && enabled,
                 loggingEnabled && enabled,
+                loggingThreshold,
                 jedisEnabled && enabled,
                 queryPlanThresholdInMS
         );
@@ -73,8 +75,9 @@ public class BuiltInInstrumentationBuilder {
         this.jdbcEnabled = jdbcEnabled;
     }
 
-    public void setLoggingEnabled(boolean loggingEnabled) {
+    public void setLoggingEnabled(boolean loggingEnabled, String loggingThreshold) {
         this.loggingEnabled = loggingEnabled;
+        this.loggingThreshold = loggingThreshold;
     }
 
     public void setJedisEnabled(boolean jedisEnabled) {

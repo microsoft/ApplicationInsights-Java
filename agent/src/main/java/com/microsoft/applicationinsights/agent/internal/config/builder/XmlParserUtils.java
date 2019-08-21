@@ -98,6 +98,17 @@ class XmlParserUtils {
         return defaultValue;
     }
 
+    public static String getStringAttribute(Element element, String attributeName, String defaultValue) {
+        if (element == null) {
+            return defaultValue;
+        }
+        String strValue = element.getAttribute(attributeName);
+        if (!Strings.isNullOrEmpty(strValue)) {
+            return strValue;
+        }
+        return defaultValue;
+    }
+
     public static Long getLong(Element element, String elementName) {
         if (element == null) {
             return null;
