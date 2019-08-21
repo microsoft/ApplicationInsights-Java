@@ -25,37 +25,19 @@ public class TraceLogBackTest extends AiSmokeTest {
     @Test
     @TargetUri("/traceLogBack")
     public void testTraceLogBack() {
-        assertEquals(5, mockedIngestion.getCountForType("MessageData"));
+        assertEquals(2, mockedIngestion.getCountForType("MessageData"));
 
         MessageData md1 = getTelemetryDataForType(0, "MessageData");
-        assertEquals("This is logback trace.", md1.getMessage());
-        assertEquals(SeverityLevel.Verbose, md1.getSeverityLevel());
+        assertEquals("This is logback warn.", md1.getMessage());
+        assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
-        assertEquals("TRACE", md1.getProperties().get("LoggingLevel"));
+        assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
 
         MessageData md2 = getTelemetryDataForType(1, "MessageData");
-        assertEquals("This is logback debug.", md2.getMessage());
-        assertEquals(SeverityLevel.Verbose, md2.getSeverityLevel());
+        assertEquals("This is logback error.", md2.getMessage());
+        assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
-        assertEquals("DEBUG", md2.getProperties().get("LoggingLevel"));
-
-        MessageData md3 = getTelemetryDataForType(2, "MessageData");
-        assertEquals("This is logback info.", md3.getMessage());
-        assertEquals(SeverityLevel.Information, md3.getSeverityLevel());
-        assertEquals("Logger", md3.getProperties().get("SourceType"));
-        assertEquals("INFO", md3.getProperties().get("LoggingLevel"));
-
-        MessageData md4 = getTelemetryDataForType(3, "MessageData");
-        assertEquals("This is logback warn.", md4.getMessage());
-        assertEquals(SeverityLevel.Warning, md4.getSeverityLevel());
-        assertEquals("Logger", md4.getProperties().get("SourceType"));
-        assertEquals("WARN", md4.getProperties().get("LoggingLevel"));
-
-        MessageData md5 = getTelemetryDataForType(4, "MessageData");
-        assertEquals("This is logback error.", md5.getMessage());
-        assertEquals(SeverityLevel.Error, md5.getSeverityLevel());
-        assertEquals("Logger", md5.getProperties().get("SourceType"));
-        assertEquals("ERROR", md5.getProperties().get("LoggingLevel"));
+        assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
     }
 
     @Test

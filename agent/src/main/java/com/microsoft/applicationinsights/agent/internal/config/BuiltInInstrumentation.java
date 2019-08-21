@@ -32,6 +32,7 @@ public class BuiltInInstrumentation {
     private final boolean jdbcEnabled;
 
     private final boolean loggingEnabled;
+    private final String loggingThreshold;
 
     private final boolean jedisEnabled;
 
@@ -43,6 +44,7 @@ public class BuiltInInstrumentation {
                                   boolean w3cBackCompatEnabled,
                                   boolean jdbcEnabled,
                                   boolean loggingEnabled,
+                                  String loggingThreshold,
                                   boolean jedisEnabled,
                                   long queryPlanThresholdInMS) {
         this.enabled = enabled;
@@ -51,6 +53,7 @@ public class BuiltInInstrumentation {
         this.w3cBackCompatEnabled = w3cBackCompatEnabled;
         this.jdbcEnabled = jdbcEnabled;
         this.loggingEnabled = loggingEnabled;
+        this.loggingThreshold = loggingThreshold;
         this.jedisEnabled = jedisEnabled;
         this.queryPlanThresholdInMS = queryPlanThresholdInMS;
     }
@@ -73,6 +76,10 @@ public class BuiltInInstrumentation {
 
     public boolean isJdbcEnabled() {
         return jdbcEnabled;
+    }
+
+    public String getLoggingThreshold() {
+        return loggingThreshold;
     }
 
     public boolean isLoggingEnabled() {

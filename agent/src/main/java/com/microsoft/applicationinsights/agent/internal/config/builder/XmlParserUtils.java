@@ -45,7 +45,7 @@ class XmlParserUtils {
         return (Element) node;
     }
 
-    public static boolean getEnabled(Element element, String attributeName) {
+    public static boolean getEnabled(Element element, String elementName) {
         if (element == null) {
             return true;
         }
@@ -57,7 +57,7 @@ class XmlParserUtils {
             return true;
         } catch (Exception e) {
             logger.error("Failed to parse attribute '{}' of '{}', default value ({}) will be used.", ENABLED_ATTRIBUTE,
-                    attributeName, true);
+                    elementName, true);
         }
         return true;
     }
@@ -98,6 +98,17 @@ class XmlParserUtils {
         return defaultValue;
     }
 
+    public static String getStringAttribute(Element element, String attributeName, String defaultValue) {
+        if (element == null) {
+            return defaultValue;
+        }
+        String strValue = element.getAttribute(attributeName);
+        if (!Strings.isNullOrEmpty(strValue)) {
+            return strValue;
+        }
+        return defaultValue;
+    }
+
     public static Long getLong(Element element, String elementName) {
         if (element == null) {
             return null;
@@ -113,7 +124,7 @@ class XmlParserUtils {
             }
             return null;
         } catch (Exception e) {
-            logger.error("Failed to parse attribute '{}' of '{}'", ENABLED_ATTRIBUTE, elementName);
+            logger.error("Failed to parse value of '{}'", elementName);
         }
         return null;
     }

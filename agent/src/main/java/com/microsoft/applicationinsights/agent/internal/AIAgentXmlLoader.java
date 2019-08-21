@@ -119,8 +119,19 @@ class AIAgentXmlLoader {
         jdbcConfiguration.put("captureGetConnection", false);
         jdbcConfiguration.put("explainPlanThresholdMillis", builtInConfiguration.getQueryPlanThresholdInMS());
 
+        // must be one of trace, debug, info, warn, error (which are supported by both log4j and logback)
+        String loggingThreshold = builtInConfiguration.getLoggingThreshold();
+
+        Map<String, Object> log4jConfiguration = new HashMap<>();
+        log4jConfiguration.put("threshold", loggingThreshold);
+
+        Map<String, Object> logbackConfiguration = new HashMap<>();
+        logbackConfiguration.put("threshold", loggingThreshold);
+
         instrumentationConfiguration.put("servlet", servletConfiguration);
         instrumentationConfiguration.put("jdbc", jdbcConfiguration);
+        instrumentationConfiguration.put("log4j", log4jConfiguration);
+        instrumentationConfiguration.put("logback", logbackConfiguration);
 
         return instrumentationConfiguration;
     }
