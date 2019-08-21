@@ -113,7 +113,7 @@ class XmlParserUtils {
             }
             return null;
         } catch (Exception e) {
-            logger.error("Failed to parse attribute '{}' of '{}'", ENABLED_ATTRIBUTE, elementName);
+            logger.error("Failed to parse value of '{}'", elementName);
         }
         return null;
     }
