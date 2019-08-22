@@ -73,23 +73,28 @@ public final class WebRequestTrackingFilter implements Filter {
     static {
         WebReflectionUtils.initialize();
     }
+
     // region Members
     // Visible for testing
-    final static String FILTER_NAME = "ApplicationInsightsWebFilter";
-    private final static String WEB_INF_FOLDER = "WEB-INF/";
+    static final String FILTER_NAME = "ApplicationInsightsWebFilter";
+    private static final String WEB_INF_FOLDER = "WEB-INF/";
 
     private WebModulesContainer webModulesContainer;
     private TelemetryClient telemetryClient;
     private final List<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
-    private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights."
-        + "agent.internal.coresync.AgentNotificationsHandler";
+    private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler";
     private String filterName = FILTER_NAME;
 
     /**
      * Constant for marking already processed request
      */
-    private final String ALREADY_FILTERED = "AI_FILTER_PROCESSED";
+    private static final String ALREADY_FILTERED = "AI_FILTER_PROCESSED";
+    /**
+     * Request Attribute to flag if exception was thrown from servlet/downstream filter.
+     * Value will be the caught (and rethrown) exception/throwable.
+     */
+    public static final String APPLICATION_INSIGHTS_CAUGHT_EXCEPTION = "AI_CAUGHT_EXCEPTION";
 
     /**
      * Utility handler used to instrument request start and end
@@ -137,13 +142,13 @@ public final class WebRequestTrackingFilter implements Filter {
                 httpRequest.setAttribute(ALREADY_FILTERED, Boolean.TRUE);
                 chain.doFilter(httpRequest, httpResponse);
             } catch (ServletException | IOException | RuntimeException e) {
+                httpRequest.setAttribute(APPLICATION_INSIGHTS_CAUGHT_EXCEPTION, e);
                 handler.handleException(e);
                 throw e;
             } finally {
                 if (httpRequest.isAsyncStarted()) {
                     AsyncContext context = httpRequest.getAsyncContext();
-                    AIHttpServletListener aiHttpServletListener =
-                            new AIHttpServletListener(handler, requestTelemetryContext, agentBinding);
+                    AIHttpServletListener aiHttpServletListener = new AIHttpServletListener(handler, requestTelemetryContext, agentBinding);
                     context.addListener(aiHttpServletListener, httpRequest, httpResponse);
                 } else {
                     handler.handleEnd(httpRequest, httpResponse, requestTelemetryContext);

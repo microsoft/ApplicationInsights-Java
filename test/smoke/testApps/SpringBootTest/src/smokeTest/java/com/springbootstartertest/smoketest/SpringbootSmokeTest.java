@@ -16,7 +16,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 @UseAgent
@@ -78,8 +78,17 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         Envelope exceptionEnvelope = exceptionEnvelopeList.get(0);
         RequestData d = getTelemetryDataForType(0, "RequestData");
         String requestOperationId = d.getId();
-        assertTrue(requestOperationId.contains(exceptionEnvelope.getTags().
-                getOrDefault("ai.operation.id", null)));
+        final String opId = exceptionEnvelope.getTags().get("ai.operation.id");
+        assertNotNull(opId);
+        assertThat(requestOperationId, containsString(opId));
+        System.out.println("Response code after exception: "+d.getResponseCode());
+        int code = -123;
+        try {
+            code = Integer.parseInt(d.getResponseCode());
+        } catch (NumberFormatException e) {
+            fail("Response code is not a number");
+        }
+        assertThat(code, greaterThanOrEqualTo(500));
     }
 
     @Test

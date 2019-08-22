@@ -9,6 +9,8 @@ import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
+import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 import org.apache.commons.lang3.Validate;
 
 /**
@@ -71,6 +73,7 @@ public final class AIHttpServletListener implements AsyncListener {
         } else {
             InternalLogger.INSTANCE.warn("Throwable is not instance of exception, cannot be captured: %s", throwable);
         }
+        request.setAttribute(WebRequestTrackingFilter.APPLICATION_INSIGHTS_CAUGHT_EXCEPTION, throwable);
         handler.handleEnd(request, response, context);
         if (agentBinding != null) {
             agentBinding.unbindFromRunawayChildThreads();

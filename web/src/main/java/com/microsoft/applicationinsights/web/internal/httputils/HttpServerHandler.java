@@ -14,6 +14,8 @@ import java.util.Date;
 import java.util.List;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
+import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -109,9 +111,15 @@ public final class HttpServerHandler {
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         long endTime = new Date().getTime();
         requestTelemetry.setDuration(new Duration(endTime - context.getRequestStartTimeTicks()));
-        int resultCode = extractor.getStatusCode(response);
-        requestTelemetry.setSuccess(resultCode < 400);
-        requestTelemetry.setResponseCode(Integer.toString(resultCode));
+        if (request.getAttribute(WebRequestTrackingFilter.APPLICATION_INSIGHTS_CAUGHT_EXCEPTION) != null) {
+            requestTelemetry.setSuccess(false);
+            requestTelemetry.setResponseCode("500");
+        } else {
+            int resultCode = extractor.getStatusCode(response);
+            requestTelemetry.setSuccess(resultCode < 400);
+            requestTelemetry.setResponseCode(Integer.toString(resultCode));
+        }
+
         if (ThreadContext.getRequestTelemetryContext() == null) {
             // e.g. when called from AIHttpServletListener
             ThreadContext.setRequestTelemetryContext(context);
