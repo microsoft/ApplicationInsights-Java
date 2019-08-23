@@ -74,7 +74,7 @@ shadowJar() {
     // javax.lang.model.element.Modifier which is no longer in the bootstrap class loader in Java 9, and this causes
     // spring class path scanning to fail when trying to read com.google.errorprone.annotations.ForOverride
     // (java.lang.NoClassDefFoundError: [Ljavax/lang/model/element/Modifier;)
-    exclude shadowPrefix.replace('.', '/') + '/com/google/errorprone/**'
+    exclude 'com/google/errorprone/**'
 }
 
 task shadowJar2(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
