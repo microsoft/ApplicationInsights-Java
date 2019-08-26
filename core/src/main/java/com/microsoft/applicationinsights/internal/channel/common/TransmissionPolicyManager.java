@@ -127,9 +127,10 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
      * Clear the current thread state and and reset the back off counter.
      */
     public void clearBackoff() {
-        policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
+        if (policyState.setCurrentState(TransmissionPolicy.UNBLOCKED)) {
+            InternalLogger.INSTANCE.trace("Backoff has been reset.");
+        }
         backoffManager.onDoneSending();
-//        InternalLogger.INSTANCE.info("Backoff has been reset.");
     }
 
     /**
