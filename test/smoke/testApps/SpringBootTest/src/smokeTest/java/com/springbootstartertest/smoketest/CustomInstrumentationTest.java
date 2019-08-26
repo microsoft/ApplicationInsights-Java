@@ -2,6 +2,8 @@ package com.springbootstartertest.smoketest;
 
 import java.util.List;
 
+import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -11,9 +13,10 @@ import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
 @UseAgent("CustomInstrumentation")
 public class CustomInstrumentationTest extends AiSmokeTest {
@@ -21,73 +24,131 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @Test
     @TargetUri("/customInstrumentationOne")
     public void customInstrumentationOne() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+
+        assertThat(rdList, hasSize(1));
+        assertThat(rddList, hasSize(1));
+
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.one");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
+
+        assertSameOperationId(rdEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/customInstrumentationTwo")
     public void customInstrumentationTwo() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+
+        assertThat(rdList, hasSize(1));
+        assertThat(rddList, hasSize(1));
+
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.two");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
+
+        assertSameOperationId(rdEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/customInstrumentationThree")
     public void customInstrumentationThree() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+        List<Envelope> edList = mockedIngestion.getItemsEnvelopeDataType("ExceptionData");
+
+        assertThat(rdList, hasSize(1));
+        assertThat(rddList, hasSize(1));
+        assertThat(edList, hasSize(1));
+
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+        Envelope edEnvelope = edList.get(0);
+
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
+
         assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.three");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), false);
-        ExceptionData exceptionData = getTelemetryDataForType(0, "ExceptionData");
-        List<ExceptionDetails> exceptions = exceptionData.getExceptions();
+
+        List<ExceptionDetails> exceptions = ed.getExceptions();
         assertEquals(exceptions.size(), 1);
         assertEquals(exceptions.get(0).getMessage(), "Three");
+
+        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertSameOperationId(edEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/customInstrumentationFour")
     public void customInstrumentationFour() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+
+        assertThat(rdList, hasSize(1));
+        assertThat(rddList, hasSize(1));
+
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject$NestedObject.four");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
+
+        assertSameOperationId(rdEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/customInstrumentationFive")
     public void customInstrumentationFive() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(4, mockedIngestion.getCountForType("RemoteDependencyData"));
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        assertThat(rdList, hasSize(1));
+        Envelope rdEnvelope = rdList.get(0);
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+        assertThat(rddList, hasSize(4));
+        Envelope fiveEnvelope = null;
+        Envelope sixEnvelope = null;
+        Envelope oneEnvelope = null;
+        Envelope twoEnvelope = null;
         RemoteDependencyData fiveRdd = null;
         RemoteDependencyData sixRdd = null;
         RemoteDependencyData oneRdd = null;
         RemoteDependencyData twoRdd = null;
-        List<RemoteDependencyData> rdds = mockedIngestion.getTelemetryDataByType("RemoteDependencyData");
-        for (RemoteDependencyData rdd : rdds) {
-            if (rdd.getName().endsWith(".five")) {
-                fiveRdd = rdd;
-            } else if (rdd.getName().endsWith(".six")) {
-                sixRdd = rdd;
-            } else if (rdd.getName().endsWith(".one")) {
-                oneRdd = rdd;
-            } else if (rdd.getName().endsWith(".two")) {
-                twoRdd = rdd;
+        for (Envelope loopEnvelope : rddList) {
+            RemoteDependencyData loopData = (RemoteDependencyData) ((Data) loopEnvelope.getData()).getBaseData();
+            if (loopData.getName().endsWith(".five")) {
+                fiveEnvelope = loopEnvelope;
+                fiveRdd = loopData;
+            } else if (loopData.getName().endsWith(".six")) {
+                sixEnvelope = loopEnvelope;
+                sixRdd = loopData;
+            } else if (loopData.getName().endsWith(".one")) {
+                oneEnvelope = loopEnvelope;
+                oneRdd = loopData;
+            } else if (loopData.getName().endsWith(".two")) {
+                twoEnvelope = loopEnvelope;
+                twoRdd = loopData;
             } else {
-                throw new IllegalStateException("Unexpected remote dependency: " + rdd.getName());
+                throw new IllegalStateException("Unexpected remote dependency: " + loopData.getName());
             }
         }
 
@@ -95,67 +156,99 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(fiveRdd.getName(), "com/springbootstartertest/controller/TargetObject.five");
         assertEquals(fiveRdd.getType(), "OTHER");
         assertEquals(fiveRdd.getSuccess(), true);
+        assertSameOperationId(rdEnvelope, fiveEnvelope);
 
         assertNotNull(sixRdd);
         assertEquals(sixRdd.getName(), "com/springbootstartertest/controller/TargetObject.six");
         assertEquals(sixRdd.getType(), "OTHER");
         assertEquals(sixRdd.getSuccess(), true);
+        assertSameOperationId(rdEnvelope, sixEnvelope);
 
         assertNotNull(oneRdd);
         assertEquals(oneRdd.getName(), "com/springbootstartertest/controller/TargetObject.one");
         assertEquals(oneRdd.getType(), "OTHER");
         assertEquals(oneRdd.getSuccess(), true);
+        assertSameOperationId(rdEnvelope, oneEnvelope);
 
         assertNotNull(twoRdd);
         assertEquals(twoRdd.getName(), "com/springbootstartertest/controller/TargetObject.two");
         assertEquals(twoRdd.getType(), "OTHER");
         assertEquals(twoRdd.getSuccess(), true);
+        assertSameOperationId(rdEnvelope, twoEnvelope);
     }
 
     @Test
     @TargetUri("/customInstrumentationSeven")
     public void customInstrumentationSeven() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+
+        assertThat(rdList, hasSize(1));
+        assertThat(rddList, hasSize(1));
+
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+
         assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.seven");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
+        assertSameOperationId(rdEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/customInstrumentationEight")
     public void customInstrumentationEight() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(2, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RemoteDependencyData rdd1 = getTelemetryDataForType(0, "RemoteDependencyData");
-        RemoteDependencyData rdd2 = getTelemetryDataForType(1, "RemoteDependencyData");
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+
+        assertThat(rdList, hasSize(1));
+        assertThat(rddList, hasSize(2));
+
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope1 = rddList.get(0);
+        Envelope rddEnvelope2 = rddList.get(1);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
         assertEquals(rdd1.getName(), "com/springbootstartertest/controller/TargetObject.eight");
         assertEquals(rdd1.getType(), "OTHER");
         assertEquals(rdd1.getSuccess(), true);
+        assertSameOperationId(rdEnvelope, rddEnvelope1);
 
         assertEquals(rdd2.getName(), "com/springbootstartertest/controller/TargetObject.eight");
         assertEquals(rdd2.getType(), "OTHER");
         assertEquals(rdd2.getSuccess(), true);
+        assertSameOperationId(rdEnvelope, rddEnvelope2);
     }
 
     @Test
     @TargetUri("/customInstrumentationNine")
     public void customInstrumentationNine() {
-        assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-        assertEquals(2, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
+        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
+        assertThat(rdList, hasSize(1));
+        Envelope rdEnvelope = rdList.get(0);
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+
+        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
+        assertThat(rddList, hasSize(2));
+        Envelope nineEnvelope = null;
+        Envelope httpEnvelope = null;
         RemoteDependencyData nineRdd = null;
         RemoteDependencyData httpRdd = null;
-        List<RemoteDependencyData> rdds = mockedIngestion.getTelemetryDataByType("RemoteDependencyData");
-        for (RemoteDependencyData rdd : rdds) {
-            if (rdd.getType().equals("OTHER")) {
-                nineRdd = rdd;
-            } else if (rdd.getType().equals("Http (tracked component)")) {
-                httpRdd = rdd;
+        for (Envelope loopEnvelope : rddList) {
+            RemoteDependencyData loopData = (RemoteDependencyData) ((Data) loopEnvelope.getData()).getBaseData();
+            if (loopData.getType().equals("OTHER")) {
+                nineEnvelope = loopEnvelope;
+                nineRdd = loopData;
+            } else if (loopData.getType().equals("Http (tracked component)")) {
+                httpEnvelope = loopEnvelope;
+                httpRdd = loopData;
             } else {
-                throw new IllegalStateException("Unexpected remote dependency type: " + rdd.getType());
+                throw new IllegalStateException("Unexpected remote dependency type: " + loopData.getType());
             }
         }
 
@@ -163,10 +256,20 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(nineRdd.getName(), "com/springbootstartertest/controller/TargetObject.nine");
         assertEquals(nineRdd.getType(), "OTHER");
         assertEquals(nineRdd.getSuccess(), true);
+        assertSameOperationId(rdEnvelope, nineEnvelope);
 
         assertNotNull(httpRdd);
-        String requestOperationId = d.getId();
-        String rddId = httpRdd.getId();
-        assertTrue(rddId.contains(requestOperationId));
+        assertSameOperationId(rdEnvelope, httpEnvelope);
+    }
+
+    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+
+        assertNotNull(operationId);
+        assertNotNull(operationParentId);
+
+        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
+        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
     }
 }
