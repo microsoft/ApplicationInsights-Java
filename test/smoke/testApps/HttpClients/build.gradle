@@ -1,0 +1,21 @@
+apply plugin: 'war'
+
+dependencies {
+    compile aiCoreJar
+    compile aiWebJar
+
+    compile group: 'org.apache.httpcomponents', name:'httpclient', version: '4.5.7'
+    compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.12.1'
+    compile group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDirectory
+ext.testAppArtifactFilename = war.archiveFileName.get()

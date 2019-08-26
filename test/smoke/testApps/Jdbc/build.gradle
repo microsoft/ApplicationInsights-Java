@@ -1,0 +1,22 @@
+apply plugin: 'war'
+
+dependencies {
+    compile aiCoreJar
+    compile aiWebJar
+
+    compile group: 'org.hsqldb', name: 'hsqldb', version: '2.3.6' // 2.4.0+ requires Java 8+
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.43' // the old agent did not support 8.x
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5.jre7'
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '6.4.0.jre7' // 6.5.0+ requires Java 8+
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDirectory
+ext.testAppArtifactFilename = war.archiveFileName.get()
+ext.dependencyContainers = ['mysql:5','postgres:11','mcr.microsoft.com/mssql/server:2017-latest']

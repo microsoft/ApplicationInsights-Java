@@ -3,7 +3,7 @@
     <Instrumentation>
         <BuiltIn enabled="true">
         </BuiltIn>
-        <Class name="com.springbootstartertest.controller.TargetObject">
+        <Class name="com.microsoft.applicationinsights.smoketestapp.TargetObject">
             <Method name="one"/>
             <Method name="two" signature="(Ljava/lang/String;)Ljava/lang/String;"/>
             <Method name="three"/>
@@ -14,7 +14,7 @@
             <Method name="eight" signature="(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"/>
             <Method name="nine"/>
         </Class>
-        <Class name="com.springbootstartertest.controller.TargetObject$NestedObject">
+        <Class name="com.microsoft.applicationinsights.smoketestapp.TargetObject$NestedObject">
             <Method name="four" signature="(Z[I[[Ljava/lang/String;)V"/>
         </Class>
     </Instrumentation>
