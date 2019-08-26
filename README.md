@@ -37,19 +37,6 @@ After you upgrade, you'll need to merge back any customizations you made to `App
 
 Compare the old and new `ApplicationInsights.xml`. Many of the changes you see are because we added and removed modules. Reinstate any customizations that you made.
 
-## Application Insights for Java Roadmap
-The Application Insights team have been hard at work to deliver the next wave of features for our Java support and experience. Below is an outline of the features and improvements that are planned for our next several releases, which are targeted to be completed for mid-year 2018.
-
-### Documentation Improvements
-The Application Insights team believes that documentation is important to the overall successfulness of our users. As such, we strive to continually improve our documentation. The full list of [documentation changes](https://github.com/Microsoft/ApplicationInsights-Java/issues?q=is%3Aissue+is%3Aopen+label%3A%22Documentation+Changes%22) can be found in our [issue tracker](https://github.com/Microsoft/ApplicationInsights-Java/issues). Feel free to [open a new issue](https://github.com/Microsoft/ApplicationInsights-Java/issues/new) to report incorrect or unclear documentation.
-
-### Adaptive Sampling
-While our 2.0 SDK will provide full support for fixed rate sampling, we plan to add support for adaptive sampling. Adaptive sampling provides fine-grained controls over a variable sampling rate when traffic to an application fluctuates and finding a fixed rate to sample with would otherwise be difficult.
-
-### Support for Java 9
-The Application Insights for Java SDK currently supports Java 7 and 8. We are working to bring full support for customers who have upgraded their applications to Java 9 as well.
-
-
 ## Microsoft Open Source Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
