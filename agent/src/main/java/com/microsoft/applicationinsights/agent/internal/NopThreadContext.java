@@ -106,8 +106,7 @@ class NopThreadContext implements ThreadContextPlus {
 
     @Override
     public AuxThreadContext createAuxThreadContext() {
-        // TODO Auto-generated method stub
-        return null;
+        return NopAuxThreadContext.INSTANCE;
     }
 
     @Override
@@ -185,5 +184,20 @@ class NopThreadContext implements ThreadContextPlus {
     @Override
     public void setCurrentSuppressionKeyId(int suppressionKeyId) {
         this.currentSuppressionKeyId = suppressionKeyId;
+    }
+
+    private static class NopAuxThreadContext implements AuxThreadContext {
+
+        private static final AuxThreadContext INSTANCE = new NopAuxThreadContext();
+
+        @Override
+        public Span start() {
+            return NopTransactionService.LOCAL_SPAN;
+        }
+
+        @Override
+        public Span startAndMarkAsyncTransactionComplete() {
+            return NopTransactionService.LOCAL_SPAN;
+        }
     }
 }
