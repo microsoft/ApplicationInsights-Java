@@ -23,7 +23,7 @@ public class ConnectionString {
             kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             kvps.putAll(Splitter.on(';').trimResults().omitEmptyStrings().withKeyValueSeparator('=').split(connectionString));
         } catch (IllegalArgumentException e) {
-            throw new InvalidConnectionStringException("Error parsing connection string: \""+connectionString+"\"", e);
+            throw new InvalidConnectionStringException("Could not parse connection string.");
         }
 
         mapToConnectionConfiguration(kvps, targetConfig);

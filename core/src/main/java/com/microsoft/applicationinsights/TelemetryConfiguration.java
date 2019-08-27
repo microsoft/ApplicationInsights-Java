@@ -234,7 +234,7 @@ public final class TelemetryConfiguration {
         try {
             ConnectionString.parseInto(connectionString, this);
         } catch (ConnectionStringParseException e) {
-            throw new IllegalArgumentException("Invalid connection string: "+connectionString, e);
+            throw new IllegalArgumentException("Invalid connection string", e);
         }
         this.connectionString = connectionString;
     }
