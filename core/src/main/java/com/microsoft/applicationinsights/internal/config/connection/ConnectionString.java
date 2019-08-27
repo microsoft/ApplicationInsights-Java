@@ -14,9 +14,16 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class ConnectionString {
+
+    @VisibleForTesting
+    static final int CONNECTION_STRING_MAX_LENGTH = 4096;
+
     private ConnectionString(){}
 
     public static void parseInto(String connectionString, TelemetryConfiguration targetConfig) throws ConnectionStringParseException {
+        if (connectionString.length() > CONNECTION_STRING_MAX_LENGTH) { // guard against malicious input
+            throw new InvalidConnectionStringException("ConnectionString values with more than " + CONNECTION_STRING_MAX_LENGTH + " characters are not allowed.");
+        }
         // parse key value pairs
         final Map<String, String> kvps;
         try {

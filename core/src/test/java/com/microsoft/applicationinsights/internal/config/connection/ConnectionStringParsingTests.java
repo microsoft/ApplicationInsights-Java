@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.internal.config.connection;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.EndpointPrefixes;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hamcrest.Matchers;
 import org.junit.*;
@@ -264,6 +265,14 @@ public class ConnectionStringParsingTests {
         exception.expectCause(Matchers.<Throwable>instanceOf(URISyntaxException.class));
         exception.expectMessage(containsString("LiveEndpoint"));
         parseInto_printExceptionAndRethrow("InstrumentationKey=fake-ikey;LiveEndpoint=https:////~!@#$%&^*()_{}{}><?<?>:L\":\"_+_+_");
+    }
+
+    @Test
+    public void giantValuesAreNotAllowed() throws ConnectionStringParseException {
+        exception.expect(InvalidConnectionStringException.class);
+        exception.expectMessage(containsString(""+ConnectionString.CONNECTION_STRING_MAX_LENGTH)); // message should state max length
+        String bigIkey = StringUtils.repeat('0', ConnectionString.CONNECTION_STRING_MAX_LENGTH * 2);
+        parseInto_printExceptionAndRethrow("InstrumentationKey="+bigIkey);
     }
 
     private void parseInto_printExceptionAndRethrow(String connectionString) throws ConnectionStringParseException {
