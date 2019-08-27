@@ -246,14 +246,14 @@ public class ConnectionStringParsingTests {
         ConnectionString.parseInto(UUID.randomUUID().toString(), config);
     }
 
-    @Test
-    public void missingAuthorizationIsInvalid() throws ConnectionStringParseException {
+    @Test // when more Authorization values are available, create a copy of this test. For example, given "Authorization=Xyz", this would fail because the 'Xyz' key/value pair is missing.
+    public void missingInstrumentationKeyIsInvalid() throws ConnectionStringParseException {
         exception.expect(InvalidConnectionStringException.class);
         ConnectionString.parseInto("LiveEndpoint=https://live.example.com", config);
     }
 
     @Test
-    public void nonIkeyAuthIsInvalid() throws ConnectionStringParseException {
+    public void unsupportedAuthTypeIsInvalid() throws ConnectionStringParseException {
         exception.expect(UnsupportedAuthorizationTypeException.class);
         ConnectionString.parseInto("Authorization=magic;MagicWord=abacadabra", config);
     }
