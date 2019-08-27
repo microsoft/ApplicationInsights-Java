@@ -41,6 +41,7 @@ import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,11 +71,18 @@ public abstract class AiSmokeTest {
         List<String> appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
         System.out.println("Target appservers="+Arrays.toString(appServers.toArray()));
         String os = System.getProperty("applicationinsights.smoketest.os", "linux");
+        URL jreExcludesURL = Thread.currentThread().getContextClassLoader().getResource("jre.excludes.txt");
+        List<String> jreExcludes;
+        if (jreExcludesURL == null) {
+            jreExcludes = new ArrayList<>();
+        } else {
+            jreExcludes = Resources.readLines(jreExcludesURL, Charsets.UTF_8);
+        }
         Multimap<String, String> appServers2jres = HashMultimap.create();
         for (String appServer : appServers) {
             List<String> serverJres;
             try {
-                serverJres = getAppServerJres(appServer);
+                serverJres = getAppServerJres(appServer, jreExcludes);
             } catch (Exception e) {
                 System.err.printf("SKIPPING '%s'. Could not configure jres: %s%n", appServer, e);
                 continue;
@@ -93,14 +101,14 @@ public abstract class AiSmokeTest {
         return rval;
     }
 
-    private static List<String> getAppServerJres(String appServer) throws IOException {
-        List<String> rval = Resources.readLines(Resources.getResource(appServer+".jre.txt"), Charsets.UTF_8);
-        return Lists.transform(rval, new Function<String, String>() {
-            @Override
-            public String apply(String input) {
-                return input.replaceAll("[:/]", "_");
+    private static List<String> getAppServerJres(String appServer, List<String> jreExcludes) throws IOException {
+        List<String> jres = new ArrayList<>();
+        for (String jre : Resources.readLines(Resources.getResource(appServer+".jre.txt"), Charsets.UTF_8)) {
+            if (!jreExcludes.contains(jre)) {
+                jres.add(jre.replaceAll("[:/]", "_"));
             }
-        });
+        }
+        return jres;
     }
 
     @Parameter(0) public String appServer;

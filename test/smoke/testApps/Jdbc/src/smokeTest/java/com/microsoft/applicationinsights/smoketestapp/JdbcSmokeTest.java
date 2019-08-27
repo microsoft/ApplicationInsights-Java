@@ -1,4 +1,4 @@
-package com.springbootstartertest.smoketest;
+package com.microsoft.applicationinsights.smoketestapp;
 
 import java.util.List;
 
@@ -6,7 +6,11 @@ import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.smoketest.*;
+import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
+import com.microsoft.applicationinsights.smoketest.DependencyContainer;
+import com.microsoft.applicationinsights.smoketest.TargetUri;
+import com.microsoft.applicationinsights.smoketest.UseAgent;
+import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -36,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
-    @TargetUri("/jdbc/hsqldbPreparedStatement")
+    @TargetUri("/hsqldbPreparedStatement")
     public void hsqldbPreparedStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -59,7 +63,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/hsqldbStatement")
+    @TargetUri("/hsqldbStatement")
     public void hsqldbStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -82,7 +86,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/hsqldbBatchPreparedStatement")
+    @TargetUri("/hsqldbBatchPreparedStatement")
     public void hsqldbBatchPreparedStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -106,7 +110,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/hsqldbBatchStatement")
+    @TargetUri("/hsqldbBatchStatement")
     public void hsqldbBatchStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -131,7 +135,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/mysqlPreparedStatement")
+    @TargetUri("/mysqlPreparedStatement")
     public void mysqlPreparedStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         assertThat(rdList, hasSize(1));
@@ -160,7 +164,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/mysqlStatement")
+    @TargetUri("/mysqlStatement")
     public void mysqlStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         assertThat(rdList, hasSize(1));
@@ -189,7 +193,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/postgresPreparedStatement")
+    @TargetUri("/postgresPreparedStatement")
     public void postgresPreparedStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -212,7 +216,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/postgresStatement")
+    @TargetUri("/postgresStatement")
     public void postgresStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -235,7 +239,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/sqlServerPreparedStatement")
+    @TargetUri("/sqlServerPreparedStatement")
     public void sqlServerPreparedStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -258,7 +262,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/jdbc/sqlServerStatement")
+    @TargetUri("/sqlServerStatement")
     public void sqlServerStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -282,7 +286,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Ignore("FIXME: need custom container with oracle db")
     @Test
-    @TargetUri("/jdbc/oraclePreparedStatement")
+    @TargetUri("/oraclePreparedStatement")
     public void oraclePreparedStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
@@ -306,7 +310,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Ignore("FIXME: need custom container with oracle db")
     @Test
-    @TargetUri("/jdbc/oracleStatement")
+    @TargetUri("/oracleStatement")
     public void oracleStatement() {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");

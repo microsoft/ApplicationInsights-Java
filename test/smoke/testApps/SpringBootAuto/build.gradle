@@ -10,8 +10,10 @@ ext.testAppArtifactFilename = war.archiveFileName.get()
 
 dependencies {
     compile aiWebAutoJar
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.21.RELEASE'
-    providedRuntime group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.21.RELEASE'
+    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+    compile group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.3'
 
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 }

@@ -1,16 +1,24 @@
-package com.springbootstartertest.controller;
+package com.microsoft.applicationinsights.smoketestapp;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Strings;
 import org.hsqldb.jdbc.JDBCDriver;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.*;
+@WebServlet("/*")
+public class JdbcTestServlet extends HttpServlet {
 
-@RestController
-public class JdbcTestController {
-
-    static {
+    public void init() throws ServletException {
         try {
             setupHsqldb();
             if (!Strings.isNullOrEmpty(System.getenv("MYSQL"))) setupMysql();
@@ -18,106 +26,122 @@ public class JdbcTestController {
             if (!Strings.isNullOrEmpty(System.getenv("SQLSERVER"))) setupSqlServer();
             // setupOracle();
         } catch (Exception e) {
-            // print stack trace to stdout to make sure it shows up in docker log
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new ServletException(e);
         }
     }
 
-    @GetMapping("/jdbc/hsqldbPreparedStatement")
-    public String hsqldbPreparedStatement() throws Exception {
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
+        try {
+            doGetInternal(req);
+            resp.getWriter().println("ok");
+        } catch (ServletException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+    }
+
+    private void doGetInternal(HttpServletRequest req) throws Exception {
+        String pathInfo = req.getPathInfo();
+        if (pathInfo.equals("/hsqldbPreparedStatement")) {
+            hsqldbPreparedStatement();
+        } else if (pathInfo.equals("/hsqldbStatement")) {
+            hsqldbStatement();
+        } else if (pathInfo.equals("/hsqldbBatchPreparedStatement")) {
+            hsqldbBatchPreparedStatement();
+        } else if (pathInfo.equals("/hsqldbBatchStatement")) {
+            hsqldbBatchStatement();
+        } else if (pathInfo.equals("/mysqlPreparedStatement")) {
+            mysqlPreparedStatement();
+        } else if (pathInfo.equals("/mysqlStatement")) {
+            mysqlStatement();
+        } else if (pathInfo.equals("/postgresPreparedStatement")) {
+            postgresPreparedStatement();
+        } else if (pathInfo.equals("/postgresStatement")) {
+            postgresStatement();
+        } else if (pathInfo.equals("/sqlServerPreparedStatement")) {
+            sqlServerPreparedStatement();
+        } else if (pathInfo.equals("/sqlServerStatement")) {
+            sqlServerStatement();
+        } else if (pathInfo.equals("/oraclePreparedStatement")) {
+            oraclePreparedStatement();
+        } else if (pathInfo.equals("/oracleStatement")) {
+            oracleStatement();
+        } else if (!pathInfo.equals("/")) {
+            throw new ServletException("Unexpected url: " + pathInfo);
+        }
+    }
+
+    private void hsqldbPreparedStatement() throws Exception {
         Connection connection = getHsqldbConnection();
         executePreparedStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/hsqldbStatement")
-    public String hsqldbStatement() throws Exception {
+    private void hsqldbStatement() throws Exception {
         Connection connection = getHsqldbConnection();
         executeStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/hsqldbBatchPreparedStatement")
-    public String hsqldbBatchPreparedStatement() throws Exception {
+    private void hsqldbBatchPreparedStatement() throws Exception {
         Connection connection = getHsqldbConnection();
         executeBatchPreparedStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/hsqldbBatchStatement")
-    public String hsqldbBatchStatement() throws Exception {
+    private void hsqldbBatchStatement() throws Exception {
         Connection connection = getHsqldbConnection();
         executeBatchStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/mysqlPreparedStatement")
-    public String mysqlPreparedStatement() throws Exception {
+    private void mysqlPreparedStatement() throws Exception {
         Connection connection = getMysqlConnection();
         executePreparedStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/mysqlStatement")
-    public String mysqlStatement() throws Exception {
+    private void mysqlStatement() throws Exception {
         Connection connection = getMysqlConnection();
         executeStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/postgresPreparedStatement")
-    public String postgresPreparedStatement() throws Exception {
+    private void postgresPreparedStatement() throws Exception {
         Connection connection = getPostgresConnection();
         executePreparedStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/postgresStatement")
-    public String postgresStatement() throws Exception {
+    private void postgresStatement() throws Exception {
         Connection connection = getPostgresConnection();
         executeStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/sqlServerPreparedStatement")
-    public String sqlServerPreparedStatement() throws Exception {
+    private void sqlServerPreparedStatement() throws Exception {
         Connection connection = getSqlServerConnection();
         executePreparedStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/sqlServerStatement")
-    public String sqlServerStatement() throws Exception {
+    private void sqlServerStatement() throws Exception {
         Connection connection = getSqlServerConnection();
         executeStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/oraclePreparedStatement")
-    public String oraclePreparedStatement() throws Exception {
+    private void oraclePreparedStatement() throws Exception {
         Connection connection = getOracleConnection();
         executePreparedStatement(connection);
         connection.close();
-        return "ok";
     }
 
-    @GetMapping("/jdbc/oracleStatement")
-    public String oracleStatement() throws Exception {
+    private void oracleStatement() throws Exception {
         Connection connection = getOracleConnection();
         executeStatement(connection);
         connection.close();
-        return "ok";
     }
 
     private static void executePreparedStatement(Connection connection) throws SQLException {

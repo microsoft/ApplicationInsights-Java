@@ -17,8 +17,14 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @UseAgent
 public class SpringbootSmokeTest extends AiSmokeTest {
@@ -95,32 +101,8 @@ public class SpringbootSmokeTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/asyncDependencyCallWithApacheHttpClient4")
-    public void testAsyncDependencyCallWithApacheHttpClient4() {
-        commonValidation();
-    }
-
-    @Test
-    @TargetUri("/asyncDependencyCallWithApacheHttpClient3")
-    public void testAsyncDependencyCallWithApacheHttpClient3() {
-        commonValidation();
-    }
-
-    @Test
-    @TargetUri("/asyncDependencyCallWithOkHttp3")
-    public void testAsyncDependencyCallWithOkHttp3() {
-        commonValidation();
-    }
-
-    @Test
-    @TargetUri("/asyncDependencyCallWithOkHttp2")
-    public void testAsyncDependencyCallWithOkHttp2() {
-        commonValidation();
-    }
-
-    @Test
-    @TargetUri("/asyncDependencyCallWithHttpURLConnection")
-    public void testAsyncDependencyCallWithHttpURLConnection() {
+    @TargetUri("/asyncDependencyCall")
+    public void testAsyncDependencyCall() {
         commonValidation();
     }
 

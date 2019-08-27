@@ -1,18 +1,19 @@
 package com.microsoft.ajl.simple;
 
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TestController {
 
-    @GetMapping("/")
+    @RequestMapping(path = "/", method = RequestMethod.GET)
     public String root() {
         return "OK";
     }
 
 
-    @GetMapping("/test")
+    @RequestMapping(path = "/test", method = RequestMethod.GET)
     public String test() {
         return "OK!";
     }

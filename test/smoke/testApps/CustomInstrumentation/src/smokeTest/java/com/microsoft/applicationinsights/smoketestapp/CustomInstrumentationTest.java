@@ -1,4 +1,4 @@
-package com.springbootstartertest.smoketest;
+package com.microsoft.applicationinsights.smoketestapp;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
 
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
-        assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.one");
+        assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.one");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
@@ -56,7 +56,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
 
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
-        assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.two");
+        assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.two");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
@@ -82,7 +82,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
 
         assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
-        assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.three");
+        assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.three");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), false);
 
@@ -108,7 +108,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
 
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
-        assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject$NestedObject.four");
+        assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject$NestedObject.four");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
@@ -153,25 +153,25 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         }
 
         assertNotNull(fiveRdd);
-        assertEquals(fiveRdd.getName(), "com/springbootstartertest/controller/TargetObject.five");
+        assertEquals(fiveRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.five");
         assertEquals(fiveRdd.getType(), "OTHER");
         assertEquals(fiveRdd.getSuccess(), true);
         assertSameOperationId(rdEnvelope, fiveEnvelope);
 
         assertNotNull(sixRdd);
-        assertEquals(sixRdd.getName(), "com/springbootstartertest/controller/TargetObject.six");
+        assertEquals(sixRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.six");
         assertEquals(sixRdd.getType(), "OTHER");
         assertEquals(sixRdd.getSuccess(), true);
         assertSameOperationId(rdEnvelope, sixEnvelope);
 
         assertNotNull(oneRdd);
-        assertEquals(oneRdd.getName(), "com/springbootstartertest/controller/TargetObject.one");
+        assertEquals(oneRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.one");
         assertEquals(oneRdd.getType(), "OTHER");
         assertEquals(oneRdd.getSuccess(), true);
         assertSameOperationId(rdEnvelope, oneEnvelope);
 
         assertNotNull(twoRdd);
-        assertEquals(twoRdd.getName(), "com/springbootstartertest/controller/TargetObject.two");
+        assertEquals(twoRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.two");
         assertEquals(twoRdd.getType(), "OTHER");
         assertEquals(twoRdd.getSuccess(), true);
         assertSameOperationId(rdEnvelope, twoEnvelope);
@@ -191,7 +191,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
 
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
-        assertEquals(rdd.getName(), "com/springbootstartertest/controller/TargetObject.seven");
+        assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.seven");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
         assertSameOperationId(rdEnvelope, rddEnvelope);
@@ -214,12 +214,12 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
-        assertEquals(rdd1.getName(), "com/springbootstartertest/controller/TargetObject.eight");
+        assertEquals(rdd1.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd1.getType(), "OTHER");
         assertEquals(rdd1.getSuccess(), true);
         assertSameOperationId(rdEnvelope, rddEnvelope1);
 
-        assertEquals(rdd2.getName(), "com/springbootstartertest/controller/TargetObject.eight");
+        assertEquals(rdd2.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd2.getType(), "OTHER");
         assertEquals(rdd2.getSuccess(), true);
         assertSameOperationId(rdEnvelope, rddEnvelope2);
@@ -253,7 +253,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         }
 
         assertNotNull(nineRdd);
-        assertEquals(nineRdd.getName(), "com/springbootstartertest/controller/TargetObject.nine");
+        assertEquals(nineRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.nine");
         assertEquals(nineRdd.getType(), "OTHER");
         assertEquals(nineRdd.getSuccess(), true);
         assertSameOperationId(rdEnvelope, nineEnvelope);
