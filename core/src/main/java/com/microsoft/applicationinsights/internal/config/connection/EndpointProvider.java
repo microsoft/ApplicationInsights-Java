@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class EndpointProvider {
     @VisibleForTesting static final String INGESTION_URI_PATH = "v2/track";
     @VisibleForTesting static final String LIVE_URI_PATH = "QuickPulseService.svc";
-    @VisibleForTesting static final String API_PROFILES_APP_ID_URI_PREFIX = "api/profiles/";
+    @VisibleForTesting static final String API_PROFILES_APP_ID_URI_PREFIX = "api/profiles/"; // <base uri, with host>/api/profiles/<ikey>/appid
     @VisibleForTesting static final String API_PROFILES_APP_ID_URI_SUFFIX = "/appId";
 
     private final AtomicReference<URI> ingestionEndpoint = new AtomicReference<>();
