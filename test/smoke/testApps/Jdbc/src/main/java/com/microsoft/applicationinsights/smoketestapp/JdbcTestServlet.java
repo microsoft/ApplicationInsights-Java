@@ -6,12 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import org.hsqldb.jdbc.JDBCDriver;
 
@@ -219,7 +221,16 @@ public class JdbcTestServlet extends HttpServlet {
     }
 
     private static Connection getHsqldbConnection() throws SQLException {
-        return JDBCDriver.getConnection("jdbc:hsqldb:mem:test", null);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        SQLException exception;
+        do {
+            try {
+                return JDBCDriver.getConnection("jdbc:hsqldb:mem:test", null);
+            } catch (SQLException e) {
+                exception = e;
+            }
+        } while (stopwatch.elapsed(TimeUnit.SECONDS) < 15);
+        throw exception;
     }
 
     private static Connection getMysqlConnection() throws SQLException {
