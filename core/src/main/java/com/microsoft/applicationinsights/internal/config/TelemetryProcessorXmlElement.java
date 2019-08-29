@@ -30,7 +30,6 @@ import com.thoughtworks.xstream.annotations.XStreamImplicit;
 /**
  * Created by gupele on 7/26/2016.
  */
-@XStreamAlias("Processor")
 public class TelemetryProcessorXmlElement {
 
     @XStreamAsAttribute

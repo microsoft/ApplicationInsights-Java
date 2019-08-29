@@ -62,5 +62,11 @@ public final class JaxbAppInsightsConfigurationBuilderTest {
         Assert.assertEquals("System Threads", windowsPC.getDisplayName());
         JmxXmlElement jmxXmlElement = config.getPerformance().getJmxXmlElements().get(0);
         Assert.assertEquals("Thread Count", jmxXmlElement.getDisplayName());
+        TelemetryProcessorXmlElement builtInTelemetryProcessor =
+                config.getTelemetryProcessors().getBuiltInTelemetryProcessors().get(0);
+        Assert.assertEquals("FixedRateSamplingTelemetryProcessor", builtInTelemetryProcessor.getType());
+        TelemetryProcessorXmlElement customTelemetryProcessor =
+                config.getTelemetryProcessors().getCustomTelemetryProcessors().get(0);
+        Assert.assertEquals("Test", customTelemetryProcessor.getType());
     }
 }
