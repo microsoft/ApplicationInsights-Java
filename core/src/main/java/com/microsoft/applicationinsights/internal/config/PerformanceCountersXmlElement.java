@@ -25,6 +25,7 @@ import java.util.ArrayList;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 3/15/2015.
@@ -44,17 +45,17 @@ public class PerformanceCountersXmlElement {
     private String plugin;
 
     @XStreamAlias("Jmx")
-    private ArrayList<JmxXmlElement> jmxXmlElements;
+    private JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
 
     @XStreamAlias("Windows")
-    private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
+    private WindowsPCWrapperXmlElement windowsPCWrapper = new WindowsPCWrapperXmlElement();
 
     public ArrayList<JmxXmlElement> getJmxXmlElements() {
-        return jmxXmlElements;
+        return jmxWrapper.jmxXmlElements;
     }
 
     public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
-        this.jmxXmlElements = jmxXmlElements;
+        jmxWrapper.jmxXmlElements = jmxXmlElements;
     }
 
     public boolean isUseBuiltIn() {
@@ -66,11 +67,11 @@ public class PerformanceCountersXmlElement {
     }
 
     public ArrayList<WindowsPerformanceCounterXmlElement> getWindowsPCs() {
-        return windowsPCs;
+        return windowsPCWrapper.windowsPCs;
     }
 
     public void setWindowsPCs(ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs) {
-        this.windowsPCs = windowsPCs;
+        windowsPCWrapper.windowsPCs = windowsPCs;
     }
 
     public long getCollectionFrequencyInSec() {
@@ -95,5 +96,17 @@ public class PerformanceCountersXmlElement {
 
     public void setPlugin(String plugin) {
         this.plugin = plugin;
+    }
+
+    public static class JmxWrapperXmlElement {
+
+        @XStreamImplicit(itemFieldName = "Add")
+        private ArrayList<JmxXmlElement> jmxXmlElements;
+    }
+
+    public static class WindowsPCWrapperXmlElement {
+
+        @XStreamImplicit(itemFieldName = "Add")
+        private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
     }
 }

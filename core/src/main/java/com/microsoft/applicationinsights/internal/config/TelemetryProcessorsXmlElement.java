@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.config;
 import java.util.ArrayList;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 7/26/2016.
@@ -31,24 +32,30 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 public class TelemetryProcessorsXmlElement {
 
     @XStreamAlias("CustomProcessors")
-    private ArrayList<TelemetryProcessorXmlElement> custom = new ArrayList<>();
+    private TelemetryProcessorWrapperXmlElement customWrapper = new TelemetryProcessorWrapperXmlElement();
 
     @XStreamAlias("BuiltInProcessors")
-    private ArrayList<TelemetryProcessorXmlElement> builtIn = new ArrayList<>();
+    private TelemetryProcessorWrapperXmlElement builtInWrapper = new TelemetryProcessorWrapperXmlElement();
 
     public ArrayList<TelemetryProcessorXmlElement> getBuiltInTelemetryProcessors() {
-        return builtIn;
+        return builtInWrapper.processors;
     }
 
     public void setBuiltInTelemetryProcessors(ArrayList<TelemetryProcessorXmlElement> builtIn) {
-        this.builtIn = builtIn;
+        builtInWrapper.processors = builtIn;
     }
 
     public ArrayList<TelemetryProcessorXmlElement> getCustomTelemetryProcessors() {
-        return custom;
+        return customWrapper.processors;
     }
 
     public void setCustomTelemetryProcessors(ArrayList<TelemetryProcessorXmlElement> custom) {
-        this.custom = custom;
+        customWrapper.processors = custom;
+    }
+
+    public static class TelemetryProcessorWrapperXmlElement {
+
+        @XStreamImplicit(itemFieldName = "Processor")
+        private ArrayList<TelemetryProcessorXmlElement> processors = new ArrayList<>();
     }
 }
