@@ -6,12 +6,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import org.hsqldb.jdbc.JDBCDriver;
 
@@ -184,7 +187,7 @@ public class JdbcTestServlet extends HttpServlet {
         statement.close();
     }
 
-    private static void setupHsqldb() throws SQLException {
+    private static void setupHsqldb() throws Exception {
         Connection connection = getHsqldbConnection();
         setup(connection);
         connection.close();
@@ -218,28 +221,61 @@ public class JdbcTestServlet extends HttpServlet {
         connection.close();
     }
 
-    private static Connection getHsqldbConnection() throws SQLException {
-        return JDBCDriver.getConnection("jdbc:hsqldb:mem:test", null);
+    private static Connection getHsqldbConnection() throws Exception {
+        return getConnection(new Callable<Connection>() {
+            @Override public Connection call() throws Exception {
+                return JDBCDriver.getConnection("jdbc:hsqldb:mem:test", null);
+            }
+        });
     }
 
-    private static Connection getMysqlConnection() throws SQLException {
-        String hostname = System.getenv("MYSQL");
-        return DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql", "root", "password");
+    private static Connection getMysqlConnection() throws Exception {
+        return getConnection(new Callable<Connection>() {
+            @Override public Connection call() throws Exception {
+                String hostname = System.getenv("MYSQL");
+                return DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql", "root", "password");
+            }
+        });
     }
 
-    private static Connection getPostgresConnection() throws SQLException {
-        String hostname = System.getenv("POSTGRES");
-        return DriverManager.getConnection("jdbc:postgresql://" + hostname + "/postgres", "postgres", "");
+    private static Connection getPostgresConnection() throws Exception {
+        return getConnection(new Callable<Connection>() {
+            @Override public Connection call() throws Exception {
+                String hostname = System.getenv("POSTGRES");
+                return DriverManager.getConnection("jdbc:postgresql://" + hostname + "/postgres", "postgres", "");
+            }
+        });
     }
 
-    private static Connection getSqlServerConnection() throws SQLException {
-        String hostname = System.getenv("SQLSERVER");
-        return DriverManager.getConnection("jdbc:sqlserver://" + hostname, "sa", "Password1");
+    private static Connection getSqlServerConnection() throws Exception {
+        return getConnection(new Callable<Connection>() {
+            @Override public Connection call() throws Exception {
+                String hostname = System.getenv("SQLSERVER");
+                return DriverManager.getConnection("jdbc:sqlserver://" + hostname, "sa", "Password1");
+            }
+        });
     }
 
-    private static Connection getOracleConnection() throws SQLException {
-        String hostname = System.getenv("ORACLE");
-        return DriverManager.getConnection("jdbc:oracle:thin:@" + hostname, "system", "password");
+    private static Connection getOracleConnection() throws Exception {
+        return getConnection(new Callable<Connection>() {
+            @Override public Connection call() throws Exception {
+                String hostname = System.getenv("ORACLE");
+                return DriverManager.getConnection("jdbc:oracle:thin:@" + hostname, "system", "password");
+            }
+        });
+    }
+
+    private static Connection getConnection(Callable<Connection> callable) throws Exception {
+        Exception exception;
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        do {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                exception = e;
+            }
+        } while (stopwatch.elapsed(TimeUnit.SECONDS) < 30);
+        throw exception;
     }
 
     private static void setup(Connection connection) throws SQLException {
