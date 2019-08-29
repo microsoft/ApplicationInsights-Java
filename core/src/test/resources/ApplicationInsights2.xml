@@ -266,6 +266,9 @@
             The structure is the same as BuiltInProcessors.
             See comments above for more information on implementation and configuration.
             -->
+            <Processor type="Test">
+                <Add name="Test" value="Test" />
+            </Processor>
         </CustomProcessors>
     </TelemetryProcessors>
 

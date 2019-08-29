@@ -21,13 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by gupele on 3/30/2015.
  */
-@XStreamAlias("Add")
 public class WindowsPerformanceCounterXmlElement {
 
     @XStreamAsAttribute
