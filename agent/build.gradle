@@ -48,6 +48,8 @@ shadowJar() {
     relocate('ch.qos.logback', "${shadowPrefix}.ch.qos.logback")
     relocate('com.google', "${shadowPrefix}.com.google")
     relocate 'org.checkerframework', "${shadowPrefix}.org.checkerframework"
+    relocate 'javax.annotation', "${shadowPrefix}.javax.annotation"
+    relocate 'org.codehaus.mojo.animal_sniffer', "${shadowPrefix}.org.codehaus.mojo.animal_sniffer"
 
     // this shades internal use of java util logging which is needed to prevent java util logging from being initialized
     // early (e.g. in the case of jboss which wants to do some setup before jul is initialized)
