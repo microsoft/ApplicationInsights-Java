@@ -99,6 +99,8 @@ public class HttpClientTestServlet extends HttpServlet {
     private int httpURLConnection() throws IOException {
         URL obj = new URL("https://www.bing.com");
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+        // calling getContentType() first, since this triggered a bug previously in the instrumentation previously
+        connection.getContentType();
         InputStream content = connection.getInputStream();
         ByteStreams.exhaust(content);
         content.close();

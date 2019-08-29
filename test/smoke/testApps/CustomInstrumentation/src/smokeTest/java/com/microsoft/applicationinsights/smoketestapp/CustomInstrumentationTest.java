@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @UseAgent("CustomInstrumentation")
 public class CustomInstrumentationTest extends AiSmokeTest {
@@ -33,8 +34,10 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.one");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
@@ -54,8 +57,10 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.two");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
@@ -78,10 +83,11 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rddEnvelope = rddList.get(0);
         Envelope edEnvelope = edList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
         ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
 
-        assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
+        assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.three");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), false);
@@ -106,8 +112,10 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject$NestedObject.four");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
@@ -152,6 +160,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
             }
         }
 
+        assertTrue(rd.getSuccess());
+
         assertNotNull(fiveRdd);
         assertEquals(fiveRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.five");
         assertEquals(fiveRdd.getType(), "OTHER");
@@ -189,8 +199,10 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.seven");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
@@ -213,6 +225,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
+
+        assertTrue(rd.getSuccess());
 
         assertEquals(rdd1.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd1.getType(), "OTHER");
@@ -251,6 +265,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
                 throw new IllegalStateException("Unexpected remote dependency type: " + loopData.getType());
             }
         }
+
+        assertTrue(rd.getSuccess());
 
         assertNotNull(nineRdd);
         assertEquals(nineRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.nine");

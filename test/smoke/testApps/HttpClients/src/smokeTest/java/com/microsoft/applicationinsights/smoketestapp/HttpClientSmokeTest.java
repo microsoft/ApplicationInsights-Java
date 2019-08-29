@@ -18,11 +18,12 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     public void testAsyncDependencyCallWithApacheHttpClient4() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        assertTrue(rdd.getId().contains(rd.getId()));
     }
 
     @Test
@@ -30,11 +31,12 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     public void testAsyncDependencyCallWithApacheHttpClient3() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        assertTrue(rdd.getId().contains(rd.getId()));
     }
 
     @Test
@@ -42,11 +44,12 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     public void testAsyncDependencyCallWithOkHttp3() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        assertTrue(rdd.getId().contains(rd.getId()));
     }
 
     @Test
@@ -54,11 +57,12 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     public void testAsyncDependencyCallWithOkHttp2() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        assertTrue(rdd.getId().contains(rd.getId()));
     }
 
     @Test
@@ -66,10 +70,11 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     public void testAsyncDependencyCallWithHttpURLConnection() {
         assertEquals(1, mockedIngestion.getCountForType("RequestData"));
         assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
-        RequestData d = getTelemetryDataForType(0, "RequestData");
+        RequestData rd = getTelemetryDataForType(0, "RequestData");
         RemoteDependencyData rdd = getTelemetryDataForType(0, "RemoteDependencyData");
+        assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(d.getId()));
+        assertTrue(rdd.getId().contains(rd.getId()));
     }
 }
