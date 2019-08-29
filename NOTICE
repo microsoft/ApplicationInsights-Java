@@ -47,6 +47,7 @@ Microsoft Application Insights Java Software Development Kit consists of materia
 24. Glowroot Instrumentation 0.14.0 (https://github.com/glowroot/instrumentation)
 25. CheckerFramework annotations for Java 6 1.0.0 (https://github.com/trask/checker-framework-annotations-for-jdk6)
 26. Gson 2.8.5 (https://github.com/google/gson)
+27. os-maven-plugin 1.6.2 (https://github.com/trustin/os-maven-plugin)
 
 %% Apache Commons-codec NOTICES, INFORMATION, AND LICENSE BEGIN HERE
 =========================================
@@ -1211,3 +1212,9 @@ END OF CheckerFramework annotations for Java 6 NOTICES, INFORMATION, AND LICENSE
 Licensed under the Apache License, Version 2.0
 =========================================
 END OF Gson NOTICES, INFORMATION, AND LICENSE
+
+%% os-maven-plugin NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+=========================================
+Licensed under the Apache License, Version 2.0
+=========================================
+END OF os-maven-plugin NOTICES, INFORMATION, AND LICENSE
