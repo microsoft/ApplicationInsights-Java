@@ -30,8 +30,8 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Encapsulates the global telemetry configuration typically loaded from the ApplicationInsights.xml file.
@@ -48,10 +48,10 @@ public final class TelemetryConfiguration {
     private String instrumentationKey;
     private String roleName;
 
-    private final ArrayList<ContextInitializer> contextInitializers = new   ArrayList<ContextInitializer>();
-    private final ArrayList<TelemetryInitializer> telemetryInitializers = new ArrayList<TelemetryInitializer>();
-    private final ArrayList<TelemetryModule> telemetryModules = new ArrayList<TelemetryModule>();
-    private final ArrayList<TelemetryProcessor> telemetryProcessors = new ArrayList<TelemetryProcessor>();
+    private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
+    private final List<TelemetryInitializer> telemetryInitializers = new CopyOnWriteArrayList<TelemetryInitializer>();
+    private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<TelemetryModule>();
+    private final List<TelemetryProcessor> telemetryProcessors = new CopyOnWriteArrayList<TelemetryProcessor>();
 
     private TelemetryChannel channel;
 
