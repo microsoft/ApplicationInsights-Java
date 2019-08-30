@@ -1,5 +1,13 @@
 # CHANGELOG
 
+# Version 2.5.0-BETA.4
+- Fixed registration of custom JMX performance counters
+  ([#1042](https://github.com/microsoft/ApplicationInsights-Java/issues/1042))
+- Fixed `IllegalStateException` that could happen when using `HttpURLConnection`
+  ([#1037](https://github.com/microsoft/ApplicationInsights-Java/issues/1037))
+- Fixed `NullPointerException` that could happen when using Java 11
+  ([#1032](https://github.com/microsoft/ApplicationInsights-Java/issues/1032))
+
 # Version 2.5.0-BETA.3
 - Fixed `HttpURLConnection` instrumentation was not capturing outgoing url
   ([#1025](https://github.com/microsoft/ApplicationInsights-Java/issues/1025))
