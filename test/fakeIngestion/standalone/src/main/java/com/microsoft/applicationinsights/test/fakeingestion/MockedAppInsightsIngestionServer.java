@@ -113,7 +113,7 @@ public class MockedAppInsightsIngestionServer {
             }
         }, numItems, 10, TimeUnit.SECONDS);
         if (items.size() > numItems) {
-            throw new IllegalStateException("Received too many items of type " + type);
+            throw new AssertionError("Expecting " + numItems + " of type " + type + ", but received " + items.size());
         }
         return items;
     }
