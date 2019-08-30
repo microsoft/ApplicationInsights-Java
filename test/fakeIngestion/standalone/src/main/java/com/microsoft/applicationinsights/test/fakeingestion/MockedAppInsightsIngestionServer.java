@@ -2,9 +2,11 @@ package com.microsoft.applicationinsights.test.fakeingestion;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -104,6 +106,17 @@ public class MockedAppInsightsIngestionServer {
         return waitForItems(condition, 1, timeout, timeUnit).get(0);
     }
 
+    public List<Envelope> waitForItems(final String type, final int numItems) throws Exception {
+        List<Envelope> items = waitForItems(new Predicate<Envelope>() {
+            @Override public boolean apply(Envelope input) {
+                return input.getData().getBaseType().equals(type);
+            }
+        }, numItems, 10, TimeUnit.SECONDS);
+        if (items.size() > numItems) {
+            throw new AssertionError("Expecting " + numItems + " of type " + type + ", but received " + items.size());
+        }
+        return items;
+    }
 
     /**
      * Waits the given amount of time for this mocked server to receive a certain number of items which match the given predicate.

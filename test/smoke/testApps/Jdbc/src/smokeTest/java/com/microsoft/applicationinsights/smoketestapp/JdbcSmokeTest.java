@@ -1,7 +1,9 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -14,10 +16,8 @@ import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @UseAgent
@@ -41,12 +41,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/hsqldbPreparedStatement")
-    public void hsqldbPreparedStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void hsqldbPreparedStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -65,12 +62,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/hsqldbStatement")
-    public void hsqldbStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void hsqldbStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -89,12 +83,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/hsqldbBatchPreparedStatement")
-    public void hsqldbBatchPreparedStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void hsqldbBatchPreparedStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -114,12 +105,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/hsqldbBatchStatement")
-    public void hsqldbBatchStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void hsqldbBatchStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -140,23 +128,25 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/mysqlPreparedStatement")
-    public void mysqlPreparedStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        assertThat(rdList, hasSize(1));
+    public void mysqlPreparedStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-        Envelope rddEnvelope = null;
-        // the old agent captured several internal queries, e.g. "SHOW WARNINGS"
-        for (Envelope loopEnvelope : rddList) {
-            RemoteDependencyData loopData = (RemoteDependencyData) ((Data) loopEnvelope.getData()).getBaseData();
-            if (loopData.getData().equals("select * from abc where xyz = ?")) {
-                rddEnvelope = loopEnvelope;
-                break;
+        Envelope rddEnvelope = mockedIngestion.waitForItem(new Predicate<Envelope>() {
+            @Override
+            public boolean apply(Envelope input) {
+                if (!input.getData().getBaseType().equals("RemoteDependencyData")) {
+                    return false;
+                }
+                RemoteDependencyData rdd = (RemoteDependencyData) ((Data) input.getData()).getBaseData();
+                // the old agent captured several internal queries, e.g. "SHOW WARNINGS"
+                return rdd.getData().equals("select * from abc where xyz = ?");
             }
-        }
-        assertNotNull(rddEnvelope);
+        }, 10, TimeUnit.SECONDS);
+
+
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
@@ -170,23 +160,24 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/mysqlStatement")
-    public void mysqlStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        assertThat(rdList, hasSize(1));
+    public void mysqlStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-        Envelope rddEnvelope = null;
-        // the old agent captured several internal queries, e.g. "SHOW WARNINGS"
-        for (Envelope loopEnvelope : rddList) {
-            RemoteDependencyData loopData = (RemoteDependencyData) ((Data) loopEnvelope.getData()).getBaseData();
-            if (loopData.getData().equals("select * from abc")) {
-                rddEnvelope = loopEnvelope;
-                break;
+        Envelope rddEnvelope = mockedIngestion.waitForItem(new Predicate<Envelope>() {
+            @Override
+            public boolean apply(Envelope input) {
+                if (!input.getData().getBaseType().equals("RemoteDependencyData")) {
+                    return false;
+                }
+                RemoteDependencyData rdd = (RemoteDependencyData) ((Data) input.getData()).getBaseData();
+                // the old agent captured several internal queries, e.g. "SHOW WARNINGS"
+                return rdd.getData().equals("select * from abc");
             }
-        }
-        assertNotNull(rddEnvelope);
+        }, 10, TimeUnit.SECONDS);
+
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
@@ -200,12 +191,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/postgresPreparedStatement")
-    public void postgresPreparedStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void postgresPreparedStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -224,12 +212,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/postgresStatement")
-    public void postgresStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void postgresStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -248,12 +233,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/sqlServerPreparedStatement")
-    public void sqlServerPreparedStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void sqlServerPreparedStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -272,12 +254,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/sqlServerStatement")
-    public void sqlServerStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void sqlServerStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -297,12 +276,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @Ignore("FIXME: need custom container with oracle db")
     @Test
     @TargetUri("/oraclePreparedStatement")
-    public void oraclePreparedStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void oraclePreparedStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -322,12 +298,9 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @Ignore("FIXME: need custom container with oracle db")
     @Test
     @TargetUri("/oracleStatement")
-    public void oracleStatement() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void oracleStatement() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
