@@ -30,8 +30,8 @@ import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
-import com.microsoft.applicationinsights.internal.config.connection.ConnectionStringParseException;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
+import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -233,7 +233,7 @@ public final class TelemetryConfiguration {
     public void setConnectionString(String connectionString) {
         try {
             ConnectionString.parseInto(connectionString, this);
-        } catch (ConnectionStringParseException e) {
+        } catch (InvalidConnectionStringException e) {
             throw new IllegalArgumentException("Invalid connection string", e);
         }
         this.connectionString = connectionString;

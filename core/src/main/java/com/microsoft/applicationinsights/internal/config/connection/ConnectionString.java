@@ -20,7 +20,7 @@ public class ConnectionString {
 
     private ConnectionString(){}
 
-    public static void parseInto(String connectionString, TelemetryConfiguration targetConfig) throws ConnectionStringParseException {
+    public static void parseInto(String connectionString, TelemetryConfiguration targetConfig) throws InvalidConnectionStringException {
         if (connectionString.length() > CONNECTION_STRING_MAX_LENGTH) { // guard against malicious input
             throw new InvalidConnectionStringException("ConnectionString values with more than " + CONNECTION_STRING_MAX_LENGTH + " characters are not allowed.");
         }
@@ -36,17 +36,12 @@ public class ConnectionString {
         mapToConnectionConfiguration(kvps, targetConfig);
     }
 
-    private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryConfiguration config) throws ConnectionStringParseException {
-        // check for authorization
-        String authorizationType = kvps.get(Keywords.AUTHORIZATION);
-        if (!(Strings.isNullOrEmpty(authorizationType) || "ikey".equalsIgnoreCase(authorizationType))) {
-            throw new UnsupportedAuthorizationTypeException("\"" + authorizationType + "\" is not a supported Authorization value. Supported values: [\"ikey\"].");
-        }
+    private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryConfiguration config) throws InvalidConnectionStringException {
 
         // get ikey
         String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
         if (Strings.isNullOrEmpty(instrumentationKey)) {
-            throw new InvalidConnectionStringException("Missing 'InstrumentationKey'");
+            throw new InvalidConnectionStringException("Missing '"+Keywords.INSTRUMENTATION_KEY+"'");
         }
         if (!Strings.isNullOrEmpty(config.getInstrumentationKey())) {
             InternalLogger.INSTANCE.warn("Connection string is overriding previously configured instrumentation key.");

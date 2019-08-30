@@ -13,7 +13,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class ConnectionStringParsingTests {
@@ -34,7 +34,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void minimalString() throws ConnectionStringParseException {
+    public void minimalString() throws Exception {
         final String ikey = "fake-ikey";
         final String cs = "InstrumentationKey="+ikey;
 
@@ -55,19 +55,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void minimalWithAuth() throws ConnectionStringParseException {
-        final String ikey = "fake-ikey";
-        final String cs = "Authorization=ikey;InstrumentationKey="+ikey;
-
-        ConnectionString.parseInto(cs, config);
-        assertEquals(ikey, config.getInstrumentationKey());
-        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT), config.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(URI.create(Defaults.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URI_PATH), config.getEndpointProvider().getIngestionEndpointURL());
-        assertEquals(URI.create(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URI_PATH), config.getEndpointProvider().getLiveEndpointURL());
-    }
-
-    @Test
-    public void ikeyWithSuffix() throws ConnectionStringParseException {
+    public void ikeyWithSuffix() throws Exception {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix="+suffix;
@@ -83,7 +71,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void ikeyWithExplicitEndpoints() throws ConnectionStringParseException {
+    public void ikeyWithExplicitEndpoints() throws Exception {
         final String ikey = "fake-ikey";
         final URI expectedIngestionEndpoint = URI.create("https://ingestion.example.com");
         final URI expectedIngestionEndpointURL = URI.create("https://ingestion.example.com/" + EndpointProvider.INGESTION_URI_PATH);
@@ -99,7 +87,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void explicitEndpointOverridesSuffix() throws ConnectionStringParseException {
+    public void explicitEndpointOverridesSuffix() throws Exception {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
         final URI expectedIngestionEndpoint = URI.create("https://ingestion.example.com");
@@ -154,7 +142,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void emptyValueIsSameAsUnset() throws ConnectionStringParseException {
+    public void emptyValueIsSameAsUnset() throws Exception {
         final String ikey = "fake-ikey";
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix=";
 
@@ -166,7 +154,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void caseInsensitiveParsing() throws ConnectionStringParseException {
+    public void caseInsensitiveParsing() throws Exception {
         final String ikey = "fake-ikey";
         final String live = "https://live.something.com";
         final String profiler = "https://prof.something.com";
@@ -187,7 +175,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void orderDoesNotMatter() throws ConnectionStringParseException {
+    public void orderDoesNotMatter() throws Exception {
         final String ikey = "fake-ikey";
         final String live = "https://live.something.com";
         final String profiler = "https://prof.something.com";
@@ -209,58 +197,53 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void endpointWithNoSchemeIsHttps() throws ConnectionStringParseException {
+    public void endpointWithNoSchemeIsHttps() throws Exception {
         ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com", config);
         assertEquals("https", config.getEndpointProvider().getIngestionEndpoint().getScheme());
     }
 
     @Test
-    public void httpEndpointKeepsScheme() throws ConnectionStringParseException {
+    public void httpEndpointKeepsScheme() throws Exception {
         ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=http://my-ai.example.com", config);
         assertEquals("http", config.getEndpointProvider().getIngestionEndpoint().getScheme());
     }
 
     @Test
-    public void emptyIkeyValueIsInvalid() throws ConnectionStringParseException {
+    public void emptyIkeyValueIsInvalid() throws Exception {
         exception.expect(InvalidConnectionStringException.class);
         final String cs = "InstrumentationKey=;IngestionEndpoint=https://ingestion.example.com;EndpointSuffix=ai.example.com";
         ConnectionString.parseInto(cs, config);
     }
 
     @Test
-    public void multipleKeySeparatorsIsInvalid() throws ConnectionStringParseException {
+    public void multipleKeySeparatorsIsInvalid() throws Exception {
         exception.expect(InvalidConnectionStringException.class);
         final String ikey = "fake-ikey";
-        final String cs = "Authorization=ikey;InstrumentationKey=="+ikey;
+        exception.expectMessage(not(containsString(ikey))); // ikey is a secret; should not be in log/exception message
+        final String cs = "InstrumentationKey=="+ikey;
         parseInto_printExceptionAndRethrow(cs);
     }
 
     @Test
-    public void emptyStringIsInvalid() throws ConnectionStringParseException {
+    public void emptyStringIsInvalid() throws Exception {
         exception.expect(InvalidConnectionStringException.class);
         ConnectionString.parseInto("", config);
     }
 
     @Test
-    public void nonKeyValueStringIsInvalid() throws ConnectionStringParseException {
+    public void nonKeyValueStringIsInvalid() throws Exception {
         exception.expect(InvalidConnectionStringException.class);
         ConnectionString.parseInto(UUID.randomUUID().toString(), config);
     }
 
     @Test // when more Authorization values are available, create a copy of this test. For example, given "Authorization=Xyz", this would fail because the 'Xyz' key/value pair is missing.
-    public void missingInstrumentationKeyIsInvalid() throws ConnectionStringParseException {
+    public void missingInstrumentationKeyIsInvalid() throws Exception {
         exception.expect(InvalidConnectionStringException.class);
         ConnectionString.parseInto("LiveEndpoint=https://live.example.com", config);
     }
 
     @Test
-    public void unsupportedAuthTypeIsInvalid() throws ConnectionStringParseException {
-        exception.expect(UnsupportedAuthorizationTypeException.class);
-        ConnectionString.parseInto("Authorization=magic;MagicWord=abacadabra", config);
-    }
-
-    @Test
-    public void invalidUriIsInvalidConnectionString() throws ConnectionStringParseException {
+    public void invalidUriIsInvalidConnectionString() throws Exception {
         exception.expect(InvalidConnectionStringException.class);
         exception.expectCause(Matchers.<Throwable>instanceOf(URISyntaxException.class));
         exception.expectMessage(containsString("LiveEndpoint"));
@@ -268,14 +251,14 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void giantValuesAreNotAllowed() throws ConnectionStringParseException {
+    public void giantValuesAreNotAllowed() throws Exception {
         exception.expect(InvalidConnectionStringException.class);
         exception.expectMessage(containsString(""+ConnectionString.CONNECTION_STRING_MAX_LENGTH)); // message should state max length
         String bigIkey = StringUtils.repeat('0', ConnectionString.CONNECTION_STRING_MAX_LENGTH * 2);
         parseInto_printExceptionAndRethrow("InstrumentationKey="+bigIkey);
     }
 
-    private void parseInto_printExceptionAndRethrow(String connectionString) throws ConnectionStringParseException {
+    private void parseInto_printExceptionAndRethrow(String connectionString) throws Exception {
         try {
             ConnectionString.parseInto(connectionString, config);
         } catch (Exception e) {

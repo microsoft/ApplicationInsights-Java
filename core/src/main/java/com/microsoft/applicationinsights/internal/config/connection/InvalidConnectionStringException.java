@@ -1,10 +1,6 @@
 package com.microsoft.applicationinsights.internal.config.connection;
 
-public class InvalidConnectionStringException extends ConnectionStringParseException {
-
-    InvalidConnectionStringException() {
-        super();
-    }
+public class InvalidConnectionStringException extends Exception {
 
     InvalidConnectionStringException(String message) {
         super(message);
