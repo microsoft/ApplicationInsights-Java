@@ -581,23 +581,9 @@ public final class TelemetryConfigurationFactoryTest {
         return mods;
     }
 
-
     private void initializeWithFactory(AppInsightsConfigurationBuilder mockParser, TelemetryConfiguration mockConfiguration) {
-//        Field field = null;
-//        try {
-//            field = ClassDataUtils.class.getDeclaredField("verifier");
-//            field.setAccessible(true);
-//
-//            ClassDataVerifier mockVerifier = Mockito.mock(ClassDataVerifier.class);
-//            Mockito.doReturn(true).when(mockVerifier).verifyClassExists(anyString());
-//            field.set(ClassDataUtils.INSTANCE, mockVerifier);
             TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
             TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
-//        } catch (NoSuchFieldException e) {
-//            throw new RuntimeException();
-//        } catch (IllegalAccessException e) {
-//            throw new RuntimeException();
-//        }
     }
 
     private void ikeyTest(String configurationIkey, String expectedIkey) {
