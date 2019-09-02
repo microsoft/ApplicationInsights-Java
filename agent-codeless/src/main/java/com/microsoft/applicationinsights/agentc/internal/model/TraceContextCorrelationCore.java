@@ -65,6 +65,38 @@ public class TraceContextCorrelationCore {
         }
     }
 
+    @Nullable
+    public static <Req> DistributedTraceContext resolveCorrelationForInvisibleRequest(Req request,
+                                                                                      Getter<Req> requestHeaderGetter,
+                                                                                      RequestTelemetry requestTelemetry) {
+        try {
+            Traceparent incomingTraceparent = extractIncomingTraceparent(request, requestHeaderGetter);
+            if (incomingTraceparent == null) {
+                return null;
+            }
+
+            // id of the current request
+            requestTelemetry
+                    .setId("|" + incomingTraceparent.getTraceId() + "." + incomingTraceparent.getSpanId() + ".");
+
+            // trace-id of the distributed trace
+            requestTelemetry.getContext().getOperation().setId(incomingTraceparent.getTraceId());
+
+            // assign parent id
+            requestTelemetry.getContext().getOperation().setParentId("|" + incomingTraceparent.getTraceId() + "." +
+                    incomingTraceparent.getSpanId() + ".");
+
+            Tracestate tracestate = getTracestate(request, requestHeaderGetter, incomingTraceparent, getAppId());
+            int traceflag = incomingTraceparent.getTraceFlags();
+
+            return new DistributedTraceContext(requestTelemetry, tracestate, traceflag);
+
+        } catch (Exception e) {
+            logger.debug("unable to perform correlation", e);
+            return null;
+        }
+    }
+
     public static <Res> void resolveCorrelationForResponse(Res response, Setter<Res> responseHeaderSetter) {
 
         try {

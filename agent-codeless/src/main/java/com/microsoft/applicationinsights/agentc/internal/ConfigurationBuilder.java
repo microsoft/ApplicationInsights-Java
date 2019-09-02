@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -109,15 +110,26 @@ class ConfigurationBuilder {
 
     @VisibleForTesting
     static String overlayWithEnvVar(String name1, String name2, String defaultValue) {
-        String value = System.getenv(name1);
+        String value = getEnv(name1);
         if (!Strings.isNullOrEmpty(value)) {
             return value;
         }
-        value = System.getenv(name2);
+        value = getEnv(name2);
         if (!Strings.isNullOrEmpty(value)) {
             return value;
         }
         return defaultValue;
+    }
+
+    private static String getEnv(String name) {
+        String value = System.getenv(name);
+        // TODO is the best way to identify running as Azure Functions worker?
+        // TODO is this the correct way to match role name from Azure Functions IIS host?
+        if (name.equals("WEBSITE_SITE_NAME") && "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+            // special case for Azure Functions
+            value = value.toLowerCase(Locale.ENGLISH);
+        }
+        return value;
     }
 
     @VisibleForTesting

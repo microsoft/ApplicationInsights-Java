@@ -22,6 +22,7 @@
 include 'ApplicationInsightsInternalLogger'
 
 include 'agent'
+include 'instrumentation:azure-functions'
 include 'agent-codeless'
 include 'core'
 include 'logging:log4j1_2'
