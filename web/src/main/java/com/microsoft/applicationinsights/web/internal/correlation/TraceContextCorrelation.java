@@ -281,7 +281,7 @@ public class TraceContextCorrelation {
     public static String getAppId() {
 
         String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
+        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
 
         //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
         //return and let the next request resolve the ikey.
@@ -375,15 +375,13 @@ public class TraceContextCorrelation {
 
         // In W3C we only pass requestContext for the response. So it's expected to have only single key-value pair
         String[] keyValue = requestContext.split("=");
-        assert keyValue.length == 2;
 
         String headerAppID = null;
         if (keyValue[0].equals(REQUEST_CONTEXT_HEADER_APPID_KEY)) {
             headerAppID = keyValue[1];
         }
 
-        String currAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(TelemetryConfiguration.getActive()
-        .getInstrumentationKey());
+        String currAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
 
         String target = resolve(headerAppID, currAppId);
         if (target == null) {
@@ -398,11 +396,14 @@ public class TraceContextCorrelation {
      * generates the appropriate source or target.
      */
     private static String generateSourceTargetCorrelation(String instrumentationKey, String appId) {
+        if (StringUtils.isEmpty(instrumentationKey)) {
+            throw new IllegalArgumentException("instrumentationKey should be nonnull");
+        }
+        if (StringUtils.isEmpty(appId)) {
+            throw new IllegalArgumentException("appId should be nonnull");
+        }
 
-        assert instrumentationKey != null;
-        assert appId != null;
-
-        String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
+        String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
 
         return resolve(appId, myAppId);
     }
@@ -485,10 +486,14 @@ public class TraceContextCorrelation {
      * @return legacy format traceparent
      */
     public static String createChildIdFromTraceparentString(String traceparent) {
-        assert traceparent != null;
+        if (traceparent == null) {
+            throw new NullPointerException("traceparent cannot be null");
+        }
 
         String[] traceparentArr = traceparent.split("-");
-        assert traceparentArr.length == 4;
+        if (traceparentArr.length != 4) {
+            throw new IllegalArgumentException("Invalid traceparent");
+        }
 
         return "|" + traceparentArr[1] + "." + traceparentArr[2] + ".";
     }

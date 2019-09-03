@@ -23,40 +23,58 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public enum InstrumentationKeyResolver {
     INSTANCE;
 
     private static final String CorrelationIdFormat = "cid-v1:%s";
-    private AtomicReference<AppProfileFetcher> profileFetcher;
+    private volatile ApplicationIdResolver appIdResolver;
     private final ConcurrentMap<String, String> appIdCache;
 
     InstrumentationKeyResolver() {
         this.appIdCache = new ConcurrentHashMap<>();
-        this.profileFetcher = new AtomicReference<AppProfileFetcher>(new CdsProfileFetcher());
+        this.appIdResolver = new CdsProfileFetcher();
     }
 
     public void clearCache() {
         this.appIdCache.clear();
     }
 
+    /**
+     * @deprecated This method has no effect. {@link AppProfileFetcher is no longer used}. Replaced with {@link ApplicationIdResolver}
+     */
+    @Deprecated
     public void setProfileFetcher(AppProfileFetcher profileFetcher) {
-        this.profileFetcher.set(profileFetcher);
+        // nop
+    }
+
+    /* @VisisbleForTesting */
+    void setAppIdResolver(ApplicationIdResolver appIdResolver) {
+        this.appIdResolver = appIdResolver;
     }
 
     /**
      * @param instrumentationKey The instrumentation key.
      * @return The applicationId associated with the instrumentation key or null if it cannot be retrieved.
+     * @deprecated Use {@link #resolveInstrumentationKey(String, TelemetryConfiguration)}
      */
+    @Deprecated
     public String resolveInstrumentationKey(String instrumentationKey) {
+         return resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
+    }
 
-         if (instrumentationKey == null || instrumentationKey.isEmpty()) {
-             throw new IllegalArgumentException("instrumentationKey must be not null or empty");
-         }
+    public String resolveInstrumentationKey(String instrumentationKey, TelemetryConfiguration config) {
+        if (StringUtils.isEmpty(instrumentationKey)) {
+            throw new IllegalArgumentException("instrumentationKey must not be null or empty");
+        }
+        if (config == null) {
+            throw new IllegalArgumentException("config must not be null or empty");
+        }
 
         try {
             String appId = this.appIdCache.get(instrumentationKey);
@@ -65,7 +83,7 @@ public enum InstrumentationKeyResolver {
                 return appId;
             }
 
-            ProfileFetcherResult result = this.profileFetcher.get().fetchAppProfile(instrumentationKey);
+            ProfileFetcherResult result = this.appIdResolver.fetchApplicationId(instrumentationKey, config);
             appId = processResult(result, instrumentationKey);
 
             if (appId != null) {
@@ -74,8 +92,9 @@ public enum InstrumentationKeyResolver {
 
             return appId;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s => Exception: %s", instrumentationKey, e);
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                InternalLogger.INSTANCE.error("InstrumentationKeyResolver: failed to resolve instrumentation key: %s => Exception: %s", config.getInstrumentationKey(), ExceptionUtils.getStackTrace(e));
+            }
         }
 
         return null;

@@ -70,7 +70,9 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
      * @param configurationData SDK config Object
      */
     public WebRequestTrackingTelemetryModule(Map<String, String> configurationData) {
-        assert configurationData != null;
+        if (configurationData == null) {
+            throw new NullPointerException("configurationData should not be null");
+        }
 
         if (configurationData.containsKey(W3C_CONFIGURATION_PARAMETER)) {
             isW3CEnabled = Boolean.valueOf(configurationData.get(W3C_CONFIGURATION_PARAMETER));
