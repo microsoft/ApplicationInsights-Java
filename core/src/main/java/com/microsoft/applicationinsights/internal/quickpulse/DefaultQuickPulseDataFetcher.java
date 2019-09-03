@@ -67,7 +67,6 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("\"InvariantVersion\": 1,");
         sb.append("\"MachineName\": \"").append(instanceName).append("\",");
         sb.append("\"StreamId\": \"").append(quickPulseId).append("\",");
-        
         postPrefix = sb.toString();
     }
 
@@ -139,7 +138,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private void formatDocuments(StringBuilder sb) {
         sb.append("\"Documents\": [] ,");
     }
-    
+
     private void formatSingleMetric(StringBuilder sb, String metricName, double metricValue, int metricWeight, Boolean includeComma) {
         String comma = includeComma ? "," : "";
         sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
