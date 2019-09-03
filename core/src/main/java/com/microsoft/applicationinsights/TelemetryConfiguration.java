@@ -52,7 +52,7 @@ public final class TelemetryConfiguration {
     private String connectionString;
     private String roleName;
 
-    private final EndpointProvider endpointConfiguration = new EndpointProvider();
+    private final EndpointProvider endpointProvider = new EndpointProvider();
 
     private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
     private final List<TelemetryInitializer> telemetryInitializers = new CopyOnWriteArrayList<TelemetryInitializer>();
@@ -73,8 +73,7 @@ public final class TelemetryConfiguration {
         if (active == null) {
             synchronized (s_lock) {
                 if (active == null) {
-                    active = new TelemetryConfiguration();
-                    TelemetryConfigurationFactory.INSTANCE.initialize(active);
+                    active = createDefault();
                 }
             }
         }
@@ -240,7 +239,7 @@ public final class TelemetryConfiguration {
     }
 
     public EndpointProvider getEndpointProvider() {
-        return endpointConfiguration;
+        return endpointProvider;
     }
 
     /**
