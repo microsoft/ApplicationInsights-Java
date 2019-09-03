@@ -28,10 +28,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.methods.HttpPost;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -95,7 +93,7 @@ public enum QuickPulse implements Stoppable {
                         instanceName = "Unknown host";
                     }
 
-                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(configuration, apacheSender, instanceName, quickPulseId);
+                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, configuration, instanceName, quickPulseId);
                     final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, configuration, instanceName, quickPulseId);
 
                     final QuickPulseCoordinatorInitData coordinatorInitData =

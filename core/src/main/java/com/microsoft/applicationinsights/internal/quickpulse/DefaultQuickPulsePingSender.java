@@ -43,7 +43,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private String pingPrefix;
     private long lastValidTransmission = 0;
 
-    public DefaultQuickPulsePingSender(TelemetryConfiguration configuration, ApacheSender sender, String instanceName, String quickPulseId) {
+    public DefaultQuickPulsePingSender(ApacheSender sender, TelemetryConfiguration configuration, String instanceName, String quickPulseId) {
         this.configuration = configuration;
         this.apacheSender = sender;
 
@@ -60,7 +60,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     @Deprecated
     public DefaultQuickPulsePingSender(final ApacheSender apacheSender, final String instanceName, final String quickPulseId) {
-        this(TelemetryConfiguration.getActive(), apacheSender, instanceName, quickPulseId);
+        this(apacheSender, TelemetryConfiguration.getActive(), instanceName, quickPulseId);
     }
 
     @Override
