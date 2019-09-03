@@ -18,11 +18,11 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
 
     @Test
     @TargetUri("/traceLog4j1_2")
-    public void testTraceLog4j1_2() {
+    public void testTraceLog4j1_2() throws Exception {
         // FIXME this doesn't work with jbosseap6; under investigation
         Assume.assumeFalse(currentImageName.contains("jbosseap6"));
 
-        assertEquals(6, mockedIngestion.getCountForType("MessageData"));
+        mockedIngestion.waitForItems("MessageData", 6);
 
         final List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
         logs.sort(new Comparator<MessageData>() {
@@ -76,8 +76,8 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
 
     @Test
     @TargetUri("traceLog4j1_2WithException")
-    public void testTraceLog4j1_2WithExeption() {
-        assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
+    public void testTraceLog4j1_2WithExeption() throws Exception {
+        mockedIngestion.waitForItems("ExceptionData", 1);
 
         ExceptionData ed1 = getTelemetryDataForType(0, "ExceptionData");
         List<ExceptionDetails> details = ed1.getExceptions();
