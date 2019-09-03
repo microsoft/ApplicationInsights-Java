@@ -54,7 +54,7 @@ dependencyCheck {
     }
     outputDirectory = "${project.buildDir}/reports/dependency-check"
     formats = ['HTML', 'JUNIT']
-    skipConfigurations = ['mavenDeployer', 'findbugs']
+    skipConfigurations = ['mavenDeployer', 'findbugs', 'checkstyle']
     cveValidForHours = 1
     failBuildOnCVSS = 0
 }
