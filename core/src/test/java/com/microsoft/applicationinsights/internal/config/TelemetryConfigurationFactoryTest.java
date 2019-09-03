@@ -413,22 +413,6 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     @Test
-    public void connectionStringSystemPropertyOverridesXml() {
-        final AppInsightsConfigurationBuilder mockParser = createMockParser(false, false, false);
-        final ApplicationInsightsXmlConfiguration config = mockParser.build(null);
-        final String xmlConString = "InstrumentationKey=xml-ikey";
-        config.setConnectionString(xmlConString);
-
-        final String propConString = "InstrumentationKey=sys-prop-ikey";
-        System.setProperty(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME, propConString);
-
-        TelemetryConfiguration tc = new TelemetryConfiguration();
-        initializeWithFactory(mockParser, tc);
-        assertEquals(propConString, tc.getConnectionString());
-        assertEquals("sys-prop-ikey", tc.getInstrumentationKey());
-    }
-
-    @Test
     public void connectionStringEnvVarOverridesPropertyAndXml() {
         final AppInsightsConfigurationBuilder mockParser = createMockParser(false, false, false);
         final ApplicationInsightsXmlConfiguration config = mockParser.build(null);

@@ -344,15 +344,7 @@ public enum TelemetryConfigurationFactory {
         // hardcoded should follow a different path
         String connectionString = configXml.getConnectionString(); // config.xml
 
-        String nextValue = System.getProperty(CONNECTION_STRING_ENV_VAR_NAME);
-        if (!Strings.isNullOrEmpty(nextValue)) {
-            if (!Strings.isNullOrEmpty(connectionString)) {
-                InternalLogger.INSTANCE.warn("System property %s is overriding connection string value from %s", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
-            }
-            connectionString = nextValue;
-        }
-
-        nextValue = System.getenv(CONNECTION_STRING_ENV_VAR_NAME);
+        String nextValue = System.getenv(CONNECTION_STRING_ENV_VAR_NAME);
         if (!Strings.isNullOrEmpty(nextValue)) {
             if (!Strings.isNullOrEmpty(connectionString)) {
                 InternalLogger.INSTANCE.warn("Environment variable %s is overriding connection string value from %s or system property", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
