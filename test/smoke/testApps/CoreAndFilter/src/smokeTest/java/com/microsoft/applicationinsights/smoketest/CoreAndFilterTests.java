@@ -21,7 +21,6 @@ import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatcher
 import com.microsoft.applicationinsights.smoketest.matchers.PageViewDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;

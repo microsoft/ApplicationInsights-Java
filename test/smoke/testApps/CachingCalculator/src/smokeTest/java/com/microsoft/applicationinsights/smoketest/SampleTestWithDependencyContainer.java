@@ -5,7 +5,6 @@ import java.util.List;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.*;
 
 import static org.hamcrest.Matchers.hasSize;

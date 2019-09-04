@@ -13,10 +13,8 @@ import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @UseAgent("CustomInstrumentation")
