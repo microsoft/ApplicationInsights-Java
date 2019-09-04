@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Comparator;
 import java.util.List;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
@@ -28,9 +29,17 @@ public class TraceLog4j2Test extends AiSmokeTest {
         Envelope mdEnvelope2 = mdList.get(1);
         Envelope mdEnvelope3 = mdList.get(2);
 
-        MessageData md1 = (MessageData) ((Data) mdEnvelope1.getData()).getBaseData();
-        MessageData md2 = (MessageData) ((Data) mdEnvelope2.getData()).getBaseData();
-        MessageData md3 = (MessageData) ((Data) mdEnvelope3.getData()).getBaseData();
+        List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
+        logs.sort(new Comparator<MessageData>() {
+            @Override
+            public int compare(MessageData o1, MessageData o2) {
+                return o1.getSeverityLevel().compareTo(o2.getSeverityLevel());
+            }
+        });
+
+        MessageData md1 = logs.get(0);
+        MessageData md2 = logs.get(1);
+        MessageData md3 = logs.get(2);
 
         assertEquals("This is log4j2 warn.", md1.getMessage());
         assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
