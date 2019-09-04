@@ -197,7 +197,7 @@ public class AiDockerClient {
 
     public boolean isContainerRunning(String id) throws IOException, InterruptedException {
         Process p = new ProcessBuilder(dockerExePath, "inspect", "-f", "{{.State.Running}}", id).start();
-        waitAndCheckCodeForProcess(p, 1, TimeUnit.SECONDS, String.format("checking if container is running: %s", id));
+        waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("checking if container is running: %s", id));
 
         StringWriter sw = new StringWriter();
         try {

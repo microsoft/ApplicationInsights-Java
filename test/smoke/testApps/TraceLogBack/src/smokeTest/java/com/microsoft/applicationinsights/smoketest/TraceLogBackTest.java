@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Comparator;
 import java.util.List;
 
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
@@ -26,8 +27,8 @@ public class TraceLogBackTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/traceLogBack")
-    public void testTraceLogBack() {
-        assertEquals(5, mockedIngestion.getCountForType("MessageData"));
+    public void testTraceLogBack() throws Exception {
+        mockedIngestion.waitForItems("MessageData", 5);
 
         final List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
         logs.sort(new Comparator<MessageData>() {
@@ -74,8 +75,8 @@ public class TraceLogBackTest extends AiSmokeTest {
 
     @Test
     @TargetUri("traceLogBackWithException")
-    public void testTraceLogBackWithExeption() {
-        assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
+    public void testTraceLogBackWithExeption() throws Exception {
+        mockedIngestion.waitForItems("ExceptionData", 1);
 
         ExceptionData ed1 = getTelemetryDataForType(0, "ExceptionData");
         List<ExceptionDetails> details = ed1.getExceptions();

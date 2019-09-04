@@ -17,8 +17,8 @@ public class TraceLog4j2Test extends AiSmokeTest {
 
     @Test
     @TargetUri("/traceLog4j2")
-    public void testTraceLog4j2() {
-        assertEquals(6, mockedIngestion.getCountForType("MessageData"));
+    public void testTraceLog4j2() throws Exception {
+        mockedIngestion.waitForItems("MessageData", 6);
 
         final List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
         logs.sort(new Comparator<MessageData>() {
@@ -72,8 +72,8 @@ public class TraceLog4j2Test extends AiSmokeTest {
 
     @Test
     @TargetUri("/traceLog4j2WithException")
-    public void testTraceLog4j2WithException() {
-        assertEquals(1, mockedIngestion.getCountForType("ExceptionData"));
+    public void testTraceLog4j2WithException() throws Exception {
+        mockedIngestion.waitForItems("ExceptionData", 1);
 
         ExceptionData ed1 = getTelemetryDataForType(0, "ExceptionData");
         List<ExceptionDetails> details = ed1.getExceptions();
