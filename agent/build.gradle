@@ -26,7 +26,7 @@ plugins {
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
-def instrumentationVersion = '0.14.4'
+def instrumentationVersion = '0.14.5'
 
 def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
 
