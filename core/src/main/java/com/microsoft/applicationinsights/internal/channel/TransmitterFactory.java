@@ -36,7 +36,7 @@ public interface TransmitterFactory<T> {
      * @param throttlingIsEnabled Allow the network telemetry sender to be throttled
      * @param maxInstantRetries Number of instant retries in case of a temporary network outage
      * @return The {@link TelemetriesTransmitter} object
-     * @deprecated Use {@link ConfiguredTransmitterFactory#create(TelemetryConfiguration, String, String, boolean, int)}
+     * @deprecated Replaced by {@link ConfiguredTransmitterFactory#create(TelemetryConfiguration, String, String, boolean, int)}
      */
     @Deprecated
     TelemetriesTransmitter<T> create(@Nullable String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries);
