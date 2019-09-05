@@ -155,6 +155,7 @@ public abstract class AiSmokeTest {
     protected String targetUri;
     protected String httpMethod;
     protected long targetUriDelayMs;
+    protected long targetUriCallCount;
     protected long targetUriTimeoutMs;
     //endregion
 
@@ -187,6 +188,7 @@ public abstract class AiSmokeTest {
                 thiz.targetUri = null;
                 thiz.httpMethod = null;
                 thiz.targetUriDelayMs = 0L;
+                thiz.targetUriCallCount = 1;
                 thiz.targetUriTimeoutMs = TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000;
             } else {
                 thiz.targetUri = targetUri.value();
@@ -195,6 +197,7 @@ public abstract class AiSmokeTest {
                 }
                 thiz.httpMethod = targetUri.method().toUpperCase();
                 thiz.targetUriDelayMs = targetUri.delay();
+                thiz.targetUriCallCount = targetUri.callCount();
                 thiz.targetUriTimeoutMs = targetUri.timeout() > 0 ? targetUri.timeout() : TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000;
             }
 
@@ -395,20 +398,26 @@ public abstract class AiSmokeTest {
         }
         System.out.println("Calling "+targetUri+" ...");
         String url = getBaseUrl()+targetUri;
-        System.out.println("calling " + url);
-        final String content;
-        switch(httpMethod) {
-            case "GET":
-                content = HttpHelper.get(url);
-                break;
-            default:
-                throw new NotSupportedException(String.format("http method '%s' is not currently supported", httpMethod));
+        if (targetUriCallCount == 1) {
+            System.out.println("calling " + url);
+        } else {
+            System.out.println("calling " + url + " " + targetUriCallCount + " times");
         }
-
-        String expectationMessage = "The base context in testApps should return a nonempty response.";
-        assertNotNull(String.format("Null response from targetUri: '%s'. %s", targetUri, expectationMessage), content);
-        assertTrue(String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage), content.length() > 0);
-
+        for (int i = 0; i < targetUriCallCount; i++) {
+            final String content;
+            switch (httpMethod) {
+                case "GET":
+                    content = HttpHelper.get(url);
+                    break;
+                default:
+                    throw new NotSupportedException(
+                            String.format("http method '%s' is not currently supported", httpMethod));
+            }
+            String expectationMessage = "The base context in testApps should return a nonempty response.";
+            assertNotNull(String.format("Null response from targetUri: '%s'. %s", targetUri, expectationMessage),                    content);
+            assertTrue(String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage),
+                    content.length() > 0);
+        }
         if (this.targetUriTimeoutMs > 0) {
             Stopwatch sw = Stopwatch.createStarted();
             mockedIngestion.awaitAnyItems(this.targetUriTimeoutMs, TimeUnit.MILLISECONDS);
