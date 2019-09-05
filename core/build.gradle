@@ -109,7 +109,7 @@ archivesBaseName = 'applicationinsights-core'
 
 dependencies {
     compileOnly (project(':agent')) { transitive = false }
-    compileOnly ([group: 'org.glowroot.instrumentation', name: 'instrumentation-api', version: '0.14.4']) { transitive = false }
+    compileOnly ([group: 'org.glowroot.instrumentation', name: 'instrumentation-api', version: '0.14.5']) { transitive = false }
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])

@@ -44,7 +44,7 @@ Microsoft Application Insights Java Software Development Kit consists of materia
 21. Guava dependency: Google ErrorProne annotations 2.2.0 (https://github.com/google/error-prone/tree/master/annotations)
 22. Guava dependency: Google J2ObjC annotations 1.1 (https://github.com/google/j2objc/tree/master/annotations)
 23. Guava dependency: Animal Sniffer annotations 1.17 (https://github.com/mojohaus/animal-sniffer/tree/master/animal-sniffer-annotations)
-24. Glowroot Instrumentation 0.14.4 (https://github.com/glowroot/instrumentation)
+24. Glowroot Instrumentation 0.14.5 (https://github.com/glowroot/instrumentation)
 25. CheckerFramework annotations for Java 6 1.0.0 (https://github.com/trask/checker-framework-annotations-for-jdk6)
 26. Gson 2.8.5 (https://github.com/google/gson)
 27. os-maven-plugin 1.6.2 (https://github.com/trustin/os-maven-plugin)
