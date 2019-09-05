@@ -3,8 +3,9 @@ package com.microsoft.applicationinsights.channel.concrete.localforwarder;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
-import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
+import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
@@ -19,30 +20,53 @@ public class LocalForwarderTelemetryChannel extends TelemetryChannelBase<Telemet
     public static final String ENDPOINT_ENVIRONMENT_VARIABLE_NAME = "APPLICATION_INSIGHTS_LOCAL_FORWARDER_ENDPOINT";
     public static final String ENDPOINT_SYSTEM_PROPERTY_NAME = "applicationinsights.localforwarder.endpoint";
 
+    public LocalForwarderTelemetryChannel(TelemetryConfiguration configuration) {
+        super(configuration);
+    }
+
+    public LocalForwarderTelemetryChannel(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling, int maxInstantRetries) {
+        super(configuration, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis, throttling, maxInstantRetries);
+    }
+
+    public LocalForwarderTelemetryChannel(TelemetryConfiguration configuration, Map<String, String> chanelConfig) {
+        super(configuration, chanelConfig);
+    }
+
+    /**
+     * @deprecated Use {@link #LocalForwarderTelemetryChannel(TelemetryConfiguration, String, boolean, int, int, boolean, int)}. Use {@link TelemetryConfiguration#setConnectionString(String)} to set endpoint (IngestionEndpoint).
+     */
+    @Deprecated
     public LocalForwarderTelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
         super(endpointAddress, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis);
     }
 
+    /**
+     * @deprecated Use {@link #LocalForwarderTelemetryChannel(TelemetryConfiguration, String, boolean, int, int, boolean, int)}. Use {@link TelemetryConfiguration#setConnectionString(String)} to set endpoint (IngestionEndpoint).
+     */
+    @Deprecated
     public LocalForwarderTelemetryChannel(String endpointAddress, String maxTransmissionStorageCapacity, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling, int maxInstantRetries) {
         super(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis, throttling, maxInstantRetries);
     }
 
+    /**
+     * @deprecated Use {@link #LocalForwarderTelemetryChannel(TelemetryConfiguration, Map)}
+     */
+    @Deprecated
     public LocalForwarderTelemetryChannel(Map<String, String> namesAndValues) {
         super(namesAndValues);
     }
 
     @Override
-    protected synchronized void initialize(String configurationFileEndpoint, String maxTransmissionStorageCapacity, boolean developerMode,
-                                           LimitsEnforcer maxTelemetryBufferCapacityEnforcer, LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
+    protected synchronized void initialize(TelemetryConfiguration configuration, String endpointAddress, String maxTransmissionStorageCapacity, boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer, LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
         if (isInitailized) {
             return;
         }
         // using the same policy as TelemetryConfigurationFactory, in priority order: System Property, Environment Variable, Configuration File
         String endpoint = System.getProperty(ENDPOINT_SYSTEM_PROPERTY_NAME, System.getenv(ENDPOINT_ENVIRONMENT_VARIABLE_NAME));
         if (Strings.isNullOrEmpty(endpoint)) {
-            endpoint = configurationFileEndpoint;
+            endpoint = endpointAddress;
         }
-        super.initialize(endpoint, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds, throttling, maxInstantRetry);
+        super.initialize(configuration, endpoint, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds, throttling, maxInstantRetry);
     }
 
     @Override
@@ -93,7 +117,7 @@ public class LocalForwarderTelemetryChannel extends TelemetryChannelBase<Telemet
     }
 
     @Override
-    protected TransmitterFactory<Telemetry> createTransmitterFactory() {
+    protected ConfiguredTransmitterFactory<Telemetry> createTransmitterFactory() {
         return new LocalForwarderTelemetryTransmitterFactory();
     }
 

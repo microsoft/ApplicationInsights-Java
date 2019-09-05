@@ -166,7 +166,7 @@ public enum TelemetryConfigurationFactory {
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         setInstrumentationKey(userConfiguration, configuration);
         setRoleName(userConfiguration, configuration);
-        configuration.setChannel(new InProcessTelemetryChannel());
+        configuration.setChannel(new InProcessTelemetryChannel(configuration));
         addHeartBeatModule(configuration);
         setContextInitializers(null, configuration);
         initializeComponents(configuration);
@@ -347,7 +347,7 @@ public enum TelemetryConfigurationFactory {
         String nextValue = System.getenv(CONNECTION_STRING_ENV_VAR_NAME);
         if (!Strings.isNullOrEmpty(nextValue)) {
             if (!Strings.isNullOrEmpty(connectionString)) {
-                InternalLogger.INSTANCE.warn("Environment variable %s is overriding connection string value from %s or system property", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
+                InternalLogger.INSTANCE.warn("Environment variable %s is overriding connection string value from %s", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
             }
             connectionString = nextValue;
         }
@@ -517,7 +517,7 @@ public enum TelemetryConfigurationFactory {
     private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetrySampler telemetrySampler, TelemetryConfiguration configuration) {
         String channelName = channelXmlElement.getType();
         if (channelName != null) {
-            TelemetryChannel channel = ReflectionUtils.createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
+            TelemetryChannel channel = createChannel(channelXmlElement, configuration);
             if (channel != null) {
                 channel.setSampler(telemetrySampler);
                 configuration.setChannel(channel);
@@ -532,28 +532,37 @@ public enum TelemetryConfigurationFactory {
 
         try {
             // We will create the default channel and we assume that the data is relevant.
-            TelemetryChannel channel = new InProcessTelemetryChannel(channelXmlElement.getData());
+            TelemetryChannel channel = new InProcessTelemetryChannel(configuration, channelXmlElement.getData());
             channel.setSampler(telemetrySampler);
             configuration.setChannel(channel);
             return true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.toString());
-            TelemetryChannel channel = new InProcessTelemetryChannel();
+            TelemetryChannel channel = new InProcessTelemetryChannel(configuration);
             channel.setSampler(telemetrySampler);
             configuration.setChannel(channel);
             return true;
         }
     }
 
-    private void loadProcessorComponents(
-            List<TelemetryProcessor> list,
-            Collection<TelemetryProcessorXmlElement> classesFromConfigration) {
-        if (classesFromConfigration == null) {
+    private TelemetryChannel createChannel(ChannelXmlElement channelXmlElement, TelemetryConfiguration configuration) {
+        String channelName = channelXmlElement.getType();
+        TelemetryChannel channel = ReflectionUtils.createConfiguredInstance(channelName, TelemetryChannel.class, configuration, channelXmlElement.getData());
+
+        if (channel == null) {
+            channel = ReflectionUtils.createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
+        }
+
+        return channel;
+    }
+
+    private void loadProcessorComponents(List<TelemetryProcessor> list, Collection<TelemetryProcessorXmlElement> classesFromConfiguration) {
+        if (classesFromConfiguration == null) {
             return;
         }
 
         TelemetryProcessorCreator creator = new TelemetryProcessorCreator();
-        for (TelemetryProcessorXmlElement classData : classesFromConfigration) {
+        for (TelemetryProcessorXmlElement classData : classesFromConfiguration) {
             TelemetryProcessor processor = creator.Create(classData);
             if (processor == null) {
                 InternalLogger.INSTANCE.error("Processor %s failure during initialization", classData.getType());
@@ -565,8 +574,6 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-
-    // TODO: include context/telemetry initializers - where do they initialized?
     private void initializeComponents(TelemetryConfiguration configuration) {
         List<TelemetryModule> telemetryModules = configuration.getTelemetryModules();
 

@@ -27,6 +27,7 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
+import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
@@ -71,15 +72,39 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     protected boolean isInitailized = false;
 
     protected TelemetriesTransmitter<T> telemetriesTransmitter;
-    protected TelemetrySampler telemetrySampler;
+    protected volatile TelemetrySampler telemetrySampler;
     protected TelemetryBuffer<T> telemetryBuffer;
 
     private boolean developerMode = false;
 
     private TelemetryConfiguration configuration;
 
+    public TelemetryChannelBase(TelemetryConfiguration configuration) {
+        initialize(configuration, null, null, Boolean.getBoolean(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME),
+                createDefaultMaxTelemetryBufferCapacityEnforcer(null), createDefaultSendIntervalInSecondsEnforcer(null), true, DEFAULT_MAX_INSTANT_RETRY);
+    }
+
+    /**
+     * @param configuration The telemetry configuration to use for finding endpoints.
+     * @param maxTransmissionStorageCapacity This limits the size of the saved telemetry files which encountered an error during sending.
+     * @param developerMode 'non-production' mode for easier debugging. This forces maxTelemetryBufferCapacity=1 and when logger is enabled, it prints serialized telemetry to log.
+     * @param maxTelemetryBufferCapacity Max number of Telemetries we keep in the buffer, when reached we will send the buffer Note, value should be between TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS and
+     *                                   TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS, inclusive
+     * @param sendIntervalInMillis The maximum number of milliseconds to wait before we send the buffer Note, value should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and MAX_MAX_TELEMETRY_BUFFER_CAPACITY, inclusive
+     * @param throttling enables throttling when true
+     * @param maxInstantRetries number of retries before starting incremental back-off.
+     */
+    public TelemetryChannelBase(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling, int maxInstantRetries) {
+        initialize(configuration, null, maxTransmissionStorageCapacity, developerMode, createDefaultMaxTelemetryBufferCapacityEnforcer(maxTelemetryBufferCapacity),
+                createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis), throttling, maxInstantRetries);
+    }
+
+    /**
+     * @deprecated Use {@link #TelemetryChannelBase(TelemetryConfiguration)}
+     */
+    @Deprecated
     public TelemetryChannelBase() {
-        initialize(
+        initialize(null,
                 null,
                 null,
                 Boolean.getBoolean(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME),
@@ -90,37 +115,19 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     }
 
     /**
-     * Ctor
-     *
-     * @param endpointAddress Must be empty string or a valid uri, else an exception will be thrown
-     * @param developerMode True will behave in a 'non-production' mode to ease the debugging
-     * @param maxTelemetryBufferCapacity Max number of Telemetries we keep in the buffer, when reached
-     *     we will send the buffer Note, value should be between TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS
-     *     and TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS inclusive
-     * @param sendIntervalInMillis The maximum number of milliseconds to wait before we send the
-     *     buffer Note, value should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and
-     *     MAX_MAX_TELEMETRY_BUFFER_CAPACITY inclusive
+     * @deprecated Use {@link #TelemetryChannelBase(TelemetryConfiguration, String, boolean, int, int, boolean, int)}. Use {@link TelemetryConfiguration#setConnectionString(String)} to set ingestion endpoint, if needed.
      */
+    @Deprecated
     public TelemetryChannelBase(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
-        this(
-                endpointAddress,
-                null,
-                developerMode,
-                maxTelemetryBufferCapacity,
-                sendIntervalInMillis,
-                true,
-                DEFAULT_MAX_INSTANT_RETRY);
+        this(endpointAddress, null, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis, true, DEFAULT_MAX_INSTANT_RETRY);
     }
 
-    public TelemetryChannelBase(
-            String endpointAddress,
-            String maxTransmissionStorageCapacity,
-            boolean developerMode,
-            int maxTelemetryBufferCapacity,
-            int sendIntervalInMillis,
-            boolean throttling,
-            int maxInstantRetries) {
-        initialize(
+    /**
+     * @deprecated Use {@link #TelemetryChannelBase(TelemetryConfiguration, String, boolean, int, int, boolean, int)}. Use {@link TelemetryConfiguration#setConnectionString(String)} to set ingestion endpoint, if needed.
+     */
+    @Deprecated
+    public TelemetryChannelBase(String endpointAddress, String maxTransmissionStorageCapacity, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling, int maxInstantRetries) {
+        initialize(null,
                 endpointAddress,
                 maxTransmissionStorageCapacity,
                 developerMode,
@@ -131,26 +138,29 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     }
 
     /**
-     * This Ctor will query the 'namesAndValues' map for data to initialize itself
-     * It will ignore data that is not of its interest, this Ctor is useful for
-     * building an instance from configuration
-     *
-     * @param namesAndValues - The data passed as name and value pairs
+     * @deprecated Use {@link #TelemetryChannelBase(TelemetryConfiguration, Map)}.
      */
+    @Deprecated
     public TelemetryChannelBase(Map<String, String> namesAndValues) {
+        this(null, namesAndValues);
+    }
+
+    /**
+     * @param configuration The configuration for the current TelemetryClient
+     * @param namesAndValues Key/Value pairs for channel configuration options
+     */
+    public TelemetryChannelBase(TelemetryConfiguration configuration, Map<String, String> namesAndValues) {
         boolean developerMode = false;
         String endpointAddress = null;
         int maxInstantRetries = DEFAULT_MAX_INSTANT_RETRY;
-
         LimitsEnforcer maxTelemetryBufferCapacityEnforcer = createDefaultMaxTelemetryBufferCapacityEnforcer(null);
-
         LimitsEnforcer sendIntervalInSecondsEnforcer = createDefaultSendIntervalInSecondsEnforcer(null);
-
         boolean throttling = true;
         String maxTransmissionStorageCapacity = null;
+
         if (namesAndValues != null) {
-            throttling = Boolean.valueOf(namesAndValues.get(THROTTLING_ENABLED_NAME));
-            developerMode = Boolean.valueOf(namesAndValues.get(DEVELOPER_MODE_NAME));
+            throttling = Boolean.parseBoolean(namesAndValues.get(THROTTLING_ENABLED_NAME));
+            developerMode = Boolean.parseBoolean(namesAndValues.get(DEVELOPER_MODE_NAME));
             try {
                 String instantRetryValue = namesAndValues.get(INSTANT_RETRY_NAME);
                 if (instantRetryValue != null) {
@@ -162,7 +172,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
             }
 
             if (!developerMode) {
-                developerMode = Boolean.valueOf(System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME));
+                developerMode = Boolean.parseBoolean(System.getProperty(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME));
             }
             endpointAddress = namesAndValues.get(ENDPOINT_ADDRESS_NAME);
 
@@ -171,7 +181,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
             maxTransmissionStorageCapacity = namesAndValues.get(MAX_TRANSMISSION_STORAGE_CAPACITY_NAME);
         }
 
-        initialize(
+        initialize(configuration,
                 endpointAddress,
                 maxTransmissionStorageCapacity,
                 developerMode,
@@ -181,26 +191,36 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
                 maxInstantRetries);
     }
 
+    /**
+     * @deprecated Use {@link #initialize(TelemetryConfiguration, String, String, boolean, LimitsEnforcer, LimitsEnforcer, boolean, int)}
+     */
+    @Deprecated
     protected synchronized void initialize(String endpointAddress, String maxTransmissionStorageCapacity,
                                        boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
                                        LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
-        if (isInitailized) {
-            return;
-        }
-        makeSureEndpointAddressIsValid(endpointAddress);
-
-
-        telemetriesTransmitter = getTransmitterFactory().create(endpointAddress, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
-        telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
-
-        setDeveloperMode(developerMode);
-        isInitailized = true;
+        initialize(null, endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds, throttling, maxInstantRetry);
     }
 
     protected synchronized void initialize(TelemetryConfiguration configuration, String endpointAddress, String maxTransmissionStorageCapacity,
                                            boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
                                            LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
+        if (isInitailized) {
+            return;
+        }
+        makeSureEndpointAddressIsValid(endpointAddress);
 
+        this.configuration = configuration;
+        final TransmitterFactory<T> transmitterFactory = getTransmitterFactory();
+        if (transmitterFactory instanceof ConfiguredTransmitterFactory) {
+            // TODO follow factor and allow null configuration
+            telemetriesTransmitter = ((ConfiguredTransmitterFactory<T>) transmitterFactory).create(configuration, endpointAddress, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
+        } else {
+            telemetriesTransmitter = transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
+        }
+        telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
+
+        setDeveloperMode(developerMode);
+        isInitailized = true;
     }
 
     protected synchronized TransmitterFactory<T> getTransmitterFactory() {
@@ -358,21 +378,17 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     protected abstract TransmitterFactory<T> createTransmitterFactory();
 
     protected LimitsEnforcer createDefaultMaxTelemetryBufferCapacityEnforcer(Integer currentValue) {
-        LimitsEnforcer maxItemsInBatchEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
+        return LimitsEnforcer.createWithClosestLimitOnError(
                 MAX_TELEMETRY_BUFFER_CAPACITY_NAME, MIN_MAX_TELEMETRY_BUFFER_CAPACITY,
                 MAX_MAX_TELEMETRY_BUFFER_CAPACITY, DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY,
                         currentValue == null ? DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY : currentValue);
-
-        return maxItemsInBatchEnforcer;
     }
 
     protected LimitsEnforcer createDefaultSendIntervalInSecondsEnforcer(Integer currentValue) {
-        LimitsEnforcer sendIntervalInSecondsEnforcer = LimitsEnforcer.createWithClosestLimitOnError(
+        return LimitsEnforcer.createWithClosestLimitOnError(
                 FLUSH_BUFFER_TIMEOUT_IN_SECONDS_NAME, MIN_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
                 MAX_FLUSH_BUFFER_TIMEOUT_IN_SECONDS, DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS,
                         currentValue == null ? DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS : currentValue);
-
-        return sendIntervalInSecondsEnforcer;
     }
 
     /**
