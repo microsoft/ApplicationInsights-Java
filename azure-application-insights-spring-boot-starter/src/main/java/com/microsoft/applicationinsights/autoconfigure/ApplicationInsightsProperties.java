@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTel
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
+import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProvider;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -85,6 +86,8 @@ public class ApplicationInsightsProperties {
   /** Heartbeat Properties container */
   private HeartBeat heartBeat = new HeartBeat();
 
+  private String connectionString;
+
   public boolean isEnabled() {
     return enabled;
   }
@@ -94,17 +97,18 @@ public class ApplicationInsightsProperties {
   }
 
   public String getInstrumentationKey() {
-    // First try getting ikey from application.properties
-    if (StringUtils.isNotBlank(instrumentationKey)) {
-      return instrumentationKey;
-    }
 
     // If above fails try getting ikey from environment variables or system properties
     String v = IkeyResolver.getIkeyFromEnvironmentVariables();
-    if (v == null) {
-      throw new IllegalStateException("Instrumentation Key must be set to report telemetry");
+    if (v != null) {
+      return v;
     }
-    return v;
+
+    // Try getting ikey from application.properties
+    if (StringUtils.isNotBlank(instrumentationKey)) {
+      return instrumentationKey;
+    }
+    throw new IllegalStateException("Instrumentation Key must be set to report telemetry");
   }
 
   public void setInstrumentationKey(String instrumentationKey) {
@@ -175,6 +179,21 @@ public class ApplicationInsightsProperties {
     this.heartBeat = heartBeat;
   }
 
+  public String getConnectionString() {
+    String nextValue = System.getenv(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME);
+    if (StringUtils.isNotEmpty(nextValue)) {
+      if (StringUtils.isNotEmpty(connectionString)) {
+        InternalLogger.INSTANCE.warn("Environment variable %s is overriding connection string value from application.properties", TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME);
+      }
+      return nextValue;
+    }
+    return this.connectionString;
+  }
+
+  public void setConnectionString(String connectionString) {
+    this.connectionString = connectionString;
+  }
+
   static class Channel {
     /** Configuration of {@link InProcessTelemetryChannel}. */
     private InProcess inProcess = new InProcess();
@@ -205,22 +224,17 @@ public class ApplicationInsightsProperties {
        */
       private boolean developerMode = false;
       /** Endpoint address. */
-      private String endpointAddress = TransmissionNetworkOutput.DEFAULT_SERVER_URI;
+      private String endpointAddress;
       /**
-       * Maximum count of telemetries that will be batched before sending. Must be between 1 and
-       * 1000.
+       * Maximum count of telemetries that will be batched before sending. Must be between 1 and 1000.
        */
-      private int maxTelemetryBufferCapacity =
-          TelemetryChannelBase.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
+      private int maxTelemetryBufferCapacity = TelemetryChannelBase.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
       /** Interval to send telemetry. Must be between 1 and 300. */
-      private int flushIntervalInSeconds =
-          TelemetryChannelBase.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
+      private int flushIntervalInSeconds = TelemetryChannelBase.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
       /**
-       * Size of disk space that Application Insights can use to store telemetry in case of network
-       * outage. Must be between 1 and 1000.
+       * Size of disk space that Application Insights can use to store telemetry in case of network outage. Must be between 1 and 1000.
        */
-      private int maxTransmissionStorageFilesCapacityInMb =
-          TransmissionFileSystemOutput.DEFAULT_CAPACITY_MEGABYTES;
+      private int maxTransmissionStorageFilesCapacityInMb = TransmissionFileSystemOutput.DEFAULT_CAPACITY_MEGABYTES;
       /** Enables throttling on sending telemetry data. */
       private boolean throttling = true;
 
@@ -271,8 +285,7 @@ public class ApplicationInsightsProperties {
         return maxTransmissionStorageFilesCapacityInMb;
       }
 
-      public void setMaxTransmissionStorageFilesCapacityInMb(
-          int maxTransmissionStorageFilesCapacityInMb) {
+      public void setMaxTransmissionStorageFilesCapacityInMb(int maxTransmissionStorageFilesCapacityInMb) {
         this.maxTransmissionStorageFilesCapacityInMb = maxTransmissionStorageFilesCapacityInMb;
       }
 
@@ -297,12 +310,10 @@ public class ApplicationInsightsProperties {
        * Maximum count of telemetries that will be batched before sending. Must be between 1 and
        * 1000.
        */
-      private int maxTelemetryBufferCapacity =
-          TelemetryChannelBase.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
+      private int maxTelemetryBufferCapacity = TelemetryChannelBase.DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY;
 
       /** Interval to send telemetry. Must be between 1 and 300. */
-      private int flushIntervalInSeconds =
-          TelemetryChannelBase.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
+      private int flushIntervalInSeconds = TelemetryChannelBase.DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS;
 
       public int getMaxTelemetryBufferCapacity() {
         return maxTelemetryBufferCapacity;

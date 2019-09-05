@@ -125,8 +125,11 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
 
     @Bean
     @DependsOn("internalLogger")
-    public TelemetryConfiguration telemetryConfiguration(TelemetryChannel telemetryChannel) {
+    public TelemetryConfiguration telemetryConfiguration() {
         TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
+        if (StringUtils.isNotEmpty(applicationInsightsProperties.getConnectionString())) {
+            telemetryConfiguration.setConnectionString(applicationInsightsProperties.getConnectionString());
+        }
         telemetryConfiguration.setTrackingIsDisabled(!applicationInsightsProperties.isEnabled());
         telemetryConfiguration.setInstrumentationKey(applicationInsightsProperties.getInstrumentationKey());
         if (contextInitializers != null) {
@@ -141,7 +144,6 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         if (telemetryProcessors != null) {
             telemetryConfiguration.getTelemetryProcessors().addAll(telemetryProcessors);
         }
-        telemetryConfiguration.setChannel(telemetryChannel);
         initializeComponents(telemetryConfiguration);
         initializePerformanceCounterContainer();
         return telemetryConfiguration;
@@ -170,27 +172,37 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public TelemetryChannel telemetryChannel() throws IllegalConfigurationException {
-        String localForwarderEndpoint = environment.getProperty("azure.application-insights.channel.local-forwarder.endpoint-address");
-        String inProcessEndPoint = environment.getProperty("azure.application-insights.channel.in-process.endpoint-address");
-        if (StringUtils.isNotBlank(localForwarderEndpoint) && StringUtils.isNotBlank(inProcessEndPoint)) {
-            throw new IllegalConfigurationException("SDK cannot have two channels, please either remove Local Forwarder Endpoint, "
-                + "or In Process Endpoint");
+    public TelemetryChannel telemetryChannel(TelemetryConfiguration configuration) {
+        boolean hasLfEndpoint = StringUtils.isNotBlank(environment.getProperty("azure.application-insights.channel.local-forwarder.endpoint-address"));
+        boolean hasInprocEndpoint = StringUtils.isNotBlank(environment.getProperty("azure.application-insights.channel.in-process.endpoint-address"));
+        if (hasLfEndpoint && hasInprocEndpoint) {
+            throw new IllegalConfigurationException("SDK cannot have two channels, please either remove Local Forwarder Endpoint, or In Process Endpoint");
         }
 
         // If local forwarder endpoint is present configure local forwarder channel
-        if (StringUtils.isNotBlank(localForwarderEndpoint)) {
+        if (hasLfEndpoint) {
             LocalForwarder lf = applicationInsightsProperties.getChannel().getLocalForwarder();
 
-            return new LocalForwarderTelemetryChannel(lf.getEndpointAddress(), false, lf.getMaxTelemetryBufferCapacity() ,
-                lf.getFlushIntervalInSeconds());
+            // TODO use config
+            final LocalForwarderTelemetryChannel channel = new LocalForwarderTelemetryChannel(lf.getEndpointAddress(), false, lf.getMaxTelemetryBufferCapacity(), lf.getFlushIntervalInSeconds());
+            configuration.setChannel(channel);
+            return channel;
         }
 
         InProcess inProcess = applicationInsightsProperties.getChannel().getInProcess();
-        return new InProcessTelemetryChannel(inProcess.getEndpointAddress(),
-                String.valueOf(inProcess.getMaxTransmissionStorageFilesCapacityInMb()), inProcess.isDeveloperMode(),
-                inProcess.getMaxTelemetryBufferCapacity(), inProcess.getFlushIntervalInSeconds(), inProcess.isThrottling(),
-            inProcess.getMaxInstantRetry());
+        final InProcessTelemetryChannel channel;
+        if (StringUtils.isNotEmpty(inProcess.getEndpointAddress())) {
+            channel = new InProcessTelemetryChannel(inProcess.getEndpointAddress(),
+                    String.valueOf(inProcess.getMaxTransmissionStorageFilesCapacityInMb()), inProcess.isDeveloperMode(),
+                    inProcess.getMaxTelemetryBufferCapacity(), inProcess.getFlushIntervalInSeconds(), inProcess.isThrottling(),
+                    inProcess.getMaxInstantRetry());
+        } else {
+            channel = new InProcessTelemetryChannel(configuration, String.valueOf(inProcess.getMaxTransmissionStorageFilesCapacityInMb()), inProcess.isDeveloperMode(), inProcess.getMaxTelemetryBufferCapacity(),
+                    inProcess.getFlushIntervalInSeconds(), inProcess.isThrottling(), inProcess.getMaxInstantRetry());
+        }
+
+        configuration.setChannel(channel);
+        return channel;
     }
 
     // If local forwarder channel is present quick pulse would not be initialized.
