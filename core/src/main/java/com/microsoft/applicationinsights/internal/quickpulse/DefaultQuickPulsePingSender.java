@@ -58,9 +58,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
                 "\"Timestamp\": \"\\/Date(";
     }
 
+    /**
+     * @deprecated Use {@link #DefaultQuickPulsePingSender(ApacheSender, TelemetryConfiguration, String, String)}
+     */
     @Deprecated
     public DefaultQuickPulsePingSender(final ApacheSender apacheSender, final String instanceName, final String quickPulseId) {
-        this(apacheSender, TelemetryConfiguration.getActive(), instanceName, quickPulseId);
+        this(apacheSender, null, instanceName, quickPulseId);
     }
 
     @Override
@@ -98,7 +101,11 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     private String getQuickPulsePingUri() {
-        return configuration.getEndpointProvider().getLiveEndpointURL().toString() + "ping?ikey=" + configuration.getInstrumentationKey();
+        if (configuration != null) {
+            return configuration.getEndpointProvider().getLiveEndpointURL().toString() + "ping?ikey=" + configuration.getInstrumentationKey();
+        } else {
+            return QP_BASE_URI + "ping?ikey=" + TelemetryConfiguration.getActive().getInstrumentationKey();
+        }
     }
 
     private ByteArrayEntity buildPingEntity(long timeInMillis) {
