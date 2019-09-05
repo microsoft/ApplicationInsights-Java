@@ -1,9 +1,6 @@
 package com.microsoft.ajl.simplecalc;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

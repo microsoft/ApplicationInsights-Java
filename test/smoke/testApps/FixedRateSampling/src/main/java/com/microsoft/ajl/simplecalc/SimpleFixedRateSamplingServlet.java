@@ -1,6 +1,7 @@
 package com.microsoft.ajl.simplecalc;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,6 +20,8 @@ public class SimpleFixedRateSamplingServlet extends HttpServlet {
     private static final long serialVersionUID = -5889330779672565409L;
     private TelemetryClient client = new TelemetryClient();
 
+    private final AtomicInteger count = new AtomicInteger();
+
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
      *      response)
@@ -27,11 +30,6 @@ public class SimpleFixedRateSamplingServlet extends HttpServlet {
             throws ServletException, IOException {
         ServletFuncs.getRenderedHtml(request, response);
         client.trackTrace("Trace Test.");
-        for (int i = 0; i < 100; i++) {
-            String str = String.format("Event Test %s", i);
-            EventTelemetry et = new EventTelemetry(str);
-            et.getContext().getOperation().setId(String.valueOf(i));
-            client.trackEvent(et);
-        }
+        client.trackEvent(new EventTelemetry("Event Test " + count.getAndIncrement()));
     }
 }
