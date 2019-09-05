@@ -98,7 +98,6 @@ class AIAgentXmlLoader {
 
         InstrumentationDescriptor instrumentationDescriptor = buildCustomInstrumentation(agentConfiguration);
         if (instrumentationDescriptor != null) {
-            System.out.println(instrumentationDescriptor);
             instrumentationDescriptors.add(instrumentationDescriptor);
         }
         return instrumentationDescriptors;
