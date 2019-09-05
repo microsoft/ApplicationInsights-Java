@@ -6,11 +6,11 @@ WORKDIR /root/docker-compile
 RUN mkdir /root/docker-stage
 
 # update packages and install dependencies: wget
-RUN apt-get update \
-    && apt-get install -y wget
-
-RUN apt-get install -y procps
-
+RUN if type "apt-get" > /dev/null; then \
+      apt-get update && apt-get install -y wget procps; \
+    else \
+      yum install -y wget procps; \
+    fi
 
 ENV TOMCAT_MAJOR_VERSION 7
 ENV TOMCAT_FULL_VERSION 7.0.94

@@ -2,9 +2,12 @@ FROM @JRE@
 
 WORKDIR /usr/local/docker-compile
 
-# update packages and install dependencies: wget procps (we need 'ps' for debugging)
-RUN apt-get update \
-    && apt-get install -y wget procps
+# update packages and install dependencies: wget
+RUN if type "apt-get" > /dev/null; then \
+      apt-get update && apt-get install -y wget procps; \
+    else \
+      yum install -y wget procps; \
+    fi
 
 ENV JETTY_FULL_VERSION 9.4.17.v20190418
 

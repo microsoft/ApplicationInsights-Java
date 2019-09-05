@@ -3,11 +3,12 @@ FROM @JRE@
 USER root
 WORKDIR /root/docker-compile
 
-# update packages and install dependencies: wget
-RUN apt-get update \
-    && apt-get install -y wget \
-    && apt-get install -y procps \
-    && apt-get install -y unzip
+# update packages and install dependencies: wget unzip
+RUN if type "apt-get" > /dev/null; then \
+      apt-get update && apt-get install -y wget unzip procps; \
+    else \
+      yum install -y wget unzip procps; \
+    fi
 
 # add jboss zip
 ADD ./@ZIP_FILENAME@ ./
