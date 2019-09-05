@@ -14,19 +14,19 @@ public class EndpointProvider {
     @VisibleForTesting static final String API_PROFILES_APP_ID_URI_PREFIX = "api/profiles/"; // <base uri, with host>/api/profiles/<ikey>/appid
     @VisibleForTesting static final String API_PROFILES_APP_ID_URI_SUFFIX = "/appId";
 
-    private final AtomicReference<URI> ingestionEndpoint = new AtomicReference<>();
-    private final AtomicReference<URI> ingestionEndpointURL = new AtomicReference<>();
-    private final AtomicReference<URI> liveEndpointURL = new AtomicReference<>();
-    private final AtomicReference<URI> profilerEndpoint = new AtomicReference<>();
-    private final AtomicReference<URI> snapshotEndpoint = new AtomicReference<>(); // TODO is this one needed?
+    private volatile URI ingestionEndpoint;
+    private volatile URI ingestionEndpointURL;
+    private volatile URI liveEndpointURL;
+    private volatile URI profilerEndpoint;
+    private volatile URI snapshotEndpoint;
 
     public EndpointProvider() {
         try {
-            ingestionEndpoint.set(new URI(Defaults.INGESTION_ENDPOINT));
-            ingestionEndpointURL.set(buildIngestionUri(ingestionEndpoint.get()));
-            liveEndpointURL.set(buildLiveUri(new URI(Defaults.LIVE_ENDPOINT)));
-            profilerEndpoint.set(new URI(Defaults.PROFILER_ENDPOINT));
-            snapshotEndpoint.set(new URI(Defaults.SNAPSHOT_ENDPOINT));
+            ingestionEndpoint = new URI(Defaults.INGESTION_ENDPOINT);
+            ingestionEndpointURL = buildIngestionUri(ingestionEndpoint);
+            liveEndpointURL = buildLiveUri(new URI(Defaults.LIVE_ENDPOINT));
+            profilerEndpoint = new URI(Defaults.PROFILER_ENDPOINT);
+            snapshotEndpoint = new URI(Defaults.SNAPSHOT_ENDPOINT);
         } catch (URISyntaxException e) {
             throw new IllegalStateException("ConnectionString.Defaults are invalid", e);
         }
@@ -41,55 +41,55 @@ public class EndpointProvider {
     }
 
     public URI getIngestionEndpointURL() {
-        return ingestionEndpointURL.get();
+        return ingestionEndpointURL;
     }
 
     public URI getAppIdEndpointURL(String instrumentationKey) {
         try {
-            return new URIBuilder(ingestionEndpoint.get()).setPath(API_PROFILES_APP_ID_URI_PREFIX +instrumentationKey+ API_PROFILES_APP_ID_URI_SUFFIX).build();
+            return new URIBuilder(ingestionEndpoint).setPath(API_PROFILES_APP_ID_URI_PREFIX +instrumentationKey+ API_PROFILES_APP_ID_URI_SUFFIX).build();
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Invalid instrumentationKey: "+instrumentationKey);
         }
     }
 
     public URI getIngestionEndpoint() {
-        return ingestionEndpoint.get();
+        return ingestionEndpoint;
     }
 
     void setIngestionEndpoint(URI ingestionEndpoint) {
         try {
-            this.ingestionEndpointURL.set(buildIngestionUri(ingestionEndpoint));
+            this.ingestionEndpointURL = buildIngestionUri(ingestionEndpoint);
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Could not construct ingestion endpoint uri", e);
         }
-        this.ingestionEndpoint.set(ingestionEndpoint);
+        this.ingestionEndpoint = ingestionEndpoint;
     }
 
     public URI getLiveEndpointURL() {
-        return liveEndpointURL.get();
+        return liveEndpointURL;
     }
 
     void setLiveEndpoint(URI liveEndpoint) {
         try {
-            this.liveEndpointURL.set(buildLiveUri(liveEndpoint));
+            this.liveEndpointURL = buildLiveUri(liveEndpoint);
         } catch (URISyntaxException e) {
             throw new IllegalStateException("could not construct live endpoint uri", e);
         }
     }
 
     public URI getProfilerEndpoint() {
-        return profilerEndpoint.get();
+        return profilerEndpoint;
     }
 
     void setProfilerEndpoint(URI profilerEndpoint) {
-        this.profilerEndpoint.set(profilerEndpoint);
+        this.profilerEndpoint = profilerEndpoint;
     }
 
     public URI getSnapshotEndpoint() {
-        return snapshotEndpoint.get();
+        return snapshotEndpoint;
     }
 
     void setSnapshotEndpoint(URI snapshotEndpoint) {
-        this.snapshotEndpoint.set(snapshotEndpoint);
+        this.snapshotEndpoint = snapshotEndpoint;
     }
 }

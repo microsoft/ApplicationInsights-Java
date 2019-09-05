@@ -65,7 +65,7 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
     private String serverUri;
 
     private volatile boolean stopped;
-    private final AtomicReference<TelemetryConfiguration> configuration = new AtomicReference<>();
+    private volatile TelemetryConfiguration configuration;
 
     // Use one instance for optimization
     private final ApacheSender httpClient;
@@ -270,13 +270,16 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
 
     @Override
     public void setConfiguration(TelemetryConfiguration configuration) {
-        this.configuration.set(configuration);
+        this.configuration = configuration;
     }
 
     private HttpPost createNewRequest() {
-        if (configuration.get() != null) {
-            return new HttpPost(configuration.get().getEndpointProvider().getIngestionEndpointURL());
+        if (configuration != null) {
+            return new HttpPost(configuration.getEndpointProvider().getIngestionEndpointURL());
+        } else if (serverUri != null) {
+            return new HttpPost(serverUri);
+        } else {
+            return new HttpPost(DEFAULT_SERVER_URI);
         }
-        return new HttpPost(serverUri == null ? DEFAULT_SERVER_URI : serverUri);
     }
 }
