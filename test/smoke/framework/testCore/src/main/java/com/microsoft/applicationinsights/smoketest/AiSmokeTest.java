@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -363,27 +364,38 @@ public abstract class AiSmokeTest {
                     String.format("%s on %s", getAppContext(), containerInfo.getImageName()),
                     HEALTH_CHECK_RETRIES);
             System.out.println("Test app health check complete.");
-            if (requestCaptureEnabled) {
-                Stopwatch sw = Stopwatch.createStarted();
-                mockedIngestion.waitForItem(new Predicate<Envelope>() {
-                    @Override
-                    public boolean apply(Envelope input) {
-                        if (!"RequestData".equals(input.getData().getBaseType())) {
-                            return false;
-                        }
-                        RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
-                        return contextRootUrl.equals(data.getUrl()) && "200".equals(data.getResponseCode());
-                    }
-                }, TELEMETRY_RECEIVE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                System.out.printf("Received request telemetry after %.3f seconds...%n",
-                        sw.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
-                System.out.println("Clearing any RequestData from health check.");
-            }
+            waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
         } catch (Exception e) {
             docker.printContainerLogs(containerInfo.getContainerId());
             throw e;
+        } finally {
+            mockedIngestion.resetData();
         }
-        mockedIngestion.resetData();
+    }
+
+    private static void waitForHealthCheckTelemetryIfNeeded(final String contextRootUrl) throws InterruptedException, ExecutionException {
+        if (!requestCaptureEnabled) {
+            return;
+        }
+
+        Stopwatch receivedTelemetryTimer = Stopwatch.createStarted();
+        final int requestTelemetryFromHealthCheckTimeout = TELEMETRY_RECEIVE_TIMEOUT_SECONDS;
+        try {
+            mockedIngestion.waitForItem(new Predicate<Envelope>() {
+                @Override
+                public boolean apply(Envelope input) {
+                    if (!"RequestData".equals(input.getData().getBaseType())) {
+                        return false;
+                    }
+                    RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
+                    return contextRootUrl.equals(data.getUrl()) && "200".equals(data.getResponseCode());
+                }
+            }, requestTelemetryFromHealthCheckTimeout, TimeUnit.SECONDS);
+            System.out.printf("Received request telemetry after %.3f seconds...%n", receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
+            System.out.println("Clearing any RequestData from health check.");
+        } catch (java.util.concurrent.TimeoutException e) {
+            throw new TimeoutException("request telemetry from application health check", requestTelemetryFromHealthCheckTimeout, TimeUnit.SECONDS, e);
+        }
     }
 
     protected void callTargetUriAndWaitForTelemetry() throws Exception {
@@ -710,8 +722,7 @@ public abstract class AiSmokeTest {
         assertFalse(String.format("Empty response from '%s'. Health check urls should return something non-empty", url), rval.isEmpty());
     }
 
-    protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries)
-            throws IOException {
+    protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) throws IOException {
         Preconditions.checkArgument(numberOfRetries >= 0, "numberOfRetries must be non-negative");
         int triedCount = 0;
         boolean success = false;
