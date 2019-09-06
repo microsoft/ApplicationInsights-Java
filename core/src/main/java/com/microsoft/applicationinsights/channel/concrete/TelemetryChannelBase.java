@@ -212,7 +212,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         this.configuration = configuration;
         final TransmitterFactory<T> transmitterFactory = getTransmitterFactory();
         if (transmitterFactory instanceof ConfiguredTransmitterFactory) {
-            // TODO follow factor and allow null configuration
             telemetriesTransmitter = ((ConfiguredTransmitterFactory<T>) transmitterFactory).create(configuration, endpointAddress, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
         } else {
             telemetriesTransmitter = transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
