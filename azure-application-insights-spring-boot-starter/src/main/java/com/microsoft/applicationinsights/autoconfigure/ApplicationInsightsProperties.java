@@ -105,10 +105,7 @@ public class ApplicationInsightsProperties {
     }
 
     // Try getting ikey from application.properties
-    if (StringUtils.isNotBlank(instrumentationKey)) {
-      return instrumentationKey;
-    }
-    throw new IllegalStateException("Instrumentation Key must be set to report telemetry");
+    return instrumentationKey;
   }
 
   public void setInstrumentationKey(String instrumentationKey) {

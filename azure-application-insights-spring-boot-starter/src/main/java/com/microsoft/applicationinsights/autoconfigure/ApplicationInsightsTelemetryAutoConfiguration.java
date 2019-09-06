@@ -131,7 +131,12 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
             telemetryConfiguration.setConnectionString(applicationInsightsProperties.getConnectionString());
         }
         telemetryConfiguration.setTrackingIsDisabled(!applicationInsightsProperties.isEnabled());
-        telemetryConfiguration.setInstrumentationKey(applicationInsightsProperties.getInstrumentationKey());
+        if (StringUtils.isNotEmpty(applicationInsightsProperties.getInstrumentationKey())) {
+            telemetryConfiguration.setInstrumentationKey(applicationInsightsProperties.getInstrumentationKey());
+        }
+        if (StringUtils.isEmpty(telemetryConfiguration.getInstrumentationKey())) {
+            throw new IllegalStateException("Could not find instrumentation key or connection string");
+        }
         if (contextInitializers != null) {
             telemetryConfiguration.getContextInitializers().addAll(contextInitializers);
         }

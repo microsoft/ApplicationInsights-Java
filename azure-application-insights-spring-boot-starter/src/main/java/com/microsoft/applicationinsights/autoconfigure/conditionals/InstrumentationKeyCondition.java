@@ -21,6 +21,7 @@
 package com.microsoft.applicationinsights.autoconfigure.conditionals;
 
 import com.microsoft.applicationinsights.autoconfigure.helpers.IkeyResolver;
+import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
@@ -30,26 +31,36 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
  * Conditional to check if instrumentation key is either specified using
- * 1. azure.application-insights.instrumentation-key
- * 2. APPLICATION_INSIGHTS_IKEY
- * 3. APPINSIGHTS_INSTRUMENTATIONKEY
+ * 1. {@value com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory#CONNECTION_STRING_ENV_VAR_NAME}
+ * 2. azure.application-insights.connection-string
+ * 3. APPLICATION_INSIGHTS_IKEY
+ * 4. APPINSIGHTS_INSTRUMENTATIONKEY
+ * 5. azure.application-insights.instrumentation-key
  *
- * @author Dhaval Doshi
+ * @author Dhaval Doshi, Arthur Little
  */
 public class InstrumentationKeyCondition extends SpringBootCondition {
 
   @Override
   public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-    String iKey = context.getEnvironment().getProperty("azure.application-insights.instrumentation-key");
-    if (StringUtils.isNoneBlank(iKey)) {
-      return new ConditionOutcome(true, ConditionMessage.of("instrumentation key found"));
+    if (StringUtils.isNotBlank(System.getenv(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME))) {
+      return new ConditionOutcome(true, ConditionMessage.of("found "+TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME));
     }
-    iKey = IkeyResolver.getIkeyFromEnvironmentVariables();
-    if (StringUtils.isNoneBlank(iKey)) {
-      return new ConditionOutcome(true, ConditionMessage.of("instrumentation key found"));
+
+    final String connStringProp = "azure.application-insights.connection-string";
+    if (StringUtils.isNotBlank(context.getEnvironment().getProperty(connStringProp))) {
+      return new ConditionOutcome(true, ConditionMessage.of("found "+connStringProp));
     }
-    else {
-      return new ConditionOutcome(false, ConditionMessage.of("instrumentation key not found"));
+
+    if (StringUtils.isNotBlank(IkeyResolver.getIkeyFromEnvironmentVariables())) {
+      return new ConditionOutcome(true, ConditionMessage.of("found instrumentation key found via environment variable"));
     }
+
+    final String ikeyProp = "azure.application-insights.instrumentation-key";
+    if (StringUtils.isNotBlank(context.getEnvironment().getProperty(ikeyProp))) {
+      return new ConditionOutcome(true, ConditionMessage.of("found "+ikeyProp));
+    }
+
+    return new ConditionOutcome(false, ConditionMessage.of("instrumentation key or connection string not found"));
   }
 }
