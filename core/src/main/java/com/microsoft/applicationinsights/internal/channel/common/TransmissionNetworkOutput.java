@@ -278,10 +278,10 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
     }
 
     private String getIngestionEndpoint() {
-        if (configuration != null) {
-            return configuration.getEndpointProvider().getIngestionEndpointURL().toString();
-        } else if (serverUri != null) {
+        if (serverUri != null) {
             return serverUri;
+        } else if (configuration != null) {
+            return configuration.getEndpointProvider().getIngestionEndpointURL().toString();
         } else {
             return DEFAULT_SERVER_URI;
         }
