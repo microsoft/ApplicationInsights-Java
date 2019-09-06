@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The class is responsible for the actual sending of
@@ -77,6 +76,7 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
      *
      * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.
      * @return
+     * @deprecated Use {@link #create(String, TelemetryConfiguration, TransmissionPolicyManager)}
      */
     @Deprecated
     public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
@@ -89,6 +89,7 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
      * @param endpoint The HTTP endpoint to send our telemetry too.
      * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.
      * @return
+     * @deprecated Use {@link #create(String, TelemetryConfiguration, TransmissionPolicyManager)}
      */
     @Deprecated
     public static TransmissionNetworkOutput create(@Nullable String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
@@ -96,9 +97,7 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
     }
 
     public static TransmissionNetworkOutput create(@Nullable String endpoint, TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
-        final TransmissionNetworkOutput transmissionNetworkOutput = new TransmissionNetworkOutput(endpoint, transmissionPolicyManager);
-        transmissionNetworkOutput.setConfiguration(configuration);
-        return transmissionNetworkOutput;
+        return new TransmissionNetworkOutput(endpoint, transmissionPolicyManager, configuration);
     }
 
     /**
@@ -110,14 +109,19 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
      * @param transmissionPolicyManager
      */
     private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager) {
+        this(serverUri, transmissionPolicyManager, null);
+    }
+
+    public TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager, TelemetryConfiguration configuration) {
         Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
-
         this.serverUri = serverUri;
-
+        this.configuration = configuration;
         httpClient = ApacheSenderFactory.INSTANCE.create();
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
-
+        if (InternalLogger.INSTANCE.isTraceEnabled()) {
+            InternalLogger.INSTANCE.trace("%s using endpoint %s", TransmissionNetworkOutput.class.getSimpleName(), getIngestionEndpoint());
+        }
     }
 
     /**
@@ -258,7 +262,7 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
      * @return The completed {@link HttpPost} object
      */
     private HttpPost createTransmissionPostRequest(Transmission transmission) {
-        HttpPost request = createNewRequest();
+        HttpPost request = new HttpPost(getIngestionEndpoint());
         request.addHeader(CONTENT_TYPE_HEADER, transmission.getWebContentType());
         request.addHeader(CONTENT_ENCODING_HEADER, transmission.getWebContentEncodingType());
 
@@ -273,13 +277,13 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
         this.configuration = configuration;
     }
 
-    private HttpPost createNewRequest() {
+    private String getIngestionEndpoint() {
         if (configuration != null) {
-            return new HttpPost(configuration.getEndpointProvider().getIngestionEndpointURL());
+            return configuration.getEndpointProvider().getIngestionEndpointURL().toString();
         } else if (serverUri != null) {
-            return new HttpPost(serverUri);
+            return serverUri;
         } else {
-            return new HttpPost(DEFAULT_SERVER_URI);
+            return DEFAULT_SERVER_URI;
         }
     }
 }

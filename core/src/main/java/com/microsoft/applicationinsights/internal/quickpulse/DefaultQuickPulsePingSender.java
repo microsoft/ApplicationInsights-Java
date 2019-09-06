@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.io.IOException;
 import java.util.Date;
 
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -56,6 +57,9 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
                 "\"Metrics\": null," +
                 "\"StreamId\": \"" + quickPulseId + "\"," +
                 "\"Timestamp\": \"\\/Date(";
+        if (InternalLogger.INSTANCE.isTraceEnabled()) {
+            InternalLogger.INSTANCE.trace("%s using endpoint %s", DefaultQuickPulsePingSender.class.getSimpleName(), getQuickPulseEndpoint());
+        }
     }
 
     /**
@@ -101,10 +105,19 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     private String getQuickPulsePingUri() {
+        return getQuickPulseEndpoint() + "ping?ikey=" + getInstrumentationKey();
+    }
+
+    private String getInstrumentationKey() {
+        TelemetryConfiguration config = this.configuration == null ? TelemetryConfiguration.getActive() : configuration;
+        return config.getInstrumentationKey();
+    }
+
+    private String getQuickPulseEndpoint() {
         if (configuration != null) {
-            return configuration.getEndpointProvider().getLiveEndpointURL().toString() + "ping?ikey=" + configuration.getInstrumentationKey();
+            return configuration.getEndpointProvider().getLiveEndpointURL().toString();
         } else {
-            return QP_BASE_URI + "ping?ikey=" + TelemetryConfiguration.getActive().getInstrumentationKey();
+            return QP_BASE_URI;
         }
     }
 

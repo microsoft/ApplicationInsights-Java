@@ -68,6 +68,9 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("\"MachineName\": \"").append(instanceName).append("\",");
         sb.append("\"StreamId\": \"").append(quickPulseId).append("\",");
         postPrefix = sb.toString();
+        if (InternalLogger.INSTANCE.isTraceEnabled()) {
+            InternalLogger.INSTANCE.trace("%s using endpoint %s", DefaultQuickPulseDataFetcher.class.getSimpleName(), getQuickPulseEndpoint());
+        }
     }
 
     /**
@@ -107,11 +110,11 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     }
 
     private String getEndpointUrl() {
-        if (config != null) {
-            return config.getEndpointProvider().getLiveEndpointURL().toString() + "post?ikey=" + getInstrumentationKey();
-        } else {
-            return QP_BASE_URI + "post?ikey=" + getInstrumentationKey();
-        }
+        return getQuickPulseEndpoint() + "post?ikey=" + getInstrumentationKey();
+    }
+
+    private String getQuickPulseEndpoint() {
+         return config == null ? QP_BASE_URI : config.getEndpointProvider().getLiveEndpointURL().toString();
     }
 
     private String getInstrumentationKey() {

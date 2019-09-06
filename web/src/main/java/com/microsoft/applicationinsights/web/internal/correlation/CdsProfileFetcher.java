@@ -184,6 +184,9 @@ public class CdsProfileFetcher implements AppProfileFetcher, ApplicationIdResolv
         URL url = new URL(endpoint);
         String urlStr = url.toString();
         this.endpointAddress = urlStr.substring(0, urlStr.length() - url.getFile().length());
+        if (InternalLogger.INSTANCE.isTraceEnabled()) {
+            InternalLogger.INSTANCE.trace("%s endpoint override: %s", CdsProfileFetcher.class.getSimpleName(), this.endpointAddress);
+        }
     }
 
     private Future<HttpResponse> createFetchTask(String instrumentationKey, TelemetryConfiguration configuration) {
