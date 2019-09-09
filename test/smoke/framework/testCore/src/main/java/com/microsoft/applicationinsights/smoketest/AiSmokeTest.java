@@ -347,11 +347,21 @@ public abstract class AiSmokeTest {
 
     //region: before test helper methods
     protected static String getAppContext() {
-        return warFileName.replace(".war", "");
+        if (warFileName.endsWith(".jar")) {
+            // spring boot jar
+            return "";
+        } else {
+            return warFileName.replace(".war", "");
+        }
     }
 
     protected static String getBaseUrl() {
-        return "http://localhost:" + appServerPort + "/" + getAppContext();
+        String appContext = getAppContext();
+        if (appContext.isEmpty()) {
+            return "http://localhost:" + appServerPort;
+        } else {
+            return "http://localhost:" + appServerPort + "/" + appContext;
+        }
     }
 
     protected static void waitForApplicationToStart() throws Exception {
@@ -553,26 +563,32 @@ public abstract class AiSmokeTest {
 
         final ContainerInfo containerInfo = new ContainerInfo(containerId, currentImageName);
         currentContainerInfo.set(containerInfo);
-        try {
-            String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
-            System.out.printf("Verifying appserver has started (%s)...%n", url);
+        if (currentImageName.startsWith("javase_")) {
+            // can proceed straight to deploying the app
+            // (there's nothing running at this point, unlike images based on servlet containers)
             allContainers.push(containerInfo);
-            waitForUrlWithRetries(url, APPSERVER_HEALTH_CHECK_TIMEOUT, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
-            System.out.println("App server is ready.");
-        }
-        catch (Exception e) {
-            System.err.println("Error starting app server");
-            if (docker.isContainerRunning(containerInfo.getContainerId())) {
-                System.out.println("Container is not running.");
-                allContainers.remove(containerInfo);
-            } else {
-                System.out.println("Yet, the container is running.");
+        } else {
+            try {
+                String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
+                System.out.printf("Verifying appserver has started (%s)...%n", url);
+                allContainers.push(containerInfo);
+                waitForUrlWithRetries(url, APPSERVER_HEALTH_CHECK_TIMEOUT, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
+                System.out.println("App server is ready.");
             }
-            System.out.println("Printing container logs: ");
-            System.out.println("# LOGS START =========================");
-            docker.printContainerLogs(containerInfo.getContainerId());
-            System.out.println("# LOGS END ===========================");
-            throw e;
+            catch (Exception e) {
+                System.err.println("Error starting app server");
+                if (docker.isContainerRunning(containerInfo.getContainerId())) {
+                    System.out.println("Container is not running.");
+                    allContainers.remove(containerInfo);
+                } else {
+                    System.out.println("Yet, the container is running.");
+                }
+                System.out.println("Printing container logs: ");
+                System.out.println("# LOGS START =========================");
+                docker.printContainerLogs(containerInfo.getContainerId());
+                System.out.println("# LOGS END ===========================");
+                throw e;
+            }
         }
 
         try {
