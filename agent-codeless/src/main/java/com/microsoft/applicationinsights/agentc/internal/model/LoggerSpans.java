@@ -112,13 +112,19 @@ class LoggerSpans {
             case "FATAL":
                 return SeverityLevel.Critical;
             case "ERROR":
+            case "SEVERE":
                 return SeverityLevel.Error;
             case "WARN":
+            case "WARNING":
                 return SeverityLevel.Warning;
             case "INFO":
                 return SeverityLevel.Information;
             case "DEBUG":
             case "TRACE":
+            case "CONFIG":
+            case "FINE":
+            case "FINER":
+            case "FINEST":
             case "ALL":
                 return SeverityLevel.Verbose;
             default:

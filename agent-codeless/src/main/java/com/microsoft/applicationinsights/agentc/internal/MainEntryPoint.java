@@ -227,59 +227,93 @@ public class MainEntryPoint {
         jdbcConfig.put("captureResultSetNavigate", false);
         jdbcConfig.put("captureGetConnection", false);
 
-        jdbcConfig.put("explainPlanThresholdMillis", getExplainPlanThresholdInMS(configuration, 10000));
+        Number explainPlanThresholdInMS = getExplainPlanThresholdInMS(configuration);
+        if (explainPlanThresholdInMS == null) {
+            jdbcConfig.put("explainPlanThresholdMillis", 10000);
+        } else {
+            jdbcConfig.put("explainPlanThresholdMillis", explainPlanThresholdInMS);
+        }
 
         Map<String, Object> log4jConfig = new HashMap<>();
         Map<String, Object> logbackConfig = new HashMap<>();
+        Map<String, Object> julConfig = new HashMap<>();
 
-        // must be one of trace, debug, info, warn, error (which are supported by both log4j and logback)
-        String threshold = getLoggingThreshold(configuration, "warn");
-        log4jConfig.put("threshold", threshold);
-        logbackConfig.put("threshold", threshold);
-
+        LoggingThreshold threshold = getLoggingThreshold(configuration);
+        if (threshold == null) {
+            log4jConfig.put("threshold", "warn");
+            logbackConfig.put("threshold", "warn");
+            julConfig.put("threshold", "warning");
+        } else {
+            log4jConfig.put("threshold", threshold.log4jThreshold);
+            logbackConfig.put("threshold", threshold.logbackThreshold);
+            julConfig.put("threshold", threshold.julThreshold);
+        }
         instrumentationConfig.put("servlet", servletConfig);
         instrumentationConfig.put("jdbc", jdbcConfig);
         instrumentationConfig.put("log4j", log4jConfig);
         instrumentationConfig.put("logback", logbackConfig);
+        instrumentationConfig.put("java-util-logging", julConfig);
 
         return instrumentationConfig;
     }
 
-    private static Number getExplainPlanThresholdInMS(Configuration configuration, Number defaultValue) {
+    private static @Nullable Number getExplainPlanThresholdInMS(Configuration configuration) {
         Map<String, Object> jdbc = configuration.instrumentation.get("jdbc");
         if (jdbc == null) {
-            return defaultValue;
+            return null;
         }
         Object explainPlanThresholdInMS = jdbc.get("explainPlanThresholdInMS");
         if (explainPlanThresholdInMS == null) {
-            return defaultValue;
+            return null;
         }
         if (!(explainPlanThresholdInMS instanceof Number)) {
             startupLogger.warn("jdbc explainPlanThresholdMillis must be a number, but found: {}",
                     explainPlanThresholdInMS.getClass());
-            return defaultValue;
+            return null;
         }
         return (Number) explainPlanThresholdInMS;
     }
 
-    private static String getLoggingThreshold(Configuration configuration, String defaultValue) {
+    private static @Nullable LoggingThreshold getLoggingThreshold(Configuration configuration) {
         Map<String, Object> logging = configuration.instrumentation.get("logging");
         if (logging == null) {
-            return defaultValue;
+            return null;
         }
         Object thresholdObj = logging.get("threshold");
         if (thresholdObj == null) {
-            return defaultValue;
+            return null;
         }
         if (!(thresholdObj instanceof String)) {
             startupLogger.warn("logging threshold must be a string, but found: {}", thresholdObj.getClass());
-            return defaultValue;
+            return null;
         }
         String threshold = (String) thresholdObj;
         if (threshold.isEmpty()) {
-            return defaultValue;
+            return null;
         }
-        return threshold;
+        switch (threshold) {
+            case "fatal":
+                return new LoggingThreshold("fatal", "error", "severe");
+            case "error":
+            case "severe":
+                return new LoggingThreshold("error", "error", "severe");
+            case "warn":
+            case "warning":
+                return new LoggingThreshold("warn", "warn", "warning");
+            case "info":
+                return new LoggingThreshold("info", "info", "info");
+            case "debug":
+            case "config":
+            case "fine":
+            case "finer":
+                return new LoggingThreshold("debug", "debug", threshold);
+            case "trace":
+            case "finest":
+                return new LoggingThreshold("trace", "trace", "finest");
+            default:
+                startupLogger.warn("invalid logging threshold: {}", threshold);
+                return null;
+        }
     }
 
     private static void addFixedRateSampling(FixedRateSampling fixedRateSampling,
@@ -314,5 +348,20 @@ public class MainEntryPoint {
         // this is never an empty string (empty string is normalized to null)
         private @Nullable String instrumentationKey;
         private String ingestionEndpoint = "https://dc.services.visualstudio.com/";
+    }
+
+    private static class LoggingThreshold {
+
+        private static final LoggingThreshold DEFAULT = new LoggingThreshold("warn", "warn", "warning");
+
+        private final String log4jThreshold;
+        private final String logbackThreshold;
+        private final String julThreshold;
+
+        private LoggingThreshold(String log4jThreshold, String logbackThreshold, String julThreshold) {
+            this.log4jThreshold = log4jThreshold;
+            this.logbackThreshold = logbackThreshold;
+            this.julThreshold = julThreshold;
+        }
     }
 }
