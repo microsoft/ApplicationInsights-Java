@@ -21,13 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.text.StringCharacterIterator;
 import java.util.Date;
@@ -35,6 +29,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
 /**
  * This class knows how to transform data that is relevant to {@link Telemetry} instances into JSON.
@@ -74,7 +72,9 @@ public final class JsonTelemetryDataSerializer {
 
     public void write(String name, Duration value) throws IOException {
         writeName(name);
-        write(String.valueOf(value));
+        out.write(JSON_COMMA);
+        value.toString(out);
+        out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
 
@@ -219,8 +219,7 @@ public final class JsonTelemetryDataSerializer {
 
         writeName(name);
         out.write(JSON_COMMA);
-        String sanitizedValue = sanitizeStringForJSON(value, len);
-        out.write(sanitizedValue);
+        sanitizeStringForJSON(out, value, len);
         out.write(JSON_COMMA);
         separator = JSON_SEPARATOR;
     }
@@ -230,13 +229,8 @@ public final class JsonTelemetryDataSerializer {
             return;
         }
 
-        String jsonStringToAppend = createJsonFor(value);
-        if (Strings.isNullOrEmpty(jsonStringToAppend)) {
-            return;
-        }
-
         writeName(name);
-        out.write(jsonStringToAppend);
+        writeObject(value);
 
         separator = JSON_SEPARATOR;
     }
@@ -253,7 +247,11 @@ public final class JsonTelemetryDataSerializer {
 
             separator = "";
             for (Map.Entry<String, T> entry : map.entrySet()) {
-                writeName(sanitizeKey(entry.getKey()));
+                out.write(separator);
+                out.write(JSON_COMMA);
+                sanitizeKey(out, entry.getKey());
+                out.write(JSON_COMMA);
+                out.write(JSON_NAME_VALUE_SEPARATOR);
                 write(entry.getValue());
                 separator = JSON_SEPARATOR;
             }
@@ -292,40 +290,30 @@ public final class JsonTelemetryDataSerializer {
 
     private <T> void write(T item) throws IOException {
         if (item instanceof JsonSerializable) {
-            StringWriter stringWriter = new StringWriter();
-
-            String jsonStringToAppend = createJsonFor((JsonSerializable)item);
-            if (Strings.isNullOrEmpty(jsonStringToAppend)) {
-                return;
-            }
-
-            out.write(jsonStringToAppend);
+            writeObject((JsonSerializable) item);
         } else {
             if (WRAPPER_TYPES.contains(item.getClass()))
             {
                 out.write(String.valueOf(item));
             } else {
                 String truncatedName = truncate(String.valueOf(item), 8192);
-                String sanitizedItem = sanitizeStringForJSON(truncatedName, 8192);
                 out.write(JSON_COMMA);
-                out.write(sanitizedItem);
+                sanitizeStringForJSON(out, truncatedName, 8192);
                 out.write(JSON_COMMA);
             }
         }
     }
 
-    private <T extends JsonSerializable> String createJsonFor(T value) throws IOException {
-        StringWriter stringWriter = new StringWriter();
-        JsonTelemetryDataSerializer temp = new JsonTelemetryDataSerializer(new BufferedWriter(stringWriter));
-
-        value.serialize(temp);
-        temp.close();
-        String jsonStringToAppend = stringWriter.toString();
-        if (Strings.isNullOrEmpty(jsonStringToAppend) || JSON_EMPTY_OBJECT.equals(jsonStringToAppend)) {
-            return "";
+    private void writeObject(JsonSerializable value) throws IOException {
+        String savedSeparator = separator;
+        separator = "";
+        try {
+            out.write(JSON_START_OBJECT);
+            value.serialize(this);
+            out.write(JSON_CLOSE_OBJECT);
+        } finally {
+            separator = savedSeparator;
         }
-
-        return jsonStringToAppend;
     }
 
     private void writeName(String name) throws IOException {
@@ -352,53 +340,63 @@ public final class JsonTelemetryDataSerializer {
         return ret;
     }
 
-    private String sanitizeStringForJSON(String text, int maxLength) {
+    private void sanitizeStringForJSON(Appendable out, String text, int maxLength) throws IOException {
 
-        final StringBuilder result = new StringBuilder();
+        int count = 0;
         StringCharacterIterator iterator = new StringCharacterIterator(text);
-        for (char curr = iterator.current(); curr != iterator.DONE && result.length() < maxLength - DELTA; curr = iterator.next()) {
+
+        for (char curr = iterator.current(); curr != iterator.DONE && count < maxLength - DELTA; curr = iterator.next()) {
             if( curr == '\"' ){
-                result.append("\\\"");
+                out.append("\\\"");
+                count += 2;
             }
             else if(curr == '\\'){
-                result.append("\\\\");
+                out.append("\\\\");
+                count += 2;
             }
             else if(curr == '\b'){
-                result.append("\\b");
+                out.append("\\b");
+                count += 2;
             }
             else if(curr == '\f'){
-                result.append("\\f");
+                out.append("\\f");
+                count += 2;
             }
             else if(curr == '\n'){
-                result.append("\\n");
+                out.append("\\n");
+                count += 2;
             }
             else if(curr == '\r'){
-                result.append("\\r");
+                out.append("\\r");
+                count += 2;
             }
             else if(curr == '\t'){
-                result.append("\\t");
+                out.append("\\t");
+                count += 2;
             }
             else if (!Character.isISOControl(curr)){
-                result.append(curr);
+                out.append(curr);
+                count++;
             }
             else {
-                if (result.length() + 7 < maxLength) { // needs 7 more character space to be appended
-                    result.append("\\u");
-                    result.append((String.format( "%04x", Integer.valueOf(curr))));
+                if (count + 7 < maxLength) { // needs 7 more character space to be appended
+                    out.append("\\u");
+                    out.append((String.format( "%04x", Integer.valueOf(curr))));
+                    count += 7;
                 }
                 else {
                     break;
                 }
             }
         }
-        return result.toString();
     }
 
-    private String sanitizeKey(String key) {
-        String sanitizedKey = trimAndTruncate(key, 150);
-        sanitizedKey = sanitizeStringForJSON(sanitizedKey, 150);
-        sanitizedKey = MakeKeyNonEmpty(sanitizedKey);
-        return sanitizedKey;
+    private void sanitizeKey(Appendable out, String key) throws IOException {
+        String trimmed = trimAndTruncate(key, 150);
+        if (Strings.isNullOrEmpty(trimmed)) {
+            trimmed = "(required property name is empty)";
+        }
+        sanitizeStringForJSON(out, trimmed, 150);
     }
 
     private static String trimAndTruncate(String value, int maxLength) {
@@ -412,10 +410,6 @@ public final class JsonTelemetryDataSerializer {
         }
 
         return sanitized;
-    }
-
-    private String MakeKeyNonEmpty(String key) {
-        return Strings.isNullOrEmpty(key) ? "(required property name is empty)" : key;
     }
 
     private String truncate(String value, int len) {
