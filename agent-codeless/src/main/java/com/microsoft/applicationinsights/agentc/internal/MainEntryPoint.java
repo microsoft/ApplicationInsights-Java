@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agentc.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,6 +47,8 @@ import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlC
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
 import com.microsoft.applicationinsights.internal.config.SDKLoggerXmlElement;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
@@ -115,13 +119,26 @@ public class MainEntryPoint {
 
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {
 
+        Path agentJarPath = agentJarFile.toPath();
+        Path sdkNamePrefixPath = agentJarPath.resolveSibling("appsvc.codeless");
+        if (Files.exists(sdkNamePrefixPath)) {
+            if (SystemInformation.INSTANCE.isWindows()) {
+                PropertyHelper.setSdkNamePrefix("awr_");
+            } else if (SystemInformation.INSTANCE.isUnix()) {
+                PropertyHelper.setSdkNamePrefix("alr_");
+            } else {
+                startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));
+                PropertyHelper.setSdkNamePrefix("aur_");
+            }
+        }
+
         File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
         File tmpDir = new File(javaTmpDir, "applicationinsights-java");
         if (!tmpDir.exists() && !tmpDir.mkdirs()) {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        Configuration config = ConfigurationBuilder.create(agentJarFile.toPath());
+        Configuration config = ConfigurationBuilder.create(agentJarPath);
 
         Global.setOutboundW3CEnabled(config.distributedTracing.w3cEnabled);
         Global.setInboundW3CEnabled(config.distributedTracing.w3cEnabled);
