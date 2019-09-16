@@ -1,6 +1,7 @@
 # CHANGELOG
 
 # Version 2.5.0
+* No changes since 2.5.0-BETA.5
 
 # Version 2.5.0-BETA.5
 - Fixed `ClassCastException` that could happen when using `HttpURLConnection`
