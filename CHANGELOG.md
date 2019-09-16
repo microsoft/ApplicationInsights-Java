@@ -1,6 +1,9 @@
 # CHANGELOG
 
 # Version 2.5.0-BETA.5
+- Added `TelemetryClientHelper` for easily wrapping external dependency calls
+
+# Version 2.5.0-BETA.5
 - Fixed `ClassCastException` that could happen when using `HttpURLConnection`
   ([#1053](https://github.com/microsoft/ApplicationInsights-Java/issues/1053))
 
