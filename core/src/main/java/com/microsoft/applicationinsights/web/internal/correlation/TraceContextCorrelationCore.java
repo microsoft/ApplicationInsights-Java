@@ -47,7 +47,6 @@ public class TraceContextCorrelationCore {
      * traceId, spanId and parentId. It also stores incoming tracestate into ThreadLocal for downstream
      * propagation.
      * @param request
-     * @param response
      * @param requestTelemetry
      */
     public static <Req, Res> void resolveCorrelationForRequest(Req request,
