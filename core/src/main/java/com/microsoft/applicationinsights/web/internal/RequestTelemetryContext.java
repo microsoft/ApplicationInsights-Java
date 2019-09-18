@@ -63,7 +63,6 @@ public class RequestTelemetryContext {
     /**
      * Constructs new RequestTelemetryContext object.
      * @param ticks The time in ticks
-     * @param servletRequest The servlet request
      */
     public RequestTelemetryContext(long ticks, Map<String, String> requestHeaders) {
         requestTelemetry = new RequestTelemetry();
