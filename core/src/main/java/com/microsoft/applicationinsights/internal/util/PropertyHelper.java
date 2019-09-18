@@ -111,6 +111,11 @@ public final class PropertyHelper {
         return SdkPropertyValues.SDK_VERSION_STRING;
     }
 
+    public static void setSdkNamePrefix(String sdkNamePrefix) {
+        SdkPropertyValues.SDK_VERSION_STRING =
+                sdkNamePrefix + VERSION_STRING_PREFIX + SdkPropertyValues.SDK_VERSION_NUMBER;
+    }
+
     public static String getSdkVersionNumber() {
         return SdkPropertyValues.SDK_VERSION_NUMBER;
     }
@@ -127,7 +132,7 @@ public final class PropertyHelper {
     }
 
     private static class SdkPropertyValues {
-        private static final String SDK_VERSION_STRING;
+        private static volatile String SDK_VERSION_STRING;
         private static final String SDK_VERSION_NUMBER;
         private SdkPropertyValues(){}
         static {
