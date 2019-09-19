@@ -98,7 +98,7 @@ public class ApplicationInsightsProperties {
 
   public String getInstrumentationKey() {
 
-    // If above fails try getting ikey from environment variables or system properties
+    // Try getting ikey from environment variables or system properties
     String v = IkeyResolver.getIkeyFromEnvironmentVariables();
     if (v != null) {
       return v;
