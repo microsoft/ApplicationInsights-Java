@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmissionOutput;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements ConfiguredTransmissionOutput {
+public final class TransmissionNetworkOutput implements TransmissionOutput {
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private static final String RESPONSE_THROTTLING_HEADER = "Retry-After";
@@ -261,11 +261,6 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
         request.setEntity(bae);
 
         return request;
-    }
-
-    @Override
-    public void setConfiguration(TelemetryConfiguration configuration) {
-        this.configuration = configuration;
     }
 
     private String getIngestionEndpoint() {
