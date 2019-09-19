@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmission
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -116,6 +117,9 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
         Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
         this.serverUri = serverUri;
         this.configuration = configuration;
+        if (StringUtils.isNotEmpty(serverUri)) {
+            InternalLogger.INSTANCE.warn("Setting the endpoint via the <Channel> element is deprecated and will be removed in a future version. Use the top-level element <ConnectionString>.");
+        }
         httpClient = ApacheSenderFactory.INSTANCE.create();
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
