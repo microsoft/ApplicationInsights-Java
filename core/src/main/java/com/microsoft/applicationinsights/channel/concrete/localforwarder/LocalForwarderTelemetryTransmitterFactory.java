@@ -17,7 +17,7 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Configur
     private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(0);
 
     /**
-     * @deprecated Use {@link #create(TelemetryConfiguration, String, String, boolean, int)}
+     * @deprecated Use {@link ConfiguredTransmitterFactory#create(TelemetryConfiguration, String, boolean, int)}
      */
     @Deprecated
     @Override
@@ -29,21 +29,18 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Configur
     /**
      *
      * @param configuration The configuration for the current TelemetryClient
-     * @param endpointSetting The endpoint to use. Overrides endpoint set by connection string, if any.
      * @param maxTransmissionStorageCapacity n/a
      * @param throttlingIsEnabled n/a
      * @param maxInstantRetries n/a
      * @return
      */
     @Override
-    public TelemetriesTransmitter<Telemetry> create(@Nullable TelemetryConfiguration configuration, @Nullable String endpointSetting, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
+    public TelemetriesTransmitter<Telemetry> create(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
         String theEndpoint = null;
-        if (StringUtils.isNotBlank(endpointSetting)) {
-            theEndpoint = endpointSetting;
-        } else if (configuration != null && configuration.getConnectionString() != null) {
+        if (configuration != null && configuration.getConnectionString() != null) {
             theEndpoint = configuration.getEndpointProvider().getIngestionEndpoint().toString();
         }
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(theEndpoint), "You must specify an endpoint for LocalForwarder.");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(theEndpoint), "You must specify an endpoint for LocalForwarder using <ConnectionString>.");
         if (InternalLogger.INSTANCE.isTraceEnabled()) {
             InternalLogger.INSTANCE.trace("LocalForwarder using endpoint %s", theEndpoint);
         }

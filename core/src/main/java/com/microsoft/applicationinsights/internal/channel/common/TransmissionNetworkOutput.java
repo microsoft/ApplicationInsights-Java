@@ -77,11 +77,11 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
      *
      * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.
      * @return
-     * @deprecated Use {@link #create(String, TelemetryConfiguration, TransmissionPolicyManager)}
+     * @deprecated Use {@link #create(TelemetryConfiguration, TransmissionPolicyManager)}
      */
     @Deprecated
     public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
-        return create(null, transmissionPolicyManager);
+        return new TransmissionNetworkOutput(null, null, transmissionPolicyManager);
     }
 
     /**
@@ -90,30 +90,18 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
      * @param endpoint The HTTP endpoint to send our telemetry too.
      * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.
      * @return
-     * @deprecated Use {@link #create(String, TelemetryConfiguration, TransmissionPolicyManager)}
+     * @deprecated Use {@link #create(TelemetryConfiguration, TransmissionPolicyManager)}
      */
     @Deprecated
     public static TransmissionNetworkOutput create(@Nullable String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
-        return new TransmissionNetworkOutput(endpoint, transmissionPolicyManager);
+        return new TransmissionNetworkOutput(endpoint, null, transmissionPolicyManager);
     }
 
-    public static TransmissionNetworkOutput create(@Nullable String endpoint, TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
-        return new TransmissionNetworkOutput(endpoint, transmissionPolicyManager, configuration);
+    public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
+        return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager);
     }
 
-    /**
-     * Private Ctor to initialize class.
-     * <p>
-     * Also creates the httpClient using the ApacheSender instance
-     *
-     * @param serverUri The HTTP endpoint to send our telemetry too.
-     * @param transmissionPolicyManager
-     */
-    private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager) {
-        this(serverUri, transmissionPolicyManager, null);
-    }
-
-    public TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager, TelemetryConfiguration configuration) {
+    private TransmissionNetworkOutput(@Nullable String serverUri, @Nullable TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
         Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
         this.serverUri = serverUri;
         this.configuration = configuration;
@@ -127,7 +115,6 @@ public final class TransmissionNetworkOutput implements ConfiguredTransmissionOu
             InternalLogger.INSTANCE.trace("%s using endpoint %s", TransmissionNetworkOutput.class.getSimpleName(), getIngestionEndpoint());
         }
     }
-
     /**
      * Used to inject the dispatcher used for this output so it can be injected to the retry logic.
      *

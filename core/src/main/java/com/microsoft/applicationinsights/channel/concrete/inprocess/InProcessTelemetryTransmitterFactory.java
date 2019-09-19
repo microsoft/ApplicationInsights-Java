@@ -62,14 +62,14 @@ final class InProcessTelemetryTransmitterFactory implements ConfiguredTransmitte
     }
 
     @Override
-    public TelemetriesTransmitter create(TelemetryConfiguration configuration, String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
+    public TelemetriesTransmitter create(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
         transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
         transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
         transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
         transmissionPolicyManager.setMaxInstantRetries(maxInstantRetries);
         // An active object with the network sender
-        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, configuration, transmissionPolicyManager);
+        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(configuration, transmissionPolicyManager);
 
         return finishTransmitterConstruction(maxTransmissionStorageCapacity, transmissionPolicyManager, actualNetworkSender);
     }
