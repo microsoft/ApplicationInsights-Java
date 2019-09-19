@@ -29,17 +29,17 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Configur
     /**
      *
      * @param configuration The configuration for the current TelemetryClient
-     * @param endpoint The endpoint to use. Overrides endpoint set by connection string, if any.
+     * @param endpointSetting The endpoint to use. Overrides endpoint set by connection string, if any.
      * @param maxTransmissionStorageCapacity n/a
      * @param throttlingIsEnabled n/a
      * @param maxInstantRetries n/a
      * @return
      */
     @Override
-    public TelemetriesTransmitter<Telemetry> create(@Nullable TelemetryConfiguration configuration, @Nullable String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
+    public TelemetriesTransmitter<Telemetry> create(@Nullable TelemetryConfiguration configuration, @Nullable String endpointSetting, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
         String theEndpoint = null;
-        if (StringUtils.isNotBlank(endpoint)) {
-            theEndpoint = endpoint;
+        if (StringUtils.isNotBlank(endpointSetting)) {
+            theEndpoint = endpointSetting;
         } else if (configuration != null && configuration.getConnectionString() != null) {
             theEndpoint = configuration.getEndpointProvider().getIngestionEndpoint().toString();
         }
@@ -47,6 +47,6 @@ public final class LocalForwarderTelemetryTransmitterFactory implements Configur
         if (InternalLogger.INSTANCE.isTraceEnabled()) {
             InternalLogger.INSTANCE.trace("LocalForwarder using endpoint %s", theEndpoint);
         }
-        return new LocalForwarderTelemetriesTransmitter(ManagedChannelBuilder.forTarget(endpoint).usePlaintext().enableRetry(), true, INSTANCE_ID_POOL.getAndIncrement());
+        return new LocalForwarderTelemetriesTransmitter(ManagedChannelBuilder.forTarget(theEndpoint).usePlaintext().enableRetry(), true, INSTANCE_ID_POOL.getAndIncrement());
     }
 }
