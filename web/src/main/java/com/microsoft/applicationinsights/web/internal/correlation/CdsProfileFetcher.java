@@ -38,7 +38,6 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -101,19 +100,19 @@ public class CdsProfileFetcher implements AppProfileFetcher, ApplicationIdResolv
     @Override
     @Deprecated
     public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, IOException {
-        return internal_fetchAppProfile(instrumentationKey, TelemetryConfiguration.getActive());
+        return internalFetchAppProfile(instrumentationKey, TelemetryConfiguration.getActive());
     }
 
     @Override
     public ProfileFetcherResult fetchApplicationId(String instrumentationKey, TelemetryConfiguration configuration) throws ApplicationIdResolutionException, InterruptedException {
         try {
-            return internal_fetchAppProfile(instrumentationKey, configuration);
+            return internalFetchAppProfile(instrumentationKey, configuration);
         } catch (ExecutionException | IOException e) {
             throw new ApplicationIdResolutionException(e);
         }
     }
 
-    private ProfileFetcherResult internal_fetchAppProfile(String instrumentationKey, TelemetryConfiguration configuration) throws InterruptedException, ExecutionException, IOException {
+    private ProfileFetcherResult internalFetchAppProfile(String instrumentationKey, TelemetryConfiguration configuration) throws InterruptedException, ExecutionException, IOException {
         if (StringUtils.isEmpty(instrumentationKey)) {
             throw new IllegalArgumentException("instrumentationKey must not be null or empty");
         }
