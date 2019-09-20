@@ -30,7 +30,6 @@ ENV JETTY_STOP_KEY stopitplease
 WORKDIR /root/docker-stage
 
 RUN java -jar $JETTY_HOME/start.jar jetty.base=$JETTY_BASE --add-to-start=http,jsp,deploy,jstl --update-ini jetty.http.port=8080 --update-ini jetty.deploy.extractWars=true
-RUN java -jar $JETTY_HOME/start.jar jetty.base=$JETTY_BASE --add-to-start=console-capture --update-ini jetty.console-capture.timezone=PST
 
 RUN cp -r $JETTY_HOME/demo-base/webapps/ROOT $JETTY_BASE/webapps/
 

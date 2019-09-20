@@ -21,15 +21,13 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import org.junit.*;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.util.Hashtable;
 import java.util.UUID;
@@ -37,19 +35,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 
 public class TelemetryCorrelationUtilsTests {
 
-    private static MockProfileFetcher mockProfileFetcher;
+    private ApplicationIdResolver mockProfileFetcher;
 
     @Before
     public void testInitialize() {
-
         // initialize mock profile fetcher (for resolving ikeys to appIds)
-        mockProfileFetcher = new MockProfileFetcher();
-        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockProfileFetcher);
+        mockProfileFetcher = mock(ApplicationIdResolver.class);
+        InstrumentationKeyResolver.INSTANCE.setAppIdResolver(mockProfileFetcher);
         InstrumentationKeyResolver.INSTANCE.clearCache();
+    }
+
+    @After
+    public void tearDown() {
+        mockProfileFetcher = null;
+        InstrumentationKeyResolver.INSTANCE.setAppIdResolver(new CdsProfileFetcher());
     }
 
     @Test
@@ -59,7 +63,7 @@ public class TelemetryCorrelationUtilsTests {
         String id = "|9e74f0e5-efc4-41b5-86d1-3524a43bd891.bcec871c_1.";
 
         //validate
-        Assert.assertTrue(TelemetryCorrelationUtils.isHierarchicalId(id));
+        assertTrue(TelemetryCorrelationUtils.isHierarchicalId(id));
     }
 
     @Test
@@ -69,7 +73,7 @@ public class TelemetryCorrelationUtilsTests {
         String id = "";
 
         //validate
-        Assert.assertFalse(TelemetryCorrelationUtils.isHierarchicalId(id));
+        assertFalse(TelemetryCorrelationUtils.isHierarchicalId(id));
     }
 
     @Test
@@ -79,7 +83,7 @@ public class TelemetryCorrelationUtilsTests {
         String id = null;
 
         //validate
-        Assert.assertFalse(TelemetryCorrelationUtils.isHierarchicalId(id));
+        assertFalse(TelemetryCorrelationUtils.isHierarchicalId(id));
     }
 
     @Test
@@ -89,7 +93,7 @@ public class TelemetryCorrelationUtilsTests {
         String id = "9e74f0e5-efc4-41b5-86d1-3524a43bd891.bcec871c_1.";
 
         //validate
-        Assert.assertFalse(TelemetryCorrelationUtils.isHierarchicalId(id));
+        assertFalse(TelemetryCorrelationUtils.isHierarchicalId(id));
     }
 
     @Test
@@ -110,10 +114,10 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(requestTelemetry.getId());
+        assertNotNull(requestTelemetry.getId());
         assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
-        Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
-        Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
+        assertTrue(requestTelemetry.getId().startsWith(incomingId));
+        assertTrue(requestTelemetry.getId().endsWith("_"));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -138,9 +142,9 @@ public class TelemetryCorrelationUtilsTests {
         // is newly generated and request.Id is based on new rootId
         OperationContext operation = requestTelemetry.getContext().getOperation();
 
-        Assert.assertNotNull(requestTelemetry.getId());
+        assertNotNull(requestTelemetry.getId());
         assertEquals(requestTelemetry.getId(), '|' + operation.getId() + '.');
-        Assert.assertNull(operation.getParentId());
+        assertNull(operation.getParentId());
     }
 
     @Test
@@ -162,9 +166,9 @@ public class TelemetryCorrelationUtilsTests {
         // is newly generated and request.Id is based on new rootId
         OperationContext operation = requestTelemetry.getContext().getOperation();
 
-        Assert.assertNotNull(requestTelemetry.getId());
+        assertNotNull(requestTelemetry.getId());
         assertEquals(requestTelemetry.getId(), '|' + operation.getId() + '.');
-        Assert.assertNull(operation.getParentId());
+        assertNull(operation.getParentId());
     }
 
     @Test
@@ -183,10 +187,10 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertTrue(requestTelemetry.getId().startsWith("|guid."));
+        assertNotNull(requestTelemetry.getId());
+        assertTrue(requestTelemetry.getId().startsWith("|guid."));
         assertEquals("|guid.".length() + 9, requestTelemetry.getId().length());
-        Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
+        assertTrue(requestTelemetry.getId().endsWith("_"));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -210,10 +214,10 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertTrue(requestTelemetry.getId().startsWith("|guid.guid2.guid3"));
+        assertNotNull(requestTelemetry.getId());
+        assertTrue(requestTelemetry.getId().startsWith("|guid.guid2.guid3"));
         assertEquals("|guid.guid2.guid3.".length() + 9, requestTelemetry.getId().length());
-        Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
+        assertTrue(requestTelemetry.getId().endsWith("_"));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -237,10 +241,10 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertTrue(requestTelemetry.getId().startsWith("|guid.guid2_"));
+        assertNotNull(requestTelemetry.getId());
+        assertTrue(requestTelemetry.getId().startsWith("|guid.guid2_"));
         assertEquals("|guid.guid2_".length() + 9, requestTelemetry.getId().length());
-        Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
+        assertTrue(requestTelemetry.getId().endsWith("_"));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -264,10 +268,10 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertTrue(requestTelemetry.getId().startsWith("|guid."));
+        assertNotNull(requestTelemetry.getId());
+        assertTrue(requestTelemetry.getId().startsWith("|guid."));
         assertEquals("|guid.".length() + 9, requestTelemetry.getId().length());
-        Assert.assertTrue(requestTelemetry.getId().endsWith("_"));
+        assertTrue(requestTelemetry.getId().endsWith("_"));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -294,9 +298,9 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate
-        Assert.assertNotNull(requestTelemetry.getId());
+        assertNotNull(requestTelemetry.getId());
         assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
-        Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
+        assertTrue(requestTelemetry.getId().startsWith(incomingId));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -327,9 +331,9 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate
-        Assert.assertNotNull(requestTelemetry.getId());
+        assertNotNull(requestTelemetry.getId());
         assertEquals(incomingId.length() + 9, requestTelemetry.getId().length());
-        Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId));
+        assertTrue(requestTelemetry.getId().startsWith(incomingId));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -376,7 +380,7 @@ public class TelemetryCorrelationUtilsTests {
             incomingId += suffix;
         }
 
-        Assert.assertTrue(incomingId.length() < 1024);
+        assertTrue(incomingId.length() < 1024);
 
         Hashtable<String, String> headers = new Hashtable<String, String>();
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
@@ -390,13 +394,13 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate
-        Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertTrue(TelemetryCorrelationUtils.isHierarchicalId(requestTelemetry.getId()));
+        assertNotNull(requestTelemetry.getId());
+        assertTrue(TelemetryCorrelationUtils.isHierarchicalId(requestTelemetry.getId()));
 
         //derivedId should be like: "|<rootId>.bcec871c_.#"
         assertEquals(1024, requestTelemetry.getId().length());
-        Assert.assertTrue(requestTelemetry.getId().startsWith(incomingId.substring(0, 1015)));
-        Assert.assertTrue(requestTelemetry.getId().endsWith("#"));
+        assertTrue(requestTelemetry.getId().startsWith(incomingId.substring(0, 1015)));
+        assertTrue(requestTelemetry.getId().endsWith("#"));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -416,7 +420,7 @@ public class TelemetryCorrelationUtilsTests {
             incomingId += suffix;
         }
 
-        Assert.assertTrue(incomingId.length() < 1024);
+        assertTrue(incomingId.length() < 1024);
 
         Hashtable<String, String> headers = new Hashtable<String, String>();
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
@@ -430,15 +434,15 @@ public class TelemetryCorrelationUtilsTests {
         TelemetryCorrelationUtils.resolveCorrelation(request, response, requestTelemetry);
 
         //validate
-        Assert.assertNotNull(requestTelemetry.getId());
-        Assert.assertTrue(TelemetryCorrelationUtils.isHierarchicalId(requestTelemetry.getId()));
+        assertNotNull(requestTelemetry.getId());
+        assertTrue(TelemetryCorrelationUtils.isHierarchicalId(requestTelemetry.getId()));
 
         //derivedId should be a new one since incoming was not valid: "|guid."
         if (requestTelemetry.getId().length() != 34 && requestTelemetry.getId().length() != 33 ) {
-            Assert.fail("New id is expected to have 33 or 34 chars.");
+            fail("New id is expected to have 33 or 34 chars.");
         }
-        Assert.assertTrue(requestTelemetry.getId().startsWith("|"));
-        Assert.assertTrue(requestTelemetry.getId().endsWith("."));
+        assertTrue(requestTelemetry.getId().startsWith("|"));
+        assertTrue(requestTelemetry.getId().endsWith("."));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -466,7 +470,7 @@ public class TelemetryCorrelationUtilsTests {
         String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(childId);
+        assertNotNull(childId);
         assertEquals(requestTelemetry.getId() + "1.", childId);
     }
 
@@ -490,12 +494,12 @@ public class TelemetryCorrelationUtilsTests {
         String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(childId);
+        assertNotNull(childId);
         assertEquals(requestTelemetry.getId() + "1.", childId);
 
         // generate second child
         childId = TelemetryCorrelationUtils.generateChildDependencyId();
-        Assert.assertNotNull(childId);
+        assertNotNull(childId);
         assertEquals(requestTelemetry.getId() + "2.", childId);
     }
 
@@ -519,7 +523,7 @@ public class TelemetryCorrelationUtilsTests {
         String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //Incoming ID is non-hierarchical, so we must not modidy outgoing (child) id
-        Assert.assertNotNull(childId);
+        assertNotNull(childId);
         assertEquals(incomingId, childId);
     }
 
@@ -540,12 +544,12 @@ public class TelemetryCorrelationUtilsTests {
         String childId = TelemetryCorrelationUtils.generateChildDependencyId();
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(childId);
+        assertNotNull(childId);
         assertEquals(requestTelemetry.getId() + "1.", childId);
     }
 
     @Test
-    public void testRequestContextIsResolved() {
+    public void testRequestContextIsResolved() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -555,8 +559,7 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
@@ -566,7 +569,7 @@ public class TelemetryCorrelationUtilsTests {
     }
 
     @Test
-    public void testRequestContextIsNotResolvedWithPendingAppProfileFetch() {
+    public void testRequestContextIsNotResolvedWithPendingAppProfileFetch() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -576,18 +579,17 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.PENDING);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.PENDING));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
 
         //validate source is not set as the task to retrieve appId was still pending.
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
-    public void testRequestContextIsNotResolvedWithFailedAppProfileFetch() {
+    public void testRequestContextIsNotResolvedWithFailedAppProfileFetch() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -597,18 +599,17 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.FAILED);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.FAILED));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
 
         //validate source is not set as the task to retrieve appId failed.
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
-    public void testRequestContextIsNotResolvedForSameApp() {
+    public void testRequestContextIsNotResolvedForSameApp() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -618,19 +619,18 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
         //appId returned is the same as incoming one.
-        mockProfileFetcher.setAppIdToReturn("id1");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id1", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
 
         //validate source is not set as the incoming request came from the same application.
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
-    public void testRequestContextIsNotResolvedIfNoHeaderPresent() {
+    public void testRequestContextIsNotResolvedIfNoHeaderPresent() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -638,18 +638,17 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id1");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id1", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
 
         //validate source is not set as the incoming request had no Request-Context header.
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
-    public void testRequestContextIsNotResolvedIfNoAppIdOrRoleName() {
+    public void testRequestContextIsNotResolvedIfNoAppIdOrRoleName() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -659,18 +658,17 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id1");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id1", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
 
         //validate source is not set as the incoming request had no appId or roleName.
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
-    public void testRequestContextIsResolvedWithRoleNameOnly() {
+    public void testRequestContextIsResolvedWithRoleNameOnly() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -680,8 +678,7 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
@@ -691,7 +688,7 @@ public class TelemetryCorrelationUtilsTests {
     }
 
     @Test
-    public void testRequestContextIsResolvedWithAppIdAndRoleName() {
+    public void testRequestContextIsResolvedWithAppIdAndRoleName() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -701,8 +698,7 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, "ikey1");
@@ -713,7 +709,7 @@ public class TelemetryCorrelationUtilsTests {
 
 
     @Test
-    public void testRequestContextIsNotResolvedWithNullIkey() {
+    public void testRequestContextIsNotResolvedWithNullIkey() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -723,18 +719,17 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, requestTelemetry, null);
 
         //validate
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
-    public void testRequestContextIsNotResolvedWithNullRequest() {
+    public void testRequestContextIsNotResolvedWithNullRequest() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -743,18 +738,17 @@ public class TelemetryCorrelationUtilsTests {
 
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(null, requestTelemetry, "ike1");
 
         //validate
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
-    public void testRequestContextIsNotResolvedWithNullRequestTelemetry() {
+    public void testRequestContextIsNotResolvedWithNullRequestTelemetry() throws Exception {
 
         //setup
         Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -764,14 +758,13 @@ public class TelemetryCorrelationUtilsTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.COMPLETE));
 
         //run
         TelemetryCorrelationUtils.resolveRequestSource(request, null, "ike1");
 
         //validate
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test

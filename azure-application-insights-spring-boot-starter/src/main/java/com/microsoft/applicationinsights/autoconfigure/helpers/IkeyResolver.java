@@ -33,22 +33,22 @@ public class IkeyResolver {
   private static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
     public static String getIkeyFromEnvironmentVariables() {
-    String v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
+    String v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
     if (StringUtils.isNotBlank(v)) {
       return v;
     }
 
-    v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
-    if (StringUtils.isNotBlank(v)) {
-      return v;
-    }
-
-    // Second, try to find the i-key as an environment variable 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
-    v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME);
-    if (StringUtils.isNotBlank(v)) {
-      return v;
-    }
     v = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
+    if (StringUtils.isNotBlank(v)) {
+      return v;
+    }
+
+    // Second, try to find the i-key as a system property 'APPLICATION_INSIGHTS_IKEY' or 'APPINSIGHTS_INSTRUMENTATIONKEY'
+    v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME);
+    if (StringUtils.isNotBlank(v)) {
+      return v;
+    }
+    v = System.getProperty(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
     if (StringUtils.isNotBlank(v)) {
       return v;
     }

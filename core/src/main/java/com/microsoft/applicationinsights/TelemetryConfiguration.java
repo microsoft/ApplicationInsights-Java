@@ -29,6 +29,9 @@ import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
+import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -42,11 +45,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public final class TelemetryConfiguration {
 
     // Synchronization for instance initialization
-    private final static Object s_lock = new Object();
+    private static final Object s_lock = new Object();
     private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
+    private String connectionString;
     private String roleName;
+
+    private final EndpointProvider endpointProvider = new EndpointProvider();
 
     private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
     private final List<TelemetryInitializer> telemetryInitializers = new CopyOnWriteArrayList<TelemetryInitializer>();
@@ -67,8 +73,7 @@ public final class TelemetryConfiguration {
         if (active == null) {
             synchronized (s_lock) {
                 if (active == null) {
-                    active = new TelemetryConfiguration();
-                    TelemetryConfigurationFactory.INSTANCE.initialize(active);
+                    active = createDefault();
                 }
             }
         }
@@ -218,6 +223,23 @@ public final class TelemetryConfiguration {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getConnectionString() {
+        return connectionString;
+    }
+
+    public void setConnectionString(String connectionString) {
+        try {
+            ConnectionString.parseInto(connectionString, this);
+        } catch (InvalidConnectionStringException e) {
+            throw new IllegalArgumentException("Invalid connection string", e);
+        }
+        this.connectionString = connectionString;
+    }
+
+    public EndpointProvider getEndpointProvider() {
+        return endpointProvider;
     }
 
     /**
