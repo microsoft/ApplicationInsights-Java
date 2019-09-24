@@ -150,6 +150,10 @@ public class OutgoingSpanImpl implements Span {
             telemetry.getProperties().put("Method", method);
         }
         if (uri != null) {
+            String host = (String) detail.get("Host");
+            if (host != null) {
+                uri = host + uri;
+            }
             try {
                 URI uriObject = new URI(uri);
                 String target;
