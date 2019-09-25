@@ -16,6 +16,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.cookie.CookieSpecBase;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -44,6 +46,8 @@ public class HttpClientTestServlet extends HttpServlet {
             return 200;
         } else if (pathInfo.equals("/apacheHttpClient4")) {
             return apacheHttpClient4();
+        } else if (pathInfo.equals("/apacheHttpClient4WithResponseHandler")) {
+            return apacheHttpClient4WithResponseHandler();
         } else if (pathInfo.equals("/apacheHttpClient3")) {
             return apacheHttpClient3();
         } else if (pathInfo.equals("/okHttp3")) {
@@ -63,6 +67,17 @@ public class HttpClientTestServlet extends HttpServlet {
         try (CloseableHttpResponse response = httpClient.execute(get)) {
             return response.getStatusLine().getStatusCode();
         }
+    }
+
+    private int apacheHttpClient4WithResponseHandler() throws IOException {
+        String url = "https://www.bing.com";
+        HttpGet get = new HttpGet(url);
+        return httpClient.execute(get, new ResponseHandler<Integer>() {
+            @Override
+            public Integer handleResponse(HttpResponse response) {
+                return response.getStatusLine().getStatusCode();
+            }
+        });
     }
 
     private int apacheHttpClient3() throws IOException {
