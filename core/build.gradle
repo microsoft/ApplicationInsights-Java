@@ -147,6 +147,7 @@ shadowJar {
     relocate 'org.checkerframework', "${dependenciesPrefix}.checkerframework"
 
     relocate 'com.thoughtworks.xstream', "${dependenciesPrefix}.xstream"
+    relocate 'org.xmlpull', "${dependenciesPrefix}.xmlpull"
 
     exclude '**/*.proto'
 }
