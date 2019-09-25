@@ -22,11 +22,12 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmissionOutput;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -37,6 +38,7 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.util.EntityUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -50,19 +52,20 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements TransmissionOutput {
-    private final static String CONTENT_TYPE_HEADER = "Content-Type";
-    private final static String CONTENT_ENCODING_HEADER = "Content-Encoding";
-    private final static String RESPONSE_THROTTLING_HEADER = "Retry-After";
+public final class TransmissionNetworkOutput implements ConfiguredTransmissionOutput {
+    private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
+    private static final String RESPONSE_THROTTLING_HEADER = "Retry-After";
 
-    public final static String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
+    public static final String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
 
-    private final String serverUri;
+    private String serverUri;
 
     private volatile boolean stopped;
+    private volatile TelemetryConfiguration configuration;
 
     // Use one instance for optimization
     private final ApacheSender httpClient;
@@ -71,63 +74,51 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
     /**
      * Creates an instance of the network transmission class.
-     * <p>
-     * Will use the DEFAULT_SERVER_URI for the endpoint.
      *
-     * @param transmissionPolicyManager
-     *            The transmission policy used to mark this sender active or
-     *            blocked.
+     * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.
      * @return
+     * @deprecated Use {@link #create(TelemetryConfiguration, TransmissionPolicyManager)}
      */
+    @Deprecated
     public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
-        return create(DEFAULT_SERVER_URI, transmissionPolicyManager);
+        return new TransmissionNetworkOutput(null, null, transmissionPolicyManager);
     }
 
     /**
      * Creates an instance of the network transmission class.
      *
-     * @param endpoint
-     *            The HTTP endpoint to send our telemetry too.
-     * @param transmissionPolicyManager
-     *            The transmission policy used to mark this sender active or
-     *            blocked.
+     * @param endpoint The HTTP endpoint to send our telemetry too.
+     * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.
      * @return
+     * @deprecated Use {@link #create(TelemetryConfiguration, TransmissionPolicyManager)}
      */
-    public static TransmissionNetworkOutput create(String endpoint,
-            TransmissionPolicyManager transmissionPolicyManager) {
-        String realEndpoint = Strings.isNullOrEmpty(endpoint) ? DEFAULT_SERVER_URI : endpoint;
-        return new TransmissionNetworkOutput(realEndpoint, transmissionPolicyManager);
+    @Deprecated
+    public static TransmissionNetworkOutput create(@Nullable String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
+        return new TransmissionNetworkOutput(endpoint, null, transmissionPolicyManager);
     }
 
-    /**
-     * Private Ctor to initialize class.
-     * <p>
-     * Also creates the httpClient using the ApacheSender instance
-     *
-     * @param serverUri
-     *            The HTTP endpoint to send our telemetry too.
-     * @param transmissionPolicyManager
-     */
-    private TransmissionNetworkOutput(String serverUri, TransmissionPolicyManager transmissionPolicyManager) {
-        Preconditions.checkNotNull(serverUri, "serverUri should be a valid non-null value");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(serverUri), "serverUri should be a valid non-null value");
-        Preconditions.checkNotNull(transmissionPolicyManager,
-                "transmissionPolicyManager should be a valid non-null value");
+    public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
+        return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager);
+    }
 
+    private TransmissionNetworkOutput(@Nullable String serverUri, @Nullable TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
+        Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
         this.serverUri = serverUri;
-
+        this.configuration = configuration;
+        if (StringUtils.isNotEmpty(serverUri)) {
+            InternalLogger.INSTANCE.warn("Setting the endpoint via the <Channel> element is deprecated and will be removed in a future version. Use the top-level element <ConnectionString>.");
+        }
         httpClient = ApacheSenderFactory.INSTANCE.create();
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
-
+        if (InternalLogger.INSTANCE.isTraceEnabled()) {
+            InternalLogger.INSTANCE.trace("%s using endpoint %s", TransmissionNetworkOutput.class.getSimpleName(), getIngestionEndpoint());
+        }
     }
-
     /**
-     * Used to inject the dispatcher used for this output so it can be injected to
-     * the retry logic.
+     * Used to inject the dispatcher used for this output so it can be injected to the retry logic.
      *
-     * @param transmissionDispatcher
-     *            The dispatcher to be injected.
+     * @param transmissionDispatcher The dispatcher to be injected.
      */
     public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
         this.transmissionDispatcher = transmissionDispatcher;
@@ -167,8 +158,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         if (!stopped) {
             // If we're not stopped but in a blocked state then fail to second
             // TransmissionOutput
-            if (transmissionPolicyManager.getTransmissionPolicyState()
-                    .getCurrentState() != TransmissionPolicy.UNBLOCKED) {
+            if (transmissionPolicyManager.getTransmissionPolicyState().getCurrentState() != TransmissionPolicy.UNBLOCKED) {
                 return false;
             }
 
@@ -202,24 +192,19 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
             } catch (ConnectionPoolTimeoutException e) {
                 ex = e;
-                InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception%nStack Trace:%n%s",
-                        ExceptionUtils.getStackTrace(e));
+                InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception%nStack Trace:%n%s", ExceptionUtils.getStackTrace(e));
             } catch (SocketException e) {
                 ex = e;
-                InternalLogger.INSTANCE.error("Failed to send, socket exception.%nStack Trace:%n%s",
-                        ExceptionUtils.getStackTrace(e));
+                InternalLogger.INSTANCE.error("Failed to send, socket exception.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(e));
             } catch (UnknownHostException e) {
                 ex = e;
-                InternalLogger.INSTANCE.error(
-                        "Failed to send, wrong host address or cannot reach address due to network issues.%nStack Trace:%n%s",
-                        ExceptionUtils.getStackTrace(e));
+                InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(e));
             } catch (IOException ioe) {
                 ex = ioe;
                 InternalLogger.INSTANCE.error("Failed to send.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(ioe));
             } catch (Exception e) {
                 ex = e;
-                InternalLogger.INSTANCE.error("Failed to send, unexpected exception.%nStack Trace:%n%s",
-                        ExceptionUtils.getStackTrace(e));
+                InternalLogger.INSTANCE.error("Failed to send, unexpected exception.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(e));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {
@@ -264,12 +249,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
     /**
      * Generates the HTTP POST to send to the endpoint.
      *
-     * @param transmission
-     *            The transmission to send.
+     * @param transmission The transmission to send.
      * @return The completed {@link HttpPost} object
      */
     private HttpPost createTransmissionPostRequest(Transmission transmission) {
-        HttpPost request = new HttpPost(serverUri);
+        HttpPost request = new HttpPost(getIngestionEndpoint());
         request.addHeader(CONTENT_TYPE_HEADER, transmission.getWebContentType());
         request.addHeader(CONTENT_ENCODING_HEADER, transmission.getWebContentEncodingType());
 
@@ -279,4 +263,18 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         return request;
     }
 
+    @Override
+    public void setConfiguration(TelemetryConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    private String getIngestionEndpoint() {
+        if (serverUri != null) {
+            return serverUri;
+        } else if (configuration != null) {
+            return configuration.getEndpointProvider().getIngestionEndpointURL().toString();
+        } else {
+            return DEFAULT_SERVER_URI;
+        }
+    }
 }

@@ -33,6 +33,21 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     }
 
     @Test
+    @TargetUri("/apacheHttpClient4WithResponseHandler")
+    public void testAsyncDependencyCallWithApacheHttpClient4WithResponseHandler() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+
+        RequestData rd = (RequestData) ((Data) rdList.get(0).getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddList.get(0).getData()).getBaseData();
+
+        assertTrue(rd.getSuccess());
+        assertEquals("GET /", rdd.getName());
+        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertTrue(rdd.getId().contains(rd.getId()));
+    }
+
+    @Test
     @TargetUri("/apacheHttpClient3")
     public void testAsyncDependencyCallWithApacheHttpClient3() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);

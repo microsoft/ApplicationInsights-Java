@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
@@ -65,6 +67,10 @@ public class ChannelXmlElement {
         this.type = type;
     }
 
+    /**
+     * @deprecated Use {@link TelemetryConfiguration#getEndpointProvider()} and {@link EndpointProvider#getIngestionEndpoint()}.
+     */
+    @Deprecated
     public String getEndpointAddress() {
         return endpointAddress;
     }
@@ -77,6 +83,10 @@ public class ChannelXmlElement {
         return throttling;
     }
 
+    /**
+     * @deprecated Use {@link TelemetryConfiguration#setConnectionString(String)}.
+     */
+    @Deprecated
     public void setEndpointAddress(String endpointAddress) {
         this.endpointAddress = endpointAddress;
     }
@@ -105,14 +115,21 @@ public class ChannelXmlElement {
         this.flushIntervalInSeconds = flushIntervalInSeconds;
     }
 
+    /**
+     * @deprecated Use {@link #getMaxTransmissionStorageFilesCapacityInMB()}
+     */
+    @Deprecated
     public String isMaxTransmissionStorageFilesCapacityInMB() {
+        return maxTransmissionStorageFilesCapacityInMB;
+    }
+
+    public String getMaxTransmissionStorageFilesCapacityInMB() {
         return maxTransmissionStorageFilesCapacityInMB;
     }
 
     public void setMaxTransmissionStorageFilesCapacityInMB(String maxTransmissionStorageFilesCapacityInMB) {
         this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
     }
-
 
     public String getMaxInstantRetry() {
         return maxInstantRetry;

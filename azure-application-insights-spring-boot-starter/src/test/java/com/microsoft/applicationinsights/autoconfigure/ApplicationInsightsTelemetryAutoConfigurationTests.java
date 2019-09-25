@@ -55,6 +55,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.UnsatisfiedDependencyException;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
@@ -208,9 +209,8 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
             "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
             "azure.application-insights.channel.local-forwarder.endpoint-address=localhost:8080",
             "azure.application-insights.channel.in-process.endpoint-address=https://dc.services.visualstudio.com/v2/track");
-        context.register(PropertyPlaceholderAutoConfiguration.class,
-            ApplicationInsightsTelemetryAutoConfiguration.class);
-        thrown.expect(UnsatisfiedDependencyException.class);
+        context.register(PropertyPlaceholderAutoConfiguration.class, ApplicationInsightsTelemetryAutoConfiguration.class);
+        thrown.expect(BeanCreationException.class);
         context.refresh();
     }
 

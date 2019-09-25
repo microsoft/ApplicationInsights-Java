@@ -102,7 +102,7 @@ public class TelemetryCorrelationUtils {
     public static boolean isHierarchicalId(String id) {
         return TelemetryCorrelationUtilsCore.isHierarchicalId(id);
     }
-    
+
     private static class RequestHeaderGetterImpl implements RequestHeaderGetter<HttpServletRequest> {
 
         @Override

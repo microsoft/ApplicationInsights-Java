@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
@@ -81,6 +82,7 @@ public enum TelemetryConfigurationFactory {
      * If set "true" (case insensitive) scanning will be enabled. Otherwise (by default), it will be disabled.
      */
     public static final String PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY = "applicationinsights.modules.performance.scanning.enabled";
+    public static final String CONNECTION_STRING_ENV_VAR_NAME = "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
     private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
@@ -141,6 +143,7 @@ public enum TelemetryConfigurationFactory {
         setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
 
         setInstrumentationKey(applicationInsightsConfig, configuration);
+        setConnectionString(applicationInsightsConfig, configuration);
         setRoleName(applicationInsightsConfig, configuration);
 
         TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
@@ -157,11 +160,11 @@ public enum TelemetryConfigurationFactory {
 
         TelemetryChannel channel = configuration.getChannel();
         if (channel instanceof LocalForwarderTelemetryChannel
-            && isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
-                InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
-                applicationInsightsConfig.getQuickPulse().setEnabled(false);
+                && isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
+            InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
+            applicationInsightsConfig.getQuickPulse().setEnabled(false);
         }
-        setQuickPulse(applicationInsightsConfig);
+        setQuickPulse(applicationInsightsConfig, configuration);
 
         initializeComponents(configuration);
     }
@@ -169,7 +172,7 @@ public enum TelemetryConfigurationFactory {
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         setInstrumentationKey(userConfiguration, configuration);
         setRoleName(userConfiguration, configuration);
-        configuration.setChannel(new InProcessTelemetryChannel());
+        configuration.setChannel(new InProcessTelemetryChannel(configuration));
         addHeartBeatModule(configuration);
         setContextInitializers(null, configuration);
         initializeComponents(configuration);
@@ -206,10 +209,10 @@ public enum TelemetryConfigurationFactory {
         new ContextInitializersInitializer().initialize(contextInitializers, configuration);
     }
 
-    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration) {
+    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
         if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
             InternalLogger.INSTANCE.trace("Initializing QuickPulse...");
-            QuickPulse.INSTANCE.initialize();
+            QuickPulse.INSTANCE.initialize(configuration);
         }
     }
 
@@ -337,6 +340,26 @@ public enum TelemetryConfigurationFactory {
             }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.toString());
+        }
+    }
+
+    private void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryConfiguration configuration) {
+        // connection string > ikey
+        // hardcoded > env var > system property > config.xml
+
+        // hardcoded should follow a different path
+        String connectionString = configXml.getConnectionString(); // config.xml
+
+        String nextValue = System.getenv(CONNECTION_STRING_ENV_VAR_NAME);
+        if (!Strings.isNullOrEmpty(nextValue)) {
+            if (!Strings.isNullOrEmpty(connectionString)) {
+                InternalLogger.INSTANCE.warn("Environment variable %s is overriding connection string value from %s", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
+            }
+            connectionString = nextValue;
+        }
+
+        if (connectionString != null) {
+            configuration.setConnectionString(connectionString);
         }
     }
 
@@ -500,7 +523,7 @@ public enum TelemetryConfigurationFactory {
     private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetrySampler telemetrySampler, TelemetryConfiguration configuration) {
         String channelName = channelXmlElement.getType();
         if (channelName != null) {
-            TelemetryChannel channel = ReflectionUtils.createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
+            TelemetryChannel channel = createChannel(channelXmlElement, configuration);
             if (channel != null) {
                 channel.setSampler(telemetrySampler);
                 configuration.setChannel(channel);
@@ -515,28 +538,37 @@ public enum TelemetryConfigurationFactory {
 
         try {
             // We will create the default channel and we assume that the data is relevant.
-            TelemetryChannel channel = new InProcessTelemetryChannel(channelXmlElement.getData());
+            TelemetryChannel channel = new InProcessTelemetryChannel(configuration, channelXmlElement.getData());
             channel.setSampler(telemetrySampler);
             configuration.setChannel(channel);
             return true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.toString());
-            TelemetryChannel channel = new InProcessTelemetryChannel();
+            TelemetryChannel channel = new InProcessTelemetryChannel(configuration);
             channel.setSampler(telemetrySampler);
             configuration.setChannel(channel);
             return true;
         }
     }
 
-    private void loadProcessorComponents(
-            List<TelemetryProcessor> list,
-            Collection<TelemetryProcessorXmlElement> classesFromConfigration) {
-        if (classesFromConfigration == null) {
+    private TelemetryChannel createChannel(ChannelXmlElement channelXmlElement, TelemetryConfiguration configuration) {
+        String channelName = channelXmlElement.getType();
+        TelemetryChannel channel = ReflectionUtils.createConfiguredInstance(channelName, TelemetryChannel.class, configuration, channelXmlElement.getData());
+
+        if (channel == null) {
+            channel = ReflectionUtils.createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
+        }
+
+        return channel;
+    }
+
+    private void loadProcessorComponents(List<TelemetryProcessor> list, Collection<TelemetryProcessorXmlElement> classesFromConfiguration) {
+        if (classesFromConfiguration == null) {
             return;
         }
 
         TelemetryProcessorCreator creator = new TelemetryProcessorCreator();
-        for (TelemetryProcessorXmlElement classData : classesFromConfigration) {
+        for (TelemetryProcessorXmlElement classData : classesFromConfiguration) {
             TelemetryProcessor processor = creator.Create(classData);
             if (processor == null) {
                 InternalLogger.INSTANCE.error("Processor %s failure during initialization", classData.getType());
@@ -548,8 +580,6 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-
-    // TODO: include context/telemetry initializers - where do they initialized?
     private void initializeComponents(TelemetryConfiguration configuration) {
         List<TelemetryModule> telemetryModules = configuration.getTelemetryModules();
 
@@ -584,10 +614,12 @@ public enum TelemetryConfigurationFactory {
         return false;
     }
 
+    @VisibleForTesting
     void setPerformanceCountersSection(String performanceCountersSection) {
         this.performanceCountersSection = performanceCountersSection;
     }
 
+    @VisibleForTesting
     void setBuilder(AppInsightsConfigurationBuilder builder) {
         this.builder = builder;
     }
