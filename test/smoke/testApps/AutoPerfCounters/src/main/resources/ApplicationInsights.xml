@@ -4,7 +4,7 @@
 
     <!-- The key from the portal: -->
 
-    <InstrumentationKey>00000000-0000-0000-0000-0FEEDDADBEEF</InstrumentationKey>
+    <ConnectionString>InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606</ConnectionString>
 
     <SDKLogger type="CONSOLE">
         <enabled>true</enabled>
@@ -32,7 +32,6 @@
     </TelemetryInitializers>
 
     <Channel>
-        <EndpointAddress>http://fakeingestion:60606/v2/track</EndpointAddress>
         <DeveloperMode>true</DeveloperMode>
         <FlushIntervalInSeconds>1</FlushIntervalInSeconds>
     </Channel>
