@@ -21,12 +21,13 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -44,12 +45,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class CdsProfileFetcher implements AppProfileFetcher {
+public class CdsProfileFetcher implements AppProfileFetcher, ApplicationIdResolver {
 
     private CloseableHttpAsyncClient httpClient;
-    private String endpointAddress;
-    private static final String ProfileQueryEndpointAppIdFormat = "%s/api/profiles/%s/appId";
-    private static final String DefaultProfileQueryEndpointAddress = "https://dc.services.visualstudio.com";
+    private String endpointAddress = null;
+    private static final String PROFILE_QUERY_ENDPOINT_APP_ID_FORMAT = "%s/api/profiles/%s/appId";
 
     // cache of tasks per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Future<HttpResponse>> tasks;
@@ -87,7 +87,6 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
         this.tasks = new ConcurrentHashMap<>();
         this.failureCounters = new ConcurrentHashMap<>();
-        this.endpointAddress = DefaultProfileQueryEndpointAddress;
 
         taskThreadPool.executePeriodicRunnableTask(cdsRetryClearTask);
         this.httpClient.start();
@@ -95,20 +94,37 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         SDKShutdownActivity.INSTANCE.register(this);
     }
 
+    /**
+     * @deprecated Use {@link #fetchApplicationId(String, TelemetryConfiguration)}. This still works for now by calling {@code fetchApplicationId(instrumentationKey, TelemetryConfiguration.getActive()}
+     */
     @Override
-    public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException {
+    @Deprecated
+    public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, IOException {
+        return internalFetchAppProfile(instrumentationKey, TelemetryConfiguration.getActive());
+    }
 
-        if (instrumentationKey == null || instrumentationKey.isEmpty()) {
-            throw new IllegalArgumentException("instrumentationKey must be not null or empty");
+    @Override
+    public ProfileFetcherResult fetchApplicationId(String instrumentationKey, TelemetryConfiguration configuration) throws ApplicationIdResolutionException, InterruptedException {
+        try {
+            return internalFetchAppProfile(instrumentationKey, configuration);
+        } catch (ExecutionException | IOException e) {
+            throw new ApplicationIdResolutionException(e);
+        }
+    }
+
+    private ProfileFetcherResult internalFetchAppProfile(String instrumentationKey, TelemetryConfiguration configuration) throws InterruptedException, ExecutionException, IOException {
+        if (StringUtils.isEmpty(instrumentationKey)) {
+            throw new IllegalArgumentException("instrumentationKey must not be null or empty");
+        }
+        if (configuration == null) {
+            throw new IllegalArgumentException("configuration must not be null");
         }
 
         ProfileFetcherResult result = new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.PENDING);
 
         // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
         if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >= retryPolicy.getMaxInstantRetries()) {
-            InternalLogger.INSTANCE.warn(String.format(
-                    "The profile fetch task will not execute for next %d minutes. Max number of retries reached.",
-                    retryPolicy.getResetPeriodInMinutes()));
+            InternalLogger.INSTANCE.info("The profile fetch task will not execute for next %d minutes. Max number of retries reached.", retryPolicy.getResetPeriodInMinutes());
             return result;
         }
 
@@ -116,7 +132,7 @@ public class CdsProfileFetcher implements AppProfileFetcher {
 
         // if no task currently exists for this ikey, then let's create one.
         if (currentTask == null) {
-            currentTask = createFetchTask(instrumentationKey);
+            currentTask = createFetchTask(instrumentationKey, configuration);
             this.tasks.putIfAbsent(instrumentationKey, currentTask);
         }
 
@@ -147,7 +163,6 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         } catch (Exception ex) {
             incrementFailureCount(instrumentationKey);
             throw ex;
-
         } finally {
             // remove task as we're done with it.
             this.tasks.remove(instrumentationKey);
@@ -158,16 +173,29 @@ public class CdsProfileFetcher implements AppProfileFetcher {
         this.httpClient = client;
     }
 
+    /**
+     * @deprecated Set endpoints using {@link TelemetryConfiguration#setConnectionString(String)}.
+     */
+    @Deprecated
     public void setEndpointAddress(String endpoint) throws MalformedURLException {
         // set endpoint address to the base address (e.g. https://dc.services.visualstudio.com)
         // later we will append the profile/ikey segment
         URL url = new URL(endpoint);
         String urlStr = url.toString();
         this.endpointAddress = urlStr.substring(0, urlStr.length() - url.getFile().length());
+        if (InternalLogger.INSTANCE.isTraceEnabled()) {
+            InternalLogger.INSTANCE.trace("%s endpoint override: %s", CdsProfileFetcher.class.getSimpleName(), this.endpointAddress);
+        }
     }
 
-    private Future<HttpResponse> createFetchTask(String instrumentationKey) {
-        HttpGet request = new HttpGet(String.format(ProfileQueryEndpointAppIdFormat, this.endpointAddress, instrumentationKey));
+    private Future<HttpResponse> createFetchTask(String instrumentationKey, TelemetryConfiguration configuration) {
+        final HttpGet request;
+        if (endpointAddress == null) {
+            request = new HttpGet(configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey));
+        } else {
+            request = new HttpGet(String.format(PROFILE_QUERY_ENDPOINT_APP_ID_FORMAT, this.endpointAddress, instrumentationKey));
+        }
+
         return this.httpClient.execute(request, null);
     }
 

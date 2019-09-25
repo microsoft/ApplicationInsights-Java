@@ -33,6 +33,9 @@ public class ApplicationInsightsXmlConfiguration {
     @XStreamAlias("InstrumentationKey")
     private String instrumentationKey;
 
+    @XStreamAlias("ConnectionString")
+    private String connectionString;
+
     @XStreamAlias("RoleName")
     private String roleName;
 
@@ -75,6 +78,14 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setInstrumentationKey(String instrumentationKey) {
         this.instrumentationKey = instrumentationKey;
+    }
+
+    public String getConnectionString() {
+        return connectionString;
+    }
+
+    public void setConnectionString(String connectionString) {
+        this.connectionString = connectionString;
     }
 
     public String getRoleName() {

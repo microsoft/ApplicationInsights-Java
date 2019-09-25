@@ -29,16 +29,18 @@ import org.apache.http.ParseException;
 
 /**
  * Retrieves the application profile from storage
+ * @deprecated Replaced by {@link ApplicationIdResolver}
  */
- public interface AppProfileFetcher extends Closeable {
-     /**
-      * Fetches the application profile and returns the appId corresponding to the
-      * instrumentation key provided.
-      * @param instrumentationKey The instrumentation key for which to fetch the appId.
-      * @throws ExecutionException
-      * @throws InterruptedException
-      * @throws IOException
-      * @throws ParseException
-      */
-      ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException;
- }
+@Deprecated
+public interface AppProfileFetcher extends Closeable {
+    /**
+     * Fetches the application profile and returns the appId corresponding to the
+     * instrumentation key provided.
+     * @param instrumentationKey The instrumentation key for which to fetch the appId.
+     * @throws ExecutionException
+     * @throws InterruptedException
+     * @throws IOException
+     * @throws ParseException
+     */
+    ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, ParseException, IOException;
+}

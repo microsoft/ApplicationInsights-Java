@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -132,12 +133,30 @@ public final class ReflectionUtils {
                 clazz = clazz.asSubclass(interfaceClass);
             }
             Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
-            T instance = (T)clazzConstructor.newInstance(argument);
-            return instance;
+            return (T) clazzConstructor.newInstance(argument);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
         }
 
+        return null;
+    }
+
+    static <T> T createConfiguredInstance(String className, Class<T> interfaceClass, TelemetryConfiguration configuration, Map<String, String> componentConfig) {
+        try {
+            if (LocalStringsUtils.isNullOrEmpty(className)) {
+                return null;
+            }
+            Class<?> clazz = builtInMap.get(className);
+            if (clazz == null) {
+                clazz = Class.forName(className).asSubclass(interfaceClass);
+            } else {
+                clazz = clazz.asSubclass(interfaceClass);
+            }
+            Constructor<?> clazzConstructor = clazz.getConstructor(TelemetryConfiguration.class, Map.class);
+            return (T) clazzConstructor.newInstance(configuration, componentConfig);
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Failed to instantiate %s: %s", className, ExceptionUtils.getStackTrace(e));
+        }
         return null;
     }
 

@@ -1,28 +1,30 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockProfileFetcher;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
 import com.microsoft.applicationinsights.web.utils.ServletUtils;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class TraceContextCorrelationTests {
 
-    private static MockProfileFetcher mockProfileFetcher;
+    private ApplicationIdResolver mockProfileFetcher;
 
     @Before
-    public void testInitialize() {
+    public void testInitialize() throws Exception {
 
         // initialize mock profile fetcher (for resolving ikeys to appIds)
-        mockProfileFetcher = new MockProfileFetcher();
-        InstrumentationKeyResolver.INSTANCE.setProfileFetcher(mockProfileFetcher);
+        mockProfileFetcher = mock(ApplicationIdResolver.class);
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id1", ProfileFetcherResultTaskStatus.COMPLETE));
+        InstrumentationKeyResolver.INSTANCE.setAppIdResolver(mockProfileFetcher);
         InstrumentationKeyResolver.INSTANCE.clearCache();
     }
 
@@ -43,14 +45,14 @@ public class TraceContextCorrelationTests {
         TraceContextCorrelation.resolveCorrelation(request, response, requestTelemetry);
 
         //validate we have generated proper ID's
-        Assert.assertNotNull(requestTelemetry.getId());
+        assertNotNull(requestTelemetry.getId());
 
-        Assert.assertTrue(requestTelemetry.getId().startsWith(formatedID(t.getTraceId())));
+        assertTrue(requestTelemetry.getId().startsWith(formatedID(t.getTraceId())));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        Assert.assertEquals(t.getTraceId(), operation.getId());
-        Assert.assertEquals(formatedID(t.getTraceId() + "." + t.getSpanId()), operation.getParentId());
+        assertEquals(t.getTraceId(), operation.getId());
+        assertEquals(formatedID(t.getTraceId() + "." + t.getSpanId()), operation.getParentId());
     }
 
     @Test
@@ -70,11 +72,11 @@ public class TraceContextCorrelationTests {
         // is newly generated and request.Id is based on new traceId-spanId
         OperationContext operation = requestTelemetry.getContext().getOperation();
 
-        Assert.assertNotNull(requestTelemetry.getId());
+        assertNotNull(requestTelemetry.getId());
 
         // First trace will have it's own spanId also.
-        Assert.assertTrue(requestTelemetry.getId().startsWith(formatedID(operation.getId())));
-        Assert.assertNull(operation.getParentId());
+        assertTrue(requestTelemetry.getId().startsWith(formatedID(operation.getId())));
+        assertNull(operation.getParentId());
     }
 
     @Test
@@ -96,14 +98,14 @@ public class TraceContextCorrelationTests {
         // is newly generated and request.Id is based on new traceId-spanId
         OperationContext operation = requestTelemetry.getContext().getOperation();
 
-        Assert.assertNotNull(requestTelemetry.getId());
+        assertNotNull(requestTelemetry.getId());
         // First trace will have it's own spanId also.
-        Assert.assertTrue(requestTelemetry.getId().startsWith("|" + operation.getId()));
-        Assert.assertNull(operation.getParentId());
+        assertTrue(requestTelemetry.getId().startsWith("|" + operation.getId()));
+        assertNull(operation.getParentId());
     }
 
     @Test
-    public void testTracestateIsResolved() {
+    public void testTracestateIsResolved() throws Exception {
         Map<String, String> headers = new HashMap<>();
         String incomingTracestate = getTracestateHeaderValue("id1");
         headers.put(TraceContextCorrelation.TRACESTATE_HEADER_NAME, incomingTracestate);
@@ -111,12 +113,11 @@ public class TraceContextCorrelationTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
+        when(mockProfileFetcher.fetchApplicationId(anyString(), any(TelemetryConfiguration.class))).thenReturn(new ProfileFetcherResult("id2", ProfileFetcherResultTaskStatus.COMPLETE));
 
         TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
 
-        Assert.assertEquals("cid-v1:id1", requestTelemetry.getSource());
+        assertEquals("cid-v1:id1", requestTelemetry.getSource());
 
     }
 
@@ -129,12 +130,9 @@ public class TraceContextCorrelationTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id1");
-
         TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
         //source and target have same appId
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
@@ -144,11 +142,8 @@ public class TraceContextCorrelationTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id1");
-
         TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
@@ -159,14 +154,11 @@ public class TraceContextCorrelationTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id1");
-
         TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testTraceStateIsNotResolvedIfHeaderDoesntHaveAzureComponent() {
         Map<String, String> headers = new HashMap<>();
         // get tracestate with non azure component
@@ -176,11 +168,8 @@ public class TraceContextCorrelationTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id1");
-
         TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, "ikey1");
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
@@ -192,12 +181,9 @@ public class TraceContextCorrelationTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
-
         TraceContextCorrelation.resolveRequestSource(request, requestTelemetry, null);
 
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
@@ -209,12 +195,9 @@ public class TraceContextCorrelationTests {
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers);
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
-
         TraceContextCorrelation.resolveRequestSource(request, null, "ikey1");
 
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
     @Test
@@ -225,12 +208,9 @@ public class TraceContextCorrelationTests {
 
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
-        mockProfileFetcher.setResultStatus(ProfileFetcherResultTaskStatus.COMPLETE);
-        mockProfileFetcher.setAppIdToReturn("id2");
-
         TraceContextCorrelation.resolveRequestSource(null, requestTelemetry, "ikey1");
 
-        Assert.assertNull(requestTelemetry.getSource());
+        assertNull(requestTelemetry.getSource());
     }
 
      public static String getTracestateHeaderValue(String appId) {

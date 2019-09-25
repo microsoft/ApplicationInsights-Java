@@ -36,7 +36,7 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * Created by gupele on 12/12/2016.
  */
 final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
-    private final static String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/";
+    private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc/";
     private final ArrayBlockingQueue<HttpPost> sendQueue;
     private final TelemetryConfiguration config;
     private final String ikey;
@@ -54,8 +54,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         this(sendQueue, null, ikey, instanceName, quickPulseId);
     }
 
-    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config,
-                                        String ikey, String instanceName, String quickPulseId) {
+    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config, String ikey, String instanceName, String quickPulseId) {
         this.sendQueue = sendQueue;
         this.config = config;
         this.ikey = ikey;
@@ -63,13 +62,15 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         final StringBuilder sb = new StringBuilder();
         sb.append("[{");
         formatDocuments(sb);
-        sb.append("\"Instance\": \"" + instanceName + "\",");
-        sb.append("\"InstrumentationKey\": \"" + ikey + "\",");
+        sb.append("\"Instance\": \"").append(instanceName).append("\",");
+        sb.append("\"InstrumentationKey\": \"").append(ikey).append("\",");
         sb.append("\"InvariantVersion\": 1,");
-        sb.append("\"MachineName\": \"" + instanceName + "\",");
-        sb.append("\"StreamId\": \"" + quickPulseId + "\",");
-
+        sb.append("\"MachineName\": \"").append(instanceName).append("\",");
+        sb.append("\"StreamId\": \"").append(quickPulseId).append("\",");
         postPrefix = sb.toString();
+        if (InternalLogger.INSTANCE.isTraceEnabled()) {
+            InternalLogger.INSTANCE.trace("%s using endpoint %s", DefaultQuickPulseDataFetcher.class.getSimpleName(), getQuickPulseEndpoint());
+        }
     }
 
     /**
@@ -86,7 +87,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
             final Date currentDate = new Date();
-            final HttpPost request = networkHelper.buildRequest(currentDate, QP_BASE_URI + "post?ikey=" + getInstrumentationKey());
+            final HttpPost request = networkHelper.buildRequest(currentDate, getEndpointUrl());
 
             final ByteArrayEntity postEntity = buildPostEntity(counters);
 
@@ -106,6 +107,14 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
                 // chomp
             }
         }
+    }
+
+    private String getEndpointUrl() {
+        return getQuickPulseEndpoint() + "post?ikey=" + getInstrumentationKey();
+    }
+
+    private String getQuickPulseEndpoint() {
+         return config == null ? QP_BASE_URI : config.getEndpointProvider().getLiveEndpointURL().toString();
     }
 
     private String getInstrumentationKey() {
