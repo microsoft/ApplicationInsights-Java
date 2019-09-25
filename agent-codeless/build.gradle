@@ -158,6 +158,7 @@ dependencies {
     runtime "org.glowroot.instrumentation:instrumentation-executor:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-servlet:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-netty:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-jms:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-spring:$instrumentationVersion" // need for operation name
     runtime "org.glowroot.instrumentation:instrumentation-jaxrs:$instrumentationVersion" // need for operation name
     runtime "org.glowroot.instrumentation:instrumentation-struts:$instrumentationVersion" // need for operation name
