@@ -140,7 +140,7 @@ public class QuerySpanImpl implements QuerySpan {
     }
 
     private void endInternalPart2() {
-        if (!type.equals("SQL")) {
+        if (!type.equals("SQL") && !type.equals("MongoDB")) {
             return;
         }
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
@@ -148,7 +148,11 @@ public class QuerySpanImpl implements QuerySpan {
         telemetry.getContext().getOperation().setParentId(operationParentId);
         telemetry.setTimestamp(new Date(startTimeMillis));
         telemetry.setDuration(new Duration(endTimeMillis - startTimeMillis));
-        telemetry.setName(dest);
+        if (dest.isEmpty()) {
+            telemetry.setName(type);
+        } else {
+            telemetry.setName(dest);
+        }
         telemetry.setCommandName(text);
         telemetry.setSuccess(exception == null);
         telemetry.setType(type);
