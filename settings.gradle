@@ -55,6 +55,7 @@ include ':test:smoke:appServers:Tomcat.8.5'
 include ':test:smoke:appServers:JBossEAP.7'
 include ':test:smoke:appServers:JBossEAP.6'
 include ':test:smoke:appServers:Jetty.9'
+include ':test:smoke:appServers:JavaSE'
 include ':test:smoke:testApps'
 
 include ':test:smoke:framework:testCore'
@@ -82,5 +83,4 @@ include ':test:smoke:testApps:CustomInstrumentation'
 include ':test:smoke:testApps:WebAuto'
 include ':test:smoke:testApps:SpringBoot1_3Auto'
 include ':test:smoke:testApps:SpringBootAuto'
-
-
+include ':test:smoke:testApps:Netty'

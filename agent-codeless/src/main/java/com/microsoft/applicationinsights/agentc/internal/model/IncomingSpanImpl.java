@@ -197,11 +197,28 @@ public class IncomingSpanImpl implements Span {
 
         requestTelemetry.setDuration(new Duration(endTimeMillis - startTimeMillis));
 
-        try {
-            requestTelemetry.setUrl(removeSessionIdFromUri(getUrl(detail)));
-        } catch (MalformedURLException e) {
-            logger.error(e.getMessage());
-            logger.debug(e.getMessage(), e);
+        String scheme = (String) detail.get("Request scheme");
+        if (scheme == null) {
+            String text = message.getText();
+            int index = text.indexOf(' ');
+            if (index != -1) {
+                text = text.substring(index + 1);
+            }
+            String url = removeSessionIdFromUri(text);
+            try {
+                requestTelemetry.setUrl(url);
+            } catch (MalformedURLException e) {
+                logger.error("{}: {}", e.getMessage(), url);
+                logger.debug(e.getMessage(), e);
+            }
+        } else {
+            String url = removeSessionIdFromUri(getUrl(detail));
+            try {
+                requestTelemetry.setUrl(url);
+            } catch (MalformedURLException e) {
+                logger.error("{}: {}", e.getMessage(), url);
+                logger.debug(e.getMessage(), e);
+            }
         }
 
         Integer responseCode = (Integer) detail.get("Response code");
@@ -265,8 +282,10 @@ public class IncomingSpanImpl implements Span {
         sb.append(scheme);
         sb.append("://");
         sb.append(host);
-        sb.append(":");
-        sb.append(port);
+        if (port != null) {
+            sb.append(":");
+            sb.append(port);
+        }
         sb.append(uri);
         if (query != null) {
             sb.append("?");
