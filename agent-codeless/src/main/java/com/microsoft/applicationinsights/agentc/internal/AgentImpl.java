@@ -47,7 +47,7 @@ class AgentImpl implements AgentSPI {
                                       ThreadContextThreadLocal.Holder threadContextHolder, int rootNestingGroupId,
                                       int rootSuppressionKeyId) {
 
-        if (!transactionType.equals("Web")) {
+        if (!transactionType.equals("Web") && !transactionType.equals("Background")) {
             // this is a little more complicated than desired, but part of the contract of startIncomingSpan is that it
             // sets a ThreadContext in the threadContextHolder before returning, and NopThreadSpan makes sure to clear
             // the threadContextHolder at the end of the thread
