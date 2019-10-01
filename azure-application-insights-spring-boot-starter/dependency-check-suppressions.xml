@@ -40,4 +40,13 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
         <cve>CVE-2019-10072</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-netty-shaded-1.24.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-netty\-shaded@.*$</packageUrl>
+        <cve>CVE-2014-3488</cve>
+        <cve>CVE-2015-2156</cve>
+        <cve>CVE-2019-16869</cve>
+    </suppress>
 </suppressions>
