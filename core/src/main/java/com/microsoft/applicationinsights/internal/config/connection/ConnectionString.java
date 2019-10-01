@@ -104,17 +104,16 @@ public class ConnectionString {
     /**
      * All tokens are lowercase. Parsing should be case insensitive.
      */
-    @VisibleForTesting
-    static class Keywords {
+    public static class Keywords {
         private Keywords(){}
 
-        static final String AUTHORIZATION = "Authorization";
-        static final String INSTRUMENTATION_KEY = "InstrumentationKey";
-        static final String ENDPOINT_SUFFIX = "EndpointSuffix";
-        static final String INGESTION_ENDPOINT = "IngestionEndpoint";
-        static final String LIVE_ENDPOINT = "LiveEndpoint";
-        static final String PROFILER_ENDPOINT = "ProfilerEndpoint";
-        static final String SNAPSHOT_ENDPOINT = "SnapshotEndpoint";
+        public static final String AUTHORIZATION = "Authorization";
+        public static final String INSTRUMENTATION_KEY = "InstrumentationKey";
+        public static final String ENDPOINT_SUFFIX = "EndpointSuffix";
+        public static final String INGESTION_ENDPOINT = "IngestionEndpoint";
+        public static final String LIVE_ENDPOINT = "LiveEndpoint";
+        public static final String PROFILER_ENDPOINT = "ProfilerEndpoint";
+        public static final String SNAPSHOT_ENDPOINT = "SnapshotEndpoint";
     }
 
     @VisibleForTesting
