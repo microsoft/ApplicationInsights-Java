@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
 import javax.annotation.Nullable;
 

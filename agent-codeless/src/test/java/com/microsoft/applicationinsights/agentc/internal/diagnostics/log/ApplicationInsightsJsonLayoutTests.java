@@ -1,27 +1,18 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
 
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsValueFinder;
 import org.hamcrest.Matchers;
 import org.junit.*;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.rules.TemporaryFolder;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 public class ApplicationInsightsJsonLayoutTests {
 
-    @Rule
-    public EnvironmentVariables envVars = new EnvironmentVariables();
-
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    public static final String UNKNOWN_VALUE = ApplicationInsightsJsonLayout.UNKNOWN_VALUE;
 
     private ApplicationInsightsJsonLayout ourLayout;
     private Map<String, Object> jsonMap = new HashMap<>();
@@ -38,46 +29,47 @@ public class ApplicationInsightsJsonLayoutTests {
     }
 
     @Test
-    public void noEnvVarsMeansUnknownResourceId() {
+    public void layoutAddsDataFromFinders() {
+        ourLayout.valueFinders.clear();
+        final String key = "mock-finder";
+        final String value = "mock-value";
+
+        final DiagnosticsValueFinder mockFinder = mock(DiagnosticsValueFinder.class);
+        when(mockFinder.getName()).thenReturn(key);
+        when(mockFinder.getValue()).thenReturn(value);
+        ourLayout.valueFinders.add(mockFinder);
+
         ourLayout.addCustomDataToJsonMap(jsonMap, null);
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(ResourceIdFinder.RESOURCE_ID_FIELD_NAME, ApplicationInsightsJsonLayout.UNKNOWN_VALUE));
+
+        verify(mockFinder, atLeastOnce()).getName();
+        verify(mockFinder, atLeastOnce()).getValue();
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry(key, value));
     }
 
     @Test
-    public void whenOnlyHostnameIsSetUseAsResourceId() {
-        String value = "test-host.example.com";
-        envVars.set(ResourceIdFinder.WEBSITE_HOSTNAME_ENV_VAR, value);
-        ourLayout.addCustomDataToJsonMap(jsonMap, null);
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(ResourceIdFinder.RESOURCE_ID_FIELD_NAME, value));
-    }
+    public void nullOrEmptyValueWritesUnknownValue() {
+        ourLayout.valueFinders.clear();
+        final String nKey = "f-null";
+        final String eKey = "f-empty";
 
-    @Test
-    public void whenResourceIdFileIsNonEmptyUseAsResourceId() throws IOException {
-        String value = "test-host2.example.com";
-        envVars.set(ResourceIdFinder.WEBSITE_HOSTNAME_ENV_VAR, "wrong");
-        File residFile = tempFolder.newFile(ResourceIdFinder.RESOURCE_ID_FILE_NAME);
-        envVars.set(ResourceIdFinder.DIAGNOSTIC_LOGS_MOUNT_PATH_ENV_VAR, residFile.getParent());
-        Files.write(Paths.get(residFile.getAbsolutePath()), value.getBytes(StandardCharsets.UTF_8));
-        ourLayout.addCustomDataToJsonMap(jsonMap, null);
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(ResourceIdFinder.RESOURCE_ID_FIELD_NAME, value));
-    }
+        final DiagnosticsValueFinder nullValueFinder = mock(DiagnosticsValueFinder.class);
+        when(nullValueFinder.getName()).thenReturn(nKey);
+        when(nullValueFinder.getValue()).thenReturn(null);
+        ourLayout.valueFinders.add(nullValueFinder);
 
-    @Test
-    public void ifResourceIdFileIsEmptyFallbackToHostname() throws IOException {
-        String value = "test-host3.example.com";
-        envVars.set(ResourceIdFinder.WEBSITE_HOSTNAME_ENV_VAR, value);
-        File residFile = tempFolder.newFile(ResourceIdFinder.RESOURCE_ID_FILE_NAME);
-        envVars.set(ResourceIdFinder.DIAGNOSTIC_LOGS_MOUNT_PATH_ENV_VAR, residFile.getParent());
-        ourLayout.addCustomDataToJsonMap(jsonMap, null);
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(ResourceIdFinder.RESOURCE_ID_FIELD_NAME, value));
-    }
+        final DiagnosticsValueFinder emptyValueFinder = mock(DiagnosticsValueFinder.class);
+        when(emptyValueFinder.getName()).thenReturn(eKey);
+        when(emptyValueFinder.getValue()).thenReturn("");
+        ourLayout.valueFinders.add(emptyValueFinder);
 
-    @Test
-    public void isResourceIdFileAndHostnameAreEmptyIdIsUnknown() throws IOException {
-        File residFile = tempFolder.newFile(ResourceIdFinder.RESOURCE_ID_FILE_NAME);
-        envVars.set(ResourceIdFinder.DIAGNOSTIC_LOGS_MOUNT_PATH_ENV_VAR, residFile.getParent());
         ourLayout.addCustomDataToJsonMap(jsonMap, null);
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(ResourceIdFinder.RESOURCE_ID_FIELD_NAME, ApplicationInsightsJsonLayout.UNKNOWN_VALUE));
+
+        verify(nullValueFinder, atLeastOnce()).getName();
+        verify(nullValueFinder, atLeastOnce()).getValue();
+        verify(emptyValueFinder, atLeastOnce()).getName();
+        verify(emptyValueFinder, atLeastOnce()).getValue();
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry(eKey, UNKNOWN_VALUE));
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry(nKey, UNKNOWN_VALUE));
     }
 
 }

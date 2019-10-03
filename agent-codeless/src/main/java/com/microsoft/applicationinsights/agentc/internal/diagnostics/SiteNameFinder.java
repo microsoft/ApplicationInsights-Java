@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -15,7 +15,7 @@ public class SiteNameFinder extends CachedDiagnosticsValueFinder {
     }
 
     @Override
-    public String populateValue() {
+    protected String populateValue() {
         String fromEnv = System.getenv(SiteNameFinder.WEBSITE_SITE_NAME_ENV_VAR);
         if (Strings.isNullOrEmpty(fromEnv)) {
             return null;

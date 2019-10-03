@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -23,7 +23,7 @@ public class ResourceIdFinder extends CachedDiagnosticsValueFinder {
     }
 
     @Override
-    public String populateValue() {
+    protected String populateValue() {
         String diagLogMountPath = System.getenv(ResourceIdFinder.DIAGNOSTIC_LOGS_MOUNT_PATH_ENV_VAR);
 
         if (!Strings.isNullOrEmpty(diagLogMountPath)) {

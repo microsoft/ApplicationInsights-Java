@@ -28,12 +28,19 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsValueFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.InstrumentationKeyFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.ResourceIdFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.SdkVersionFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.SiteNameFinder;
 
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
     @VisibleForTesting
     static final String UNKNOWN_VALUE = "unknown";
 
+    @VisibleForTesting
     final List<DiagnosticsValueFinder> valueFinders = new ArrayList<>();
 
     public ApplicationInsightsJsonLayout() {
