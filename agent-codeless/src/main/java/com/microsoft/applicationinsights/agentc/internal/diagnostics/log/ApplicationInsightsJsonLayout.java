@@ -38,8 +38,6 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.SiteNameFin
 
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
-    private static final String OPERATION_NAME = "n/a"; // TODO
-
     public static String TIMESTAMP_PROP_NAME = "time";
     public static String RESOURCE_ID_PROP_NAME = "resourceId";
     public static String OPERATION_NAME_PROP_NAME = "operationName";
@@ -55,6 +53,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     private DiagnosticsValueFinder resourceIdValue = new ResourceIdFinder();
 
     private String category = "Execution";
+    private String operationName = "n/a";
 
     public ApplicationInsightsJsonLayout() {
         valueFinders.add(new SiteNameFinder());
@@ -87,20 +86,26 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
         return jsonMap;
     }
 
-    @VisibleForTesting
-    String getOperationName() {
-        return OPERATION_NAME;
+    public String getOperationName() {
+        return operationName;
+    }
+
+    public void setOperationName(String operationName) {
+        this.operationName = operationName;
     }
 
     @VisibleForTesting
     String getResourceId() {
-        final String value = resourceIdValue.getValue(); // should be uppercase
+        final String value = resourceIdValue.getValue();
         return Strings.isNullOrEmpty(value) ? UNKNOWN_VALUE.toUpperCase() : value.toUpperCase();
     }
 
-    @VisibleForTesting
-    String getCategory() {
+    public String getCategory() {
         return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
 }
