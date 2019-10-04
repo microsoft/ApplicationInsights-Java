@@ -21,6 +21,7 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,14 +38,25 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.SiteNameFin
 
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
+    private static final String OPERATION_NAME = "n/a"; // TODO
+
+    public static String TIMESTAMP_PROP_NAME = "time";
+    public static String RESOURCE_ID_PROP_NAME = "resourceId";
+    public static String OPERATION_NAME_PROP_NAME = "operationName";
+    public static String CATEGORY_PROP_NAME = "category";
+    public static String CUSTOM_FIELDS_PROP_NAME = "properties";
+
     @VisibleForTesting
     static final String UNKNOWN_VALUE = "unknown";
 
     @VisibleForTesting
     final List<DiagnosticsValueFinder> valueFinders = new ArrayList<>();
 
+    private DiagnosticsValueFinder resourceIdValue = new ResourceIdFinder();
+
+    private String category = "Execution";
+
     public ApplicationInsightsJsonLayout() {
-        valueFinders.add(new ResourceIdFinder());
         valueFinders.add(new SiteNameFinder());
         valueFinders.add(new InstrumentationKeyFinder());
         valueFinders.add(new AgentExtensionVersionFinder());
@@ -52,10 +64,43 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     }
 
     @Override
-    protected void addCustomDataToJsonMap(Map<String, Object> map, ILoggingEvent event) {
+    protected Map toJsonMap(ILoggingEvent event) {
+        Map<String, Object> jsonMap = new LinkedHashMap<>();
+        addTimestamp(TIMESTAMP_PROP_NAME, true, event.getTimeStamp(), jsonMap);
+        add(RESOURCE_ID_PROP_NAME, true, getResourceId(), jsonMap);
+        add(OPERATION_NAME_PROP_NAME, true, getOperationName(), jsonMap);
+        add(CATEGORY_PROP_NAME, true, getCategory(), jsonMap);
+        add(LEVEL_ATTR_NAME, true, String.valueOf(event.getLevel()), jsonMap);
+        addMap(CUSTOM_FIELDS_PROP_NAME, true, getPropertiesMap(event), jsonMap);
+        return jsonMap;
+    }
+
+    private Map<String, Object> getPropertiesMap(ILoggingEvent event) {
+        Map<String, Object> jsonMap = new LinkedHashMap<>();
+        add(FORMATTED_MESSAGE_ATTR_NAME, true, event.getFormattedMessage(), jsonMap);
+        add(LOGGER_ATTR_NAME, true, event.getLoggerName(), jsonMap);
+        addThrowableInfo(EXCEPTION_ATTR_NAME, true, event, jsonMap);
         for (DiagnosticsValueFinder finder : valueFinders) {
             String value = finder.getValue();
-            map.put(finder.getName(), Strings.isNullOrEmpty(value) ? UNKNOWN_VALUE : value);
+            add(finder.getName(), true, Strings.isNullOrEmpty(value) ? UNKNOWN_VALUE : value, jsonMap);
         }
+        return jsonMap;
     }
+
+    @VisibleForTesting
+    String getOperationName() {
+        return OPERATION_NAME;
+    }
+
+    @VisibleForTesting
+    String getResourceId() {
+        final String value = resourceIdValue.getValue(); // should be uppercase
+        return Strings.isNullOrEmpty(value) ? UNKNOWN_VALUE.toUpperCase() : value.toUpperCase();
+    }
+
+    @VisibleForTesting
+    String getCategory() {
+        return category;
+    }
+
 }
