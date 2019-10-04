@@ -44,6 +44,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     public static String CATEGORY_PROP_NAME = "category";
     public static String CUSTOM_FIELDS_PROP_NAME = "properties";
 
+
     @VisibleForTesting
     static final String UNKNOWN_VALUE = "unknown";
 
@@ -53,7 +54,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     private DiagnosticsValueFinder resourceIdValue = new ResourceIdFinder();
 
     private String category = "Execution";
-    private String operationName = "n/a";
+    private String operationNamePrefix = "n/a";
 
     public ApplicationInsightsJsonLayout() {
         valueFinders.add(new SiteNameFinder());
@@ -67,7 +68,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
         Map<String, Object> jsonMap = new LinkedHashMap<>();
         addTimestamp(TIMESTAMP_PROP_NAME, true, event.getTimeStamp(), jsonMap);
         add(RESOURCE_ID_PROP_NAME, true, getResourceId(), jsonMap);
-        add(OPERATION_NAME_PROP_NAME, true, getOperationName(), jsonMap);
+        add(OPERATION_NAME_PROP_NAME, true, getOperationName(event), jsonMap);
         add(CATEGORY_PROP_NAME, true, getCategory(), jsonMap);
         add(LEVEL_ATTR_NAME, true, String.valueOf(event.getLevel()), jsonMap);
         addMap(CUSTOM_FIELDS_PROP_NAME, true, getPropertiesMap(event), jsonMap);
@@ -86,12 +87,8 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
         return jsonMap;
     }
 
-    public String getOperationName() {
-        return operationName;
-    }
-
-    public void setOperationName(String operationName) {
-        this.operationName = operationName;
+    public String getOperationName(ILoggingEvent event) {
+        return operationNamePrefix;
     }
 
     @VisibleForTesting
@@ -108,4 +105,11 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
         this.category = category;
     }
 
+    public String getOperationNamePrefix() {
+        return operationNamePrefix;
+    }
+
+    public void setOperationNamePrefix(String operationNamePrefix) {
+        this.operationNamePrefix = operationNamePrefix;
+    }
 }
