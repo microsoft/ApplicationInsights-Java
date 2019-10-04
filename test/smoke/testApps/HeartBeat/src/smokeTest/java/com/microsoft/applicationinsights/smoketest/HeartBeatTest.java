@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 
@@ -24,7 +25,7 @@ public class HeartBeatTest extends AiSmokeTest {
         List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate("HeartbeatState"), 2, 70, TimeUnit.SECONDS);
         assertEquals(2, metrics.size());
 
-        MetricData data = getTelemetryDataForType(0, "MetricData");
+        MetricData data = (MetricData) ((Data) metrics.get(0).getData()).getBaseData();
         assertNotNull(data.getProperties().get("jreVersion"));
         assertNotNull(data.getProperties().get("sdkVersion"));
         assertNotNull(data.getProperties().get("osVersion"));

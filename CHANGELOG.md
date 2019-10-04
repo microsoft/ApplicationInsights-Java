@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 2.5.1-BETA
+* Fixed exception thrown by agent when using Apache HttpClient ResponseHandler methods
+  ([#1067](https://github.com/microsoft/ApplicationInsights-Java/issues/1067))
+* Connection String introduced for better government cloud support
+* Agent now captures MongoDB queries
+
 # Version 2.5.0
 * No changes since 2.5.0-BETA.5
 
