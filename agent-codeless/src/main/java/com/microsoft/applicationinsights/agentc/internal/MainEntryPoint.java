@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.FixedRateSampling;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.ApplicationInsightsStatusFile;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
@@ -86,6 +87,11 @@ public class MainEntryPoint {
             startupLogger.error("Agent failed to start.", t);
             t.printStackTrace();
         } finally {
+            try {
+                ApplicationInsightsStatusFile.write();
+            } catch (Exception e) {
+                startupLogger.error("Error writing status.json", e);
+            }
             MDC.clear();
         }
     }
