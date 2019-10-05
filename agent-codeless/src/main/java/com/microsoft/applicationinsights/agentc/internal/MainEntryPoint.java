@@ -64,6 +64,7 @@ import org.glowroot.instrumentation.engine.impl.SimpleConfigServiceFactory;
 import org.glowroot.instrumentation.engine.init.EngineModule;
 import org.glowroot.instrumentation.engine.init.MainEntryPointUtil;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 public class MainEntryPoint {
 
@@ -75,6 +76,7 @@ public class MainEntryPoint {
     public static void premain(Instrumentation instrumentation, File agentJarFile) {
         try {
             startupLogger = initLogging(instrumentation, agentJarFile);
+            MDC.put("microsoft.ai.operationName", "Startup");
             addLibJars(instrumentation, agentJarFile);
             instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
             instrumentation.addTransformer(new LegacyTelemetryClientClassFileTransformer());
@@ -86,6 +88,8 @@ public class MainEntryPoint {
         } catch (Throwable t) {
             startupLogger.error("Agent failed to start.", t);
             t.printStackTrace();
+        } finally {
+            MDC.clear();
         }
     }
 

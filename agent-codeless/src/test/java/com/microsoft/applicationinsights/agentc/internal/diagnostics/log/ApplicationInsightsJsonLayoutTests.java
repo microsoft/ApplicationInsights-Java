@@ -7,6 +7,7 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.Diagnostics
 import org.hamcrest.Matchers;
 import org.junit.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.*;
@@ -47,7 +48,7 @@ public class ApplicationInsightsJsonLayoutTests {
         final Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
         assertThat(jsonMap, Matchers.<String, Object>hasEntry(TIMESTAMP_PROP_NAME, String.valueOf(TIMESTAMP_VALUE))); // there is no timestamp format specified, so it just uses the raw long value.
         assertThat(jsonMap, Matchers.<String, Object>hasEntry(CATEGORY_PROP_NAME, ourLayout.getCategory()));
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(OPERATION_NAME_PROP_NAME, ourLayout.getOperationName()));
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry(OPERATION_NAME_PROP_NAME, ourLayout.getOperationName(logEvent)));
         assertThat(jsonMap, Matchers.<String, Object>hasEntry(RESOURCE_ID_PROP_NAME, ourLayout.getResourceId()));
         assertThat(jsonMap, hasEntry(is(CUSTOM_FIELDS_PROP_NAME), instanceOf(Map.class)));
     }
@@ -101,6 +102,16 @@ public class ApplicationInsightsJsonLayoutTests {
         verify(emptyValueFinder, atLeastOnce()).getValue();
         assertThat(propMap, Matchers.<String, Object>hasEntry(eKey, UNKNOWN_VALUE));
         assertThat(propMap, Matchers.<String, Object>hasEntry(nKey, UNKNOWN_VALUE));
+    }
+
+    @Test
+    public void mdcOperationNamePropertyAppendsToPrefix() {
+        Map<String, String> map = new HashMap<>();
+        map.put("microsoft.ai.operationName", "test");
+        when(logEvent.getMDCPropertyMap()).thenReturn(map);
+        ourLayout.setOperationNamePrefix("test123/456");
+        final Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry("operationName", "test123/456/test"));
     }
 
 }

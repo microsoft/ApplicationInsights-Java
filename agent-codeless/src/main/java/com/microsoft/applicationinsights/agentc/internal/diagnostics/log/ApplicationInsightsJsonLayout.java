@@ -88,7 +88,12 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     }
 
     public String getOperationName(ILoggingEvent event) {
-        return operationNamePrefix;
+        final Map<String, String> map = event.getMDCPropertyMap();
+        if (map.containsKey("microsoft.ai.operationName")) {
+            return operationNamePrefix + "/" + map.get("microsoft.ai.operationName");
+        } else {
+            return operationNamePrefix;
+        }
     }
 
     @VisibleForTesting
