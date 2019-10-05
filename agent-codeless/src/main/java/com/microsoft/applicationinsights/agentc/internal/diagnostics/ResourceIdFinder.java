@@ -33,7 +33,7 @@ public class ResourceIdFinder extends CachedDiagnosticsValueFinder {
                     return resId;
                 }
             } catch (Exception e) {
-                // nop
+                // nop. this can't be logged since we're inside the logger layout class
             }
         }
 

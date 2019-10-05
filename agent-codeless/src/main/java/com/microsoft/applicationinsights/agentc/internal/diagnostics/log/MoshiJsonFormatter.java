@@ -8,6 +8,9 @@ import com.squareup.moshi.Moshi.Builder;
 import java.util.Map;
 
 public class MoshiJsonFormatter implements JsonFormatter {
+    /**
+     * Used in testing, not in prod.
+     */
     private boolean prettyPrint;
 
     @Override
