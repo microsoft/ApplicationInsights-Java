@@ -16,10 +16,6 @@ public class SiteNameFinder extends CachedDiagnosticsValueFinder {
 
     @Override
     protected String populateValue() {
-        String fromEnv = System.getenv(SiteNameFinder.WEBSITE_SITE_NAME_ENV_VAR);
-        if (Strings.isNullOrEmpty(fromEnv)) {
-            return null;
-        }
-        return fromEnv;
+        return Strings.emptyToNull(System.getenv(SiteNameFinder.WEBSITE_SITE_NAME_ENV_VAR));
     }
 }

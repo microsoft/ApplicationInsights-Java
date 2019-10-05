@@ -21,11 +21,11 @@ public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
     @Nullable
     @Override
     public String getValue() {
-        try {
-            return Global.getTelemetryClient().getContext().getInstrumentationKey();
-        } catch (NullPointerException npe) {
-            // ignore. TelemetryClient not initialized yet.
+        final String ikey = Global.getInstrumentationKey();
+        if (ikey != null) {
+            return ikey;
         }
+
         final String connStr = System.getenv(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME);
         if (!Strings.isNullOrEmpty(connStr)) {
             try {
