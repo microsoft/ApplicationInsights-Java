@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 import org.junit.*;
 
 import java.net.URI;
@@ -10,6 +11,16 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class DefaultQuickPulsePingSenderTests {
+    @BeforeClass
+    public static void cleanUpActive() {
+        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
+    }
+
+    @AfterClass
+    public static void cleanUpActiveAgain() {
+        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
+    }
+
     @Test
     public void endpointIsFormattedCorrectlyWhenUsingConfig() {
         final TelemetryConfiguration config = new TelemetryConfiguration();

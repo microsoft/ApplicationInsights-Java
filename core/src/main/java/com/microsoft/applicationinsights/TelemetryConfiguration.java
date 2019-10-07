@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.nop.NopTelemetryChannel;
@@ -245,7 +246,8 @@ public final class TelemetryConfiguration {
     /**
      * Method for tear down in tests
      */
-    private static void setActiveAsNull() {
+    @VisibleForTesting
+    static void setActiveAsNull() {
         active = null;
     }
 }
