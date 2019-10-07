@@ -27,7 +27,7 @@ import java.security.ProtectionDomain;
 
 import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.ApplicationInsightsStatusFile;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agentc.internal.model.LegacySDK;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
@@ -88,7 +88,7 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
         if (!unshadedClassName.equals(className)) {
             return null;
         }
-        ApplicationInsightsStatusFile.putValueAndWrite("SDKPresent", true);
+        StatusFile.putValueAndWrite("SDKPresent", true);
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             TelemetryClientClassVisitor cv = new TelemetryClientClassVisitor(cw, unshadedPrefix);
