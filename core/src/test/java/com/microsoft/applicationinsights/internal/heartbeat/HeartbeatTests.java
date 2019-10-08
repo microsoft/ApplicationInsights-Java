@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -16,10 +17,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.*;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -27,8 +26,13 @@ import org.mockito.stubbing.Answer;
 public class HeartbeatTests {
 
   @Before
-  public void setTelemetryConfigurationNull() throws Exception{
-    tearDown();
+  public void setTelemetryConfigurationNull() {
+    TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
+  }
+
+  @After
+  public void tearDown() {
+    TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
   }
 
   @Test
@@ -339,14 +343,4 @@ public class HeartbeatTests {
     Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("webapps"));
   }
 
-  @AfterClass
-  public static void tear() throws Exception{
-    tearDown();
-  }
-
-  private static void tearDown() throws Exception{
-    Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
-    method.setAccessible(true);
-    method.invoke(null);
-  }
 }

@@ -28,6 +28,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.Constants;
 import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContext;
 import com.microsoft.applicationinsights.extensibility.initializer.docker.internal.DockerContextPoller;
@@ -38,10 +39,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.*;
 
 /**
  * Created by yonisha on 7/29/2015.
@@ -72,6 +71,11 @@ public class DockerContextInitializerTests {
         when(contextPollerMock.getDockerContext()).thenReturn(defaultDockerContext);
         when(contextPollerMock.isCompleted()).thenReturn(true);
         telemetry = new TraceTelemetry();
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
     }
 
     @Test

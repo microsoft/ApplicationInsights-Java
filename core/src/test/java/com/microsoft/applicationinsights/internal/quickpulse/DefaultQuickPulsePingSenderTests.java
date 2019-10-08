@@ -11,13 +11,13 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class DefaultQuickPulsePingSenderTests {
-    @BeforeClass
-    public static void cleanUpActive() {
+    @Before
+    public void cleanUpActive() {
         TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
     }
 
-    @AfterClass
-    public static void cleanUpActiveAgain() {
+    @After
+    public void cleanUpActiveAgain() {
         TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
     }
 
