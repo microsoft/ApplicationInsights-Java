@@ -126,7 +126,7 @@ public class MainEntryPoint {
 
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {
 
-        if (DiagnosticsHelper.isAppService()) {
+        if (DiagnosticsHelper.isAppServiceCodeless()) {
             if (SystemInformation.INSTANCE.isWindows()) {
                 PropertyHelper.setSdkNamePrefix("awr_");
             } else if (SystemInformation.INSTANCE.isUnix()) {

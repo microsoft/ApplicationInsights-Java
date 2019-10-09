@@ -113,7 +113,7 @@ public class StatusFile {
     }
 
     private static boolean shouldNotWrite() {
-        return !DiagnosticsHelper.isAppService();
+        return !DiagnosticsHelper.isAppServiceCodeless();
     }
 
     @VisibleForTesting

@@ -11,15 +11,15 @@ public class DiagnosticsHelper {
     private static File agentJarFile;
 
     @VisibleForTesting
-    static volatile boolean appService;
+    static volatile boolean appServiceCodeless;
 
     public static synchronized void setAgentJarFile(File agentJarFile) {
         DiagnosticsHelper.agentJarFile = agentJarFile;
-        appService = Files.exists(agentJarFile.toPath().resolveSibling("appsvc.codeless"));
+        appServiceCodeless = Files.exists(agentJarFile.toPath().resolveSibling("appsvc.codeless"));
     }
 
-    public static synchronized boolean isAppService() {
-        return appService;
+    public static synchronized boolean isAppServiceCodeless() {
+        return appServiceCodeless;
     }
 
 }

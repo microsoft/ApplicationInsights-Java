@@ -76,7 +76,7 @@ public class StatusFileTests {
     @Test
     public void writesCorrectFile() throws Exception {
         try {
-            DiagnosticsTestHelper.setIsAppService(true);
+            DiagnosticsTestHelper.setIsAppServiceCodeless(true);
 
             final File tempFolder = this.tempFolder.newFolder();
             StatusFile.directory = tempFolder.getAbsolutePath();
@@ -88,7 +88,7 @@ public class StatusFileTests {
             final Map map = parseJsonFile(tempFolder);
             assertMapHasExpectedInformation(map);
         } finally {
-            DiagnosticsTestHelper.setIsAppService(false);
+            DiagnosticsTestHelper.setIsAppServiceCodeless(false);
         }
     }
 
@@ -107,7 +107,7 @@ public class StatusFileTests {
     @Test
     public void doesNotWriteIfNotAppService() throws Exception {
         try {
-            DiagnosticsTestHelper.setIsAppService(false); // just to be sure
+            DiagnosticsTestHelper.setIsAppServiceCodeless(false); // just to be sure
 
             final File tempFolder = this.tempFolder.newFolder();
             StatusFile.directory = tempFolder.getAbsolutePath();
@@ -128,7 +128,7 @@ public class StatusFileTests {
     public void putValueAndWriteOverwritesCurrentFile() throws Exception {
         final String key = "write-test";
         try {
-            DiagnosticsTestHelper.setIsAppService(true);
+            DiagnosticsTestHelper.setIsAppServiceCodeless(true);
 
 
             final File tempFolder = this.tempFolder.newFolder();
@@ -149,7 +149,7 @@ public class StatusFileTests {
             assertMapHasExpectedInformation(map, key, value);
 
         } finally {
-            DiagnosticsTestHelper.setIsAppService(false);
+            DiagnosticsTestHelper.setIsAppServiceCodeless(false);
             StatusFile.CONSTANT_VALUES.remove(key);
         }
     }
