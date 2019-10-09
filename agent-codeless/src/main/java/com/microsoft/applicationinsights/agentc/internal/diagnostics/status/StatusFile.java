@@ -18,7 +18,6 @@ import okio.Okio;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -90,7 +89,7 @@ public class StatusFile {
                 if (dirsWereCreated || file.getParentFile().exists()) {
                     try (BufferedSink buffer = Okio.buffer(Okio.sink(file))) {
                         new Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(buffer, map);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         LoggerFactory.getLogger(StatusFile.class).error("Error writing {}", file.getAbsolutePath(), e);
                     }
                 } else {
