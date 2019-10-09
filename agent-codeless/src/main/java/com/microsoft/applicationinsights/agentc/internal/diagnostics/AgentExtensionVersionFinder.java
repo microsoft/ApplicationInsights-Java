@@ -5,6 +5,9 @@ import javax.annotation.Nullable;
 
 public class AgentExtensionVersionFinder extends CachedDiagnosticsValueFinder {
 
+    /**
+     * Follows variable naming scheme for extension versions: https://github.com/projectkudu/kudu/wiki/Azure-Site-Extensions#pre-installed-site-extensions
+     */
     public static final String AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE = "ApplicationInsightsAgent_EXTENSION_VERSION";
 
     @Nullable
