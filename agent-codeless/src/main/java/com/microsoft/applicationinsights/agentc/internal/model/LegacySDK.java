@@ -37,6 +37,7 @@ import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextPlus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -141,6 +142,7 @@ public class LegacySDK {
             telemetry.getContext().getOperation().setId(incomingSpan.getOperationId());
             telemetry.getContext().getOperation().setParentId(incomingSpan.getOperationParentId());
         }
-        Global.getTelemetryClient().track(telemetry);
+        // this is not null because legacy instrumentation is not added until it is set
+        checkNotNull(Global.getTelemetryClient()).track(telemetry);
     }
 }

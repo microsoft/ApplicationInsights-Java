@@ -178,7 +178,8 @@ public class IncomingSpanImpl implements Span {
 
     private void send() {
         long endTimeMillis = System.currentTimeMillis();
-        TelemetryClient telemetryClient = Global.getTelemetryClient();
+        // telemetry client is not null because it was checked when transaction started in AgentImpl.startIncomingSpan()
+        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
         if (exception != null) {
             ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);
             exceptionTelemetry.getContext().getOperation().setId(getOperationId());

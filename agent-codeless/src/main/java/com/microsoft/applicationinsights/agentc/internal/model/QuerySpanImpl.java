@@ -36,6 +36,8 @@ import org.glowroot.instrumentation.api.Setter;
 import org.glowroot.instrumentation.api.Timer;
 import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class QuerySpanImpl implements QuerySpan {
 
     private final String operationId;
@@ -185,7 +187,8 @@ public class QuerySpanImpl implements QuerySpan {
             telemetry.getProperties().put("Query Plan", sb.toString());
         }
 
-        TelemetryClient telemetryClient = Global.getTelemetryClient();
+        // telemetry client is not null because it was checked when transaction started in AgentImpl.startIncomingSpan()
+        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
         telemetryClient.track(telemetry);
         if (exception != null) {
             ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);

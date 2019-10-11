@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
@@ -34,6 +35,8 @@ import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.internal.ReadableMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 class LoggerSpans {
 
@@ -50,6 +53,9 @@ class LoggerSpans {
 
         String loggerName = (String) detail.get("Logger name");
 
+        // telemetry client is not null because it was checked when transaction started in AgentImpl.startIncomingSpan()
+        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
+
         if (throwable == null) {
             TraceTelemetry telemetry = new TraceTelemetry(formattedMessage);
             telemetry.getContext().getOperation().setId(operationId);
@@ -58,7 +64,7 @@ class LoggerSpans {
                 telemetry.setSeverityLevel(severityLevel);
             }
             setProperties(telemetry.getProperties(), timeMillis, level, loggerName, null, formattedMessage);
-            Global.getTelemetryClient().track(telemetry);
+            telemetryClient.track(telemetry);
         } else {
             ExceptionTelemetry telemetry = new ExceptionTelemetry(throwable);
             telemetry.getContext().getOperation().setId(operationId);
@@ -67,7 +73,7 @@ class LoggerSpans {
                 telemetry.setSeverityLevel(severityLevel);
             }
             setProperties(telemetry.getProperties(), timeMillis, level, loggerName, throwable, formattedMessage);
-            Global.getTelemetryClient().track(telemetry);
+            telemetryClient.track(telemetry);
         }
     }
 
