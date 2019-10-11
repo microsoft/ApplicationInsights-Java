@@ -17,11 +17,18 @@ import okio.BufferedSink;
 import okio.Okio;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
@@ -46,6 +53,9 @@ public class StatusFile {
 
     @VisibleForTesting
     static String directory;
+
+    @VisibleForTesting
+    static String uniqueId;
 
     private static final ThreadPoolExecutor WRITER_THREAD = new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), ThreadPoolUtils.createNamedDaemonThreadFactory("StatusFileWriter"));
 
@@ -85,17 +95,16 @@ public class StatusFile {
 
                 String fileName = constructFileName(map);
 
-                final File file = new File(directory, fileName);
-                boolean dirsWereCreated = file.getParentFile().mkdirs();
-                if (dirsWereCreated || file.getParentFile().exists()) {
-                    file.deleteOnExit();
-                    try (BufferedSink buffer = Okio.buffer(Okio.sink(file))) {
+                final Path path = Paths.get(directory, fileName);
+                try {
+                    Files.createDirectories(path.getParent(), PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--rw-")));
+                    try (BufferedSink buffer = Okio.buffer(Okio.sink(path, StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE, StandardOpenOption.WRITE))) {
                         new Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(buffer, map);
-                    } catch (Exception e) {
-                        LoggerFactory.getLogger(StatusFile.class).error("Error writing {}", file.getAbsolutePath(), e);
+                    } catch (Exception e) { // open/create/write file
+                        LoggerFactory.getLogger(StatusFile.class).error("Error writing {}", path, e);
                     }
-                } else {
-                    LoggerFactory.getLogger(StatusFile.class).error("Parent directories for status file could not be created: {}", file.getAbsolutePath());
+                } catch (Exception e) { // Files.createDirectories
+                    LoggerFactory.getLogger(StatusFile.class).error("Parent directories for status file could not be created: {}", path, e);
                 }
             }
         }, "StatusFileJsonWrite");
@@ -117,6 +126,11 @@ public class StatusFile {
         return !DiagnosticsHelper.isAppServiceCodeless();
     }
 
+    /**
+     * This MUST return the same filename each time. This should be unique for each process.
+     * @param map Json map to be written (contains some values incorporated into the filename)
+     * @return The filename
+     */
     @VisibleForTesting
     static String constructFileName(Map<String, Object> map) {
         String result = FILENAME_PREFIX;
@@ -124,12 +138,31 @@ public class StatusFile {
         if (map.containsKey(MachineNameFinder.PROPERTY_NAME)) {
             result = result + separator + map.get(MachineNameFinder.PROPERTY_NAME);
         }
-        if (map.containsKey(PidFinder.PROPERTY_NAME)) {
-            result = result + separator + map.get(PidFinder.PROPERTY_NAME);
-        } else {
-            result = result + separator + ThreadLocalRandom.current().nextInt(4096);
+        return result + getUniqueId(map.get(PidFinder.PROPERTY_NAME)) + FILE_EXTENSION;
+    }
+
+    /**
+     * If pid is available, use pid. Otherwise, use process start time. If neither are available, use a random guid.
+     * @param pid The process' id.
+     * @return A unique id for the current process.
+     */
+    private static synchronized String getUniqueId(Object pid) {
+        if (uniqueId != null) {
+            return uniqueId;
         }
-        return result + FILE_EXTENSION;
+
+        if (pid != null) {
+            uniqueId = pid.toString();
+        } else {
+            final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            if (runtimeMXBean != null) {
+                uniqueId = String.valueOf(runtimeMXBean.getStartTime());
+            } else {
+                uniqueId = UUID.randomUUID().toString().replace("-", "");
+            }
+        }
+
+        return uniqueId;
     }
 
     private static String capitalize(String input) {
