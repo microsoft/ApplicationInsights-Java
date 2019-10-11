@@ -15,15 +15,15 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.Moshi.Builder;
 import okio.BufferedSink;
 import okio.Okio;
+import okio.Sink;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.concurrent.GuardedBy;
+import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,11 +31,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class StatusFile {
+
     private StatusFile() {}
 
     private static final List<DiagnosticsValueFinder> VALUE_FINDERS = new ArrayList<>();
@@ -54,8 +54,11 @@ public class StatusFile {
     @VisibleForTesting
     static String directory;
 
-    @VisibleForTesting
-    static String uniqueId;
+    @GuardedBy("StatusFile.class")
+    private static String uniqueId;
+
+    @GuardedBy("StatusFile.class")
+    private static BufferedSink buffer;
 
     private static final ThreadPoolExecutor WRITER_THREAD = new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), ThreadPoolUtils.createNamedDaemonThreadFactory("StatusFileWriter"));
 
@@ -95,19 +98,39 @@ public class StatusFile {
 
                 String fileName = constructFileName(map);
 
-                final Path path = Paths.get(directory, fileName);
-                try {
-                    Files.createDirectories(path.getParent(), PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--rw-")));
-                    try (BufferedSink buffer = Okio.buffer(Okio.sink(path, StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE, StandardOpenOption.WRITE))) {
-                        new Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(buffer, map);
-                    } catch (Exception e) { // open/create/write file
-                        LoggerFactory.getLogger(StatusFile.class).error("Error writing {}", path, e);
+                synchronized (StatusFile.class) { // the executor should prevent more than one thread from executing this block. this is just a safeguard
+                    final File file = new File(directory, fileName);
+                    boolean dirsWereCreated = file.getParentFile().mkdirs();
+                    if (dirsWereCreated || file.getParentFile().exists()) {
+                        BufferedSink b = null;
+                        try {
+                            b = getBuffer(file);
+                            new Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(b, map);
+                            b.flush();
+                        } catch (Exception e) {
+                            LoggerFactory.getLogger(StatusFile.class).error("Error writing {}", file.getAbsolutePath(), e);
+                            if (b != null) {
+                                try {
+                                    b.close();
+                                } catch (IOException ex) {
+                                    // ignore this
+                                }
+                            }
+                        }
+                    } else {
+                        LoggerFactory.getLogger(StatusFile.class).error("Parent directories for status file could not be created: {}", file.getAbsolutePath());
                     }
-                } catch (Exception e) { // Files.createDirectories
-                    LoggerFactory.getLogger(StatusFile.class).error("Parent directories for status file could not be created: {}", path, e);
                 }
             }
         }, "StatusFileJsonWrite");
+    }
+
+    private static synchronized BufferedSink getBuffer(File file) throws IOException {
+        if (buffer != null) {
+            buffer.close();
+        }
+        buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+        return buffer;
     }
 
     @VisibleForTesting
@@ -138,7 +161,7 @@ public class StatusFile {
         if (map.containsKey(MachineNameFinder.PROPERTY_NAME)) {
             result = result + separator + map.get(MachineNameFinder.PROPERTY_NAME);
         }
-        return result + getUniqueId(map.get(PidFinder.PROPERTY_NAME)) + FILE_EXTENSION;
+        return result + separator + getUniqueId(map.get(PidFinder.PROPERTY_NAME)) + FILE_EXTENSION;
     }
 
     /**
@@ -156,7 +179,7 @@ public class StatusFile {
         } else {
             final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
             if (runtimeMXBean != null) {
-                uniqueId = String.valueOf(runtimeMXBean.getStartTime());
+                uniqueId = String.valueOf(Math.abs(runtimeMXBean.getStartTime()));
             } else {
                 uniqueId = UUID.randomUUID().toString().replace("-", "");
             }

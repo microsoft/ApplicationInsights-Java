@@ -70,6 +70,7 @@ public class MainEntryPoint {
     }
 
     public static void premain(Instrumentation instrumentation, File agentJarFile) {
+        boolean success = false;
         try {
             DiagnosticsHelper.setAgentJarFile(agentJarFile);
             startupLogger = initLogging(instrumentation, agentJarFile);
@@ -81,6 +82,7 @@ public class MainEntryPoint {
             instrumentation.addTransformer(new LegacyTelemetryClientClassFileTransformer());
             instrumentation.addTransformer(new LegacyDependencyTelemetryClassFileTransformer());
             instrumentation.addTransformer(new LegacyPerformanceCounterClassFileTransformer());
+            success = true;
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
@@ -88,7 +90,7 @@ public class MainEntryPoint {
             t.printStackTrace();
         } finally {
             try {
-                StatusFile.write();
+                StatusFile.putValueAndWrite("RegisteredClassFileTransformers", success);
             } catch (Exception e) {
                 startupLogger.error("Error writing status.json", e);
             }
