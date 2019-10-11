@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -87,6 +88,7 @@ public class StatusFile {
                 final File file = new File(directory, fileName);
                 boolean dirsWereCreated = file.getParentFile().mkdirs();
                 if (dirsWereCreated || file.getParentFile().exists()) {
+                    file.deleteOnExit();
                     try (BufferedSink buffer = Okio.buffer(Okio.sink(file))) {
                         new Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(buffer, map);
                     } catch (Exception e) {
@@ -124,6 +126,8 @@ public class StatusFile {
         }
         if (map.containsKey(PidFinder.PROPERTY_NAME)) {
             result = result + separator + map.get(PidFinder.PROPERTY_NAME);
+        } else {
+            result = result + separator + ThreadLocalRandom.current().nextInt(4096);
         }
         return result + FILE_EXTENSION;
     }
