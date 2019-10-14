@@ -27,10 +27,11 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agentc.internal.model.DistributedTraceContext;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.agentc.internal.model.IncomingSpanImpl;
-import com.microsoft.applicationinsights.agentc.internal.model.NopThreadSpan;
+import com.microsoft.applicationinsights.agentc.internal.model.LoggerSpans;
 import com.microsoft.applicationinsights.agentc.internal.model.ThreadContextImpl;
 import com.microsoft.applicationinsights.agentc.internal.model.TraceContextCorrelationCore;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.Span;
@@ -49,12 +50,7 @@ class AgentImpl implements AgentSPI {
         TelemetryClient telemetryClient = Global.getTelemetryClient();
         if (telemetryClient == null
                 || !transactionType.equals("Web") && !transactionType.equals("Background")) {
-            // this is a little more complicated than desired, but part of the contract of startIncomingSpan is that it
-            // sets a ThreadContext in the threadContextHolder before returning, and NopThreadSpan makes sure to clear
-            // the threadContextHolder at the end of the thread
-            NopThreadSpan nopThreadSpan = new NopThreadSpan(threadContextHolder);
-            threadContextHolder.set(new NopThreadContext(rootNestingGroupId, rootSuppressionKeyId));
-            return nopThreadSpan;
+            return null;
         }
 
         long startTimeMillis = System.currentTimeMillis();
@@ -84,5 +80,10 @@ class AgentImpl implements AgentSPI {
         threadContextHolder.set(mainThreadContext);
 
         return incomingSpan;
+    }
+
+    @Override
+    public void captureLoggerSpan(MessageSupplier messageSupplier, @Nullable Throwable throwable) {
+        LoggerSpans.track("", "", messageSupplier, throwable, System.currentTimeMillis());
     }
 }

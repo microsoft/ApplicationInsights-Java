@@ -7,9 +7,9 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
-import com.google.gson.Gson;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import okio.Okio;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -46,9 +46,11 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldUseDefaults() {
+    public void shouldUseDefaults() throws IOException {
 
-        Configuration configuration = new Gson().fromJson("{}", Configuration.class);
+        Moshi moshi = new Moshi.Builder().build();
+        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+        Configuration configuration =  jsonAdapter.fromJson("{}");
 
         assertEquals(null, configuration.connectionString);
         assertEquals(null, configuration.roleName);
