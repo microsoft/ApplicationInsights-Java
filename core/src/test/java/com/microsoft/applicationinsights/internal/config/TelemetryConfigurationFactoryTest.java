@@ -22,12 +22,11 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import com.google.common.collect.Iterables;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.nop.NopTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -48,14 +47,16 @@ import org.hamcrest.Matchers;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.mockito.Mockito;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public final class TelemetryConfigurationFactoryTest {
+
+    private AppInsightsConfigurationBuilder originalBuilder;
 
     @Rule
     public EnvironmentVariables envVars = new EnvironmentVariables();
@@ -63,34 +64,49 @@ public final class TelemetryConfigurationFactoryTest {
     @Rule
     public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties(); // returns system props to state before the test was run
 
+    @Before
+    public void cacheOriginalBuilder() {
+        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
+        originalBuilder = TelemetryConfigurationFactory.INSTANCE.builder;
+    }
+
+    @After
+    public void tearDown() {
+        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
+        TelemetryConfigurationFactory.INSTANCE.builder = originalBuilder;
+    }
+
     private final static String MOCK_IKEY = "c9341531-05ac-4d8c-972e-36e97601d5ff";
     private final static String MOCK_ENDPOINT = "MockEndpoint";
     private final static String NON_VALID_URL = "http:sd{@~fsd.s.d.f;fffff";
+
     private final static String APP_INSIGHTS_IKEY_TEST_VALUE = "ds";
 
     @PerformanceModule
     static final class MockPerformanceModule implements TelemetryModule, PerformanceCounterConfigurationAware {
         public boolean initializeWasCalled = false;
+
         public boolean addConfigurationDataWasCalled = false;
 
         @Override
         public void initialize(TelemetryConfiguration configuration) {
             initializeWasCalled = true;
         }
-
         @Override
         public void addConfigurationData(PerformanceCountersXmlElement configuration) {
             addConfigurationDataWasCalled = true;
         }
+
     }
 
     @PerformanceModule
     static final class MockPerformanceBadModule {
-        public boolean initializeWasCalled = false;
 
+        public boolean initializeWasCalled = false;
         public void initialize(TelemetryConfiguration configuration) {
             initializeWasCalled = true;
         }
+
     }
 
     @Test
@@ -142,7 +158,7 @@ public final class TelemetryConfigurationFactoryTest {
 
     @Test
     public void testWithEmptySections() {
-        AppInsightsConfigurationBuilder mockParser = Mockito.mock(AppInsightsConfigurationBuilder.class);
+        AppInsightsConfigurationBuilder mockParser = mock(AppInsightsConfigurationBuilder.class);
 
         ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
         appConf.setInstrumentationKey(MOCK_IKEY);
@@ -150,7 +166,7 @@ public final class TelemetryConfigurationFactoryTest {
         appConf.setContextInitializers(null);
         appConf.setModules(null);
         appConf.setSdkLogger(null);
-        Mockito.doReturn(appConf).when(mockParser).build(any(InputStream.class));
+        when(mockParser.build(any(InputStream.class))).thenReturn(appConf);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
@@ -467,19 +483,20 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     private AppInsightsConfigurationBuilder createMockParserThatFailsToParse() {
-        AppInsightsConfigurationBuilder mockParser = Mockito.mock(AppInsightsConfigurationBuilder.class);
-        Mockito.doReturn(null).when(mockParser).build(any(InputStream.class));
+        AppInsightsConfigurationBuilder mockParser = mock(AppInsightsConfigurationBuilder.class);
+        when(mockParser.build(any(InputStream.class))).thenReturn(null);
+
         return mockParser;
     }
 
     private AppInsightsConfigurationBuilder createMockParserWithDefaultChannel(boolean withChannel) {
         return createMockParser(withChannel, false, false);
     }
+    // Suppress non relevant warning due to mockito internal stuff
 
-        // Suppress non relevant warning due to mockito internal stuff
     @SuppressWarnings("unchecked")
     private AppInsightsConfigurationBuilder createMockParser(boolean withChannel, boolean setChannel, boolean withPerformanceModules) {
-        AppInsightsConfigurationBuilder mockParser = Mockito.mock(AppInsightsConfigurationBuilder.class);
+        AppInsightsConfigurationBuilder mockParser = mock(AppInsightsConfigurationBuilder.class);
 
         ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
 
@@ -499,7 +516,7 @@ public final class TelemetryConfigurationFactoryTest {
             PerformanceCountersXmlElement performanceCountersXmlElement = new PerformanceCountersXmlElement();
             appConf.setPerformance(performanceCountersXmlElement);
         }
-        Mockito.doReturn(appConf).when(mockParser).build(any(InputStream.class));
+        when(mockParser.build(any(InputStream.class))).thenReturn(appConf);
 
         return mockParser;
     }
@@ -520,7 +537,6 @@ public final class TelemetryConfigurationFactoryTest {
         }
     }
 
-//    @Ignore
     @Test
     public void testPerformanceModules_withScanningDisabled() {
         final String prevPropValue = System.getProperty(TelemetryConfigurationFactory.PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY);
@@ -566,7 +582,7 @@ public final class TelemetryConfigurationFactoryTest {
     }
 
     private void initializeWithFactory(AppInsightsConfigurationBuilder mockParser, TelemetryConfiguration mockConfiguration) {
-            TelemetryConfigurationFactory.INSTANCE.setBuilder(mockParser);
+            TelemetryConfigurationFactory.INSTANCE.builder = mockParser;
             TelemetryConfigurationFactory.INSTANCE.initialize(mockConfiguration);
     }
 
@@ -577,20 +593,12 @@ public final class TelemetryConfigurationFactoryTest {
 
         ApplicationInsightsXmlConfiguration appConf = new ApplicationInsightsXmlConfiguration();
         appConf.setInstrumentationKey(configurationIkey);
-        Mockito.doReturn(appConf).when(mockParser).build(any(InputStream.class));
+        when(mockParser.build(any(InputStream.class))).thenReturn(appConf);
 
         TelemetryConfiguration mockConfiguration = new TelemetryConfiguration();
 
         initializeWithFactory(mockParser, mockConfiguration);
         assertEquals(expectedIkey, mockConfiguration.getInstrumentationKey());
         assertThat(mockConfiguration.getChannel(), instanceOf(InProcessTelemetryChannel.class));
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        Method method = TelemetryConfiguration.class.getDeclaredMethod("setActiveAsNull");
-        method.setAccessible(true);
-        method.invoke(null);
-
     }
 }
