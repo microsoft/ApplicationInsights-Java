@@ -25,8 +25,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 // global state used instead of passing these to various classes (e.g. ThreadContextImpl, SpanImpl) in order
 // to reduce memory footprint
 public class Global {
@@ -68,8 +66,9 @@ public class Global {
         Global.inboundW3CEnabled = inboundW3CEnabled;
     }
 
-    public static TelemetryClient getTelemetryClient() {
-        return checkNotNull(telemetryClient);
+    // this can be null if agent failed during startup
+    public static @Nullable TelemetryClient getTelemetryClient() {
+        return telemetryClient;
     }
 
     public static void setTelemetryClient(TelemetryClient telemetryClient) {

@@ -39,6 +39,8 @@ import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class LocalSpanImpl implements Span {
 
     static final String PREFIX = "__custom,";
@@ -113,7 +115,8 @@ public class LocalSpanImpl implements Span {
         telemetry.setDuration(new Duration(durationMillis));
         telemetry.setSuccess(exception == null);
 
-        TelemetryClient telemetryClient = Global.getTelemetryClient();
+        // telemetry client is not null because it was checked when transaction started in AgentImpl.startIncomingSpan()
+        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
         telemetryClient.track(telemetry);
         if (exception != null) {
             ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(exception);

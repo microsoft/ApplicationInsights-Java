@@ -79,10 +79,11 @@ public class MainEntryPoint {
             MDC.put("microsoft.ai.operationName", "Startup");
             addLibJars(instrumentation, agentJarFile);
             instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
+            start(instrumentation, agentJarFile);
+            // add legacy class file transformers after ensuring Global.getTelemetryClient() will not return null
             instrumentation.addTransformer(new LegacyTelemetryClientClassFileTransformer());
             instrumentation.addTransformer(new LegacyDependencyTelemetryClassFileTransformer());
             instrumentation.addTransformer(new LegacyPerformanceCounterClassFileTransformer());
-            start(instrumentation, agentJarFile);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {

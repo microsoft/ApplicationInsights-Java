@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agentc.internal;
 import java.util.Date;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agentc.internal.model.DistributedTraceContext;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.agentc.internal.model.IncomingSpanImpl;
@@ -47,7 +48,9 @@ class AgentImpl implements AgentSPI {
                                       ThreadContextThreadLocal.Holder threadContextHolder, int rootNestingGroupId,
                                       int rootSuppressionKeyId) {
 
-        if (!transactionType.equals("Web") && !transactionType.equals("Background")) {
+        TelemetryClient telemetryClient = Global.getTelemetryClient();
+        if (telemetryClient == null
+                || !transactionType.equals("Web") && !transactionType.equals("Background")) {
             // this is a little more complicated than desired, but part of the contract of startIncomingSpan is that it
             // sets a ThreadContext in the threadContextHolder before returning, and NopThreadSpan makes sure to clear
             // the threadContextHolder at the end of the thread
@@ -67,7 +70,7 @@ class AgentImpl implements AgentSPI {
         String userAgent = getter.get(carrier, "User-Agent");
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
 
-        String instrumentationKey = Global.getTelemetryClient().getContext().getInstrumentationKey();
+        String instrumentationKey = telemetryClient.getContext().getInstrumentationKey();
         DistributedTraceContext distributedTraceContext;
         if (Global.isOutboundW3CEnabled()) {
             distributedTraceContext =
