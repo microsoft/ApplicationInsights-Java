@@ -22,10 +22,10 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
+
+import javax.annotation.concurrent.GuardedBy;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -46,33 +46,15 @@ import org.apache.http.ssl.SSLContexts;
  */
 final class ApacheSender43 implements ApacheSender {
 
-    private final AtomicReference<CloseableHttpClient> httpClientRef = new AtomicReference<>();
+    private final Object lock = new Object();
+
+    @GuardedBy("lock")
+    private RuntimeException initException;
+    @GuardedBy("lock")
+    private CloseableHttpClient httpClient;
 
     static ApacheSender43 create() {
-        final ApacheSender43 sender = new ApacheSender43();
-        final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
-        Thread initThread = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
-                                .register("https", new SSLConnectionSocketFactory(SSLContexts.createDefault(), allowedProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
-                                .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                                .build());
-                        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
-                        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-                        sender.httpClientRef.compareAndSet(null, HttpClients.custom()
-                                .setConnectionManager(cm)
-                                .useSystemProperties()
-                                .build());
-                        synchronized (sender.httpClientRef) {
-                            sender.httpClientRef.notifyAll();
-                        }
-                    }
-                }, ApacheSender43.class.getSimpleName()+"_initializer");
-        initThread.setDaemon(true);
-        initThread.start();
-        return sender;
+        return new ApacheSender43();
     }
 
     private ApacheSender43() {}
@@ -86,7 +68,7 @@ final class ApacheSender43 implements ApacheSender {
     public void dispose(HttpResponse response) {
         try {
             if (response != null) {
-                ((CloseableHttpResponse)response).close();
+                ((CloseableHttpResponse) response).close();
             }
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to send or failed to close response, exception: %s", e.toString());
@@ -96,7 +78,7 @@ final class ApacheSender43 implements ApacheSender {
     @Override
     public void close() {
         try {
-            ((CloseableHttpClient)getHttpClient()).close();
+            ((CloseableHttpClient) getHttpClient()).close();
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to close http client, exception: %s", e.toString());
         }
@@ -104,16 +86,20 @@ final class ApacheSender43 implements ApacheSender {
 
     @Override
     public HttpClient getHttpClient() {
-        synchronized (httpClientRef) {
-            try {
-                while (httpClientRef.get() == null) {
-                    httpClientRef.wait();
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+        synchronized (lock) {
+            if (httpClient != null) {
+                return httpClient;
             }
+            if (initException != null) {
+                throw initException;
+            }
+            try {
+                httpClient = init();
+            } catch (RuntimeException e) {
+                initException = e;
+            }
+            return httpClient;
         }
-        return httpClientRef.get();
     }
 
     @Override
@@ -125,5 +111,22 @@ final class ApacheSender43 implements ApacheSender {
                 .build();
 
         request.setConfig(requestConfig);
+    }
+
+    private static CloseableHttpClient init() {
+        final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
+        final PoolingHttpClientConnectionManager cm =
+                new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
+                        .register("https",
+                                new SSLConnectionSocketFactory(SSLContexts.createDefault(), allowedProtocols, null,
+                                        SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
+                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                        .build());
+        cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
+        cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+        return HttpClients.custom()
+                .setConnectionManager(cm)
+                .useSystemProperties()
+                .build();
     }
 }
