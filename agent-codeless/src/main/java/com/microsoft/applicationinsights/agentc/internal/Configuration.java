@@ -45,7 +45,7 @@ public class Configuration {
 
     public static class DistributedTracing {
 
-        public boolean w3cEnabled;
+        public boolean w3cEnabled = true;
         public boolean w3cBackCompatEnabled = true;
     }
 

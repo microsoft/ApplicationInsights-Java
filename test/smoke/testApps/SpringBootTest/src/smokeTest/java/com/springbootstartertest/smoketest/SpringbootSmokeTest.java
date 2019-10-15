@@ -93,7 +93,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         }
         assertThat(code, greaterThanOrEqualTo(500));
 
-        assertSameOperationId(rdEnvelope, edEnvelope);
+        assertParentChild(rd, rdEnvelope, edEnvelope);
     }
 
     @Test
@@ -115,18 +115,15 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
 
-        assertTrue(rdd.getId().contains(d.getId()));
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(d, rdEnvelope, rddEnvelope);
     }
 
-    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope rddEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
 
         assertNotNull(operationId);
-        assertNotNull(operationParentId);
 
         assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
-        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
+        assertEquals(rd.getId(), rddEnvelope.getTags().get("ai.operation.parentId"));
     }
 }

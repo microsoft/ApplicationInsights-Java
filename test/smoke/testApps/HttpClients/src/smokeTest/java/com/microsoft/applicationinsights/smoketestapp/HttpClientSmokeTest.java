@@ -12,6 +12,8 @@ import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @UseAgent
@@ -23,13 +25,16 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
-        RequestData rd = (RequestData) ((Data) rdList.get(0).getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddList.get(0).getData()).getBaseData();
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(rd.getId()));
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -38,13 +43,16 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
-        RequestData rd = (RequestData) ((Data) rdList.get(0).getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddList.get(0).getData()).getBaseData();
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(rd.getId()));
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -53,13 +61,16 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
-        RequestData rd = (RequestData) ((Data) rdList.get(0).getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddList.get(0).getData()).getBaseData();
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(rd.getId()));
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -68,13 +79,16 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
-        RequestData rd = (RequestData) ((Data) rdList.get(0).getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddList.get(0).getData()).getBaseData();
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(rd.getId()));
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -83,13 +97,16 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
-        RequestData rd = (RequestData) ((Data) rdList.get(0).getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddList.get(0).getData()).getBaseData();
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(rd.getId()));
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -98,12 +115,24 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
-        RequestData rd = (RequestData) ((Data) rdList.get(0).getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddList.get(0).getData()).getBaseData();
+        Envelope rdEnvelope = rdList.get(0);
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
         assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
-        assertTrue(rdd.getId().contains(rd.getId()));
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
+    }
+
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope rddEnvelope) {
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+
+        assertNotNull(operationId);
+
+        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
+        assertEquals(rd.getId(), rddEnvelope.getTags().get("ai.operation.parentId"));
     }
 }
