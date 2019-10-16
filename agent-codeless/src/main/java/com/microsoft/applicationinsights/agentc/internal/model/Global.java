@@ -82,9 +82,4 @@ public class Global {
     public static ThreadContextThreadLocal.Holder getThreadContextHolder() {
         return TCTL.getHolder();
     }
-
-    @Nullable
-    public static String getInstrumentationKey() {
-        return telemetryClient == null ? null : telemetryClient.getContext().getInstrumentationKey();
-    }
 }

@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Keywords;
@@ -21,9 +22,9 @@ public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
     @Nullable
     @Override
     public String getValue() {
-        final String ikey = Global.getInstrumentationKey();
-        if (ikey != null) {
-            return ikey;
+        TelemetryClient telemetryClient = Global.getTelemetryClient();
+        if (telemetryClient != null) {
+            return telemetryClient.getContext().getInstrumentationKey();
         }
 
         final String connStr = System.getenv(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME);
