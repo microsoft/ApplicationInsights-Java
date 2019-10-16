@@ -89,7 +89,8 @@ public enum TelemetryConfigurationFactory {
     static final String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
     static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
-    private AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
+    @VisibleForTesting
+    AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
 
     private static final Set<String> defaultPerformaceModuleClassNames = new HashSet<>();
 
@@ -617,10 +618,5 @@ public enum TelemetryConfigurationFactory {
     @VisibleForTesting
     void setPerformanceCountersSection(String performanceCountersSection) {
         this.performanceCountersSection = performanceCountersSection;
-    }
-
-    @VisibleForTesting
-    void setBuilder(AppInsightsConfigurationBuilder builder) {
-        this.builder = builder;
     }
 }
