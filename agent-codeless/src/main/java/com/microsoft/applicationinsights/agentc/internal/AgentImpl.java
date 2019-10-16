@@ -85,8 +85,8 @@ class AgentImpl implements AgentSPI {
             requestTelemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
         }
 
-        IncomingSpanImpl incomingSpan = new IncomingSpanImpl(messageSupplier, threadContextHolder, startTimeMillis,
-                requestTelemetry, distributedTraceContext);
+        IncomingSpanImpl incomingSpan = new IncomingSpanImpl(transactionType, messageSupplier, threadContextHolder,
+                startTimeMillis, requestTelemetry, distributedTraceContext);
 
         ThreadContextImpl mainThreadContext =
                 new ThreadContextImpl(incomingSpan, rootNestingGroupId, rootSuppressionKeyId, false);
