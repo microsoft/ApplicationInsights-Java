@@ -246,6 +246,10 @@ public class ThreadContextImpl implements ThreadContextPlus {
         this.currentSuppressionKeyId = suppressionKeyId;
     }
 
+    public boolean isSameIncomingSpan(IncomingSpanImpl incomingSpan) {
+        return this.incomingSpan == incomingSpan;
+    }
+
     public void endAuxThreadContext() {
         checkNotNull(auxThreadAsyncCompletion);
         if (auxThreadAsyncCompletion.setPart2()) {
