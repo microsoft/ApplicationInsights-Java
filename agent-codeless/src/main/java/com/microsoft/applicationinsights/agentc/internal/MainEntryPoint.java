@@ -155,7 +155,7 @@ public class MainEntryPoint {
 
         Connection connection = parseConnectionString(config.connectionString);
         String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
-        if (connection.instrumentationKey != null) {
+        if (Strings.isNullOrEmpty(instrumentationKey)) {
             instrumentationKey = connection.instrumentationKey;
         }
         if (!Strings.isNullOrEmpty(instrumentationKey)) {
@@ -165,7 +165,7 @@ public class MainEntryPoint {
             xmlConfiguration.getChannel().setEndpointAddress(connection.ingestionEndpoint + "v2/track");
         }
         String roleName = System.getenv("WEBSITE_SITE_NAME");
-        if (config.roleName != null) {
+        if (Strings.isNullOrEmpty(roleName)) {
             roleName = config.roleName;
         }
         if (!Strings.isNullOrEmpty(roleName)) {
@@ -223,7 +223,7 @@ public class MainEntryPoint {
         }
         TelemetryClient telemetryClient = new TelemetryClient();
         String roleInstance = System.getenv("WEBSITE_INSTANCE_ID");
-        if (config.roleInstance != null) {
+        if (Strings.isNullOrEmpty(roleInstance)) {
             roleInstance = config.roleInstance;
         }
         if (!Strings.isNullOrEmpty(roleInstance)) {
