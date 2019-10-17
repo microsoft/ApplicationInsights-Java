@@ -224,8 +224,12 @@ public class MainEntryPoint {
         // important to set TelemetryClient before doing any instrumentation, so we can guarantee
         // Global.getTelemetryClient() always returns non-null
         TelemetryClient telemetryClient = new TelemetryClient();
+        String roleInstance = System.getenv("WEBSITE_INSTANCE_ID");
         if (config.roleInstance != null) {
-            telemetryClient.getContext().getCloud().setRoleInstance(config.roleInstance);
+            roleInstance = config.roleInstance;
+        }
+        if (!Strings.isNullOrEmpty(roleInstance)) {
+            telemetryClient.getContext().getCloud().setRoleInstance(roleInstance);
         }
         if (!config.telemetryContext.isEmpty()) {
             telemetryClient.getContext().getProperties().putAll(config.telemetryContext);
