@@ -3,8 +3,8 @@
   "roleName": "Something Good",
   "roleInstance": "xyz123",
   "distributedTracing": {
-    "w3cEnabled": true,
-    "w3cBackCompatEnabled": false
+    "outboundEnabled": false,
+    "requestIdCompatEnabled": false
   },
   "liveMetrics": {
     "enabled": false

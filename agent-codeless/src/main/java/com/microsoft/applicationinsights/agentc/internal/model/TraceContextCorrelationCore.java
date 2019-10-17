@@ -13,10 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A class that is responsible for performing correlation based on W3C protocol.
- * This is a clean implementation of W3C protocol and doesn't have the backward
- * compatibility with AI-RequestId protocol.
- *
  * @author Dhaval Doshi
  */
 public class TraceContextCorrelationCore {
@@ -28,12 +24,6 @@ public class TraceContextCorrelationCore {
     private static final String REQUEST_CONTEXT_HEADER_NAME = "Request-Context";
     private static final String AZURE_TRACEPARENT_COMPONENT_INITIAL = "az";
     private static final String REQUEST_CONTEXT_HEADER_APPID_KEY = "appId";
-
-    /**
-     * Switch to enable W3C Backward compatibility with Legacy AI Correlation.
-     * By default this is turned ON.
-     */
-    private static boolean isW3CBackCompatEnabled = true;
 
     private TraceContextCorrelationCore() {
     }
@@ -124,7 +114,7 @@ public class TraceContextCorrelationCore {
         if (incomingTraceparent == null) {
 
             // If BackCompat mode is enabled, read the Request-Id Header
-            if (isW3CBackCompatEnabled) {
+            if (Global.isDistributedTracingRequestIdCompatEnabled()) {
                 processedTraceparent = processLegacyCorrelation(request, requestHeaderGetter, requestTelemetry);
             }
 
@@ -262,7 +252,7 @@ public class TraceContextCorrelationCore {
 
             String tracestate = requestHeaderGetter.get(request, TRACESTATE_HEADER_NAME);
             if (Strings.isNullOrEmpty(tracestate)) {
-                if (isW3CBackCompatEnabled) {
+                if (Global.isDistributedTracingRequestIdCompatEnabled()) {
                     String requestContext = requestHeaderGetter.get(request, REQUEST_CONTEXT_HEADER_NAME);
                     if (requestContext != null) {
                         logger.trace("Tracestate absent, In backward compatibility mode, will try to resolve " +

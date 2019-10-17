@@ -27,13 +27,10 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.correlation.CorrelationContext;
 import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.Getter;
-import org.glowroot.instrumentation.api.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,104 +47,6 @@ public class TelemetryCorrelationUtilsCore {
     private static final int REQUESTID_MAXLENGTH = 1024;
 
     private TelemetryCorrelationUtilsCore() {
-    }
-
-    /**
-     * Resolves correlation ID's by parsing well-known correlation headers in the request.
-     *
-     * @param request          The servlet request.
-     * @param requestTelemetry The request telemetry to be populated with correlation ID's.
-     */
-    public static <Req> DistributedTraceContext resolveCorrelationForRequest(Req request,
-                                                                             Getter<Req> requestHeaderGetter,
-                                                                             RequestTelemetry requestTelemetry) {
-        String parentId;
-        String rootId;
-        String currentId;
-
-        String requestId = requestHeaderGetter.get(request, CORRELATION_HEADER_NAME);
-
-        if (requestId == null || requestId.isEmpty()) {
-            parentId = null;
-            rootId = generateRootId();
-            currentId = '|' + rootId + '.';
-        } else {
-            parentId = requestId;
-            rootId = extractRootId(parentId);
-            currentId = generateId(parentId);
-        }
-
-        requestTelemetry.setId(currentId);
-        requestTelemetry.getContext().getOperation().setId(rootId);
-        requestTelemetry.getContext().getOperation().setParentId(parentId);
-
-        CorrelationContext correlationContext = new CorrelationContext();
-        resolveCorrelationContext(request, requestHeaderGetter, requestTelemetry, correlationContext);
-        return new DistributedTraceContext(requestTelemetry, correlationContext);
-    }
-
-    public static <Res> void resolveCorrelationForResponse(Res response, Setter<Res> responseHeaderSetter) {
-
-        try {
-            if (response == null) {
-                logger.debug("Failed to resolve correlation. response is null.");
-                return;
-            }
-
-            //add the target appId for the response header
-            addTargetAppIdForResponseHeader(response, responseHeaderSetter);
-        } catch (Exception e) {
-            logger.debug("Failed to resolve correlation: {}", e.toString());
-            logger.trace("Failed to resolve correlation", e);
-        }
-    }
-
-    /**
-     * Retrieves the appId (in correlation format) for the current active config's instrumentation key.
-     */
-    @Nullable
-    public static String retrieveApplicationCorrelationId() {
-
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
-
-        //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just 
-        //return and let the next request resolve the ikey.
-        if (appId == null) {
-            logger.trace("Application correlation Id could not be retrieved (e.g. task may be pending or failed)");
-            return null;
-        }
-
-        return REQUEST_CONTEXT_HEADER_APPID_KEY + "=" + appId;
-    }
-
-    /**
-     * Given a request context, it generates a new dependency target, possibly including the appId found in
-     * the given Request-Context.
-     *
-     * @param requestContext - the Request-Context header value
-     * @return the dependency target
-     */
-    public static String generateChildDependencyTarget(String requestContext) {
-
-        if (requestContext == null || requestContext.isEmpty()) {
-            logger.trace("generateChildDependencyTarget: won't continue as requestContext is null or empty.");
-            return "";
-        }
-
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        if (instrumentationKey == null || instrumentationKey.isEmpty()) {
-            logger.debug("Failed to generate target correlation. InstrumentationKey is null or empty.");
-            return "";
-        }
-
-        String target = generateSourceTargetCorrelation(instrumentationKey, requestContext);
-        if (target == null) {
-            logger.debug("Target value is null and hence returning empty string");
-            return ""; // we want an empty string instead of null so it plays nicer with bytecode injection
-        }
-
-        return target;
     }
 
     /**
@@ -189,46 +88,6 @@ public class TelemetryCorrelationUtilsCore {
         }
 
         return id.charAt(0) == '|';
-    }
-
-    /**
-     * Extracts the correlation context information from the request headers and populates the request telemetry's
-     * properties accordingly. It also saves the context in TLS for future use.
-     *
-     * @param request          The incoming request.
-     * @param requestTelemetry The request telemetry item.
-     */
-    private static <Req> void resolveCorrelationContext(Req request, Getter<Req> requestHeaderGetter,
-                                                        RequestTelemetry requestTelemetry,
-                                                        CorrelationContext correlationContext) {
-
-        // resolve baggage (Correlation-Context)
-        String baggage = requestHeaderGetter.get(request, CORRELATION_CONTEXT_HEADER_NAME);
-
-        if (Strings.isNullOrEmpty(baggage)) {
-            logger.debug("could not access header information: {}", CORRELATION_CONTEXT_HEADER_NAME);
-            return;
-        }
-
-        correlationContext.append(baggage);
-        Map<String, String> propertyBag = getPropertyBag(baggage);
-        correlationContext.getMappings().putAll(propertyBag);
-
-        requestTelemetry.getProperties().putAll(propertyBag);
-    }
-
-    /**
-     * Adds a response header for the Request-Context.
-     *
-     * @param response The servlet's response.
-     */
-    private static <Res> void addTargetAppIdForResponseHeader(Res response, Setter<Res> responseHeaderSetter) {
-
-        String appId = retrieveApplicationCorrelationId();
-        if (appId == null) {
-            return;
-        }
-        responseHeaderSetter.put(response, REQUEST_CONTEXT_HEADER_NAME, appId);
     }
 
     /**

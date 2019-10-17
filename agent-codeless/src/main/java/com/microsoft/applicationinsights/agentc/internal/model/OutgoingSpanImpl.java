@@ -51,7 +51,7 @@ public class OutgoingSpanImpl implements Span {
 
     private final String operationId;
     private final String operationParentId;
-    private final String outgoingSpanId;
+    private final @Nullable String outgoingSpanId; // null when distributed tracing is disabled
 
     private final String type;
     private final String text;
@@ -62,7 +62,7 @@ public class OutgoingSpanImpl implements Span {
 
     private volatile @MonotonicNonNull Throwable exception;
 
-    public OutgoingSpanImpl(String operationId, String operationParentId, String outgoingSpanId, String type,
+    public OutgoingSpanImpl(String operationId, String operationParentId, @Nullable String outgoingSpanId, String type,
                             String text, long startTimeMillis, MessageSupplier messageSupplier) {
         this.operationId = operationId;
         this.operationParentId = operationParentId;
@@ -155,7 +155,9 @@ public class OutgoingSpanImpl implements Span {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
         telemetry.getContext().getOperation().setId(operationId);
         telemetry.getContext().getOperation().setParentId(operationParentId);
-        telemetry.setId(outgoingSpanId);
+        if (outgoingSpanId != null) {
+            telemetry.setId(outgoingSpanId);
+        }
         telemetry.setTimestamp(new Date(startTimeMillis));
         telemetry.setDuration(new Duration(endTimeMillis - startTimeMillis));
         telemetry.setType("Http (tracked component)");
@@ -181,10 +183,8 @@ public class OutgoingSpanImpl implements Span {
                 String target;
                 if (requestContext == null) {
                     target = uriObject.getHost();
-                } else if (Global.isOutboundW3CEnabled()) {
-                    target = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
                 } else {
-                    target = TelemetryCorrelationUtilsCore.generateChildDependencyTarget(requestContext);
+                    target = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
                 }
                 String path = uriObject.getPath();
                 if (Strings.isNullOrEmpty(path)) {
