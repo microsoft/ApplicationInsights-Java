@@ -221,8 +221,6 @@ public class MainEntryPoint {
         if (fixedRateSampling != null) {
             addFixedRateSampling(fixedRateSampling, configuration);
         }
-        // important to set TelemetryClient before doing any instrumentation, so we can guarantee
-        // Global.getTelemetryClient() always returns non-null
         TelemetryClient telemetryClient = new TelemetryClient();
         String roleInstance = System.getenv("WEBSITE_INSTANCE_ID");
         if (config.roleInstance != null) {
