@@ -146,6 +146,7 @@ public enum TelemetryConfigurationFactory {
         setInstrumentationKey(applicationInsightsConfig, configuration);
         setConnectionString(applicationInsightsConfig, configuration);
         setRoleName(applicationInsightsConfig, configuration);
+        setRoleInstance(applicationInsightsConfig, configuration);
 
         TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
         boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
@@ -173,6 +174,7 @@ public enum TelemetryConfigurationFactory {
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
         setInstrumentationKey(userConfiguration, configuration);
         setRoleName(userConfiguration, configuration);
+        setRoleInstance(userConfiguration, configuration);
         configuration.setChannel(new InProcessTelemetryChannel(configuration));
         addHeartBeatModule(configuration);
         setContextInitializers(null, configuration);
@@ -365,7 +367,7 @@ public enum TelemetryConfigurationFactory {
     }
 
     private void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
-                           TelemetryConfiguration configuration) {
+                             TelemetryConfiguration configuration) {
         try {
             String roleName;
 
@@ -385,6 +387,30 @@ public enum TelemetryConfigurationFactory {
             }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to set role name: '%s'", e.toString());
+        }
+    }
+
+    private void setRoleInstance(ApplicationInsightsXmlConfiguration userConfiguration,
+                             TelemetryConfiguration configuration) {
+        try {
+            String roleInstance;
+
+            // try to find the role instance in ApplicationInsights.xml
+            if (userConfiguration != null) {
+                roleInstance = userConfiguration.getRoleInstance();
+                if (roleInstance == null) {
+                    return;
+                }
+
+                roleInstance = roleInstance.trim();
+                if (roleInstance.length() == 0) {
+                    return;
+                }
+
+                configuration.setRoleInstance(roleInstance);
+            }
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Failed to set role instance: '%s'", e.toString());
         }
     }
 

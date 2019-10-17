@@ -171,6 +171,13 @@ public class MainEntryPoint {
         if (!Strings.isNullOrEmpty(roleName)) {
             xmlConfiguration.setRoleName(roleName);
         }
+        String roleInstance = System.getenv("WEBSITE_INSTANCE_ID");
+        if (Strings.isNullOrEmpty(roleInstance)) {
+            roleInstance = config.roleInstance;
+        }
+        if (!Strings.isNullOrEmpty(roleInstance)) {
+            xmlConfiguration.setRoleInstance(roleInstance);
+        }
         if (!config.liveMetrics.enabled) {
             xmlConfiguration.getQuickPulse().setEnabled(false);
         }
@@ -222,13 +229,6 @@ public class MainEntryPoint {
             addFixedRateSampling(fixedRateSampling, configuration);
         }
         TelemetryClient telemetryClient = new TelemetryClient();
-        String roleInstance = System.getenv("WEBSITE_INSTANCE_ID");
-        if (Strings.isNullOrEmpty(roleInstance)) {
-            roleInstance = config.roleInstance;
-        }
-        if (!Strings.isNullOrEmpty(roleInstance)) {
-            telemetryClient.getContext().getCloud().setRoleInstance(roleInstance);
-        }
         if (!config.telemetryContext.isEmpty()) {
             telemetryClient.getContext().getProperties().putAll(config.telemetryContext);
         }

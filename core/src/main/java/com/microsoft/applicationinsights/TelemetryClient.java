@@ -519,6 +519,10 @@ public class TelemetryClient {
         if (StringUtils.isNotEmpty(roleName)) {
             ctx.getCloud().setRole(roleName);
         }
+        String roleInstance = configuration.getRoleInstance();
+        if (StringUtils.isNotEmpty(roleInstance)) {
+            ctx.getCloud().setRoleInstance(roleInstance);
+        }
         for (ContextInitializer init : configuration.getContextInitializers()) {
             try {
                 init.initialize(ctx);

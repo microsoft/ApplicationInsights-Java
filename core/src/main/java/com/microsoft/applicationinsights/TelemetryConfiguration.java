@@ -52,6 +52,7 @@ public final class TelemetryConfiguration {
     private String instrumentationKey;
     private String connectionString;
     private String roleName;
+    private String roleInstance;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
@@ -224,6 +225,14 @@ public final class TelemetryConfiguration {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getRoleInstance() {
+        return roleInstance;
+    }
+
+    public void setRoleInstance(String roleInstance) {
+        this.roleInstance = roleInstance;
     }
 
     public String getConnectionString() {
