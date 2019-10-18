@@ -105,7 +105,7 @@ public class StatusFile {
                         BufferedSink b = null;
                         try {
                             b = getBuffer(file);
-                            new Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(b, map);
+                            new Moshi.Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(b, map);
                             b.flush();
                         } catch (Exception e) {
                             LoggerFactory.getLogger(StatusFile.class).error("Error writing {}", file.getAbsolutePath(), e);
