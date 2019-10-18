@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -107,7 +108,8 @@ class ConfigurationBuilder {
         return null;
     }
 
-    private static String overlayWithEnvVar(String name1, String name2, String defaultValue) {
+    @VisibleForTesting
+    static String overlayWithEnvVar(String name1, String name2, String defaultValue) {
         String value = System.getenv(name1);
         if (!Strings.isNullOrEmpty(value)) {
             return value;
@@ -119,17 +121,29 @@ class ConfigurationBuilder {
         return defaultValue;
     }
 
-    private static Map<String, String> overlayWithEnvVar(String name, Map<String, String> defaultValue) {
+    @VisibleForTesting
+    static Map<String, String> overlayWithEnvVar(String name, Map<String, String> defaultValue) {
         String value = System.getenv(name);
         if (!Strings.isNullOrEmpty(value)) {
             Moshi moshi = new Moshi.Builder().build();
-            Type type = Types.newParameterizedType(Map.class, String.class, String.class);
-            JsonAdapter<Map<String, String>> adapter = moshi.adapter(type);
+            JsonAdapter<Map> adapter = moshi.adapter(Map.class);
+            Map<String, String> stringMap = new HashMap<>();
+            Map<String, Object> objectMap;
             try {
-                return adapter.fromJson(value);
+                objectMap = adapter.fromJson(value);
             } catch (Exception e) {
                 logger.warn("could not parse environment variable {} as json: {}", name, value);
+                return defaultValue;
             }
+            for (Map.Entry<String, Object> entry : objectMap.entrySet()) {
+                Object val = entry.getValue();
+                if (!(val instanceof String)) {
+                    logger.warn("currently only string values are supported in json map from {}: {}", name, value);
+                    return defaultValue;
+                }
+                stringMap.put(entry.getKey(), (String) val);
+            }
+            return stringMap;
         }
         return defaultValue;
     }
