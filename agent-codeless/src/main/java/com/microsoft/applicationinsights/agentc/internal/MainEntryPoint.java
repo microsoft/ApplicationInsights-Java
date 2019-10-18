@@ -154,27 +154,19 @@ public class MainEntryPoint {
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 
         Connection connection = parseConnectionString(config.connectionString);
-        String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
-        if (Strings.isNullOrEmpty(instrumentationKey)) {
-            instrumentationKey = connection.instrumentationKey;
-        }
+        String instrumentationKey = getEnvVar("APPINSIGHTS_INSTRUMENTATIONKEY", connection.instrumentationKey);
         if (!Strings.isNullOrEmpty(instrumentationKey)) {
             xmlConfiguration.setInstrumentationKey(instrumentationKey);
         }
         if (connection.ingestionEndpoint != null) {
             xmlConfiguration.getChannel().setEndpointAddress(connection.ingestionEndpoint + "v2/track");
         }
-        String roleName = System.getenv("WEBSITE_SITE_NAME");
-        if (Strings.isNullOrEmpty(roleName)) {
-            roleName = config.roleName;
-        }
+        String roleName = getEnvVar("APPLICATIONINSIGHTS_ROLE_NAME", "WEBSITE_SITE_NAME", config.roleName);
         if (!Strings.isNullOrEmpty(roleName)) {
             xmlConfiguration.setRoleName(roleName);
         }
-        String roleInstance = System.getenv("WEBSITE_INSTANCE_ID");
-        if (Strings.isNullOrEmpty(roleInstance)) {
-            roleInstance = config.roleInstance;
-        }
+        String roleInstance =
+                getEnvVar("APPLICATIONINSIGHTS_ROLE_INSTANCE", "WEBSITE_INSTANCE_ID", config.roleInstance);
         if (!Strings.isNullOrEmpty(roleInstance)) {
             xmlConfiguration.setRoleInstance(roleInstance);
         }
@@ -304,7 +296,7 @@ public class MainEntryPoint {
         }
         return threshold;
     }
-    
+
     private static void addFixedRateSampling(FixedRateSampling fixedRateSampling,
                                              TelemetryConfiguration configuration) {
 
@@ -356,6 +348,26 @@ public class MainEntryPoint {
             }
         }
         return connection;
+    }
+
+    private static String getEnvVar(String name, String defaultValue) {
+        String value = System.getenv(name);
+        if (!Strings.isNullOrEmpty(value)) {
+            return value;
+        }
+        return defaultValue;
+    }
+
+    private static String getEnvVar(String name1, String name2, String defaultValue) {
+        String value = System.getenv(name1);
+        if (!Strings.isNullOrEmpty(value)) {
+            return value;
+        }
+        value = System.getenv(name2);
+        if (!Strings.isNullOrEmpty(value)) {
+            return value;
+        }
+        return defaultValue;
     }
 
     private static class Connection {
