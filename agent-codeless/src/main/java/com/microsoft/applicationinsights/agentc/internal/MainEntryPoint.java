@@ -72,6 +72,14 @@ import org.slf4j.MDC;
 
 public class MainEntryPoint {
 
+    private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
+    private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
+    private static final String APPLICATIONINSIGHTS_TELEMETRY_CONTEXT = "APPLICATIONINSIGHTS_TELEMETRY_CONTEXT";
+
+    private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+    private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
+    private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
+
     private static @Nullable Logger startupLogger;
 
     private MainEntryPoint() {
@@ -158,19 +166,19 @@ public class MainEntryPoint {
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 
         Connection connection = parseConnectionString(config.connectionString);
-        String instrumentationKey = getEnvVar("APPINSIGHTS_INSTRUMENTATIONKEY", connection.instrumentationKey);
+        String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY, connection.instrumentationKey);
         if (!Strings.isNullOrEmpty(instrumentationKey)) {
             xmlConfiguration.setInstrumentationKey(instrumentationKey);
         }
         if (connection.ingestionEndpoint != null) {
             xmlConfiguration.getChannel().setEndpointAddress(connection.ingestionEndpoint + "v2/track");
         }
-        String roleName = getEnvVar("APPLICATIONINSIGHTS_ROLE_NAME", "WEBSITE_SITE_NAME", config.roleName);
+        String roleName = getEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.roleName);
         if (!Strings.isNullOrEmpty(roleName)) {
             xmlConfiguration.setRoleName(roleName);
         }
         String roleInstance =
-                getEnvVar("APPLICATIONINSIGHTS_ROLE_INSTANCE", "WEBSITE_INSTANCE_ID", config.roleInstance);
+                getEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.roleInstance);
         if (!Strings.isNullOrEmpty(roleInstance)) {
             xmlConfiguration.setRoleInstance(roleInstance);
         }
@@ -226,7 +234,7 @@ public class MainEntryPoint {
         }
         TelemetryClient telemetryClient = new TelemetryClient();
         Map<String, String> telemetryContext =
-                getEnvVarAsMap("APPLICATIONINSIGHTS_TELEMETRY_CONTEXT", config.telemetryContext);
+                getEnvVarAsMap(APPLICATIONINSIGHTS_TELEMETRY_CONTEXT, config.telemetryContext);
         if (!telemetryContext.isEmpty()) {
             telemetryClient.getContext().getProperties().putAll(telemetryContext);
         }
