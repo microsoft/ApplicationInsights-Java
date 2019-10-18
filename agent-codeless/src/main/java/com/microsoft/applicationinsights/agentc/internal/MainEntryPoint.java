@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agentc.internal;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,6 +57,9 @@ import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import okio.Okio;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
@@ -221,8 +225,10 @@ public class MainEntryPoint {
             addFixedRateSampling(fixedRateSampling, configuration);
         }
         TelemetryClient telemetryClient = new TelemetryClient();
-        if (!config.telemetryContext.isEmpty()) {
-            telemetryClient.getContext().getProperties().putAll(config.telemetryContext);
+        Map<String, String> telemetryContext =
+                getEnvVarAsMap("APPLICATIONINSIGHTS_TELEMETRY_CONTEXT", config.telemetryContext);
+        if (!telemetryContext.isEmpty()) {
+            telemetryClient.getContext().getProperties().putAll(telemetryContext);
         }
         Global.setTelemetryClient(telemetryClient);
     }
@@ -366,6 +372,20 @@ public class MainEntryPoint {
         value = System.getenv(name2);
         if (!Strings.isNullOrEmpty(value)) {
             return value;
+        }
+        return defaultValue;
+    }
+
+    private static Map<String, String> getEnvVarAsMap(String name, Map<String, String> defaultValue) {
+        String value = System.getenv(name);
+        if (!Strings.isNullOrEmpty(value)) {
+            Moshi moshi = new Moshi.Builder().build();
+            JsonAdapter<Map> jsonAdapter = moshi.adapter(Map.class);
+            try {
+                return jsonAdapter.fromJson(value);
+            } catch (Exception e) {
+                startupLogger.warn("could not parse environment variable {} as json: {}", name, value);
+            }
         }
         return defaultValue;
     }
